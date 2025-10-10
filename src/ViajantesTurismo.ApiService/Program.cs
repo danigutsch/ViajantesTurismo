@@ -21,27 +21,20 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
+Tour[] tours =
+[
+    new("City Highlights", DateTime.Now.AddDays(1), DateTime.Now.AddDays(3)),
+    new("Historical Landmarks", DateTime.Now.AddDays(4), DateTime.Now.AddDays(6)),
+    new("Cultural Experience", DateTime.Now.AddDays(7), DateTime.Now.AddDays(10)),
+    new("Nature and Adventure", DateTime.Now.AddDays(11), DateTime.Now.AddDays(15)),
+    new("Food and Wine Tour", DateTime.Now.AddDays(16), DateTime.Now.AddDays(20))
+];
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapGet("/tours", () => tours)
+    .WithName("GetTours");
 
 app.MapDefaultEndpoints();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+internal sealed record Tour(string Name, DateTime StartDate, DateTime EndDate);

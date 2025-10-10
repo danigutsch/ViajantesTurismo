@@ -1,0 +1,48 @@
+﻿@page "/tours"
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+
+@inject ToursApiClient ToursApi
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates showing data loaded from a backend API service.</p>
+
+@if (_tours == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tour name</th>
+                <th aria-label="Start date">Start</th>
+                <th aria-label="End date">End</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in _tours)
+            {
+                <tr>
+                    <td>@forecast.Name</td>
+                    <td>@forecast.StartDate.ToShortDateString()</td>
+                    <td>@forecast.EndDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Tour[]? _tours;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tours = await ToursApi.GetWeatherAsync();
+    }
+}

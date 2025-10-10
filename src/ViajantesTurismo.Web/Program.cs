@@ -10,7 +10,7 @@ builder.AddRedisOutputCache("cache");
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client => client.BaseAddress = new Uri("https+http://apiservice"));
+builder.Services.AddHttpClient<ToursApiClient>(client => client.BaseAddress = new Uri("https+http://apiservice"));
 
 var app = builder.Build();
 

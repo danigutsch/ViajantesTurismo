@@ -16,7 +16,7 @@ namespace ViajantesTurismo.ServiceDefaults;
 /// health checks, and OpenTelemetry instrumentation for .NET applications.
 /// </summary>
 [PublicAPI]
-public static class Extensions
+public static class ServiceDefaultsExtensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
