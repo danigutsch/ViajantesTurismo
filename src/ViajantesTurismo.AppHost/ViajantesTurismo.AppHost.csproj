@@ -9,11 +9,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ViajantesTurismo.ApiService\ViajantesTurismo.ApiService.csproj" />
+      <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" IsAspireProjectResource="false"/>
     <ProjectReference Include="..\ViajantesTurismo.Web\ViajantesTurismo.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
+      <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
     <PackageReference Include="Aspire.Hosting.Redis" />
   </ItemGroup>
 

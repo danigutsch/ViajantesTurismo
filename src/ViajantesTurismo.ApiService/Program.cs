@@ -1,19 +1,19 @@
+using ViajantesTurismo.ApiService;
+using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
-// Add services to the container.
 builder.Services.AddProblemDetails();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.AddNpgsqlDbContext<ApplicationDbContext>(ResourceNames.Database);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
@@ -36,5 +36,3 @@ app.MapGet("/tours", () => tours)
 app.MapDefaultEndpoints();
 
 app.Run();
-
-internal sealed record Tour(string Name, DateTime StartDate, DateTime EndDate);

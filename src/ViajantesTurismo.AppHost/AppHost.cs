@@ -1,11 +1,19 @@
+using Projects;
+using ViajantesTurismo.Resources;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var cache = builder.AddRedis("cache");
+var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer);
+var database = databaseServer.AddDatabase(ResourceNames.Database);
 
-var apiService = builder.AddProject<Projects.ViajantesTurismo_ApiService>("apiservice")
-    .WithHttpHealthCheck("/health");
+var cache = builder.AddRedis(ResourceNames.Cache);
 
-builder.AddProject<Projects.ViajantesTurismo_Web>("webfrontend")
+var apiService = builder.AddProject<ViajantesTurismo_ApiService>(ResourceNames.Api)
+    .WithHttpHealthCheck("/health")
+    .WithReference(database)
+    .WaitFor(database);
+
+builder.AddProject<ViajantesTurismo_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(cache)
