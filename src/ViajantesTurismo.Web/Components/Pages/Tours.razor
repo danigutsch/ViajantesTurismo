@@ -29,6 +29,7 @@ else
                 <th>Regular Bike Price</th>
                 <th>E-Bike Price</th>
                 <th>Currency</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -44,6 +45,9 @@ else
                     <td>@FormatPrice(tour.RegularBikePrice, tour.Currency)</td>
                     <td>@FormatPrice(tour.EBikePrice, tour.Currency)</td>
                     <td>@tour.Currency</td>
+                    <td>
+                        <a href="@($"/edittour/{tour.Id}")" class="btn btn-sm btn-primary">Edit</a>
+                    </td>
                 </tr>
             }
         </tbody>
