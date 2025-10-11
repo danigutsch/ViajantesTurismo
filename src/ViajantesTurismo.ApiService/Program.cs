@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.ApiService;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +13,7 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddOpenApi();
 
-builder.AddNpgsqlDbContext<ApplicationDbContext>(ResourceNames.Database);
+builder.AddInfrastructure();
 
 var app = builder.Build();
 
@@ -30,7 +28,7 @@ var toursGroup = app.MapGroup("/tours")
     .WithGroupName("Tours")
     .WithTags("Tours");
 
-toursGroup.MapPost("/", async ([FromBody] CreateTourDto tourDto, [FromServices] ApplicationDbContext dbContext, CancellationToken ct) =>
+toursGroup.MapPost("/", async ([FromBody] CreateTourDto tourDto, [FromServices] ITourStore tourStore, [FromServices] IUnitOfWork unitOfWork, CancellationToken ct) =>
     {
         var currency = (Currency)tourDto.Currency;
 
@@ -47,9 +45,9 @@ toursGroup.MapPost("/", async ([FromBody] CreateTourDto tourDto, [FromServices] 
             [.. tourDto.IncludedServices]
         );
 
-        dbContext.Add(tour);
+        tourStore.Add(tour);
 
-        await dbContext.SaveChangesAsync(ct);
+        await unitOfWork.SaveEntities(ct);
 
         return TypedResults.Created($"/tours/{tour.Id}", tour);
     })
@@ -57,9 +55,9 @@ toursGroup.MapPost("/", async ([FromBody] CreateTourDto tourDto, [FromServices] 
     .WithDescription("Creates a new tour.")
     .WithSummary("Creates a new tour.");
 
-toursGroup.MapGet("/", async ([FromServices] ApplicationDbContext dbContext, CancellationToken ct) =>
+toursGroup.MapGet("/", async ([FromServices] IQueryService queryService, CancellationToken ct) =>
     {
-        var allTours = await dbContext.Tours.ToArrayAsync(ct);
+        var allTours = await queryService.GetAllTours(ct);
         return TypedResults.Ok(allTours);
     })
     .WithName("GetTours")

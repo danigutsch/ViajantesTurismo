@@ -6,6 +6,7 @@
         <File Path="Directory.Packages.props"/>
     </Folder>
     <Folder Name="/src/">
+        <Project Path="src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj"/>
         <Project Path="src/ViajantesTurismo.AdminApi.Contracts/ViajantesTurismo.AdminApi.Contracts.csproj"/>
         <Project Path="src/ViajantesTurismo.ApiService/ViajantesTurismo.ApiService.csproj"/>
         <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj"/>
@@ -13,7 +14,8 @@
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj"/>
         <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"/>
         <Project Path="src/ViajantesTurismo.Web/ViajantesTurismo.Web.csproj"/>
-        <Project Path="src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj"/>
+        <Project Path="src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj"
+                 Type="Classic C#"/>
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/ViajantesTurismo.IntegrationTests/ViajantesTurismo.IntegrationTests.csproj"/>

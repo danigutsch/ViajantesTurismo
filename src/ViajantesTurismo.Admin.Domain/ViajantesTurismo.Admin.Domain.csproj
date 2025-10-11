@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.AdminApi.Contracts\ViajantesTurismo.AdminApi.Contracts.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
     </ItemGroup>
 </Project>

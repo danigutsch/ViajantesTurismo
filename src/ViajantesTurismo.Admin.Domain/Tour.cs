@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.Domain;
 /// </summary>
 public sealed class Tour : Entity<int>
 {
-    private readonly string[] _includedServices = [];
+    private readonly List<string> _includedServices = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Tour"/> class.

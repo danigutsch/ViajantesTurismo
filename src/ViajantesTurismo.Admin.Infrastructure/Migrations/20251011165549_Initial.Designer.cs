@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ViajantesTurismo.ApiService;
+using ViajantesTurismo.Admin.Infrastructure;
 
 #nullable disable
 
-namespace ViajantesTurismo.ApiService.Migrations
+namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251011140739_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251011165549_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace ViajantesTurismo.ApiService.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ViajantesTurismo.ApiService.Tour", b =>
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tour", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

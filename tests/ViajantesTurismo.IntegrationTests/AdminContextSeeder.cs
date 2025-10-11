@@ -1,4 +1,5 @@
-﻿using ViajantesTurismo.ApiService;
+﻿using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.IntegrationTests;

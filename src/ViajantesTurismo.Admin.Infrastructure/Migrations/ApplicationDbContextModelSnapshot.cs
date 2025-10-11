@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ViajantesTurismo.ApiService;
+using ViajantesTurismo.Admin.Infrastructure;
 
 #nullable disable
 
-namespace ViajantesTurismo.ApiService.Migrations
+namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace ViajantesTurismo.ApiService.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ViajantesTurismo.ApiService.Tour", b =>
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tour", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

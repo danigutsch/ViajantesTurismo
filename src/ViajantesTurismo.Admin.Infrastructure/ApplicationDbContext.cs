@@ -1,11 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain;
 
-namespace ViajantesTurismo.ApiService;
+namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IUnitOfWork
 {
     public DbSet<Tour> Tours => Set<Tour>();
+
+    public async Task SaveEntities(CancellationToken ct)
+    {
+        _ = await SaveChangesAsync(ct);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,7 +31,9 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.Property(tour => tour.SingleRoomSupplementPrice).IsRequired();
             entity.Property(tour => tour.RegularBikePrice).IsRequired();
             entity.Property(tour => tour.EBikePrice).IsRequired();
-            entity.Property(tour => tour.IncludedServices).IsRequired();
+            entity.PrimitiveCollection(tour => tour.IncludedServices)
+                .HasField("_includedServices")
+                .IsRequired();
         });
     }
 }
