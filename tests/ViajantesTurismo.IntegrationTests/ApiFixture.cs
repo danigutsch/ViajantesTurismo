@@ -32,7 +32,10 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
     {
         await _app.StartAsync();
 
-        var databaseConnectionString = await DatabaseServer.Resource.GetConnectionStringAsync() ?? throw new InvalidOperationException("Failed to get database connection string.");
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await _app.ResourceNotifications.WaitForResourceHealthyAsync(Database.Resource.Name, cts.Token);
+
+        var databaseConnectionString = await DatabaseServer.Resource.GetConnectionStringAsync(cts.Token) ?? throw new InvalidOperationException("Failed to get database connection string.");
         var databaseConnectionStringBuilder = new NpgsqlConnectionStringBuilder(databaseConnectionString)
         {
             Database = Database.Resource.Name

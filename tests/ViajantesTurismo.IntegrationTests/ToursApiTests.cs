@@ -1,13 +1,27 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.ApiService;
 
 namespace ViajantesTurismo.IntegrationTests;
 
 [Collection("Api collection")]
-public sealed class ToursApiTests(ApiFixture fixture)
+public sealed class ToursApiTests
 {
-    private readonly HttpClient _client = fixture.CreateClient();
+    private readonly HttpClient _client;
+    private readonly ApiFixture _fixture;
+
+    public ToursApiTests(ApiFixture fixture)
+    {
+        _fixture = fixture;
+        _client = _fixture.CreateClient();
+
+        using var scope = _fixture.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var seeder = new AdminContextSeeder(dbContext);
+        seeder.Seed();
+    }
 
     [Fact]
     public async Task Can_Get_Tours()
