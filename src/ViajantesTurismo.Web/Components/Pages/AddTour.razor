@@ -58,22 +58,24 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="price" class="form-label">Base Price</label>
-            <InputNumber id="price" class="form-control" @bind-Value="_model.Price"/>
+            <InputNumber id="price" class="form-control" @bind-Value="_model.Price" @bind-Value:format="F2"/>
         </div>
         <div class="col-md-6 mb-3">
             <label for="singleRoom" class="form-label">Single Room Supplement</label>
-            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"/>
+            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"
+                         @bind-Value:format="F2"/>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="regularBike" class="form-label">Regular Bike Price</label>
-            <InputNumber id="regularBike" class="form-control" @bind-Value="_model.RegularBikePrice"/>
+            <InputNumber id="regularBike" class="form-control" @bind-Value="_model.RegularBikePrice"
+                         @bind-Value:format="F2"/>
         </div>
         <div class="col-md-6 mb-3">
             <label for="eBike" class="form-label">E-Bike Price</label>
-            <InputNumber id="eBike" class="form-control" @bind-Value="_model.EBikePrice"/>
+            <InputNumber id="eBike" class="form-control" @bind-Value="_model.EBikePrice" @bind-Value:format="F2"/>
         </div>
     </div>
 
@@ -129,7 +131,7 @@
             var response = await ToursApi.CreateTour(tour);
 
             _success = true;
-            _model = new TourFormModel(); // Reset form
+            _model = new TourFormModel();
         }
         catch (Exception ex)
         {
