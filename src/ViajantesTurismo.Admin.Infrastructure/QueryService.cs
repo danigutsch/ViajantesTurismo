@@ -8,7 +8,7 @@ internal sealed class QueryService(ApplicationDbContext dbContext) : IQueryServi
 {
     public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct)
     {
-        var tours = await dbContext.Tours.ToListAsync(ct);
+        var tours = await dbContext.Tours.OrderBy(tour => tour.Id).ToListAsync(ct);
         return
         [
             ..tours.Select(tour => new GetTourDto()
