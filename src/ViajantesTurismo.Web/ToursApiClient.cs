@@ -26,4 +26,12 @@ internal sealed class ToursApiClient(HttpClient httpClient)
 
         return tours?.ToArray() ?? [];
     }
+
+    public async Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+    }
 }

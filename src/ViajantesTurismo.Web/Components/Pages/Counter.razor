@@ -1,19 +1,158 @@
 ﻿@page "/counter"
+@using ViajantesTurismo.AdminApi.Contracts
+@inject ToursApiClient ToursApi
 @rendermode InteractiveServer
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>Add Tour</PageTitle>
 
-<h1>Counter</h1>
+<h1>Add New Tour</h1>
 
-<p role="status">Current count: @_currentCount</p>
+@if (_success)
+{
+    <div class="alert alert-success" role="alert">
+        Tour created successfully!
+    </div>
+}
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @_errorMessage
+    </div>
+}
+
+<EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="addTour">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="mb-3">
+        <label for="identifier" class="form-label">Tour Identifier</label>
+        <InputText id="identifier" class="form-control" @bind-Value="_model.Identifier" placeholder="e.g., CUBA2024"/>
+    </div>
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Tour Name</label>
+        <InputText id="name" class="form-control" @bind-Value="_model.Name" placeholder="e.g., Isla de Cuba"/>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="startDate" class="form-label">Start Date</label>
+            <InputDate id="startDate" class="form-control" @bind-Value="_model.StartDate"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="endDate" class="form-label">End Date</label>
+            <InputDate id="endDate" class="form-control" @bind-Value="_model.EndDate"/>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="currency" class="form-label">Currency</label>
+        <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency">
+            <option value="@CurrencyDto.Real">Brazilian Real (BRL)</option>
+            <option value="@CurrencyDto.Euro">Euro (EUR)</option>
+            <option value="@CurrencyDto.UsDollar">US Dollar (USD)</option>
+        </InputSelect>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="price" class="form-label">Base Price</label>
+            <InputNumber id="price" class="form-control" @bind-Value="_model.Price"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="singleRoom" class="form-label">Single Room Supplement</label>
+            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"/>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="regularBike" class="form-label">Regular Bike Price</label>
+            <InputNumber id="regularBike" class="form-control" @bind-Value="_model.RegularBikePrice"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="eBike" class="form-label">E-Bike Price</label>
+            <InputNumber id="eBike" class="form-control" @bind-Value="_model.EBikePrice"/>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="services" class="form-label">Included Services (comma-separated)</label>
+        <InputText id="services" class="form-control" @bind-Value="_model.ServicesInput"
+                   placeholder="e.g., Hotel, Breakfast, City Tour"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
+        @if (_isSubmitting)
+        {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <text>Creating...</text>
+        }
+        else
+        {
+            <text>Create Tour</text>
+        }
+    </button>
+</EditForm>
 
 @code {
-    private int _currentCount;
+    private TourFormModel _model = new();
+    private bool _isSubmitting;
+    private bool _success;
+    private string? _errorMessage;
 
-    private void IncrementCount()
+    private async Task HandleSubmit()
     {
-        _currentCount++;
+        _isSubmitting = true;
+        _success = false;
+        _errorMessage = null;
+
+        try
+        {
+            var tour = new CreateTourDto
+            {
+                Identifier = _model.Identifier,
+                Name = _model.Name,
+                StartDate = _model.StartDate.ToUniversalTime(),
+                EndDate = _model.EndDate.ToUniversalTime(),
+                Currency = _model.Currency,
+                Price = _model.Price,
+                SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
+                RegularBikePrice = _model.RegularBikePrice,
+                EBikePrice = _model.EBikePrice,
+                IncludedServices = _model.ServicesInput
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .ToList()
+            };
+
+            var response = await ToursApi.CreateTour(tour);
+
+            _success = true;
+            _model = new TourFormModel(); // Reset form
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
+
+    private class TourFormModel
+    {
+        public string Identifier { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; } = DateTime.Today.AddDays(30);
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(40);
+        public CurrencyDto Currency { get; set; } = CurrencyDto.Real;
+        public decimal Price { get; set; }
+        public decimal SingleRoomSupplementPrice { get; set; }
+        public decimal RegularBikePrice { get; set; }
+        public decimal EBikePrice { get; set; }
+        public string ServicesInput { get; set; } = string.Empty;
+    }
+
 }

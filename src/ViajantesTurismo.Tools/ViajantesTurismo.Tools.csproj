@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.IntegrationTests"/>
+        <InternalsVisibleTo Include="ViajantesTurismo.MigrationService"/>
+    </ItemGroup>
+
+</Project>

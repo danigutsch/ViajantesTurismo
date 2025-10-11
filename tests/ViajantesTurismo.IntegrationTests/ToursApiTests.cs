@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Tools;
 
 namespace ViajantesTurismo.IntegrationTests;
 

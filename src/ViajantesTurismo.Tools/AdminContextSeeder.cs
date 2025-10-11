@@ -2,7 +2,7 @@
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.IntegrationTests;
+namespace ViajantesTurismo.Tools;
 
 internal sealed class AdminContextSeeder(ApplicationDbContext dbContext)
 {
@@ -78,5 +78,15 @@ internal sealed class AdminContextSeeder(ApplicationDbContext dbContext)
         dbContext.Tours.AddRange(Tours);
 
         dbContext.SaveChanges();
+    }
+
+    public async Task Seed(CancellationToken ct)
+    {
+        await dbContext.Database.EnsureDeletedAsync(ct);
+        await dbContext.Database.EnsureCreatedAsync(ct);
+
+        dbContext.Tours.AddRange(Tours);
+
+        await dbContext.SaveChangesAsync(ct);
     }
 }
