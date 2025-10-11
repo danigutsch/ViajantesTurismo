@@ -8,10 +8,15 @@ var database = databaseServer.AddDatabase(ResourceNames.Database);
 
 var cache = builder.AddRedis(ResourceNames.Cache);
 
+var migrationService = builder.AddProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
+    .WithReference(database)
+    .WaitFor(database);
+
 var apiService = builder.AddProject<ViajantesTurismo_ApiService>(ResourceNames.Api)
     .WithHttpHealthCheck("/health")
     .WithReference(database)
-    .WaitFor(database);
+    .WaitFor(database)
+    .WaitForCompletion(migrationService);
 
 builder.AddProject<ViajantesTurismo_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()

@@ -10,6 +10,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Tools\ViajantesTurismo.Tools.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
     </ItemGroup>
 </Project>

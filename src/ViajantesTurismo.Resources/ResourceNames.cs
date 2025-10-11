@@ -29,4 +29,9 @@ public static class ResourceNames
     /// The name of the web application resource.
     /// </summary>
     public const string WebApp = "web-app";
+
+    /// <summary>
+    /// The name of the migration service resource.
+    /// </summary>
+    public const string MigrationService = "migration";
 }

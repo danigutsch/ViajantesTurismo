@@ -15,7 +15,7 @@ public static class InfrastructureCompositionRoot
     /// </summary>
     /// <param name="builder">The application builder to configure.</param>
     /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
-    /// <returns></returns>
+    /// <returns>The updated application builder.</returns>
     public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
@@ -23,6 +23,21 @@ public static class InfrastructureCompositionRoot
         builder.Services.AddScoped<IUnitOfWork, ApplicationDbContext>();
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the seeding services to the application builder, including the database context and seeder implementation.
+    /// </summary>
+    /// <param name="builder">The application builder to configure.</param>
+    /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
+    /// <returns>The updated application builder.</returns>
+    public static TApplicationBuilder AddSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddNpgsqlDbContext<ApplicationDbContext>(ResourceNames.Database);
+        builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
     }

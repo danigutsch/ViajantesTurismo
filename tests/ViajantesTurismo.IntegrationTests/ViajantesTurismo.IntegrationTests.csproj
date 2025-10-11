@@ -40,7 +40,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.ApiService\ViajantesTurismo.ApiService.csproj" IsAspireProjectResource="false"/>
-        <ProjectReference Include="..\..\src\ViajantesTurismo.Tools\ViajantesTurismo.Tools.csproj" IsAspireProjectResource="false"/>
     </ItemGroup>
 
 </Project>

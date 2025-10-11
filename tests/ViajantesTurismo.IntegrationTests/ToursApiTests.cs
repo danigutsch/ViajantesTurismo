@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Tools;
 
 namespace ViajantesTurismo.IntegrationTests;
 
@@ -20,7 +19,7 @@ public sealed class ToursApiTests
 
         using var scope = _fixture.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var seeder = new AdminContextSeeder(dbContext);
+        var seeder = new Seeder(dbContext);
         seeder.Seed();
     }
 

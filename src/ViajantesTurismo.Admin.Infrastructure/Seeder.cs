@@ -1,10 +1,9 @@
 ﻿using ViajantesTurismo.Admin.Domain;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.Tools;
+namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class AdminContextSeeder(ApplicationDbContext dbContext)
+internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
 {
     private static readonly Tour[] Tours =
     [
@@ -89,4 +88,10 @@ internal sealed class AdminContextSeeder(ApplicationDbContext dbContext)
 
         await dbContext.SaveChangesAsync(ct);
     }
+}
+
+internal interface ISeeder
+{
+    void Seed();
+    Task Seed(CancellationToken ct);
 }

@@ -87,7 +87,8 @@ public static class ServiceDefaultsExtensions
                             && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
                     )
                     .AddGrpcClientInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation();
             });
 
         builder.AddOpenTelemetryExporters();

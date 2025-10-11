@@ -12,7 +12,6 @@
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.IntegrationTests"/>
         <InternalsVisibleTo Include="ViajantesTurismo.MigrationService"/>
-        <InternalsVisibleTo Include="ViajantesTurismo.Tools"/>
     </ItemGroup>
 
 </Project>

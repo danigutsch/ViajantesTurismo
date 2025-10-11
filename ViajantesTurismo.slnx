@@ -13,12 +13,11 @@
         <Project Path="src/ViajantesTurismo.ApiService/ViajantesTurismo.ApiService.csproj"/>
         <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj"/>
         <Project Path="src/ViajantesTurismo.Common/ViajantesTurismo.Common.csproj"/>
+        <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj"
+                 Type="Classic C#"/>
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj"/>
         <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"/>
         <Project Path="src/ViajantesTurismo.Web/ViajantesTurismo.Web.csproj"/>
-        <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj"
-                 Type="Classic C#"/>
-        <Project Path="src/ViajantesTurismo.Tools/ViajantesTurismo.Tools.csproj" Type="Classic C#"/>
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/ViajantesTurismo.IntegrationTests/ViajantesTurismo.IntegrationTests.csproj"/>
