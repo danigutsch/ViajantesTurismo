@@ -30,6 +30,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<decimal>("EBikePrice")
                         .HasColumnType("numeric");
 

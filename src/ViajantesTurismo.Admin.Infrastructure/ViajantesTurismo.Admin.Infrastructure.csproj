@@ -14,4 +14,8 @@
         <InternalsVisibleTo Include="ViajantesTurismo.MigrationService"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Remove="Migrations\20251011202710_Initial.Designer.cs"/>
+    </ItemGroup>
+
 </Project>

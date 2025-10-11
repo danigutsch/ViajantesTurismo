@@ -31,6 +31,7 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.Property(tour => tour.SingleRoomSupplementPrice).IsRequired();
             entity.Property(tour => tour.RegularBikePrice).IsRequired();
             entity.Property(tour => tour.EBikePrice).IsRequired();
+            entity.Property(tour => tour.Currency).HasConversion<string>().IsRequired();
             entity.PrimitiveCollection(tour => tour.IncludedServices)
                 .HasField("_includedServices")
                 .IsRequired();

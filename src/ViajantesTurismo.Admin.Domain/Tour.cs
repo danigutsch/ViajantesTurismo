@@ -97,8 +97,7 @@ public sealed class Tour : Entity<int>
     public IReadOnlyList<string> IncludedServices => _includedServices.AsReadOnly();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Tour"/> class.
-    /// This constructor is required by Entity Framework Core for materialization.
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
 #pragma warning disable CS8618
     public Tour()

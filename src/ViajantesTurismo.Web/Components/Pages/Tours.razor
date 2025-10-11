@@ -7,7 +7,7 @@
 
 <PageTitle>Weather</PageTitle>
 
-<h1>Weather</h1>
+<h1>Tours</h1>
 
 <p>This component demonstrates showing data loaded from a backend API service.</p>
 
@@ -20,18 +20,30 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Tour name</th>
-                <th aria-label="Start date">Start</th>
-                <th aria-label="End date">End</th>
+                <th>Identifier</th>
+                <th>Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Price</th>
+                <th>Single Room Supplement</th>
+                <th>Regular Bike Price</th>
+                <th>E-Bike Price</th>
+                <th>Currency</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in _tours)
+        @foreach (var tour in _tours)
             {
                 <tr>
-                    <td>@forecast.Name</td>
-                    <td>@forecast.StartDate.ToShortDateString()</td>
-                    <td>@forecast.EndDate.ToShortDateString()</td>
+                    <td>@tour.Identifier</td>
+                    <td>@tour.Name</td>
+                    <td>@tour.StartDate.ToShortDateString()</td>
+                    <td>@tour.EndDate.ToShortDateString()</td>
+                    <td>@FormatPrice(tour.Price, tour.Currency)</td>
+                    <td>@FormatPrice(tour.SingleRoomSupplementPrice, tour.Currency)</td>
+                    <td>@FormatPrice(tour.RegularBikePrice, tour.Currency)</td>
+                    <td>@FormatPrice(tour.EBikePrice, tour.Currency)</td>
+                    <td>@tour.Currency</td>
                 </tr>
             }
         </tbody>
@@ -44,5 +56,17 @@ else
     protected override async Task OnInitializedAsync()
     {
         _tours = await ToursApi.GetTours();
+    }
+
+    private static string FormatPrice(decimal price, CurrencyDto currency)
+    {
+        var symbol = currency switch
+        {
+            CurrencyDto.Real => "R$",
+            CurrencyDto.Euro => "€",
+            CurrencyDto.UsDollar => "$",
+            _ => ""
+        };
+        return $"{symbol}{price:N2}";
     }
 }

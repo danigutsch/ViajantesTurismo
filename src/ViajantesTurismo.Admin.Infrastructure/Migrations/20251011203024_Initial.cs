@@ -26,6 +26,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     SingleRoomSupplementPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     RegularBikePrice = table.Column<decimal>(type: "numeric", nullable: false),
                     EBikePrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    Currency = table.Column<string>(type: "text", nullable: false),
                     IncludedServices = table.Column<string[]>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
