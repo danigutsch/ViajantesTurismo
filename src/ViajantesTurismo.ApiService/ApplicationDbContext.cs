@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Domain;
 
 namespace ViajantesTurismo.ApiService;
 

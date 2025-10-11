@@ -13,6 +13,7 @@
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj"/>
         <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"/>
         <Project Path="src/ViajantesTurismo.Web/ViajantesTurismo.Web.csproj"/>
+        <Project Path="src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj"/>
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/ViajantesTurismo.IntegrationTests/ViajantesTurismo.IntegrationTests.csproj"/>

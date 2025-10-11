@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.ApiService;
 using ViajantesTurismo.Common.Monies;
