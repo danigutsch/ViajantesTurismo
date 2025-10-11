@@ -20,7 +20,7 @@ public static class InfrastructureCompositionRoot
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDbContext<ApplicationDbContext>(ResourceNames.Database);
-        builder.Services.AddScoped<IUnitOfWork, ApplicationDbContext>();
+        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
 

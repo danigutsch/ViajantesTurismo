@@ -10,16 +10,18 @@ namespace ViajantesTurismo.IntegrationTests;
 public sealed class ToursApiTests
 {
     private readonly HttpClient _client;
+    private readonly ApplicationDbContext _dbContext;
     private readonly ApiFixture _fixture;
+    private readonly IServiceScope _scope;
 
     public ToursApiTests(ApiFixture fixture)
     {
         _fixture = fixture;
         _client = _fixture.CreateClient();
 
-        using var scope = _fixture.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var seeder = new Seeder(dbContext);
+        _scope = _fixture.Services.CreateScope();
+        _dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var seeder = new Seeder(_dbContext);
         seeder.Seed();
     }
 
@@ -60,5 +62,8 @@ public sealed class ToursApiTests
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var tour = _dbContext.Tours.FirstOrDefault(t => t.Identifier == "CUBA2024");
+        Assert.NotNull(tour);
     }
 }

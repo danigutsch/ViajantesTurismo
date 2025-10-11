@@ -3,10 +3,12 @@ using ViajantesTurismo.Resources;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer);
+var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer)
+    .WithPgWeb();
 var database = databaseServer.AddDatabase(ResourceNames.Database);
 
-var cache = builder.AddRedis(ResourceNames.Cache);
+var cache = builder.AddRedis(ResourceNames.Cache)
+    .WithRedisInsight();
 
 var migrationService = builder.AddProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
     .WithReference(database)
