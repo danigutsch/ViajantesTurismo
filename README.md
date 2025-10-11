@@ -11,13 +11,15 @@ powerful tools to create and manage tour packages.
 ## Features
 
 - **Tour Management**: Create and manage bike tour packages with detailed itineraries
-- **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD)
+- **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
+  formatting and display in the web frontend
 - **Flexible Pricing**:
     - Base tour pricing per person
     - Single room supplement options
     - Regular bike and E-bike rental pricing
 - **Service Packages**: Customizable included services (hotels, meals, guided tours, etc.)
 - **RESTful API**: Modern API-first architecture for seamless integrations
+- **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
 
 ## Technology Stack
 
@@ -26,6 +28,7 @@ powerful tools to create and manage tour packages.
 - **Entity Framework Core** - Database ORM
 - **PostgreSQL** - Primary database
 - **.NET Aspire** - Cloud-native orchestration
+- **Blazor** - Web frontend with client-side routing and modern UX
 - **xUnit** - Testing framework
 - **OpenAPI/Swagger** - API documentation
 
@@ -34,15 +37,18 @@ powerful tools to create and manage tour packages.
 ```
 ViajantesTurismo/
 ├── src/
-│   ├── ViajantesTurismo.ApiService/        # Main API service
-│   ├── ViajantesTurismo.Web/                # Web frontend
-│   ├── ViajantesTurismo.AppHost/            # Aspire orchestration
-│   ├── ViajantesTurismo.AdminApi.Contracts/ # API contracts and DTOs
-│   ├── ViajantesTurismo.Common/             # Shared domain models
-│   ├── ViajantesTurismo.Resources/          # Resource definitions
-│   └── ViajantesTurismo.ServiceDefaults/    # Service defaults
+│   ├── ViajantesTurismo.Admin.Domain/         # Domain interfaces and models
+│   ├── ViajantesTurismo.Admin.Infrastructure/ # Infrastructure (EF Core, DB context, stores)
+│   ├── ViajantesTurismo.AdminApi.Contracts/   # API contracts and DTOs
+│   ├── ViajantesTurismo.ApiService/           # Main API service
+│   ├── ViajantesTurismo.AppHost/              # Aspire orchestration
+│   ├── ViajantesTurismo.Common/               # Shared domain models
+│   ├── ViajantesTurismo.MigrationService/     # Database migration worker
+│   ├── ViajantesTurismo.Resources/            # Resource definitions
+│   ├── ViajantesTurismo.ServiceDefaults/      # Service defaults and extensions
+│   └── ViajantesTurismo.Web/                  # Blazor web frontend
 └── tests/
-    └── ViajantesTurismo.IntegrationTests/   # Integration tests
+    └── ViajantesTurismo.IntegrationTests/     # Integration tests
 ```
 
 ## Getting Started
@@ -51,7 +57,9 @@ ViajantesTurismo/
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Preview)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (for PostgreSQL)
-- [Visual Studio 2025](https://visualstudio.microsoft.com/) or [JetBrains Rider](https://www.jetbrains.com/rider/)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/)
+  or [Visual Studio 2026 Preview](https://visualstudio.microsoft.com/vs/preview/)
+  or [JetBrains Rider](https://www.jetbrains.com/rider/)
 
 ### Running the Application
 
@@ -101,7 +109,8 @@ Each tour includes:
 - **Unique Identifier** - Tour code (e.g., "CUBA2024")
 - **Name** - Descriptive tour name
 - **Dates** - Start and end dates
-- **Pricing** - Base price, single room supplement, bike rentals
+- **Pricing** - Base price, single room supplement, bike rentals (all prices displayed and entered with correct currency
+  formatting)
 - **Currency** - Real, Euro, or US Dollar
 - **Included Services** - Hotels, meals, activities, etc.
 
