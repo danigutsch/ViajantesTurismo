@@ -1,5 +1,6 @@
 ﻿@page "/tours"
-@attribute [StreamRendering(true)]
+@using ViajantesTurismo.AdminApi.Contracts
+@attribute [StreamRendering]
 @attribute [OutputCache(Duration = 5)]
 
 @inject ToursApiClient ToursApi
@@ -22,7 +23,6 @@ else
                 <th>Tour name</th>
                 <th aria-label="Start date">Start</th>
                 <th aria-label="End date">End</th>
-                <th>Summary</th>
             </tr>
         </thead>
         <tbody>
@@ -39,10 +39,10 @@ else
 }
 
 @code {
-    private Tour[]? _tours;
+    private GetTourDto[]? _tours;
 
     protected override async Task OnInitializedAsync()
     {
-        _tours = await ToursApi.GetWeatherAsync();
+        _tours = await ToursApi.GetTours();
     }
 }

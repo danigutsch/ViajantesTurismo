@@ -1,3 +1,4 @@
+using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.Web;
 using ViajantesTurismo.Web.Components;
@@ -10,7 +11,7 @@ builder.AddRedisOutputCache("cache");
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient<ToursApiClient>(client => client.BaseAddress = new Uri("https+http://apiservice"));
+builder.Services.AddHttpClient<ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 
 var app = builder.Build();
 

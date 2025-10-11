@@ -1,12 +1,14 @@
+using ViajantesTurismo.AdminApi.Contracts;
+
 namespace ViajantesTurismo.Web;
 
 internal sealed class ToursApiClient(HttpClient httpClient)
 {
-    public async Task<Tour[]> GetWeatherAsync(int maxItems = 10, CancellationToken cancellationToken = default)
+    public async Task<GetTourDto[]> GetTours(int maxItems = 10, CancellationToken cancellationToken = default)
     {
-        List<Tour>? tours = null;
+        List<GetTourDto>? tours = null;
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable<Tour>("/tours", cancellationToken))
+        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable<GetTourDto>("/tours", cancellationToken))
         {
             if (tours?.Count >= maxItems)
             {
@@ -25,5 +27,3 @@ internal sealed class ToursApiClient(HttpClient httpClient)
         return tours?.ToArray() ?? [];
     }
 }
-
-internal sealed record Tour(string Name, DateTime StartDate, DateTime EndDate);
