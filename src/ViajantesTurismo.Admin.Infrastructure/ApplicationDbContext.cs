@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
@@ -24,8 +25,8 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.HasIndex(tour => tour.Identifier).IsUnique();
             entity.HasIndex(tour => tour.Name).IsUnique();
 
-            entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(64);
-            entity.Property(tour => tour.Name).IsRequired().HasMaxLength(128);
+            entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(ContractConstants.MaxDefaultLength);
+            entity.Property(tour => tour.Name).IsRequired().HasMaxLength(ContractConstants.MaxTourNameLength);
             entity.Property(tour => tour.StartDate).IsRequired();
             entity.Property(tour => tour.EndDate).IsRequired();
             entity.Property(tour => tour.Price).IsRequired();

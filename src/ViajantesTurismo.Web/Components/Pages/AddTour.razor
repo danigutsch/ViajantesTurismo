@@ -1,16 +1,25 @@
 @page "/addtour"
+@using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.AdminApi.Contracts
 @inject ToursApiClient ToursApi
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>Add Tour</PageTitle>
 
 <h1>Add New Tour</h1>
 
-@if (_success)
+@if (_success && _createdTourUrl != null)
 {
     <div class="alert alert-success" role="alert">
-        Tour created successfully!
+        <h4 class="alert-heading">Tour created successfully!</h4>
+        <p>What would you like to do next?</p>
+        <hr>
+        <div class="d-flex gap-2">
+            <a href="@_createdTourUrl" class="btn btn-primary">View Tour Details</a>
+            <button type="button" class="btn btn-success" @onclick="CreateAnother">Create Another Tour</button>
+            <NavLink href="/tours" class="btn btn-secondary">View All Tours</NavLink>
+        </div>
     </div>
 }
 
@@ -103,6 +112,7 @@
     private bool _isSubmitting;
     private bool _success;
     private string? _errorMessage;
+    private string? _createdTourUrl;
 
     private async Task HandleSubmit()
     {
@@ -130,8 +140,8 @@
 
             var response = await ToursApi.CreateTour(tour);
 
+            _createdTourUrl = response.ToString();
             _success = true;
-            _model = new TourFormModel();
         }
         catch (Exception ex)
         {
@@ -143,18 +153,43 @@
         }
     }
 
-    private class TourFormModel
+    private void CreateAnother()
     {
-        public string Identifier { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; } = DateTime.Today.AddDays(30);
-        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(40);
-        public CurrencyDto Currency { get; set; } = CurrencyDto.Real;
-        public decimal Price { get; set; }
-        public decimal SingleRoomSupplementPrice { get; set; }
-        public decimal RegularBikePrice { get; set; }
-        public decimal EBikePrice { get; set; }
-        public string ServicesInput { get; set; } = string.Empty;
+        _model = new TourFormModel();
+        _success = false;
+        _createdTourUrl = null;
+        _errorMessage = null;
     }
 
+    [MinimumDuration(5)]
+    private class TourFormModel
+    {
+        [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+        public string Identifier { get; set; } = string.Empty;
+
+        [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public DateTime StartDate { get; set; } = DateTime.Today.AddDays(30);
+
+        [Required]
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(40);
+
+        [Required] public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;
+
+        [Required, Range(0, 10_000)]
+        public decimal Price { get; set; }
+
+        [Required, Range(0, 10_000)]
+        public decimal SingleRoomSupplementPrice { get; set; }
+
+        [Required, Range(0, 10_000)]
+        public decimal RegularBikePrice { get; set; }
+
+        [Required, Range(0, 10_000)]
+        public decimal EBikePrice { get; set; }
+
+        public string ServicesInput { get; set; } = string.Empty;
+    }
 }
