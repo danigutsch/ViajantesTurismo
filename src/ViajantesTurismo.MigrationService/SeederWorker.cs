@@ -11,7 +11,7 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var activity = ActivitySource.StartActivity(ActivityOperationName, ActivityKind.Producer);
+        using var activity = ActivitySource.StartActivity(ActivityOperationName, ActivityKind.Producer, parentContext: default);
 
         try
         {

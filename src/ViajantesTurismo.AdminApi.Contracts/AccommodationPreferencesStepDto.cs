@@ -20,16 +20,8 @@ public sealed record AccommodationPreferencesStepDto
     public required BedTypeDto? BedType { get; init; }
 
     /// <summary>
-    /// The first name of the companion.
+    /// The ID of the companion.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? CompanionFirstName { get; init; }
-
-    /// <summary>
-    /// The last name of the companion.
-    /// </summary>
-    [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? CompanionLastName { get; init; }
+    public required int? CompanionId { get; init; }
 }

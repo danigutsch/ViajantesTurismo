@@ -13,9 +13,6 @@ public sealed class AccommodationPreferences
     /// <summary>Bed type.</summary>
     public required BedType BedType { get; init; }
 
-    /// <summary>Companion's first name.</summary>
-    public string? CompanionFirstName { get; init; }
-
-    /// <summary>Companion's last name.</summary>
-    public string? CompanionLastName { get; init; }
+    /// <summary>Companion's ID.</summary>
+    public int? CompanionId { get; init; }
 }

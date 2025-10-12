@@ -124,8 +124,7 @@ internal static class CustomerEndpoints
         {
             RoomType = (RoomType)dto.AccommodationPreferences.RoomType!.Value,
             BedType = (BedType)dto.AccommodationPreferences.BedType!.Value,
-            CompanionFirstName = dto.AccommodationPreferences.CompanionFirstName,
-            CompanionLastName = dto.AccommodationPreferences.CompanionLastName
+            CompanionId = dto.AccommodationPreferences.CompanionId
         };
 
         var emergencyContact = new EmergencyContact
