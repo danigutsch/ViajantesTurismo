@@ -46,7 +46,10 @@ else
                     <td>@FormatPrice(tour.EBikePrice, tour.Currency)</td>
                     <td>@tour.Currency</td>
                     <td>
-                        <a href="@($"/edittour/{tour.Id}")" class="btn btn-sm btn-primary">Edit</a>
+                        <div class="btn-group" role="group">
+                            <a href="@($"/tours/{tour.Id}")" class="btn btn-sm btn-info">View Details</a>
+                            <a href="@($"/edittour/{tour.Id}")" class="btn btn-sm btn-primary">Edit</a>
+                        </div>
                     </td>
                 </tr>
             }

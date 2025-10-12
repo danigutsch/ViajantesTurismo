@@ -1,0 +1,132 @@
+@page "/tours/{id:int}"
+@using ViajantesTurismo.AdminApi.Contracts
+@inject ToursApiClient ToursApi
+@inject NavigationManager Navigation
+
+<PageTitle>Tour Details</PageTitle>
+
+<h1>Tour Details</h1>
+
+@if (_loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (_notFound)
+{
+    <div class="alert alert-danger" role="alert">
+        Tour not found.
+    </div>
+    <NavLink href="/tours" class="btn btn-secondary">Back to Tours</NavLink>
+}
+else if (_tour != null)
+{
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">@_tour.Name</h3>
+            <div class="d-flex gap-2">
+                <a href="@($"/edittour/{_tour.Id}")" class="btn btn-primary">Edit Tour</a>
+                <NavLink href="/tours" class="btn btn-secondary">Back to List</NavLink>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>General Information</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Identifier:</dt>
+                        <dd class="col-sm-8">@_tour.Identifier</dd>
+
+                        <dt class="col-sm-4">Tour Name:</dt>
+                        <dd class="col-sm-8">@_tour.Name</dd>
+
+                        <dt class="col-sm-4">Start Date:</dt>
+                        <dd class="col-sm-8">@_tour.StartDate.ToShortDateString()</dd>
+
+                        <dt class="col-sm-4">End Date:</dt>
+                        <dd class="col-sm-8">@_tour.EndDate.ToShortDateString()</dd>
+
+                        <dt class="col-sm-4">Duration:</dt>
+                        <dd class="col-sm-8">@((_tour.EndDate - _tour.StartDate).Days) days</dd>
+
+                        <dt class="col-sm-4">Currency:</dt>
+                        <dd class="col-sm-8">@_tour.Currency</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    <h5>Pricing</h5>
+                    <dl class="row">
+                        <dt class="col-sm-6">Base Price:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.Price, _tour.Currency)</dd>
+
+                        <dt class="col-sm-6">Single Room Supplement:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.SingleRoomSupplementPrice, _tour.Currency)</dd>
+
+                        <dt class="col-sm-6">Regular Bike Price:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.RegularBikePrice, _tour.Currency)</dd>
+
+                        <dt class="col-sm-6">E-Bike Price:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.EBikePrice, _tour.Currency)</dd>
+                    </dl>
+                </div>
+            </div>
+
+            @if (_tour.IncludedServices.Any())
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <h5>Included Services</h5>
+                        <ul class="list-group">
+                            @foreach (var service in _tour.IncludedServices)
+                            {
+                                <li class="list-group-item">@service</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private GetTourDto? _tour;
+    private bool _loading = true;
+    private bool _notFound;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _tour = await ToursApi.GetTourById(Id);
+
+            if (_tour is null)
+            {
+                _notFound = true;
+            }
+        }
+        catch (Exception)
+        {
+            _notFound = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatPrice(decimal price, CurrencyDto currency)
+    {
+        var symbol = currency switch
+        {
+            CurrencyDto.Real => "R$",
+            CurrencyDto.Euro => "€",
+            CurrencyDto.UsDollar => "$",
+            _ => ""
+        };
+        return $"{symbol}{price:N2}";
+    }
+
+}
