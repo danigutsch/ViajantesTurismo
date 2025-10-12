@@ -97,11 +97,11 @@ public sealed class ToursApiTests : IDisposable
         };
         var createResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var createdTour = _dbContext.Tours.FirstOrDefault(tour => tour.Identifier == request.Identifier);
-        Assert.NotNull(createdTour);
+        var location = createResponse.Headers.Location;
+        Assert.NotNull(location);
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/tours/{createdTour.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync(location, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
