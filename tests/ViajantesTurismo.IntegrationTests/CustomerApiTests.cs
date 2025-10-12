@@ -11,20 +11,18 @@ public sealed class CustomerApiTests : IDisposable
 {
     private readonly HttpClient _client;
     private readonly ApplicationDbContext _dbContext;
-    private readonly ApiFixture _fixture;
     private readonly IServiceScope _scope;
 
     public CustomerApiTests(ApiFixture fixture)
     {
-        _fixture = fixture;
-        _client = _fixture.CreateClient();
+        _client = fixture.CreateClient();
 
-        using var scope = _fixture.Services.CreateScope();
+        using var scope = fixture.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = new Seeder(dbContext);
         seeder.Seed();
 
-        _scope = _fixture.Services.CreateScope();
+        _scope = fixture.Services.CreateScope();
         _dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
 
