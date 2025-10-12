@@ -11,7 +11,7 @@ public sealed class AccommodationPreferences
     public required RoomType RoomType { get; init; }
 
     /// <summary>Bed type.</summary>
-    public required string BedType { get; init; }
+    public required BedType BedType { get; init; }
 
     /// <summary>Companion's first name.</summary>
     public string? CompanionFirstName { get; init; }

@@ -17,8 +17,7 @@ public sealed record AccommodationPreferencesStepDto
     /// The type of bed preferred.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxDefaultLength)]
-    public required string? BedType { get; init; }
+    public required BedTypeDto? BedType { get; init; }
 
     /// <summary>
     /// The first name of the companion.

@@ -123,7 +123,7 @@ internal static class CustomerEndpoints
         var accommodationPreferences = new AccommodationPreferences
         {
             RoomType = (RoomType)dto.AccommodationPreferences.RoomType!.Value,
-            BedType = dto.AccommodationPreferences.BedType!,
+            BedType = (BedType)dto.AccommodationPreferences.BedType!.Value,
             CompanionFirstName = dto.AccommodationPreferences.CompanionFirstName,
             CompanionLastName = dto.AccommodationPreferences.CompanionLastName
         };
