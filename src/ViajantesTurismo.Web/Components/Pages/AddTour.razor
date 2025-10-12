@@ -178,16 +178,16 @@
 
         [Required] public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;
 
-        [Required, Range(0, 10_000)]
+        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal Price { get; set; }
 
-        [Required, Range(0, 10_000)]
+        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal SingleRoomSupplementPrice { get; set; }
 
-        [Required, Range(0, 10_000)]
+        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal RegularBikePrice { get; set; }
 
-        [Required, Range(0, 10_000)]
+        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal EBikePrice { get; set; }
 
         public string ServicesInput { get; set; } = string.Empty;
