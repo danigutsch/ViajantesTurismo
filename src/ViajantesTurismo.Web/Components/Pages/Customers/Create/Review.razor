@@ -1,0 +1,282 @@
+@page "/customers/create/review"
+@using ViajantesTurismo.AdminApi.Contracts
+@using ViajantesTurismo.Web.Components.Shared
+@rendermode InteractiveServer
+
+@inject CustomerCreationState State
+@inject CustomersApiClient ApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Create Customer - Review & Submit</PageTitle>
+
+<div class="container mt-4">
+    <h2>Create New Customer</h2>
+    <WizardProgress/>
+
+    @if (!State.IsComplete())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Please complete all steps before submitting.
+            <button @onclick="@(() => Navigation.NavigateTo("/customers/create/personal-info"))"
+                    class="btn btn-sm btn-primary ms-3">Go to Step 1
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header">
+                <h4>Review Your Information</h4>
+            </div>
+            <div class="card-body">
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-person"></i> Personal Information</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Name:</dt>
+                            <dd class="col-sm-8">@State.PersonalInfo!.FirstName @State.PersonalInfo.LastName</dd>
+
+                            <dt class="col-sm-4">Birth Date:</dt>
+                            <dd class="col-sm-8">@State.PersonalInfo.BirthDate?.ToShortDateString()</dd>
+
+                            <dt class="col-sm-4">Gender:</dt>
+                            <dd class="col-sm-8">@State.PersonalInfo.Gender</dd>
+
+                            <dt class="col-sm-4">Nationality:</dt>
+                            <dd class="col-sm-8">@State.PersonalInfo.Nationality</dd>
+
+                            <dt class="col-sm-4">Profession:</dt>
+                            <dd class="col-sm-8">@State.PersonalInfo.Profession</dd>
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/personal-info"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-card-text"></i> Identification</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">National ID:</dt>
+                            <dd class="col-sm-8">@State.IdentificationInfo!.NationalId</dd>
+
+                            <dt class="col-sm-4">ID Nationality:</dt>
+                            <dd class="col-sm-8">@State.IdentificationInfo.IdNationality</dd>
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/identification"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-envelope"></i> Contact Information</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Email:</dt>
+                            <dd class="col-sm-8">@State.ContactInfo!.Email</dd>
+
+                            <dt class="col-sm-4">Mobile:</dt>
+                            <dd class="col-sm-8">@State.ContactInfo.Mobile</dd>
+
+                            @if (!string.IsNullOrWhiteSpace(State.ContactInfo.Instagram))
+                            {
+                                <dt class="col-sm-4">Instagram:</dt>
+                                <dd class="col-sm-8">@State.ContactInfo.Instagram</dd>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(State.ContactInfo.Facebook))
+                            {
+                                <dt class="col-sm-4">Facebook:</dt>
+                                <dd class="col-sm-8">@State.ContactInfo.Facebook</dd>
+                            }
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/contact"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-geo-alt"></i> Address</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Street:</dt>
+                            <dd class="col-sm-8">@State.Address!.Street @State.Address.Complement</dd>
+
+                            <dt class="col-sm-4">Neighborhood:</dt>
+                            <dd class="col-sm-8">@State.Address.Neighborhood</dd>
+
+                            <dt class="col-sm-4">City:</dt>
+                            <dd class="col-sm-8">@State.Address.City, @State.Address.State</dd>
+
+                            <dt class="col-sm-4">Postal Code:</dt>
+                            <dd class="col-sm-8">@State.Address.PostalCode</dd>
+
+                            <dt class="col-sm-4">Country:</dt>
+                            <dd class="col-sm-8">@State.Address.Country</dd>
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/address"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-bicycle"></i> Physical Information</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Weight:</dt>
+                            <dd class="col-sm-8">@State.PhysicalInfo!.WeightKg kg</dd>
+
+                            <dt class="col-sm-4">Height:</dt>
+                            <dd class="col-sm-8">@State.PhysicalInfo.HeightCentimeters cm</dd>
+
+                            <dt class="col-sm-4">Bike Type:</dt>
+                            <dd class="col-sm-8">@State.PhysicalInfo.BikeType</dd>
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/physical"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-house"></i> Accommodation</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Room Type:</dt>
+                            <dd class="col-sm-8">@State.AccommodationPreferences!.RoomType</dd>
+
+                            <dt class="col-sm-4">Bed Type:</dt>
+                            <dd class="col-sm-8">@State.AccommodationPreferences.BedType</dd>
+
+                            @if (State.AccommodationPreferences.CompanionId.HasValue)
+                            {
+                                <dt class="col-sm-4">Companion ID:</dt>
+                                <dd class="col-sm-8">@State.AccommodationPreferences.CompanionId</dd>
+                            }
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/accommodation"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-telephone"></i> Emergency Contact</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Name:</dt>
+                            <dd class="col-sm-8">@State.EmergencyContact!.Name</dd>
+
+                            <dt class="col-sm-4">Mobile:</dt>
+                            <dd class="col-sm-8">@State.EmergencyContact.Mobile</dd>
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/emergency-contact"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-heart-pulse"></i> Medical Information</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Allergies:</dt>
+                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(State.MedicalInfo!.Allergies) ? "None reported" : State.MedicalInfo.Allergies)</dd>
+
+                            <dt class="col-sm-4">Additional Info:</dt>
+                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(State.MedicalInfo.AdditionalInfo) ? "None reported" : State.MedicalInfo.AdditionalInfo)</dd>
+                        </dl>
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers/create/medical"))"
+                                class="btn btn-sm btn-link">Edit
+                        </button>
+                    </div>
+                </div>
+
+                @if (_errorMessage is not null)
+                {
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle"></i> @_errorMessage
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-secondary" @onclick="GoBack">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" @onclick="SubmitCustomer"
+                            disabled="@_isSubmitting">
+                        @if (_isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Creating Customer...</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-check-circle"></i> Create Customer</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        State.NavigateToStep(8);
+    }
+
+    private async Task SubmitCustomer()
+    {
+        if (!State.IsComplete()) return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var dto = new CreateCustomerDto
+            {
+                PersonalInfo = State.PersonalInfo!,
+                IdentificationInfo = State.IdentificationInfo!,
+                ContactInfo = State.ContactInfo!,
+                Address = State.Address!,
+                PhysicalInfo = State.PhysicalInfo!,
+                AccommodationPreferences = State.AccommodationPreferences!,
+                EmergencyContact = State.EmergencyContact!,
+                MedicalInfo = State.MedicalInfo!
+            };
+
+            var location = await ApiClient.CreateCustomer(dto, CancellationToken.None);
+
+            State.Reset();
+
+            // Extract customer ID from location URI
+            var customerId = location.AbsolutePath.Split('/').Last();
+            Navigation.NavigateTo($"/customers/{customerId}");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to create customer: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        State.NavigateToStep(8);
+        Navigation.NavigateTo("/customers/create/medical");
+    }
+
+}

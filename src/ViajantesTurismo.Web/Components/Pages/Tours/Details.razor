@@ -1,7 +1,6 @@
 @page "/tours/{id:int}"
 @using ViajantesTurismo.AdminApi.Contracts
 @inject ToursApiClient ToursApi
-@inject NavigationManager Navigation
 
 <PageTitle>Tour Details</PageTitle>
 
@@ -90,12 +89,18 @@ else if (_tour != null)
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+
+    /// <summary>
+    /// The ID of the tour to display.
+    /// </summary>
+    [Parameter]
+    public int Id { get; set; }
 
     private GetTourDto? _tour;
     private bool _loading = true;
     private bool _notFound;
 
+    /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         try

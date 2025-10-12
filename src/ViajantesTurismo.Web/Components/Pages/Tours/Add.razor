@@ -2,7 +2,6 @@
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.AdminApi.Contracts
 @inject ToursApiClient ToursApi
-@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>Add Tour</PageTitle>
@@ -124,18 +123,18 @@
         {
             var tour = new CreateTourDto
             {
-                Identifier = _model.Identifier,
-                Name = _model.Name,
-                StartDate = _model.StartDate.ToUniversalTime(),
-                EndDate = _model.EndDate.ToUniversalTime(),
-                Currency = _model.Currency,
-                Price = _model.Price,
-                SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
-                RegularBikePrice = _model.RegularBikePrice,
-                EBikePrice = _model.EBikePrice,
-                IncludedServices = _model.ServicesInput
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    .ToList()
+                    Identifier = _model.Identifier,
+                    Name = _model.Name,
+                    StartDate = _model.StartDate.ToUniversalTime(),
+                    EndDate = _model.EndDate.ToUniversalTime(),
+                    Currency = _model.Currency,
+                    Price = _model.Price,
+                    SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
+                    RegularBikePrice = _model.RegularBikePrice,
+                    EBikePrice = _model.EBikePrice,
+                    IncludedServices = _model.ServicesInput
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .ToList()
             };
 
             var response = await ToursApi.CreateTour(tour);
@@ -194,4 +193,5 @@
         [Required]
         public string ServicesInput { get; set; } = string.Empty;
     }
+
 }

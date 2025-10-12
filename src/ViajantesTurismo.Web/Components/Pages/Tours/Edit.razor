@@ -139,7 +139,12 @@ else
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+
+    /// <summary>
+    /// The ID of the tour to edit.
+    /// </summary>
+    [Parameter]
+    public int Id { get; set; }
 
     private TourFormModel _model = new();
     private bool _loading = true;
@@ -151,6 +156,7 @@ else
     private CancellationTokenSource? _redirectCts;
     private string? _errorMessage;
 
+    /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         try

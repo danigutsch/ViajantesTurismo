@@ -1,0 +1,39 @@
+using System.ComponentModel.DataAnnotations;
+using ViajantesTurismo.AdminApi.Contracts;
+
+namespace ViajantesTurismo.Web.Models;
+
+internal sealed class ContactInfoFormModel
+{
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email address")]
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Mobile is required")]
+    [Phone(ErrorMessage = "Invalid phone number")]
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string Mobile { get; set; } = string.Empty;
+
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string? Instagram { get; set; }
+
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string? Facebook { get; set; }
+
+    public ContactInfoStepDto ToDto() => new()
+    {
+        Email = Email,
+        Mobile = Mobile,
+        Instagram = Instagram,
+        Facebook = Facebook
+    };
+
+    public static ContactInfoFormModel FromDto(ContactInfoStepDto dto) => new()
+    {
+        Email = dto.Email ?? string.Empty,
+        Mobile = dto.Mobile ?? string.Empty,
+        Instagram = dto.Instagram,
+        Facebook = dto.Facebook
+    };
+}

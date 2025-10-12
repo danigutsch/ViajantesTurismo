@@ -15,6 +15,99 @@ internal sealed class CustomerCreationState
     public EmergencyContactStepDto? EmergencyContact { get; private set; }
     public MedicalInfoStepDto? MedicalInfo { get; private set; }
 
+    /// <summary>
+    /// Sets the personal information for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The personal information data.</param>
+    public void SetPersonalInfo(PersonalInfoStepDto dto)
+    {
+        PersonalInfo = dto;
+        CurrentStep = Math.Max(CurrentStep, 2);
+    }
+
+    /// <summary>
+    /// Sets the identification information for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The identification information data.</param>
+    public void SetIdentificationInfo(IdentificationInfoStepDto dto)
+    {
+        IdentificationInfo = dto;
+        CurrentStep = Math.Max(CurrentStep, 3);
+    }
+
+    /// <summary>
+    /// Sets the contact information for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The contact information data.</param>
+    public void SetContactInfo(ContactInfoStepDto dto)
+    {
+        ContactInfo = dto;
+        CurrentStep = Math.Max(CurrentStep, 4);
+    }
+
+    /// <summary>
+    /// Sets the address information for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The address information data.</param>
+    public void SetAddress(AddressStepDto dto)
+    {
+        Address = dto;
+        CurrentStep = Math.Max(CurrentStep, 5);
+    }
+
+    /// <summary>
+    /// Sets the physical information for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The physical information data.</param>
+    public void SetPhysicalInfo(PhysicalInfoStepDto dto)
+    {
+        PhysicalInfo = dto;
+        CurrentStep = Math.Max(CurrentStep, 6);
+    }
+
+    /// <summary>
+    /// Sets the accommodation preferences for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The accommodation preferences data.</param>
+    public void SetAccommodationPreferences(AccommodationPreferencesStepDto dto)
+    {
+        AccommodationPreferences = dto;
+        CurrentStep = Math.Max(CurrentStep, 7);
+    }
+
+    /// <summary>
+    /// Sets the emergency contact information for the customer and advances to the next step.
+    /// </summary>
+    /// <param name="dto">The emergency contact information data.</param>
+    public void SetEmergencyContact(EmergencyContactStepDto dto)
+    {
+        EmergencyContact = dto;
+        CurrentStep = Math.Max(CurrentStep, 8);
+    }
+
+    /// <summary>
+    /// Sets the medical information for the customer and completes the wizard.
+    /// </summary>
+    /// <param name="dto">The medical information data.</param>
+    public void SetMedicalInfo(MedicalInfoStepDto dto)
+    {
+        MedicalInfo = dto;
+        CurrentStep = Math.Max(CurrentStep, 8);
+    }
+
+    /// <summary>
+    /// Navigates to a specific step in the wizard.
+    /// </summary>
+    /// <param name="step">The step number (1-8).</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when step is not between 1 and 8.</exception>
+    public void NavigateToStep(int step)
+    {
+        if (step is < 1 or > 8)
+            throw new ArgumentOutOfRangeException(nameof(step), "Step must be between 1 and 8.");
+
+        CurrentStep = step;
+    }
+
     public bool IsStepCompleted(int step) => step switch
     {
         1 => PersonalInfo is not null,

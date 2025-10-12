@@ -1,0 +1,83 @@
+@page "/customers/create/emergency-contact"
+@using ViajantesTurismo.Web.Components.Shared
+@using ViajantesTurismo.Web.Models
+@rendermode InteractiveServer
+
+@inject CustomerCreationState State
+@inject NavigationManager Navigation
+
+<PageTitle>Create Customer - Emergency Contact</PageTitle>
+
+<div class="container mt-4">
+    <h2>Create New Customer</h2>
+    <WizardProgress/>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Step 7 of 8: Emergency Contact</h4>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="alert alert-danger"/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Contact Name <span class="text-danger">*</span></label>
+                        <InputText id="name" @bind-Value="_model.Name" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.Name)"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="mobile" class="form-label">Contact Mobile <span class="text-danger">*</span></label>
+                        <InputText id="mobile" @bind-Value="_model.Mobile" class="form-control"
+                                   placeholder="+55 11 98888-7777"/>
+                        <ValidationMessage For="@(() => _model.Mobile)"/>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> This person will be contacted in case of an emergency during the
+                    tour.
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-secondary" @onclick="GoBack">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private EmergencyContactFormModel _model = new();
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (State.EmergencyContact is not null)
+        {
+            _model = EmergencyContactFormModel.FromDto(State.EmergencyContact);
+        }
+
+        State.NavigateToStep(7);
+    }
+
+    private void HandleValidSubmit()
+    {
+        State.SetEmergencyContact(_model.ToDto());
+        Navigation.NavigateTo("/customers/create/medical");
+    }
+
+    private void GoBack()
+    {
+        State.NavigateToStep(6);
+        Navigation.NavigateTo("/customers/create/accommodation");
+    }
+
+}

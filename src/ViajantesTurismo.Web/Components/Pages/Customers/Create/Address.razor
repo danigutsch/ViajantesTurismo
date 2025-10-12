@@ -1,0 +1,114 @@
+@page "/customers/create/address"
+@using ViajantesTurismo.Web.Components.Shared
+@using ViajantesTurismo.Web.Models
+@rendermode InteractiveServer
+
+@inject CustomerCreationState State
+@inject NavigationManager Navigation
+
+<PageTitle>Create Customer - Address</PageTitle>
+
+<div class="container mt-4">
+    <h2>Create New Customer</h2>
+    <WizardProgress/>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Step 4 of 8: Address</h4>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="alert alert-danger"/>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="street" class="form-label">Street <span class="text-danger">*</span></label>
+                        <InputText id="street" @bind-Value="_model.Street" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.Street)"/>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="complement" class="form-label">Complement</label>
+                        <InputText id="complement" @bind-Value="_model.Complement" class="form-control"
+                                   placeholder="Apt, Suite, etc."/>
+                        <ValidationMessage For="@(() => _model.Complement)"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="neighborhood" class="form-label">Neighborhood <span
+                                class="text-danger">*</span></label>
+                        <InputText id="neighborhood" @bind-Value="_model.Neighborhood" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.Neighborhood)"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="postalCode" class="form-label">Postal Code <span
+                                class="text-danger">*</span></label>
+                        <InputText id="postalCode" @bind-Value="_model.PostalCode" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.PostalCode)"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="city" class="form-label">City <span class="text-danger">*</span></label>
+                        <InputText id="city" @bind-Value="_model.City" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.City)"/>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="state" class="form-label">State <span class="text-danger">*</span></label>
+                        <InputText id="state" @bind-Value="_model.State" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.State)"/>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
+                        <InputText id="country" @bind-Value="_model.Country" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.Country)"/>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-secondary" @onclick="GoBack">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private AddressFormModel _model = new();
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (State.Address is not null)
+        {
+            _model = AddressFormModel.FromDto(State.Address);
+        }
+
+        State.NavigateToStep(4);
+    }
+
+    private void HandleValidSubmit()
+    {
+        State.SetAddress(_model.ToDto());
+        Navigation.NavigateTo("/customers/create/physical");
+    }
+
+    private void GoBack()
+    {
+        State.NavigateToStep(3);
+        Navigation.NavigateTo("/customers/create/contact");
+    }
+
+}

@@ -1,0 +1,125 @@
+@inject CustomerCreationState State
+
+<div class="wizard-progress mb-4">
+    <div class="progress-steps">
+        @for (int i = 1; i <= 8; i++)
+        {
+            var stepNum = i;
+            <div class="step @GetStepClass(stepNum)">
+                <div class="step-circle">
+                    @if (State.IsStepCompleted(stepNum))
+                    {
+                        <i class="bi bi-check-lg"></i>
+                    }
+                    else
+                    {
+                        <span>@stepNum</span>
+                    }
+                </div>
+                <div class="step-label">@GetStepName(stepNum)</div>
+            </div>
+            @if (i < 8)
+            {
+                <div class="step-connector @(State.IsStepCompleted(stepNum) ? "completed" : "")"></div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .wizard-progress {
+        margin-bottom: 2rem;
+    }
+
+    .progress-steps {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 0 0 auto;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border: 2px solid #dee2e6;
+        background: white;
+        color: #6c757d;
+    }
+
+    .step.completed .step-circle {
+        background: #198754;
+        border-color: #198754;
+        color: white;
+    }
+
+    .step.active .step-circle {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+
+    .step-label {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .step.active .step-label {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .step.completed .step-label {
+        color: #198754;
+    }
+
+    .step-connector {
+        flex: 1;
+        height: 2px;
+        background: #dee2e6;
+        margin: 0 0.5rem;
+        margin-bottom: 25px;
+    }
+
+    .step-connector.completed {
+        background: #198754;
+    }
+</style>
+
+@code {
+
+    private string GetStepClass(int step)
+    {
+        if (State.IsStepCompleted(step)) return "completed";
+        if (step == State.CurrentStep) return "active";
+        return "pending";
+    }
+
+    private string GetStepName(int step) => step switch
+    {
+            1 => "Personal",
+            2 => "ID",
+            3 => "Contact",
+            4 => "Address",
+            5 => "Physical",
+            6 => "Accommodation",
+            7 => "Emergency",
+            8 => "Medical",
+            _ => ""
+    };
+
+}

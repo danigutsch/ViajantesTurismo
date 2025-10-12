@@ -1,0 +1,12 @@
+@page "/customers/create"
+@inject NavigationManager Navigation
+
+@code {
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/customers/create/personal-info", replace: true);
+    }
+
+}

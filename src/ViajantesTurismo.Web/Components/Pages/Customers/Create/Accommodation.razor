@@ -1,0 +1,97 @@
+@page "/customers/create/accommodation"
+@using ViajantesTurismo.AdminApi.Contracts
+@using ViajantesTurismo.Web.Components.Shared
+@using ViajantesTurismo.Web.Models
+@rendermode InteractiveServer
+
+@inject CustomerCreationState State
+@inject NavigationManager Navigation
+
+<PageTitle>Create Customer - Accommodation Preferences</PageTitle>
+
+<div class="container mt-4">
+    <h2>Create New Customer</h2>
+    <WizardProgress/>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Step 6 of 8: Accommodation Preferences</h4>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="alert alert-danger"/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="roomType" class="form-label">Room Type <span class="text-danger">*</span></label>
+                        <InputSelect id="roomType" @bind-Value="_model.RoomType" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="@RoomTypeDto.SingleRoom">Single Room</option>
+                            <option value="@RoomTypeDto.DoubleRoom">Double Room</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _model.RoomType)"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="bedType" class="form-label">Bed Type <span class="text-danger">*</span></label>
+                        <InputSelect id="bedType" @bind-Value="_model.BedType" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="@BedTypeDto.SingleBed">Single Bed</option>
+                            <option value="@BedTypeDto.DoubleBed">Double Bed</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _model.BedType)"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="companionId" class="form-label">Companion ID (Optional)</label>
+                        <InputNumber id="companionId" @bind-Value="_model.CompanionId" class="form-control"
+                                     placeholder="ID of traveling companion"/>
+                        <ValidationMessage For="@(() => _model.CompanionId)"/>
+                        <small class="form-text text-muted">Enter the ID of another customer traveling with this
+                            person</small>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-secondary" @onclick="GoBack">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private AccommodationPreferencesFormModel _model = new();
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (State.AccommodationPreferences is not null)
+        {
+            _model = AccommodationPreferencesFormModel.FromDto(State.AccommodationPreferences);
+        }
+
+        State.NavigateToStep(6);
+    }
+
+    private void HandleValidSubmit()
+    {
+        State.SetAccommodationPreferences(_model.ToDto());
+        Navigation.NavigateTo("/customers/create/emergency-contact");
+    }
+
+    private void GoBack()
+    {
+        State.NavigateToStep(5);
+        Navigation.NavigateTo("/customers/create/physical");
+    }
+
+}
