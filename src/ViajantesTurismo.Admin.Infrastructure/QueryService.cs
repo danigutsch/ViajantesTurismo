@@ -27,4 +27,21 @@ internal sealed class QueryService(ApplicationDbContext dbContext) : IQueryServi
             })
         ];
     }
+
+    public async Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct)
+    {
+        var customers = await dbContext.Customers.OrderBy(c => c.Id).ToListAsync(ct);
+        return
+        [
+            ..customers.Select(c => new GetCustomerDto
+            {
+                Id = c.Id,
+                FirstName = c.PersonalInfo.FirstName,
+                LastName = c.PersonalInfo.LastName,
+                Email = c.ContactInfo.Email,
+                Mobile = c.ContactInfo.Mobile,
+                Nationality = c.PersonalInfo.Nationality
+            })
+        ];
+    }
 }

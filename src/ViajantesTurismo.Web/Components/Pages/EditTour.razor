@@ -265,10 +265,10 @@ else
     [MinimumDuration(5)]
     private class TourFormModel
     {
-        [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Identifier { get; set; } = string.Empty;
 
-        [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Name { get; set; } = string.Empty;
 
         [Required]
@@ -292,6 +292,7 @@ else
         [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal EBikePrice { get; set; }
 
+        [Required]
         public string ServicesInput { get; set; } = string.Empty;
     }
 

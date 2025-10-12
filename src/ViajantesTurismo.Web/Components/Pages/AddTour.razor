@@ -164,10 +164,10 @@
     [MinimumDuration(5)]
     private class TourFormModel
     {
-        [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Identifier { get; set; } = string.Empty;
 
-        [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Name { get; set; } = string.Empty;
 
         [Required]
@@ -176,7 +176,8 @@
         [Required]
         public DateTime EndDate { get; set; } = DateTime.Today.AddDays(40);
 
-        [Required] public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;
+        [Required]
+        public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;
 
         [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal Price { get; set; }
@@ -190,6 +191,7 @@
         [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
         public decimal EBikePrice { get; set; }
 
+        [Required]
         public string ServicesInput { get; set; } = string.Empty;
     }
 }

@@ -1,3 +1,5 @@
+using ViajantesTurismo.Common;
+
 namespace ViajantesTurismo.Admin.Domain;
 
 /// <summary>
@@ -12,5 +14,5 @@ public sealed class PhysicalInfo
     public required int HeightCentimeters { get; init; }
 
     /// <summary>Type of bicycle.</summary>
-    public required string BikeType { get; init; }
+    public required BikeType BikeType { get; init; }
 }

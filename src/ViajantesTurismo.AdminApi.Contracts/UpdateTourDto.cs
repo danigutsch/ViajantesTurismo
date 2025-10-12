@@ -11,13 +11,13 @@ public sealed record UpdateTourDto
     /// <summary>
     /// External or business identifier for the tour.
     /// </summary>
-    [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+    [Required, MaxLength(ContractConstants.MaxNameLength)]
     public required string Identifier { get; init; }
 
     /// <summary>
     /// Name of the tour.
     /// </summary>
-    [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+    [Required, MaxLength(ContractConstants.MaxNameLength)]
     public required string Name { get; init; }
 
     /// <summary>

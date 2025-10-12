@@ -11,14 +11,14 @@ public static class ContractConstants
     public const int MaxDefaultLength = 64;
 
     /// <summary>
-    /// The maximum length for tour names.
+    /// The maximum length for names such as customer names and tour names.
     /// </summary>
-    public const int MaxTourNameLength = 128;
+    public const int MaxNameLength = 128;
 
     /// <summary>
     /// The maximum length for service names in the included services list.
     /// </summary>
-    public const int MaxServiceNameLength = 256;
+    public const int MaxServiceDescriptionLength = 256;
 
     /// <summary>
     /// The minimum price value for any tour-related pricing.

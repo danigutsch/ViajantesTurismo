@@ -1,3 +1,5 @@
+using ViajantesTurismo.Common;
+
 namespace ViajantesTurismo.Admin.Domain;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace ViajantesTurismo.Admin.Domain;
 public sealed class AccommodationPreferences
 {
     /// <summary>Room type.</summary>
-    public required string RoomType { get; init; }
+    public required RoomType RoomType { get; init; }
 
     /// <summary>Bed type.</summary>
     public required string BedType { get; init; }

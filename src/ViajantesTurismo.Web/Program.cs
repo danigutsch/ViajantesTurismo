@@ -11,6 +11,8 @@ builder.AddRedisOutputCache("cache");
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddScoped<CustomerCreationState>();
+
 builder.Services.AddHttpClient<ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 
 var app = builder.Build();

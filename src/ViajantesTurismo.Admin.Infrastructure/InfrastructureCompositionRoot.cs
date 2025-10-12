@@ -32,6 +32,7 @@ public static class InfrastructureCompositionRoot
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
+        builder.Services.AddScoped<ICustomerStore, CustomerStore>();
 
         return builder;
     }

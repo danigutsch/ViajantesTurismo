@@ -11,23 +11,25 @@ public sealed record CreateTourDto
     /// <summary>
     /// A unique identifier for the tour.
     /// </summary>
-    [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+    [Required, MaxLength(ContractConstants.MaxNameLength)]
     public required string Identifier { get; init; }
 
     /// <summary>
     /// The name of the tour.
     /// </summary>
-    [Required, MaxLength(ContractConstants.MaxTourNameLength)]
+    [Required, MaxLength(ContractConstants.MaxNameLength)]
     public required string Name { get; init; }
 
     /// <summary>
     /// The start date of the tour.
     /// </summary>
+    [Required]
     public required DateTime StartDate { get; init; }
 
     /// <summary>
     /// The end date of the tour.
     /// </summary>
+    [Required]
     public required DateTime EndDate { get; init; }
 
     /// <summary>
@@ -63,5 +65,6 @@ public sealed record CreateTourDto
     /// <summary>
     /// The list of services included in the tour package.
     /// </summary>
+    [Required]
     public required ICollection<string> IncludedServices { get; init; }
 }

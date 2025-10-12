@@ -7,6 +7,7 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IUnitOfWork
 {
     public DbSet<Tour> Tours => Set<Tour>();
+    public DbSet<Customer> Customers => Set<Customer>();
 
     public async Task SaveEntities(CancellationToken ct)
     {
@@ -26,7 +27,7 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.HasIndex(tour => tour.Name).IsUnique();
 
             entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(ContractConstants.MaxDefaultLength);
-            entity.Property(tour => tour.Name).IsRequired().HasMaxLength(ContractConstants.MaxTourNameLength);
+            entity.Property(tour => tour.Name).IsRequired().HasMaxLength(ContractConstants.MaxNameLength);
             entity.Property(tour => tour.StartDate).IsRequired();
             entity.Property(tour => tour.EndDate).IsRequired();
             entity.Property(tour => tour.Price).IsRequired();
@@ -37,6 +38,21 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.PrimitiveCollection(tour => tour.IncludedServices)
                 .HasField("_includedServices")
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(customer => customer.Id);
+            entity.Property(customer => customer.Id).ValueGeneratedOnAdd();
+
+            entity.OwnsOne(customer => customer.PersonalInfo, builder => builder.ToTable("CustomerPersonalInfo"));
+            entity.OwnsOne(customer => customer.IdentificationInfo, builder => builder.ToTable("CustomerIdentificationInfo"));
+            entity.OwnsOne(customer => customer.ContactInfo, builder => builder.ToTable("CustomerContactInfo"));
+            entity.OwnsOne(customer => customer.Address, builder => builder.ToTable("CustomerAddress"));
+            entity.OwnsOne(customer => customer.PhysicalInfo, builder => builder.ToTable("CustomerPhysicalInfo"));
+            entity.OwnsOne(customer => customer.AccommodationPreferences, builder => builder.ToTable("CustomerAccommodationPreferences"));
+            entity.OwnsOne(customer => customer.EmergencyContact, builder => builder.ToTable("CustomerEmergencyContact"));
+            entity.OwnsOne(customer => customer.MedicalInfo, builder => builder.ToTable("CustomerMedicalInfo"));
         });
     }
 }
