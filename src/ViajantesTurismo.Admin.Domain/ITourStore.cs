@@ -18,10 +18,4 @@ public interface ITourStore
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour if found; otherwise, null.</returns>
     Task<Tour?> GetById(int id, CancellationToken ct);
-
-    /// <summary>
-    /// Updates an existing tour.
-    /// </summary>
-    /// <param name="tour">The tour to update.</param>
-    void Update(Tour tour);
 }

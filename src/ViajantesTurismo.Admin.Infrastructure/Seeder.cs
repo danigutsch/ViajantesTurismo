@@ -74,7 +74,20 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
 
-        dbContext.Tours.AddRange(Tours);
+        var toursToAdd = Tours.Select(t => new Tour(
+            t.Identifier,
+            t.Name,
+            t.StartDate,
+            t.EndDate,
+            t.Price,
+            t.SingleRoomSupplementPrice,
+            t.RegularBikePrice,
+            t.EBikePrice,
+            t.Currency,
+            t.IncludedServices
+        ));
+
+        dbContext.Tours.AddRange(toursToAdd);
 
         dbContext.SaveChanges();
     }
@@ -84,7 +97,20 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         await dbContext.Database.EnsureDeletedAsync(ct);
         await dbContext.Database.EnsureCreatedAsync(ct);
 
-        dbContext.Tours.AddRange(Tours);
+        var toursToAdd = Tours.Select(t => new Tour(
+            t.Identifier,
+            t.Name,
+            t.StartDate,
+            t.EndDate,
+            t.Price,
+            t.SingleRoomSupplementPrice,
+            t.RegularBikePrice,
+            t.EBikePrice,
+            t.Currency,
+            t.IncludedServices
+        ));
+
+        dbContext.Tours.AddRange(toursToAdd);
 
         await dbContext.SaveChangesAsync(ct);
     }

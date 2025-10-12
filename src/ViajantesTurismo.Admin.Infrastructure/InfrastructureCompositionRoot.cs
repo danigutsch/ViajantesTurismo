@@ -19,7 +19,16 @@ public static class InfrastructureCompositionRoot
     public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDbContext<ApplicationDbContext>(ResourceNames.Database);
+        builder.AddNpgsqlDbContext<ApplicationDbContext>(
+            ResourceNames.Database,
+            configureDbContextOptions: options =>
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
+            });
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
@@ -36,7 +45,16 @@ public static class InfrastructureCompositionRoot
     public static TApplicationBuilder AddSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDbContext<ApplicationDbContext>(ResourceNames.Database);
+        builder.AddNpgsqlDbContext<ApplicationDbContext>(
+            ResourceNames.Database,
+            configureDbContextOptions: options =>
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
+            });
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;

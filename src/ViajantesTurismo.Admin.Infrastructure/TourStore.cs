@@ -8,6 +8,4 @@ internal sealed class TourStore(ApplicationDbContext dbContext) : ITourStore
 
     public async Task<Tour?> GetById(int id, CancellationToken ct) =>
         await dbContext.Tours.FindAsync([id], ct);
-
-    public void Update(Tour tour) => dbContext.Tours.Update(tour);
 }

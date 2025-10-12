@@ -12,7 +12,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251011203024_Initial")]
+    [Migration("20251012084441_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

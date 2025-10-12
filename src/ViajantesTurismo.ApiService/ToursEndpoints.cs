@@ -104,7 +104,7 @@ internal static class ToursEndpoints
             RegularBikePrice = tour.RegularBikePrice,
             EBikePrice = tour.EBikePrice,
             Currency = (CurrencyDto)tour.Currency,
-            IncludedServices = tour.IncludedServices.ToList()
+            IncludedServices = [.. tour.IncludedServices]
         };
 
         return TypedResults.Ok(tourDto);
@@ -138,7 +138,6 @@ internal static class ToursEndpoints
             [.. tourDto.IncludedServices]
         );
 
-        tourStore.Update(tour);
         await unitOfWork.SaveEntities(ct);
 
         return TypedResults.NoContent();

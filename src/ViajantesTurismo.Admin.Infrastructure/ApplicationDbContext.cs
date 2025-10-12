@@ -19,6 +19,7 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
         modelBuilder.Entity<Tour>(entity =>
         {
             entity.HasKey(tour => tour.Id);
+            entity.Property(tour => tour.Id).ValueGeneratedOnAdd();
 
             entity.HasIndex(tour => tour.Identifier).IsUnique();
             entity.HasIndex(tour => tour.Name).IsUnique();
