@@ -4,7 +4,6 @@
 @attribute [OutputCache(Duration = 5)]
 
 @inject ToursApiClient ToursApi
-@inject NavigationManager NavigationManager
 
 <PageTitle>Tours</PageTitle>
 
@@ -49,12 +48,8 @@ else
                     <td>@tour.Currency</td>
                     <td>
                         <div class="btn-group" role="group">
-                            <button @onclick="@(() => NavigationManager.NavigateTo($"/tours/{tour.Id}"))"
-                                    class="btn btn-sm btn-info">View Details
-                            </button>
-                            <button @onclick="@(() => NavigationManager.NavigateTo($"/edittour/{tour.Id}"))"
-                                    class="btn btn-sm btn-primary">Edit
-                            </button>
+                            <NavLink href="/tours/@tour.Id" class="btn btn-sm btn-info">View Details</NavLink>
+                            <NavLink href="/edittour/@tour.Id" class="btn btn-sm btn-primary">Edit</NavLink>
                         </div>
                     </td>
                 </tr>
