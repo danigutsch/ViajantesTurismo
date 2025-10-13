@@ -259,8 +259,7 @@
 
             State.Reset();
 
-            // Extract customer ID from location URI
-            var customerId = location.AbsolutePath.Split('/').Last();
+            var customerId = location.ToString().Split('/').Last();
             Navigation.NavigateTo($"/customers/{customerId}");
         }
         catch (Exception ex)

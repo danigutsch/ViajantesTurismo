@@ -1,12 +1,16 @@
 @page "/customers/create"
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
 
 @code {
 
     /// <inheritdoc />
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        Navigation.NavigateTo("/customers/create/personal-info", replace: true);
+        if (firstRender)
+        {
+            Navigation.NavigateTo("/customers/create/personal-info", replace: true);
+        }
     }
 
 }

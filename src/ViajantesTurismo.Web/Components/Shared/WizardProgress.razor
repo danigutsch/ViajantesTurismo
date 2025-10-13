@@ -91,8 +91,7 @@
         flex: 1;
         height: 2px;
         background: #dee2e6;
-        margin: 0 0.5rem;
-        margin-bottom: 25px;
+        margin: 0 0.5rem 25px;
     }
 
     .step-connector.completed {
@@ -104,9 +103,14 @@
 
     private string GetStepClass(int step)
     {
-        if (State.IsStepCompleted(step)) return "completed";
-        if (step == State.CurrentStep) return "active";
-        return "pending";
+        if (State.IsStepCompleted(step))
+        {
+            return "completed";
+        }
+
+        return step == State.CurrentStep
+            ? "active"
+            : "pending";
     }
 
     private string GetStepName(int step) => step switch

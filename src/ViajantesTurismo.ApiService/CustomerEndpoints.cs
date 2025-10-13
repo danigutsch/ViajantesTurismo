@@ -82,7 +82,7 @@ internal static class CustomerEndpoints
         {
             FirstName = dto.PersonalInfo.FirstName!,
             LastName = dto.PersonalInfo.LastName!,
-            BirthDate = dto.PersonalInfo.BirthDate!.Value,
+            BirthDate = dto.PersonalInfo.BirthDate!.Value.ToUniversalTime(),
             Gender = dto.PersonalInfo.Gender!,
             Nationality = dto.PersonalInfo.Nationality!,
             Profession = dto.PersonalInfo.Profession!
