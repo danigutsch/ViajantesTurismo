@@ -86,7 +86,7 @@
     {
         if (State.PersonalInfo is not null)
         {
-            _model = PersonalInfoFormModel.FromDto(State.PersonalInfo);
+            _model = State.PersonalInfo;
         }
 
         State.NavigateToStep(1);
@@ -94,7 +94,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetPersonalInfo(_model.ToDto());
+        State.SetPersonalInfo(_model);
         Navigation.NavigateTo("/customers/create/identification");
     }
 

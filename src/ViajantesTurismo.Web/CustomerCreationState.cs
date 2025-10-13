@@ -1,4 +1,5 @@
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Web.Models;
 
 namespace ViajantesTurismo.Web;
 
@@ -6,92 +7,92 @@ internal sealed class CustomerCreationState
 {
     public int CurrentStep { get; private set; } = 1;
 
-    public PersonalInfoStepDto? PersonalInfo { get; private set; }
-    public IdentificationInfoStepDto? IdentificationInfo { get; private set; }
-    public ContactInfoStepDto? ContactInfo { get; private set; }
-    public AddressStepDto? Address { get; private set; }
-    public PhysicalInfoStepDto? PhysicalInfo { get; private set; }
-    public AccommodationPreferencesStepDto? AccommodationPreferences { get; private set; }
-    public EmergencyContactStepDto? EmergencyContact { get; private set; }
-    public MedicalInfoStepDto? MedicalInfo { get; private set; }
+    public PersonalInfoFormModel? PersonalInfo { get; private set; }
+    public IdentificationInfoFormModel? IdentificationInfo { get; private set; }
+    public ContactInfoFormModel? ContactInfo { get; private set; }
+    public AddressFormModel? Address { get; private set; }
+    public PhysicalInfoFormModel? PhysicalInfo { get; private set; }
+    public AccommodationPreferencesFormModel? AccommodationPreferences { get; private set; }
+    public EmergencyContactFormModel? EmergencyContact { get; private set; }
+    public MedicalInfoFormModel? MedicalInfo { get; private set; }
 
     /// <summary>
     /// Sets the personal information for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The personal information data.</param>
-    public void SetPersonalInfo(PersonalInfoStepDto dto)
+    /// <param name="model">The personal information form model.</param>
+    public void SetPersonalInfo(PersonalInfoFormModel model)
     {
-        PersonalInfo = dto;
+        PersonalInfo = model;
         CurrentStep = Math.Max(CurrentStep, 2);
     }
 
     /// <summary>
     /// Sets the identification information for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The identification information data.</param>
-    public void SetIdentificationInfo(IdentificationInfoStepDto dto)
+    /// <param name="model">The identification information form model.</param>
+    public void SetIdentificationInfo(IdentificationInfoFormModel model)
     {
-        IdentificationInfo = dto;
+        IdentificationInfo = model;
         CurrentStep = Math.Max(CurrentStep, 3);
     }
 
     /// <summary>
     /// Sets the contact information for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The contact information data.</param>
-    public void SetContactInfo(ContactInfoStepDto dto)
+    /// <param name="model">The contact information form model.</param>
+    public void SetContactInfo(ContactInfoFormModel model)
     {
-        ContactInfo = dto;
+        ContactInfo = model;
         CurrentStep = Math.Max(CurrentStep, 4);
     }
 
     /// <summary>
     /// Sets the address information for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The address information data.</param>
-    public void SetAddress(AddressStepDto dto)
+    /// <param name="model">The address information form model.</param>
+    public void SetAddress(AddressFormModel model)
     {
-        Address = dto;
+        Address = model;
         CurrentStep = Math.Max(CurrentStep, 5);
     }
 
     /// <summary>
     /// Sets the physical information for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The physical information data.</param>
-    public void SetPhysicalInfo(PhysicalInfoStepDto dto)
+    /// <param name="model">The physical information form model.</param>
+    public void SetPhysicalInfo(PhysicalInfoFormModel model)
     {
-        PhysicalInfo = dto;
+        PhysicalInfo = model;
         CurrentStep = Math.Max(CurrentStep, 6);
     }
 
     /// <summary>
     /// Sets the accommodation preferences for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The accommodation preferences data.</param>
-    public void SetAccommodationPreferences(AccommodationPreferencesStepDto dto)
+    /// <param name="model">The accommodation preferences form model.</param>
+    public void SetAccommodationPreferences(AccommodationPreferencesFormModel model)
     {
-        AccommodationPreferences = dto;
+        AccommodationPreferences = model;
         CurrentStep = Math.Max(CurrentStep, 7);
     }
 
     /// <summary>
     /// Sets the emergency contact information for the customer and advances to the next step.
     /// </summary>
-    /// <param name="dto">The emergency contact information data.</param>
-    public void SetEmergencyContact(EmergencyContactStepDto dto)
+    /// <param name="model">The emergency contact information form model.</param>
+    public void SetEmergencyContact(EmergencyContactFormModel model)
     {
-        EmergencyContact = dto;
+        EmergencyContact = model;
         CurrentStep = Math.Max(CurrentStep, 8);
     }
 
     /// <summary>
     /// Sets the medical information for the customer and completes the wizard.
     /// </summary>
-    /// <param name="dto">The medical information data.</param>
-    public void SetMedicalInfo(MedicalInfoStepDto dto)
+    /// <param name="model">The medical information form model.</param>
+    public void SetMedicalInfo(MedicalInfoFormModel model)
     {
-        MedicalInfo = dto;
+        MedicalInfo = model;
         CurrentStep = Math.Max(CurrentStep, 8);
     }
 
@@ -149,5 +150,30 @@ internal sealed class CustomerCreationState
         AccommodationPreferences = null;
         EmergencyContact = null;
         MedicalInfo = null;
+    }
+
+    /// <summary>
+    /// Creates a CreateCustomerDto from the completed form models.
+    /// </summary>
+    /// <returns>A CreateCustomerDto with all the customer information.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when not all steps are completed.</exception>
+    public CreateCustomerDto ToCreateCustomerDto()
+    {
+        if (!IsComplete())
+        {
+            throw new InvalidOperationException("Cannot create customer DTO: not all steps are completed.");
+        }
+
+        return new CreateCustomerDto
+        {
+            PersonalInfo = PersonalInfo!.ToDto(),
+            IdentificationInfo = IdentificationInfo!.ToDto(),
+            ContactInfo = ContactInfo!.ToDto(),
+            Address = Address!.ToDto(),
+            PhysicalInfo = PhysicalInfo!.ToDto(),
+            AccommodationPreferences = AccommodationPreferences!.ToDto(),
+            EmergencyContact = EmergencyContact!.ToDto(),
+            MedicalInfo = MedicalInfo!.ToDto()
+        };
     }
 }

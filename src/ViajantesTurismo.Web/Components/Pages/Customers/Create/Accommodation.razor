@@ -76,7 +76,7 @@
     {
         if (State.AccommodationPreferences is not null)
         {
-            _model = AccommodationPreferencesFormModel.FromDto(State.AccommodationPreferences);
+            _model = State.AccommodationPreferences;
         }
 
         State.NavigateToStep(6);
@@ -84,7 +84,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetAccommodationPreferences(_model.ToDto());
+        State.SetAccommodationPreferences(_model);
         Navigation.NavigateTo("/customers/create/emergency-contact");
     }
 

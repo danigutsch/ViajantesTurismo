@@ -61,7 +61,7 @@
     {
         if (State.MedicalInfo is not null)
         {
-            _model = MedicalInfoFormModel.FromDto(State.MedicalInfo);
+            _model = State.MedicalInfo;
         }
 
         State.NavigateToStep(8);
@@ -69,7 +69,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetMedicalInfo(_model.ToDto());
+        State.SetMedicalInfo(_model);
         Navigation.NavigateTo("/customers/create/review");
     }
 

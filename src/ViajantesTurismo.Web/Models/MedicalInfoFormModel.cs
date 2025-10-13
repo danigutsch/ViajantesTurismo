@@ -11,13 +11,13 @@ internal sealed class MedicalInfoFormModel
     [MaxLength(ContractConstants.MaxServiceDescriptionLength)]
     public string? AdditionalInfo { get; set; }
 
-    public MedicalInfoStepDto ToDto() => new()
+    public MedicalInfoDto ToDto() => new()
     {
         Allergies = Allergies,
         AdditionalInfo = AdditionalInfo
     };
 
-    public static MedicalInfoFormModel FromDto(MedicalInfoStepDto dto) => new()
+    public static MedicalInfoFormModel FromDto(MedicalInfoDto dto) => new()
     {
         Allergies = dto.Allergies,
         AdditionalInfo = dto.AdditionalInfo

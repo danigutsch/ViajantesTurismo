@@ -237,7 +237,7 @@ else
                 await Task.Delay(3000, token);
                 if (_pendingRedirect && !token.IsCancellationRequested)
                 {
-                    Navigation.NavigateTo($"/tour/{Id}");
+                    Navigation.NavigateTo($"/tours/{Id}");
                 }
             }
             catch (TaskCanceledException)
@@ -265,7 +265,7 @@ else
 
     private void GoToDetails()
     {
-        Navigation.NavigateTo($"/tour/{Id}");
+        Navigation.NavigateTo($"/tours/{Id}");
     }
 
     [MinimumDuration(5)]

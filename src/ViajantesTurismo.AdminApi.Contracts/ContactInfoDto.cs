@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// Data Transfer Object representing the contact information step in a multistep customer creation wizard.
+/// Data Transfer Object representing the contact information of a customer.
 /// Contains communication and social media details with validation attributes for each property.
 /// </summary>
-public sealed record ContactInfoStepDto
+public sealed record ContactInfoDto
 {
     /// <summary>
     /// The email address of the customer.

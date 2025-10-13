@@ -1,5 +1,4 @@
 @page "/customers/create/review"
-@using ViajantesTurismo.AdminApi.Contracts
 @using ViajantesTurismo.Web.Components.Shared
 @rendermode InteractiveServer
 
@@ -243,17 +242,7 @@
 
         try
         {
-            var dto = new CreateCustomerDto
-            {
-                PersonalInfo = State.PersonalInfo!,
-                IdentificationInfo = State.IdentificationInfo!,
-                ContactInfo = State.ContactInfo!,
-                Address = State.Address!,
-                PhysicalInfo = State.PhysicalInfo!,
-                AccommodationPreferences = State.AccommodationPreferences!,
-                EmergencyContact = State.EmergencyContact!,
-                MedicalInfo = State.MedicalInfo!
-            };
+            var dto = State.ToCreateCustomerDto();
 
             var location = await ApiClient.CreateCustomer(dto, CancellationToken.None);
 

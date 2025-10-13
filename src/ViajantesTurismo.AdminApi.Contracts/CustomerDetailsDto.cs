@@ -1,47 +1,53 @@
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// Represents the data required to create a new customer with all required information.
+/// Data Transfer Object representing complete customer details for display purposes.
+/// Contains all customer information including personal, contact, address, and other details.
 /// </summary>
-public sealed record CreateCustomerDto
+public sealed record CustomerDetailsDto
 {
     /// <summary>
-    /// Gets the personal information of the customer.
+    /// The unique identifier of the customer.
+    /// </summary>
+    public required int Id { get; init; }
+
+    /// <summary>
+    /// Personal information.
     /// </summary>
     public required PersonalInfoDto PersonalInfo { get; init; }
 
     /// <summary>
-    /// Gets the identification information of the customer.
+    /// Identification information.
     /// </summary>
     public required IdentificationInfoDto IdentificationInfo { get; init; }
 
     /// <summary>
-    /// Gets the contact information of the customer.
+    /// Contact information.
     /// </summary>
     public required ContactInfoDto ContactInfo { get; init; }
 
     /// <summary>
-    /// Gets the address of the customer.
+    /// Physical address.
     /// </summary>
     public required AddressDto Address { get; init; }
 
     /// <summary>
-    /// Gets the physical information of the customer.
+    /// Physical characteristics and bike preferences.
     /// </summary>
     public required PhysicalInfoDto PhysicalInfo { get; init; }
 
     /// <summary>
-    /// Gets the accommodation preferences of the customer.
+    /// Accommodation preferences.
     /// </summary>
     public required AccommodationPreferencesDto AccommodationPreferences { get; init; }
 
     /// <summary>
-    /// Gets the emergency contact information of the customer.
+    /// Emergency contact information.
     /// </summary>
     public required EmergencyContactDto EmergencyContact { get; init; }
 
     /// <summary>
-    /// Gets the medical information of the customer.
+    /// Medical information and allergies.
     /// </summary>
     public required MedicalInfoDto MedicalInfo { get; init; }
 }

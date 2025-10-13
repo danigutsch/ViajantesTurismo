@@ -83,29 +83,14 @@ internal static class ToursEndpoints
 
     private static async Task<Results<Ok<GetTourDto>, NotFound>> GetTourById(
         [FromRoute] int id,
-        [FromServices] ITourStore tourStore,
+        [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
-        var tour = await tourStore.GetById(id, ct);
-        if (tour is null)
+        var tourDto = await queryService.GetTourById(id, ct);
+        if (tourDto is null)
         {
             return TypedResults.NotFound();
         }
-
-        var tourDto = new GetTourDto
-        {
-            Id = tour.Id,
-            Identifier = tour.Identifier,
-            Name = tour.Name,
-            StartDate = tour.StartDate,
-            EndDate = tour.EndDate,
-            Price = tour.Price,
-            SingleRoomSupplementPrice = tour.SingleRoomSupplementPrice,
-            RegularBikePrice = tour.RegularBikePrice,
-            EBikePrice = tour.EBikePrice,
-            Currency = (CurrencyDto)tour.Currency,
-            IncludedServices = [.. tour.IncludedServices]
-        };
 
         return TypedResults.Ok(tourDto);
     }

@@ -5,15 +5,38 @@ namespace ViajantesTurismo.Admin.Domain;
 /// </summary>
 public sealed class ContactInfo
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContactInfo"/> class.
+    /// </summary>
+    /// <param name="email">The email address.</param>
+    /// <param name="mobile">The mobile phone number.</param>
+    /// <param name="instagram">The Instagram handle.</param>
+    /// <param name="facebook">The Facebook profile.</param>
+    public ContactInfo(string email, string mobile, string? instagram, string? facebook)
+    {
+        Email = email;
+        Mobile = mobile;
+        Instagram = instagram;
+        Facebook = facebook;
+    }
+
     /// <summary>Email address.</summary>
-    public required string Email { get; init; }
+    public string Email { get; private set; }
 
     /// <summary>Mobile phone number.</summary>
-    public required string Mobile { get; init; }
+    public string Mobile { get; private set; }
 
     /// <summary>Instagram handle.</summary>
-    public string? Instagram { get; init; }
+    public string? Instagram { get; private set; }
 
     /// <summary>Facebook profile.</summary>
-    public string? Facebook { get; init; }
+    public string? Facebook { get; private set; }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    private ContactInfo()
+    {
+    }
 }

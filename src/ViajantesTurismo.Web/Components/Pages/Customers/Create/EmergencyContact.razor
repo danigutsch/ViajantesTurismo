@@ -62,7 +62,7 @@
     {
         if (State.EmergencyContact is not null)
         {
-            _model = EmergencyContactFormModel.FromDto(State.EmergencyContact);
+            _model = State.EmergencyContact;
         }
 
         State.NavigateToStep(7);
@@ -70,7 +70,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetEmergencyContact(_model.ToDto());
+        State.SetEmergencyContact(_model);
         Navigation.NavigateTo("/customers/create/medical");
     }
 

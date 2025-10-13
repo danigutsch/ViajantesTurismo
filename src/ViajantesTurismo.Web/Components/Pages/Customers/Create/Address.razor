@@ -93,7 +93,7 @@
     {
         if (State.Address is not null)
         {
-            _model = AddressFormModel.FromDto(State.Address);
+            _model = State.Address;
         }
 
         State.NavigateToStep(4);
@@ -101,7 +101,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetAddress(_model.ToDto());
+        State.SetAddress(_model);
         Navigation.NavigateTo("/customers/create/physical");
     }
 

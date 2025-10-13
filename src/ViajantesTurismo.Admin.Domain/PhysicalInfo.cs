@@ -7,12 +7,33 @@ namespace ViajantesTurismo.Admin.Domain;
 /// </summary>
 public sealed class PhysicalInfo
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PhysicalInfo"/> class.
+    /// </summary>
+    /// <param name="weightKg">The weight in kilograms.</param>
+    /// <param name="heightCentimeters">The height in centimeters.</param>
+    /// <param name="bikeType">The type of bicycle.</param>
+    public PhysicalInfo(decimal weightKg, int heightCentimeters, BikeType bikeType)
+    {
+        WeightKg = weightKg;
+        HeightCentimeters = heightCentimeters;
+        BikeType = bikeType;
+    }
+
     /// <summary>Weight in kilograms.</summary>
-    public required decimal WeightKg { get; init; }
+    public decimal WeightKg { get; private set; }
 
     /// <summary>Height in centimeters.</summary>
-    public required int HeightCentimeters { get; init; }
+    public int HeightCentimeters { get; private set; }
 
     /// <summary>Type of bicycle.</summary>
-    public required BikeType BikeType { get; init; }
+    public BikeType BikeType { get; private set; }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    private PhysicalInfo()
+    {
+    }
 }

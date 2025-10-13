@@ -7,12 +7,33 @@ namespace ViajantesTurismo.Admin.Domain;
 /// </summary>
 public sealed class AccommodationPreferences
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AccommodationPreferences"/> class.
+    /// </summary>
+    /// <param name="roomType">The room type.</param>
+    /// <param name="bedType">The bed type.</param>
+    /// <param name="companionId">The companion's ID.</param>
+    public AccommodationPreferences(RoomType roomType, BedType bedType, int? companionId)
+    {
+        RoomType = roomType;
+        BedType = bedType;
+        CompanionId = companionId;
+    }
+
     /// <summary>Room type.</summary>
-    public required RoomType RoomType { get; init; }
+    public RoomType RoomType { get; private set; }
 
     /// <summary>Bed type.</summary>
-    public required BedType BedType { get; init; }
+    public BedType BedType { get; private set; }
 
     /// <summary>Companion's ID.</summary>
-    public int? CompanionId { get; init; }
+    public int? CompanionId { get; private set; }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    private AccommodationPreferences()
+    {
+    }
 }

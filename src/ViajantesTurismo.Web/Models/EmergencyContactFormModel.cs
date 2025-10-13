@@ -14,13 +14,13 @@ internal sealed class EmergencyContactFormModel
     [MaxLength(ContractConstants.MaxDefaultLength)]
     public string Mobile { get; set; } = string.Empty;
 
-    public EmergencyContactStepDto ToDto() => new()
+    public EmergencyContactDto ToDto() => new()
     {
         Name = Name,
         Mobile = Mobile
     };
 
-    public static EmergencyContactFormModel FromDto(EmergencyContactStepDto dto) => new()
+    public static EmergencyContactFormModel FromDto(EmergencyContactDto dto) => new()
     {
         Name = dto.Name ?? string.Empty,
         Mobile = dto.Mobile ?? string.Empty

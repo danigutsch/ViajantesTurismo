@@ -53,7 +53,7 @@ public sealed class CustomerApiTests : IDisposable
         // Arrange
         var request = new CreateCustomerDto
         {
-            PersonalInfo = new PersonalInfoStepDto
+            PersonalInfo = new PersonalInfoDto
             {
                 FirstName = "John",
                 LastName = "Doe",
@@ -62,19 +62,19 @@ public sealed class CustomerApiTests : IDisposable
                 Nationality = "American",
                 Profession = "Engineer"
             },
-            IdentificationInfo = new IdentificationInfoStepDto
+            IdentificationInfo = new IdentificationInfoDto
             {
                 NationalId = "123456789",
                 IdNationality = "American"
             },
-            ContactInfo = new ContactInfoStepDto
+            ContactInfo = new ContactInfoDto
             {
                 Email = "john.doe@example.com",
                 Mobile = "+15551234567",
                 Instagram = "@johndoe",
                 Facebook = "john.doe"
             },
-            Address = new AddressStepDto
+            Address = new AddressDto
             {
                 Street = "123 Main St",
                 Complement = null,
@@ -84,24 +84,24 @@ public sealed class CustomerApiTests : IDisposable
                 State = "NY",
                 Country = "USA"
             },
-            PhysicalInfo = new PhysicalInfoStepDto
+            PhysicalInfo = new PhysicalInfoDto
             {
                 WeightKg = 75.0m,
                 HeightCentimeters = 180,
                 BikeType = BikeTypeDto.Regular
             },
-            AccommodationPreferences = new AccommodationPreferencesStepDto
+            AccommodationPreferences = new AccommodationPreferencesDto
             {
                 RoomType = RoomTypeDto.SingleRoom,
                 BedType = BedTypeDto.SingleBed,
                 CompanionId = null
             },
-            EmergencyContact = new EmergencyContactStepDto
+            EmergencyContact = new EmergencyContactDto
             {
                 Name = "Jane Doe",
                 Mobile = "+15559876543"
             },
-            MedicalInfo = new MedicalInfoStepDto
+            MedicalInfo = new MedicalInfoDto
             {
                 Allergies = null,
                 AdditionalInfo = null
@@ -124,7 +124,7 @@ public sealed class CustomerApiTests : IDisposable
         // Arrange: create a customer first
         var request = new CreateCustomerDto
         {
-            PersonalInfo = new PersonalInfoStepDto
+            PersonalInfo = new PersonalInfoDto
             {
                 FirstName = "Jane",
                 LastName = "Smith",
@@ -133,19 +133,19 @@ public sealed class CustomerApiTests : IDisposable
                 Nationality = "Canadian",
                 Profession = "Teacher"
             },
-            IdentificationInfo = new IdentificationInfoStepDto
+            IdentificationInfo = new IdentificationInfoDto
             {
                 NationalId = "987654321",
                 IdNationality = "Canadian"
             },
-            ContactInfo = new ContactInfoStepDto
+            ContactInfo = new ContactInfoDto
             {
                 Email = "jane.smith@example.com",
                 Mobile = "+14161234567",
                 Instagram = "@janesmith",
                 Facebook = "jane.smith"
             },
-            Address = new AddressStepDto
+            Address = new AddressDto
             {
                 Street = "456 Oak St",
                 Complement = "Apt 2",
@@ -155,24 +155,24 @@ public sealed class CustomerApiTests : IDisposable
                 State = "ON",
                 Country = "Canada"
             },
-            PhysicalInfo = new PhysicalInfoStepDto
+            PhysicalInfo = new PhysicalInfoDto
             {
                 WeightKg = 65.0m,
                 HeightCentimeters = 165,
                 BikeType = BikeTypeDto.EBike
             },
-            AccommodationPreferences = new AccommodationPreferencesStepDto
+            AccommodationPreferences = new AccommodationPreferencesDto
             {
                 RoomType = RoomTypeDto.DoubleRoom,
                 BedType = BedTypeDto.DoubleBed,
                 CompanionId = null
             },
-            EmergencyContact = new EmergencyContactStepDto
+            EmergencyContact = new EmergencyContactDto
             {
                 Name = "Bob Smith",
                 Mobile = "+14169876543"
             },
-            MedicalInfo = new MedicalInfoStepDto
+            MedicalInfo = new MedicalInfoDto
             {
                 Allergies = "Peanuts",
                 AdditionalInfo = null
@@ -188,13 +188,13 @@ public sealed class CustomerApiTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var customerDto = await response.Content.ReadFromJsonAsync<GetCustomerDto>(cancellationToken: TestContext.Current.CancellationToken);
+        var customerDto = await response.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(customerDto);
-        Assert.Equal(request.PersonalInfo.FirstName, customerDto.FirstName);
-        Assert.Equal(request.PersonalInfo.LastName, customerDto.LastName);
-        Assert.Equal(request.ContactInfo.Email, customerDto.Email);
-        Assert.Equal(request.ContactInfo.Mobile, customerDto.Mobile);
-        Assert.Equal(request.PersonalInfo.Nationality, customerDto.Nationality);
+        Assert.Equal(request.PersonalInfo.FirstName, customerDto.PersonalInfo.FirstName);
+        Assert.Equal(request.PersonalInfo.LastName, customerDto.PersonalInfo.LastName);
+        Assert.Equal(request.ContactInfo.Email, customerDto.ContactInfo.Email);
+        Assert.Equal(request.ContactInfo.Mobile, customerDto.ContactInfo.Mobile);
+        Assert.Equal(request.PersonalInfo.Nationality, customerDto.PersonalInfo.Nationality);
     }
 
     [Fact]

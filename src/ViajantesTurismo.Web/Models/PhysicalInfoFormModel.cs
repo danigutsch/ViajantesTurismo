@@ -16,14 +16,14 @@ internal sealed class PhysicalInfoFormModel
     [Required(ErrorMessage = "Bike type is required")]
     public BikeTypeDto? BikeType { get; set; }
 
-    public PhysicalInfoStepDto ToDto() => new()
+    public PhysicalInfoDto ToDto() => new()
     {
         WeightKg = WeightKg,
         HeightCentimeters = HeightCentimeters,
         BikeType = BikeType
     };
 
-    public static PhysicalInfoFormModel FromDto(PhysicalInfoStepDto dto) => new()
+    public static PhysicalInfoFormModel FromDto(PhysicalInfoDto dto) => new()
     {
         WeightKg = dto.WeightKg,
         HeightCentimeters = dto.HeightCentimeters,

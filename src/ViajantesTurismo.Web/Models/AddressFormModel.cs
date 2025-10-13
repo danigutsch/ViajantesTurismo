@@ -32,7 +32,7 @@ internal sealed class AddressFormModel
     [MaxLength(ContractConstants.MaxNameLength)]
     public string Country { get; set; } = string.Empty;
 
-    public AddressStepDto ToDto() => new()
+    public AddressDto ToDto() => new()
     {
         Street = Street,
         Complement = Complement,
@@ -43,7 +43,7 @@ internal sealed class AddressFormModel
         Country = Country
     };
 
-    public static AddressFormModel FromDto(AddressStepDto dto) => new()
+    public static AddressFormModel FromDto(AddressDto dto) => new()
     {
         Street = dto.Street ?? string.Empty,
         Complement = dto.Complement,

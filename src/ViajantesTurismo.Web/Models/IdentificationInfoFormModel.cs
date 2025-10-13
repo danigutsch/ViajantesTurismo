@@ -13,13 +13,13 @@ internal sealed class IdentificationInfoFormModel
     [MaxLength(ContractConstants.MaxDefaultLength)]
     public string IdNationality { get; set; } = string.Empty;
 
-    public IdentificationInfoStepDto ToDto() => new()
+    public IdentificationInfoDto ToDto() => new()
     {
         NationalId = NationalId,
         IdNationality = IdNationality
     };
 
-    public static IdentificationInfoFormModel FromDto(IdentificationInfoStepDto dto) => new()
+    public static IdentificationInfoFormModel FromDto(IdentificationInfoDto dto) => new()
     {
         NationalId = dto.NationalId ?? string.Empty,
         IdNationality = dto.IdNationality ?? string.Empty

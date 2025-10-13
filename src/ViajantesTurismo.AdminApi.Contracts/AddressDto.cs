@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// Data Transfer Object representing the address step in a multistep customer creation wizard.
+/// Data Transfer Object representing the address information of a customer.
 /// Contains address-related fields with validation attributes for each property.
 /// </summary>
-public sealed record AddressStepDto
+public sealed record AddressDto
 {
     /// <summary>
     /// The street name of the address.

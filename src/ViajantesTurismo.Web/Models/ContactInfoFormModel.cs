@@ -21,7 +21,7 @@ internal sealed class ContactInfoFormModel
     [MaxLength(ContractConstants.MaxDefaultLength)]
     public string? Facebook { get; set; }
 
-    public ContactInfoStepDto ToDto() => new()
+    public ContactInfoDto ToDto() => new()
     {
         Email = Email,
         Mobile = Mobile,
@@ -29,7 +29,7 @@ internal sealed class ContactInfoFormModel
         Facebook = Facebook
     };
 
-    public static ContactInfoFormModel FromDto(ContactInfoStepDto dto) => new()
+    public static ContactInfoFormModel FromDto(ContactInfoDto dto) => new()
     {
         Email = dto.Email ?? string.Empty,
         Mobile = dto.Mobile ?? string.Empty,

@@ -27,9 +27,9 @@ internal sealed class CustomersApiClient(HttpClient httpClient)
         return customers?.ToArray() ?? [];
     }
 
-    public async Task<GetCustomerDto?> GetCustomerById(int id, CancellationToken cancellationToken = default)
+    public async Task<CustomerDetailsDto?> GetCustomerById(int id, CancellationToken cancellationToken = default)
     {
-        return await httpClient.GetFromJsonAsync<GetCustomerDto>($"/customers/{id}", cancellationToken);
+        return await httpClient.GetFromJsonAsync<CustomerDetailsDto>($"/customers/{id}", cancellationToken);
     }
 
     public async Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken cancellationToken = default)
@@ -38,5 +38,11 @@ internal sealed class CustomersApiClient(HttpClient httpClient)
         response.EnsureSuccessStatusCode();
 
         return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+    }
+
+    public async Task UpdateCustomer(int id, UpdateCustomerDto dto, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PutAsJsonAsync($"/customers/{id}", dto, cancellationToken);
+        response.EnsureSuccessStatusCode();
     }
 }

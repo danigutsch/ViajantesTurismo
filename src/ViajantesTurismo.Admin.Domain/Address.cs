@@ -5,24 +5,53 @@ namespace ViajantesTurismo.Admin.Domain;
 /// </summary>
 public sealed class Address
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Address"/> class.
+    /// </summary>
+    /// <param name="street">The street address and number.</param>
+    /// <param name="complement">The address complement.</param>
+    /// <param name="neighborhood">The neighborhood.</param>
+    /// <param name="postalCode">The postal code.</param>
+    /// <param name="city">The city.</param>
+    /// <param name="state">The state.</param>
+    /// <param name="country">The country.</param>
+    public Address(string street, string? complement, string neighborhood, string postalCode, string city, string state, string country)
+    {
+        Street = street;
+        Complement = complement;
+        Neighborhood = neighborhood;
+        PostalCode = postalCode;
+        City = city;
+        State = state;
+        Country = country;
+    }
+
     /// <summary>Street address and number.</summary>
-    public required string Street { get; init; }
+    public string Street { get; private set; }
 
     /// <summary>Address complement.</summary>
-    public string? Complement { get; init; }
+    public string? Complement { get; private set; }
 
     /// <summary>Neighborhood.</summary>
-    public required string Neighborhood { get; init; }
+    public string Neighborhood { get; private set; }
 
     /// <summary>Postal code.</summary>
-    public required string PostalCode { get; init; }
+    public string PostalCode { get; private set; }
 
     /// <summary>City.</summary>
-    public required string City { get; init; }
+    public string City { get; private set; }
 
     /// <summary>State.</summary>
-    public required string State { get; init; }
+    public string State { get; private set; }
 
     /// <summary>Country.</summary>
-    public required string Country { get; init; }
+    public string Country { get; private set; }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    private Address()
+    {
+    }
 }

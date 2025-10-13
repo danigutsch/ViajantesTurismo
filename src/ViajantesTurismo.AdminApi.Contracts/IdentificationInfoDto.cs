@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// Data Transfer Object representing the identification information step in a multistep customer creation wizard.
+/// Data Transfer Object representing the identification information of a customer.
 /// Contains identification document details with validation attributes for each property.
 /// </summary>
-public sealed record IdentificationInfoStepDto
+public sealed record IdentificationInfoDto
 {
     /// <summary>
     /// The national identification number or document number of the customer.

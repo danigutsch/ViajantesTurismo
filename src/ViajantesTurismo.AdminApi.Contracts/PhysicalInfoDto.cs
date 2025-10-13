@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// Data Transfer Object representing the physical information step in a multistep customer creation wizard.
+/// Data Transfer Object representing the physical information of a customer.
 /// Contains physical characteristics and bike preference with validation attributes for each property.
 /// </summary>
-public sealed record PhysicalInfoStepDto
+public sealed record PhysicalInfoDto
 {
     /// <summary>
     /// The weight of the customer in kilograms. Valid range is 0 to 500 kg.

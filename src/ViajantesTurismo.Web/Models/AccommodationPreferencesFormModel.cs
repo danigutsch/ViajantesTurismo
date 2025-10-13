@@ -13,14 +13,14 @@ internal sealed class AccommodationPreferencesFormModel
 
     public int? CompanionId { get; set; }
 
-    public AccommodationPreferencesStepDto ToDto() => new()
+    public AccommodationPreferencesDto ToDto() => new()
     {
         RoomType = RoomType,
         BedType = BedType,
         CompanionId = CompanionId
     };
 
-    public static AccommodationPreferencesFormModel FromDto(AccommodationPreferencesStepDto dto) => new()
+    public static AccommodationPreferencesFormModel FromDto(AccommodationPreferencesDto dto) => new()
     {
         RoomType = dto.RoomType,
         BedType = dto.BedType,

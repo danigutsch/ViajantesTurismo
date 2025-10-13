@@ -68,7 +68,7 @@
     {
         if (State.PhysicalInfo is not null)
         {
-            _model = PhysicalInfoFormModel.FromDto(State.PhysicalInfo);
+            _model = State.PhysicalInfo;
         }
 
         State.NavigateToStep(5);
@@ -76,7 +76,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetPhysicalInfo(_model.ToDto());
+        State.SetPhysicalInfo(_model);
         Navigation.NavigateTo("/customers/create/accommodation");
     }
 

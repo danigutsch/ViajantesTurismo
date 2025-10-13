@@ -5,9 +5,28 @@ namespace ViajantesTurismo.Admin.Domain;
 /// </summary>
 public sealed class IdentificationInfo
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IdentificationInfo"/> class.
+    /// </summary>
+    /// <param name="nationalId">The national ID.</param>
+    /// <param name="idNationality">The nationality that issued the ID.</param>
+    public IdentificationInfo(string nationalId, string idNationality)
+    {
+        NationalId = nationalId;
+        IdNationality = idNationality;
+    }
+
     /// <summary>National ID.</summary>
-    public required string NationalId { get; init; }
+    public string NationalId { get; private set; }
 
     /// <summary>The nationality that issued the ID.</summary>
-    public required string IdNationality { get; init; }
+    public string IdNationality { get; private set; }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    private IdentificationInfo()
+    {
+    }
 }

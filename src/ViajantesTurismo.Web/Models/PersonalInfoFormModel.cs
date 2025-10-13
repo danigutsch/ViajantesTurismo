@@ -28,7 +28,7 @@ internal sealed class PersonalInfoFormModel
     [MaxLength(ContractConstants.MaxDefaultLength)]
     public string Profession { get; set; } = string.Empty;
 
-    public PersonalInfoStepDto ToDto() => new()
+    public PersonalInfoDto ToDto() => new()
     {
         FirstName = FirstName,
         LastName = LastName,
@@ -38,7 +38,7 @@ internal sealed class PersonalInfoFormModel
         Profession = Profession
     };
 
-    public static PersonalInfoFormModel FromDto(PersonalInfoStepDto dto) => new()
+    public static PersonalInfoFormModel FromDto(PersonalInfoDto dto) => new()
     {
         FirstName = dto.FirstName ?? string.Empty,
         LastName = dto.LastName ?? string.Empty,

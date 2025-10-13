@@ -5,7 +5,7 @@ namespace ViajantesTurismo.AdminApi.Contracts;
 /// <summary>
 /// Represents the accommodation preferences for a customer.
 /// </summary>
-public sealed record AccommodationPreferencesStepDto
+public sealed record AccommodationPreferencesDto
 {
     /// <summary>
     /// The type of room preferred.

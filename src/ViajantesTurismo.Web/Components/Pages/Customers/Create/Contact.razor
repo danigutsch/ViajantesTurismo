@@ -72,7 +72,7 @@
     {
         if (State.ContactInfo is not null)
         {
-            _model = ContactInfoFormModel.FromDto(State.ContactInfo);
+            _model = State.ContactInfo;
         }
 
         State.NavigateToStep(3);
@@ -80,7 +80,7 @@
 
     private void HandleValidSubmit()
     {
-        State.SetContactInfo(_model.ToDto());
+        State.SetContactInfo(_model);
         Navigation.NavigateTo("/customers/create/address");
     }
 

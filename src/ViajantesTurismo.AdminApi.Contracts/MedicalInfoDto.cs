@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// Data Transfer Object representing the medical information step in a multistep customer creation wizard.
+/// Data Transfer Object representing the medical information of a customer.
 /// Contains health-related details with validation attributes for each property.
 /// </summary>
-public sealed record MedicalInfoStepDto
+public sealed record MedicalInfoDto
 {
     /// <summary>
     /// Known allergies of the customer (e.g., food, medication, environmental).
