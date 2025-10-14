@@ -1,0 +1,124 @@
+@using ViajantesTurismo.AdminApi.Contracts
+@inherits InputBase<int?>
+
+<div class="position-relative">
+    <input type="text"
+           class="form-control @CssClass"
+           placeholder="Search customers by name or email..."
+           @bind="SearchTerm"
+           @bind:event="oninput"
+           @onfocus="OnFocus"
+           @onblur="OnBlur"/>
+
+    @if (_isOpen && FilteredCustomers.Any())
+    {
+        <div class="dropdown-menu show w-100" style="max-height: 300px; overflow-y: auto;">
+            <button type="button" class="dropdown-item text-muted" @onclick="() => SelectCustomer(null)">
+                <em>-- Clear selection --</em>
+            </button>
+            @foreach (var customer in FilteredCustomers)
+            {
+                <button type="button"
+                        class="dropdown-item @(Value == customer.Id ? "active" : "")"
+                        @onclick="() => SelectCustomer(customer.Id)"
+                        @onmousedown:preventDefault>
+                    <div>
+                        <strong>@customer.FirstName @customer.LastName</strong>
+                        <span class="badge bg-secondary ms-2">ID: @customer.Id</span>
+                    </div>
+                    <small class="text-muted">@customer.Email | @customer.Nationality</small>
+                </button>
+            }
+        </div>
+    }
+    else if (_isOpen && !string.IsNullOrWhiteSpace(SearchTerm) && !FilteredCustomers.Any())
+    {
+        <div class="dropdown-menu show w-100">
+            <div class="dropdown-item-text text-muted">
+                <em>No customers found</em>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Value.HasValue && SelectedCustomer != null)
+{
+    <div class="mt-2">
+        <span class="badge bg-primary">
+            Selected: @SelectedCustomer.FirstName @SelectedCustomer.LastName (ID: @SelectedCustomer.Id)
+        </span>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public IReadOnlyList<GetCustomerDto> Customers { get; set; } = [];
+
+    private string SearchTerm { get; set; } = string.Empty;
+    private bool _isOpen;
+
+    private GetCustomerDto? SelectedCustomer =>
+        Value.HasValue ? Customers.FirstOrDefault(c => c.Id == Value.Value) : null;
+
+    private IEnumerable<GetCustomerDto> FilteredCustomers
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                return Customers.Take(10); // Show first 10 when no search
+            }
+
+            var searchLower = SearchTerm.ToLowerInvariant();
+            return Customers
+                .Where(c =>
+                    c.FirstName.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                    c.LastName.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                    c.Email.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                    c.Id.ToString().Contains(searchLower))
+                .Take(20);
+        }
+    }
+
+    protected override bool TryParseValueFromString(string? value, out int? result, out string validationErrorMessage)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = null;
+            validationErrorMessage = string.Empty;
+            return true;
+        }
+
+        if (int.TryParse(value, out var parsed))
+        {
+            result = parsed;
+            validationErrorMessage = string.Empty;
+            return true;
+        }
+
+        result = null;
+        validationErrorMessage = "Invalid customer ID.";
+        return false;
+    }
+
+    private void SelectCustomer(int? customerId)
+    {
+        CurrentValue = customerId;
+        SearchTerm = string.Empty;
+        _isOpen = false;
+    }
+
+    private void OnFocus()
+    {
+        _isOpen = true;
+    }
+
+    private async Task OnBlur()
+    {
+        // Delay to allow click events on dropdown items to fire
+        await Task.Delay(200);
+        _isOpen = false;
+    }
+
+}

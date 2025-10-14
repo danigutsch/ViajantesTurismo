@@ -4,7 +4,7 @@ namespace ViajantesTurismo.Web;
 
 internal sealed class CustomersApiClient(HttpClient httpClient)
 {
-    public async Task<GetCustomerDto[]> GetCustomers(int maxItems = 100, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<GetCustomerDto>> GetCustomers(int maxItems = 100, CancellationToken cancellationToken = default)
     {
         List<GetCustomerDto>? customers = null;
 

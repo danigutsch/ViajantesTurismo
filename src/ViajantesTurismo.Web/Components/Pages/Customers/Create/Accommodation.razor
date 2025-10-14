@@ -6,6 +6,7 @@
 
 @inject CustomerCreationState State
 @inject NavigationManager Navigation
+@inject CustomersApiClient CustomersApi
 
 <PageTitle>Create Customer - Accommodation Preferences</PageTitle>
 
@@ -46,12 +47,20 @@
 
                 <div class="row">
                     <div class="col-md-12 mb-3">
-                        <label for="companionId" class="form-label">Companion ID (Optional)</label>
-                        <InputNumber id="companionId" @bind-Value="_model.CompanionId" class="form-control"
-                                     placeholder="ID of traveling companion"/>
+                        <label class="form-label">Companion (Optional)</label>
+                        @if (_customers == null)
+                        {
+                            <div class="form-control">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Loading customers...
+                            </div>
+                        }
+                        else
+                        {
+                            <CustomerSelector @bind-Value="_model.CompanionId" Customers="_customers"/>
+                        }
                         <ValidationMessage For="@(() => _model.CompanionId)"/>
-                        <small class="form-text text-muted">Enter the ID of another customer traveling with this
-                            person</small>
+                        <small class="form-text text-muted">Select another customer traveling with this person</small>
                     </div>
                 </div>
 
@@ -70,9 +79,10 @@
 
 @code {
     private AccommodationPreferencesFormModel _model = new();
+    private IReadOnlyList<GetCustomerDto>? _customers;
 
     /// <inheritdoc />
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (State.AccommodationPreferences is not null)
         {
@@ -80,6 +90,8 @@
         }
 
         State.NavigateToStep(6);
+
+        _customers = await CustomersApi.GetCustomers();
     }
 
     private void HandleValidSubmit()
