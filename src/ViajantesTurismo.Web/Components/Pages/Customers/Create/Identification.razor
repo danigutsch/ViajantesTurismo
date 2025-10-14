@@ -1,10 +1,12 @@
 @page "/customers/create/identification"
 @using ViajantesTurismo.Web.Components.Shared
 @using ViajantesTurismo.Web.Models
+@using ViajantesTurismo.Web.Services
 @rendermode InteractiveServer
 
 @inject CustomerCreationState State
 @inject NavigationManager Navigation
+@inject CountryService CountryService
 
 <PageTitle>Create Customer - Identification</PageTitle>
 
@@ -31,8 +33,18 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="idNationality" class="form-label">ID Nationality <span class="text-danger">*</span></label>
-                        <InputText id="idNationality" @bind-Value="_model.IdNationality" class="form-control"/>
+                        <label class="form-label">ID Nationality <span class="text-danger">*</span></label>
+                        @if (_countries == null)
+                        {
+                            <div class="form-control">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Loading countries...
+                            </div>
+                        }
+                        else
+                        {
+                            <CountrySelector @bind-Value="_model.IdNationality" Countries="_countries"/>
+                        }
                         <ValidationMessage For="@(() => _model.IdNationality)"/>
                     </div>
                 </div>
@@ -52,9 +64,10 @@
 
 @code {
     private IdentificationInfoFormModel _model = new();
+    private CountryInfo[]? _countries;
 
     /// <inheritdoc />
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (State.IdentificationInfo is not null)
         {
@@ -62,6 +75,8 @@
         }
 
         State.NavigateToStep(2);
+
+        _countries = await CountryService.GetCountriesAsync();
     }
 
     private void HandleValidSubmit()
