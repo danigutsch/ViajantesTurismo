@@ -1,10 +1,12 @@
 @page "/customers/create/personal-info"
 @using ViajantesTurismo.Web.Components.Shared
 @using ViajantesTurismo.Web.Models
+@using ViajantesTurismo.Web.Services
 @rendermode InteractiveServer
 
 @inject CustomerCreationState State
 @inject NavigationManager Navigation
+@inject CountryService CountryService
 
 <PageTitle>Create Customer - Personal Information</PageTitle>
 
@@ -56,9 +58,18 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="nationality" class="form-label">Nationality <span
-                                class="text-danger">*</span></label>
-                        <InputText id="nationality" @bind-Value="_model.Nationality" class="form-control"/>
+                        <label class="form-label">Nationality <span class="text-danger">*</span></label>
+                        @if (_countries == null)
+                        {
+                            <div class="form-control">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Loading countries...
+                            </div>
+                        }
+                        else
+                        {
+                            <CountrySelector @bind-Value="_model.Nationality" Countries="_countries"/>
+                        }
                         <ValidationMessage For="@(() => _model.Nationality)"/>
                     </div>
 
@@ -84,9 +95,10 @@
 
 @code {
     private PersonalInfoFormModel _model = new();
+    private IReadOnlyList<CountryInfo>? _countries;
 
     /// <inheritdoc />
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (State.PersonalInfo is not null)
         {
@@ -94,6 +106,8 @@
         }
 
         State.NavigateToStep(1);
+
+        _countries = await CountryService.GetCountriesAsync();
     }
 
     private void HandleValidSubmit()

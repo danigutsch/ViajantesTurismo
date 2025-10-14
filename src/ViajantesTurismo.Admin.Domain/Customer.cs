@@ -95,8 +95,7 @@ public sealed class Customer : Entity<int>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
 #pragma warning disable CS8618
-    private
-        Customer()
+    private Customer()
     {
     }
 }
