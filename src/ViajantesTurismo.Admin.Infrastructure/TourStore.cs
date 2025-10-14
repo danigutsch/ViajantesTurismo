@@ -1,4 +1,4 @@
-﻿using ViajantesTurismo.Admin.Domain;
+﻿using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 

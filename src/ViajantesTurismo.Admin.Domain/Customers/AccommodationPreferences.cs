@@ -1,6 +1,6 @@
 using ViajantesTurismo.Common;
 
-namespace ViajantesTurismo.Admin.Domain;
+namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
 /// Represents accommodation preferences for a customer.

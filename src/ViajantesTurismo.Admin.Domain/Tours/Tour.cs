@@ -1,7 +1,7 @@
 ﻿using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.Admin.Domain;
+namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Represents a tour entity with details such as identifier, name, dates, pricing, currency, and included services.

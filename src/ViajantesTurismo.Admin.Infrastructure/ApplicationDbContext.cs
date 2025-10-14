@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.Infrastructure;

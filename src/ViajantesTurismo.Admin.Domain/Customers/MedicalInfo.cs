@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Domain;
+namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
 /// Represents medical information and allergies.

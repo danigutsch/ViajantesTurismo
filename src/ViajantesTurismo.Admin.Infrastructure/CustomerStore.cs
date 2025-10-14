@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 

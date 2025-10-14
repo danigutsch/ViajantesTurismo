@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Monies;
 

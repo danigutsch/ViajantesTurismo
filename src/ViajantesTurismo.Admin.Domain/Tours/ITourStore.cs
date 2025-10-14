@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Domain;
+﻿namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Manages the storage and retrieval of <see cref="Tour"/> entities.
