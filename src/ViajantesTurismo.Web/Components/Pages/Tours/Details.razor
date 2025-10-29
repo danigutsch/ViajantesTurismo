@@ -1,6 +1,7 @@
 @page "/tours/{id:int}"
 @using ViajantesTurismo.AdminApi.Contracts
 @inject ToursApiClient ToursApi
+@inject BookingsApiClient BookingsApi
 
 <PageTitle>Tour Details</PageTitle>
 
@@ -86,13 +87,41 @@ else if (_tour != null)
             }
         </div>
     </div>
+
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="bi bi-calendar-check"></i> Bookings</h3>
+            <button class="btn btn-success" @onclick="ShowCreateBookingForm">
+                <i class="bi bi-plus-circle"></i> Add Booking
+            </button>
+        </div>
+        <div class="card-body">
+            @if (_loadingBookings)
+            {
+                <p><em>Loading bookings...</em></p>
+            }
+            else if (_showCreateForm)
+            {
+                <div class="alert alert-info">
+                    <h5>Create New Booking</h5>
+                    <p>Booking form will be implemented in the next step.</p>
+                    <button class="btn btn-secondary btn-sm" @onclick="HideCreateBookingForm">Cancel</button>
+                </div>
+            }
+            else
+            {
+                <BookingsList Bookings="_bookings"
+                              ShowTourInfo="false"
+                              OnEdit="HandleEditBooking"
+                              OnCancel="HandleCancelBooking"
+                              OnDelete="HandleDeleteBooking" />
+            }
+        </div>
+    </div>
 }
 
 @code {
 
-    /// <summary>
-    /// The ID of the tour to display.
-    /// </summary>
     [Parameter]
     public int Id { get; set; }
 
@@ -100,7 +129,10 @@ else if (_tour != null)
     private bool _loading = true;
     private bool _notFound;
 
-    /// <inheritdoc />
+    private GetBookingDto[]? _bookings;
+    private bool _loadingBookings = true;
+    private bool _showCreateForm;
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -111,6 +143,10 @@ else if (_tour != null)
             {
                 _notFound = true;
             }
+            else
+            {
+                await LoadBookings();
+            }
         }
         catch (Exception)
         {
@@ -120,6 +156,71 @@ else if (_tour != null)
         {
             _loading = false;
         }
+    }
+
+    private async Task LoadBookings()
+    {
+        _loadingBookings = true;
+        try
+        {
+            _bookings = await BookingsApi.GetBookingsByTourId(Id);
+        }
+        finally
+        {
+            _loadingBookings = false;
+        }
+    }
+
+    private void ShowCreateBookingForm()
+    {
+        _showCreateForm = true;
+    }
+
+    private void HideCreateBookingForm()
+    {
+        _showCreateForm = false;
+    }
+
+    private async Task HandleEditBooking(long bookingId)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task HandleCancelBooking(long bookingId)
+    {
+        if (await ConfirmAction("Are you sure you want to cancel this booking?"))
+        {
+            try
+            {
+                await BookingsApi.CancelBooking(bookingId);
+                await LoadBookings();
+            }
+            catch (Exception)
+            {
+                throw new NotImplementedException("Error handling not yet implemented");
+            }
+        }
+    }
+
+    private async Task HandleDeleteBooking(long bookingId)
+    {
+        if (await ConfirmAction("Are you sure you want to delete this booking? This action cannot be undone."))
+        {
+            try
+            {
+                await BookingsApi.DeleteBooking(bookingId);
+                await LoadBookings();
+            }
+            catch (Exception)
+            {
+                throw new NotImplementedException("Error handling not yet implemented");
+            }
+        }
+    }
+
+    private async Task<bool> ConfirmAction(string message)
+    {
+        throw new NotImplementedException("Confirmation dialog not yet implemented");
     }
 
     private static string FormatPrice(decimal price, CurrencyDto currency)

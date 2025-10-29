@@ -19,6 +19,28 @@
 - **Complex algorithms** where the "why" is not obvious from the code itself (rare)
 - **Legal notices** or licensing headers
 
+### Placeholder Implementation
+
+**Prefer throwing `NotImplementedException` over TODO comments.**
+
+❌ **Don't do this:**
+```csharp
+private async Task HandleEditBooking(long bookingId)
+{
+    // TODO: Implement edit functionality
+}
+```
+
+✅ **Do this instead:**
+```csharp
+private async Task HandleEditBooking(long bookingId)
+{
+    throw new NotImplementedException();
+}
+```
+
+This makes incomplete features fail fast and clearly, rather than silently doing nothing. The compiler and runtime will help you track down unimplemented features.
+
 ### Alternative to Comments: Extract Methods
 
 Instead of adding comments to explain what code does, extract that code into a well-named method.
