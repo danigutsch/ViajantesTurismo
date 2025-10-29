@@ -73,6 +73,11 @@ internal static class BookingEndpoints
             .WithDescription("Updates the price and notes of a booking.")
             .WithSummary("Updates booking details.");
 
+        bookingsGroup.MapPatch("/{id:long}/complete", CompleteBooking)
+            .WithName("CompleteBooking")
+            .WithDescription("Completes a booking by setting its status to Completed.")
+            .WithSummary("Completes a booking.");
+
         return app;
     }
 
@@ -242,6 +247,25 @@ internal static class BookingEndpoints
         }
 
         tour.UpdateBookingDetails(id, dto.TotalPrice, dto.Notes);
+
+        await unitOfWork.SaveEntities(ct);
+
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> CompleteBooking(
+        [FromRoute] long id,
+        [FromServices] ITourStore tourStore,
+        [FromServices] IUnitOfWork unitOfWork,
+        CancellationToken ct)
+    {
+        var tour = await tourStore.GetByBookingId(id, ct);
+        if (tour is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        tour.CompleteBooking(id);
 
         await unitOfWork.SaveEntities(ct);
 

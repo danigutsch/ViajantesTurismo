@@ -78,6 +78,10 @@ else
                             }
                             else if (booking.Status == BookingStatusDto.Confirmed)
                             {
+                                <button type="button" class="btn btn-outline-primary"
+                                        @onclick="() => OnCompleteClicked(booking.Id)" title="Complete Booking">
+                                    <i class="bi bi-check2-all"></i> Complete
+                                </button>
                                 <button type="button" class="btn btn-outline-warning"
                                         @onclick="() => OnCancelClicked(booking.Id)" title="Cancel Booking">
                                     <i class="bi bi-x-circle"></i> Cancel
@@ -117,6 +121,9 @@ else
     public EventCallback<long> OnCancel { get; set; }
 
     [Parameter]
+    public EventCallback<long> OnComplete { get; set; }
+
+    [Parameter]
     public EventCallback<long> OnDelete { get; set; }
 
     private async Task OnEditClicked(long bookingId)
@@ -132,6 +139,11 @@ else
     private async Task OnCancelClicked(long bookingId)
     {
         await OnCancel.InvokeAsync(bookingId);
+    }
+
+    private async Task OnCompleteClicked(long bookingId)
+    {
+        await OnComplete.InvokeAsync(bookingId);
     }
 
     private async Task OnDeleteClicked(long bookingId)

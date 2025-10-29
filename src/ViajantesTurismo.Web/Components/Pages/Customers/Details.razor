@@ -8,6 +8,9 @@
 
 <PageTitle>Customer Details</PageTitle>
 
+<ConfirmDialog @ref="_confirmDialog" />
+<ToastNotification @ref="_toast" />
+
 @if (_customer == null)
 {
     <p><em>Loading...</em></p>
@@ -279,6 +282,7 @@ else
                                           OnEdit="HandleEditBooking"
                                           OnConfirm="HandleConfirmBooking"
                                           OnCancel="HandleCancelBooking"
+                                          OnComplete="HandleCompleteBooking"
                                           OnDelete="HandleDeleteBooking" />
                         }
                     </div>
@@ -303,6 +307,9 @@ else
     private GetCustomerDto[] _customers = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
+
+    private ConfirmDialog _confirmDialog = default!;
+    private ToastNotification _toast = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -411,10 +418,11 @@ else
 
             await LoadBookings();
             HideBookingForm();
+            _toast.ShowSuccess(_editingBookingId.HasValue ? "Booking updated successfully." : "Booking created successfully.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new NotImplementedException("Error handling not yet implemented");
+            _toast.ShowError($"Failed to save booking: {ex.Message}");
         }
         finally
         {
@@ -434,36 +442,59 @@ else
         {
             await BookingsApi.ConfirmBooking(bookingId);
             await LoadBookings();
+            _toast.ShowSuccess("Booking confirmed successfully.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new NotImplementedException("Error handling not yet implemented");
+            _toast.ShowError($"Failed to confirm booking: {ex.Message}");
         }
     }
 
     private async Task HandleCancelBooking(long bookingId)
     {
+        if (await _confirmDialog.ShowAsync("Are you sure you want to cancel this booking?", "Cancel Booking", "Yes, Cancel", "No", "btn-warning"))
+        {
+            try
+            {
+                await BookingsApi.CancelBooking(bookingId);
+                await LoadBookings();
+                _toast.ShowSuccess("Booking cancelled successfully.");
+            }
+            catch (Exception ex)
+            {
+                _toast.ShowError($"Failed to cancel booking: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task HandleCompleteBooking(long bookingId)
+    {
         try
         {
-            await BookingsApi.CancelBooking(bookingId);
+            await BookingsApi.CompleteBooking(bookingId);
             await LoadBookings();
+            _toast.ShowSuccess("Booking completed successfully.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new NotImplementedException("Error handling not yet implemented");
+            _toast.ShowError($"Failed to complete booking: {ex.Message}");
         }
     }
 
     private async Task HandleDeleteBooking(long bookingId)
     {
-        try
+        if (await _confirmDialog.ShowAsync("Are you sure you want to delete this booking? This action cannot be undone.", "Delete Booking", "Yes, Delete", "No", "btn-danger"))
         {
-            await BookingsApi.DeleteBooking(bookingId);
-            await LoadBookings();
-        }
-        catch (Exception)
-        {
-            throw new NotImplementedException("Error handling not yet implemented");
+            try
+            {
+                await BookingsApi.DeleteBooking(bookingId);
+                await LoadBookings();
+                _toast.ShowSuccess("Booking deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                _toast.ShowError($"Failed to delete booking: {ex.Message}");
+            }
         }
     }
 

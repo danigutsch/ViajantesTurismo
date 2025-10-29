@@ -126,6 +126,7 @@ dotnet test
 - `POST /bookings` - Create a new booking
 - `PATCH /bookings/{id}/confirm` - Confirm a pending booking
 - `PATCH /bookings/{id}/cancel` - Cancel a booking
+- `PATCH /bookings/{id}/complete` - Complete a confirmed booking
 - `PATCH /bookings/{id}/details` - Update booking price and notes
 - `DELETE /bookings/{id}` - Delete a booking
 
