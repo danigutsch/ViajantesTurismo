@@ -4,6 +4,13 @@
 <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
+    @if (IsEditMode)
+    {
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> Tour and companion cannot be changed after booking creation.
+        </div>
+    }
+
     <div class="row">
         <div class="col-md-6 mb-3">
             <label class="form-label">Tour <span class="text-danger">*</span></label>

@@ -65,6 +65,10 @@ else
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    @onclick="() => OnEditClicked(booking.Id)" title="Edit Booking">
+                                <i class="bi bi-pencil"></i>
+                            </button>
                             @if (booking.Status == BookingStatusDto.Pending)
                             {
                                 <button type="button" class="btn btn-outline-success"

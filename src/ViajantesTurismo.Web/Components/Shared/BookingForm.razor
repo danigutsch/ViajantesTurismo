@@ -1,8 +1,29 @@
 @using ViajantesTurismo.AdminApi.Contracts
-@using System.ComponentModel.DataAnnotations
 
 <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
+
+    @if (IsEditMode)
+    {
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> Customer and companion cannot be changed after booking creation.
+        </div>
+    }
+
+    @if (Tours.Any())
+    {
+        <div class="mb-3">
+            <label class="form-label">Tour <span class="text-danger">*</span></label>
+            <InputSelect @bind-Value="Model.TourId" class="form-select" disabled="@IsEditMode">
+                <option value="">-- Select Tour --</option>
+                @foreach (var tour in Tours)
+                {
+                    <option value="@tour.Id">@tour.Name (@tour.StartDate.ToShortDateString())</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.TourId)" />
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -88,6 +109,9 @@
 
     [Parameter]
     public IReadOnlyList<GetCustomerDto> Customers { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<GetTourDto> Tours { get; set; } = [];
 
     [Parameter]
     public EventCallback<BookingFormModel> OnValidSubmit { get; set; }
