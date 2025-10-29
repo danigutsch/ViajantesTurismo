@@ -11,13 +11,13 @@ public sealed record AccommodationPreferencesDto
     /// The type of room preferred.
     /// </summary>
     [Required]
-    public required RoomTypeDto? RoomType { get; init; }
+    public required RoomTypeDto RoomType { get; init; }
 
     /// <summary>
     /// The type of bed preferred.
     /// </summary>
     [Required]
-    public required BedTypeDto? BedType { get; init; }
+    public required BedTypeDto BedType { get; init; }
 
     /// <summary>
     /// The ID of the companion.

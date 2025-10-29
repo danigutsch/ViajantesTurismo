@@ -18,9 +18,9 @@ internal sealed class PhysicalInfoFormModel
 
     public PhysicalInfoDto ToDto() => new()
     {
-        WeightKg = WeightKg,
-        HeightCentimeters = HeightCentimeters,
-        BikeType = BikeType
+        WeightKg = WeightKg!.Value,
+        HeightCentimeters = HeightCentimeters!.Value,
+        BikeType = BikeType!.Value
     };
 
     public static PhysicalInfoFormModel FromDto(PhysicalInfoDto dto) => new()

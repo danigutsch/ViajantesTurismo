@@ -32,7 +32,7 @@ internal sealed class PersonalInfoFormModel
     {
         FirstName = FirstName,
         LastName = LastName,
-        BirthDate = BirthDate,
+        BirthDate = BirthDate!.Value,
         Gender = Gender,
         Nationality = Nationality,
         Profession = Profession
@@ -40,11 +40,11 @@ internal sealed class PersonalInfoFormModel
 
     public static PersonalInfoFormModel FromDto(PersonalInfoDto dto) => new()
     {
-        FirstName = dto.FirstName ?? string.Empty,
-        LastName = dto.LastName ?? string.Empty,
+        FirstName = dto.FirstName,
+        LastName = dto.LastName,
         BirthDate = dto.BirthDate,
-        Gender = dto.Gender ?? string.Empty,
-        Nationality = dto.Nationality ?? string.Empty,
-        Profession = dto.Profession ?? string.Empty
+        Gender = dto.Gender,
+        Nationality = dto.Nationality,
+        Profession = dto.Profession
     };
 }

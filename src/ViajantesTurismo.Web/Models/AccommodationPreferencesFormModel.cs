@@ -15,8 +15,8 @@ internal sealed class AccommodationPreferencesFormModel
 
     public AccommodationPreferencesDto ToDto() => new()
     {
-        RoomType = RoomType,
-        BedType = BedType,
+        RoomType = RoomType!.Value,
+        BedType = BedType!.Value,
         CompanionId = CompanionId
     };
 

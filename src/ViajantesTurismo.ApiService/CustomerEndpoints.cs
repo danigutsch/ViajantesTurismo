@@ -75,40 +75,40 @@ internal static class CustomerEndpoints
         CancellationToken ct)
     {
         var personalInfo = new PersonalInfo(
-            dto.PersonalInfo.FirstName!,
-            dto.PersonalInfo.LastName!,
-            dto.PersonalInfo.Gender!,
-            dto.PersonalInfo.BirthDate!.Value.ToUniversalTime(),
-            dto.PersonalInfo.Nationality!,
-            dto.PersonalInfo.Profession!);
+            dto.PersonalInfo.FirstName,
+            dto.PersonalInfo.LastName,
+            dto.PersonalInfo.Gender,
+            dto.PersonalInfo.BirthDate.ToUniversalTime(),
+            dto.PersonalInfo.Nationality,
+            dto.PersonalInfo.Profession);
 
         var identificationInfo = new IdentificationInfo(
-            dto.IdentificationInfo.NationalId!,
-            dto.IdentificationInfo.IdNationality!);
+            dto.IdentificationInfo.NationalId,
+            dto.IdentificationInfo.IdNationality);
 
         var contactInfo = new ContactInfo(
-            dto.ContactInfo.Email!,
-            dto.ContactInfo.Mobile!,
+            dto.ContactInfo.Email,
+            dto.ContactInfo.Mobile,
             dto.ContactInfo.Instagram,
             dto.ContactInfo.Facebook);
 
         var address = new Address(
-            dto.Address.Street!,
+            dto.Address.Street,
             dto.Address.Complement,
             dto.Address.Neighborhood!,
-            dto.Address.PostalCode!,
-            dto.Address.City!,
-            dto.Address.State!,
-            dto.Address.Country!);
+            dto.Address.PostalCode,
+            dto.Address.City,
+            dto.Address.State,
+            dto.Address.Country);
 
         var physicalInfo = new PhysicalInfo(
-            dto.PhysicalInfo.WeightKg!.Value,
-            dto.PhysicalInfo.HeightCentimeters!.Value,
-            (BikeType)dto.PhysicalInfo.BikeType!.Value);
+            dto.PhysicalInfo.WeightKg,
+            dto.PhysicalInfo.HeightCentimeters,
+            (BikeType)dto.PhysicalInfo.BikeType);
 
         var accommodationPreferences = new AccommodationPreferences(
-            (RoomType)dto.AccommodationPreferences.RoomType!.Value,
-            (BedType)dto.AccommodationPreferences.BedType!.Value,
+            (RoomType)dto.AccommodationPreferences.RoomType,
+            (BedType)dto.AccommodationPreferences.BedType,
             dto.AccommodationPreferences.CompanionId);
 
         var emergencyContact = new EmergencyContact(
@@ -160,40 +160,40 @@ internal static class CustomerEndpoints
         }
 
         var personalInfo = new PersonalInfo(
-            dto.PersonalInfo.FirstName!,
-            dto.PersonalInfo.LastName!,
-            dto.PersonalInfo.Gender!,
-            dto.PersonalInfo.BirthDate!.Value.ToUniversalTime(),
-            dto.PersonalInfo.Nationality!,
-            dto.PersonalInfo.Profession!);
+            dto.PersonalInfo.FirstName,
+            dto.PersonalInfo.LastName,
+            dto.PersonalInfo.Gender,
+            dto.PersonalInfo.BirthDate.ToUniversalTime(),
+            dto.PersonalInfo.Nationality,
+            dto.PersonalInfo.Profession);
 
         var identificationInfo = new IdentificationInfo(
-            dto.IdentificationInfo.NationalId!,
-            dto.IdentificationInfo.IdNationality!);
+            dto.IdentificationInfo.NationalId,
+            dto.IdentificationInfo.IdNationality);
 
         var contactInfo = new ContactInfo(
-            dto.ContactInfo.Email!,
-            dto.ContactInfo.Mobile!,
+            dto.ContactInfo.Email,
+            dto.ContactInfo.Mobile,
             dto.ContactInfo.Instagram,
             dto.ContactInfo.Facebook);
 
         var address = new Address(
-            dto.Address.Street!,
+            dto.Address.Street,
             dto.Address.Complement,
             dto.Address.Neighborhood!,
-            dto.Address.PostalCode!,
-            dto.Address.City!,
-            dto.Address.State!,
-            dto.Address.Country!);
+            dto.Address.PostalCode,
+            dto.Address.City,
+            dto.Address.State,
+            dto.Address.Country);
 
         var physicalInfo = new PhysicalInfo(
-            dto.PhysicalInfo.WeightKg!.Value,
-            dto.PhysicalInfo.HeightCentimeters!.Value,
-            (BikeType)dto.PhysicalInfo.BikeType!.Value);
+            dto.PhysicalInfo.WeightKg,
+            dto.PhysicalInfo.HeightCentimeters,
+            (BikeType)dto.PhysicalInfo.BikeType);
 
         var accommodationPreferences = new AccommodationPreferences(
-            (RoomType)dto.AccommodationPreferences.RoomType!.Value,
-            (BedType)dto.AccommodationPreferences.BedType!.Value,
+            (RoomType)dto.AccommodationPreferences.RoomType,
+            (BedType)dto.AccommodationPreferences.BedType,
             dto.AccommodationPreferences.CompanionId);
 
         var emergencyContact = new EmergencyContact(

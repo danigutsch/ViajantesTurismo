@@ -13,7 +13,7 @@ public sealed record AddressDto
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? Street { get; init; }
+    public required string Street { get; init; }
 
     /// <summary>
     /// Additional address information, such as apartment or suite number.
@@ -34,26 +34,26 @@ public sealed record AddressDto
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxDefaultLength)]
-    public required string? PostalCode { get; init; }
+    public required string PostalCode { get; init; }
 
     /// <summary>
     /// The city where the address is located.
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? City { get; init; }
+    public required string City { get; init; }
 
     /// <summary>
     /// The state or province of the address.
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? State { get; init; }
+    public required string State { get; init; }
 
     /// <summary>
     /// The country of the address.
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? Country { get; init; }
+    public required string Country { get; init; }
 }

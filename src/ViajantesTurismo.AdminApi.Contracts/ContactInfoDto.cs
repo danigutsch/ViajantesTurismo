@@ -14,7 +14,7 @@ public sealed record ContactInfoDto
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
     [EmailAddress]
-    public required string? Email { get; init; }
+    public required string Email { get; init; }
 
     /// <summary>
     /// The mobile phone number of the customer.
@@ -22,7 +22,7 @@ public sealed record ContactInfoDto
     [Required]
     [MaxLength(ContractConstants.MaxDefaultLength)]
     [Phone]
-    public required string? Mobile { get; init; }
+    public required string Mobile { get; init; }
 
     /// <summary>
     /// The Instagram handle or profile URL of the customer.

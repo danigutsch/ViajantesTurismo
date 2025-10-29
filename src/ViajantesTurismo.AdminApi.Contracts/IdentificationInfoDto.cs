@@ -13,12 +13,12 @@ public sealed record IdentificationInfoDto
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxDefaultLength)]
-    public required string? NationalId { get; init; }
+    public required string NationalId { get; init; }
 
     /// <summary>
     /// The country of issuance for the identification document.
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
-    public required string? IdNationality { get; init; }
+    public required string IdNationality { get; init; }
 }
