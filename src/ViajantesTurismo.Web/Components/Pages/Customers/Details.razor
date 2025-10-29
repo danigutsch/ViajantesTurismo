@@ -3,6 +3,7 @@
 @attribute [StreamRendering]
 
 @inject CustomersApiClient CustomersApi
+@inject BookingsApiClient BookingsApi
 
 <PageTitle>Customer Details</PageTitle>
 
@@ -235,6 +236,30 @@ else
                 </div>
             </div>
         </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="bi bi-calendar-check"></i> Bookings</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (_loadingBookings)
+                        {
+                            <p><em>Loading bookings...</em></p>
+                        }
+                        else
+                        {
+                            <BookingsList Bookings="_bookings"
+                                          ShowCustomerInfo="false"
+                                          OnEdit="HandleEditBooking"
+                                          OnCancel="HandleCancelBooking"
+                                          OnDelete="HandleDeleteBooking" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
@@ -244,11 +269,57 @@ else
     public int Id { get; set; }
 
     private CustomerDetailsDto? _customer;
+    private GetBookingDto[]? _bookings;
+    private bool _loadingBookings = true;
 
-    /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         _customer = await CustomersApi.GetCustomerById(Id);
+        await LoadBookings();
+    }
+
+    private async Task LoadBookings()
+    {
+        _loadingBookings = true;
+        try
+        {
+            _bookings = await BookingsApi.GetBookingsByCustomerId(Id);
+        }
+        finally
+        {
+            _loadingBookings = false;
+        }
+    }
+
+    private async Task HandleEditBooking(long bookingId)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task HandleCancelBooking(long bookingId)
+    {
+        try
+        {
+            await BookingsApi.CancelBooking(bookingId);
+            await LoadBookings();
+        }
+        catch (Exception)
+        {
+            throw new NotImplementedException("Error handling not yet implemented");
+        }
+    }
+
+    private async Task HandleDeleteBooking(long bookingId)
+    {
+        try
+        {
+            await BookingsApi.DeleteBooking(bookingId);
+            await LoadBookings();
+        }
+        catch (Exception)
+        {
+            throw new NotImplementedException("Error handling not yet implemented");
+        }
     }
 
 }
