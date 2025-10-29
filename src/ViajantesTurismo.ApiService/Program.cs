@@ -23,6 +23,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapToursEndpoints();
 app.MapCustomerEndpoints();
+app.MapBookingEndpoints();
 
 app.MapDefaultEndpoints();
 

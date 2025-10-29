@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain;
+using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
@@ -37,9 +38,15 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.Property(tour => tour.RegularBikePrice).IsRequired();
             entity.Property(tour => tour.EBikePrice).IsRequired();
             entity.Property(tour => tour.Currency).HasConversion<string>().IsRequired();
-            entity.PrimitiveCollection(tour => tour.IncludedServices)
-                .HasField("_includedServices")
+            entity.Property<string[]>("_includedServices")
+                .HasColumnName("IncludedServices")
                 .IsRequired();
+
+            entity.HasMany(tour => tour.Bookings)
+                .WithOne()
+                .HasForeignKey(booking => booking.TourId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .Metadata.PrincipalToDependent!.SetField("_bookings");
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -55,6 +62,32 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.OwnsOne(customer => customer.AccommodationPreferences, builder => builder.ToTable("CustomerAccommodationPreferences"));
             entity.OwnsOne(customer => customer.EmergencyContact, builder => builder.ToTable("CustomerEmergencyContact"));
             entity.OwnsOne(customer => customer.MedicalInfo, builder => builder.ToTable("CustomerMedicalInfo"));
+        });
+
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.HasKey(booking => booking.Id);
+            entity.Property(booking => booking.Id).ValueGeneratedOnAdd();
+
+            entity.Property(booking => booking.TourId).IsRequired();
+            entity.Property(booking => booking.CustomerId).IsRequired();
+            entity.Property(booking => booking.CompanionId).IsRequired(false);
+            entity.Property(booking => booking.BookingDate).IsRequired();
+            entity.Property(booking => booking.Status).HasConversion<string>().IsRequired();
+            entity.Property(booking => booking.PaymentStatus).HasConversion<string>().IsRequired();
+            entity.Property(booking => booking.TotalPrice).IsRequired();
+            entity.Property(booking => booking.Notes).HasMaxLength(2000);
+
+            entity.HasOne<Customer>()
+                .WithMany()
+                .HasForeignKey(booking => booking.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Customer>()
+                .WithMany()
+                .HasForeignKey(booking => booking.CompanionId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         });
     }
 }

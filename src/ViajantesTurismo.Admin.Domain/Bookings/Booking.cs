@@ -60,10 +60,25 @@ public sealed class Booking : Entity<long>
     /// <summary>
     /// The total price of the booking.
     /// </summary>
-    public decimal TotalPrice { get; private init; }
+    public decimal TotalPrice { get; private set; }
 
     /// <summary>
     /// The currency of the booking.
     /// </summary>
     public string? Notes { get; private set; }
+
+    /// <summary>
+    /// Updates the booking with new information.
+    /// </summary>
+    /// <param name="totalPrice">The total price of the booking.</param>
+    /// <param name="notes">Optional notes about the booking.</param>
+    /// <param name="status">The booking status.</param>
+    /// <param name="paymentStatus">The payment status.</param>
+    internal void Update(decimal totalPrice, string? notes, BookingStatus status, PaymentStatus paymentStatus)
+    {
+        TotalPrice = totalPrice;
+        Notes = notes;
+        Status = status;
+        PaymentStatus = paymentStatus;
+    }
 }

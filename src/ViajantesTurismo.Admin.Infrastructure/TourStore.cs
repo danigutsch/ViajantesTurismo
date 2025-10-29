@@ -1,4 +1,5 @@
-﻿using ViajantesTurismo.Admin.Domain.Tours;
+﻿using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
@@ -8,4 +9,9 @@ internal sealed class TourStore(ApplicationDbContext dbContext) : ITourStore
 
     public async Task<Tour?> GetById(int id, CancellationToken ct) =>
         await dbContext.Tours.FindAsync([id], ct);
+
+    public async Task<Tour?> GetByBookingId(long bookingId, CancellationToken ct) =>
+        await dbContext.Tours
+            .Include(t => t.Bookings)
+            .FirstOrDefaultAsync(t => t.Bookings.Any(b => b.Id == bookingId), ct);
 }
