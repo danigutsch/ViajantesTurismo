@@ -2,6 +2,7 @@
 @using ViajantesTurismo.AdminApi.Contracts
 @inject ToursApiClient ToursApi
 @inject BookingsApiClient BookingsApi
+@inject CustomersApiClient CustomersApi
 
 <PageTitle>Tour Details</PageTitle>
 
@@ -102,10 +103,14 @@ else if (_tour != null)
             }
             else if (_showCreateForm)
             {
-                <div class="alert alert-info">
+                <div class="border rounded p-3 mb-3">
                     <h5>Create New Booking</h5>
-                    <p>Booking form will be implemented in the next step.</p>
-                    <button class="btn btn-secondary btn-sm" @onclick="HideCreateBookingForm">Cancel</button>
+                    <BookingForm Model="_bookingFormModel"
+                                 Customers="_customers"
+                                 OnValidSubmit="HandleCreateBooking"
+                                 OnCancel="HideCreateBookingForm"
+                                 SubmitButtonText="Create Booking"
+                                 IsSubmitting="_isSubmitting" />
                 </div>
             }
             else
@@ -132,6 +137,10 @@ else if (_tour != null)
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
     private bool _showCreateForm;
+    
+    private GetCustomerDto[] _customers = [];
+    private BookingForm.BookingFormModel _bookingFormModel = new();
+    private bool _isSubmitting;
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,7 +154,7 @@ else if (_tour != null)
             }
             else
             {
-                await LoadBookings();
+                await Task.WhenAll(LoadBookings(), LoadCustomers());
             }
         }
         catch (Exception)
@@ -171,14 +180,55 @@ else if (_tour != null)
         }
     }
 
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            _customers = (await CustomersApi.GetCustomers()).ToArray();
+        }
+        catch (Exception)
+        {
+            _customers = [];
+        }
+    }
+
     private void ShowCreateBookingForm()
     {
+        _bookingFormModel = new BookingForm.BookingFormModel();
         _showCreateForm = true;
     }
 
     private void HideCreateBookingForm()
     {
         _showCreateForm = false;
+    }
+
+    private async Task HandleCreateBooking(BookingForm.BookingFormModel model)
+    {
+        _isSubmitting = true;
+        try
+        {
+            var createDto = new CreateBookingDto
+            {
+                TourId = Id,
+                CustomerId = model.CustomerId,
+                CompanionId = model.CompanionId,
+                TotalPrice = model.TotalPrice,
+                Notes = model.Notes
+            };
+
+            await BookingsApi.CreateBooking(createDto);
+            await LoadBookings();
+            HideCreateBookingForm();
+        }
+        catch (Exception)
+        {
+            throw new NotImplementedException("Error handling not yet implemented");
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private async Task HandleEditBooking(long bookingId)
