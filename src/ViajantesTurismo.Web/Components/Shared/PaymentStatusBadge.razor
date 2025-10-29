@@ -1,0 +1,31 @@
+@using ViajantesTurismo.AdminApi.Contracts
+@{
+    var badgeClass = Status switch
+    {
+            PaymentStatusDto.Unpaid => "bg-danger",
+            PaymentStatusDto.PartiallyPaid => "bg-warning text-dark",
+            PaymentStatusDto.Paid => "bg-success",
+            PaymentStatusDto.Refunded => "bg-info",
+            _ => "bg-secondary"
+    };
+
+    var icon = Status switch
+    {
+            PaymentStatusDto.Unpaid => "bi-currency-dollar",
+            PaymentStatusDto.PartiallyPaid => "bi-cash-stack",
+            PaymentStatusDto.Paid => "bi-check-circle-fill",
+            PaymentStatusDto.Refunded => "bi-arrow-counterclockwise",
+            _ => "bi-question-circle"
+    };
+}
+
+<span class="badge @badgeClass">
+    <i class="bi @icon"></i> @Status
+</span>
+
+@code {
+
+    [Parameter]
+    public PaymentStatusDto Status { get; set; }
+
+}

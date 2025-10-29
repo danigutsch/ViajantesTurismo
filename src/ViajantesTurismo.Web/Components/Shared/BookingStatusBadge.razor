@@ -1,0 +1,31 @@
+@using ViajantesTurismo.AdminApi.Contracts
+@{
+    var badgeClass = Status switch
+    {
+            BookingStatusDto.Pending => "bg-warning text-dark",
+            BookingStatusDto.Confirmed => "bg-success",
+            BookingStatusDto.Cancelled => "bg-danger",
+            BookingStatusDto.Completed => "bg-primary",
+            _ => "bg-secondary"
+    };
+
+    var icon = Status switch
+    {
+            BookingStatusDto.Pending => "bi-clock",
+            BookingStatusDto.Confirmed => "bi-check-circle",
+            BookingStatusDto.Cancelled => "bi-x-circle",
+            BookingStatusDto.Completed => "bi-check-all",
+            _ => "bi-question-circle"
+    };
+}
+
+<span class="badge @badgeClass">
+    <i class="bi @icon"></i> @Status
+</span>
+
+@code {
+
+    [Parameter]
+    public BookingStatusDto Status { get; set; }
+
+}
