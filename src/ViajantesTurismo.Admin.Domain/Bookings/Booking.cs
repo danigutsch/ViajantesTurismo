@@ -21,13 +21,6 @@ public sealed class Booking : Entity<long>
     }
 
     /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-    private Booking()
-    {
-    }
-
-    /// <summary>
     /// The ID of the tour that was booked.
     /// </summary>
     public int TourId { get; private init; }
@@ -80,5 +73,74 @@ public sealed class Booking : Entity<long>
         Notes = notes;
         Status = status;
         PaymentStatus = paymentStatus;
+    }
+
+    /// <summary>
+    /// Confirms the booking, setting its status to Confirmed.
+    /// </summary>
+    internal void Confirm()
+    {
+        if (Status == BookingStatus.Cancelled)
+        {
+            throw new InvalidOperationException("Cannot confirm a cancelled booking.");
+        }
+
+        Status = BookingStatus.Confirmed;
+    }
+
+    /// <summary>
+    /// Cancels the booking, setting its status to Cancelled.
+    /// </summary>
+    internal void Cancel()
+    {
+        if (Status == BookingStatus.Completed)
+        {
+            throw new InvalidOperationException("Cannot cancel a completed booking.");
+        }
+
+        Status = BookingStatus.Cancelled;
+    }
+
+    /// <summary>
+    /// Marks the booking as completed.
+    /// </summary>
+    internal void Complete()
+    {
+        if (Status == BookingStatus.Cancelled)
+        {
+            throw new InvalidOperationException("Cannot complete a cancelled booking.");
+        }
+
+        Status = BookingStatus.Completed;
+    }
+
+    /// <summary>
+    /// Updates the total price of the booking.
+    /// </summary>
+    /// <param name="newPrice">The new total price.</param>
+    internal void UpdatePrice(decimal newPrice)
+    {
+        if (newPrice <= 0)
+        {
+            throw new ArgumentException("Price must be greater than zero.", nameof(newPrice));
+        }
+
+        TotalPrice = newPrice;
+    }
+
+    /// <summary>
+    /// Updates the notes for the booking.
+    /// </summary>
+    /// <param name="notes">The updated notes.</param>
+    internal void UpdateNotes(string? notes)
+    {
+        Notes = notes;
+    }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+    private Booking()
+    {
     }
 }

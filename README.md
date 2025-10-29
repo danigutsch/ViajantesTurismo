@@ -11,6 +11,12 @@ powerful tools to create and manage tour packages.
 ## Features
 
 - **Tour Management**: Create and manage bike tour packages with detailed itineraries
+- **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences, and medical details
+- **Booking Management**: 
+  - Create bookings for customers and optional companions
+  - Domain-driven operations: Confirm, Cancel, Complete bookings
+  - Update booking details (price and notes)
+  - Track booking and payment status
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
@@ -18,7 +24,7 @@ powerful tools to create and manage tour packages.
     - Single room supplement options
     - Regular bike and E-bike rental pricing
 - **Service Packages**: Customizable included services (hotels, meals, guided tours, etc.)
-- **RESTful API**: Modern API-first architecture for seamless integrations
+- **RESTful API**: Modern API-first architecture with behavior-driven endpoints
 - **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
 
 ## Technology Stack
@@ -100,7 +106,28 @@ dotnet test
 ### Tours API
 
 - `GET /tours` - Retrieve all available tours
+- `GET /tours/{id}` - Get tour by ID
 - `POST /tours` - Create a new tour package
+- `PUT /tours/{id}` - Update a tour
+
+### Customers API
+
+- `GET /customers` - Retrieve all customers
+- `GET /customers/{id}` - Get customer by ID
+- `POST /customers` - Create a new customer
+- `PUT /customers/{id}` - Update customer information
+
+### Bookings API (Domain-Driven)
+
+- `GET /bookings` - Retrieve all bookings
+- `GET /bookings/{id}` - Get booking by ID
+- `GET /bookings/tour/{tourId}` - Get bookings for a specific tour
+- `GET /bookings/customer/{customerId}` - Get bookings for a specific customer
+- `POST /bookings` - Create a new booking
+- `PATCH /bookings/{id}/confirm` - Confirm a pending booking
+- `PATCH /bookings/{id}/cancel` - Cancel a booking
+- `PATCH /bookings/{id}/details` - Update booking price and notes
+- `DELETE /bookings/{id}` - Delete a booking
 
 ## Tour Package Information
 

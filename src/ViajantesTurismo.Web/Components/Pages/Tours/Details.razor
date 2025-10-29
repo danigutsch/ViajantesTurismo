@@ -107,8 +107,8 @@ else if (_tour != null)
                     <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
                     <BookingForm Model="_bookingFormModel"
                                  Customers="_customers"
-                                 OnValidSubmit="HandleSaveBooking"
-                                 OnCancel="HideBookingForm"
+                                 OnValidSubmit="@HandleSaveBooking"
+                                 OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
                                  SubmitButtonText="@(_editingBookingId.HasValue ? "Update Booking" : "Create Booking")"
                                  IsSubmitting="_isSubmitting"
                                  IsEditMode="_editingBookingId.HasValue" />
@@ -119,6 +119,7 @@ else if (_tour != null)
                 <BookingsList Bookings="_bookings"
                               ShowTourInfo="false"
                               OnEdit="HandleEditBooking"
+                              OnConfirm="HandleConfirmBooking"
                               OnCancel="HandleCancelBooking"
                               OnDelete="HandleDeleteBooking" />
             }
@@ -139,9 +140,9 @@ else if (_tour != null)
     private bool _loadingBookings = true;
     private bool _showCreateForm;
     private long? _editingBookingId;
-    
+
     private GetCustomerDto[] _customers = [];
-    private BookingForm.BookingFormModel _bookingFormModel = new();
+    private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
 
     protected override async Task OnInitializedAsync()
@@ -197,7 +198,7 @@ else if (_tour != null)
     private void ShowCreateBookingForm()
     {
         _editingBookingId = null;
-        _bookingFormModel = new BookingForm.BookingFormModel();
+        _bookingFormModel = new BookingFormModel();
         _showCreateForm = true;
     }
 
@@ -207,7 +208,7 @@ else if (_tour != null)
         if (booking == null) return;
 
         _editingBookingId = bookingId;
-        _bookingFormModel = new BookingForm.BookingFormModel
+        _bookingFormModel = new BookingFormModel
         {
             CustomerId = booking.CustomerId,
             CompanionId = booking.CompanionId,
@@ -225,7 +226,7 @@ else if (_tour != null)
         _editingBookingId = null;
     }
 
-    private async Task HandleSaveBooking(BookingForm.BookingFormModel model)
+    private async Task HandleSaveBooking(BookingFormModel model)
     {
         _isSubmitting = true;
         try
@@ -247,7 +248,7 @@ else if (_tour != null)
                 var createDto = new CreateBookingDto
                 {
                     TourId = Id,
-                    CustomerId = model.CustomerId,
+                    CustomerId = model.CustomerId!.Value,
                     CompanionId = model.CompanionId,
                     TotalPrice = model.TotalPrice,
                     Notes = model.Notes
@@ -273,6 +274,19 @@ else if (_tour != null)
     {
         ShowEditBookingForm(bookingId);
         await Task.CompletedTask;
+    }
+
+    private async Task HandleConfirmBooking(long bookingId)
+    {
+        try
+        {
+            await BookingsApi.ConfirmBooking(bookingId);
+            await LoadBookings();
+        }
+        catch (Exception)
+        {
+            throw new NotImplementedException("Error handling not yet implemented");
+        }
     }
 
     private async Task HandleCancelBooking(long bookingId)
@@ -307,7 +321,7 @@ else if (_tour != null)
         }
     }
 
-    private async Task<bool> ConfirmAction(string message)
+    private Task<bool> ConfirmAction(string message)
     {
         throw new NotImplementedException("Confirmation dialog not yet implemented");
     }

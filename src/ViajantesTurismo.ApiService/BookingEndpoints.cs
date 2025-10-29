@@ -63,6 +63,16 @@ internal static class BookingEndpoints
             .WithDescription("Cancels a booking by setting its status to Cancelled.")
             .WithSummary("Cancels a booking.");
 
+        bookingsGroup.MapPatch("/{id:long}/confirm", ConfirmBooking)
+            .WithName("ConfirmBooking")
+            .WithDescription("Confirms a booking by setting its status to Confirmed.")
+            .WithSummary("Confirms a booking.");
+
+        bookingsGroup.MapPatch("/{id:long}/details", UpdateBookingDetails)
+            .WithName("UpdateBookingDetails")
+            .WithDescription("Updates the price and notes of a booking.")
+            .WithSummary("Updates booking details.");
+
         return app;
     }
 
@@ -193,6 +203,45 @@ internal static class BookingEndpoints
         }
 
         tour.CancelBooking(id);
+
+        await unitOfWork.SaveEntities(ct);
+
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> ConfirmBooking(
+        [FromRoute] long id,
+        [FromServices] ITourStore tourStore,
+        [FromServices] IUnitOfWork unitOfWork,
+        CancellationToken ct)
+    {
+        var tour = await tourStore.GetByBookingId(id, ct);
+        if (tour is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        tour.ConfirmBooking(id);
+
+        await unitOfWork.SaveEntities(ct);
+
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> UpdateBookingDetails(
+        [FromRoute] long id,
+        [FromBody] UpdateBookingDetailsDto dto,
+        [FromServices] ITourStore tourStore,
+        [FromServices] IUnitOfWork unitOfWork,
+        CancellationToken ct)
+    {
+        var tour = await tourStore.GetByBookingId(id, ct);
+        if (tour is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        tour.UpdateBookingDetails(id, dto.TotalPrice, dto.Notes);
 
         await unitOfWork.SaveEntities(ct);
 

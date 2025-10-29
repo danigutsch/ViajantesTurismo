@@ -6,22 +6,22 @@
 
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label class="form-label">Customer <span class="text-danger">*</span></label>
-            <InputSelect @bind-Value="Model.CustomerId" class="form-select" disabled="@IsEditMode">
-                <option value="">-- Select Customer --</option>
-                @foreach (var customer in Customers)
+            <label class="form-label">Tour <span class="text-danger">*</span></label>
+            <InputSelect @bind-Value="Model.TourId" class="form-select" disabled="@IsEditMode">
+                <option value="">-- Select Tour --</option>
+                @foreach (var tour in Tours)
                 {
-                    <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
+                    <option value="@tour.Id">@tour.Name (@tour.StartDate.ToShortDateString())</option>
                 }
             </InputSelect>
-            <ValidationMessage For="@(() => Model.CustomerId)" />
+            <ValidationMessage For="@(() => Model.TourId)" />
         </div>
 
         <div class="col-md-6 mb-3">
             <label class="form-label">Companion (Optional)</label>
             <InputSelect @bind-Value="Model.CompanionId" class="form-select" disabled="@IsEditMode">
                 <option value="">-- No Companion --</option>
-                @foreach (var customer in Customers.Where(c => !Model.CustomerId.HasValue || c.Id != Model.CustomerId.Value))
+                @foreach (var customer in Customers.Where(c => c.Id != CurrentCustomerId))
                 {
                     <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
                 }
@@ -84,10 +84,31 @@
 
 @code {
     [Parameter]
-    public BookingFormModel Model { get; set; } = new();
+    public int? TourId { get; set; }
+
+    [Parameter]
+    public int? CompanionId { get; set; }
+
+    [Parameter]
+    public decimal TotalPrice { get; set; }
+
+    [Parameter]
+    public string? Notes { get; set; }
+
+    [Parameter]
+    public BookingStatusDto Status { get; set; } = BookingStatusDto.Pending;
+
+    [Parameter]
+    public PaymentStatusDto PaymentStatus { get; set; } = PaymentStatusDto.Unpaid;
+
+    [Parameter]
+    public IReadOnlyList<GetTourDto> Tours { get; set; } = [];
 
     [Parameter]
     public IReadOnlyList<GetCustomerDto> Customers { get; set; } = [];
+
+    [Parameter]
+    public int CurrentCustomerId { get; set; }
 
     [Parameter]
     public EventCallback<BookingFormModel> OnValidSubmit { get; set; }
@@ -104,8 +125,43 @@
     [Parameter]
     public bool IsEditMode { get; set; }
 
+    private BookingFormModel Model { get; set; } = new();
+
+    protected override void OnParametersSet()
+    {
+        Model = new BookingFormModel
+        {
+            TourId = TourId,
+            CompanionId = CompanionId,
+            TotalPrice = TotalPrice,
+            Notes = Notes,
+            Status = Status,
+            PaymentStatus = PaymentStatus
+        };
+    }
+
     private async Task HandleValidSubmit()
     {
         await OnValidSubmit.InvokeAsync(Model);
+    }
+
+    public class CustomerBookingFormModel
+    {
+        [Required(ErrorMessage = "Tour is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a tour")]
+        public int TourId { get; set; }
+
+        public int? CompanionId { get; set; }
+
+        [Required(ErrorMessage = "Total price is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Total price must be greater than zero")]
+        public decimal TotalPrice { get; set; }
+
+        [MaxLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
+        public string? Notes { get; set; }
+
+        public BookingStatusDto Status { get; set; } = BookingStatusDto.Pending;
+
+        public PaymentStatusDto PaymentStatus { get; set; } = PaymentStatusDto.Unpaid;
     }
 }

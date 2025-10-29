@@ -4,6 +4,7 @@
 
 @inject CustomersApiClient CustomersApi
 @inject BookingsApiClient BookingsApi
+@inject ToursApiClient ToursApi
 
 <PageTitle>Customer Details</PageTitle>
 
@@ -240,19 +241,43 @@ else
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0"><i class="bi bi-calendar-check"></i> Bookings</h5>
+                        <button class="btn btn-success" @onclick="ShowCreateBookingForm">
+                            <i class="bi bi-plus-circle"></i> Add Booking
+                        </button>
                     </div>
                     <div class="card-body">
                         @if (_loadingBookings)
                         {
                             <p><em>Loading bookings...</em></p>
                         }
+                        else if (_showBookingForm)
+                        {
+                            <div class="border rounded p-3 mb-3">
+                                <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
+                                <CustomerBookingForm TourId="@_bookingFormModel.TourId"
+                                                     CompanionId="@_bookingFormModel.CompanionId"
+                                                     TotalPrice="@_bookingFormModel.TotalPrice"
+                                                     Notes="@_bookingFormModel.Notes"
+                                                     Status="@_bookingFormModel.Status"
+                                                     PaymentStatus="@_bookingFormModel.PaymentStatus"
+                                                     Tours="@_tours"
+                                                     Customers="@_customers"
+                                                     CurrentCustomerId="@Id"
+                                                     OnValidSubmit="@HandleSaveBooking"
+                                                     OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                                     SubmitButtonText="@(_editingBookingId.HasValue ? "Update Booking" : "Create Booking")"
+                                                     IsSubmitting="@_isSubmitting"
+                                                     IsEditMode="@_editingBookingId.HasValue" />
+                            </div>
+                        }
                         else
                         {
                             <BookingsList Bookings="_bookings"
                                           ShowCustomerInfo="false"
                                           OnEdit="HandleEditBooking"
+                                          OnConfirm="HandleConfirmBooking"
                                           OnCancel="HandleCancelBooking"
                                           OnDelete="HandleDeleteBooking" />
                         }
@@ -271,11 +296,18 @@ else
     private CustomerDetailsDto? _customer;
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
+    private bool _showBookingForm;
+    private long? _editingBookingId;
+    
+    private GetTourDto[] _tours = [];
+    private GetCustomerDto[] _customers = [];
+    private BookingFormModel _bookingFormModel = new();
+    private bool _isSubmitting;
 
     protected override async Task OnInitializedAsync()
     {
         _customer = await CustomersApi.GetCustomerById(Id);
-        await LoadBookings();
+        await Task.WhenAll(LoadBookings(), LoadTours(), LoadCustomers());
     }
 
     private async Task LoadBookings()
@@ -291,9 +323,122 @@ else
         }
     }
 
+    private async Task LoadTours()
+    {
+        try
+        {
+            _tours = await ToursApi.GetTours(maxItems: 100);
+        }
+        catch (Exception)
+        {
+            _tours = [];
+        }
+    }
+
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            _customers = (await CustomersApi.GetCustomers(maxItems: 100)).ToArray();
+        }
+        catch (Exception)
+        {
+            _customers = [];
+        }
+    }
+
+    private void ShowCreateBookingForm()
+    {
+        _editingBookingId = null;
+        _bookingFormModel = new BookingFormModel();
+        _showBookingForm = true;
+    }
+
+    private void ShowEditBookingForm(long bookingId)
+    {
+        var booking = _bookings?.FirstOrDefault(b => b.Id == bookingId);
+        if (booking == null) return;
+
+        _editingBookingId = bookingId;
+        _bookingFormModel = new BookingFormModel
+        {
+            TourId = booking.TourId,
+            CompanionId = booking.CompanionId,
+            TotalPrice = booking.TotalPrice,
+            Notes = booking.Notes,
+            Status = booking.Status,
+            PaymentStatus = booking.PaymentStatus
+        };
+        _showBookingForm = true;
+    }
+
+    private void HideBookingForm()
+    {
+        _showBookingForm = false;
+        _editingBookingId = null;
+    }
+
+    private async Task HandleSaveBooking(BookingFormModel model)
+    {
+        _isSubmitting = true;
+        try
+        {
+            if (_editingBookingId.HasValue)
+            {
+                var updateDto = new UpdateBookingDto
+                {
+                    TotalPrice = model.TotalPrice,
+                    Notes = model.Notes,
+                    Status = model.Status,
+                    PaymentStatus = model.PaymentStatus
+                };
+
+                await BookingsApi.UpdateBooking(_editingBookingId.Value, updateDto);
+            }
+            else
+            {
+                var createDto = new CreateBookingDto
+                {
+                    TourId = model.TourId!.Value,
+                    CustomerId = Id,
+                    CompanionId = model.CompanionId,
+                    TotalPrice = model.TotalPrice,
+                    Notes = model.Notes
+                };
+
+                await BookingsApi.CreateBooking(createDto);
+            }
+
+            await LoadBookings();
+            HideBookingForm();
+        }
+        catch (Exception)
+        {
+            throw new NotImplementedException("Error handling not yet implemented");
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
     private async Task HandleEditBooking(long bookingId)
     {
-        throw new NotImplementedException();
+        ShowEditBookingForm(bookingId);
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleConfirmBooking(long bookingId)
+    {
+        try
+        {
+            await BookingsApi.ConfirmBooking(bookingId);
+            await LoadBookings();
+        }
+        catch (Exception)
+        {
+            throw new NotImplementedException("Error handling not yet implemented");
+        }
     }
 
     private async Task HandleCancelBooking(long bookingId)

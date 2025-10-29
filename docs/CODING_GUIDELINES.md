@@ -1,5 +1,97 @@
 # Coding Guidelines
 
+## Domain-Driven Design Principles
+
+### Use Domain Language in Methods
+
+Domain objects should express business operations using **ubiquitous language** from the domain, not generic CRUD terms.
+
+❌ **Don't do this:**
+```csharp
+booking.Update(totalPrice, notes, BookingStatus.Confirmed, paymentStatus);
+```
+
+✅ **Do this instead:**
+```csharp
+booking.Confirm();
+```
+
+### Why Domain Language Matters
+
+1. **Intent is clear**: `booking.Confirm()` clearly expresses what business operation is happening
+2. **Encapsulation**: Business rules for confirming a booking are encapsulated within the method
+3. **Maintainability**: If confirmation rules change, there's one place to update
+4. **Prevents invalid states**: Generic setters allow invalid state transitions; domain methods enforce invariants
+
+### Behavior-Driven Endpoints
+
+API endpoints should represent **business operations**, not generic CRUD actions.
+
+❌ **Avoid overly generic endpoints:**
+```csharp
+PUT /bookings/{id}  // with status field in body
+```
+
+✅ **Prefer explicit domain operations:**
+```csharp
+PATCH /bookings/{id}/confirm
+PATCH /bookings/{id}/cancel
+PATCH /bookings/{id}/complete
+```
+
+### Benefits
+
+- **Self-documenting API**: Endpoint names describe what they do
+- **Type safety**: Each endpoint accepts only the data needed for that specific operation
+- **Clear permissions**: Different operations can have different authorization rules
+- **Easier testing**: Each operation is independently testable
+- **Audit trails**: Business events are explicit in logs and monitoring
+
+### Granular Domain Methods for Events
+
+Even when endpoints group related updates (e.g., price and notes together), domain methods should remain **granular** to enable domain events.
+
+❌ **Don't do this:**
+```csharp
+public void UpdateDetails(decimal price, string? notes)
+{
+    TotalPrice = price;
+    Notes = notes;
+}
+```
+
+✅ **Do this instead:**
+```csharp
+public void UpdatePrice(decimal newPrice)
+{
+    TotalPrice = newPrice;
+    // Can raise PriceChangedEvent here
+}
+
+public void UpdateNotes(string? notes)
+{
+    Notes = notes;
+    // Can raise NotesUpdatedEvent here
+}
+```
+
+Then compose them in the aggregate root or application layer:
+```csharp
+public void UpdateBookingDetails(long bookingId, decimal newPrice, string? notes)
+{
+    var booking = GetBooking(bookingId);
+    booking.UpdatePrice(newPrice);  // Raises PriceChangedEvent
+    booking.UpdateNotes(notes);     // Raises NotesUpdatedEvent
+}
+```
+
+**Benefits:**
+- Each method can raise its own domain event
+- Fine-grained auditing (know exactly what changed)
+- Flexible composition for different use cases
+- Better testability
+- Supports eventual consistency patterns
+
 ## Code Comments
 
 **Avoid comments in source code and tests.** Comments should only be added if absolutely necessary.

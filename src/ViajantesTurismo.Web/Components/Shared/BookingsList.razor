@@ -65,17 +65,24 @@ else
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
-                            @if (booking.Status == BookingStatusDto.Pending || booking.Status == BookingStatusDto.Confirmed)
+                            @if (booking.Status == BookingStatusDto.Pending)
+                            {
+                                <button type="button" class="btn btn-outline-success"
+                                        @onclick="() => OnConfirmClicked(booking.Id)" title="Confirm Booking">
+                                    <i class="bi bi-check-circle"></i> Confirm
+                                </button>
+                                <button type="button" class="btn btn-outline-warning"
+                                        @onclick="() => OnCancelClicked(booking.Id)" title="Cancel Booking">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                            }
+                            else if (booking.Status == BookingStatusDto.Confirmed)
                             {
                                 <button type="button" class="btn btn-outline-warning"
                                         @onclick="() => OnCancelClicked(booking.Id)" title="Cancel Booking">
-                                    <i class="bi bi-x-circle"></i>
+                                    <i class="bi bi-x-circle"></i> Cancel
                                 </button>
                             }
-                            <button type="button" class="btn btn-outline-primary"
-                                    @onclick="() => OnEditClicked(booking.Id)" title="Edit Booking">
-                                <i class="bi bi-pencil"></i>
-                            </button>
                             <button type="button" class="btn btn-outline-danger"
                                     @onclick="() => OnDeleteClicked(booking.Id)" title="Delete Booking">
                                 <i class="bi bi-trash"></i>
@@ -104,6 +111,9 @@ else
     public EventCallback<long> OnEdit { get; set; }
 
     [Parameter]
+    public EventCallback<long> OnConfirm { get; set; }
+
+    [Parameter]
     public EventCallback<long> OnCancel { get; set; }
 
     [Parameter]
@@ -112,6 +122,11 @@ else
     private async Task OnEditClicked(long bookingId)
     {
         await OnEdit.InvokeAsync(bookingId);
+    }
+
+    private async Task OnConfirmClicked(long bookingId)
+    {
+        await OnConfirm.InvokeAsync(bookingId);
     }
 
     private async Task OnCancelClicked(long bookingId)

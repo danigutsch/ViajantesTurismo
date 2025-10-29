@@ -180,7 +180,72 @@ public sealed class Tour : Entity<int>
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
                       ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
 
-        booking.Update(booking.TotalPrice, booking.Notes, BookingStatus.Cancelled, booking.PaymentStatus);
+        booking.Cancel();
+    }
+
+    /// <summary>
+    /// Confirms a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to confirm.</param>
+    public void ConfirmBooking(long bookingId)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
+                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+
+        booking.Confirm();
+    }
+
+    /// <summary>
+    /// Completes a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to complete.</param>
+    public void CompleteBooking(long bookingId)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
+                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+
+        booking.Complete();
+    }
+
+    /// <summary>
+    /// Updates the price of a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to update.</param>
+    /// <param name="newPrice">The new total price.</param>
+    public void UpdateBookingPrice(long bookingId, decimal newPrice)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
+                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+
+        booking.UpdatePrice(newPrice);
+    }
+
+    /// <summary>
+    /// Updates the notes of a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to update.</param>
+    /// <param name="notes">The updated notes.</param>
+    public void UpdateBookingNotes(long bookingId, string? notes)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
+                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+
+        booking.UpdateNotes(notes);
+    }
+
+    /// <summary>
+    /// Updates the price and notes of a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to update.</param>
+    /// <param name="newPrice">The new total price.</param>
+    /// <param name="notes">The updated notes.</param>
+    public void UpdateBookingDetails(long bookingId, decimal newPrice, string? notes)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
+                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+
+        booking.UpdatePrice(newPrice);
+        booking.UpdateNotes(notes);
     }
 
     /// <summary>
