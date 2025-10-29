@@ -17,6 +17,7 @@ builder.Services.AddScoped<CountryService>();
 
 builder.Services.AddHttpClient<ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 builder.Services.AddHttpClient<CustomersApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
+builder.Services.AddHttpClient<BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 
 var app = builder.Build();
 

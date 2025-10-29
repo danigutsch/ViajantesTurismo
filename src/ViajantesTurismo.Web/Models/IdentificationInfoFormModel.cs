@@ -21,7 +21,7 @@ internal sealed class IdentificationInfoFormModel
 
     public static IdentificationInfoFormModel FromDto(IdentificationInfoDto dto) => new()
     {
-        NationalId = dto.NationalId ?? string.Empty,
-        IdNationality = dto.IdNationality ?? string.Empty
+        NationalId = dto.NationalId,
+        IdNationality = dto.IdNationality
     };
 }

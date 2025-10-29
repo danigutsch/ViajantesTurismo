@@ -112,8 +112,8 @@ internal static class CustomerEndpoints
             dto.AccommodationPreferences.CompanionId);
 
         var emergencyContact = new EmergencyContact(
-            dto.EmergencyContact.Name!,
-            dto.EmergencyContact.Mobile!);
+            dto.EmergencyContact.Name,
+            dto.EmergencyContact.Mobile);
 
         var medicalInfo = new MedicalInfo(
             dto.MedicalInfo.Allergies,
@@ -197,8 +197,8 @@ internal static class CustomerEndpoints
             dto.AccommodationPreferences.CompanionId);
 
         var emergencyContact = new EmergencyContact(
-            dto.EmergencyContact.Name!,
-            dto.EmergencyContact.Mobile!);
+            dto.EmergencyContact.Name,
+            dto.EmergencyContact.Mobile);
 
         var medicalInfo = new MedicalInfo(
             dto.MedicalInfo.Allergies,

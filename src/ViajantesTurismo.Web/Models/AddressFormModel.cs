@@ -45,12 +45,12 @@ internal sealed class AddressFormModel
 
     public static AddressFormModel FromDto(AddressDto dto) => new()
     {
-        Street = dto.Street ?? string.Empty,
+        Street = dto.Street,
         Complement = dto.Complement,
         Neighborhood = dto.Neighborhood ?? string.Empty,
-        PostalCode = dto.PostalCode ?? string.Empty,
-        City = dto.City ?? string.Empty,
-        State = dto.State ?? string.Empty,
-        Country = dto.Country ?? string.Empty
+        PostalCode = dto.PostalCode,
+        City = dto.City,
+        State = dto.State,
+        Country = dto.Country
     };
 }

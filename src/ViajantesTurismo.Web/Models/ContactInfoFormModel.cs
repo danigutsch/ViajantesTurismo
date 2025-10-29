@@ -31,8 +31,8 @@ internal sealed class ContactInfoFormModel
 
     public static ContactInfoFormModel FromDto(ContactInfoDto dto) => new()
     {
-        Email = dto.Email ?? string.Empty,
-        Mobile = dto.Mobile ?? string.Empty,
+        Email = dto.Email,
+        Mobile = dto.Mobile,
         Instagram = dto.Instagram,
         Facebook = dto.Facebook
     };

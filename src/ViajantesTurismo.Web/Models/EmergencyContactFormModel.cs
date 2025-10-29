@@ -22,7 +22,7 @@ internal sealed class EmergencyContactFormModel
 
     public static EmergencyContactFormModel FromDto(EmergencyContactDto dto) => new()
     {
-        Name = dto.Name ?? string.Empty,
-        Mobile = dto.Mobile ?? string.Empty
+        Name = dto.Name,
+        Mobile = dto.Mobile
     };
 }
