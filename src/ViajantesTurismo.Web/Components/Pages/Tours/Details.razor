@@ -104,13 +104,14 @@ else if (_tour != null)
             else if (_showCreateForm)
             {
                 <div class="border rounded p-3 mb-3">
-                    <h5>Create New Booking</h5>
+                    <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
                     <BookingForm Model="_bookingFormModel"
                                  Customers="_customers"
-                                 OnValidSubmit="HandleCreateBooking"
-                                 OnCancel="HideCreateBookingForm"
-                                 SubmitButtonText="Create Booking"
-                                 IsSubmitting="_isSubmitting" />
+                                 OnValidSubmit="HandleSaveBooking"
+                                 OnCancel="HideBookingForm"
+                                 SubmitButtonText="@(_editingBookingId.HasValue ? "Update Booking" : "Create Booking")"
+                                 IsSubmitting="_isSubmitting"
+                                 IsEditMode="_editingBookingId.HasValue" />
                 </div>
             }
             else
@@ -137,6 +138,7 @@ else if (_tour != null)
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
     private bool _showCreateForm;
+    private long? _editingBookingId;
     
     private GetCustomerDto[] _customers = [];
     private BookingForm.BookingFormModel _bookingFormModel = new();
@@ -194,32 +196,68 @@ else if (_tour != null)
 
     private void ShowCreateBookingForm()
     {
+        _editingBookingId = null;
         _bookingFormModel = new BookingForm.BookingFormModel();
         _showCreateForm = true;
     }
 
-    private void HideCreateBookingForm()
+    private void ShowEditBookingForm(long bookingId)
     {
-        _showCreateForm = false;
+        var booking = _bookings?.FirstOrDefault(b => b.Id == bookingId);
+        if (booking == null) return;
+
+        _editingBookingId = bookingId;
+        _bookingFormModel = new BookingForm.BookingFormModel
+        {
+            CustomerId = booking.CustomerId,
+            CompanionId = booking.CompanionId,
+            TotalPrice = booking.TotalPrice,
+            Notes = booking.Notes,
+            Status = booking.Status,
+            PaymentStatus = booking.PaymentStatus
+        };
+        _showCreateForm = true;
     }
 
-    private async Task HandleCreateBooking(BookingForm.BookingFormModel model)
+    private void HideBookingForm()
+    {
+        _showCreateForm = false;
+        _editingBookingId = null;
+    }
+
+    private async Task HandleSaveBooking(BookingForm.BookingFormModel model)
     {
         _isSubmitting = true;
         try
         {
-            var createDto = new CreateBookingDto
+            if (_editingBookingId.HasValue)
             {
-                TourId = Id,
-                CustomerId = model.CustomerId,
-                CompanionId = model.CompanionId,
-                TotalPrice = model.TotalPrice,
-                Notes = model.Notes
-            };
+                var updateDto = new UpdateBookingDto
+                {
+                    TotalPrice = model.TotalPrice,
+                    Notes = model.Notes,
+                    Status = model.Status,
+                    PaymentStatus = model.PaymentStatus
+                };
 
-            await BookingsApi.CreateBooking(createDto);
+                await BookingsApi.UpdateBooking(_editingBookingId.Value, updateDto);
+            }
+            else
+            {
+                var createDto = new CreateBookingDto
+                {
+                    TourId = Id,
+                    CustomerId = model.CustomerId,
+                    CompanionId = model.CompanionId,
+                    TotalPrice = model.TotalPrice,
+                    Notes = model.Notes
+                };
+
+                await BookingsApi.CreateBooking(createDto);
+            }
+
             await LoadBookings();
-            HideCreateBookingForm();
+            HideBookingForm();
         }
         catch (Exception)
         {
@@ -233,7 +271,8 @@ else if (_tour != null)
 
     private async Task HandleEditBooking(long bookingId)
     {
-        throw new NotImplementedException();
+        ShowEditBookingForm(bookingId);
+        await Task.CompletedTask;
     }
 
     private async Task HandleCancelBooking(long bookingId)
