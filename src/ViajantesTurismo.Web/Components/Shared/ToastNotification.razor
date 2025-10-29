@@ -21,21 +21,41 @@
     private readonly List<ToastMessage> _toasts = new();
     private int _nextId = 1;
 
+    /// <summary>
+    /// Show a success toast notification.
+    /// </summary>
+    /// <param name="message">The message to display.</param>
+    /// <param name="durationMs">The duration in milliseconds the toast should be visible. Default is 5000ms.</param>
     public void ShowSuccess(string message, int durationMs = 5000)
     {
         ShowToast(message, ToastType.Success, durationMs);
     }
 
+    /// <summary>
+    /// Show an error toast notification.
+    /// </summary>
+    /// <param name="message">The message to display.</param>
+    /// <param name="durationMs">The duration in milliseconds the toast should be visible. Default is 8000ms.</param>
     public void ShowError(string message, int durationMs = 8000)
     {
         ShowToast(message, ToastType.Error, durationMs);
     }
 
+    /// <summary>
+    /// Show a warning toast notification.
+    /// </summary>
+    /// <param name="message">The message to display.</param>
+    /// <param name="durationMs">The duration in milliseconds the toast should be visible. Default is 6000ms.</param>
     public void ShowWarning(string message, int durationMs = 6000)
     {
         ShowToast(message, ToastType.Warning, durationMs);
     }
 
+    /// <summary>
+	/// Show an info toast notification.
+    /// </summary>
+    /// <param name="message">The message to display.</param>
+	/// <param name="durationMs">The duration in milliseconds the toast should be visible. Default is 5000ms.</param>
     public void ShowInfo(string message, int durationMs = 5000)
     {
         ShowToast(message, ToastType.Info, durationMs);

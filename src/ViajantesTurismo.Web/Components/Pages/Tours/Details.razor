@@ -133,6 +133,9 @@ else if (_tour != null)
 
 @code {
 
+    /// <summary>
+	/// The ID of the tour to display details for.
+    /// </summary>
     [Parameter]
     public int Id { get; set; }
 
@@ -149,8 +152,8 @@ else if (_tour != null)
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
 
-    private ConfirmDialog _confirmDialog = default!;
-    private ToastNotification _toast = default!;
+    private ConfirmDialog _confirmDialog = null!;
+    private ToastNotification _toast = null!;
 
     protected override async Task OnInitializedAsync()
     {

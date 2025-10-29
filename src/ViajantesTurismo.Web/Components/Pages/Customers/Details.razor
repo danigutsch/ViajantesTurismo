@@ -294,6 +294,9 @@ else
 
 @code {
 
+    /// <summary>
+    /// The ID of the customer to display details for.
+    /// </summary>
     [Parameter]
     public int Id { get; set; }
 
@@ -302,15 +305,16 @@ else
     private bool _loadingBookings = true;
     private bool _showBookingForm;
     private long? _editingBookingId;
-    
+
     private GetTourDto[] _tours = [];
     private GetCustomerDto[] _customers = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
 
-    private ConfirmDialog _confirmDialog = default!;
-    private ToastNotification _toast = default!;
+    private ConfirmDialog _confirmDialog = null!;
+    private ToastNotification _toast = null!;
 
+    /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         _customer = await CustomersApi.GetCustomerById(Id);

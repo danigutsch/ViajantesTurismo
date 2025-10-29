@@ -25,12 +25,17 @@
 </p>
 
 @code{
+
+    /// <summary>
+	/// The current HTTP context.
+    /// </summary>
     [CascadingParameter]
     public HttpContext? HttpContext { get; set; }
 
     private string? _requestId;
     private bool ShowRequestId => !string.IsNullOrEmpty(_requestId);
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _requestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
