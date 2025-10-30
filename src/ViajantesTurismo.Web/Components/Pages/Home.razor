@@ -1,7 +1,85 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home - ViajantesTurismo</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="bi bi-bicycle"></i> ViajantesTurismo Admin Dashboard</h1>
+            <p class="lead">Welcome to the ViajantesTurismo administration system for managing bike tours, customers,
+                and bookings.</p>
+        </div>
+    </div>
 
-Welcome to your new app.
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-bicycle text-primary"></i> Tours Management
+                    </h5>
+                    <p class="card-text">Create and manage bike tour packages, including pricing, dates, and
+                        itineraries.</p>
+                    <div class="d-flex gap-2">
+                        <NavLink href="addtour" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Add Tour
+                        </NavLink>
+                        <NavLink href="tours" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-list"></i> View All
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-people text-success"></i> Customer Management
+                    </h5>
+                    <p class="card-text">Manage customer profiles, contact information, preferences, and medical
+                        details.</p>
+                    <div class="d-flex gap-2">
+                        <NavLink href="customers/create" class="btn btn-success btn-sm">
+                            <i class="bi bi-person-plus"></i> Add Customer
+                        </NavLink>
+                        <NavLink href="customers" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-list"></i> View All
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-calendar-check text-info"></i> Bookings Management
+                    </h5>
+                    <p class="card-text">Track and manage customer bookings, reservations, and tour assignments.</p>
+                    <div class="d-flex gap-2">
+                        <NavLink href="bookings" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-list"></i> View All
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-info-circle"></i> About ViajantesTurismo</h5>
+                    <p class="mb-0">
+                        This administrative platform helps you efficiently manage your bike tour business.
+                        Use the navigation menu to access different sections and manage tours, customers, and bookings.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
