@@ -216,3 +216,44 @@ Prefer extracting code into well-named methods rather than using multiple levels
 
 Each method should do **one thing** at an appropriate level of abstraction. If a method is doing too much or requires
 comments to explain its sections, extract those sections into separate methods.
+
+### Collection types by intent
+Choose collection types to clearly express intent (mutability, uniqueness, ordering, and expected operations). Prefer exposing the least-powerful interface that conveys how the collection should be used.
+
+Guidelines:
+
+- Mutability intent (aggregates / domain models):
+  - Internally use mutable collections when you need to add/remove items frequently (e.g. `List<T>`).
+  - Expose a read-only view from public APIs and entity properties (e.g. `IReadOnlyCollection<T>` or `IReadOnlyList<T>`).
+  - Example:
+  ```csharp
+  private readonly List<Passenger> _passengers = new();
+  public IReadOnlyList<Passenger> Passengers => _passengers;
+
+  public void AddPassenger(Passenger p)
+  {
+      if (_passengers.Any(x => x.Id == p.Id)) throw new InvalidOperationException("Duplicate passenger");
+      _passengers.Add(p);
+  }
+  ```
+
+- Uniqueness / membership checks:
+  - Use `HashSet<T>` when you require uniqueness or fast membership checks. Expose it as `IReadOnlyCollection<T>` or `IEnumerable<T>`.
+  ```csharp
+  private readonly HashSet<string> _emails = new(StringComparer.OrdinalIgnoreCase);
+  public IReadOnlyCollection<string> Emails => _emails;
+  ```
+
+- Lookups by key:
+  - Use `Dictionary<TKey, TValue>` for keyed lookups; keep it private and provide explicit accessor methods.
+
+- Read-only snapshots and concurrency:
+  - For immutable semantics or when sharing between threads, prefer the `System.Collections.Immutable` types (e.g. `ImmutableList<T>`).
+
+- Query projections / API responses:
+  - For read/query surfaces prefer returning `IEnumerable<T>` or a DTO collection type. If consumers need count or index access, prefer `IReadOnlyCollection<T>`/`IReadOnlyList<T>`.
+
+Practical decision matrix (short):
+- You will add/remove items in the aggregate: use `List<T>` internally + expose `IReadOnlyCollection<T>`.
+- You need uniqueness: `HashSet<T>` (internal) + expose read-only.
+- You need keyed lookup: `Dictionary<TKey, TValue>` (internal).
