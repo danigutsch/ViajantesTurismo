@@ -19,6 +19,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ViajantesTurismo.IntegrationTests/ViajantesTurismo.IntegrationTests.csproj" />
+      <Project Path="tests\ViajantesTurismo.Admin.BehaviorTests\ViajantesTurismo.Admin.BehaviorTests.csproj"
+               Type="Classic C#"/>
       <Project Path="tests\ViajantesTurismo.Admin.UnitTests\ViajantesTurismo.Admin.UnitTests.csproj" Type="Classic C#"/>
   </Folder>
 </Solution>
