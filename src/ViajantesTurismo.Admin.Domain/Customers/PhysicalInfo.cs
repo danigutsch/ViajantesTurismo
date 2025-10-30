@@ -1,5 +1,3 @@
-using ViajantesTurismo.Common;
-
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>

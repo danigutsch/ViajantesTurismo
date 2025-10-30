@@ -1,6 +1,5 @@
 ﻿using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
