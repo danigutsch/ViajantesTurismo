@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Common;
+﻿namespace ViajantesTurismo.Common.Results;
 
 /// <summary>
 /// Represents various statuses for operation results.

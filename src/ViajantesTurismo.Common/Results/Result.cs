@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace ViajantesTurismo.Common;
+namespace ViajantesTurismo.Common.Results;
 
 /// <summary>
 /// Represents the result of an operation that can succeed or fail.
