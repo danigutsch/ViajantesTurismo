@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
-using Xunit;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -64,6 +63,7 @@ public sealed class PersonalInfoValidationSteps
         _nationality = "American";
         _profession = "Software Engineer";
     }
+
     [Given(@"I have personal information with last name ""(.*)""")]
     public void GivenIHavePersonalInformationWithLastName(string lastName)
     {
@@ -83,6 +83,17 @@ public sealed class PersonalInfoValidationSteps
         _gender = gender;
         _birthDate = new DateTime(1990, 5, 15);
         _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with nationality ""(.*)""")]
+    public void GivenIHavePersonalInformationWithNationality(string nationality)
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = nationality;
         _profession = "Software Engineer";
     }
 
