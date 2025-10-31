@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Admin.BehaviorTests</RootNamespace>
+        <InvariantGlobalization>false</InvariantGlobalization>
         <!--
         To enable the Microsoft Testing Platform 'dotnet test' experience, add property:
           <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
@@ -25,13 +26,23 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="Xunit.Gherkin.Quick" />
+        <PackageReference Include="Reqnroll.xunit.v3"/>
         <PackageReference Include="xunit.v3" />
         <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Features\**\*.feature">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="**/*.feature"/>
     </ItemGroup>
 
 </Project>
