@@ -50,4 +50,26 @@ public static class CustomerErrors
         {
             { "Nationality", ["Nationality is required."] }
         });
+
+    /// <summary>
+    /// Indicates that the profession is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> EmptyProfession() => Result<PersonalInfo>.Invalid(
+        detail: "Profession is required.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "Profession", ["Profession is required."] }
+        });
+
+    /// <summary>
+    /// Indicates that the birth date is in the future.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> FutureBirthDate() => Result<PersonalInfo>.Invalid(
+        detail: "Birth date cannot be in the future.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "BirthDate", ["Birth date cannot be in the future."] }
+        });
 }

@@ -75,6 +75,16 @@ public sealed class PersonalInfo
             return EmptyNationality();
         }
 
+        if (string.IsNullOrWhiteSpace(profession))
+        {
+            return EmptyProfession();
+        }
+
+        if (birthDate > DateTime.Today)
+        {
+            return FutureBirthDate();
+        }
+
         return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
     }
 

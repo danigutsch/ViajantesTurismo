@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
+using Xunit;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -85,7 +86,6 @@ public sealed class PersonalInfoValidationSteps
         _nationality = "American";
         _profession = "Software Engineer";
     }
-
     [Given(@"I have personal information with nationality ""(.*)""")]
     public void GivenIHavePersonalInformationWithNationality(string nationality)
     {
@@ -97,7 +97,28 @@ public sealed class PersonalInfoValidationSteps
         _profession = "Software Engineer";
     }
 
-    [Then(@"the creation should fail")]
+    [Given(@"I have personal information with profession ""(.*)""")]
+    public void GivenIHavePersonalInformationWithProfession(string profession)
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = profession;
+    }
+
+    [Given(@"I have personal information with birth date in the future")]
+    public void GivenIHavePersonalInformationWithBirthDateInTheFuture()
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = DateTime.Now.AddDays(1);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
     [Then(@"the creation should fail")]
     public void ThenTheCreationShouldFail()
     {
