@@ -35,30 +35,22 @@ public sealed class PersonalInfoValidationSteps
     [Then(@"the creation should succeed")]
     public void ThenTheCreationShouldSucceed()
     {
-        if (_result is null || _result.Value.IsFailure)
-        {
-            var error = _result.HasValue ? _result.Value.ErrorDetails?.Detail : "Result was null";
-            throw new InvalidOperationException($"Expected success but got: {error}");
-        }
+        Assert.NotNull(_result);
+        Assert.True(_result.Value.IsSuccess, _result.Value.ErrorDetails?.Detail ?? "Result failed");
     }
 
     [Then(@"the personal info should contain the provided data")]
     public void ThenThePersonalInfoShouldContainTheProvidedData()
     {
-        if (_result is null || _result.Value.IsFailure)
-        {
-            throw new InvalidOperationException("Result was null or failed");
-        }
+        Assert.NotNull(_result);
+        Assert.True(_result.Value.IsSuccess);
 
         var info = _result.Value.Value;
-        if (info.FirstName != _firstName ||
-            info.LastName != _lastName ||
-            info.Gender != _gender ||
-            info.Nationality != _nationality ||
-            info.Profession != _profession)
-        {
-            throw new InvalidOperationException("Personal info does not match expected values");
-        }
+        Assert.Equal(_firstName, info.FirstName);
+        Assert.Equal(_lastName, info.LastName);
+        Assert.Equal(_gender, info.Gender);
+        Assert.Equal(_nationality, info.Nationality);
+        Assert.Equal(_profession, info.Profession);
     }
 
     [Given(@"I have personal information with first name ""(.*)""")]
@@ -86,26 +78,19 @@ public sealed class PersonalInfoValidationSteps
     [Then(@"the creation should fail")]
     public void ThenTheCreationShouldFail()
     {
-        if (_result is null || _result.Value.IsSuccess)
-        {
-            throw new InvalidOperationException("Expected failure but got success");
-        }
+        Assert.NotNull(_result);
+        Assert.True(_result.Value.IsFailure, "Expected failure but got success");
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenTheErrorShouldBe(string expectedError)
     {
-        if (_result is null || _result.Value.IsSuccess)
-        {
-            throw new InvalidOperationException("Expected failure but got success");
-        }
+        Assert.NotNull(_result);
+        Assert.True(_result.Value.IsFailure, "Expected failure but got success");
 
         var errors = _result.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
 
-        if (allErrors.All(e => e != expectedError))
-        {
-            throw new InvalidOperationException($"Expected error '{expectedError}' but got: {string.Join(", ", allErrors)}");
-        }
+        Assert.Contains(expectedError, allErrors);
     }
 }
