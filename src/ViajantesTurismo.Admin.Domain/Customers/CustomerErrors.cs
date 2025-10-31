@@ -39,4 +39,15 @@ public static class CustomerErrors
         {
             { "Gender", ["Gender is required."] }
         });
+
+    /// <summary>
+    /// Indicates that the nationality is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> EmptyNationality() => Result<PersonalInfo>.Invalid(
+        detail: "Nationality is required.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "Nationality", ["Nationality is required."] }
+        });
 }
