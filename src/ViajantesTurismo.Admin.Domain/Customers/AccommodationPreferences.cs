@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
@@ -31,6 +33,7 @@ public sealed class AccommodationPreferences
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
 #pragma warning disable CS8618
+    [UsedImplicitly]
     private AccommodationPreferences()
     {
     }

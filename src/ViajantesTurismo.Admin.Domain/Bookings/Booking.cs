@@ -1,4 +1,5 @@
-﻿using ViajantesTurismo.Common;
+﻿using JetBrains.Annotations;
+using ViajantesTurismo.Common;
 
 namespace ViajantesTurismo.Admin.Domain.Bookings;
 
@@ -18,6 +19,14 @@ public sealed class Booking : Entity<long>
         TourId = tourId;
         CustomerId = customerId;
         CompanionId = companionId;
+    }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+    [UsedImplicitly]
+    private Booking()
+    {
     }
 
     /// <summary>
@@ -135,12 +144,5 @@ public sealed class Booking : Entity<long>
     internal void UpdateNotes(string? notes)
     {
         Notes = notes;
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-    private Booking()
-    {
     }
 }
