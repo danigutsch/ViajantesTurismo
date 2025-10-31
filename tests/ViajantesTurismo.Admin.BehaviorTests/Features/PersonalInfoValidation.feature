@@ -20,3 +20,9 @@ So that only valid customer data is accepted
         When I create the personal info
         Then the creation should fail
         And the error should be "Last name is required."
+
+    Scenario: Creating personal info with empty gender
+        Given I have personal information with gender ""
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Gender is required."
