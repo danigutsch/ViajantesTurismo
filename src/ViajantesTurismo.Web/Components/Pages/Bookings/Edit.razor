@@ -1,0 +1,275 @@
+@page "/bookings/{id:long}/edit"
+@using ViajantesTurismo.AdminApi.Contracts
+@inject BookingsApiClient BookingsApi
+@inject ToursApiClient ToursApi
+@inject CustomersApiClient CustomersApi
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Edit Booking</PageTitle>
+
+<h1>Edit Booking</h1>
+
+@if (_loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (_notFound)
+{
+    <div class="alert alert-danger" role="alert">
+        Booking not found.
+    </div>
+    <NavLink href="/bookings" class="btn btn-secondary">Back to Bookings</NavLink>
+}
+else
+{
+    @if (_success)
+    {
+        <div class="alert alert-success" role="alert">
+            Booking updated successfully!
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @_errorMessage
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Booking Information</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Tour:</dt>
+                <dd class="col-sm-9">
+                    <a href="/tours/@_booking!.TourId">@_booking.TourName</a>
+                    <br/>
+                    <small class="text-muted">@_booking.TourIdentifier</small>
+                </dd>
+
+                <dt class="col-sm-3">Customer:</dt>
+                <dd class="col-sm-9">
+                    <a href="/customers/@_booking.CustomerId">@_booking.CustomerName</a>
+                </dd>
+
+                @if (_booking.CompanionId.HasValue)
+                {
+                    <dt class="col-sm-3">Companion:</dt>
+                    <dd class="col-sm-9">
+                        <a href="/customers/@_booking.CompanionId">@_booking.CompanionName</a>
+                    </dd>
+                }
+
+                <dt class="col-sm-3">Booking Date:</dt>
+                <dd class="col-sm-9">@_booking.BookingDate.ToString("dd/MM/yyyy HH:mm")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="editBooking">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Edit Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="totalPrice" class="form-label">Total Price</label>
+                        <InputNumber id="totalPrice" class="form-control" @bind-Value="_model.TotalPrice" @bind-Value:format="F2"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <InputSelect id="status" class="form-control" @bind-Value="_model.Status">
+                            <option value="@BookingStatusDto.Pending">Pending</option>
+                            <option value="@BookingStatusDto.Confirmed">Confirmed</option>
+                            <option value="@BookingStatusDto.Completed">Completed</option>
+                            <option value="@BookingStatusDto.Cancelled">Cancelled</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="paymentStatus" class="form-label">Payment Status</label>
+                    <InputSelect id="paymentStatus" class="form-control" @bind-Value="_model.PaymentStatus">
+                        <option value="@PaymentStatusDto.Unpaid">Unpaid</option>
+                        <option value="@PaymentStatusDto.PartiallyPaid">Partially Paid</option>
+                        <option value="@PaymentStatusDto.Paid">Paid</option>
+                        <option value="@PaymentStatusDto.Refunded">Refunded</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes</label>
+                    <InputTextArea id="notes" class="form-control" @bind-Value="_model.Notes" rows="4" placeholder="Additional notes or comments..."/>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" disabled="@(_isSubmitting || _pendingRedirect)">
+                @if (_isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <text>Updating...</text>
+                }
+                else
+                {
+                    <text>Update Booking</text>
+                }
+            </button>
+            <NavLink href="/bookings"
+                     class="@($"btn btn-secondary {(_isSubmitting || _pendingRedirect ? "disabled" : "")}")">
+                Cancel
+            </NavLink>
+        </div>
+    </EditForm>
+
+    @if (_pendingRedirect)
+    {
+        <div class="alert alert-info d-flex align-items-center justify-content-between mt-4" role="alert">
+            <span>
+                Redirecting to bookings page in 3 seconds...
+            </span>
+            <button class="btn btn-sm btn-outline-danger ms-3" @onclick="CancelRedirect">Cancel</button>
+        </div>
+    }
+    else if (_redirectCancelled)
+    {
+        <div class="alert alert-success d-flex align-items-center justify-content-between mt-4" role="alert">
+            <span>Booking updated successfully!</span>
+            <button class="btn btn-sm btn-primary ms-3" @onclick="GoToBookings">Go to Bookings</button>
+        </div>
+    }
+}
+
+@code {
+    /// <summary>
+    /// The ID of the booking to edit.
+    /// </summary>
+    [Parameter]
+    public long Id { get; set; }
+
+    private GetBookingDto? _booking;
+    private BookingFormModel _model = new();
+    private bool _loading = true;
+    private bool _notFound;
+    private bool _isSubmitting;
+    private bool _success;
+    private bool _pendingRedirect;
+    private bool _redirectCancelled;
+    private CancellationTokenSource? _redirectCts;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _booking = await BookingsApi.GetBookingById(Id);
+
+            if (_booking is null)
+            {
+                _notFound = true;
+                return;
+            }
+
+            _model = new BookingFormModel
+            {
+                TotalPrice = _booking.TotalPrice,
+                Notes = _booking.Notes ?? string.Empty,
+                Status = _booking.Status,
+                PaymentStatus = _booking.PaymentStatus
+            };
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading booking: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _isSubmitting = true;
+        _success = false;
+        _errorMessage = null;
+        _pendingRedirect = false;
+        _redirectCancelled = false;
+
+        if (_redirectCts is not null)
+        {
+            await _redirectCts.CancelAsync();
+            _redirectCts = null;
+        }
+
+        try
+        {
+            var updateDto = new UpdateBookingDto
+            {
+                TotalPrice = _model.TotalPrice,
+                Notes = _model.Notes,
+                Status = _model.Status,
+                PaymentStatus = _model.PaymentStatus
+            };
+
+            await BookingsApi.UpdateBooking(Id, updateDto);
+
+            _success = true;
+            _pendingRedirect = true;
+            _redirectCts = new CancellationTokenSource();
+            var token = _redirectCts.Token;
+            StateHasChanged();
+            
+            try
+            {
+                await Task.Delay(3000, token);
+                if (_pendingRedirect && !token.IsCancellationRequested)
+                {
+                    Navigation.NavigateTo("/bookings");
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                /* Cancelled by user */
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void CancelRedirect()
+    {
+        _pendingRedirect = false;
+        _redirectCancelled = true;
+        _redirectCts?.Cancel();
+        StateHasChanged();
+    }
+
+    private void GoToBookings()
+    {
+        Navigation.NavigateTo("/bookings");
+    }
+
+    private class BookingFormModel
+    {
+        public decimal TotalPrice { get; set; }
+        public string Notes { get; set; } = string.Empty;
+        public BookingStatusDto Status { get; set; }
+        public PaymentStatusDto PaymentStatus { get; set; }
+    }
+}
