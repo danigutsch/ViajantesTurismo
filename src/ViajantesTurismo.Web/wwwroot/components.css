@@ -1,0 +1,101 @@
+/* Reusable component styles for ViajantesTurismo */
+
+/* Action Button Groups - consistent styling across the application */
+.action-buttons {
+    display: inline-flex;
+    gap: 0.25rem;
+}
+
+.action-buttons .btn {
+    white-space: nowrap;
+}
+
+/* Icon-only buttons for compact layouts */
+.btn-icon-only {
+    padding: 0.25rem 0.5rem;
+    line-height: 1;
+}
+
+.btn-icon-only i {
+    font-size: 0.875rem;
+}
+
+/* Action button variants with icons - consistent across tables */
+.btn-action-view {
+    background-color: transparent;
+    border-color: #17a2b8;
+    color: #17a2b8;
+}
+
+.btn-action-view:hover {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.btn-action-edit {
+    background-color: transparent;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.btn-action-edit:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-action-confirm {
+    background-color: transparent;
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-action-confirm:hover {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-action-complete {
+    background-color: transparent;
+    border-color: #0056b3;
+    color: #0056b3;
+}
+
+.btn-action-complete:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.btn-action-cancel {
+    background-color: transparent;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.btn-action-cancel:hover {
+    background-color: #ffc107;
+    color: #856404;
+}
+
+.btn-action-delete {
+    background-color: transparent;
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-action-delete:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Badge styles for status indicators */
+.status-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
