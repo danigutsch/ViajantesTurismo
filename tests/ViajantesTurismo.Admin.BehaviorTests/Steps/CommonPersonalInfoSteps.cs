@@ -128,6 +128,17 @@ public sealed class CommonPersonalInfoSteps
         _profession = profession;
     }
 
+    [Given(@"I have personal information with null profession")]
+    public void GivenIHavePersonalInformationWithNullProfession()
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = null!;
+    }
+
     [Given(@"I have personal information with birth date in the future")]
     public void GivenIHavePersonalInformationWithBirthDateInTheFuture()
     {
