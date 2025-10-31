@@ -3,4 +3,7 @@
         <ProjectReference Include="..\ViajantesTurismo.AdminApi.Contracts\ViajantesTurismo.AdminApi.Contracts.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
     </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations"/>
+    </ItemGroup>
 </Project>

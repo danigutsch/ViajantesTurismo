@@ -1,3 +1,6 @@
+using JetBrains.Annotations;
+using ViajantesTurismo.Common.Results;
+
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
@@ -5,16 +8,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class PersonalInfo
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PersonalInfo"/> class.
-    /// </summary>
-    /// <param name="firstName">The first name.</param>
-    /// <param name="lastName">The last name.</param>
-    /// <param name="gender">The gender.</param>
-    /// <param name="birthDate">The birth date.</param>
-    /// <param name="nationality">The nationality.</param>
-    /// <param name="profession">The profession.</param>
-    public PersonalInfo(string firstName, string lastName, string gender, DateTime birthDate, string nationality, string profession)
+    private PersonalInfo(string firstName, string lastName, string gender, DateTime birthDate, string nationality, string profession)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -43,9 +37,31 @@ public sealed class PersonalInfo
     public string Profession { get; private set; }
 
     /// <summary>
+    /// Creates a new instance of the <see cref="PersonalInfo"/> class.
+    /// </summary>
+    /// <param name="firstName">The first name.</param>
+    /// <param name="lastName">The last name.</param>
+    /// <param name="gender">The gender.</param>
+    /// <param name="birthDate">The birthdate.</param>
+    /// <param name="nationality">The nationality.</param>
+    /// <param name="profession">The profession.</param>
+    /// <returns>A Result containing the PersonalInfo.</returns>
+    public static Result<PersonalInfo> Create(
+        string firstName,
+        string lastName,
+        string gender,
+        DateTime birthDate,
+        string nationality,
+        string profession)
+    {
+        return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
+    }
+
+    /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
 #pragma warning disable CS8618
+    [UsedImplicitly]
     private PersonalInfo()
     {
     }
