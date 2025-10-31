@@ -5,13 +5,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ViajantesTurismo.AdminApi.Contracts\ViajantesTurismo.AdminApi.Contracts.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.AdminApi.Contracts\ViajantesTurismo.AdminApi.Contracts.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching"/>
+        <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
     </ItemGroup>
 
 </Project>
