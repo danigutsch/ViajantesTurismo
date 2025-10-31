@@ -65,6 +65,22 @@ public sealed class PersonalInfoValidationSteps
     public void GivenIHavePersonalInformationWithFirstName(string firstName)
     {
         _firstName = firstName;
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with last name ""(.*)""")]
+    public void GivenIHavePersonalInformationWithLastName(string lastName)
+    {
+        _firstName = "John";
+        _lastName = lastName;
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = "Software Engineer";
     }
 
     [Then(@"the creation should fail")]

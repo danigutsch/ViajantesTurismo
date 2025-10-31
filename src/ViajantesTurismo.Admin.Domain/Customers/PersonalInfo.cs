@@ -60,6 +60,11 @@ public sealed class PersonalInfo
             return EmptyFirstName();
         }
 
+        if (string.IsNullOrWhiteSpace(lastName))
+        {
+            return EmptyLastName();
+        }
+
         return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
     }
 
