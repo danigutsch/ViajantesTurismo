@@ -73,7 +73,7 @@ internal static class CustomerEndpoints
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
     {
-        var personalInfo = new PersonalInfo(
+        var personalInfo = PersonalInfo.Create(
             dto.PersonalInfo.FirstName,
             dto.PersonalInfo.LastName,
             dto.PersonalInfo.Gender,
@@ -119,7 +119,7 @@ internal static class CustomerEndpoints
             dto.MedicalInfo.AdditionalInfo);
 
         var customer = new Customer(
-            personalInfo,
+            personalInfo.Value,
             identificationInfo,
             contactInfo,
             address,
@@ -158,13 +158,13 @@ internal static class CustomerEndpoints
             return TypedResults.NotFound();
         }
 
-        var personalInfo = new PersonalInfo(
+        var personalInfo = PersonalInfo.Create(
             dto.PersonalInfo.FirstName,
             dto.PersonalInfo.LastName,
             dto.PersonalInfo.Gender,
             dto.PersonalInfo.BirthDate.ToUniversalTime(),
             dto.PersonalInfo.Nationality,
-            dto.PersonalInfo.Profession);
+            dto.PersonalInfo.Profession).Value;
 
         var identificationInfo = new IdentificationInfo(
             dto.IdentificationInfo.NationalId,

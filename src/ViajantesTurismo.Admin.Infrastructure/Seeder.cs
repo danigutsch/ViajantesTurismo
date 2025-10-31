@@ -74,7 +74,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
     private static readonly Customer[] Customers =
     [
         new(
-            new PersonalInfo("Alice", "Smith", "Female", new DateTime(1990, 1, 1).ToUniversalTime(), "Brazilian", "Engineer"),
+            PersonalInfo.Create("Alice", "Smith", "Female", new DateTime(1990, 1, 1).ToUniversalTime(), "Brazilian", "Engineer").Value,
             new IdentificationInfo("123456789", "Brazilian"),
             new ContactInfo("alice@example.com", "+5511999999999", "@alice", "alice.fb"),
             new Address("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "Brazil"),
@@ -84,7 +84,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo("Peanuts", null)
         ),
         new(
-            new PersonalInfo("Bob", "Johnson", "Male", new DateTime(1985, 5, 15).ToUniversalTime(), "American", "Teacher"),
+            PersonalInfo.Create("Bob", "Johnson", "Male", new DateTime(1985, 5, 15).ToUniversalTime(), "American", "Teacher").Value,
             new IdentificationInfo("987654321", "American"),
             new ContactInfo("bob@example.com", "+15551234567", null, "bob.johnson"),
             new Address("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "USA"),
@@ -94,7 +94,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo(null, null)
         ),
         new(
-            new PersonalInfo("Carla", "Santos", "Female", new DateTime(1995, 10, 20).ToUniversalTime(), "Portuguese", "Doctor"),
+            PersonalInfo.Create("Carla", "Santos", "Female", new DateTime(1995, 10, 20).ToUniversalTime(), "Portuguese", "Doctor").Value,
             new IdentificationInfo("456789123", "Portuguese"),
             new ContactInfo("carla@example.com", "+351912345678", "@carla_santos", null),
             new Address("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "Portugal"),
@@ -104,7 +104,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo("Shellfish", null)
         ),
         new(
-            new PersonalInfo("David", "Lee", "Male", new DateTime(1980, 3, 10).ToUniversalTime(), "Korean", "Chef"),
+            PersonalInfo.Create("David", "Lee", "Male", new DateTime(1980, 3, 10).ToUniversalTime(), "Korean", "Chef").Value,
             new IdentificationInfo("789123456", "Korean"),
             new ContactInfo("david@example.com", "+821012345678", null, "david.lee"),
             new Address("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea"),
@@ -114,7 +114,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo("Dairy", null)
         ),
         new(
-            new PersonalInfo("Elena", "Rodriguez", "Female", new DateTime(1992, 7, 5).ToUniversalTime(), "Spanish", "Artist"),
+            PersonalInfo.Create("Elena", "Rodriguez", "Female", new DateTime(1992, 7, 5).ToUniversalTime(), "Spanish", "Artist").Value,
             new IdentificationInfo("321654987", "Spanish"),
             new ContactInfo("elena@example.com", "+34612345678", "@elena_art", null),
             new Address("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "Spain"),
@@ -124,7 +124,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo("Pollen", null)
         ),
         new(
-            new PersonalInfo("Frank", "Muller", "Male", new DateTime(1975, 12, 25).ToUniversalTime(), "German", "Mechanic"),
+            PersonalInfo.Create("Frank", "Muller", "Male", new DateTime(1975, 12, 25).ToUniversalTime(), "German", "Mechanic").Value,
             new IdentificationInfo("654987321", "German"),
             new ContactInfo("frank@example.com", "+491512345678", null, "frank.muller"),
             new Address("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "Germany"),
@@ -134,7 +134,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo(null, null)
         ),
         new(
-            new PersonalInfo("Gina", "Patel", "Female", new DateTime(1988, 9, 30).ToUniversalTime(), "Indian", "Accountant"),
+            PersonalInfo.Create("Gina", "Patel", "Female", new DateTime(1988, 9, 30).ToUniversalTime(), "Indian", "Accountant").Value,
             new IdentificationInfo("147258369", "Indian"),
             new ContactInfo("gina@example.com", "+919876543210", "@gina_patel", null),
             new Address("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India"),
@@ -144,7 +144,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo("Nuts", null)
         ),
         new(
-            new PersonalInfo("Hans", "Nielsen", "Male", new DateTime(1998, 4, 14).ToUniversalTime(), "Danish", "Student"),
+            PersonalInfo.Create("Hans", "Nielsen", "Male", new DateTime(1998, 4, 14).ToUniversalTime(), "Danish", "Student").Value,
             new IdentificationInfo("963852741", "Danish"),
             new ContactInfo("hans@example.com", "+4520123456", null, "hans.nielsen"),
             new Address("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "Denmark"),
@@ -154,7 +154,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo("Gluten", null)
         ),
         new(
-            new PersonalInfo("Irina", "Petrov", "Female", new DateTime(1983, 11, 8).ToUniversalTime(), "Russian", "Scientist"),
+            PersonalInfo.Create("Irina", "Petrov", "Female", new DateTime(1983, 11, 8).ToUniversalTime(), "Russian", "Scientist").Value,
             new IdentificationInfo("852741963", "Russian"),
             new ContactInfo("irina@example.com", "+79123456789", "@irina_petrov", null),
             new Address("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "Russia"),
@@ -164,7 +164,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             new MedicalInfo(null, null)
         ),
         new(
-            new PersonalInfo("Jack", "Brown", "Male", new DateTime(1991, 6, 22).ToUniversalTime(), "Australian", "Photographer"),
+            PersonalInfo.Create("Jack", "Brown", "Male", new DateTime(1991, 6, 22).ToUniversalTime(), "Australian", "Photographer").Value,
             new IdentificationInfo("741963852", "Australian"),
             new ContactInfo("jack@example.com", "+61412345678", null, "jack.brown"),
             new Address("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia"),
