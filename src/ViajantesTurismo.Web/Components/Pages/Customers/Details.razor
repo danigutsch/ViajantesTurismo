@@ -1,6 +1,6 @@
 @page "/customers/{id:int}"
 @using ViajantesTurismo.AdminApi.Contracts
-@attribute [StreamRendering]
+@rendermode InteractiveServer
 
 @inject CustomersApiClient CustomersApi
 @inject BookingsApiClient BookingsApi

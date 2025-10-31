@@ -1,6 +1,9 @@
 @page "/bookings"
 @using ViajantesTurismo.AdminApi.Contracts
+@rendermode InteractiveServer
+
 @inject BookingsApiClient BookingsApi
+@inject NavigationManager Navigation
 
 <PageTitle>Bookings</PageTitle>
 
@@ -47,8 +50,8 @@
     private GetBookingDto[]? _bookings;
     private bool _loading = true;
 
-    private ConfirmDialog _confirmDialog = default!;
-    private ToastNotification _toast = default!;
+    private ConfirmDialog _confirmDialog = null!;
+    private ToastNotification _toast = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,6 +73,7 @@
 
     private async Task HandleEditBooking(long bookingId)
     {
+        Navigation.NavigateTo($"/bookings/{bookingId}/edit");
         await Task.CompletedTask;
     }
 
