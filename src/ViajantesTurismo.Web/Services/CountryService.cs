@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JetBrains.Annotations;
 
 namespace ViajantesTurismo.Web.Services;
 
@@ -11,7 +12,7 @@ namespace ViajantesTurismo.Web.Services;
 /// <param name="hostEnvironment">The web host environment.</param>
 internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     private CountryInfo[]? _countries;
 
@@ -73,6 +74,7 @@ public sealed record CountryInfo
 /// <summary>
 /// Represents country data from JSON.
 /// </summary>
+[UsedImplicitly]
 internal sealed record CountryData
 {
     /// <summary>
