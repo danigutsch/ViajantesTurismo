@@ -1,8 +1,6 @@
 @page "/bookings/{id:long}/edit"
 @using ViajantesTurismo.AdminApi.Contracts
 @inject BookingsApiClient BookingsApi
-@inject ToursApiClient ToursApi
-@inject CustomersApiClient CustomersApi
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -228,7 +226,7 @@ else
             _redirectCts = new CancellationTokenSource();
             var token = _redirectCts.Token;
             StateHasChanged();
-            
+
             try
             {
                 await Task.Delay(3000, token);
