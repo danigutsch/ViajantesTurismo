@@ -6,7 +6,7 @@ using Xunit;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class PersonalInfoValidationSteps
+public sealed class CommonPersonalInfoSteps
 {
     private DateTime _birthDate;
     private string _firstName = null!;
@@ -54,6 +54,25 @@ public sealed class PersonalInfoValidationSteps
         Assert.Equal(_profession, info.Profession);
     }
 
+    [Then(@"the creation should fail")]
+    public void ThenTheCreationShouldFail()
+    {
+        Assert.NotNull(_result);
+        Assert.True(_result.Value.IsFailure, "Expected failure but got success");
+    }
+
+    [Then(@"the error should be ""(.*)""")]
+    public void ThenTheErrorShouldBe(string expectedError)
+    {
+        Assert.NotNull(_result);
+        Assert.True(_result.Value.IsFailure, "Expected failure but got success");
+
+        var errors = _result.Value.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+
+        Assert.Contains(expectedError, allErrors);
+    }
+
     [Given(@"I have personal information with first name ""(.*)""")]
     public void GivenIHavePersonalInformationWithFirstName(string firstName)
     {
@@ -86,6 +105,7 @@ public sealed class PersonalInfoValidationSteps
         _nationality = "American";
         _profession = "Software Engineer";
     }
+
     [Given(@"I have personal information with nationality ""(.*)""")]
     public void GivenIHavePersonalInformationWithNationality(string nationality)
     {
@@ -117,24 +137,5 @@ public sealed class PersonalInfoValidationSteps
         _birthDate = DateTime.Now.AddDays(1);
         _nationality = "American";
         _profession = "Software Engineer";
-    }
-
-    [Then(@"the creation should fail")]
-    public void ThenTheCreationShouldFail()
-    {
-        Assert.NotNull(_result);
-        Assert.True(_result.Value.IsFailure, "Expected failure but got success");
-    }
-
-    [Then(@"the error should be ""(.*)""")]
-    public void ThenTheErrorShouldBe(string expectedError)
-    {
-        Assert.NotNull(_result);
-        Assert.True(_result.Value.IsFailure, "Expected failure but got success");
-
-        var errors = _result.Value.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-
-        Assert.Contains(expectedError, allErrors);
     }
 }
