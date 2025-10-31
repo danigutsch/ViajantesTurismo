@@ -28,4 +28,15 @@ public static class CustomerErrors
         {
             { "LastName", ["Last name is required."] }
         });
+
+    /// <summary>
+    /// Indicates that the gender is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> EmptyGender() => Result<PersonalInfo>.Invalid(
+        detail: "Gender is required.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "Gender", ["Gender is required."] }
+        });
 }
