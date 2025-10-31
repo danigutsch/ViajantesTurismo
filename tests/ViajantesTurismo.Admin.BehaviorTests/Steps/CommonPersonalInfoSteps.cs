@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
-using Xunit;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -101,6 +100,17 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = gender;
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with null gender")]
+    public void GivenIHavePersonalInformationWithNullGender()
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = null!;
         _birthDate = new DateTime(1990, 5, 15);
         _nationality = "American";
         _profession = "Software Engineer";

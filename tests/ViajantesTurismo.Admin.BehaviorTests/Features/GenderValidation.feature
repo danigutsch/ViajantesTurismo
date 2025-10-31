@@ -7,9 +7,52 @@ So that only valid genders are accepted
         Given I have valid personal information
         When I create the personal info
         Then the creation should succeed
+        And the personal info should contain the provided data
 
     Scenario: Creating personal info with empty gender
         Given I have personal information with gender ""
         When I create the personal info
         Then the creation should fail
         And the error should be "Gender is required."
+
+    Scenario: Creating personal info with whitespace-only gender
+        Given I have personal information with gender "   "
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Gender is required."
+
+    Scenario: Creating personal info with null gender
+        Given I have personal information with null gender
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Gender is required."
+
+    Scenario: Creating personal info with Male gender
+        Given I have personal information with gender "Male"
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with Female gender
+        Given I have personal information with gender "Female"
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with Other gender
+        Given I have personal information with gender "Other"
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with non-binary gender
+        Given I have personal information with gender "Non-binary"
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with custom gender value
+        Given I have personal information with gender "Prefer not to say"
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
