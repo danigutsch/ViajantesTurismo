@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Common.Results;
+using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -54,6 +55,11 @@ public sealed class PersonalInfo
         string nationality,
         string profession)
     {
+        if (string.IsNullOrWhiteSpace(firstName))
+        {
+            return EmptyFirstName();
+        }
+
         return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
     }
 

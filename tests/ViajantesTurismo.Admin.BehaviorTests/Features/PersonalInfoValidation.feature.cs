@@ -26,8 +26,8 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Features
         
         private static string[] featureTags = ((string[])(null));
         
-        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features", "Personal Information Validation", "    As a tourism system\r\n    I want to validate customer personal information\r\n  " +
-                "  So that only valid customer data is accepted", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
+        private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features", "Personal Information Validation", "As a tourism system\r\nI want to validate customer personal information\r\nSo that on" +
+                "ly valid customer data is accepted", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         
 #line 1 "PersonalInfoValidation.feature"
 #line hidden
