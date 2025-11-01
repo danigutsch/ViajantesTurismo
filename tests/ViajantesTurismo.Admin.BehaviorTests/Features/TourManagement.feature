@@ -51,5 +51,5 @@ So that tours have valid and accurate information
 
     Scenario: Updating all tour pricing components
         Given an existing tour
-        When I update pricing with base 2500.00, single room 600.00, regular bike 150.00, e-bike 250.00
+        When I update pricing with single room 600.00, regular bike 150.00, e-bike 250.00
         Then the tour pricing should reflect all updates

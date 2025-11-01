@@ -161,14 +161,13 @@ public sealed class TourManagementSteps
         _tour!.UpdateCurrency(currency);
     }
 
-    [When(@"I update pricing with base (.*), single room (.*), regular bike (.*), e-bike (.*)")]
+    [When(@"I update pricing with single room (.*), regular bike (.*), e-bike (.*)")]
     public void WhenIUpdatePricingWithBaseSingleRoomRegularBikeEBike(
-        decimal basePrice,
         decimal singleRoom,
         decimal regularBike,
         decimal eBike)
     {
-        _tour!.UpdatePricing(basePrice, singleRoom, regularBike, eBike, Currency.UsDollar);
+        _tour!.UpdatePricing(singleRoom, regularBike, eBike, Currency.UsDollar);
     }
 
     [Then(@"the tour should be created successfully")]
@@ -250,8 +249,7 @@ public sealed class TourManagementSteps
     [Then(@"the tour pricing should reflect all updates")]
     public void ThenTheTourPricingShouldReflectAllUpdates()
     {
-        Assert.Equal(2500.00m, _tour!.Price);
-        Assert.Equal(600.00m, _tour.SingleRoomSupplementPrice);
+        Assert.Equal(600.00m, _tour!.SingleRoomSupplementPrice);
         Assert.Equal(150.00m, _tour.RegularBikePrice);
         Assert.Equal(250.00m, _tour.EBikePrice);
     }
