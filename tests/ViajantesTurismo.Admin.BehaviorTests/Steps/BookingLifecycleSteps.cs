@@ -57,7 +57,8 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         var confirmResult = tour.ConfirmBooking(booking.Id);
         Assert.True(confirmResult.IsSuccess);
-        tour.CompleteBooking(booking.Id);
+        var completeResult = tour.CompleteBooking(booking.Id);
+        Assert.True(completeResult.IsSuccess);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
         Assert.Equal(BookingStatus.Completed, booking.Status);
@@ -86,7 +87,8 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.CompleteBooking(booking.Id);
+        var result = tour.CompleteBooking(booking.Id);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator tries to confirm the booking")]
@@ -110,7 +112,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Action"] = () => tour.CompleteBooking(booking.Id);
+        scenarioContext["Result"] = tour.CompleteBooking(booking.Id);
     }
 
     [When(@"the operator updates the price to (.*)")]

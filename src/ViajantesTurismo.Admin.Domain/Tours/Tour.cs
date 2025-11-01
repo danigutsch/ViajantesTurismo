@@ -260,12 +260,16 @@ public sealed class Tour : Entity<int>
     /// Completes a booking.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to complete.</param>
-    public void CompleteBooking(long bookingId)
+    /// <returns>A result indicating success or failure.</returns>
+    public Result CompleteBooking(long bookingId)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
-                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
 
-        booking.Complete();
+        return booking.Complete();
     }
 
     /// <summary>

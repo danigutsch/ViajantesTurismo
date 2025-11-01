@@ -297,7 +297,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         _ = tours[3].ConfirmBooking(booking4.Id);
         _ = tours[3].UpdateBookingPaymentStatus(booking4.Id, PaymentStatus.Paid);
 
-        tours[4].CompleteBooking(booking5.Id);
+        _ = tours[4].CompleteBooking(booking5.Id);
         _ = tours[0].CancelBooking(booking6.Id);
 
         tours[1].UpdateBookingPrice(booking7.Id, 4400m);

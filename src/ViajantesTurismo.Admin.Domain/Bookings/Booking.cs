@@ -122,16 +122,22 @@ public sealed class Booking : Entity<long>
     }
 
     /// <summary>
-    /// Marks the booking as completed.
+    /// Marks the booking as completed. Is idempotent.
     /// </summary>
-    internal void Complete()
+    /// <returns>A result indicating success or failure.</returns>
+    internal Result Complete()
     {
-        if (Status == BookingStatus.Cancelled)
+        switch (Status)
         {
-            throw new InvalidOperationException("Cannot complete a cancelled booking.");
+            case BookingStatus.Completed:
+                return Result.Ok();
+            case BookingStatus.Cancelled:
+                return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Completed);
+            case BookingStatus.Pending or BookingStatus.Confirmed:
+            default:
+                Status = BookingStatus.Completed;
+                return Result.Ok();
         }
-
-        Status = BookingStatus.Completed;
     }
 
     /// <summary>
