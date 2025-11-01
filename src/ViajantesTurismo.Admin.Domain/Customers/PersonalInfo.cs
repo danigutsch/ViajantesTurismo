@@ -61,59 +61,61 @@ public sealed class PersonalInfo
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
 
+        var errors = new ValidationErrors<PersonalInfo>();
+
         if (string.IsNullOrWhiteSpace(firstName))
         {
-            return EmptyFirstName();
+            errors.Add(EmptyFirstName());
         }
-
-        if (firstName.Length > ContractConstants.MaxNameLength)
+        else if (firstName.Length > ContractConstants.MaxNameLength)
         {
-            return FirstNameTooLong();
+            errors.Add(FirstNameTooLong());
         }
 
         if (string.IsNullOrWhiteSpace(lastName))
         {
-            return EmptyLastName();
+            errors.Add(EmptyLastName());
         }
-
-        if (lastName.Length > ContractConstants.MaxNameLength)
+        else if (lastName.Length > ContractConstants.MaxNameLength)
         {
-            return LastNameTooLong();
+            errors.Add(LastNameTooLong());
         }
 
         if (string.IsNullOrWhiteSpace(gender))
         {
-            return EmptyGender();
+            errors.Add(EmptyGender());
         }
-
-        if (gender.Length > ContractConstants.MaxDefaultLength)
+        else if (gender.Length > ContractConstants.MaxDefaultLength)
         {
-            return GenderTooLong();
+            errors.Add(GenderTooLong());
         }
 
         if (string.IsNullOrWhiteSpace(nationality))
         {
-            return EmptyNationality();
+            errors.Add(EmptyNationality());
         }
-
-        if (nationality.Length > ContractConstants.MaxNameLength)
+        else if (nationality.Length > ContractConstants.MaxNameLength)
         {
-            return NationalityTooLong();
+            errors.Add(NationalityTooLong());
         }
 
         if (string.IsNullOrWhiteSpace(profession))
         {
-            return EmptyProfession();
+            errors.Add(EmptyProfession());
         }
-
-        if (profession.Length > ContractConstants.MaxNameLength)
+        else if (profession.Length > ContractConstants.MaxNameLength)
         {
-            return ProfessionTooLong();
+            errors.Add(ProfessionTooLong());
         }
 
         if (birthDate > timeProvider.GetUtcNow().Date)
         {
-            return FutureBirthDate();
+            errors.Add(FutureBirthDate());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
         }
 
         return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);

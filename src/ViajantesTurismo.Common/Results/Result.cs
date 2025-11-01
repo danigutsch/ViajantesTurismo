@@ -60,19 +60,37 @@ public readonly struct Result : IEquatable<Result>
     /// Creates a failed result with Invalid status.
     /// </summary>
     /// <param name="detail">The error detail describing why the operation failed.</param>
-    /// <param name="validationErrors">Optional validation errors.</param>
+    /// <param name="field">The field name that failed validation.</param>
+    /// <param name="message">The validation error message for the field.</param>
     /// <returns>A failed result.</returns>
-    public static Result Invalid(string detail, Dictionary<string, string[]>? validationErrors = null)
+    public static Result Invalid(string detail, string field, string message)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+        ArgumentException.ThrowIfNullOrWhiteSpace(field);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+
+        var validationErrors = new Dictionary<string, string[]>
+        {
+            [field] = [message]
+        };
+
+        return new Result(ResultStatus.Invalid, new ResultError(detail, validationErrors));
+    }
+
+    /// <summary>
+    /// Creates a failed result with Invalid status and multiple validation errors.
+    /// Used internally by ValidationErrors to combine multiple field errors.
+    /// </summary>
+    /// <param name="detail">The error detail describing why the operation failed.</param>
+    /// <param name="validationErrors">The combined validation errors.</param>
+    /// <returns>A failed result.</returns>
+    internal static Result Invalid(string detail, Dictionary<string, string[]> validationErrors)
     {
         if (string.IsNullOrWhiteSpace(detail))
-        {
             throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail));
-        }
 
-        if (validationErrors?.Count == 0)
-        {
+        if (validationErrors.Count == 0)
             throw new ArgumentOutOfRangeException(nameof(validationErrors), "Validation errors dictionary cannot be empty.");
-        }
 
         return new Result(ResultStatus.Invalid, new ResultError(detail, validationErrors));
     }
@@ -291,15 +309,48 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// Creates a failed result with Invalid status.
     /// </summary>
     /// <param name="detail">The error detail describing why the operation failed.</param>
-    /// <param name="validationErrors">Optional validation errors.</param>
+    /// <param name="field">The field name that failed validation.</param>
+    /// <param name="message">The validation error message for the field.</param>
     /// <returns>A failed result.</returns>
 #pragma warning disable CA1000 // Result pattern requires static factory methods
-    public static Result<T> Invalid(string detail, Dictionary<string, string[]>? validationErrors = null)
+    public static Result<T> Invalid(string detail, string field, string message)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.Invalid, default, new ResultError(detail, validationErrors));
+        if (string.IsNullOrWhiteSpace(detail))
+            throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail));
+
+        if (string.IsNullOrWhiteSpace(field))
+            throw new ArgumentException("Field name cannot be null or whitespace.", nameof(field));
+
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("Validation message cannot be null or whitespace.", nameof(message));
+
+        var validationErrors = new Dictionary<string, string[]>
+        {
+            [field] = [message]
+        };
+
+        return new Result<T>(ResultStatus.Invalid, default, new ResultError(detail, validationErrors));
+    }
+
+    /// <summary>
+    /// Creates a failed result with Invalid status and multiple validation errors.
+    /// Used internally by ValidationErrors to combine multiple field errors.
+    /// </summary>
+    /// <param name="detail">The error detail describing why the operation failed.</param>
+    /// <param name="validationErrors">The combined validation errors.</param>
+    /// <returns>A failed result.</returns>
+#pragma warning disable CA1000 // Result pattern requires static factory methods
+    internal static Result<T> Invalid(string detail, Dictionary<string, string[]> validationErrors)
+#pragma warning restore CA1000
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+            throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail));
+
+        if (validationErrors.Count == 0)
+            throw new ArgumentOutOfRangeException(nameof(validationErrors), "Validation errors dictionary cannot be empty.");
+
+        return new Result<T>(ResultStatus.Invalid, default, new ResultError(detail, validationErrors));
     }
 
     /// <summary>
