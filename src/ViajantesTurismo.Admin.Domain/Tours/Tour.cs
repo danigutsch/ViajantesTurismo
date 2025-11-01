@@ -104,38 +104,77 @@ public sealed class Tour : Entity<int>
     public IReadOnlyList<Booking> Bookings => _bookings.AsReadOnly();
 
     /// <summary>
-    /// Updates the tour with new information.
+    /// Updates the tour's basic information (identifier and name).
     /// </summary>
     /// <param name="identifier">The unique business identifier for the tour.</param>
     /// <param name="name">The descriptive name of the tour.</param>
+    public void UpdateBasicInfo(string identifier, string name)
+    {
+        Identifier = identifier;
+        Name = name;
+    }
+
+    /// <summary>
+    /// Updates the tour's schedule (start and end dates).
+    /// </summary>
     /// <param name="startDate">The start date of the tour.</param>
     /// <param name="endDate">The end date of the tour.</param>
+    public void UpdateSchedule(DateTime startDate, DateTime endDate)
+    {
+        if (endDate < startDate)
+        {
+            throw new ArgumentException("End date must be after start date.", nameof(endDate));
+        }
+
+        StartDate = startDate;
+        EndDate = endDate;
+    }
+
+    /// <summary>
+    /// Updates all pricing for the tour including base price, supplements, and bike rentals.
+    /// </summary>
     /// <param name="price">The base price of the tour per person.</param>
     /// <param name="singleRoomSupplementPrice">The additional price for a single room supplement.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all pricing.</param>
-    /// <param name="includedServices">The collection of services included in the tour package.</param>
-    public void Update(string identifier,
-        string name,
-        DateTime startDate,
-        DateTime endDate,
-        decimal price,
+    public void UpdatePricing(decimal price,
         decimal singleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
-        Currency currency,
-        IEnumerable<string> includedServices)
+        Currency currency)
     {
-        Identifier = identifier;
-        Name = name;
-        StartDate = startDate;
-        EndDate = endDate;
         Price = price;
         SingleRoomSupplementPrice = singleRoomSupplementPrice;
         RegularBikePrice = regularBikePrice;
         EBikePrice = eBikePrice;
         Currency = currency;
+    }
+
+    /// <summary>
+    /// Updates the base price of the tour.
+    /// </summary>
+    /// <param name="price">The new base price per person.</param>
+    public void UpdateBasePrice(decimal price)
+    {
+        Price = price;
+    }
+
+    /// <summary>
+    /// Updates the currency used for all tour pricing.
+    /// </summary>
+    /// <param name="currency">The new currency.</param>
+    public void UpdateCurrency(Currency currency)
+    {
+        Currency = currency;
+    }
+
+    /// <summary>
+    /// Updates the services included in the tour package.
+    /// </summary>
+    /// <param name="includedServices">The collection of services included in the tour package.</param>
+    public void UpdateIncludedServices(IEnumerable<string> includedServices)
+    {
         _includedServices = [..includedServices];
     }
 
@@ -150,7 +189,8 @@ public sealed class Tour : Entity<int>
     public Booking AddBooking(int customerId, int? companionId, decimal totalPrice, string? notes)
     {
         var booking = new Booking(Id, customerId, companionId);
-        booking.Update(totalPrice, notes, BookingStatus.Pending, PaymentStatus.Unpaid);
+        booking.UpdatePrice(totalPrice);
+        booking.UpdateNotes(notes);
         _bookings.Add(booking);
         return booking;
     }
@@ -168,7 +208,28 @@ public sealed class Tour : Entity<int>
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
                       ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
 
-        booking.Update(totalPrice, notes, status, paymentStatus);
+        booking.UpdatePrice(totalPrice);
+        booking.UpdateNotes(notes);
+        
+        // Only perform state transitions if status is changing
+        if (booking.Status != status)
+        {
+            switch (status)
+            {
+                case BookingStatus.Confirmed:
+                    booking.Confirm();
+                    break;
+                case BookingStatus.Cancelled:
+                    booking.Cancel();
+                    break;
+                case BookingStatus.Completed:
+                    booking.Complete();
+                    break;
+                // Pending is default state, no action needed
+            }
+        }
+        
+        booking.UpdatePaymentStatus(paymentStatus);
     }
 
     /// <summary>

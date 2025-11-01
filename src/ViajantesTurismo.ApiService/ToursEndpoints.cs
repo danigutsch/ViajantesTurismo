@@ -111,18 +111,15 @@ internal static class ToursEndpoints
 
         var currency = (Currency)tourDto.Currency;
 
-        tour.Update(
-            tourDto.Identifier,
-            tourDto.Name,
-            tourDto.StartDate,
-            tourDto.EndDate,
+        tour.UpdateBasicInfo(tourDto.Identifier, tourDto.Name);
+        tour.UpdateSchedule(tourDto.StartDate, tourDto.EndDate);
+        tour.UpdatePricing(
             tourDto.Price,
             tourDto.SingleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
-            currency,
-            [.. tourDto.IncludedServices]
-        );
+            currency);
+        tour.UpdateIncludedServices([.. tourDto.IncludedServices]);
 
         await unitOfWork.SaveEntities(ct);
 

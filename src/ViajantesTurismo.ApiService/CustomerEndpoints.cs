@@ -207,7 +207,14 @@ internal static class CustomerEndpoints
             dto.MedicalInfo.Allergies,
             dto.MedicalInfo.AdditionalInfo);
 
-        customer.Update(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+        customer.UpdatePersonalInfo(personalInfo);
+        customer.UpdateIdentificationInfo(identificationInfo);
+        customer.UpdateContactInfo(contactInfo);
+        customer.UpdateAddress(address);
+        customer.UpdatePhysicalInfo(physicalInfo);
+        customer.UpdateAccommodationPreferences(accommodationPreferences);
+        customer.UpdateEmergencyContact(emergencyContact);
+        customer.UpdateMedicalInfo(medicalInfo);
 
         await unitOfWork.SaveEntities(ct);
 

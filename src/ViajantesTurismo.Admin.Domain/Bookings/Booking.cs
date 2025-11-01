@@ -70,17 +70,11 @@ public sealed class Booking : Entity<long>
     public string? Notes { get; private set; }
 
     /// <summary>
-    /// Updates the booking with new information.
+    /// Updates the payment status of the booking.
     /// </summary>
-    /// <param name="totalPrice">The total price of the booking.</param>
-    /// <param name="notes">Optional notes about the booking.</param>
-    /// <param name="status">The booking status.</param>
-    /// <param name="paymentStatus">The payment status.</param>
-    internal void Update(decimal totalPrice, string? notes, BookingStatus status, PaymentStatus paymentStatus)
+    /// <param name="paymentStatus">The new payment status.</param>
+    internal void UpdatePaymentStatus(PaymentStatus paymentStatus)
     {
-        TotalPrice = totalPrice;
-        Notes = notes;
-        Status = status;
         PaymentStatus = paymentStatus;
     }
 

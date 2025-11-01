@@ -8,12 +8,12 @@ Domain objects should express business operations using **ubiquitous language** 
 
 ❌ **Don't do this:**
 ```csharp
-booking.Update(totalPrice, notes, BookingStatus.Confirmed, paymentStatus);
+booking.Status = BookingStatus.Confirmed;  // Direct property mutation
 ```
 
 ✅ **Do this instead:**
 ```csharp
-booking.Confirm();
+booking.Confirm();  // Intention-revealing method
 ```
 
 ### Why Domain Language Matters
@@ -91,6 +91,154 @@ public void UpdateBookingDetails(long bookingId, decimal newPrice, string? notes
 - Flexible composition for different use cases
 - Better testability
 - Supports eventual consistency patterns
+
+## Strive for Rich Domain Models
+
+A **rich domain model** encapsulates business logic within domain entities using intention-revealing methods. Avoid anemic domain models where entities are mere data containers.
+
+### Granular, Intention-Revealing Methods
+
+Domain methods should be **granular** and clearly express business intent. Each method should update a specific aspect of the entity.
+
+✅ **Good - Granular methods:**
+```csharp
+tour.UpdateBasicInfo("CUBA2025", "Cuba Cycling Adventure");
+tour.UpdateSchedule(startDate, endDate);
+tour.UpdatePricing(2500m, 300m, 100m, 200m, Currency.EUR);
+tour.UpdateIncludedServices(new[] { "Hotel", "Breakfast" });
+```
+
+❌ **Avoid - One coarse Update method:**
+```csharp
+// Don't use a single method that updates everything
+tour.Update(identifier, name, startDate, endDate, price, ...);
+```
+
+### Why Granular Methods?
+
+1. **Single Responsibility**: Each method has one focused purpose
+2. **Domain Events**: Each method can raise specific domain events (e.g., `PriceChanged`, `ScheduleUpdated`)
+3. **Validation**: Focused validation per business rule (e.g., `UpdateSchedule` validates end date > start date)
+4. **Flexibility**: Compose methods for different use cases
+5. **Clarity**: Code reads like business requirements
+
+### State Transitions as Methods
+
+Model entity lifecycle transitions as explicit methods, not property setters.
+
+✅ **Good - Explicit state transitions:**
+```csharp
+booking.Confirm();     // Pending → Confirmed
+booking.Cancel();      // Any → Cancelled  
+booking.Complete();    // Confirmed → Completed
+```
+
+❌ **Avoid - Direct property mutation:**
+```csharp
+booking.Status = BookingStatus.Confirmed;  // Bypasses validation
+```
+
+State transition methods enforce business rules:
+```csharp
+internal void Confirm()
+{
+    if (Status == BookingStatus.Cancelled)
+    {
+        throw new InvalidOperationException("Cannot confirm a cancelled booking.");
+    }
+    Status = BookingStatus.Confirmed;
+}
+```
+
+### Practical Examples
+
+**Tour Updates:**
+```csharp
+// Scenario: Adjust pricing due to market conditions
+var tour = await tourStore.GetById(tourId, ct);
+tour.UpdateBasePrice(newPrice);
+
+// Scenario: Reschedule due to venue change  
+tour.UpdateSchedule(newStartDate, newEndDate);
+
+// Scenario: Currency conversion
+var rate = await currencyService.GetRate(Currency.EUR, Currency.USD);
+tour.UpdatePricing(
+    tour.Price * rate,
+    tour.SingleRoomSupplementPrice * rate,
+    tour.RegularBikePrice * rate,
+    tour.EBikePrice * rate,
+    Currency.USD
+);
+```
+
+**Customer Updates:**
+```csharp
+// Scenario: Customer changes phone number
+var customer = await customerStore.GetById(customerId, ct);
+customer.UpdateContactInfo(new ContactInfo(newPhone, email, instagram, facebook));
+
+// Scenario: Customer moves
+customer.UpdateAddress(new Address(street, city, state, postalCode, country));
+```
+
+**Booking Lifecycle:**
+```csharp
+// 1. Create booking (pending)
+var booking = tour.AddBooking(customerId, companionId, totalPrice, "Early bird");
+
+// 2. Customer confirms and pays deposit
+booking.Confirm();
+booking.UpdatePaymentStatus(PaymentStatus.PartiallyPaid);
+
+// 3. Customer pays balance
+booking.UpdatePaymentStatus(PaymentStatus.Paid);
+
+// 4. Tour completes
+booking.Complete();
+```
+
+### API Layer Considerations
+
+The API layer may use **coarse-grained DTOs** for client convenience (fewer HTTP requests, simpler forms), but should delegate to **granular domain methods** internally:
+
+```csharp
+// API accepts UpdateTourDto with all fields
+private static async Task<Results<NoContent, NotFound>> UpdateTour(
+    int id,
+    UpdateTourDto dto,
+    ITourStore tourStore,
+    IUnitOfWork unitOfWork,
+    CancellationToken ct)
+{
+    var tour = await tourStore.GetById(id, ct);
+    if (tour is null) return TypedResults.NotFound();
+
+    // Delegate to granular domain methods
+    tour.UpdateBasicInfo(dto.Identifier, dto.Name);
+    tour.UpdateSchedule(dto.StartDate, dto.EndDate);
+    tour.UpdatePricing(dto.Price, dto.SingleRoomSupplementPrice, 
+        dto.RegularBikePrice, dto.EBikePrice, (Currency)dto.Currency);
+    tour.UpdateIncludedServices([.. dto.IncludedServices]);
+
+    await unitOfWork.SaveEntities(ct);
+    return TypedResults.NoContent();
+}
+```
+
+This provides:
+- **Domain expressiveness**: Clear business operations in domain layer
+- **Client convenience**: Simple DTOs in API layer
+- **Best of both worlds**: Rich domain model + practical API
+
+### Benefits Summary
+
+- **Ubiquitous Language**: Code uses business terms
+- **Encapsulation**: Business rules live in domain entities
+- **Testability**: Each method is independently testable
+- **Maintainability**: Changes to business rules are localized
+- **Domain Events**: Fine-grained events for each business operation
+- **Type Safety**: Invalid operations prevented at compile time
 
 ## Code Comments
 

@@ -63,32 +63,74 @@ public sealed class Customer : Entity<int>
     public MedicalInfo MedicalInfo { get; private set; }
 
     /// <summary>
-    /// Updates the customer with new information.
+    /// Updates the customer's personal information.
     /// </summary>
     /// <param name="personalInfo">The personal information.</param>
-    /// <param name="identificationInfo">The identification information.</param>
-    /// <param name="contactInfo">The contact information.</param>
-    /// <param name="address">The physical address.</param>
-    /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
-    /// <param name="accommodationPreferences">The accommodation preferences.</param>
-    /// <param name="emergencyContact">The emergency contact information.</param>
-    /// <param name="medicalInfo">The medical information and allergies.</param>
-    public void Update(PersonalInfo personalInfo,
-        IdentificationInfo identificationInfo,
-        ContactInfo contactInfo,
-        Address address,
-        PhysicalInfo physicalInfo,
-        AccommodationPreferences accommodationPreferences,
-        EmergencyContact emergencyContact,
-        MedicalInfo medicalInfo)
+    public void UpdatePersonalInfo(PersonalInfo personalInfo)
     {
         PersonalInfo = personalInfo;
+    }
+
+    /// <summary>
+    /// Updates the customer's identification information.
+    /// </summary>
+    /// <param name="identificationInfo">The identification information.</param>
+    public void UpdateIdentificationInfo(IdentificationInfo identificationInfo)
+    {
         IdentificationInfo = identificationInfo;
+    }
+
+    /// <summary>
+    /// Updates the customer's contact information.
+    /// </summary>
+    /// <param name="contactInfo">The contact information.</param>
+    public void UpdateContactInfo(ContactInfo contactInfo)
+    {
         ContactInfo = contactInfo;
+    }
+
+    /// <summary>
+    /// Updates the customer's physical address.
+    /// </summary>
+    /// <param name="address">The physical address.</param>
+    public void UpdateAddress(Address address)
+    {
         Address = address;
+    }
+
+    /// <summary>
+    /// Updates the customer's physical characteristics and bike preferences.
+    /// </summary>
+    /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
+    public void UpdatePhysicalInfo(PhysicalInfo physicalInfo)
+    {
         PhysicalInfo = physicalInfo;
+    }
+
+    /// <summary>
+    /// Updates the customer's accommodation preferences.
+    /// </summary>
+    /// <param name="accommodationPreferences">The accommodation preferences.</param>
+    public void UpdateAccommodationPreferences(AccommodationPreferences accommodationPreferences)
+    {
         AccommodationPreferences = accommodationPreferences;
+    }
+
+    /// <summary>
+    /// Updates the customer's emergency contact information.
+    /// </summary>
+    /// <param name="emergencyContact">The emergency contact information.</param>
+    public void UpdateEmergencyContact(EmergencyContact emergencyContact)
+    {
         EmergencyContact = emergencyContact;
+    }
+
+    /// <summary>
+    /// Updates the customer's medical information and allergies.
+    /// </summary>
+    /// <param name="medicalInfo">The medical information and allergies.</param>
+    public void UpdateMedicalInfo(MedicalInfo medicalInfo)
+    {
         MedicalInfo = medicalInfo;
     }
 
