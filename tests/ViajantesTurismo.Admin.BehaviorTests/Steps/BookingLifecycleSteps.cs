@@ -141,7 +141,6 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
 
         var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
 
-        // Update through Tour aggregate - Booking should not be modified directly
-        tour.UpdateBooking(booking.Id, booking.TotalPrice, booking.Notes, booking.Status, paymentStatus);
+        tour.UpdateBookingPaymentStatus(booking.Id, paymentStatus);
     }
 }

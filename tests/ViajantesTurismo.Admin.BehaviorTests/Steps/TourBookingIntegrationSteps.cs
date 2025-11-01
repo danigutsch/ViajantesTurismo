@@ -131,7 +131,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.UpdateBookingDetails(booking.Id, price, notes);
+        tour.UpdateBookingPrice(booking.Id, price);
+        tour.UpdateBookingNotes(booking.Id, notes);
     }
 
     [When(@"I remove the booking from the tour")]
@@ -162,7 +163,26 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
         var status = TestHelpers.ParseBookingStatus(statusString);
         var payment = TestHelpers.ParsePaymentStatus(paymentString);
 
-        tour.UpdateBooking(booking.Id, price, notes, status, payment);
+        tour.UpdateBookingPrice(booking.Id, price);
+        tour.UpdateBookingNotes(booking.Id, notes);
+        
+        if (booking.Status != status)
+        {
+            switch (status)
+            {
+                case BookingStatus.Confirmed:
+                    tour.ConfirmBooking(booking.Id);
+                    break;
+                case BookingStatus.Cancelled:
+                    tour.CancelBooking(booking.Id);
+                    break;
+                case BookingStatus.Completed:
+                    tour.CompleteBooking(booking.Id);
+                    break;
+            }
+        }
+        
+        tour.UpdateBookingPaymentStatus(booking.Id, payment);
     }
 
     [Then(@"the tour should have the booking")]

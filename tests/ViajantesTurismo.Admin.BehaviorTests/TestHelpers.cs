@@ -88,6 +88,7 @@ public static class TestHelpers
             "Paid" => PaymentStatus.Paid,
             "PartiallyPaid" => PaymentStatus.PartiallyPaid,
             "Unpaid" => PaymentStatus.Unpaid,
+            "Refunded" => PaymentStatus.Refunded,
             _ => throw new ArgumentException($"Unknown payment status: {statusString}", nameof(statusString))
         };
     }

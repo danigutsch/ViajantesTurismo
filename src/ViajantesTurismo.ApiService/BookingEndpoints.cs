@@ -164,12 +164,28 @@ internal static class BookingEndpoints
             return TypedResults.NotFound();
         }
 
-        tour.UpdateBooking(
-            id,
-            dto.TotalPrice,
-            dto.Notes,
-            (BookingStatus)dto.Status,
-            (PaymentStatus)dto.PaymentStatus);
+        tour.UpdateBookingPrice(id, dto.TotalPrice);
+        tour.UpdateBookingNotes(id, dto.Notes);
+        
+        var targetStatus = (BookingStatus)dto.Status;
+        var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
+        if (booking is not null && booking.Status != targetStatus)
+        {
+            switch (targetStatus)
+            {
+                case BookingStatus.Confirmed:
+                    tour.ConfirmBooking(id);
+                    break;
+                case BookingStatus.Cancelled:
+                    tour.CancelBooking(id);
+                    break;
+                case BookingStatus.Completed:
+                    tour.CompleteBooking(id);
+                    break;
+            }
+        }
+        
+        tour.UpdateBookingPaymentStatus(id, (PaymentStatus)dto.PaymentStatus);
 
         await unitOfWork.SaveEntities(ct);
 
@@ -246,7 +262,8 @@ internal static class BookingEndpoints
             return TypedResults.NotFound();
         }
 
-        tour.UpdateBookingDetails(id, dto.TotalPrice, dto.Notes);
+        tour.UpdateBookingPrice(id, dto.TotalPrice);
+        tour.UpdateBookingNotes(id, dto.Notes);
 
         await unitOfWork.SaveEntities(ct);
 

@@ -280,16 +280,36 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         var booking9 = tours[0].AddBooking(customers[4].Id, null, 1650m, "Solo traveler, single room supplement included");
         var booking10 = tours[4].AddBooking(customers[8].Id, null, 2750m, "Payment pending bank transfer");
 
-        // Save to assign IDs before updating bookings
         dbContext.SaveChanges();
 
-        tours[0].UpdateBooking(booking1.Id, 1800m, "Early bird discount applied", BookingStatus.Confirmed, PaymentStatus.Paid);
-        tours[1].UpdateBooking(booking2.Id, 4400m, "Traveling together as a couple", BookingStatus.Confirmed, PaymentStatus.PartiallyPaid);
-        tours[3].UpdateBooking(booking4.Id, 4950m, "Upgraded to premium accommodation", BookingStatus.Confirmed, PaymentStatus.Paid);
+        tours[0].UpdateBookingPrice(booking1.Id, 1800m);
+        tours[0].UpdateBookingNotes(booking1.Id, "Early bird discount applied");
+        tours[0].ConfirmBooking(booking1.Id);
+        tours[0].UpdateBookingPaymentStatus(booking1.Id, PaymentStatus.Paid);
+
+        tours[1].UpdateBookingPrice(booking2.Id, 4400m);
+        tours[1].UpdateBookingNotes(booking2.Id, "Traveling together as a couple");
+        tours[1].ConfirmBooking(booking2.Id);
+        tours[1].UpdateBookingPaymentStatus(booking2.Id, PaymentStatus.PartiallyPaid);
+
+        tours[3].UpdateBookingPrice(booking4.Id, 4950m);
+        tours[3].UpdateBookingNotes(booking4.Id, "Upgraded to premium accommodation");
+        tours[3].ConfirmBooking(booking4.Id);
+        tours[3].UpdateBookingPaymentStatus(booking4.Id, PaymentStatus.Paid);
+
         tours[4].CompleteBooking(booking5.Id);
         tours[0].CancelBooking(booking6.Id);
-        tours[1].UpdateBooking(booking7.Id, 4400m, "Special dietary requirements noted", BookingStatus.Confirmed, PaymentStatus.PartiallyPaid);
-        tours[0].UpdateBooking(booking9.Id, 1650m, "Solo traveler, single room supplement included", BookingStatus.Confirmed, PaymentStatus.Paid);
+
+        tours[1].UpdateBookingPrice(booking7.Id, 4400m);
+        tours[1].UpdateBookingNotes(booking7.Id, "Special dietary requirements noted");
+        tours[1].ConfirmBooking(booking7.Id);
+        tours[1].UpdateBookingPaymentStatus(booking7.Id, PaymentStatus.PartiallyPaid);
+
+        tours[0].UpdateBookingPrice(booking9.Id, 1650m);
+        tours[0].UpdateBookingNotes(booking9.Id, "Solo traveler, single room supplement included");
+        tours[0].ConfirmBooking(booking9.Id);
+        tours[0].UpdateBookingPaymentStatus(booking9.Id, PaymentStatus.Paid);
+
         tours[4].ConfirmBooking(booking10.Id);
     }
 }

@@ -206,39 +206,15 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
-    /// Updates an existing booking.
+    /// Updates the payment status of a booking.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>
-    /// <param name="totalPrice">The total price of the booking.</param>
-    /// <param name="notes">Optional notes about the booking.</param>
-    /// <param name="status">The booking status.</param>
     /// <param name="paymentStatus">The payment status.</param>
-    public void UpdateBooking(long bookingId, decimal totalPrice, string? notes, BookingStatus status, PaymentStatus paymentStatus)
+    public void UpdateBookingPaymentStatus(long bookingId, PaymentStatus paymentStatus)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
                       ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
 
-        booking.UpdatePrice(totalPrice);
-        booking.UpdateNotes(notes);
-        
-        // Only perform state transitions if status is changing
-        if (booking.Status != status)
-        {
-            switch (status)
-            {
-                case BookingStatus.Confirmed:
-                    booking.Confirm();
-                    break;
-                case BookingStatus.Cancelled:
-                    booking.Cancel();
-                    break;
-                case BookingStatus.Completed:
-                    booking.Complete();
-                    break;
-                // Pending is default state, no action needed
-            }
-        }
-        
         booking.UpdatePaymentStatus(paymentStatus);
     }
 
@@ -301,21 +277,6 @@ public sealed class Tour : Entity<int>
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
                       ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
 
-        booking.UpdateNotes(notes);
-    }
-
-    /// <summary>
-    /// Updates the price and notes of a booking.
-    /// </summary>
-    /// <param name="bookingId">The ID of the booking to update.</param>
-    /// <param name="newPrice">The new total price.</param>
-    /// <param name="notes">The updated notes.</param>
-    public void UpdateBookingDetails(long bookingId, decimal newPrice, string? notes)
-    {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
-                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
-
-        booking.UpdatePrice(newPrice);
         booking.UpdateNotes(notes);
     }
 

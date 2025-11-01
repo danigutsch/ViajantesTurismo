@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.Domain.Bookings;
 /// Represents a booking made by a customer for a tour.
 /// </summary>
 /// <remarks>
-/// Part of the Tour aggregate. Modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBooking()</c>).
+/// Part of the Tour aggregate. Modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingPrice()</c>).
 /// Methods are <c>internal</c> to enforce aggregate boundary.
 /// </remarks>
 public sealed class Booking : Entity<long>
