@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Domain;
@@ -129,12 +130,17 @@ internal static class ToursEndpoints
         }
 
         var pricingResult = tour.UpdatePricing(
-            tourDto.Price,
             tourDto.SingleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency);
         if (pricingResult.IsFailure)
+        {
+            return basicInfoResult.ToValidationProblem();
+        }
+
+        var basePriceResult = tour.UpdateBasePrice(tourDto.Price);
+        if (basePriceResult.IsFailure)
         {
             return basicInfoResult.ToValidationProblem();
         }
@@ -153,7 +159,7 @@ internal static class ToursEndpoints
             CurrencyDto.Real => Currency.Real,
             CurrencyDto.Euro => Currency.Euro,
             CurrencyDto.UsDollar => Currency.UsDollar,
-            _ => throw new NotImplementedException($"Unknown currency DTO: {currencyDto}")
+            _ => throw new InvalidEnumArgumentException(nameof(currencyDto), (int)currencyDto, typeof(Currency))
         };
     }
 }
