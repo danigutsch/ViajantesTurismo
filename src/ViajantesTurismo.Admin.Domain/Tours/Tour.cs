@@ -7,6 +7,11 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// <summary>
 /// Represents a tour entity with details such as identifier, name, dates, pricing, currency, and included services.
 /// </summary>
+/// <remarks>
+/// <para><strong>AGGREGATE ROOT:</strong> Tour is the aggregate root for the Tour-Booking aggregate.</para>
+/// <para>All Booking entities must be created and modified through Tour methods to maintain consistency.</para>
+/// <para>Tour enforces business rules and invariants for all bookings within its aggregate boundary.</para>
+/// </remarks>
 public sealed class Tour : Entity<int>
 {
     private readonly List<Booking> _bookings = [];
@@ -36,6 +41,11 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
+        if (endDate <= startDate)
+        {
+            throw new ArgumentException("End date must be after start date.", nameof(endDate));
+        }
+
         Identifier = identifier;
         Name = name;
         StartDate = startDate;
@@ -121,7 +131,7 @@ public sealed class Tour : Entity<int>
     /// <param name="endDate">The end date of the tour.</param>
     public void UpdateSchedule(DateTime startDate, DateTime endDate)
     {
-        if (endDate < startDate)
+        if (endDate <= startDate)
         {
             throw new ArgumentException("End date must be after start date.", nameof(endDate));
         }
