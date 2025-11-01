@@ -124,7 +124,7 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
-        var errors = new ValidationErrors<Tour>();
+        var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(identifier))
         {
@@ -195,7 +195,7 @@ public sealed class Tour : Entity<int>
 
         if (errors.HasErrors)
         {
-            return errors.ToResult();
+            return errors.ToResult<Tour>();
         }
 
         return new Tour(
@@ -216,10 +216,37 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="identifier">The unique business identifier for the tour.</param>
     /// <param name="name">The descriptive name of the tour.</param>
-    public void UpdateBasicInfo(string identifier, string name)
+    /// <returns>A Result indicating success or failure.</returns>
+    public Result UpdateBasicInfo(string identifier, string name)
     {
+        var errors = new ValidationErrors();
+
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            errors.Add(TourErrors.EmptyIdentifier());
+        }
+        else if (identifier.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, identifier.Length));
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            errors.Add(TourErrors.EmptyName());
+        }
+        else if (name.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
         Identifier = identifier;
         Name = name;
+        return Result.Ok();
     }
 
     /// <summary>
@@ -230,15 +257,24 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateSchedule(DateTime startDate, DateTime endDate)
     {
+        var errors = new ValidationErrors();
+
         if (endDate <= startDate)
         {
-            return TourErrors.InvalidDateRangeUpdate();
+            errors.Add(TourErrors.InvalidDateRangeUpdate());
+        }
+        else
+        {
+            var duration = (endDate - startDate).TotalDays;
+            if (duration <= ContractConstants.MinimumTourDurationDays)
+            {
+                errors.Add(TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, duration));
+            }
         }
 
-        var duration = (endDate - startDate).TotalDays;
-        if (duration <= ContractConstants.MinimumTourDurationDays)
+        if (errors.HasErrors)
         {
-            return TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, duration);
+            return errors.ToResult();
         }
 
         StartDate = startDate;
@@ -254,26 +290,83 @@ public sealed class Tour : Entity<int>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all pricing.</param>
-    public void UpdatePricing(decimal price,
+    /// <returns>A Result indicating success or failure.</returns>
+    public Result UpdatePricing(decimal price,
         decimal singleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency)
     {
+        var errors = new ValidationErrors();
+
+        if (price < 0)
+        {
+            errors.Add(TourErrors.InvalidPrice("Base price", price));
+        }
+        else if (price > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price));
+        }
+
+        if (singleRoomSupplementPrice < 0)
+        {
+            errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
+        }
+        else if (singleRoomSupplementPrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
+        }
+
+        if (regularBikePrice < 0)
+        {
+            errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
+        }
+        else if (regularBikePrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
+        }
+
+        if (eBikePrice < 0)
+        {
+            errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
+        }
+        else if (eBikePrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("E-bike price", ContractConstants.MaxPrice, eBikePrice));
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
         Price = price;
         SingleRoomSupplementPrice = singleRoomSupplementPrice;
         RegularBikePrice = regularBikePrice;
         EBikePrice = eBikePrice;
         Currency = currency;
+        return Result.Ok();
     }
 
     /// <summary>
     /// Updates the base price of the tour.
     /// </summary>
     /// <param name="price">The new base price per person.</param>
-    public void UpdateBasePrice(decimal price)
+    /// <returns>A Result indicating success or failure.</returns>
+    public Result UpdateBasePrice(decimal price)
     {
+        if (price < 0)
+        {
+            return TourErrors.InvalidPrice("Base price", price).ToResult();
+        }
+
+        if (price > ContractConstants.MaxPrice)
+        {
+            return TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price).ToResult();
+        }
+
         Price = price;
+        return Result.Ok();
     }
 
     /// <summary>

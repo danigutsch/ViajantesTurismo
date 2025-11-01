@@ -3,12 +3,11 @@
 /// <summary>
 /// Collects and combines multiple validation errors into a single result.
 /// </summary>
-/// <typeparam name="T">The type of value being validated.</typeparam>
-public sealed class ValidationErrors<T>
+public sealed class ValidationErrors
 {
     private const string MultipleValidationErrorsDetailMessage = "Multiple validation errors occurred.";
 
-    private readonly List<Result<T>> _errors = [];
+    private readonly List<Result> _errors = [];
 
     /// <summary>
     /// Gets a value indicating whether any validation errors have been collected.
@@ -16,11 +15,11 @@ public sealed class ValidationErrors<T>
     public bool HasErrors => _errors.Count > 0;
 
     /// <summary>
-    /// Returns the combined validation error result. If multiple errors exist, they are merged into a single result. Should only be called if <see cref="HasErrors"/> is true.
+    /// Returns the combined validation error result (non-generic).
     /// </summary>
     /// <returns>A combined error result with all validation errors.</returns>
     /// <exception cref="InvalidOperationException">Thrown if no errors have been collected.</exception>
-    public Result<T> ToResult()
+    public Result ToResult()
     {
         if (_errors.Count == 0)
         {
@@ -32,6 +31,37 @@ public sealed class ValidationErrors<T>
             return _errors[0];
         }
 
+        var mergedErrors = MergeValidationErrors();
+        return Result.Invalid(MultipleValidationErrorsDetailMessage, mergedErrors);
+    }
+
+    /// <summary>
+    /// Returns the combined validation error result as Result&lt;T&gt;.
+    /// </summary>
+    /// <typeparam name="T">The type of value being validated.</typeparam>
+    /// <returns>A combined error result with all validation errors.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if no errors have been collected.</exception>
+    public Result<T> ToResult<T>()
+    {
+        if (_errors.Count == 0)
+        {
+            throw new InvalidOperationException("Cannot create result from empty error collection. Check HasErrors before calling ToResult.");
+        }
+
+        if (_errors.Count == 1)
+        {
+            var singleError = _errors[0];
+            return Result<T>.Invalid(
+                singleError.ErrorDetails!.Detail,
+                singleError.ErrorDetails.ValidationErrors!);
+        }
+
+        var mergedErrors = MergeValidationErrors();
+        return Result<T>.Invalid(MultipleValidationErrorsDetailMessage, mergedErrors);
+    }
+
+    private Dictionary<string, string[]> MergeValidationErrors()
+    {
         var mergedValidationErrors = new Dictionary<string, List<string>>();
 
         foreach (var error in _errors)
@@ -54,12 +84,10 @@ public sealed class ValidationErrors<T>
             }
         }
 
-        var finalValidationErrors = mergedValidationErrors.ToDictionary(
+        return mergedValidationErrors.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.ToArray()
         );
-
-        return Result<T>.Invalid(MultipleValidationErrorsDetailMessage, finalValidationErrors);
     }
 
     /// <summary>
@@ -67,7 +95,7 @@ public sealed class ValidationErrors<T>
     /// </summary>
     /// <param name="error">The validation error result to add.</param>
     /// <exception cref="InvalidOperationException">Thrown if the result status is not Invalid.</exception>
-    public void Add(Result<T> error)
+    public void Add(Result error)
     {
         if (error.Status != ResultStatus.Invalid)
         {
@@ -75,5 +103,21 @@ public sealed class ValidationErrors<T>
         }
 
         _errors.Add(error);
+    }
+
+    /// <summary>
+    /// Adds a validation error to the collection from a Result&lt;T&gt;.
+    /// </summary>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="error">The validation error result to add.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the result status is not Invalid.</exception>
+    public void Add<T>(Result<T> error)
+    {
+        if (error.Status != ResultStatus.Invalid)
+        {
+            throw new InvalidOperationException("Only validation errors can be added.");
+        }
+
+        _errors.Add(error.ToResult());
     }
 }

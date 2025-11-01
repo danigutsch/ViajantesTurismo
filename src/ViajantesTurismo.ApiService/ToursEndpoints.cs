@@ -52,7 +52,7 @@ internal static class ToursEndpoints
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
     {
-        var currency = (Currency)tourDto.Currency;
+        var currency = MapCurrencyDtoToCurrency(tourDto.Currency);
 
         var result = Tour.Create(
             tourDto.Identifier,
@@ -64,14 +64,11 @@ internal static class ToursEndpoints
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency,
-            [.. tourDto.IncludedServices]);
+            tourDto.IncludedServices);
 
-        if (!result.IsSuccess)
+        if (result.IsFailure)
         {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["Tour"] = [result.ErrorDetails!.Detail]
-            });
+            return result.ToValidationProblem();
         }
 
         var tour = result.Value;
@@ -117,29 +114,46 @@ internal static class ToursEndpoints
             return TypedResults.NotFound();
         }
 
-        var currency = (Currency)tourDto.Currency;
+        var currency = MapCurrencyDtoToCurrency(tourDto.Currency);
 
-        tour.UpdateBasicInfo(tourDto.Identifier, tourDto.Name);
-
-        var scheduleResult = tour.UpdateSchedule(tourDto.StartDate, tourDto.EndDate);
-        if (!scheduleResult.IsSuccess)
+        var basicInfoResult = tour.UpdateBasicInfo(tourDto.Identifier, tourDto.Name);
+        if (basicInfoResult.IsFailure)
         {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["Schedule"] = [scheduleResult.ErrorDetails!.Detail]
-            });
+            return basicInfoResult.ToValidationProblem();
         }
 
-        tour.UpdatePricing(
+        var scheduleResult = tour.UpdateSchedule(tourDto.StartDate, tourDto.EndDate);
+        if (scheduleResult.IsFailure)
+        {
+            return basicInfoResult.ToValidationProblem();
+        }
+
+        var pricingResult = tour.UpdatePricing(
             tourDto.Price,
             tourDto.SingleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency);
+        if (pricingResult.IsFailure)
+        {
+            return basicInfoResult.ToValidationProblem();
+        }
+
         tour.UpdateIncludedServices([.. tourDto.IncludedServices]);
 
         await unitOfWork.SaveEntities(ct);
 
         return TypedResults.NoContent();
+    }
+
+    private static Currency MapCurrencyDtoToCurrency(CurrencyDto currencyDto)
+    {
+        return currencyDto switch
+        {
+            CurrencyDto.Real => Currency.Real,
+            CurrencyDto.Euro => Currency.Euro,
+            CurrencyDto.UsDollar => Currency.UsDollar,
+            _ => throw new NotImplementedException($"Unknown currency DTO: {currencyDto}")
+        };
     }
 }

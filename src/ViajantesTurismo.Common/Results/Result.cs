@@ -86,11 +86,12 @@ public readonly struct Result : IEquatable<Result>
     /// <returns>A failed result.</returns>
     internal static Result Invalid(string detail, Dictionary<string, string[]> validationErrors)
     {
-        if (string.IsNullOrWhiteSpace(detail))
-            throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
         if (validationErrors.Count == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(validationErrors), "Validation errors dictionary cannot be empty.");
+        }
 
         return new Result(ResultStatus.Invalid, new ResultError(detail, validationErrors));
     }
@@ -100,70 +101,84 @@ public readonly struct Result : IEquatable<Result>
     /// </summary>
     /// <param name="detail">The error detail describing what was not found.</param>
     /// <returns>A failed result.</returns>
-    public static Result NotFound(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.NotFound, new ResultError(detail));
+    public static Result NotFound(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.NotFound, new ResultError(detail));
+    }
 
     /// <summary>
     /// Creates a failed result with Unauthorized status.
     /// </summary>
     /// <param name="detail">The error detail describing the authorization failure.</param>
     /// <returns>A failed result.</returns>
-    public static Result Unauthorized(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.Unauthorized, new ResultError(detail));
+    public static Result Unauthorized(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.Unauthorized, new ResultError(detail));
+    }
 
     /// <summary>
     /// Creates a failed result with Forbidden status.
     /// </summary>
     /// <param name="detail">The error detail describing why access is forbidden.</param>
     /// <returns>A failed result.</returns>
-    public static Result Forbidden(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.Forbidden, new ResultError(detail));
+    public static Result Forbidden(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.Forbidden, new ResultError(detail));
+    }
 
     /// <summary>
     /// Creates a failed result with Conflict status.
     /// </summary>
     /// <param name="detail">The error detail describing the conflict.</param>
     /// <returns>A failed result.</returns>
-    public static Result Conflict(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.Conflict, new ResultError(detail));
+    public static Result Conflict(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.Conflict, new ResultError(detail));
+    }
 
     /// <summary>
     /// Creates a failed result with Error status.
     /// </summary>
     /// <param name="detail">The error detail describing what went wrong.</param>
     /// <returns>A failed result.</returns>
-    public static Result Error(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.Error, new ResultError(detail));
+    public static Result Error(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.Error, new ResultError(detail));
+    }
 
     /// <summary>
     /// Creates a failed result with CriticalError status.
     /// </summary>
     /// <param name="detail">The error detail describing the critical error.</param>
     /// <returns>A failed result.</returns>
-    public static Result CriticalError(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.CriticalError, new ResultError(detail));
+    public static Result CriticalError(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.CriticalError, new ResultError(detail));
+    }
 
     /// <summary>
     /// Creates a failed result with Unavailable status.
     /// </summary>
     /// <param name="detail">The error detail describing why the resource is unavailable.</param>
     /// <returns>A failed result.</returns>
-    public static Result Unavailable(string detail) =>
-        string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result(ResultStatus.Unavailable, new ResultError(detail));
+    public static Result Unavailable(string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result(ResultStatus.Unavailable, new ResultError(detail));
+    }
 
     /// <summary>
     /// Determines whether two Result instances are equal.
@@ -272,9 +287,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Ok(T value)
 #pragma warning restore CA1000
     {
-        return value is null
-            ? throw new ArgumentNullException(nameof(value), "Success value cannot be null.")
-            : new Result<T>(ResultStatus.Ok, value, null);
+        ArgumentNullException.ThrowIfNull(value);
+
+        return new Result<T>(ResultStatus.Ok, value, null);
     }
 
     /// <summary>
@@ -286,9 +301,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Created(T value)
 #pragma warning restore CA1000
     {
-        return value is null
-            ? throw new ArgumentNullException(nameof(value), "Success value cannot be null.")
-            : new Result<T>(ResultStatus.Created, value, null);
+        ArgumentNullException.ThrowIfNull(value);
+
+        return new Result<T>(ResultStatus.Created, value, null);
     }
 
     /// <summary>
@@ -300,9 +315,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Accepted(T value)
 #pragma warning restore CA1000
     {
-        return value is null
-            ? throw new ArgumentNullException(nameof(value), "Success value cannot be null.")
-            : new Result<T>(ResultStatus.Accepted, value, null);
+        ArgumentNullException.ThrowIfNull(value);
+
+        return new Result<T>(ResultStatus.Accepted, value, null);
     }
 
     /// <summary>
@@ -316,14 +331,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Invalid(string detail, string field, string message)
 #pragma warning restore CA1000
     {
-        if (string.IsNullOrWhiteSpace(detail))
-            throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail));
-
-        if (string.IsNullOrWhiteSpace(field))
-            throw new ArgumentException("Field name cannot be null or whitespace.", nameof(field));
-
-        if (string.IsNullOrWhiteSpace(message))
-            throw new ArgumentException("Validation message cannot be null or whitespace.", nameof(message));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+        ArgumentException.ThrowIfNullOrWhiteSpace(field);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
 
         var validationErrors = new Dictionary<string, string[]>
         {
@@ -344,11 +354,12 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     internal static Result<T> Invalid(string detail, Dictionary<string, string[]> validationErrors)
 #pragma warning restore CA1000
     {
-        if (string.IsNullOrWhiteSpace(detail))
-            throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
         if (validationErrors.Count == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(validationErrors), "Validation errors dictionary cannot be empty.");
+        }
 
         return new Result<T>(ResultStatus.Invalid, default, new ResultError(detail, validationErrors));
     }
@@ -362,9 +373,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> NotFound(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.NotFound, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result<T>(ResultStatus.NotFound, default, new ResultError(detail));
     }
 
     /// <summary>
@@ -376,9 +387,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Unauthorized(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.Unauthorized, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result<T>(ResultStatus.Unauthorized, default, new ResultError(detail));
     }
 
     /// <summary>
@@ -390,9 +401,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Forbidden(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.Forbidden, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result<T>(ResultStatus.Forbidden, default, new ResultError(detail));
     }
 
     /// <summary>
@@ -404,9 +415,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Conflict(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.Conflict, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result<T>(ResultStatus.Conflict, default, new ResultError(detail));
     }
 
     /// <summary>
@@ -418,9 +429,10 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Error(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.Error, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+
+        return new Result<T>(ResultStatus.Error, default, new ResultError(detail));
     }
 
     /// <summary>
@@ -432,9 +444,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> CriticalError(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.CriticalError, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result<T>(ResultStatus.CriticalError, default, new ResultError(detail));
     }
 
     /// <summary>
@@ -446,9 +458,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public static Result<T> Unavailable(string detail)
 #pragma warning restore CA1000
     {
-        return string.IsNullOrWhiteSpace(detail)
-            ? throw new ArgumentException("Error detail cannot be null or whitespace.", nameof(detail))
-            : new Result<T>(ResultStatus.Unavailable, default, new ResultError(detail));
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return new Result<T>(ResultStatus.Unavailable, default, new ResultError(detail));
     }
 
     /// <summary>

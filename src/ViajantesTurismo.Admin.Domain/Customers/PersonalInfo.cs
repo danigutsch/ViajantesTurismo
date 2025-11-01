@@ -61,7 +61,7 @@ public sealed class PersonalInfo
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
 
-        var errors = new ValidationErrors<PersonalInfo>();
+        var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(firstName))
         {
@@ -115,7 +115,7 @@ public sealed class PersonalInfo
 
         if (errors.HasErrors)
         {
-            return errors.ToResult();
+            return errors.ToResult<PersonalInfo>();
         }
 
         return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
