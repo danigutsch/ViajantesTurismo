@@ -23,12 +23,12 @@ public static class ContractConstants
     /// <summary>
     /// The minimum price value for any tour-related pricing.
     /// </summary>
-    public const double MinPrice = 0;
+    public const int MinPrice = 0;
 
     /// <summary>
     /// The maximum price value for any tour-related pricing.
     /// </summary>
-    public const double MaxPrice = 100_000;
+    public const int MaxPrice = 100_000;
 
     /// <summary>
     /// The maximum length for booking notes.

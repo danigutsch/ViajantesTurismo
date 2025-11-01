@@ -124,75 +124,78 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
+        var errors = new ValidationErrors<Tour>();
+
         if (string.IsNullOrWhiteSpace(identifier))
         {
-            return TourErrors.EmptyIdentifier();
+            errors.Add(TourErrors.EmptyIdentifier());
         }
-
-        if (identifier.Length > ContractConstants.MaxNameLength)
+        else if (identifier.Length > ContractConstants.MaxNameLength)
         {
-            return TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, identifier.Length);
+            errors.Add(TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, identifier.Length));
         }
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            return TourErrors.EmptyName();
+            errors.Add(TourErrors.EmptyName());
         }
-
-        if (name.Length > ContractConstants.MaxNameLength)
+        else if (name.Length > ContractConstants.MaxNameLength)
         {
-            return TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length);
+            errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
         }
 
         if (endDate <= startDate)
         {
-            return TourErrors.InvalidDateRange();
+            errors.Add(TourErrors.InvalidDateRange());
         }
-
-        var duration = (endDate - startDate).TotalDays;
-        if (duration <= ContractConstants.MinimumTourDurationDays)
+        else
         {
-            return TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, duration);
+            var duration = (endDate - startDate).TotalDays;
+            if (duration <= ContractConstants.MinimumTourDurationDays)
+            {
+                errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, duration));
+            }
         }
 
         if (price < 0)
         {
-            return TourErrors.InvalidPrice("Base price", price);
+            errors.Add(TourErrors.InvalidPrice("Base price", price));
+        }
+        else if (price > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price));
         }
 
-        if (price > (decimal)ContractConstants.MaxPrice)
+        if (singleRoomSupplementPrice < ContractConstants.MinPrice)
         {
-            return TourErrors.PriceTooHigh("Base price", (decimal)ContractConstants.MaxPrice, price);
+            errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
+        }
+        else if (singleRoomSupplementPrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
         }
 
-        if (singleRoomSupplementPrice < 0)
+        if (regularBikePrice < ContractConstants.MinPrice)
         {
-            return TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice);
+            errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
+        }
+        else if (regularBikePrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
         }
 
-        if (singleRoomSupplementPrice > (decimal)ContractConstants.MaxPrice)
+        if (eBikePrice < ContractConstants.MinPrice)
         {
-            return TourErrors.PriceTooHigh("Single room supplement price", (decimal)ContractConstants.MaxPrice, singleRoomSupplementPrice);
+            errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
+        }
+        else if (eBikePrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(TourErrors.PriceTooHigh("E-bike price", ContractConstants.MaxPrice, eBikePrice));
         }
 
-        if (regularBikePrice < 0)
+        if (errors.HasErrors)
         {
-            return TourErrors.InvalidPrice("Regular bike price", regularBikePrice);
-        }
-
-        if (regularBikePrice > (decimal)ContractConstants.MaxPrice)
-        {
-            return TourErrors.PriceTooHigh("Regular bike price", (decimal)ContractConstants.MaxPrice, regularBikePrice);
-        }
-
-        if (eBikePrice < 0)
-        {
-            return TourErrors.InvalidPrice("E-bike price", eBikePrice);
-        }
-
-        if (eBikePrice > (decimal)ContractConstants.MaxPrice)
-        {
-            return TourErrors.PriceTooHigh("E-bike price", (decimal)ContractConstants.MaxPrice, eBikePrice);
+            return errors.ToResult();
         }
 
         return new Tour(
