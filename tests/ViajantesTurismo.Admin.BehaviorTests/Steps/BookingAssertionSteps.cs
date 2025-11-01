@@ -10,15 +10,7 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
     public void ThenTheBookingStatusShouldBe(string expectedStatus)
     {
         var booking = scenarioContext.Get<Booking>("Booking");
-        var expected = expectedStatus switch
-        {
-            "Pending" => BookingStatus.Pending,
-            "Confirmed" => BookingStatus.Confirmed,
-            "Cancelled" => BookingStatus.Cancelled,
-            "Completed" => BookingStatus.Completed,
-            _ => throw new ArgumentException($"Unknown status: {expectedStatus}")
-        };
-
+        var expected = TestHelpers.ParseBookingStatus(expectedStatus);
         Assert.Equal(expected, booking.Status);
     }
 
@@ -40,14 +32,7 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
     public void ThenTheBookingPaymentStatusShouldBe(string expectedStatusString)
     {
         var booking = scenarioContext.Get<Booking>("Booking");
-        var expected = expectedStatusString switch
-        {
-            "Paid" => PaymentStatus.Paid,
-            "PartiallyPaid" => PaymentStatus.PartiallyPaid,
-            "Unpaid" => PaymentStatus.Unpaid,
-            _ => throw new ArgumentException($"Unknown payment status: {expectedStatusString}")
-        };
-
+        var expected = TestHelpers.ParsePaymentStatus(expectedStatusString);
         Assert.Equal(expected, booking.PaymentStatus);
     }
 
@@ -56,6 +41,22 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
     {
         var action = scenarioContext.Get<Action>("Action");
         var exception = Assert.ThrowsAny<Exception>(action);
+        Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Then(@"the operation should fail with argument exception ""(.*)""")]
+    public void ThenTheOperationShouldFailWithArgumentException(string expectedMessage)
+    {
+        var action = scenarioContext.Get<Action>("Action");
+        var exception = Assert.Throws<ArgumentException>(action);
+        Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Then(@"the operation should fail with invalid operation exception ""(.*)""")]
+    public void ThenTheOperationShouldFailWithInvalidOperationException(string expectedMessage)
+    {
+        var action = scenarioContext.Get<Action>("Action");
+        var exception = Assert.Throws<InvalidOperationException>(action);
         Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
     }
 }

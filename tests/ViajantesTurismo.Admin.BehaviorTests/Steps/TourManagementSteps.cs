@@ -8,10 +8,10 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class TourManagementSteps
 {
-    private Tour? _tour;
-    private DateTime _startDate;
-    private DateTime _endDate;
     private Action? _action;
+    private DateTime _endDate;
+    private DateTime _startDate;
+    private Tour? _tour;
 
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
     public void GivenIHaveTourDatesFromTo(string startDateString, string endDateString)
@@ -25,51 +25,81 @@ public sealed class TourManagementSteps
     {
         _startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         _endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        _tour = CreateTourWithDates(_startDate, _endDate);
+        _tour = TestHelpers.CreateTestTourWithDates(_startDate, _endDate);
     }
 
     [Given(@"an existing tour with identifier ""(.*)"" and name ""(.*)""")]
     public void GivenAnExistingTourWithIdentifierAndName(string identifier, string name)
     {
-        _tour = CreateTour(identifier, name);
+        _tour = TestHelpers.CreateTestTourWithIdentifierAndName(identifier, name);
     }
 
     [Given(@"an existing tour with base price (.*)")]
     public void GivenAnExistingTourWithBasePrice(decimal price)
     {
-        _tour = CreateTourWithPrice(price);
+        _tour = new Tour(
+            identifier: "TEST2024",
+            name: "Test Tour",
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            price: price,
+            singleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: Currency.UsDollar,
+            includedServices: ["Hotel", "Breakfast"]);
     }
 
     [Given(@"an existing tour with services ""(.*)""")]
     public void GivenAnExistingTourWithServices(string servicesString)
     {
         var services = servicesString.Split(", ");
-        _tour = CreateTourWithServices(services);
+        _tour = new Tour(
+            identifier: "TEST2024",
+            name: "Test Tour",
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            price: 2000.00m,
+            singleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: Currency.UsDollar,
+            includedServices: services);
     }
 
     [Given(@"an existing tour with currency ""(.*)""")]
     public void GivenAnExistingTourWithCurrency(string currencyCode)
     {
-        var currency = ParseCurrency(currencyCode);
-        _tour = CreateTourWithCurrency(currency);
+        var currency = TestHelpers.ParseCurrency(currencyCode);
+        _tour = new Tour(
+            identifier: "TEST2024",
+            name: "Test Tour",
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            price: 2000.00m,
+            singleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: currency,
+            includedServices: ["Hotel", "Breakfast"]);
     }
 
     [Given(@"an existing tour")]
     public void GivenAnExistingTour()
     {
-        _tour = CreateTour("TEST2024", "Test Tour");
+        _tour = TestHelpers.CreateTestTour();
     }
 
     [When(@"I create the tour")]
     public void WhenICreateTheTour()
     {
-        _tour = CreateTourWithDates(_startDate, _endDate);
+        _tour = TestHelpers.CreateTestTourWithDates(_startDate, _endDate);
     }
 
     [When(@"I try to create the tour")]
     public void WhenITryToCreateTheTour()
     {
-        _action = () => { _tour = CreateTourWithDates(_startDate, _endDate); };
+        _action = () => { _tour = TestHelpers.CreateTestTourWithDates(_startDate, _endDate); };
     }
 
     [When(@"I update the schedule to ""(.*)"" to ""(.*)""")]
@@ -114,7 +144,7 @@ public sealed class TourManagementSteps
     [When(@"I update the currency to ""(.*)""")]
     public void WhenIUpdateTheCurrencyTo(string currencyCode)
     {
-        var currency = ParseCurrency(currencyCode);
+        var currency = TestHelpers.ParseCurrency(currencyCode);
         _tour!.UpdateCurrency(currency);
     }
 
@@ -136,6 +166,13 @@ public sealed class TourManagementSteps
 
     [Then(@"the tour creation should fail with message ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithMessage(string expectedMessage)
+    {
+        var exception = Assert.Throws<ArgumentException>(_action!);
+        Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Then(@"the tour creation should fail with argument exception ""(.*)""")]
+    public void ThenTheTourCreationShouldFailWithArgumentException(string expectedMessage)
     {
         var exception = Assert.Throws<ArgumentException>(_action!);
         Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
@@ -174,7 +211,7 @@ public sealed class TourManagementSteps
     {
         var expectedServices = servicesString.Split(", ");
         Assert.Equal(expectedServices.Length, _tour!.IncludedServices.Count);
-        
+
         foreach (var service in expectedServices)
         {
             Assert.Contains(service, _tour.IncludedServices);
@@ -184,7 +221,7 @@ public sealed class TourManagementSteps
     [Then(@"the tour currency should be ""(.*)""")]
     public void ThenTheTourCurrencyShouldBe(string currencyCode)
     {
-        var expectedCurrency = ParseCurrency(currencyCode);
+        var expectedCurrency = TestHelpers.ParseCurrency(currencyCode);
         Assert.Equal(expectedCurrency, _tour!.Currency);
     }
 
@@ -195,90 +232,5 @@ public sealed class TourManagementSteps
         Assert.Equal(600.00m, _tour.SingleRoomSupplementPrice);
         Assert.Equal(150.00m, _tour.RegularBikePrice);
         Assert.Equal(250.00m, _tour.EBikePrice);
-    }
-
-    private static Tour CreateTourWithDates(DateTime startDate, DateTime endDate)
-    {
-        return new Tour(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: startDate,
-            endDate: endDate,
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
-    }
-
-    private static Tour CreateTour(string identifier, string name)
-    {
-        return new Tour(
-            identifier: identifier,
-            name: name,
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
-    }
-
-    private static Tour CreateTourWithPrice(decimal price)
-    {
-        return new Tour(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: price,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
-    }
-
-    private static Tour CreateTourWithServices(string[] services)
-    {
-        return new Tour(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: services);
-    }
-
-    private static Tour CreateTourWithCurrency(Currency currency)
-    {
-        return new Tour(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: currency,
-            includedServices: ["Hotel", "Breakfast"]);
-    }
-
-    private static Currency ParseCurrency(string currencyCode)
-    {
-        return currencyCode switch
-        {
-            "USD" => Currency.UsDollar,
-            "EUR" => Currency.Euro,
-            _ => throw new ArgumentException($"Unknown currency: {currencyCode}")
-        };
     }
 }

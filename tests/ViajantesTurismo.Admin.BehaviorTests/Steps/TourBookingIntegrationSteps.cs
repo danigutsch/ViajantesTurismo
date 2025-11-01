@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -11,7 +10,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists")]
     public void GivenATourExists()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         scenarioContext["Tour"] = tour;
     }
 
@@ -24,7 +23,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists with a pending booking")]
     public void GivenATourExistsWithAPendingBooking()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -34,7 +33,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists with a confirmed booking")]
     public void GivenATourExistsWithAConfirmedBooking()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         tour.ConfirmBooking(booking.Id);
         scenarioContext["Tour"] = tour;
@@ -45,7 +44,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists with a booking priced at (.*)")]
     public void GivenATourExistsWithABookingPricedAt(decimal price)
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -54,7 +53,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists with a booking")]
     public void GivenATourExistsWithABooking()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -63,7 +62,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists with a booking priced at (.*) and notes ""(.*)""")]
     public void GivenATourExistsWithABookingPricedAtAndNotes(decimal price, string notes)
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: notes);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -72,7 +71,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     [Given(@"a tour exists with a pending booking priced at (.*)")]
     public void GivenATourExistsWithAPendingBookingPricedAt(decimal price)
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -159,23 +158,9 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        
-        var status = statusString switch
-        {
-            "Pending" => BookingStatus.Pending,
-            "Confirmed" => BookingStatus.Confirmed,
-            "Cancelled" => BookingStatus.Cancelled,
-            "Completed" => BookingStatus.Completed,
-            _ => throw new ArgumentException($"Unknown status: {statusString}")
-        };
 
-        var payment = paymentString switch
-        {
-            "Unpaid" => PaymentStatus.Unpaid,
-            "PartiallyPaid" => PaymentStatus.PartiallyPaid,
-            "Paid" => PaymentStatus.Paid,
-            _ => throw new ArgumentException($"Unknown payment status: {paymentString}")
-        };
+        var status = TestHelpers.ParseBookingStatus(statusString);
+        var payment = TestHelpers.ParsePaymentStatus(paymentString);
 
         tour.UpdateBooking(booking.Id, price, notes, status, payment);
     }
@@ -201,20 +186,5 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
         Assert.DoesNotContain(booking, tour.Bookings);
-    }
-
-    private static Tour CreateTestTour()
-    {
-        return new Tour(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
     }
 }

@@ -49,7 +49,7 @@ So that tour bookings are properly tracked
     Scenario: Cannot find booking that doesn't exist in tour
         Given a tour exists
         When I try to confirm a non-existent booking
-        Then the operation should fail with message "not found in this tour"
+        Then the operation should fail with invalid operation exception "not found in this tour"
 
     Scenario: Full booking update through tour
         Given a tour exists with a pending booking priced at 1500.00

@@ -21,17 +21,17 @@ So that bookings follow valid business rules
     Scenario: Cannot confirm a cancelled booking
         Given a cancelled booking exists
         When the operator tries to confirm the booking
-        Then the operation should fail with message "Cannot confirm a cancelled booking."
+        Then the operation should fail with invalid operation exception "Cannot confirm a cancelled booking."
 
     Scenario: Cannot cancel a completed booking
         Given a completed booking exists
         When the operator tries to cancel the booking
-        Then the operation should fail with message "Cannot cancel a completed booking."
+        Then the operation should fail with invalid operation exception "Cannot cancel a completed booking."
 
     Scenario: Cannot complete a cancelled booking
         Given a cancelled booking exists
         When the operator tries to complete the booking
-        Then the operation should fail with message "Cannot complete a cancelled booking."
+        Then the operation should fail with invalid operation exception "Cannot complete a cancelled booking."
 
     Scenario: Updating booking price
         Given a pending booking exists with price 1500.00
@@ -41,12 +41,12 @@ So that bookings follow valid business rules
     Scenario: Cannot update booking price to zero or negative
         Given a pending booking exists with price 1500.00
         When the operator tries to update the price to 0
-        Then the operation should fail with message "Price must be greater than zero."
+        Then the operation should fail with argument exception "Price must be greater than zero."
 
     Scenario: Cannot update booking price to negative value
         Given a pending booking exists with price 1500.00
         When the operator tries to update the price to -100
-        Then the operation should fail with message "Price must be greater than zero."
+        Then the operation should fail with argument exception "Price must be greater than zero."
 
     Scenario: Updating booking notes
         Given a pending booking exists

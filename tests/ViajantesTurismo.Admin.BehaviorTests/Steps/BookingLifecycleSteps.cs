@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -11,7 +10,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     [Given(@"a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -21,7 +20,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     [Given(@"a pending booking exists with price (.*)")]
     public void GivenAPendingBookingExistsWithPrice(decimal price)
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
@@ -31,7 +30,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     [Given(@"a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         tour.ConfirmBooking(booking.Id);
         scenarioContext["Tour"] = tour;
@@ -42,7 +41,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     [Given(@"a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         tour.CancelBooking(booking.Id);
         scenarioContext["Tour"] = tour;
@@ -53,7 +52,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     [Given(@"a completed booking exists")]
     public void GivenACompletedBookingExists()
     {
-        var tour = CreateTestTour();
+        var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
         tour.ConfirmBooking(booking.Id);
         tour.CompleteBooking(booking.Id);
@@ -139,31 +138,10 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        
-        var paymentStatus = paymentStatusString switch
-        {
-            "Paid" => PaymentStatus.Paid,
-            "PartiallyPaid" => PaymentStatus.PartiallyPaid,
-            "Unpaid" => PaymentStatus.Unpaid,
-            _ => throw new ArgumentException($"Unknown payment status: {paymentStatusString}")
-        };
+
+        var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
 
         // Update through Tour aggregate - Booking should not be modified directly
         tour.UpdateBooking(booking.Id, booking.TotalPrice, booking.Notes, booking.Status, paymentStatus);
-    }
-
-    private static Tour CreateTestTour()
-    {
-        return new Tour(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
     }
 }

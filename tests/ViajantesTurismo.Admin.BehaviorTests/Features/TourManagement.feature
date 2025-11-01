@@ -11,12 +11,12 @@ So that tours have valid and accurate information
     Scenario: Cannot create tour with end date before start date
         Given I have tour dates from "2025-06-10" to "2025-06-01"
         When I try to create the tour
-        Then the tour creation should fail with message "End date must be after start date."
+        Then the tour creation should fail with argument exception "End date must be after start date."
 
     Scenario: Cannot create tour with end date same as start date
         Given I have tour dates from "2025-06-01" to "2025-06-01"
         When I try to create the tour
-        Then the tour creation should fail with message "End date must be after start date."
+        Then the tour creation should fail with argument exception "End date must be after start date."
 
     Scenario: Updating tour schedule with valid dates
         Given an existing tour with dates from "2025-06-01" to "2025-06-10"
@@ -26,7 +26,7 @@ So that tours have valid and accurate information
     Scenario: Cannot update tour schedule with invalid date range
         Given an existing tour with dates from "2025-06-01" to "2025-06-10"
         When I try to update the schedule to "2025-07-15" to "2025-07-01"
-        Then the tour creation should fail with message "End date must be after start date."
+        Then the tour creation should fail with argument exception "End date must be after start date."
 
     Scenario: Updating tour basic information
         Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure 2024"
