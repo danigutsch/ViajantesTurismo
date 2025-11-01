@@ -8,10 +8,25 @@ So that bookings follow valid business rules
         When the operator confirms the booking
         Then the booking status should be "Confirmed"
 
+    Scenario: Confirming an already confirmed booking is idempotent
+        Given a confirmed booking exists
+        When the operator confirms the booking
+        Then the booking status should be "Confirmed"
+
     Scenario: Cancelling a pending booking
         Given a pending booking exists
         When the operator cancels the booking
         Then the booking status should be "Cancelled"
+
+    Scenario: Cancelling an already cancelled booking is idempotent
+        Given a cancelled booking exists
+        When the operator cancels the booking
+        Then the booking status should be "Cancelled"
+
+    Scenario: Cannot cancel a completed booking
+        Given a completed booking exists
+        When the operator tries to cancel the booking
+        Then the result should fail with message "Cannot transition from Completed to Cancelled."
 
     Scenario: Completing a confirmed booking
         Given a confirmed booking exists
@@ -21,12 +36,12 @@ So that bookings follow valid business rules
     Scenario: Cannot confirm a cancelled booking
         Given a cancelled booking exists
         When the operator tries to confirm the booking
-        Then the result should fail with message "Cannot confirm a cancelled booking."
+        Then the result should fail with message "Cannot transition from Cancelled to Confirmed."
 
-    Scenario: Cannot cancel a completed booking
+    Scenario: Cannot confirm a completed booking
         Given a completed booking exists
-        When the operator tries to cancel the booking
-        Then the operation should fail with invalid operation exception "Cannot cancel a completed booking."
+        When the operator tries to confirm the booking
+        Then the result should fail with message "Cannot transition from Completed to Confirmed."
 
     Scenario: Cannot complete a cancelled booking
         Given a cancelled booking exists

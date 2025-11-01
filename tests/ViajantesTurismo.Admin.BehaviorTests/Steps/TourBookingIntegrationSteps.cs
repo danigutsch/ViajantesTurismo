@@ -101,7 +101,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.CancelBooking(booking.Id);
+        var result = tour.CancelBooking(booking.Id);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"I complete the booking through the tour")]
@@ -177,7 +178,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
                     Assert.True(confirmResult.IsSuccess);
                     break;
                 case BookingStatus.Cancelled:
-                    tour.CancelBooking(booking.Id);
+                    var cancelResult = tour.CancelBooking(booking.Id);
+                    Assert.True(cancelResult.IsSuccess);
                     break;
                 case BookingStatus.Completed:
                     tour.CompleteBooking(booking.Id);

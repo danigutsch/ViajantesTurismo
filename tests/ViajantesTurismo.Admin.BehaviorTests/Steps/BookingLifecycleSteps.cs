@@ -43,7 +43,8 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
-        tour.CancelBooking(booking.Id);
+        var result = tour.CancelBooking(booking.Id);
+        Assert.True(result.IsSuccess);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
         Assert.Equal(BookingStatus.Cancelled, booking.Status);
@@ -76,7 +77,8 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.CancelBooking(booking.Id);
+        var result = tour.CancelBooking(booking.Id);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator completes the booking")]
@@ -100,7 +102,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Action"] = () => tour.CancelBooking(booking.Id);
+        scenarioContext["Result"] = tour.CancelBooking(booking.Id);
     }
 
     [When(@"the operator tries to complete the booking")]

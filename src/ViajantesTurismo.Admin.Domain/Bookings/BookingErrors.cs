@@ -8,9 +8,11 @@ namespace ViajantesTurismo.Admin.Domain.Bookings;
 public static class BookingErrors
 {
     /// <summary>
-    /// Indicates that a cancelled booking cannot be confirmed.
+    /// Indicates that a status transition is invalid for the current booking state.
     /// </summary>
+    /// <param name="currentStatus">The current booking status.</param>
+    /// <param name="targetStatus">The target booking status.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CannotConfirmCancelledBooking() => Result.Conflict(
-        detail: "Cannot confirm a cancelled booking.");
+    public static Result InvalidStatusTransition(BookingStatus currentStatus, BookingStatus targetStatus) => 
+        Result.Conflict(detail: $"Cannot transition from {currentStatus} to {targetStatus}.");
 }

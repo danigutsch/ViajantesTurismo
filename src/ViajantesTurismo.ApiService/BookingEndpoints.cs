@@ -185,8 +185,7 @@ internal static class BookingEndpoints
                     statusUpdateResult = tour.ConfirmBooking(id);
                     break;
                 case BookingStatus.Cancelled:
-                    tour.CancelBooking(id);
-                    statusUpdateResult = Result.Ok();
+                    statusUpdateResult = tour.CancelBooking(id);
                     break;
                 case BookingStatus.Completed:
                     tour.CompleteBooking(id);
@@ -244,7 +243,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound>> CancelBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> CancelBooking(
         [FromRoute] long id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -253,10 +252,22 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(new ProblemDetails()
+            {
+                Status = StatusCodes.Status404NotFound,
+                Detail = "Booking not found."
+            });
         }
 
-        tour.CancelBooking(id);
+        var result = tour.CancelBooking(id);
+        if (result.IsFailure)
+        {
+            return TypedResults.NotFound(new ProblemDetails()
+            {
+                Status = StatusCodes.Status404NotFound,
+                Detail = result.ErrorDetails!.Detail
+            });
+        }
 
         await unitOfWork.SaveEntities(ct);
 

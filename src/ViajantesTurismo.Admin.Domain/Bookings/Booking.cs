@@ -89,26 +89,34 @@ public sealed class Booking : Entity<long>
     /// <returns>A result indicating success or failure.</returns>
     internal Result Confirm()
     {
-        if (Status == BookingStatus.Cancelled)
+        switch (Status)
         {
-            return BookingErrors.CannotConfirmCancelledBooking();
+            case BookingStatus.Confirmed:
+                return Result.Ok();
+            case BookingStatus.Cancelled or BookingStatus.Completed:
+                return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Confirmed);
+            default:
+                Status = BookingStatus.Confirmed;
+                return Result.Ok();
         }
-
-        Status = BookingStatus.Confirmed;
-        return Result.Ok();
     }
 
     /// <summary>
     /// Cancels the booking, setting its status to Cancelled.
     /// </summary>
-    internal void Cancel()
+    /// <returns>A result indicating success or failure.</returns>
+    internal Result Cancel()
     {
-        if (Status == BookingStatus.Completed)
+        switch (Status)
         {
-            throw new InvalidOperationException("Cannot cancel a completed booking.");
+            case BookingStatus.Cancelled:
+                return Result.Ok();
+            case BookingStatus.Completed:
+                return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Cancelled);
+            default:
+                Status = BookingStatus.Cancelled;
+                return Result.Ok();
         }
-
-        Status = BookingStatus.Cancelled;
     }
 
     /// <summary>
