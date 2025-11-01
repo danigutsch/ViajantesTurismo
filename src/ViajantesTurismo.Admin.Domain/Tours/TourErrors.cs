@@ -117,4 +117,11 @@ public static class TourErrors
         detail: $"{priceType} cannot exceed {maxPrice}. Received: {value}.",
         field: "price",
         message: $"{priceType} cannot exceed {maxPrice}.");
+
+    /// <summary>
+    /// Indicates that a tour with the specified ID was not found.
+    /// </summary>
+    /// <param name="id">The ID of the tour that was not found.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Tour> TourNotFound(int id) => Result<Tour>.NotFound(detail: $"Tour with ID {id} was not found.");
 }

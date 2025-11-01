@@ -88,7 +88,7 @@ internal static class ToursEndpoints
         return TypedResults.Ok(allTours);
     }
 
-    private static async Task<Results<Ok<GetTourDto>, NotFound>> GetTourById(
+    private static async Task<Results<Ok<GetTourDto>, NotFound<ProblemDetails>>> GetTourById(
         [FromRoute] int id,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
@@ -96,13 +96,13 @@ internal static class ToursEndpoints
         var tourDto = await queryService.GetTourById(id, ct);
         if (tourDto is null)
         {
-            return TypedResults.NotFound();
+            return TourErrors.TourNotFound(id).ToNotFound();
         }
 
         return TypedResults.Ok(tourDto);
     }
 
-    private static async Task<Results<NoContent, NotFound, ValidationProblem>> UpdateTour(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateTour(
         int id,
         [FromBody] UpdateTourDto tourDto,
         [FromServices] ITourStore tourStore,
@@ -112,7 +112,7 @@ internal static class ToursEndpoints
         var tour = await tourStore.GetById(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound();
+            return TourErrors.TourNotFound(id).ToNotFound();
         }
 
         var currency = MapCurrencyDtoToCurrency(tourDto.Currency);
