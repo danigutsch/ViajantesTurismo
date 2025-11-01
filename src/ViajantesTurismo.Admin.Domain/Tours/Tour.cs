@@ -1,6 +1,7 @@
 ﻿using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Monies;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
@@ -206,16 +207,21 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
-    /// Updates the payment status of a booking.
+    /// Updates the payment status of a specific booking.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>
     /// <param name="paymentStatus">The payment status.</param>
-    public void UpdateBookingPaymentStatus(long bookingId, PaymentStatus paymentStatus)
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateBookingPaymentStatus(long bookingId, PaymentStatus paymentStatus)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
-                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
 
         booking.UpdatePaymentStatus(paymentStatus);
+        return Result.Ok();
     }
 
     /// <summary>

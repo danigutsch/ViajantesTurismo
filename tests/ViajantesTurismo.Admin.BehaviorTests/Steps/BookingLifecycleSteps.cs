@@ -141,6 +141,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
 
         var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
 
-        tour.UpdateBookingPaymentStatus(booking.Id, paymentStatus);
+        var result = tour.UpdateBookingPaymentStatus(booking.Id, paymentStatus);
+        Assert.True(result.IsSuccess);
     }
 }

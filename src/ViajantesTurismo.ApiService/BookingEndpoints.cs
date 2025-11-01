@@ -151,7 +151,7 @@ internal static class BookingEndpoints
         return TypedResults.Created($"/bookings/{booking.Id}", bookingDto);
     }
 
-    private static async Task<Results<NoContent, NotFound>> UpdateBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> UpdateBooking(
         [FromRoute] long id,
         [FromBody] UpdateBookingDto dto,
         [FromServices] ITourStore tourStore,
@@ -161,12 +161,18 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound();
+            var problemDetails = new ProblemDetails()
+            {
+                Status = 400,
+                Title = "Resource Not Found",
+                Detail = $"No tour found containing booking with ID {id}."
+            };
+            return TypedResults.NotFound(problemDetails);
         }
 
         tour.UpdateBookingPrice(id, dto.TotalPrice);
         tour.UpdateBookingNotes(id, dto.Notes);
-        
+
         var targetStatus = (BookingStatus)dto.Status;
         var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
         if (booking is not null && booking.Status != targetStatus)
@@ -184,8 +190,18 @@ internal static class BookingEndpoints
                     break;
             }
         }
-        
-        tour.UpdateBookingPaymentStatus(id, (PaymentStatus)dto.PaymentStatus);
+
+        var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, (PaymentStatus)dto.PaymentStatus);
+        if (paymentUpdateResult.IsFailure)
+        {
+            var problemDetails = new ProblemDetails()
+            {
+                Status = (int)paymentUpdateResult.Status,
+                Title = paymentUpdateResult.Status.ToString(),
+                Detail = paymentUpdateResult.ErrorDetails.Detail
+            };
+            return TypedResults.NotFound(problemDetails);
+        }
 
         await unitOfWork.SaveEntities(ct);
 

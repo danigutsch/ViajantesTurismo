@@ -165,7 +165,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
 
         tour.UpdateBookingPrice(booking.Id, price);
         tour.UpdateBookingNotes(booking.Id, notes);
-        
+
         if (booking.Status != status)
         {
             switch (status)
@@ -181,8 +181,9 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
                     break;
             }
         }
-        
-        tour.UpdateBookingPaymentStatus(booking.Id, payment);
+
+        var result = tour.UpdateBookingPaymentStatus(booking.Id, payment);
+        Assert.True(result.IsSuccess);
     }
 
     [Then(@"the tour should have the booking")]
