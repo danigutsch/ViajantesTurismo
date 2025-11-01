@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using ViajantesTurismo.Common;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Bookings;
 
@@ -85,14 +86,16 @@ public sealed class Booking : Entity<long>
     /// <summary>
     /// Confirms the booking, setting its status to Confirmed.
     /// </summary>
-    internal void Confirm()
+    /// <returns>A result indicating success or failure.</returns>
+    internal Result Confirm()
     {
         if (Status == BookingStatus.Cancelled)
         {
-            throw new InvalidOperationException("Cannot confirm a cancelled booking.");
+            return BookingErrors.CannotConfirmCancelledBooking();
         }
 
         Status = BookingStatus.Confirmed;
+        return Result.Ok();
     }
 
     /// <summary>

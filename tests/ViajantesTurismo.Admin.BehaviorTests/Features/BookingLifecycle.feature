@@ -21,7 +21,7 @@ So that bookings follow valid business rules
     Scenario: Cannot confirm a cancelled booking
         Given a cancelled booking exists
         When the operator tries to confirm the booking
-        Then the operation should fail with invalid operation exception "Cannot confirm a cancelled booking."
+        Then the result should fail with message "Cannot confirm a cancelled booking."
 
     Scenario: Cannot cancel a completed booking
         Given a completed booking exists

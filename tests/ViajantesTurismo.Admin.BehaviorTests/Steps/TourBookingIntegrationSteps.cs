@@ -35,7 +35,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = TestHelpers.CreateTestTour();
         var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
-        tour.ConfirmBooking(booking.Id);
+        var result = tour.ConfirmBooking(booking.Id);
+        Assert.True(result.IsSuccess);
         scenarioContext["Tour"] = tour;
         scenarioContext["Booking"] = booking;
         Assert.Equal(BookingStatus.Confirmed, booking.Status);
@@ -91,7 +92,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.ConfirmBooking(booking.Id);
+        var result = tour.ConfirmBooking(booking.Id);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"I cancel the booking through the tour")]
@@ -147,7 +149,7 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     public void WhenITryToConfirmANonExistentBooking()
     {
         var tour = scenarioContext.Get<Tour>("Tour");
-        scenarioContext["Action"] = () => tour.ConfirmBooking(99999);
+        scenarioContext["Result"] = tour.ConfirmBooking(99999);
     }
 
     [When(@"I update the booking with price (.*), notes ""(.*)"", status ""(.*)"", and payment ""(.*)""")]
@@ -171,7 +173,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
             switch (status)
             {
                 case BookingStatus.Confirmed:
-                    tour.ConfirmBooking(booking.Id);
+                    var confirmResult = tour.ConfirmBooking(booking.Id);
+                    Assert.True(confirmResult.IsSuccess);
                     break;
                 case BookingStatus.Cancelled:
                     tour.CancelBooking(booking.Id);

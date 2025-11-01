@@ -4,6 +4,7 @@ using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.ApiService;
 
@@ -177,17 +178,33 @@ internal static class BookingEndpoints
         var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
         if (booking is not null && booking.Status != targetStatus)
         {
+            Result statusUpdateResult;
             switch (targetStatus)
             {
                 case BookingStatus.Confirmed:
-                    tour.ConfirmBooking(id);
+                    statusUpdateResult = tour.ConfirmBooking(id);
                     break;
                 case BookingStatus.Cancelled:
                     tour.CancelBooking(id);
+                    statusUpdateResult = Result.Ok();
                     break;
                 case BookingStatus.Completed:
                     tour.CompleteBooking(id);
+                    statusUpdateResult = Result.Ok();
                     break;
+                default:
+                    statusUpdateResult = Result.Ok();
+                    break;
+            }
+
+            if (statusUpdateResult.IsFailure)
+            {
+                var problemDetails = new ProblemDetails()
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Detail = statusUpdateResult.ErrorDetails!.Detail
+                };
+                return TypedResults.NotFound(problemDetails);
             }
         }
 
@@ -258,7 +275,11 @@ internal static class BookingEndpoints
             return TypedResults.NotFound();
         }
 
-        tour.ConfirmBooking(id);
+        var result = tour.ConfirmBooking(id);
+        if (result.IsFailure)
+        {
+            return TypedResults.NotFound();
+        }
 
         await unitOfWork.SaveEntities(ct);
 

@@ -1,5 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -58,5 +59,13 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
         var action = scenarioContext.Get<Action>("Action");
         var exception = Assert.Throws<InvalidOperationException>(action);
         Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Then(@"the result should fail with message ""(.*)""")]
+    public void ThenTheResultShouldFailWithMessage(string expectedMessage)
+    {
+        var result = scenarioContext.Get<Result>("Result");
+        Assert.True(result.IsFailure);
+        Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 }
