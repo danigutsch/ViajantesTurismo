@@ -85,8 +85,8 @@ So that bookings follow valid business rules
 
     Scenario: Cannot update booking notes exceeding max length
         Given a pending booking exists
-        When the operator tries to update the notes to a string longer than 1000 characters
-        Then the result should fail with message starting with "Notes cannot exceed 1000 characters"
+        When the operator tries to update the notes to a string longer than 2000 characters
+        Then the result should fail with message starting with "Notes cannot exceed 2000 characters"
 
     Scenario: Updating booking payment status
         Given a pending booking exists
