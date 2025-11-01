@@ -38,4 +38,11 @@ public static class BookingErrors
             detail: $"Notes cannot exceed {maxLength} characters. Received: {actualLength} characters.",
             field: "notes",
             message: $"Notes cannot exceed {maxLength} characters.");
+
+    /// <summary>
+    /// Indicates that a booking with the specified ID was not found.
+    /// </summary>
+    /// <param name="id">The ID of the booking that was not found.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result BookingNotFound(long id) => Result.NotFound(detail: $"Booking with ID {id} was not found.");
 }

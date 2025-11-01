@@ -56,6 +56,28 @@ internal static class ResultExtensions
         return TypedResults.ValidationProblem(result.ErrorDetails.ValidationErrors, result.ErrorDetails.Detail);
     }
 
+    public static NotFound<ProblemDetails> ToNotFound(this Result result)
+    {
+        if (result.IsSuccess)
+        {
+            throw new InvalidOperationException("Cannot convert a successful result to NotFound.");
+        }
+
+        if (result.Status != ResultStatus.NotFound)
+        {
+            throw new InvalidOperationException("Only results with status 'NotFound' can be converted to NotFound.");
+        }
+
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Resource Not Found",
+            Detail = result.ErrorDetails?.Detail,
+            Status = StatusCodes.Status404NotFound
+        };
+
+        return TypedResults.NotFound(problemDetails);
+    }
+
     public static NotFound<ProblemDetails> ToNotFound<T>(this Result<T> result)
     {
         if (result.IsSuccess)

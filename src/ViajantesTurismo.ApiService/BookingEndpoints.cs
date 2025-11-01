@@ -162,13 +162,7 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            var problemDetails = new ProblemDetails()
-            {
-                Status = 400,
-                Title = "Resource Not Found",
-                Detail = $"No tour found containing booking with ID {id}."
-            };
-            return TypedResults.NotFound(problemDetails);
+            return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
         tour.UpdateBookingPrice(id, dto.TotalPrice);
@@ -178,44 +172,24 @@ internal static class BookingEndpoints
         var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
         if (booking is not null && booking.Status != targetStatus)
         {
-            Result statusUpdateResult;
-            switch (targetStatus)
+            var statusUpdateResult = targetStatus switch
             {
-                case BookingStatus.Confirmed:
-                    statusUpdateResult = tour.ConfirmBooking(id);
-                    break;
-                case BookingStatus.Cancelled:
-                    statusUpdateResult = tour.CancelBooking(id);
-                    break;
-                case BookingStatus.Completed:
-                    statusUpdateResult = tour.CompleteBooking(id);
-                    break;
-                default:
-                    statusUpdateResult = Result.Ok();
-                    break;
-            }
+                BookingStatus.Confirmed => tour.ConfirmBooking(id),
+                BookingStatus.Cancelled => tour.CancelBooking(id),
+                BookingStatus.Completed => tour.CompleteBooking(id),
+                _ => Result.Ok()
+            };
 
             if (statusUpdateResult.IsFailure)
             {
-                var problemDetails = new ProblemDetails()
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Detail = statusUpdateResult.ErrorDetails!.Detail
-                };
-                return TypedResults.NotFound(problemDetails);
+                return statusUpdateResult.ToNotFound();
             }
         }
 
         var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, (PaymentStatus)dto.PaymentStatus);
         if (paymentUpdateResult.IsFailure)
         {
-            var problemDetails = new ProblemDetails()
-            {
-                Status = (int)paymentUpdateResult.Status,
-                Title = paymentUpdateResult.Status.ToString(),
-                Detail = paymentUpdateResult.ErrorDetails.Detail
-            };
-            return TypedResults.NotFound(problemDetails);
+            paymentUpdateResult.ToNotFound();
         }
 
         await unitOfWork.SaveEntities(ct);
