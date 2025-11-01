@@ -29,4 +29,9 @@ public static class ContractConstants
     /// The maximum price value for any tour-related pricing.
     /// </summary>
     public const double MaxPrice = 100_000;
+
+    /// <summary>
+    /// The maximum length for booking notes.
+    /// </summary>
+    public const int MaxBookingNotesLength = 2000;
 }

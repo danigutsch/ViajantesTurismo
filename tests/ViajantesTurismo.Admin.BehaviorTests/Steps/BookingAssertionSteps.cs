@@ -68,4 +68,12 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
         Assert.True(result.IsFailure);
         Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
+
+    [Then(@"the result should fail with message starting with ""(.*)""")]
+    public void ThenTheResultShouldFailWithMessageStartingWith(string expectedMessagePrefix)
+    {
+        var result = scenarioContext.Get<Result>("Result");
+        Assert.True(result.IsFailure);
+        Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+    }
 }

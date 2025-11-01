@@ -1,4 +1,5 @@
-﻿using ViajantesTurismo.Admin.Domain.Bookings;
+﻿using JetBrains.Annotations;
+using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
@@ -294,12 +295,16 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>
     /// <param name="notes">The updated notes.</param>
-    public void UpdateBookingNotes(long bookingId, string? notes)
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateBookingNotes(long bookingId, string? notes)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
-                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
 
-        booking.UpdateNotes(notes);
+        return booking.UpdateNotes(notes);
     }
 
     /// <summary>
@@ -317,6 +322,7 @@ public sealed class Tour : Entity<int>
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
+    [UsedImplicitly]
 #pragma warning disable CS8618
     public Tour()
     {

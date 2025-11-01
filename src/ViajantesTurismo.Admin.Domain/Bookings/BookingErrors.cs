@@ -21,6 +21,15 @@ public static class BookingErrors
     /// </summary>
     /// <param name="price">The invalid price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result InvalidPrice(decimal price) =>
+    public static Result InvalidPrice(decimal price) => 
         Result.Invalid(detail: $"Price must be greater than zero. Received: {price}.");
+
+    /// <summary>
+    /// Indicates that the notes exceed the maximum allowed length.
+    /// </summary>
+    /// <param name="maxLength">The maximum allowed length.</param>
+    /// <param name="actualLength">The actual length provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidNotesLength(int maxLength, int actualLength) => 
+        Result.Invalid(detail: $"Notes cannot exceed {maxLength} characters. Received: {actualLength} characters.");
 }

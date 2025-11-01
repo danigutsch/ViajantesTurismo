@@ -76,7 +76,7 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.Property(booking => booking.Status).HasConversion<string>().IsRequired();
             entity.Property(booking => booking.PaymentStatus).HasConversion<string>().IsRequired();
             entity.Property(booking => booking.TotalPrice).IsRequired();
-            entity.Property(booking => booking.Notes).HasMaxLength(2000);
+            entity.Property(booking => booking.Notes).HasMaxLength(ContractConstants.MaxBookingNotesLength);
 
             entity.HasOne<Customer>()
                 .WithMany()

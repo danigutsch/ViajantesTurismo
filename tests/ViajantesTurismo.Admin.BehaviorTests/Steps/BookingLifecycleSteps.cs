@@ -137,7 +137,17 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.UpdateBookingNotes(booking.Id, notes);
+        var result = tour.UpdateBookingNotes(booking.Id, notes);
+        Assert.True(result.IsSuccess);
+    }
+
+    [When(@"the operator tries to update the notes to a string longer than (.*) characters")]
+    public void WhenTheOperatorTriesToUpdateTheNotesToAStringLongerThanCharacters(int maxLength)
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        var booking = scenarioContext.Get<Booking>("Booking");
+        var longNotes = new string('A', maxLength + 1);
+        scenarioContext["Result"] = tour.UpdateBookingNotes(booking.Id, longNotes);
     }
 
     [When(@"the operator updates the payment status to ""(.*)""")]

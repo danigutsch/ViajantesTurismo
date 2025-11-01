@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Results;
 
@@ -160,8 +161,15 @@ public sealed class Booking : Entity<long>
     /// Updates the notes for the booking.
     /// </summary>
     /// <param name="notes">The updated notes.</param>
-    internal void UpdateNotes(string? notes)
+    /// <returns>A result indicating success or failure.</returns>
+    internal Result UpdateNotes(string? notes)
     {
+        if (notes?.Length > ContractConstants.MaxBookingNotesLength)
+        {
+            return BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length);
+        }
+
         Notes = notes;
+        return Result.Ok();
     }
 }

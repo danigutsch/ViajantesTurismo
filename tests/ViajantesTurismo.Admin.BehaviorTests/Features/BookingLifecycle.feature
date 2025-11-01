@@ -83,6 +83,11 @@ So that bookings follow valid business rules
         When the operator updates the notes to "Customer requested vegetarian meals"
         Then the booking notes should be "Customer requested vegetarian meals"
 
+    Scenario: Cannot update booking notes exceeding max length
+        Given a pending booking exists
+        When the operator tries to update the notes to a string longer than 1000 characters
+        Then the result should fail with message starting with "Notes cannot exceed 1000 characters"
+
     Scenario: Updating booking payment status
         Given a pending booking exists
         When the operator updates the payment status to "Paid"
