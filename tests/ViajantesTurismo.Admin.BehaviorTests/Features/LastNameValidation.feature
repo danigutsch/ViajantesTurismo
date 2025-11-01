@@ -56,3 +56,15 @@ So that only valid last names are accepted
         When I create the personal info
         Then the creation should succeed
         And the personal info should contain the provided data
+
+    Scenario: Creating personal info with last name at maximum length
+        Given I have personal information with last name of 128 characters
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with last name exceeding maximum length
+        Given I have personal information with last name of 129 characters
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Last name cannot exceed 128 characters."

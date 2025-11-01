@@ -56,3 +56,15 @@ So that only valid first names are accepted
         When I create the personal info
         Then the creation should succeed
         And the personal info should contain the provided data
+
+    Scenario: Creating personal info with first name at maximum length
+        Given I have personal information with first name of 128 characters
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with first name exceeding maximum length
+        Given I have personal information with first name of 129 characters
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "First name cannot exceed 128 characters."

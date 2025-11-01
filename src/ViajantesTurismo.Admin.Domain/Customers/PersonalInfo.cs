@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -46,18 +47,28 @@ public sealed class PersonalInfo
     /// <param name="birthDate">The birthdate.</param>
     /// <param name="nationality">The nationality.</param>
     /// <param name="profession">The profession.</param>
+    /// <param name="timeProvider">The time provider for date validation.</param>
     /// <returns>A Result containing the PersonalInfo.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeProvider"/> is null.</exception>
     public static Result<PersonalInfo> Create(
         string firstName,
         string lastName,
         string gender,
         DateTime birthDate,
         string nationality,
-        string profession)
+        string profession,
+        TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         if (string.IsNullOrWhiteSpace(firstName))
         {
             return EmptyFirstName();
+        }
+
+        if (firstName.Length > ContractConstants.MaxNameLength)
+        {
+            return FirstNameTooLong();
         }
 
         if (string.IsNullOrWhiteSpace(lastName))
@@ -65,9 +76,19 @@ public sealed class PersonalInfo
             return EmptyLastName();
         }
 
+        if (lastName.Length > ContractConstants.MaxNameLength)
+        {
+            return LastNameTooLong();
+        }
+
         if (string.IsNullOrWhiteSpace(gender))
         {
             return EmptyGender();
+        }
+
+        if (gender.Length > ContractConstants.MaxDefaultLength)
+        {
+            return GenderTooLong();
         }
 
         if (string.IsNullOrWhiteSpace(nationality))
@@ -75,12 +96,22 @@ public sealed class PersonalInfo
             return EmptyNationality();
         }
 
+        if (nationality.Length > ContractConstants.MaxNameLength)
+        {
+            return NationalityTooLong();
+        }
+
         if (string.IsNullOrWhiteSpace(profession))
         {
             return EmptyProfession();
         }
 
-        if (birthDate > DateTime.Today)
+        if (profession.Length > ContractConstants.MaxNameLength)
+        {
+            return ProfessionTooLong();
+        }
+
+        if (birthDate > timeProvider.GetUtcNow().Date)
         {
             return FutureBirthDate();
         }

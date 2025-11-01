@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services.AddProblemDetails();
 
 builder.Services.AddOpenApi();

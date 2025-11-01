@@ -71,6 +71,7 @@ internal static class CustomerEndpoints
         [FromBody] CreateCustomerDto dto,
         [FromServices] ICustomerStore customerStore,
         [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] TimeProvider timeProvider,
         CancellationToken ct)
     {
         var personalInfo = PersonalInfo.Create(
@@ -79,7 +80,8 @@ internal static class CustomerEndpoints
             dto.PersonalInfo.Gender,
             dto.PersonalInfo.BirthDate.ToUniversalTime(),
             dto.PersonalInfo.Nationality,
-            dto.PersonalInfo.Profession);
+            dto.PersonalInfo.Profession,
+            timeProvider);
 
         var identificationInfo = new IdentificationInfo(
             dto.IdentificationInfo.NationalId,
@@ -145,11 +147,12 @@ internal static class CustomerEndpoints
         return TypedResults.Created($"/customers/{customer.Id}", customerDto);
     }
 
-    private static async Task<Results<NoContent, NotFound>> UpdateCustomer(
+    private static async Task<Results<NoContent, NotFound, ValidationProblem>> UpdateCustomer(
         [FromRoute] int id,
         [FromBody] UpdateCustomerDto dto,
         [FromServices] ICustomerStore customerStore,
         [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] TimeProvider timeProvider,
         CancellationToken ct)
     {
         var customer = await customerStore.GetById(id, ct);
@@ -164,7 +167,8 @@ internal static class CustomerEndpoints
             dto.PersonalInfo.Gender,
             dto.PersonalInfo.BirthDate.ToUniversalTime(),
             dto.PersonalInfo.Nationality,
-            dto.PersonalInfo.Profession).Value;
+            dto.PersonalInfo.Profession,
+            timeProvider).Value;
 
         var identificationInfo = new IdentificationInfo(
             dto.IdentificationInfo.NationalId,

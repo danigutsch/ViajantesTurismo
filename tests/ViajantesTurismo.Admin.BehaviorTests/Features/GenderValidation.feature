@@ -56,3 +56,15 @@ So that only valid genders are accepted
         When I create the personal info
         Then the creation should succeed
         And the personal info should contain the provided data
+
+    Scenario: Creating personal info with gender at maximum length
+        Given I have personal information with gender of 64 characters
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with gender exceeding maximum length
+        Given I have personal information with gender of 65 characters
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Gender cannot exceed 64 characters."

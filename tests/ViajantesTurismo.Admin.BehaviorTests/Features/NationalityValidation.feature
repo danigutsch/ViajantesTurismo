@@ -56,3 +56,15 @@ So that only valid nationalities are accepted
         When I create the personal info
         Then the creation should succeed
         And the personal info should contain the provided data
+
+    Scenario: Creating personal info with nationality at maximum length
+        Given I have personal information with nationality of 128 characters
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with nationality exceeding maximum length
+        Given I have personal information with nationality of 129 characters
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Nationality cannot exceed 128 characters."

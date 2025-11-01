@@ -50,3 +50,15 @@ So that only valid professions are accepted
         When I create the personal info
         Then the creation should succeed
         And the personal info should contain the provided data
+
+    Scenario: Creating personal info with profession at maximum length
+        Given I have personal information with profession of 128 characters
+        When I create the personal info
+        Then the creation should succeed
+        And the personal info should contain the provided data
+
+    Scenario: Creating personal info with profession exceeding maximum length
+        Given I have personal information with profession of 129 characters
+        When I create the personal info
+        Then the creation should fail
+        And the error should be "Profession cannot exceed 128 characters."

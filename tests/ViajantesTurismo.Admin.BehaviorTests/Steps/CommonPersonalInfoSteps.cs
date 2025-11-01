@@ -29,7 +29,7 @@ public sealed class CommonPersonalInfoSteps
     [When(@"I create the personal info")]
     public void WhenICreateThePersonalInfo()
     {
-        _result = PersonalInfo.Create(_firstName, _lastName, _gender, _birthDate, _nationality, _profession);
+        _result = PersonalInfo.Create(_firstName, _lastName, _gender, _birthDate, _nationality, _profession, TimeProvider.System);
     }
 
     [Then(@"the creation should succeed")]
@@ -235,5 +235,60 @@ public sealed class CommonPersonalInfoSteps
         _birthDate = DateTime.Today.AddYears(-years);
         _nationality = "American";
         _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with first name of (\d+) characters")]
+    public void GivenIHavePersonalInformationWithFirstNameOfLength(int length)
+    {
+        _firstName = new string('A', length);
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with last name of (\d+) characters")]
+    public void GivenIHavePersonalInformationWithLastNameOfLength(int length)
+    {
+        _firstName = "John";
+        _lastName = new string('A', length);
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with gender of (\d+) characters")]
+    public void GivenIHavePersonalInformationWithGenderOfLength(int length)
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = new string('A', length);
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with nationality of (\d+) characters")]
+    public void GivenIHavePersonalInformationWithNationalityOfLength(int length)
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = new string('A', length);
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with profession of (\d+) characters")]
+    public void GivenIHavePersonalInformationWithProfessionOfLength(int length)
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = new DateTime(1990, 5, 15);
+        _nationality = "American";
+        _profession = new string('A', length);
     }
 }

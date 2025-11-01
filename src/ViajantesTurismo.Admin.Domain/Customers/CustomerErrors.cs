@@ -72,4 +72,59 @@ public static class CustomerErrors
         {
             { "BirthDate", ["Birth date cannot be in the future."] }
         });
+
+    /// <summary>
+    /// Indicates that the first name exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> FirstNameTooLong() => Result<PersonalInfo>.Invalid(
+        detail: "First name cannot exceed 128 characters.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "FirstName", ["First name cannot exceed 128 characters."] }
+        });
+
+    /// <summary>
+    /// Indicates that the last name exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> LastNameTooLong() => Result<PersonalInfo>.Invalid(
+        detail: "Last name cannot exceed 128 characters.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "LastName", ["Last name cannot exceed 128 characters."] }
+        });
+
+    /// <summary>
+    /// Indicates that the gender exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> GenderTooLong() => Result<PersonalInfo>.Invalid(
+        detail: "Gender cannot exceed 64 characters.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "Gender", ["Gender cannot exceed 64 characters."] }
+        });
+
+    /// <summary>
+    /// Indicates that the nationality exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> NationalityTooLong() => Result<PersonalInfo>.Invalid(
+        detail: "Nationality cannot exceed 128 characters.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "Nationality", ["Nationality cannot exceed 128 characters."] }
+        });
+
+    /// <summary>
+    /// Indicates that the profession exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> ProfessionTooLong() => Result<PersonalInfo>.Invalid(
+        detail: "Profession cannot exceed 128 characters.",
+        validationErrors: new Dictionary<string, string[]>
+        {
+            { "Profession", ["Profession cannot exceed 128 characters."] }
+        });
 }
