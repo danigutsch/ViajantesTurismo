@@ -158,6 +158,41 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
         scenarioContext["Result"] = tour.ConfirmBooking(99999);
     }
 
+    [When(@"I try to cancel a non-existent booking")]
+    public void WhenITryToCancelANonExistentBooking()
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        scenarioContext["Result"] = tour.CancelBooking(99999);
+    }
+
+    [When(@"I try to complete a non-existent booking")]
+    public void WhenITryToCompleteANonExistentBooking()
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        scenarioContext["Result"] = tour.CompleteBooking(99999);
+    }
+
+    [When(@"I try to update price for a non-existent booking")]
+    public void WhenITryToUpdatePriceForANonExistentBooking()
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        scenarioContext["Result"] = tour.UpdateBookingPrice(99999, 1000.00m);
+    }
+
+    [When(@"I try to update notes for a non-existent booking")]
+    public void WhenITryToUpdateNotesForANonExistentBooking()
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        scenarioContext["Result"] = tour.UpdateBookingNotes(99999, "Some notes");
+    }
+
+    [When(@"I try to update payment status for a non-existent booking")]
+    public void WhenITryToUpdatePaymentStatusForANonExistentBooking()
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        scenarioContext["Result"] = tour.UpdateBookingPaymentStatus(99999, PaymentStatus.Paid);
+    }
+
     [When(@"I update the booking with price (.*), notes ""(.*)"", status ""(.*)"", and payment ""(.*)""")]
     public void WhenIUpdateTheBookingWithPriceNotesStatusAndPayment(
         decimal price,

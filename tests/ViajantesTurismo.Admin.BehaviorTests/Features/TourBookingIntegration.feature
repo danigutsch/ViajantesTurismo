@@ -46,9 +46,34 @@ So that tour bookings are properly tracked
         When I remove the booking from the tour
         Then the tour should not have the booking
 
-    Scenario: Cannot find booking that doesn't exist in tour
+    Scenario: Cannot confirm booking that doesn't exist in tour
         Given a tour exists
         When I try to confirm a non-existent booking
+        Then the result should fail with message "not found in this tour"
+
+    Scenario: Cannot cancel booking that doesn't exist in tour
+        Given a tour exists
+        When I try to cancel a non-existent booking
+        Then the result should fail with message "not found in this tour"
+
+    Scenario: Cannot complete booking that doesn't exist in tour
+        Given a tour exists
+        When I try to complete a non-existent booking
+        Then the result should fail with message "not found in this tour"
+
+    Scenario: Cannot update price for booking that doesn't exist in tour
+        Given a tour exists
+        When I try to update price for a non-existent booking
+        Then the result should fail with message "not found in this tour"
+
+    Scenario: Cannot update notes for booking that doesn't exist in tour
+        Given a tour exists
+        When I try to update notes for a non-existent booking
+        Then the result should fail with message "not found in this tour"
+
+    Scenario: Cannot update payment status for booking that doesn't exist in tour
+        Given a tour exists
+        When I try to update payment status for a non-existent booking
         Then the result should fail with message "not found in this tour"
 
     Scenario: Full booking update through tour

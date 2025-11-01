@@ -324,7 +324,7 @@ public sealed class Tour : Entity<int>
     /// </summary>
     [UsedImplicitly]
 #pragma warning disable CS8618
-    public Tour()
+    private Tour()
     {
     }
 }
