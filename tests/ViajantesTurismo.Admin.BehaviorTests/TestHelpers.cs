@@ -14,7 +14,7 @@ public static class TestHelpers
     /// </summary>
     public static Tour CreateTestTour()
     {
-        return new Tour(
+        return Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
             startDate: DateTime.UtcNow.AddMonths(1),
@@ -24,7 +24,7 @@ public static class TestHelpers
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>
@@ -32,7 +32,7 @@ public static class TestHelpers
     /// </summary>
     public static Tour CreateTestTourWithDates(DateTime startDate, DateTime endDate)
     {
-        return new Tour(
+        return Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
             startDate: startDate,
@@ -42,7 +42,7 @@ public static class TestHelpers
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public static class TestHelpers
     /// </summary>
     public static Tour CreateTestTourWithIdentifierAndName(string identifier, string name)
     {
-        return new Tour(
+        return Tour.Create(
             identifier: identifier,
             name: name,
             startDate: DateTime.UtcNow.AddMonths(1),
@@ -60,7 +60,7 @@ public static class TestHelpers
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>

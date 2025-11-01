@@ -9,66 +9,66 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
 {
     private static readonly Tour[] Tours =
     [
-        new(
+        Tour.Create(
             "CITY001",
             "City Highlights",
             DateTime.UtcNow.AddDays(1),
-            DateTime.UtcNow.AddDays(3),
+            DateTime.UtcNow.AddDays(7),
             1500m,
             300m,
             100m,
             200m,
             Currency.Real,
             ["Hotel", "Breakfast", "City Tour"]
-        ),
-        new(
+        ).Value,
+        Tour.Create(
             "HIST002",
             "Historical Landmarks",
             DateTime.UtcNow.AddDays(4),
-            DateTime.UtcNow.AddDays(6),
+            DateTime.UtcNow.AddDays(10),
             2000m,
             400m,
             150m,
             250m,
             Currency.Euro,
             ["Hotel", "Breakfast", "Museum Tickets"]
-        ),
-        new(
+        ).Value,
+        Tour.Create(
             "CULT001",
             "Cultural Experience",
             DateTime.UtcNow.AddDays(7),
-            DateTime.UtcNow.AddDays(10),
+            DateTime.UtcNow.AddDays(13),
             1800m,
             350m,
             120m,
             220m,
             Currency.UsDollar,
             ["Hotel", "Breakfast", "Cultural Show"]
-        ),
-        new(
+        ).Value,
+        Tour.Create(
             "NATR001",
             "Nature and Adventure",
             DateTime.UtcNow.AddDays(11),
-            DateTime.UtcNow.AddDays(15),
+            DateTime.UtcNow.AddDays(17),
             2200m,
             450m,
             180m,
             280m,
             Currency.Real,
             ["Hotel", "Breakfast", "Hiking Tour"]
-        ),
-        new(
+        ).Value,
+        Tour.Create(
             "FOWI003",
             "Food and Wine Tour",
             DateTime.UtcNow.AddDays(16),
-            DateTime.UtcNow.AddDays(20),
+            DateTime.UtcNow.AddDays(22),
             2500m,
             500m,
             200m,
             300m,
             Currency.Euro,
             ["Hotel", "Breakfast", "Wine Tasting"]
-        )
+        ).Value
     ];
 
     private static readonly Customer[] Customers =
@@ -180,7 +180,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
 
-        var toursToAdd = Tours.Select(t => new Tour(
+        var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,
             t.Name,
             t.StartDate,
@@ -191,7 +191,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             t.EBikePrice,
             t.Currency,
             t.IncludedServices
-        ));
+        ).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
 
@@ -222,7 +222,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         await dbContext.Database.EnsureDeletedAsync(ct);
         await dbContext.Database.EnsureCreatedAsync(ct);
 
-        var toursToAdd = Tours.Select(t => new Tour(
+        var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,
             t.Name,
             t.StartDate,
@@ -233,7 +233,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             t.EBikePrice,
             t.Currency,
             t.IncludedServices
-        ));
+        ).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
 

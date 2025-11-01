@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
@@ -19,20 +20,7 @@ public sealed class Tour : Entity<int>
     private readonly List<Booking> _bookings = [];
     private string[] _includedServices = [];
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Tour"/> class.
-    /// </summary>
-    /// <param name="identifier">The unique business identifier for the tour (e.g., "CUBA2024").</param>
-    /// <param name="name">The descriptive name of the tour.</param>
-    /// <param name="startDate">The start date of the tour.</param>
-    /// <param name="endDate">The end date of the tour.</param>
-    /// <param name="price">The base price of the tour per person.</param>
-    /// <param name="singleRoomSupplementPrice">The additional price for a single room supplement.</param>
-    /// <param name="regularBikePrice">The price for renting a regular bike.</param>
-    /// <param name="eBikePrice">The price for renting an e-bike.</param>
-    /// <param name="currency">The currency for all pricing.</param>
-    /// <param name="includedServices">The collection of services included in the tour package.</param>
-    public Tour(string identifier,
+    private Tour(string identifier,
         string name,
         DateTime startDate,
         DateTime endDate,
@@ -43,11 +31,6 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
-        if (endDate <= startDate)
-        {
-            throw new ArgumentException("End date must be after start date.", nameof(endDate));
-        }
-
         Identifier = identifier;
         Name = name;
         StartDate = startDate;
@@ -116,6 +99,116 @@ public sealed class Tour : Entity<int>
     public IReadOnlyList<Booking> Bookings => _bookings.AsReadOnly();
 
     /// <summary>
+    /// Creates a new instance of the <see cref="Tour"/> class with validation.
+    /// </summary>
+    /// <param name="identifier">The unique business identifier for the tour (e.g., "CUBA2024").</param>
+    /// <param name="name">The descriptive name of the tour.</param>
+    /// <param name="startDate">The start date of the tour.</param>
+    /// <param name="endDate">The end date of the tour.</param>
+    /// <param name="price">The base price of the tour per person.</param>
+    /// <param name="singleRoomSupplementPrice">The additional price for a single room supplement.</param>
+    /// <param name="regularBikePrice">The price for renting a regular bike.</param>
+    /// <param name="eBikePrice">The price for renting an e-bike.</param>
+    /// <param name="currency">The currency for all pricing.</param>
+    /// <param name="includedServices">The collection of services included in the tour package.</param>
+    /// <returns>A Result containing the Tour if validation succeeds, or an error if validation fails.</returns>
+    public static Result<Tour> Create(
+        string identifier,
+        string name,
+        DateTime startDate,
+        DateTime endDate,
+        decimal price,
+        decimal singleRoomSupplementPrice,
+        decimal regularBikePrice,
+        decimal eBikePrice,
+        Currency currency,
+        IEnumerable<string> includedServices)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return TourErrors.EmptyIdentifier();
+        }
+
+        if (identifier.Length > ContractConstants.MaxNameLength)
+        {
+            return TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, identifier.Length);
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return TourErrors.EmptyName();
+        }
+
+        if (name.Length > ContractConstants.MaxNameLength)
+        {
+            return TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length);
+        }
+
+        if (endDate <= startDate)
+        {
+            return TourErrors.InvalidDateRange();
+        }
+
+        var duration = (endDate - startDate).TotalDays;
+        if (duration <= ContractConstants.MinimumTourDurationDays)
+        {
+            return TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, duration);
+        }
+
+        if (price < 0)
+        {
+            return TourErrors.InvalidPrice("Base price", price);
+        }
+
+        if (price > (decimal)ContractConstants.MaxPrice)
+        {
+            return TourErrors.PriceTooHigh("Base price", (decimal)ContractConstants.MaxPrice, price);
+        }
+
+        if (singleRoomSupplementPrice < 0)
+        {
+            return TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice);
+        }
+
+        if (singleRoomSupplementPrice > (decimal)ContractConstants.MaxPrice)
+        {
+            return TourErrors.PriceTooHigh("Single room supplement price", (decimal)ContractConstants.MaxPrice, singleRoomSupplementPrice);
+        }
+
+        if (regularBikePrice < 0)
+        {
+            return TourErrors.InvalidPrice("Regular bike price", regularBikePrice);
+        }
+
+        if (regularBikePrice > (decimal)ContractConstants.MaxPrice)
+        {
+            return TourErrors.PriceTooHigh("Regular bike price", (decimal)ContractConstants.MaxPrice, regularBikePrice);
+        }
+
+        if (eBikePrice < 0)
+        {
+            return TourErrors.InvalidPrice("E-bike price", eBikePrice);
+        }
+
+        if (eBikePrice > (decimal)ContractConstants.MaxPrice)
+        {
+            return TourErrors.PriceTooHigh("E-bike price", (decimal)ContractConstants.MaxPrice, eBikePrice);
+        }
+
+        return new Tour(
+            identifier,
+            name,
+            startDate,
+            endDate,
+            price,
+            singleRoomSupplementPrice,
+            regularBikePrice,
+            eBikePrice,
+            currency,
+            includedServices);
+    }
+
+    /// <summary>
     /// Updates the tour's basic information (identifier and name).
     /// </summary>
     /// <param name="identifier">The unique business identifier for the tour.</param>
@@ -131,15 +224,23 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="startDate">The start date of the tour.</param>
     /// <param name="endDate">The end date of the tour.</param>
-    public void UpdateSchedule(DateTime startDate, DateTime endDate)
+    /// <returns>A Result indicating success or failure.</returns>
+    public Result UpdateSchedule(DateTime startDate, DateTime endDate)
     {
         if (endDate <= startDate)
         {
-            throw new ArgumentException("End date must be after start date.", nameof(endDate));
+            return TourErrors.InvalidDateRangeUpdate();
+        }
+
+        var duration = (endDate - startDate).TotalDays;
+        if (duration <= ContractConstants.MinimumTourDurationDays)
+        {
+            return TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, duration);
         }
 
         StartDate = startDate;
         EndDate = endDate;
+        return Result.Ok();
     }
 
     /// <summary>

@@ -34,4 +34,9 @@ public static class ContractConstants
     /// The maximum length for booking notes.
     /// </summary>
     public const int MaxBookingNotesLength = 2000;
+
+    /// <summary>
+    /// The minimum duration in days for a tour.
+    /// </summary>
+    public const int MinimumTourDurationDays = 5;
 }

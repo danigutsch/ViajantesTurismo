@@ -46,7 +46,7 @@ internal static class ToursEndpoints
         return app;
     }
 
-    private static async Task<Created<Tour>> CreateTour(
+    private static async Task<Results<Created<Tour>, ValidationProblem>> CreateTour(
         [FromBody] CreateTourDto tourDto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -54,7 +54,7 @@ internal static class ToursEndpoints
     {
         var currency = (Currency)tourDto.Currency;
 
-        var tour = new Tour(
+        var result = Tour.Create(
             tourDto.Identifier,
             tourDto.Name,
             tourDto.StartDate,
@@ -64,9 +64,17 @@ internal static class ToursEndpoints
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency,
-            [.. tourDto.IncludedServices]
-        );
+            [.. tourDto.IncludedServices]);
 
+        if (!result.IsSuccess)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["Tour"] = [result.ErrorDetails!.Detail]
+            });
+        }
+
+        var tour = result.Value;
         tourStore.Add(tour);
 
         await unitOfWork.SaveEntities(ct);
@@ -96,7 +104,7 @@ internal static class ToursEndpoints
         return TypedResults.Ok(tourDto);
     }
 
-    private static async Task<Results<NoContent, NotFound>> UpdateTour(
+    private static async Task<Results<NoContent, NotFound, ValidationProblem>> UpdateTour(
         int id,
         [FromBody] UpdateTourDto tourDto,
         [FromServices] ITourStore tourStore,
@@ -112,7 +120,16 @@ internal static class ToursEndpoints
         var currency = (Currency)tourDto.Currency;
 
         tour.UpdateBasicInfo(tourDto.Identifier, tourDto.Name);
-        tour.UpdateSchedule(tourDto.StartDate, tourDto.EndDate);
+
+        var scheduleResult = tour.UpdateSchedule(tourDto.StartDate, tourDto.EndDate);
+        if (!scheduleResult.IsSuccess)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["Schedule"] = [scheduleResult.ErrorDetails!.Detail]
+            });
+        }
+
         tour.UpdatePricing(
             tourDto.Price,
             tourDto.SingleRoomSupplementPrice,
