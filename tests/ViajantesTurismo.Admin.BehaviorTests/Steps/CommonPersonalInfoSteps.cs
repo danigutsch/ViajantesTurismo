@@ -188,7 +188,51 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = "Male";
-        _birthDate = DateTime.Now.AddDays(1);
+        _birthDate = DateTime.Today.AddDays(1);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with birth date today")]
+    public void GivenIHavePersonalInformationWithBirthDateToday()
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = DateTime.Today;
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with birth date one day in the future")]
+    public void GivenIHavePersonalInformationWithBirthDateOneDayInTheFuture()
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = DateTime.Today.AddDays(1);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with birth date one day in the past")]
+    public void GivenIHavePersonalInformationWithBirthDateOneDayInThePast()
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = DateTime.Today.AddDays(-1);
+        _nationality = "American";
+        _profession = "Software Engineer";
+    }
+
+    [Given(@"I have personal information with birth date (\d+) years ago")]
+    public void GivenIHavePersonalInformationWithBirthDateYearsAgo(int years)
+    {
+        _firstName = "John";
+        _lastName = "Smith";
+        _gender = "Male";
+        _birthDate = DateTime.Today.AddYears(-years);
         _nationality = "American";
         _profession = "Software Engineer";
     }
