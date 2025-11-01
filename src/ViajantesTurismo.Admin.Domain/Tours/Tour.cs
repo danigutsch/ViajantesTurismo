@@ -277,12 +277,16 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>
     /// <param name="newPrice">The new total price.</param>
-    public void UpdateBookingPrice(long bookingId, decimal newPrice)
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateBookingPrice(long bookingId, decimal newPrice)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
-                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
 
-        booking.UpdatePrice(newPrice);
+        return booking.UpdatePrice(newPrice);
     }
 
     /// <summary>

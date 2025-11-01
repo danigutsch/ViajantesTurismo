@@ -120,7 +120,8 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.UpdateBookingPrice(booking.Id, newPrice);
+        var result = tour.UpdateBookingPrice(booking.Id, newPrice);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator tries to update the price to (.*)")]
@@ -128,7 +129,7 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Action"] = () => tour.UpdateBookingPrice(booking.Id, newPrice);
+        scenarioContext["Result"] = tour.UpdateBookingPrice(booking.Id, newPrice);
     }
 
     [When(@"the operator updates the notes to ""(.*)""")]

@@ -71,12 +71,12 @@ So that bookings follow valid business rules
     Scenario: Cannot update booking price to zero or negative
         Given a pending booking exists with price 1500.00
         When the operator tries to update the price to 0
-        Then the operation should fail with argument exception "Price must be greater than zero."
+        Then the result should fail with message "Price must be greater than zero. Received: 0."
 
     Scenario: Cannot update booking price to negative value
         Given a pending booking exists with price 1500.00
         When the operator tries to update the price to -100
-        Then the operation should fail with argument exception "Price must be greater than zero."
+        Then the result should fail with message "Price must be greater than zero. Received: -100."
 
     Scenario: Updating booking notes
         Given a pending booking exists

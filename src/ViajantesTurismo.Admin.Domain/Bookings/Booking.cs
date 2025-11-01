@@ -144,14 +144,16 @@ public sealed class Booking : Entity<long>
     /// Updates the total price of the booking.
     /// </summary>
     /// <param name="newPrice">The new total price.</param>
-    internal void UpdatePrice(decimal newPrice)
+    /// <returns>A result indicating success or failure.</returns>
+    internal Result UpdatePrice(decimal newPrice)
     {
         if (newPrice <= 0)
         {
-            throw new ArgumentException("Price must be greater than zero.", nameof(newPrice));
+            return BookingErrors.InvalidPrice(newPrice);
         }
 
         TotalPrice = newPrice;
+        return Result.Ok();
     }
 
     /// <summary>

@@ -119,7 +119,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.UpdateBookingPrice(booking.Id, newPrice);
+        var result = tour.UpdateBookingPrice(booking.Id, newPrice);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"I update the booking notes to ""(.*)"" through the tour")]
@@ -135,7 +136,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
     {
         var tour = scenarioContext.Get<Tour>("Tour");
         var booking = scenarioContext.Get<Booking>("Booking");
-        tour.UpdateBookingPrice(booking.Id, price);
+        var result = tour.UpdateBookingPrice(booking.Id, price);
+        Assert.True(result.IsSuccess);
         tour.UpdateBookingNotes(booking.Id, notes);
     }
 
@@ -167,7 +169,8 @@ public sealed class TourBookingIntegrationSteps(ScenarioContext scenarioContext)
         var status = TestHelpers.ParseBookingStatus(statusString);
         var payment = TestHelpers.ParsePaymentStatus(paymentString);
 
-        tour.UpdateBookingPrice(booking.Id, price);
+        var priceResult = tour.UpdateBookingPrice(booking.Id, price);
+        Assert.True(priceResult.IsSuccess);
         tour.UpdateBookingNotes(booking.Id, notes);
 
         if (booking.Status != status)
