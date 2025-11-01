@@ -84,7 +84,7 @@ public sealed class Booking : Entity<long>
     }
 
     /// <summary>
-    /// Confirms the booking, setting its status to Confirmed.
+    /// Confirms the booking, setting its status to Confirmed. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
     internal Result Confirm()
@@ -95,6 +95,7 @@ public sealed class Booking : Entity<long>
                 return Result.Ok();
             case BookingStatus.Cancelled or BookingStatus.Completed:
                 return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Confirmed);
+            case BookingStatus.Pending:
             default:
                 Status = BookingStatus.Confirmed;
                 return Result.Ok();
@@ -102,7 +103,7 @@ public sealed class Booking : Entity<long>
     }
 
     /// <summary>
-    /// Cancels the booking, setting its status to Cancelled.
+    /// Cancels the booking, setting its status to Cancelled. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
     internal Result Cancel()
@@ -113,6 +114,7 @@ public sealed class Booking : Entity<long>
                 return Result.Ok();
             case BookingStatus.Completed:
                 return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Cancelled);
+            case BookingStatus.Pending or BookingStatus.Confirmed:
             default:
                 Status = BookingStatus.Cancelled;
                 return Result.Ok();
