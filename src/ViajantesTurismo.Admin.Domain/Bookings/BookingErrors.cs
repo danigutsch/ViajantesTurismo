@@ -21,11 +21,23 @@ public static class BookingErrors
     /// </summary>
     /// <param name="price">The invalid price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result InvalidPrice(decimal price) =>
+    public static Result ZeroOrNegativePrice(decimal price) =>
         Result.Invalid(
             detail: $"Price must be greater than zero. Received: {price}.",
             field: "price",
             message: "Price must be greater than zero.");
+
+    /// <summary>
+    /// Indicates that the price is invalid (must be greater than zero).
+    /// </summary>
+    /// <param name="price">The invalid price value.</param>
+    /// <param name="maxPrice">The maximum allowed price.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result PriceExceedsMaximum(decimal price, decimal maxPrice) =>
+        Result.Invalid(
+            detail: $"Price must be less than {maxPrice}. Received: {price}.",
+            field: "price",
+            message: $"Price must be less than {maxPrice}.");
 
     /// <summary>
     /// Indicates that the notes exceed the maximum allowed length.

@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -9,11 +10,6 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class PhysicalInfo
 {
-    private const decimal MinWeightKg = 1m;
-    private const decimal MaxWeightKg = 500m;
-    private const int MinHeightCm = 50;
-    private const int MaxHeightCm = 300;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PhysicalInfo"/> class.
     /// </summary>
@@ -47,12 +43,12 @@ public sealed class PhysicalInfo
     {
         var errors = new ValidationErrors();
 
-        if (weightKg < MinWeightKg || weightKg > MaxWeightKg)
+        if (weightKg < ContractConstants.MinWeightKg || weightKg > ContractConstants.MaxWeightKg)
         {
             errors.Add(InvalidWeight());
         }
 
-        if (heightCentimeters < MinHeightCm || heightCentimeters > MaxHeightCm)
+        if (heightCentimeters < ContractConstants.MinHeightCm || heightCentimeters > ContractConstants.MaxHeightCm)
         {
             errors.Add(InvalidHeight());
         }

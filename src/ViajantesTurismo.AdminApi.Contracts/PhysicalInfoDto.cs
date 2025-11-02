@@ -12,14 +12,14 @@ public sealed record PhysicalInfoDto
     /// The weight of the customer in kilograms. Valid range is 1 to 500 kg.
     /// </summary>
     [Required]
-    [Range(1, 500)]
+    [Range(ContractConstants.MinWeightKg, ContractConstants.MaxWeightKg)]
     public required decimal WeightKg { get; init; }
 
     /// <summary>
     /// The height of the customer in centimeters. Valid range is 50 to 300 cm.
     /// </summary>
     [Required]
-    [Range(50, 300)]
+    [Range(ContractConstants.MinHeightCm, ContractConstants.MaxHeightCm)]
     public required int HeightCentimeters { get; init; }
 
     /// <summary>

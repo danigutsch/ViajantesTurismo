@@ -5,7 +5,7 @@ namespace ViajantesTurismo.AdminApi.Contracts;
 /// <summary>
 /// Represents the data required to create a new tour.
 /// </summary>
-[MinimumDuration(5)]
+[MinimumDuration(ContractConstants.MinimumTourDurationDays)]
 public sealed record CreateTourDto
 {
     /// <summary>

@@ -18,7 +18,7 @@ public class BookingFormModel
     public int? CompanionId { get; set; }
 
     /// <summary>Optional notes about the booking.</summary>
-    [MaxLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
+    [MaxLength(ContractConstants.MaxBookingNotesLength, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; set; }
 
     /// <summary>Booking status.</summary>

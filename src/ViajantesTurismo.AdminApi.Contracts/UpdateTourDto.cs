@@ -5,7 +5,7 @@ namespace ViajantesTurismo.AdminApi.Contracts;
 /// <summary>
 /// Data Transfer Object for updating an existing tour.
 /// </summary>
-[MinimumDuration(5)]
+[MinimumDuration(ContractConstants.MinimumTourDurationDays)]
 public sealed record UpdateTourDto
 {
     /// <summary>

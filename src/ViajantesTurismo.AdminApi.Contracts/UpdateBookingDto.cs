@@ -8,7 +8,7 @@ namespace ViajantesTurismo.AdminApi.Contracts;
 public sealed class UpdateBookingDto
 {
     /// <summary>Optional notes about the booking.</summary>
-    [MaxLength(2000)]
+    [MaxLength(ContractConstants.MaxBookingNotesLength)]
     public string? Notes { get; init; }
 
     /// <summary>The booking status.</summary>

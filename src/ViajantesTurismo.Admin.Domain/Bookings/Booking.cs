@@ -97,12 +97,12 @@ public sealed class Booking : Entity<long>
 
         if (totalPrice <= ContractConstants.MinPrice)
         {
-            errors.Add(BookingErrors.InvalidPrice(totalPrice));
+            errors.Add(BookingErrors.ZeroOrNegativePrice(totalPrice));
         }
 
         if (totalPrice > ContractConstants.MaxPrice)
         {
-            errors.Add(BookingErrors.InvalidPrice(totalPrice));
+            errors.Add(BookingErrors.PriceExceedsMaximum(totalPrice, ContractConstants.MaxPrice));
         }
 
         if (notes?.Length > ContractConstants.MaxBookingNotesLength)
@@ -195,12 +195,12 @@ public sealed class Booking : Entity<long>
 
         if (newPrice <= ContractConstants.MinPrice)
         {
-            return BookingErrors.InvalidPrice(newPrice);
+            return BookingErrors.ZeroOrNegativePrice(newPrice);
         }
 
         if (newPrice > ContractConstants.MaxPrice)
         {
-            return BookingErrors.InvalidPrice(newPrice);
+            return BookingErrors.PriceExceedsMaximum(newPrice, ContractConstants.MaxPrice);
         }
 
         TotalPrice = newPrice;

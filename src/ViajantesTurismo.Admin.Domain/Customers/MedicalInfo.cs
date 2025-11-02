@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
@@ -10,8 +11,6 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class MedicalInfo
 {
-    private const int MaxNotesLength = 500;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MedicalInfo"/> class.
     /// </summary>
@@ -44,12 +43,12 @@ public sealed class MedicalInfo
 
         var errors = new ValidationErrors();
 
-        if (sanitizedAllergies?.Length > MaxNotesLength)
+        if (sanitizedAllergies?.Length > ContractConstants.MaxMedicalInfoLength)
         {
             errors.Add(AllergiesTooLong());
         }
 
-        if (sanitizedAdditionalInfo?.Length > MaxNotesLength)
+        if (sanitizedAdditionalInfo?.Length > ContractConstants.MaxMedicalInfoLength)
         {
             errors.Add(AdditionalInfoTooLong());
         }

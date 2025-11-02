@@ -19,6 +19,6 @@ public sealed class CreateBookingDto
     public int? CompanionId { get; init; }
 
     /// <summary>Optional notes about the booking.</summary>
-    [MaxLength(2000)]
+    [MaxLength(ContractConstants.MaxBookingNotesLength)]
     public string? Notes { get; init; }
 }
