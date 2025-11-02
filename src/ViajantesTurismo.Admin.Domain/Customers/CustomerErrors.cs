@@ -105,4 +105,94 @@ public static class CustomerErrors
         detail: "Profession cannot exceed 128 characters.",
         field: "Profession",
         message: "Profession cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the email is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> EmptyEmail() => Result<ContactInfo>.Invalid(
+        detail: "Email is required.",
+        field: "Email",
+        message: "Email is required.");
+
+    /// <summary>
+    /// Indicates that the email exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> EmailTooLong() => Result<ContactInfo>.Invalid(
+        detail: "Email cannot exceed 128 characters.",
+        field: "Email",
+        message: "Email cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the mobile is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> EmptyMobile() => Result<ContactInfo>.Invalid(
+        detail: "Mobile is required.",
+        field: "Mobile",
+        message: "Mobile is required.");
+
+    /// <summary>
+    /// Indicates that the mobile exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> MobileTooLong() => Result<ContactInfo>.Invalid(
+        detail: "Mobile cannot exceed 64 characters.",
+        field: "Mobile",
+        message: "Mobile cannot exceed 64 characters.");
+
+    /// <summary>
+    /// Indicates that the Instagram handle exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> InstagramTooLong() => Result<ContactInfo>.Invalid(
+        detail: "Instagram cannot exceed 64 characters.",
+        field: "Instagram",
+        message: "Instagram cannot exceed 64 characters.");
+
+    /// <summary>
+    /// Indicates that the Facebook profile exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> FacebookTooLong() => Result<ContactInfo>.Invalid(
+        detail: "Facebook cannot exceed 64 characters.",
+        field: "Facebook",
+        message: "Facebook cannot exceed 64 characters.");
+
+    /// <summary>
+    /// Indicates that the national ID is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<IdentificationInfo> EmptyNationalId() => Result<IdentificationInfo>.Invalid(
+        detail: "National ID is required.",
+        field: "NationalId",
+        message: "National ID is required.");
+
+    /// <summary>
+    /// Indicates that the national ID exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<IdentificationInfo> NationalIdTooLong() => Result<IdentificationInfo>.Invalid(
+        detail: "National ID cannot exceed 64 characters.",
+        field: "NationalId",
+        message: "National ID cannot exceed 64 characters.");
+
+    /// <summary>
+    /// Indicates that the ID nationality is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<IdentificationInfo> EmptyIdNationality() => Result<IdentificationInfo>.Invalid(
+        detail: "ID nationality is required.",
+        field: "IdNationality",
+        message: "ID nationality is required.");
+
+    /// <summary>
+    /// Indicates that the ID nationality exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<IdentificationInfo> IdNationalityTooLong() => Result<IdentificationInfo>.Invalid(
+        detail: "ID nationality cannot exceed 64 characters.",
+        field: "IdNationality",
+        message: "ID nationality cannot exceed 64 characters.");
 }

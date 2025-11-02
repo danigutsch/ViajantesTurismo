@@ -5,6 +5,15 @@ using ViajantesTurismo.Admin.Domain.Customers;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
+[Scope(Feature = "Personal Information Validation")]
+[Scope(Feature = "First Name Validation")]
+[Scope(Feature = "Last Name Validation")]
+[Scope(Feature = "Gender Validation")]
+[Scope(Feature = "Nationality Validation")]
+[Scope(Feature = "Profession Validation")]
+[Scope(Feature = "Birth Date Validation")]
+[Scope(Feature = "Customer Management")]
+[Scope(Feature = "Address Validation")]
 public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
 {
     [Given(@"I have valid personal information")]

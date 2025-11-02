@@ -10,13 +10,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
     {
-        context.IdentificationInfo = new IdentificationInfo("123456789", "American");
+        context.IdentificationInfo = IdentificationInfo.Create("123456789", "American").Value;
     }
 
     [Given(@"I have valid contact information")]
     public void GivenIHaveValidContactInformation()
     {
-        context.ContactInfo = new ContactInfo("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith");
+        context.ContactInfo = ContactInfo.Create("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith").Value;
     }
 
     [Given(@"I have valid address information")]
@@ -69,8 +69,8 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             "Software Engineer",
             TimeProvider.System).Value;
 
-        context.IdentificationInfo = new IdentificationInfo("123456789", "American");
-        context.ContactInfo = new ContactInfo("john.smith@example.com", "+1234567890", null, null);
+        context.IdentificationInfo = IdentificationInfo.Create("123456789", "American").Value;
+        context.ContactInfo = ContactInfo.Create("john.smith@example.com", "+1234567890", null, null).Value;
         context.Address = new Address("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
         context.PhysicalInfo = new PhysicalInfo(75m, 180, BikeType.Regular);
         context.AccommodationPreferences = new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null);
@@ -131,7 +131,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I update the customer with new identification information")]
     public void WhenIUpdateTheCustomerWithNewIdentificationInformation()
     {
-        var newIdentificationInfo = new IdentificationInfo("987654321", "Canadian");
+        var newIdentificationInfo = IdentificationInfo.Create("987654321", "Canadian").Value;
         context.Customer.UpdateIdentificationInfo(newIdentificationInfo);
         context.IdentificationInfo = newIdentificationInfo;
     }
@@ -139,7 +139,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I update the customer with new contact information")]
     public void WhenIUpdateTheCustomerWithNewContactInformation()
     {
-        var newContactInfo = new ContactInfo("jane.doe@example.com", "+9876543210", "@janedoe", null);
+        var newContactInfo = ContactInfo.Create("jane.doe@example.com", "+9876543210", "@janedoe", null).Value;
         context.Customer.UpdateContactInfo(newContactInfo);
         context.ContactInfo = newContactInfo;
     }
@@ -337,7 +337,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
     public void GivenIHaveContactInfoWithEmailAndMobile(string email, string mobile)
     {
-        context.ContactInfo = new ContactInfo(email, mobile, null, null);
+        context.ContactInfo = ContactInfo.Create(email, mobile, null, null).Value;
     }
 
     [When(@"I create contact information")]
@@ -363,7 +363,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
     public void GivenIHaveContactInfoWithInstagramAndFacebook(string instagram, string facebook)
     {
-        context.ContactInfo = new ContactInfo("john@example.com", "+1234567890", instagram, facebook);
+        context.ContactInfo = ContactInfo.Create("john@example.com", "+1234567890", instagram, facebook).Value;
     }
 
     [When(@"I create contact information with social media")]
@@ -389,7 +389,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have identification info with national ID ""(.*)"" and nationality ""(.*)""")]
     public void GivenIHaveIdentificationInfoWithNationalIDAndNationality(string nationalId, string nationality)
     {
-        context.IdentificationInfo = new IdentificationInfo(nationalId, nationality);
+        context.IdentificationInfo = IdentificationInfo.Create(nationalId, nationality).Value;
     }
 
     [When(@"I create identification information")]

@@ -83,15 +83,15 @@ internal static class CustomerEndpoints
             dto.PersonalInfo.Profession,
             timeProvider);
 
-        var identificationInfo = new IdentificationInfo(
+        var identificationInfo = IdentificationInfo.Create(
             dto.IdentificationInfo.NationalId,
-            dto.IdentificationInfo.IdNationality);
+            dto.IdentificationInfo.IdNationality).Value;
 
-        var contactInfo = new ContactInfo(
+        var contactInfo = ContactInfo.Create(
             dto.ContactInfo.Email,
             dto.ContactInfo.Mobile,
             dto.ContactInfo.Instagram,
-            dto.ContactInfo.Facebook);
+            dto.ContactInfo.Facebook).Value;
 
         var address = new Address(
             dto.Address.Street,
@@ -170,15 +170,15 @@ internal static class CustomerEndpoints
             dto.PersonalInfo.Profession,
             timeProvider).Value;
 
-        var identificationInfo = new IdentificationInfo(
+        var identificationInfo = IdentificationInfo.Create(
             dto.IdentificationInfo.NationalId,
-            dto.IdentificationInfo.IdNationality);
+            dto.IdentificationInfo.IdNationality).Value;
 
-        var contactInfo = new ContactInfo(
+        var contactInfo = ContactInfo.Create(
             dto.ContactInfo.Email,
             dto.ContactInfo.Mobile,
             dto.ContactInfo.Instagram,
-            dto.ContactInfo.Facebook);
+            dto.ContactInfo.Facebook).Value;
 
         var address = new Address(
             dto.Address.Street,
