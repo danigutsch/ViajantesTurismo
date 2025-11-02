@@ -197,7 +197,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> DeleteBooking(
         [FromRoute] long id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -206,10 +206,14 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound();
+            return TourErrors.BookingNotFound(id).ToNotFound();
         }
 
-        tour.RemoveBooking(id);
+        var result = tour.RemoveBooking(id);
+        if (!result.IsSuccess)
+        {
+            return result.ToNotFound();
+        }
 
         await unitOfWork.SaveEntities(ct);
 

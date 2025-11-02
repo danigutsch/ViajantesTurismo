@@ -119,13 +119,20 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [When(@"I remove the booking from the tour")]
     public void WhenIRemoveTheBookingFromTheTour()
     {
-        tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
+        Assert.True(result.IsSuccess);
     }
 
     [When(@"I try to confirm a non-existent booking")]
     public void WhenITryToConfirmANonExistentBooking()
     {
         bookingContext.Result = tourContext.Tour.ConfirmBooking(99999);
+    }
+
+    [When(@"I try to remove a non-existent booking")]
+    public void WhenITryToRemoveANonExistentBooking()
+    {
+        bookingContext.Result = tourContext.Tour.RemoveBooking(99999);
     }
 
     [When(@"I try to cancel a non-existent booking")]

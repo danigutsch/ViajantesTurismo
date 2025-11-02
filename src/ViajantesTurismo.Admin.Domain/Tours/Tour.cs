@@ -515,12 +515,17 @@ public sealed class Tour : Entity<int>
     /// Removes a booking from this tour.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to remove.</param>
-    public void RemoveBooking(long bookingId)
+    /// <returns>A result indicating success or failure.</returns>
+    public Result RemoveBooking(long bookingId)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId)
-                      ?? throw new InvalidOperationException($"Booking with ID {bookingId} not found in this tour.");
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
 
         _bookings.Remove(booking);
+        return Result.Ok();
     }
 
     /// <summary>
