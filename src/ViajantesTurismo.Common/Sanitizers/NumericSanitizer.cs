@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Common;
+namespace ViajantesTurismo.Common.Sanitizers;
 
 /// <summary>
 /// Provides numeric sanitization methods for domain inputs.

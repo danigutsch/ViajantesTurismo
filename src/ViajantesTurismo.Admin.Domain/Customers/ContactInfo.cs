@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;

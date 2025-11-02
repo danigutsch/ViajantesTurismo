@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
@@ -11,6 +11,17 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class IdentificationInfo
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IdentificationInfo"/> class.
+    /// </summary>
+    /// <param name="nationalId">The national ID.</param>
+    /// <param name="idNationality">The nationality that issued the ID.</param>
+    private IdentificationInfo(string nationalId, string idNationality)
+    {
+        NationalId = nationalId;
+        IdNationality = idNationality;
+    }
+
     /// <summary>National ID.</summary>
     public string NationalId { get; private set; }
 
@@ -54,17 +65,6 @@ public sealed class IdentificationInfo
         }
 
         return new IdentificationInfo(sanitizedNationalId!, sanitizedIdNationality!);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="IdentificationInfo"/> class.
-    /// </summary>
-    /// <param name="nationalId">The national ID.</param>
-    /// <param name="idNationality">The nationality that issued the ID.</param>
-    private IdentificationInfo(string nationalId, string idNationality)
-    {
-        NationalId = nationalId;
-        IdNationality = idNationality;
     }
 
     /// <summary>

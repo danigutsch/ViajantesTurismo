@@ -1,10 +1,10 @@
 ﻿using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

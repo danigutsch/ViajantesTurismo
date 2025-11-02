@@ -1,8 +1,8 @@
 ﻿using JetBrains.Annotations;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Bookings;
 

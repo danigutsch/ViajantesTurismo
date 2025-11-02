@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ViajantesTurismo.Common;
+namespace ViajantesTurismo.Common.Sanitizers;
 
 /// <summary>
 /// Provides string sanitization methods for domain inputs.
