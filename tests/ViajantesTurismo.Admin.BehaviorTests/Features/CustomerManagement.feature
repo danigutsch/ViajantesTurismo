@@ -86,3 +86,27 @@ So that customer records are complete and accurate
         When I create contact information
         Then the sanitized email should be "john @ example.com"
         And the sanitized mobile should be "+123 456 7890"
+
+    Scenario: Customer identification info with whitespace is trimmed
+        Given I have identification info with national ID "  ABC123456  " and nationality "  American  "
+        When I create identification information
+        Then the sanitized national ID should be "ABC123456"
+        And the sanitized ID nationality should be "American"
+
+    Scenario: Customer emergency contact with whitespace is trimmed
+        Given I have emergency contact with name "  Jane Doe  " and mobile "  +9876543210  "
+        When I create emergency contact information
+        Then the sanitized emergency contact name should be "Jane Doe"
+        And the sanitized emergency contact mobile should be "+9876543210"
+
+    Scenario: Customer medical info with whitespace is trimmed
+        Given I have medical info with allergies "  Peanuts, Dairy  " and additional info "  Requires insulin  "
+        When I create medical information
+        Then the sanitized allergies should be "Peanuts, Dairy"
+        And the sanitized additional info should be "Requires insulin"
+
+    Scenario: Customer medical info preserves multi-line formatting
+        Given I have medical info with allergies "Peanuts\nDairy\nGluten" and additional info "Line 1\nLine 2"
+        When I create medical information
+        Then the sanitized allergies should be "Peanuts\nDairy\nGluten"
+        And the sanitized additional info should be "Line 1\nLine 2"

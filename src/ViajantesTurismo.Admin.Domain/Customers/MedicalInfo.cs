@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Common;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -14,8 +15,8 @@ public sealed class MedicalInfo
     /// <param name="additionalInfo">The additional medical information.</param>
     public MedicalInfo(string? allergies, string? additionalInfo)
     {
-        Allergies = allergies;
-        AdditionalInfo = additionalInfo;
+        Allergies = StringSanitizer.SanitizeNotes(allergies);
+        AdditionalInfo = StringSanitizer.SanitizeNotes(additionalInfo);
     }
 
     /// <summary>Allergies.</summary>

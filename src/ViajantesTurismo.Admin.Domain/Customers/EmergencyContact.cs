@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Common;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -14,8 +15,8 @@ public sealed class EmergencyContact
     /// <param name="mobile">The emergency contact mobile.</param>
     public EmergencyContact(string name, string mobile)
     {
-        Name = name;
-        Mobile = mobile;
+        Name = StringSanitizer.Sanitize(name);
+        Mobile = StringSanitizer.Sanitize(mobile);
     }
 
     /// <summary>Emergency contact name.</summary>

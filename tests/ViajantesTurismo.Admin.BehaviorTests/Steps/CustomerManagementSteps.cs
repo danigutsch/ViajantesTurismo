@@ -385,4 +385,82 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     {
         Assert.Equal(expectedFacebook, context.ContactInfo.Facebook);
     }
+
+    [Given(@"I have identification info with national ID ""(.*)"" and nationality ""(.*)""")]
+    public void GivenIHaveIdentificationInfoWithNationalIDAndNationality(string nationalId, string nationality)
+    {
+        context.IdentificationInfo = new IdentificationInfo(nationalId, nationality);
+    }
+
+    [When(@"I create identification information")]
+#pragma warning disable CA1822
+    public void WhenICreateIdentificationInformation()
+#pragma warning restore CA1822
+    {
+        // IdentificationInfo is already created in the Given step
+    }
+
+    [Then(@"the sanitized national ID should be ""(.*)""")]
+    public void ThenTheSanitizedNationalIDShouldBe(string expectedNationalId)
+    {
+        Assert.Equal(expectedNationalId, context.IdentificationInfo.NationalId);
+    }
+
+    [Then(@"the sanitized ID nationality should be ""(.*)""")]
+    public void ThenTheSanitizedIDNationalityShouldBe(string expectedNationality)
+    {
+        Assert.Equal(expectedNationality, context.IdentificationInfo.IdNationality);
+    }
+
+    [Given(@"I have emergency contact with name ""(.*)"" and mobile ""(.*)""")]
+    public void GivenIHaveEmergencyContactWithNameAndMobile(string name, string mobile)
+    {
+        context.EmergencyContact = new EmergencyContact(name, mobile);
+    }
+
+    [When(@"I create emergency contact information")]
+#pragma warning disable CA1822
+    public void WhenICreateEmergencyContactInformation()
+#pragma warning restore CA1822
+    {
+        // EmergencyContact is already created in the Given step
+    }
+
+    [Then(@"the sanitized emergency contact name should be ""(.*)""")]
+    public void ThenTheSanitizedEmergencyContactNameShouldBe(string expectedName)
+    {
+        Assert.Equal(expectedName, context.EmergencyContact.Name);
+    }
+
+    [Then(@"the sanitized emergency contact mobile should be ""(.*)""")]
+    public void ThenTheSanitizedEmergencyContactMobileShouldBe(string expectedMobile)
+    {
+        Assert.Equal(expectedMobile, context.EmergencyContact.Mobile);
+    }
+
+    [Given(@"I have medical info with allergies ""(.*)"" and additional info ""(.*)""")]
+    public void GivenIHaveMedicalInfoWithAllergiesAndAdditionalInfo(string allergies, string additionalInfo)
+    {
+        context.MedicalInfo = new MedicalInfo(allergies, additionalInfo);
+    }
+
+    [When(@"I create medical information")]
+#pragma warning disable CA1822
+    public void WhenICreateMedicalInformation()
+#pragma warning restore CA1822
+    {
+        // MedicalInfo is already created in the Given step
+    }
+
+    [Then(@"the sanitized allergies should be ""(.*)""")]
+    public void ThenTheSanitizedAllergiesShouldBe(string expectedAllergies)
+    {
+        Assert.Equal(expectedAllergies, context.MedicalInfo.Allergies);
+    }
+
+    [Then(@"the sanitized additional info should be ""(.*)""")]
+    public void ThenTheSanitizedAdditionalInfoShouldBe(string expectedAdditionalInfo)
+    {
+        Assert.Equal(expectedAdditionalInfo, context.MedicalInfo.AdditionalInfo);
+    }
 }

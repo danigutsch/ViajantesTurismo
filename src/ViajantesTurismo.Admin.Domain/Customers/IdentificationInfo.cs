@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Common;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -14,8 +15,8 @@ public sealed class IdentificationInfo
     /// <param name="idNationality">The nationality that issued the ID.</param>
     public IdentificationInfo(string nationalId, string idNationality)
     {
-        NationalId = nationalId;
-        IdNationality = idNationality;
+        NationalId = StringSanitizer.Sanitize(nationalId);
+        IdNationality = StringSanitizer.Sanitize(idNationality);
     }
 
     /// <summary>National ID.</summary>
