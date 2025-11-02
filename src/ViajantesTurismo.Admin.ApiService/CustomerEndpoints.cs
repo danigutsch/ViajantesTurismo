@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 
-namespace ViajantesTurismo.ApiService;
+namespace ViajantesTurismo.Admin.ApiService;
 
 /// <summary>
 /// Defines all endpoints related to customer queries and operations.

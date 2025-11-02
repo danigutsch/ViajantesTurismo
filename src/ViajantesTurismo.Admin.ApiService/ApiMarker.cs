@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.ApiService;
+﻿namespace ViajantesTurismo.Admin.ApiService;
 
 /// <summary>
 /// Serves as an assembly marker for the API project.

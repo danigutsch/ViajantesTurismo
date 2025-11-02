@@ -1,5 +1,5 @@
+using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Infrastructure;
-using ViajantesTurismo.ApiService;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);

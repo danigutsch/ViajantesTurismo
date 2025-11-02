@@ -14,7 +14,7 @@ var migrationService = builder.AddProject<ViajantesTurismo_MigrationService>(Res
     .WithReference(database)
     .WaitFor(database);
 
-var apiService = builder.AddProject<ViajantesTurismo_ApiService>(ResourceNames.Api)
+var apiService = builder.AddProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
     .WithHttpHealthCheck("/health")
     .WithReference(database)
     .WaitFor(database)

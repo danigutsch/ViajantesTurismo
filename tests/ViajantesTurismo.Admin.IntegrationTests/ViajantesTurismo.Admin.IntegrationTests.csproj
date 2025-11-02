@@ -42,7 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\ViajantesTurismo.ApiService\ViajantesTurismo.ApiService.csproj" IsAspireProjectResource="false"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj" IsAspireProjectResource="false"/>
     </ItemGroup>
 
 </Project>

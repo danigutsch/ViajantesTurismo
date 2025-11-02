@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.ApiService;
+namespace ViajantesTurismo.Admin.ApiService;
 
 internal static class ResultExtensions
 {

@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.ApiService;
+namespace ViajantesTurismo.Admin.ApiService;
 
 /// <summary>
 /// Defines all endpoints related to booking management.
