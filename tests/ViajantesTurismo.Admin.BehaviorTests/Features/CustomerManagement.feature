@@ -68,3 +68,21 @@ So that customer records are complete and accurate
         When I create address information from sanitization inputs
         Then the sanitized address city should be "New York"
         And the sanitized address country should be "USA"
+
+    Scenario: Customer contact info with whitespace is trimmed
+        Given I have contact info with email "  john@example.com  " and mobile "  +1234567890  "
+        When I create contact information
+        Then the sanitized email should be "john@example.com"
+        And the sanitized mobile should be "+1234567890"
+
+    Scenario: Customer contact info with Instagram and Facebook whitespace
+        Given I have contact info with Instagram "  john_doe  " and Facebook "  johndoe123  "
+        When I create contact information with social media
+        Then the sanitized Instagram should be "john_doe"
+        And the sanitized Facebook should be "johndoe123"
+
+    Scenario: Customer contact info normalizes multiple spaces
+        Given I have contact info with email "john  @  example.com" and mobile "+123  456  7890"
+        When I create contact information
+        Then the sanitized email should be "john @ example.com"
+        And the sanitized mobile should be "+123 456 7890"

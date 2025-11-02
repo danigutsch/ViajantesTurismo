@@ -333,4 +333,56 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     {
         Assert.Equal(expectedCountry, context.Address.Country);
     }
+
+    [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
+    public void GivenIHaveContactInfoWithEmailAndMobile(string email, string mobile)
+    {
+        context.ContactInfo = new ContactInfo(email, mobile, null, null);
+    }
+
+    [When(@"I create contact information")]
+#pragma warning disable CA1822
+    public void WhenICreateContactInformation()
+#pragma warning restore CA1822
+    {
+        // ContactInfo is already created in the Given step
+    }
+
+    [Then(@"the sanitized email should be ""(.*)""")]
+    public void ThenTheSanitizedEmailShouldBe(string expectedEmail)
+    {
+        Assert.Equal(expectedEmail, context.ContactInfo.Email);
+    }
+
+    [Then(@"the sanitized mobile should be ""(.*)""")]
+    public void ThenTheSanitizedMobileShouldBe(string expectedMobile)
+    {
+        Assert.Equal(expectedMobile, context.ContactInfo.Mobile);
+    }
+
+    [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
+    public void GivenIHaveContactInfoWithInstagramAndFacebook(string instagram, string facebook)
+    {
+        context.ContactInfo = new ContactInfo("john@example.com", "+1234567890", instagram, facebook);
+    }
+
+    [When(@"I create contact information with social media")]
+#pragma warning disable CA1822
+    public void WhenICreateContactInformationWithSocialMedia()
+#pragma warning restore CA1822
+    {
+        // ContactInfo is already created in the Given step
+    }
+
+    [Then(@"the sanitized Instagram should be ""(.*)""")]
+    public void ThenTheSanitizedInstagramShouldBe(string expectedInstagram)
+    {
+        Assert.Equal(expectedInstagram, context.ContactInfo.Instagram);
+    }
+
+    [Then(@"the sanitized Facebook should be ""(.*)""")]
+    public void ThenTheSanitizedFacebookShouldBe(string expectedFacebook)
+    {
+        Assert.Equal(expectedFacebook, context.ContactInfo.Facebook);
+    }
 }

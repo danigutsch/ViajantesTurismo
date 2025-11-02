@@ -14,6 +14,9 @@ public sealed class TourContext
     public decimal SingleRoomSupplementPrice { get; set; }
     public decimal RegularBikePrice { get; set; }
     public decimal EBikePrice { get; set; }
+#pragma warning disable CA1002 // Do not expose generic lists - acceptable for test context
+    public List<string> IncludedServices { get; init; } = [];
+#pragma warning restore CA1002
     public Tour Tour { get; set; } = null!;
     public object Result { get; set; } = null!;
 }

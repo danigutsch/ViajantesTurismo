@@ -8,7 +8,7 @@ using ViajantesTurismo.Common.Results;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class TourManagementSteps(TourContext tourContext, ScenarioContext scenarioContext)
+public sealed class TourManagementSteps(TourContext tourContext)
 {
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
     public void GivenIHaveTourDatesFromTo(string startDateString, string endDateString)
@@ -169,6 +169,27 @@ public sealed class TourManagementSteps(TourContext tourContext, ScenarioContext
         tourContext.EBikePrice = -40m;
     }
 
+    [Given(@"I have tour details with services ""(.*)""")]
+    public void GivenIHaveTourDetailsWithServices(string servicesString)
+    {
+        ContextHelpers.SetupValidTour(tourContext);
+        tourContext.IncludedServices.Clear();
+        tourContext.IncludedServices.AddRange(servicesString.Split(", "));
+    }
+
+    [Given(@"I have tour details with base price (.*), single room (.*), regular bike (.*), e-bike (.*)")]
+    public void GivenIHaveTourDetailsWithAllPrices(decimal basePrice, decimal singleRoom, decimal regularBike, decimal eBike)
+    {
+        tourContext.Identifier = "TEST2024";
+        tourContext.Name = "Test Tour";
+        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
+        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        tourContext.BasePrice = basePrice;
+        tourContext.SingleRoomSupplementPrice = singleRoom;
+        tourContext.RegularBikePrice = regularBike;
+        tourContext.EBikePrice = eBike;
+    }
+
     [When(@"I create the tour")]
     public void WhenICreateTheTour()
     {
@@ -178,8 +199,8 @@ public sealed class TourManagementSteps(TourContext tourContext, ScenarioContext
     [When(@"I try to create the tour")]
     public void WhenITryToCreateTheTour()
     {
-        var services = scenarioContext.ContainsKey("Services")
-            ? scenarioContext.Get<string[]>("Services")
+        var services = tourContext.IncludedServices.Count > 0
+            ? tourContext.IncludedServices
             : ["Hotel", "Breakfast"];
 
         tourContext.Result = Tour.Create(
@@ -197,12 +218,6 @@ public sealed class TourManagementSteps(TourContext tourContext, ScenarioContext
         if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
         {
             tourContext.Tour = result.Value;
-        }
-
-        scenarioContext["Result"] = tourContext.Result;
-        if (tourContext.Result is Result<Tour> { IsSuccess: true })
-        {
-            scenarioContext["Tour"] = tourContext.Tour;
         }
     }
 
@@ -437,16 +452,6 @@ public sealed class TourManagementSteps(TourContext tourContext, ScenarioContext
         Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 
-    [Then(@"the pricing update should fail with validation error for ""(.*)""")]
-    public void ThenThePricingUpdateShouldFailWithValidationErrorFor(string fieldName)
-    {
-        Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result>(tourContext.Result);
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
-    }
-
     [Then(@"the tour creation should fail with multiple validation errors")]
     public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
     {
@@ -456,5 +461,33 @@ public sealed class TourManagementSteps(TourContext tourContext, ScenarioContext
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails?.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.Count > 1, "Expected multiple validation errors");
+    }
+
+    [Then(@"the tour single room supplement should be (.*)")]
+    public void ThenTheTourSingleRoomSupplementShouldBe(decimal expectedPrice)
+    {
+        Assert.Equal(expectedPrice, tourContext.Tour.SingleRoomSupplementPrice);
+    }
+
+    [Then(@"the tour regular bike price should be (.*)")]
+    public void ThenTheTourRegularBikePriceShouldBe(decimal expectedPrice)
+    {
+        Assert.Equal(expectedPrice, tourContext.Tour.RegularBikePrice);
+    }
+
+    [Then(@"the tour e-bike price should be (.*)")]
+    public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
+    {
+        Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
+    }
+
+    [Then(@"the pricing update should fail with validation error for ""(.*)""")]
+    public void ThenThePricingUpdateShouldFailWithValidationErrorFor(string fieldName)
+    {
+        Assert.NotNull(tourContext.Result);
+        Assert.IsType<Result>(tourContext.Result);
+        var result = (Result)tourContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 }
