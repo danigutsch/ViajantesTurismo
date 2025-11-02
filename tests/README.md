@@ -73,6 +73,7 @@ dotnet test --collect:"XPlat Code Coverage"
 - **Context Injection** - Use custom POCO classes for sharing data between steps
 - **Avoid ScenarioContext.Current** - Deprecated, use constructor injection instead
 - **Entity-based organization** - Group related steps in binding classes
+- **Context class properties** - Must use `required` modifier, never nullable with `= null!` initialization
 
 ### Integration Tests
 - Full request/response cycle testing

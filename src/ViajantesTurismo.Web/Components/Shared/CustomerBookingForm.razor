@@ -39,12 +39,6 @@
 
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="totalPrice" class="form-label">Total Price <span class="text-danger">*</span></label>
-            <InputNumber @bind-Value="Model.TotalPrice" class="form-control" id="totalPrice" />
-            <ValidationMessage For="@(() => Model.TotalPrice)" />
-        </div>
-
-        <div class="col-md-6 mb-3">
             <label for="status" class="form-label">Status</label>
             <InputSelect @bind-Value="Model.Status" class="form-select" id="status">
                 @foreach (var status in Enum.GetValues<BookingStatusDto>())
@@ -97,9 +91,6 @@
     public int? CompanionId { get; set; }
 
     [Parameter]
-    public decimal TotalPrice { get; set; }
-
-    [Parameter]
     public string? Notes { get; set; }
 
     [Parameter]
@@ -140,7 +131,6 @@
         {
             TourId = TourId,
             CompanionId = CompanionId,
-            TotalPrice = TotalPrice,
             Notes = Notes,
             Status = Status,
             PaymentStatus = PaymentStatus

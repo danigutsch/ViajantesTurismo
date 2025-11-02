@@ -17,8 +17,8 @@ public sealed class ContactInfo
     /// <param name="facebook">The Facebook profile.</param>
     public ContactInfo(string email, string mobile, string? instagram, string? facebook)
     {
-        Email = StringSanitizer.Sanitize(email);
-        Mobile = StringSanitizer.Sanitize(mobile);
+        Email = StringSanitizer.Sanitize(email)!;
+        Mobile = StringSanitizer.Sanitize(mobile)!;
         Instagram = StringSanitizer.Sanitize(instagram);
         Facebook = StringSanitizer.Sanitize(facebook);
     }

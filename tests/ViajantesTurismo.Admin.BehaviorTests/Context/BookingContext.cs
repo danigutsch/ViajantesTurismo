@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 [UsedImplicitly]
 public sealed class BookingContext
 {
-    public Booking Booking { get; set; } = null!;
-    public Result Result { get; set; }
-    public Action Action { get; set; } = null!;
+    public required Booking Booking { get; set; }
+    public required Result Result { get; set; }
+    public required Action Action { get; set; }
 }

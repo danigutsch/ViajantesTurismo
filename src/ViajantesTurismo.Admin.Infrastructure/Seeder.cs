@@ -269,16 +269,16 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             return;
         }
 
-        var booking1 = tours[0].AddBooking(customers[0].Id, null, 1800m, "Early bird discount applied");
-        var booking2 = tours[1].AddBooking(customers[1].Id, customers[0].Id, 4400m, "Traveling together as a couple");
-        tours[2].AddBooking(customers[2].Id, null, 1920m, "Requested vegetarian meals");
-        var booking4 = tours[3].AddBooking(customers[3].Id, customers[4].Id, 4950m, "Upgraded to premium accommodation");
-        var booking5 = tours[4].AddBooking(customers[5].Id, null, 2900m, "Excellent tour experience");
-        var booking6 = tours[0].AddBooking(customers[6].Id, null, 1500m, "Cancelled due to personal reasons");
-        var booking7 = tours[1].AddBooking(customers[7].Id, customers[8].Id, 4400m, "Special dietary requirements noted");
-        tours[3].AddBooking(customers[9].Id, null, 2200m, "Interested in photography opportunities");
-        var booking9 = tours[0].AddBooking(customers[4].Id, null, 1650m, "Solo traveler, single room supplement included");
-        var booking10 = tours[4].AddBooking(customers[8].Id, null, 2750m, "Payment pending bank transfer");
+        var booking1 = tours[0].AddBooking(customers[0].Id, null, "Early bird discount applied").Value;
+        var booking2 = tours[1].AddBooking(customers[1].Id, customers[0].Id, "Traveling together as a couple").Value;
+        tours[2].AddBooking(customers[2].Id, null, "Requested vegetarian meals");
+        var booking4 = tours[3].AddBooking(customers[3].Id, customers[4].Id, "Upgraded to premium accommodation").Value;
+        var booking5 = tours[4].AddBooking(customers[5].Id, null, "Excellent tour experience").Value;
+        var booking6 = tours[0].AddBooking(customers[6].Id, null, "Cancelled due to personal reasons").Value;
+        var booking7 = tours[1].AddBooking(customers[7].Id, customers[8].Id, "Special dietary requirements noted").Value;
+        tours[3].AddBooking(customers[9].Id, null, "Interested in photography opportunities");
+        var booking9 = tours[0].AddBooking(customers[4].Id, null, "Solo traveler, single room supplement included").Value;
+        var booking10 = tours[4].AddBooking(customers[8].Id, null, "Payment pending bank transfer").Value;
 
         dbContext.SaveChanges();
 

@@ -15,8 +15,8 @@ public sealed class IdentificationInfo
     /// <param name="idNationality">The nationality that issued the ID.</param>
     public IdentificationInfo(string nationalId, string idNationality)
     {
-        NationalId = StringSanitizer.Sanitize(nationalId);
-        IdNationality = StringSanitizer.Sanitize(idNationality);
+        NationalId = StringSanitizer.Sanitize(nationalId)!;
+        IdNationality = StringSanitizer.Sanitize(idNationality)!;
     }
 
     /// <summary>National ID.</summary>

@@ -17,11 +17,6 @@ public class BookingFormModel
     /// <summary>Optional companion customer identifier.</summary>
     public int? CompanionId { get; set; }
 
-    /// <summary>Total price of the booking.</summary>
-    [Required(ErrorMessage = "Total price is required")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "Total price must be greater than zero")]
-    public decimal TotalPrice { get; set; }
-
     /// <summary>Optional notes about the booking.</summary>
     [MaxLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; set; }

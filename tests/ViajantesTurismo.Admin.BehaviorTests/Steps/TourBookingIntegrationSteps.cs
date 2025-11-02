@@ -23,7 +23,9 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAPendingBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        Assert.True(result.IsSuccess);
+        bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
@@ -31,7 +33,9 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAConfirmedBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        Assert.True(addResult.IsSuccess);
+        bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
         Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
@@ -41,35 +45,45 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithABookingPricedAt(decimal price)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
+        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        Assert.True(result.IsSuccess);
+        bookingContext.Booking = result.Value;
     }
 
     [Given(@"a tour exists with a booking")]
     public void GivenATourExistsWithABooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        Assert.True(result.IsSuccess);
+        bookingContext.Booking = result.Value;
     }
 
     [Given(@"a tour exists with a booking priced at (.*) and notes ""(.*)""")]
     public void GivenATourExistsWithABookingPricedAtAndNotes(decimal price, string notes)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: notes);
+        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: notes);
+        Assert.True(result.IsSuccess);
+        bookingContext.Booking = result.Value;
     }
 
     [Given(@"a tour exists with a pending booking priced at (.*)")]
     public void GivenATourExistsWithAPendingBookingPricedAt(decimal price)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
+        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        Assert.True(result.IsSuccess);
+        bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [When(@"I add a booking for the customer to the tour with price (.*)")]
     public void WhenIAddABookingForTheCustomerToTheTourWithPrice(decimal price)
     {
-        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
+        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        Assert.True(result.IsSuccess);
+        bookingContext.Booking = result.Value;
     }
 
     [When(@"I confirm the booking through the tour")]

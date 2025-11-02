@@ -135,11 +135,17 @@ internal static class BookingEndpoints
             return TypedResults.NotFound();
         }
 
-        var booking = tour.AddBooking(
+        var result = tour.AddBooking(
             dto.CustomerId,
             dto.CompanionId,
-            dto.TotalPrice,
             dto.Notes);
+
+        if (result.IsFailure)
+        {
+            return result.ToValidationProblem();
+        }
+
+        var booking = result.Value;
 
         await unitOfWork.SaveEntities(ct);
 
@@ -165,7 +171,6 @@ internal static class BookingEndpoints
             return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
-        tour.UpdateBookingPrice(id, dto.TotalPrice);
         tour.UpdateBookingNotes(id, dto.Notes);
 
         var targetStatus = (BookingStatus)dto.Status;

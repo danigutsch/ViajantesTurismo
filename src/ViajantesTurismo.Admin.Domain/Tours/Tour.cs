@@ -124,8 +124,8 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
-        identifier = StringSanitizer.Sanitize(identifier);
-        name = StringSanitizer.Sanitize(name);
+        identifier = StringSanitizer.Sanitize(identifier)!;
+        name = StringSanitizer.Sanitize(name)!;
         price = NumericSanitizer.SanitizePrice(price);
         singleRoomSupplementPrice = NumericSanitizer.SanitizePrice(singleRoomSupplementPrice);
         regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
@@ -225,29 +225,29 @@ public sealed class Tour : Entity<int>
     /// <param name="identifier">The unique business identifier for the tour.</param>
     /// <param name="name">The descriptive name of the tour.</param>
     /// <returns>A Result indicating success or failure.</returns>
-    public Result UpdateBasicInfo(string identifier, string name)
+    public Result UpdateDetails(string identifier, string name)
     {
-        identifier = StringSanitizer.Sanitize(identifier);
-        name = StringSanitizer.Sanitize(name);
+        var sanitizedIdentifier = StringSanitizer.Sanitize(identifier);
+        var sanitizedName = StringSanitizer.Sanitize(name);
 
         var errors = new ValidationErrors();
 
-        if (string.IsNullOrWhiteSpace(identifier))
+        if (string.IsNullOrWhiteSpace(sanitizedIdentifier))
         {
             errors.Add(TourErrors.EmptyIdentifier());
         }
-        else if (identifier.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedIdentifier.Length > ContractConstants.MaxNameLength)
         {
-            errors.Add(TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, identifier.Length));
+            errors.Add(TourErrors.IdentifierTooLong(ContractConstants.MaxNameLength, sanitizedIdentifier.Length));
         }
 
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(sanitizedName))
         {
             errors.Add(TourErrors.EmptyName());
         }
-        else if (name.Length > ContractConstants.MaxNameLength)
+        else if (sanitizedName.Length > ContractConstants.MaxNameLength)
         {
-            errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
+            errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, sanitizedName.Length));
         }
 
         if (errors.HasErrors)
@@ -255,8 +255,8 @@ public sealed class Tour : Entity<int>
             return errors.ToResult();
         }
 
-        Identifier = identifier;
-        Name = name;
+        Identifier = sanitizedIdentifier!;
+        Name = sanitizedName!;
         return Result.Ok();
     }
 
@@ -359,7 +359,6 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateBasePrice(decimal price)
     {
-        // Sanitize input
         price = NumericSanitizer.SanitizePrice(price);
 
         if (price <= ContractConstants.MinPrice)
@@ -399,14 +398,17 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="customerId">The ID of the customer making the booking.</param>
     /// <param name="companionId">The ID of the companion, if any.</param>
-    /// <param name="totalPrice">The total price of the booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
-    /// <returns>The created booking.</returns>
-    public Booking AddBooking(int customerId, int? companionId, decimal totalPrice, string? notes)
+    /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
+    public Result<Booking> AddBooking(int customerId, int? companionId, string? notes)
     {
-        var booking = new Booking(Id, customerId, companionId);
-        booking.UpdatePrice(totalPrice);
-        booking.UpdateNotes(notes);
+        var result = Booking.Create(Id, customerId, companionId, Price, notes);
+        if (result.IsFailure)
+        {
+            return result;
+        }
+
+        var booking = result.Value;
         _bookings.Add(booking);
         return booking;
     }

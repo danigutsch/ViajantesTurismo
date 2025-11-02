@@ -117,7 +117,7 @@ internal static class ToursEndpoints
 
         var currency = MapCurrencyDtoToCurrency(tourDto.Currency);
 
-        var basicInfoResult = tour.UpdateBasicInfo(tourDto.Identifier, tourDto.Name);
+        var basicInfoResult = tour.UpdateDetails(tourDto.Identifier, tourDto.Name);
         if (basicInfoResult.IsFailure)
         {
             return basicInfoResult.ToValidationProblem();

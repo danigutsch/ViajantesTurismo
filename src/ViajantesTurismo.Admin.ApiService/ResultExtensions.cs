@@ -99,4 +99,46 @@ internal static class ResultExtensions
 
         return TypedResults.NotFound(problemDetails);
     }
+
+    public static Results<ValidationProblem, NotFound<ProblemDetails>, Conflict<ProblemDetails>> ToProblemDetails(this Result result)
+    {
+        if (result.IsSuccess)
+        {
+            throw new InvalidOperationException("Cannot convert a successful result to a problem details response.");
+        }
+
+        return result.Status switch
+        {
+            ResultStatus.Invalid => result.ToValidationProblem(),
+            ResultStatus.NotFound => result.ToNotFound(),
+            ResultStatus.Conflict => TypedResults.Conflict(new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorDetails?.Detail,
+                Status = StatusCodes.Status409Conflict
+            }),
+            _ => throw new InvalidOperationException($"Unsupported result status: {result.Status}")
+        };
+    }
+
+    public static Results<ValidationProblem, NotFound<ProblemDetails>, Conflict<ProblemDetails>> ToProblemDetails<T>(this Result<T> result)
+    {
+        if (result.IsSuccess)
+        {
+            throw new InvalidOperationException("Cannot convert a successful result to a problem details response.");
+        }
+
+        return result.Status switch
+        {
+            ResultStatus.Invalid => result.ToValidationProblem(),
+            ResultStatus.NotFound => result.ToNotFound(),
+            ResultStatus.Conflict => TypedResults.Conflict(new ProblemDetails
+            {
+                Title = "Conflict",
+                Detail = result.ErrorDetails?.Detail,
+                Status = StatusCodes.Status409Conflict
+            }),
+            _ => throw new InvalidOperationException($"Unsupported result status: {result.Status}")
+        };
+    }
 }

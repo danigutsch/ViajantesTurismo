@@ -7,14 +7,14 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 [UsedImplicitly]
 public sealed class CustomerContext
 {
-    public PersonalInfo PersonalInfo { get; set; } = null!;
-    public IdentificationInfo IdentificationInfo { get; set; } = null!;
-    public ContactInfo ContactInfo { get; set; } = null!;
-    public Address Address { get; set; } = null!;
-    public PhysicalInfo PhysicalInfo { get; set; } = null!;
-    public AccommodationPreferences AccommodationPreferences { get; set; } = null!;
-    public EmergencyContact EmergencyContact { get; set; } = null!;
-    public MedicalInfo MedicalInfo { get; set; } = null!;
-    public Customer Customer { get; set; } = null!;
-    public Result<PersonalInfo> PersonalInfoResult { get; set; }
+    public required PersonalInfo PersonalInfo { get; set; }
+    public required IdentificationInfo IdentificationInfo { get; set; }
+    public required ContactInfo ContactInfo { get; set; }
+    public required Address Address { get; set; }
+    public required PhysicalInfo PhysicalInfo { get; set; }
+    public required AccommodationPreferences AccommodationPreferences { get; set; }
+    public required EmergencyContact EmergencyContact { get; set; }
+    public required MedicalInfo MedicalInfo { get; set; }
+    public required Customer Customer { get; set; }
+    public required Result<PersonalInfo> PersonalInfoResult { get; set; }
 }

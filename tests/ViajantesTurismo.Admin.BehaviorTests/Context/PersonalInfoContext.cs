@@ -7,11 +7,11 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 [UsedImplicitly]
 public sealed class PersonalInfoContext
 {
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public string Gender { get; set; } = null!;
-    public DateTime BirthDate { get; set; }
-    public string Nationality { get; set; } = null!;
-    public string Profession { get; set; } = null!;
-    public Result<PersonalInfo>? Result { get; set; }
+    public required string FirstName { get; set; }
+    public required string LastName { get; set; }
+    public required string Gender { get; set; }
+    public required DateTime BirthDate { get; set; }
+    public required string Nationality { get; set; }
+    public required string Profession { get; set; }
+    public required Result<PersonalInfo> Result { get; set; }
 }

@@ -15,8 +15,8 @@ public sealed class EmergencyContact
     /// <param name="mobile">The emergency contact mobile.</param>
     public EmergencyContact(string name, string mobile)
     {
-        Name = StringSanitizer.Sanitize(name);
-        Mobile = StringSanitizer.Sanitize(mobile);
+        Name = StringSanitizer.Sanitize(name)!;
+        Mobile = StringSanitizer.Sanitize(mobile)!;
     }
 
     /// <summary>Emergency contact name.</summary>

@@ -261,7 +261,6 @@ else
                                 <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
                                 <CustomerBookingForm TourId="@_bookingFormModel.TourId"
                                                      CompanionId="@_bookingFormModel.CompanionId"
-                                                     TotalPrice="@_bookingFormModel.TotalPrice"
                                                      Notes="@_bookingFormModel.Notes"
                                                      Status="@_bookingFormModel.Status"
                                                      PaymentStatus="@_bookingFormModel.PaymentStatus"
@@ -376,7 +375,6 @@ else
             TourId = booking.TourId,
             CustomerId = booking.CustomerId,
             CompanionId = booking.CompanionId,
-            TotalPrice = booking.TotalPrice,
             Notes = booking.Notes,
             Status = booking.Status,
             PaymentStatus = booking.PaymentStatus
@@ -399,7 +397,6 @@ else
             {
                 var updateDto = new UpdateBookingDto
                 {
-                    TotalPrice = model.TotalPrice,
                     Notes = model.Notes,
                     Status = model.Status,
                     PaymentStatus = model.PaymentStatus
@@ -414,7 +411,6 @@ else
                     TourId = model.TourId!.Value,
                     CustomerId = Id,
                     CompanionId = model.CompanionId,
-                    TotalPrice = model.TotalPrice,
                     Notes = model.Notes
                 };
 

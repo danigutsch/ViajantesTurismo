@@ -12,10 +12,10 @@ public static partial class StringSanitizer
     /// <summary>
     /// Sanitizes a string for general use (names, identifiers).
     /// Trims, normalizes whitespace, removes control characters, and normalizes Unicode.
+    /// Returns null if the input is null or contains only whitespace.
     /// </summary>
     /// <param name="value">The string to sanitize.</param>
-    /// <returns>The sanitized string, or null if input is null.</returns>
-    [return: NotNullIfNotNull(nameof(value))]
+    /// <returns>The sanitized string, or null if input is null or whitespace-only.</returns>
     public static string? Sanitize(string? value)
     {
         if (value is null)
@@ -28,7 +28,7 @@ public static partial class StringSanitizer
         value = value.Trim();
         value = NormalizeWhitespace(value);
 
-        return value;
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <summary>

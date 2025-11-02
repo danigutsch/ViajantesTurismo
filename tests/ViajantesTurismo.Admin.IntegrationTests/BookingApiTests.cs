@@ -45,7 +45,6 @@ public sealed class BookingApiTests : IDisposable
             TourId = tourDto.Id,
             CustomerId = customerDto.Id,
             CompanionId = null,
-            TotalPrice = 1500.00m,
             Notes = "Test booking"
         };
 
@@ -58,7 +57,7 @@ public sealed class BookingApiTests : IDisposable
         Assert.NotNull(booking);
         Assert.Equal(tourDto.Id, booking.TourId);
         Assert.Equal(customerDto.Id, booking.CustomerId);
-        Assert.Equal(1500.00m, booking.TotalPrice);
+        Assert.Equal(tourDto.Price, booking.TotalPrice);
         Assert.Equal("Test booking", booking.Notes);
     }
 
@@ -75,7 +74,6 @@ public sealed class BookingApiTests : IDisposable
             TourId = tourDto.Id,
             CustomerId = customerDto.Id,
             CompanionId = companionDto.Id,
-            TotalPrice = 3000.00m,
             Notes = "Couple booking"
         };
 
@@ -100,8 +98,7 @@ public sealed class BookingApiTests : IDisposable
         {
             TourId = 99999,
             CustomerId = customerDto.Id,
-            CompanionId = null,
-            TotalPrice = 1500.00m
+            CompanionId = null
         };
 
         // Act
@@ -119,8 +116,8 @@ public sealed class BookingApiTests : IDisposable
         var customer1 = await CreateTestCustomer("Alice", "Johnson");
         var customer2 = await CreateTestCustomer("Charlie", "Brown");
 
-        await CreateTestBooking(tourDto.Id, customer1.Id, null, 1500.00m);
-        await CreateTestBooking(tourDto.Id, customer2.Id, null, 1600.00m);
+        await CreateTestBooking(tourDto.Id, customer1.Id, null);
+        await CreateTestBooking(tourDto.Id, customer2.Id, null);
 
         // Act
         var response = await _client.GetAsync(new Uri("/bookings", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -138,7 +135,7 @@ public sealed class BookingApiTests : IDisposable
         // Arrange
         var tourDto = await CreateTestTour();
         var customerDto = await CreateTestCustomer("David", "Wilson");
-        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null, 1700.00m);
+        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null);
 
         // Act
         var response = await _client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -148,7 +145,7 @@ public sealed class BookingApiTests : IDisposable
         var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(booking);
         Assert.Equal(createdBooking.Id, booking.Id);
-        Assert.Equal(1700.00m, booking.TotalPrice);
+        Assert.Equal(tourDto.Price, booking.TotalPrice);
     }
 
     [Fact]
@@ -169,8 +166,8 @@ public sealed class BookingApiTests : IDisposable
         var customer1 = await CreateTestCustomer("Emma", "Davis");
         var customer2 = await CreateTestCustomer("Frank", "Miller");
 
-        await CreateTestBooking(tourDto.Id, customer1.Id, null, 1500.00m);
-        await CreateTestBooking(tourDto.Id, customer2.Id, null, 1600.00m);
+        await CreateTestBooking(tourDto.Id, customer1.Id, null);
+        await CreateTestBooking(tourDto.Id, customer2.Id, null);
 
         // Act
         var response = await _client.GetAsync(new Uri($"/bookings/tour/{tourDto.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -191,8 +188,8 @@ public sealed class BookingApiTests : IDisposable
         var tour2 = await CreateTestTour("CUBA2025", "Cuba Adventure 2025");
         var customerDto = await CreateTestCustomer("Grace", "Lee");
 
-        await CreateTestBooking(tour1.Id, customerDto.Id, null, 1500.00m);
-        await CreateTestBooking(tour2.Id, customerDto.Id, null, 1800.00m);
+        await CreateTestBooking(tour1.Id, customerDto.Id, null);
+        await CreateTestBooking(tour2.Id, customerDto.Id, null);
 
         // Act
         var response = await _client.GetAsync(new Uri($"/bookings/customer/{customerDto.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -213,7 +210,7 @@ public sealed class BookingApiTests : IDisposable
         var primaryCustomer = await CreateTestCustomer("Henry", "Taylor");
         var companionCustomer = await CreateTestCustomer("Iris", "Anderson");
 
-        await CreateTestBooking(tourDto.Id, primaryCustomer.Id, companionCustomer.Id, 3000.00m);
+        await CreateTestBooking(tourDto.Id, primaryCustomer.Id, companionCustomer.Id);
 
         // Act
         var response = await _client.GetAsync(new Uri($"/bookings/customer/{companionCustomer.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -232,11 +229,10 @@ public sealed class BookingApiTests : IDisposable
         // Arrange
         var tourDto = await CreateTestTour();
         var customerDto = await CreateTestCustomer("Jack", "Martin");
-        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null, 1500.00m);
+        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null);
 
         var updateRequest = new UpdateBookingDto
         {
-            TotalPrice = 1800.00m,
             Notes = "Updated notes",
             Status = BookingStatusDto.Confirmed,
             PaymentStatus = PaymentStatusDto.Paid
@@ -252,7 +248,6 @@ public sealed class BookingApiTests : IDisposable
         var getResponse = await _client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
         var updatedBooking = await getResponse.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedBooking);
-        Assert.Equal(1800.00m, updatedBooking.TotalPrice);
         Assert.Equal("Updated notes", updatedBooking.Notes);
         Assert.Equal(BookingStatusDto.Confirmed, updatedBooking.Status);
         Assert.Equal(PaymentStatusDto.Paid, updatedBooking.PaymentStatus);
@@ -264,7 +259,6 @@ public sealed class BookingApiTests : IDisposable
         // Arrange
         var updateRequest = new UpdateBookingDto
         {
-            TotalPrice = 1800.00m,
             Notes = "Test",
             Status = BookingStatusDto.Confirmed,
             PaymentStatus = PaymentStatusDto.Paid
@@ -283,7 +277,7 @@ public sealed class BookingApiTests : IDisposable
         // Arrange
         var tourDto = await CreateTestTour();
         var customerDto = await CreateTestCustomer("Kate", "White");
-        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null, 1500.00m);
+        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null);
 
         // Act
         var response = await _client.DeleteAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -312,7 +306,7 @@ public sealed class BookingApiTests : IDisposable
         // Arrange
         var tourDto = await CreateTestTour();
         var customerDto = await CreateTestCustomer("Laura", "Brown");
-        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null, 1800.00m);
+        var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null);
 
         // Verify initial status is Pending
         Assert.Equal(BookingStatusDto.Pending, createdBooking.Status);
@@ -441,14 +435,13 @@ public sealed class BookingApiTests : IDisposable
         return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(cancellationToken: TestContext.Current.CancellationToken))!;
     }
 
-    private async Task<GetBookingDto> CreateTestBooking(int tourId, int customerId, int? companionId, decimal totalPrice)
+    private async Task<GetBookingDto> CreateTestBooking(int tourId, int customerId, int? companionId)
     {
         var bookingRequest = new CreateBookingDto
         {
             TourId = tourId,
             CustomerId = customerId,
             CompanionId = companionId,
-            TotalPrice = totalPrice,
             Notes = "Test booking"
         };
 

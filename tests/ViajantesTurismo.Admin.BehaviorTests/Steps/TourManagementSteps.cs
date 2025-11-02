@@ -244,7 +244,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [When(@"I update the identifier to ""(.*)"" and name to ""(.*)""")]
     public void WhenIUpdateTheIdentifierToAndNameTo(string newIdentifier, string newName)
     {
-        tourContext.Tour.UpdateBasicInfo(newIdentifier, newName);
+        tourContext.Tour.UpdateDetails(newIdentifier, newName);
     }
 
     [When(@"I update the base price to (.*)")]
@@ -285,21 +285,21 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [When(@"I try to update the identifier to ""(.*)"" and name to ""(.*)""")]
     public void WhenITryToUpdateTheIdentifierToAndNameTo(string newIdentifier, string newName)
     {
-        tourContext.Result = tourContext.Tour.UpdateBasicInfo(newIdentifier, newName);
+        tourContext.Result = tourContext.Tour.UpdateDetails(newIdentifier, newName);
     }
 
     [When(@"I try to update the identifier to a string longer than 128 characters")]
     public void WhenITryToUpdateTheIdentifierToAStringLongerThan128Characters()
     {
         var longIdentifier = new string('A', 129);
-        tourContext.Result = tourContext.Tour.UpdateBasicInfo(longIdentifier, "Valid Name");
+        tourContext.Result = tourContext.Tour.UpdateDetails(longIdentifier, "Valid Name");
     }
 
     [When(@"I try to update the name to a string longer than 128 characters")]
     public void WhenITryToUpdateTheNameToAStringLongerThan128Characters()
     {
         var longName = new string('A', 129);
-        tourContext.Result = tourContext.Tour.UpdateBasicInfo("VALID2024", longName);
+        tourContext.Result = tourContext.Tour.UpdateDetails("VALID2024", longName);
     }
 
     [When(@"I try to update pricing with single room (.*)")]

@@ -34,15 +34,15 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     [Then(@"the creation should succeed")]
     public void ThenTheCreationShouldSucceed()
     {
-        Assert.True(context.Result!.Value.IsSuccess, context.Result.Value.ErrorDetails?.Detail ?? "Result failed");
+        Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
     }
 
     [Then(@"the personal info should contain the provided data")]
     public void ThenThePersonalInfoShouldContainTheProvidedData()
     {
-        Assert.True(context.Result!.Value.IsSuccess);
+        Assert.True(context.Result.IsSuccess);
 
-        var info = context.Result.Value.Value;
+        var info = context.Result.Value;
         Assert.Equal(context.FirstName, info.FirstName, StringComparer.Ordinal);
         Assert.Equal(context.LastName, info.LastName, StringComparer.Ordinal);
         Assert.Equal(context.Gender, info.Gender, StringComparer.Ordinal);
@@ -53,15 +53,15 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     [Then(@"the creation should fail")]
     public void ThenTheCreationShouldFail()
     {
-        Assert.True(context.Result!.Value.IsFailure, "Expected failure but got success");
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenTheErrorShouldBe(string expectedError)
     {
-        Assert.True(context.Result!.Value.IsFailure, "Expected failure but got success");
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
 
-        var errors = context.Result.Value.ErrorDetails?.ValidationErrors;
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
 
         Assert.Contains(expectedError, allErrors);
