@@ -128,7 +128,7 @@ public sealed class ToursApiTests : IDisposable
     [Fact]
     public async Task Can_Update_Tour()
     {
-        // Arrange: create a tour to update
+        // Arrange
         var uniqueId = Guid.NewGuid().ToString("N");
         var request = new CreateTourDto
         {
@@ -168,7 +168,7 @@ public sealed class ToursApiTests : IDisposable
         var putResponse = await _client.PutAsJsonAsync($"/tours/{tourId}", updateRequest, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, putResponse.StatusCode);
 
-        // Validate update via GET
+        // Assert
         var getResponse = await _client.GetAsync(new Uri($"/tours/{tourId}", UriKind.Relative), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var tourDto = await getResponse.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken: TestContext.Current.CancellationToken);
@@ -184,6 +184,8 @@ public sealed class ToursApiTests : IDisposable
     public async Task Update_Tour_Returns_NotFound_For_Invalid_Id()
     {
         // Arrange
+        const int invalidId = -1;
+
         var updateRequest = new UpdateTourDto
         {
             Identifier = "INVALID",
@@ -199,9 +201,95 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/tours/-1", updateRequest, TestContext.Current.CancellationToken);
+        var response = await _client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Tour_Returns_BadRequest_For_Invalid_Data()
+    {
+        const string invalidIdentifier = "";
+        var request = new CreateTourDto
+        {
+            Identifier = invalidIdentifier,
+            Name = "Test Tour",
+            StartDate = DateTime.UtcNow.AddMonths(1),
+            EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
+            Currency = CurrencyDto.Real,
+            Price = 2000.00m,
+            SingleRoomSupplementPrice = 500.00m,
+            RegularBikePrice = 100.00m,
+            EBikePrice = 200.00m,
+            IncludedServices = ["Hotel", "Breakfast"]
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Tour_Returns_Validation_Problem_For_Multiple_Errors()
+    {
+        // Arrange
+        const string invalidIdentifier = "";
+        const string invalidName = "";
+        const decimal invalidPrice = 0.00m;
+        var request = new CreateTourDto
+        {
+            Identifier = invalidIdentifier,
+            Name = invalidName,
+            StartDate = DateTime.UtcNow.AddMonths(1),
+            EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
+            Currency = CurrencyDto.Real,
+            Price = invalidPrice,
+            SingleRoomSupplementPrice = 500.00m,
+            RegularBikePrice = 100.00m,
+            EBikePrice = 200.00m,
+            IncludedServices = ["Hotel"]
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("identifier", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("name", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Create_Tour_Returns_BadRequest_For_Invalid_Price()
+    {
+        // Arrange
+        const decimal negativeBasePrice = -100.00m;
+        var request = new CreateTourDto
+        {
+            Identifier = "TEST2024",
+            Name = "Test Tour",
+            StartDate = DateTime.UtcNow.AddMonths(1),
+            EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
+            Currency = CurrencyDto.Real,
+            Price = negativeBasePrice,
+            SingleRoomSupplementPrice = 500.00m,
+            RegularBikePrice = 100.00m,
+            EBikePrice = 200.00m,
+            IncludedServices = ["Hotel", "Breakfast"]
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("price", content, StringComparison.OrdinalIgnoreCase);
     }
 }
