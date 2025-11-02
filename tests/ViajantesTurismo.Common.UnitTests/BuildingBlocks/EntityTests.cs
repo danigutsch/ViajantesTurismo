@@ -1,9 +1,11 @@
+using JetBrains.Annotations;
 using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
 #pragma warning disable CA1508 // Avoid dead code (intentional for test coverage)
-
+// ReSharper disable EqualExpressionComparison
+// ReSharper disable SuspiciousTypeConversion.Global
 public sealed class EntityTests
 {
     [Fact]
@@ -209,7 +211,6 @@ public sealed class EntityTests
         var entity = new TestEntity(1);
         var id = entity.Id;
 
-        // Id property has private init, so it cannot be changed after construction
         Assert.Equal(1, id);
     }
 
@@ -218,7 +219,6 @@ public sealed class EntityTests
     {
         var entity = new TestEntityWithParameterlessConstructor();
 
-        // Id should be default value when using parameterless constructor
         Assert.Equal(0, entity.Id);
     }
 
@@ -228,7 +228,6 @@ public sealed class EntityTests
         var entity1 = new TestEntityWithProperties(1, "Name1");
         var entity2 = new TestEntityWithProperties(1, "Name2");
 
-        // Even though properties are different, entities with same Id are equal
         Assert.True(entity1.Equals(entity2));
     }
 
@@ -252,69 +251,27 @@ public sealed class EntityTests
         Assert.False(result);
     }
 
-    private sealed class TestEntity : Entity<int>
-    {
-        public TestEntity(int id) : base(id)
-        {
-        }
-    }
+    private sealed class TestEntity(int id) : Entity<int>(id);
 
-    private sealed class TestEntityDifferentType : Entity<int>
-    {
-        public TestEntityDifferentType(int id) : base(id)
-        {
-        }
-    }
+    private sealed class TestEntityDifferentType(int id) : Entity<int>(id);
 
-    private sealed class AnotherTestEntity : Entity<int>
-    {
-        public AnotherTestEntity(int id) : base(id)
-        {
-        }
-    }
+    private sealed class AnotherTestEntity(int id) : Entity<int>(id);
 
-    private sealed class TestEntityNullableId : Entity<string?>
-    {
-        public TestEntityNullableId(string? id) : base(id)
-        {
-        }
-    }
+    private sealed class TestEntityNullableId(string? id) : Entity<string?>(id);
 
-    private sealed class TestEntityStringId : Entity<string>
-    {
-        public TestEntityStringId(string id) : base(id)
-        {
-        }
-    }
+    private sealed class TestEntityStringId(string id) : Entity<string>(id);
 
-    private sealed class TestEntityGuidId : Entity<Guid>
-    {
-        public TestEntityGuidId(Guid id) : base(id)
-        {
-        }
-    }
+    private sealed class TestEntityGuidId(Guid id) : Entity<Guid>(id);
 
-    private sealed class TestEntityLongId : Entity<long>
-    {
-        public TestEntityLongId(long id) : base(id)
-        {
-        }
-    }
+    private sealed class TestEntityLongId(long id) : Entity<long>(id);
 
     private sealed class TestEntityWithParameterlessConstructor : Entity<int>
     {
-        public TestEntityWithParameterlessConstructor() : base()
-        {
-        }
     }
 
-    private sealed class TestEntityWithProperties : Entity<int>
+    private sealed class TestEntityWithProperties(int id, string name) : Entity<int>(id)
     {
-        public TestEntityWithProperties(int id, string name) : base(id)
-        {
-            Name = name;
-        }
-
-        public string Name { get; }
+        [UsedImplicitly]
+        public string Name { get; } = name;
     }
 }
