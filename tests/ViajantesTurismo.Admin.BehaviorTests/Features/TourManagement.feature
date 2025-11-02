@@ -228,3 +228,21 @@ So that tours have valid and accurate information
         Given an existing tour
         When I try to update pricing with e-bike 100001.00
         Then the pricing update should fail with validation error for "price"
+
+    Scenario: Tour identifier with whitespace is trimmed
+        Given I have tour details with identifier "  CUBA2024  " and name "Cuba Tour"
+        When I try to create the tour
+        Then the tour should be created successfully
+        And the tour identifier should be "CUBA2024"
+
+    Scenario: Tour name with multiple spaces is normalized
+        Given I have tour details with identifier "TEST2024" and name "Cuba    Adventure    Tour"
+        When I try to create the tour
+        Then the tour should be created successfully
+        And the tour name should be "Cuba Adventure Tour"
+
+    Scenario: Tour price is rounded to two decimals
+        Given I have tour details with base price 1999.999
+        When I try to create the tour
+        Then the tour should be created successfully
+        And the tour base price should be 2000.00

@@ -148,6 +148,8 @@ public sealed class Booking : Entity<long>
     /// <returns>A result indicating success or failure.</returns>
     internal Result UpdatePrice(decimal newPrice)
     {
+        newPrice = NumericSanitizer.SanitizePrice(newPrice);
+
         if (newPrice <= 0)
         {
             return BookingErrors.InvalidPrice(newPrice);
@@ -164,6 +166,8 @@ public sealed class Booking : Entity<long>
     /// <returns>A result indicating success or failure.</returns>
     internal Result UpdateNotes(string? notes)
     {
+        notes = StringSanitizer.SanitizeNotes(notes);
+
         if (notes?.Length > ContractConstants.MaxBookingNotesLength)
         {
             return BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length);

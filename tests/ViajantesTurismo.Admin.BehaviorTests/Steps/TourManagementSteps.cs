@@ -7,18 +7,18 @@ using ViajantesTurismo.Common.Results;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class TourManagementSteps
+public sealed class TourManagementSteps(ScenarioContext scenarioContext)
 {
+    private decimal _basePrice = 2000.00m;
+    private decimal _eBikePrice = 200.00m;
     private DateTime _endDate;
-    private object? _result;
-    private DateTime _startDate;
-    private Tour? _tour;
     private string _identifier = "TEST2024";
     private string _name = "Test Tour";
-    private decimal _basePrice = 2000.00m;
-    private decimal _singleRoomSupplementPrice = 500.00m;
     private decimal _regularBikePrice = 100.00m;
-    private decimal _eBikePrice = 200.00m;
+    private object? _result;
+    private decimal _singleRoomSupplementPrice = 500.00m;
+    private DateTime _startDate;
+    private Tour? _tour;
 
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
     public void GivenIHaveTourDatesFromTo(string startDateString, string endDateString)
@@ -189,6 +189,10 @@ public sealed class TourManagementSteps
     [When(@"I try to create the tour")]
     public void WhenITryToCreateTheTour()
     {
+        var services = scenarioContext.ContainsKey("Services")
+            ? scenarioContext.Get<string[]>("Services")
+            : ["Hotel", "Breakfast"];
+
         _result = Tour.Create(
             identifier: _identifier,
             name: _name,
@@ -199,9 +203,15 @@ public sealed class TourManagementSteps
             regularBikePrice: _regularBikePrice,
             eBikePrice: _eBikePrice,
             currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]);
+            includedServices: services);
 
         _tour = _result is Result<Tour> { IsSuccess: true } result ? result.Value : null;
+
+        scenarioContext["Result"] = _result;
+        if (_tour != null)
+        {
+            scenarioContext["Tour"] = _tour;
+        }
     }
 
     [When(@"I update the schedule to ""(.*)"" to ""(.*)""")]

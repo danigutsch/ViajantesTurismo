@@ -124,6 +124,14 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
+        identifier = StringSanitizer.Sanitize(identifier);
+        name = StringSanitizer.Sanitize(name);
+        price = NumericSanitizer.SanitizePrice(price);
+        singleRoomSupplementPrice = NumericSanitizer.SanitizePrice(singleRoomSupplementPrice);
+        regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
+        eBikePrice = NumericSanitizer.SanitizePrice(eBikePrice);
+        var sanitizedServices = StringSanitizer.SanitizeCollection(includedServices);
+
         var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(identifier))
@@ -208,7 +216,7 @@ public sealed class Tour : Entity<int>
             regularBikePrice,
             eBikePrice,
             currency,
-            includedServices);
+            sanitizedServices);
     }
 
     /// <summary>
@@ -219,6 +227,9 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateBasicInfo(string identifier, string name)
     {
+        identifier = StringSanitizer.Sanitize(identifier);
+        name = StringSanitizer.Sanitize(name);
+
         var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(identifier))
@@ -296,6 +307,10 @@ public sealed class Tour : Entity<int>
         decimal eBikePrice,
         Currency currency)
     {
+        singleRoomSupplementPrice = NumericSanitizer.SanitizePrice(singleRoomSupplementPrice);
+        regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
+        eBikePrice = NumericSanitizer.SanitizePrice(eBikePrice);
+
         var errors = new ValidationErrors();
 
         if (singleRoomSupplementPrice <= ContractConstants.MinPrice)
@@ -344,6 +359,9 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateBasePrice(decimal price)
     {
+        // Sanitize input
+        price = NumericSanitizer.SanitizePrice(price);
+
         if (price <= ContractConstants.MinPrice)
         {
             return TourErrors.InvalidPrice("Base price", price).ToResult();
@@ -373,7 +391,7 @@ public sealed class Tour : Entity<int>
     /// <param name="includedServices">The collection of services included in the tour package.</param>
     public void UpdateIncludedServices(IEnumerable<string> includedServices)
     {
-        _includedServices = [..includedServices];
+        _includedServices = StringSanitizer.SanitizeCollection(includedServices);
     }
 
     /// <summary>

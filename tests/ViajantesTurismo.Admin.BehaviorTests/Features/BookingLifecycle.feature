@@ -102,3 +102,13 @@ So that bookings follow valid business rules
         Given a pending booking exists
         When the operator updates the payment status to "Paid"
         Then the booking payment status should be "Paid"
+
+    Scenario: Booking notes with whitespace is trimmed
+        Given a pending booking exists
+        When the operator updates the notes to "  Customer needs assistance  "
+        Then the booking notes should be "Customer needs assistance"
+
+    Scenario: Booking price is rounded to two decimals
+        Given a pending booking exists with price 1500.00
+        When the operator updates the price to 1899.997
+        Then the booking price should be 1900.00
