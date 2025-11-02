@@ -1,173 +1,137 @@
 using Reqnroll;
+using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Bookings;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
+public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourContext tourContext)
 {
     [Given(@"a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
-        var tour = TestHelpers.CreateTestTour();
-        var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
-        scenarioContext["Tour"] = tour;
-        scenarioContext["Booking"] = booking;
-        Assert.Equal(BookingStatus.Pending, booking.Status);
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [Given(@"a pending booking exists with price (.*)")]
     public void GivenAPendingBookingExistsWithPrice(decimal price)
     {
-        var tour = TestHelpers.CreateTestTour();
-        var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
-        scenarioContext["Tour"] = tour;
-        scenarioContext["Booking"] = booking;
-        Assert.Equal(BookingStatus.Pending, booking.Status);
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: price, notes: null);
+        Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [Given(@"a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
-        var tour = TestHelpers.CreateTestTour();
-        var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
-        tour.ConfirmBooking(booking.Id);
-        scenarioContext["Tour"] = tour;
-        scenarioContext["Booking"] = booking;
-        Assert.Equal(BookingStatus.Confirmed, booking.Status);
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
     }
 
     [Given(@"a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
-        var tour = TestHelpers.CreateTestTour();
-        var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
-        var result = tour.CancelBooking(booking.Id);
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
-        scenarioContext["Tour"] = tour;
-        scenarioContext["Booking"] = booking;
-        Assert.Equal(BookingStatus.Cancelled, booking.Status);
+        Assert.Equal(BookingStatus.Cancelled, bookingContext.Booking.Status);
     }
 
     [Given(@"a completed booking exists")]
     public void GivenACompletedBookingExists()
     {
-        var tour = TestHelpers.CreateTestTour();
-        var booking = tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
-        var confirmResult = tour.ConfirmBooking(booking.Id);
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        bookingContext.Booking = tourContext.Tour.AddBooking(customerId: 1, companionId: null, totalPrice: 1500.00m, notes: null);
+        var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
         Assert.True(confirmResult.IsSuccess);
-        var completeResult = tour.CompleteBooking(booking.Id);
+        var completeResult = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
         Assert.True(completeResult.IsSuccess);
-        scenarioContext["Tour"] = tour;
-        scenarioContext["Booking"] = booking;
-        Assert.Equal(BookingStatus.Completed, booking.Status);
+        Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
     }
 
     [When(@"the operator confirms the booking")]
     public void WhenTheOperatorConfirmsTheBooking()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        var result = tour.ConfirmBooking(booking.Id);
+        var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator cancels the booking")]
     public void WhenTheOperatorCancelsTheBooking()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        var result = tour.CancelBooking(booking.Id);
+        var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator completes the booking")]
     public void WhenTheOperatorCompletesTheBooking()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        var result = tour.CompleteBooking(booking.Id);
+        var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator tries to confirm the booking")]
     public void WhenTheOperatorTriesToConfirmTheBooking()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Result"] = tour.ConfirmBooking(booking.Id);
+        bookingContext.Result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
     }
 
     [When(@"the operator tries to cancel the booking")]
     public void WhenTheOperatorTriesToCancelTheBooking()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Result"] = tour.CancelBooking(booking.Id);
+        bookingContext.Result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
     }
 
     [When(@"the operator tries to complete the booking")]
     public void WhenTheOperatorTriesToCompleteTheBooking()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Result"] = tour.CompleteBooking(booking.Id);
+        bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
     [When(@"the operator updates the price to (.*)")]
     public void WhenTheOperatorUpdatesThePriceTo(decimal newPrice)
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        var result = tour.UpdateBookingPrice(booking.Id, newPrice);
+        var result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, newPrice);
         Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator tries to update the price to (.*)")]
     public void WhenTheOperatorTriesToUpdateThePriceTo(decimal newPrice)
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        scenarioContext["Result"] = tour.UpdateBookingPrice(booking.Id, newPrice);
+        bookingContext.Result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, newPrice);
     }
 
     [When(@"the operator updates the notes to ""(.*)""")]
     public void WhenTheOperatorUpdatesTheNotesTo(string notes)
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        var result = tour.UpdateBookingNotes(booking.Id, notes);
+        var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
         Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator updates the notes to null")]
     public void WhenTheOperatorUpdatesTheNotesToNull()
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-        var result = tour.UpdateBookingNotes(booking.Id, null);
+        var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
         Assert.True(result.IsSuccess);
     }
 
     [When(@"the operator tries to update the notes to a string longer than (.*) characters")]
     public void WhenTheOperatorTriesToUpdateTheNotesToAStringLongerThanCharacters(int maxLength)
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
         var longNotes = new string('A', maxLength + 1);
-        scenarioContext["Result"] = tour.UpdateBookingNotes(booking.Id, longNotes);
+        bookingContext.Result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, longNotes);
     }
 
     [When(@"the operator updates the payment status to ""(.*)""")]
     public void WhenTheOperatorUpdatesThePaymentStatusTo(string paymentStatusString)
     {
-        var tour = scenarioContext.Get<Tour>("Tour");
-        var booking = scenarioContext.Get<Booking>("Booking");
-
         var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
-
-        var result = tour.UpdateBookingPaymentStatus(booking.Id, paymentStatus);
+        var result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, paymentStatus);
         Assert.True(result.IsSuccess);
     }
 }

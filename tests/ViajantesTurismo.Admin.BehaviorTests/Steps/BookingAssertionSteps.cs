@@ -1,77 +1,68 @@
 using Reqnroll;
-using ViajantesTurismo.Admin.Domain.Bookings;
-using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Admin.BehaviorTests.Context;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
+public sealed class BookingAssertionSteps(BookingContext context)
 {
     [Then(@"the booking status should be ""(.*)""")]
     public void ThenTheBookingStatusShouldBe(string expectedStatus)
     {
-        var booking = scenarioContext.Get<Booking>("Booking");
         var expected = TestHelpers.ParseBookingStatus(expectedStatus);
-        Assert.Equal(expected, booking.Status);
+        Assert.Equal(expected, context.Booking.Status);
     }
 
     [Then(@"the booking price should be (.*)")]
     public void ThenTheBookingPriceShouldBe(decimal expectedPrice)
     {
-        var booking = scenarioContext.Get<Booking>("Booking");
-        Assert.Equal(expectedPrice, booking.TotalPrice);
+        Assert.Equal(expectedPrice, context.Booking.TotalPrice);
     }
 
     [Then(@"the booking notes should be ""(.*)""")]
     public void ThenTheBookingNotesShouldBe(string expectedNotes)
     {
-        var booking = scenarioContext.Get<Booking>("Booking");
-        Assert.Equal(expectedNotes, booking.Notes);
+        Assert.Equal(expectedNotes, context.Booking.Notes);
     }
 
     [Then(@"the booking notes should be null")]
     public void ThenTheBookingNotesShouldBeNull()
     {
-        var booking = scenarioContext.Get<Booking>("Booking");
-        Assert.Null(booking.Notes);
+        Assert.Null(context.Booking.Notes);
     }
 
     [Then(@"the booking payment status should be ""(.*)""")]
     public void ThenTheBookingPaymentStatusShouldBe(string expectedStatusString)
     {
-        var booking = scenarioContext.Get<Booking>("Booking");
         var expected = TestHelpers.ParsePaymentStatus(expectedStatusString);
-        Assert.Equal(expected, booking.PaymentStatus);
+        Assert.Equal(expected, context.Booking.PaymentStatus);
     }
 
     [Then(@"the operation should fail with message ""(.*)""")]
     public void ThenTheOperationShouldFailWithMessage(string expectedMessage)
     {
-        var action = scenarioContext.Get<Action>("Action");
-        var exception = Assert.ThrowsAny<Exception>(action);
+        var exception = Assert.ThrowsAny<Exception>(context.Action);
         Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
     }
 
     [Then(@"the operation should fail with argument exception ""(.*)""")]
     public void ThenTheOperationShouldFailWithArgumentException(string expectedMessage)
     {
-        var action = scenarioContext.Get<Action>("Action");
-        var exception = Assert.Throws<ArgumentException>(action);
+        var exception = Assert.Throws<ArgumentException>(context.Action);
         Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
     }
 
     [Then(@"the operation should fail with invalid operation exception ""(.*)""")]
     public void ThenTheOperationShouldFailWithInvalidOperationException(string expectedMessage)
     {
-        var action = scenarioContext.Get<Action>("Action");
-        var exception = Assert.Throws<InvalidOperationException>(action);
+        var exception = Assert.Throws<InvalidOperationException>(context.Action);
         Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
     }
 
     [Then(@"the result should fail with message ""(.*)""")]
     public void ThenTheResultShouldFailWithMessage(string expectedMessage)
     {
-        var result = scenarioContext.Get<Result>("Result");
+        var result = context.Result;
         Assert.True(result.IsFailure);
         Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
@@ -79,7 +70,7 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
     [Then(@"the result should fail with message starting with ""(.*)""")]
     public void ThenTheResultShouldFailWithMessageStartingWith(string expectedMessagePrefix)
     {
-        var result = scenarioContext.Get<Result>("Result");
+        var result = context.Result;
         Assert.True(result.IsFailure);
         Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }

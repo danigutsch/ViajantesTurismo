@@ -1,39 +1,28 @@
 using Reqnroll;
+using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class CustomerManagementSteps
+public sealed class CustomerManagementSteps(CustomerContext context)
 {
-    private PersonalInfo _personalInfo = null!;
-    private IdentificationInfo _identificationInfo = null!;
-    private ContactInfo _contactInfo = null!;
-    private Address _address = null!;
-    private PhysicalInfo _physicalInfo = null!;
-    private AccommodationPreferences _accommodationPreferences = null!;
-    private EmergencyContact _emergencyContact = null!;
-    private MedicalInfo _medicalInfo = null!;
-    private Customer? _customer;
-    private Result<PersonalInfo>? _personalInfoResult;
-
     [Given(@"I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
     {
-        _identificationInfo = new IdentificationInfo("123456789", "American");
+        context.IdentificationInfo = new IdentificationInfo("123456789", "American");
     }
 
     [Given(@"I have valid contact information")]
     public void GivenIHaveValidContactInformation()
     {
-        _contactInfo = new ContactInfo("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith");
+        context.ContactInfo = new ContactInfo("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith");
     }
 
     [Given(@"I have valid address information")]
     public void GivenIHaveValidAddressInformation()
     {
-        _address = new Address(
+        context.Address = new Address(
             "123 Main Street",
             "Apt 4B",
             "Downtown",
@@ -46,32 +35,32 @@ public sealed class CustomerManagementSteps
     [Given(@"I have valid physical information")]
     public void GivenIHaveValidPhysicalInformation()
     {
-        _physicalInfo = new PhysicalInfo(75.5m, 180, BikeType.Regular);
+        context.PhysicalInfo = new PhysicalInfo(75.5m, 180, BikeType.Regular);
     }
 
     [Given(@"I have valid accommodation preferences")]
     public void GivenIHaveValidAccommodationPreferences()
     {
-        _accommodationPreferences = new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null);
+        context.AccommodationPreferences = new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null);
     }
 
     [Given(@"I have valid emergency contact")]
     public void GivenIHaveValidEmergencyContact()
     {
-        _emergencyContact = new EmergencyContact("Jane Smith", "+1987654321");
+        context.EmergencyContact = new EmergencyContact("Jane Smith", "+1987654321");
     }
 
     [Given(@"I have valid medical information")]
     public void GivenIHaveValidMedicalInformation()
     {
-        _medicalInfo = new MedicalInfo("Peanuts", "None");
+        context.MedicalInfo = new MedicalInfo("Peanuts", "None");
     }
 
     [Given(@"I have an existing customer")]
     public void GivenIHaveAnExistingCustomer()
     {
         // Reuse the helper to create personal info
-        _personalInfo = PersonalInfo.Create(
+        context.PersonalInfo = PersonalInfo.Create(
             "John",
             "Smith",
             "Male",
@@ -80,30 +69,30 @@ public sealed class CustomerManagementSteps
             "Software Engineer",
             TimeProvider.System).Value;
 
-        _identificationInfo = new IdentificationInfo("123456789", "American");
-        _contactInfo = new ContactInfo("john.smith@example.com", "+1234567890", null, null);
-        _address = new Address("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
-        _physicalInfo = new PhysicalInfo(75m, 180, BikeType.Regular);
-        _accommodationPreferences = new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null);
-        _emergencyContact = new EmergencyContact("Emergency Contact", "+1111111111");
-        _medicalInfo = new MedicalInfo(null, null);
+        context.IdentificationInfo = new IdentificationInfo("123456789", "American");
+        context.ContactInfo = new ContactInfo("john.smith@example.com", "+1234567890", null, null);
+        context.Address = new Address("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
+        context.PhysicalInfo = new PhysicalInfo(75m, 180, BikeType.Regular);
+        context.AccommodationPreferences = new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null);
+        context.EmergencyContact = new EmergencyContact("Emergency Contact", "+1111111111");
+        context.MedicalInfo = new MedicalInfo(null, null);
 
-        _customer = new Customer(
-            _personalInfo,
-            _identificationInfo,
-            _contactInfo,
-            _address,
-            _physicalInfo,
-            _accommodationPreferences,
-            _emergencyContact,
-            _medicalInfo);
+        context.Customer = new Customer(
+            context.PersonalInfo,
+            context.IdentificationInfo,
+            context.ContactInfo,
+            context.Address,
+            context.PhysicalInfo,
+            context.AccommodationPreferences,
+            context.EmergencyContact,
+            context.MedicalInfo);
     }
 
     [When(@"I create a customer")]
     public void WhenICreateACustomer()
     {
         // Personal info must be created through its factory method with validation
-        _personalInfo = PersonalInfo.Create(
+        context.PersonalInfo = PersonalInfo.Create(
             "John",
             "Smith",
             "Male",
@@ -112,15 +101,15 @@ public sealed class CustomerManagementSteps
             "Software Engineer",
             TimeProvider.System).Value;
 
-        _customer = new Customer(
-            _personalInfo,
-            _identificationInfo,
-            _contactInfo,
-            _address,
-            _physicalInfo,
-            _accommodationPreferences,
-            _emergencyContact,
-            _medicalInfo);
+        context.Customer = new Customer(
+            context.PersonalInfo,
+            context.IdentificationInfo,
+            context.ContactInfo,
+            context.Address,
+            context.PhysicalInfo,
+            context.AccommodationPreferences,
+            context.EmergencyContact,
+            context.MedicalInfo);
     }
 
     [When(@"I update the customer with new personal information")]
@@ -135,146 +124,146 @@ public sealed class CustomerManagementSteps
             "Designer",
             TimeProvider.System).Value;
 
-        _customer!.UpdatePersonalInfo(newPersonalInfo);
-        _personalInfo = newPersonalInfo;
+        context.Customer.UpdatePersonalInfo(newPersonalInfo);
+        context.PersonalInfo = newPersonalInfo;
     }
 
     [When(@"I update the customer with new identification information")]
     public void WhenIUpdateTheCustomerWithNewIdentificationInformation()
     {
         var newIdentificationInfo = new IdentificationInfo("987654321", "Canadian");
-        _customer!.UpdateIdentificationInfo(newIdentificationInfo);
-        _identificationInfo = newIdentificationInfo;
+        context.Customer.UpdateIdentificationInfo(newIdentificationInfo);
+        context.IdentificationInfo = newIdentificationInfo;
     }
 
     [When(@"I update the customer with new contact information")]
     public void WhenIUpdateTheCustomerWithNewContactInformation()
     {
         var newContactInfo = new ContactInfo("jane.doe@example.com", "+9876543210", "@janedoe", null);
-        _customer!.UpdateContactInfo(newContactInfo);
-        _contactInfo = newContactInfo;
+        context.Customer.UpdateContactInfo(newContactInfo);
+        context.ContactInfo = newContactInfo;
     }
 
     [When(@"I update the customer with new address")]
     public void WhenIUpdateTheCustomerWithNewAddress()
     {
         var newAddress = new Address("456 Oak Avenue", "Suite 100", "Uptown", "54321", "Toronto", "ON", "Canada");
-        _customer!.UpdateAddress(newAddress);
-        _address = newAddress;
+        context.Customer.UpdateAddress(newAddress);
+        context.Address = newAddress;
     }
 
     [When(@"I update the customer with new physical information")]
     public void WhenIUpdateTheCustomerWithNewPhysicalInformation()
     {
         var newPhysicalInfo = new PhysicalInfo(68m, 165, BikeType.EBike);
-        _customer!.UpdatePhysicalInfo(newPhysicalInfo);
-        _physicalInfo = newPhysicalInfo;
+        context.Customer.UpdatePhysicalInfo(newPhysicalInfo);
+        context.PhysicalInfo = newPhysicalInfo;
     }
 
     [When(@"I update the customer with new accommodation preferences")]
     public void WhenIUpdateTheCustomerWithNewAccommodationPreferences()
     {
         var newAccommodationPreferences = new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, 5);
-        _customer!.UpdateAccommodationPreferences(newAccommodationPreferences);
-        _accommodationPreferences = newAccommodationPreferences;
+        context.Customer.UpdateAccommodationPreferences(newAccommodationPreferences);
+        context.AccommodationPreferences = newAccommodationPreferences;
     }
 
     [When(@"I update the customer with new emergency contact")]
     public void WhenIUpdateTheCustomerWithNewEmergencyContact()
     {
         var newEmergencyContact = new EmergencyContact("Bob Doe", "+5555555555");
-        _customer!.UpdateEmergencyContact(newEmergencyContact);
-        _emergencyContact = newEmergencyContact;
+        context.Customer.UpdateEmergencyContact(newEmergencyContact);
+        context.EmergencyContact = newEmergencyContact;
     }
 
     [When(@"I update the customer with new medical information")]
     public void WhenIUpdateTheCustomerWithNewMedicalInformation()
     {
         var newMedicalInfo = new MedicalInfo("Lactose", "Requires medication");
-        _customer!.UpdateMedicalInfo(newMedicalInfo);
-        _medicalInfo = newMedicalInfo;
+        context.Customer.UpdateMedicalInfo(newMedicalInfo);
+        context.MedicalInfo = newMedicalInfo;
     }
 
     [Then(@"the customer should be created successfully")]
     public void ThenTheCustomerShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(_customer);
+        Assert.NotNull(context.Customer);
     }
 
     [Then(@"the customer should contain all the provided information")]
     public void ThenTheCustomerShouldContainAllTheProvidedInformation()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_personalInfo, _customer.PersonalInfo);
-        Assert.Equal(_identificationInfo, _customer.IdentificationInfo);
-        Assert.Equal(_contactInfo, _customer.ContactInfo);
-        Assert.Equal(_address, _customer.Address);
-        Assert.Equal(_physicalInfo, _customer.PhysicalInfo);
-        Assert.Equal(_accommodationPreferences, _customer.AccommodationPreferences);
-        Assert.Equal(_emergencyContact, _customer.EmergencyContact);
-        Assert.Equal(_medicalInfo, _customer.MedicalInfo);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.PersonalInfo, context.Customer.PersonalInfo);
+        Assert.Equal(context.IdentificationInfo, context.Customer.IdentificationInfo);
+        Assert.Equal(context.ContactInfo, context.Customer.ContactInfo);
+        Assert.Equal(context.Address, context.Customer.Address);
+        Assert.Equal(context.PhysicalInfo, context.Customer.PhysicalInfo);
+        Assert.Equal(context.AccommodationPreferences, context.Customer.AccommodationPreferences);
+        Assert.Equal(context.EmergencyContact, context.Customer.EmergencyContact);
+        Assert.Equal(context.MedicalInfo, context.Customer.MedicalInfo);
     }
 
     [Then(@"the customer personal information should be updated")]
     public void ThenTheCustomerPersonalInformationShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_personalInfo, _customer.PersonalInfo);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.PersonalInfo, context.Customer.PersonalInfo);
     }
 
     [Then(@"the customer identification information should be updated")]
     public void ThenTheCustomerIdentificationInformationShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_identificationInfo, _customer.IdentificationInfo);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.IdentificationInfo, context.Customer.IdentificationInfo);
     }
 
     [Then(@"the customer contact information should be updated")]
     public void ThenTheCustomerContactInformationShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_contactInfo, _customer.ContactInfo);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.ContactInfo, context.Customer.ContactInfo);
     }
 
     [Then(@"the customer address should be updated")]
     public void ThenTheCustomerAddressShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_address, _customer.Address);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.Address, context.Customer.Address);
     }
 
     [Then(@"the customer physical information should be updated")]
     public void ThenTheCustomerPhysicalInformationShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_physicalInfo, _customer.PhysicalInfo);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.PhysicalInfo, context.Customer.PhysicalInfo);
     }
 
     [Then(@"the customer accommodation preferences should be updated")]
     public void ThenTheCustomerAccommodationPreferencesShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_accommodationPreferences, _customer.AccommodationPreferences);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.AccommodationPreferences, context.Customer.AccommodationPreferences);
     }
 
     [Then(@"the customer emergency contact should be updated")]
     public void ThenTheCustomerEmergencyContactShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_emergencyContact, _customer.EmergencyContact);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.EmergencyContact, context.Customer.EmergencyContact);
     }
 
     [Then(@"the customer medical information should be updated")]
     public void ThenTheCustomerMedicalInformationShouldBeUpdated()
     {
-        Assert.NotNull(_customer);
-        Assert.Equal(_medicalInfo, _customer.MedicalInfo);
+        Assert.NotNull(context.Customer);
+        Assert.Equal(context.MedicalInfo, context.Customer.MedicalInfo);
     }
 
-    [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")] 
+    [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]
     public void GivenIHavePersonalInformationForSanitizationWithFirstNameAndLastName(string firstName, string lastName)
     {
-        _personalInfoResult = PersonalInfo.Create(
+        context.PersonalInfoResult = PersonalInfo.Create(
             firstName,
             lastName,
             "Male",
@@ -287,35 +276,35 @@ public sealed class CustomerManagementSteps
     [When(@"I create personal information from sanitization inputs")]
     public void WhenICreatePersonalInformationFromSanitizationInputs()
     {
-        if (_personalInfoResult?.IsSuccess == true)
+        if (context.PersonalInfoResult.IsSuccess)
         {
-            _personalInfo = _personalInfoResult.Value.Value;
+            context.PersonalInfo = context.PersonalInfoResult.Value;
         }
     }
 
     [Then(@"the personal information should be created successfully from sanitization")]
     public void ThenThePersonalInformationShouldBeCreatedSuccessfullyFromSanitization()
     {
-        Assert.True(_personalInfoResult?.IsSuccess);
-        Assert.NotNull(_personalInfo);
+        Assert.True(context.PersonalInfoResult.IsSuccess);
+        Assert.NotNull(context.PersonalInfo);
     }
 
-    [Then(@"the sanitized first name should be ""(.*)""")] 
+    [Then(@"the sanitized first name should be ""(.*)""")]
     public void ThenTheSanitizedFirstNameShouldBe(string expectedFirstName)
     {
-        Assert.Equal(expectedFirstName, _personalInfo.FirstName);
+        Assert.Equal(expectedFirstName, context.PersonalInfo.FirstName);
     }
 
-    [Then(@"the sanitized last name should be ""(.*)""")] 
+    [Then(@"the sanitized last name should be ""(.*)""")]
     public void ThenTheSanitizedLastNameShouldBe(string expectedLastName)
     {
-        Assert.Equal(expectedLastName, _personalInfo.LastName);
+        Assert.Equal(expectedLastName, context.PersonalInfo.LastName);
     }
 
-    [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")] 
+    [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")]
     public void GivenIHaveAddressForSanitizationWithCityAndCountry(string city, string country)
     {
-        _address = new Address(
+        context.Address = new Address(
             "123 Main St",
             null,
             "Downtown",
@@ -333,15 +322,15 @@ public sealed class CustomerManagementSteps
         // Address is already created in the Given step
     }
 
-    [Then(@"the sanitized address city should be ""(.*)""")] 
+    [Then(@"the sanitized address city should be ""(.*)""")]
     public void ThenTheSanitizedAddressCityShouldBe(string expectedCity)
     {
-        Assert.Equal(expectedCity, _address.City);
+        Assert.Equal(expectedCity, context.Address.City);
     }
 
-    [Then(@"the sanitized address country should be ""(.*)""")] 
+    [Then(@"the sanitized address country should be ""(.*)""")]
     public void ThenTheSanitizedAddressCountryShouldBe(string expectedCountry)
     {
-        Assert.Equal(expectedCountry, _address.Country);
+        Assert.Equal(expectedCountry, context.Address.Country);
     }
 }
