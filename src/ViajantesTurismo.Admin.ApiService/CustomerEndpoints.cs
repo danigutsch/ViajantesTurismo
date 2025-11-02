@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using ViajantesTurismo.Admin.ApiService.Mapping;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
@@ -112,32 +113,11 @@ internal static class CustomerEndpoints
             return errors.ToResult<GetCustomerDto>().ToValidationProblem();
         }
 
-        var address = new Address(
-            dto.Address.Street,
-            dto.Address.Complement,
-            dto.Address.Neighborhood!,
-            dto.Address.PostalCode,
-            dto.Address.City,
-            dto.Address.State,
-            dto.Address.Country);
-
-        var physicalInfo = new PhysicalInfo(
-            dto.PhysicalInfo.WeightKg,
-            dto.PhysicalInfo.HeightCentimeters,
-            EnumMapper.MapToBikeType(dto.PhysicalInfo.BikeType));
-
-        var accommodationPreferences = new AccommodationPreferences(
-            EnumMapper.MapToRoomType(dto.AccommodationPreferences.RoomType),
-            EnumMapper.MapToBedType(dto.AccommodationPreferences.BedType),
-            dto.AccommodationPreferences.CompanionId);
-
-        var emergencyContact = new EmergencyContact(
-            dto.EmergencyContact.Name,
-            dto.EmergencyContact.Mobile);
-
-        var medicalInfo = new MedicalInfo(
-            dto.MedicalInfo.Allergies,
-            dto.MedicalInfo.AdditionalInfo);
+        var address = CustomerMapper.MapToAddress(dto.Address);
+        var physicalInfo = CustomerMapper.MapToPhysicalInfo(dto.PhysicalInfo);
+        var accommodationPreferences = CustomerMapper.MapToAccommodationPreferences(dto.AccommodationPreferences);
+        var emergencyContact = CustomerMapper.MapToEmergencyContact(dto.EmergencyContact);
+        var medicalInfo = CustomerMapper.MapToMedicalInfo(dto.MedicalInfo);
 
         var customer = new Customer(
             personalInfoResult.Value,
@@ -218,32 +198,11 @@ internal static class CustomerEndpoints
             return errors.ToResult().ToValidationProblem();
         }
 
-        var address = new Address(
-            dto.Address.Street,
-            dto.Address.Complement,
-            dto.Address.Neighborhood!,
-            dto.Address.PostalCode,
-            dto.Address.City,
-            dto.Address.State,
-            dto.Address.Country);
-
-        var physicalInfo = new PhysicalInfo(
-            dto.PhysicalInfo.WeightKg,
-            dto.PhysicalInfo.HeightCentimeters,
-            EnumMapper.MapToBikeType(dto.PhysicalInfo.BikeType));
-
-        var accommodationPreferences = new AccommodationPreferences(
-            EnumMapper.MapToRoomType(dto.AccommodationPreferences.RoomType),
-            EnumMapper.MapToBedType(dto.AccommodationPreferences.BedType),
-            dto.AccommodationPreferences.CompanionId);
-
-        var emergencyContact = new EmergencyContact(
-            dto.EmergencyContact.Name,
-            dto.EmergencyContact.Mobile);
-
-        var medicalInfo = new MedicalInfo(
-            dto.MedicalInfo.Allergies,
-            dto.MedicalInfo.AdditionalInfo);
+        var address = CustomerMapper.MapToAddress(dto.Address);
+        var physicalInfo = CustomerMapper.MapToPhysicalInfo(dto.PhysicalInfo);
+        var accommodationPreferences = CustomerMapper.MapToAccommodationPreferences(dto.AccommodationPreferences);
+        var emergencyContact = CustomerMapper.MapToEmergencyContact(dto.EmergencyContact);
+        var medicalInfo = CustomerMapper.MapToMedicalInfo(dto.MedicalInfo);
 
         customer.UpdatePersonalInfo(personalInfoResult.Value);
         customer.UpdateIdentificationInfo(identificationInfoResult.Value);

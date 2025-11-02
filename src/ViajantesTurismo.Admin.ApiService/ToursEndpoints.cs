@@ -1,10 +1,9 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using ViajantesTurismo.Admin.ApiService.Mapping;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -53,7 +52,7 @@ internal static class ToursEndpoints
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
     {
-        var currency = EnumMapper.MapToCurrency(tourDto.Currency);
+        var currency = TourMapper.MapToCurrency(tourDto.Currency);
 
         var result = Tour.Create(
             tourDto.Identifier,
@@ -115,7 +114,7 @@ internal static class ToursEndpoints
             return TourErrors.TourNotFound(id).ToNotFound();
         }
 
-        var currency = EnumMapper.MapToCurrency(tourDto.Currency);
+        var currency = TourMapper.MapToCurrency(tourDto.Currency);
 
         var basicInfoResult = tour.UpdateDetails(tourDto.Identifier, tourDto.Name);
         if (basicInfoResult.IsFailure)

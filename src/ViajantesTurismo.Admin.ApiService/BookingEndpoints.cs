@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using ViajantesTurismo.Admin.ApiService.Mapping;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -173,7 +174,7 @@ internal static class BookingEndpoints
 
         tour.UpdateBookingNotes(id, dto.Notes);
 
-        var targetStatus = EnumMapper.MapToBookingStatus(dto.Status);
+        var targetStatus = BookingMapper.MapToBookingStatus(dto.Status);
         var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
         if (booking is not null && booking.Status != targetStatus)
         {
@@ -191,7 +192,7 @@ internal static class BookingEndpoints
             }
         }
 
-        var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, EnumMapper.MapToPaymentStatus(dto.PaymentStatus));
+        var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, BookingMapper.MapToPaymentStatus(dto.PaymentStatus));
         if (paymentUpdateResult.IsFailure)
         {
             paymentUpdateResult.ToNotFound();
