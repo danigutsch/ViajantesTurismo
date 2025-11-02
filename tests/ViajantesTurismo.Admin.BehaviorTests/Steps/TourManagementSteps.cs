@@ -13,6 +13,12 @@ public sealed class TourManagementSteps
     private object? _result;
     private DateTime _startDate;
     private Tour? _tour;
+    private string _identifier = "TEST2024";
+    private string _name = "Test Tour";
+    private decimal _basePrice = 2000.00m;
+    private decimal _singleRoomSupplementPrice = 500.00m;
+    private decimal _regularBikePrice = 100.00m;
+    private decimal _eBikePrice = 200.00m;
 
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
     public void GivenIHaveTourDatesFromTo(string startDateString, string endDateString)
@@ -91,6 +97,86 @@ public sealed class TourManagementSteps
         _tour = TestHelpers.CreateTestTour();
     }
 
+    [Given(@"I have tour details with identifier ""(.*)"" and name ""(.*)""")]
+    public void GivenIHaveTourDetailsWithIdentifierAndName(string identifier, string name)
+    {
+        _identifier = identifier;
+        _name = name;
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+    }
+
+    [Given(@"I have tour details with identifier longer than 128 characters")]
+    public void GivenIHaveTourDetailsWithIdentifierLongerThan128Characters()
+    {
+        _identifier = new string('A', 129);
+        _name = "Valid Tour Name";
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+    }
+
+    [Given(@"I have tour details with name longer than 128 characters")]
+    public void GivenIHaveTourDetailsWithNameLongerThan128Characters()
+    {
+        _identifier = "VALID2024";
+        _name = new string('A', 129);
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+    }
+
+    [Given(@"I have tour details with base price (.*)")]
+    public void GivenIHaveTourDetailsWithBasePrice(decimal price)
+    {
+        _identifier = "TEST2024";
+        _name = "Test Tour";
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        _basePrice = price;
+    }
+
+    [Given(@"I have tour details with single room supplement (.*)")]
+    public void GivenIHaveTourDetailsWithSingleRoomSupplement(decimal price)
+    {
+        _identifier = "TEST2024";
+        _name = "Test Tour";
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        _singleRoomSupplementPrice = price;
+    }
+
+    [Given(@"I have tour details with regular bike price (.*)")]
+    public void GivenIHaveTourDetailsWithRegularBikePrice(decimal price)
+    {
+        _identifier = "TEST2024";
+        _name = "Test Tour";
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        _regularBikePrice = price;
+    }
+
+    [Given(@"I have tour details with e-bike price (.*)")]
+    public void GivenIHaveTourDetailsWithEBikePrice(decimal price)
+    {
+        _identifier = "TEST2024";
+        _name = "Test Tour";
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+        _eBikePrice = price;
+    }
+
+    [Given(@"I have tour details with multiple invalid values")]
+    public void GivenIHaveTourDetailsWithMultipleInvalidValues()
+    {
+        _identifier = "";
+        _name = "";
+        _startDate = DateTime.UtcNow.AddMonths(1);
+        _endDate = _startDate.AddDays(2); // Too short duration
+        _basePrice = -100m;
+        _singleRoomSupplementPrice = -50m;
+        _regularBikePrice = -30m;
+        _eBikePrice = -40m;
+    }
+
     [When(@"I create the tour")]
     public void WhenICreateTheTour()
     {
@@ -101,14 +187,14 @@ public sealed class TourManagementSteps
     public void WhenITryToCreateTheTour()
     {
         _result = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
+            identifier: _identifier,
+            name: _name,
             startDate: _startDate,
             endDate: _endDate,
-            price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
+            price: _basePrice,
+            singleRoomSupplementPrice: _singleRoomSupplementPrice,
+            regularBikePrice: _regularBikePrice,
+            eBikePrice: _eBikePrice,
             currency: Currency.UsDollar,
             includedServices: ["Hotel", "Breakfast"]);
 
@@ -223,7 +309,6 @@ public sealed class TourManagementSteps
     [Then(@"the tour creation should fail with message ""(.*)""")]
     public static void ThenTheTourCreationShouldFailWithMessage(string expectedMessage)
     {
-        // This scenario is not currently used but keeping for potential future use
         Assert.Fail("This assertion step needs to be updated to work with Result pattern");
     }
 
@@ -345,5 +430,16 @@ public sealed class TourManagementSteps
         var result = (Result)_result;
         Assert.False(result.IsSuccess);
         Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+    }
+
+    [Then(@"the tour creation should fail with multiple validation errors")]
+    public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
+    {
+        Assert.NotNull(_result);
+        Assert.IsType<Result<Tour>>(_result);
+        var result = (Result<Tour>)_result;
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails?.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.Count > 1, "Expected multiple validation errors");
     }
 }

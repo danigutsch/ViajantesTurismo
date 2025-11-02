@@ -59,6 +59,77 @@ So that tours have valid and accurate information
         When I try to create the tour
         Then the tour creation should fail with validation error for "schedule"
 
+    Scenario: Cannot create tour with empty identifier
+        Given I have tour details with identifier "" and name "Cuba Tour"
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "identifier"
+
+    Scenario: Cannot create tour with identifier too long
+        Given I have tour details with identifier longer than 128 characters
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "identifier"
+
+    Scenario: Cannot create tour with empty name
+        Given I have tour details with identifier "CUBA2024" and name ""
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "name"
+
+    Scenario: Cannot create tour with name too long
+        Given I have tour details with name longer than 128 characters
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "name"
+
+    Scenario: Cannot create tour with negative base price
+        Given I have tour details with base price -100.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with base price exceeding maximum
+        Given I have tour details with base price 100001.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with negative single room supplement
+        Given I have tour details with single room supplement -50.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with single room supplement exceeding maximum
+        Given I have tour details with single room supplement 100001.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with negative regular bike price
+        Given I have tour details with regular bike price -30.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with regular bike price exceeding maximum
+        Given I have tour details with regular bike price 100001.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with negative e-bike price
+        Given I have tour details with e-bike price -40.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with e-bike price exceeding maximum
+        Given I have tour details with e-bike price 100001.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Create tour with zero base price succeeds
+        Given I have tour details with base price 0.00
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour base price should be 0.00
+
+    Scenario: Create tour with multiple validation errors
+        Given I have tour details with multiple invalid values
+        When I try to create the tour
+        Then the tour creation should fail with multiple validation errors
+
     Scenario: Cannot update schedule with duration too short
         Given an existing tour with dates from "2025-06-01" to "2025-06-10"
         When I try to update the schedule to "2025-07-01" to "2025-07-03"
