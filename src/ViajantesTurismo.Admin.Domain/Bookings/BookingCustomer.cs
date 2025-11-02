@@ -67,7 +67,7 @@ public sealed class BookingCustomer
 
         if (bikePrice > ContractConstants.MaxPrice)
         {
-            errors.Add(BookingErrors.PriceExceedsMaximum(bikePrice, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.BikePriceExceedsMaximum(bikePrice, ContractConstants.MaxPrice));
         }
 
         if (errors.HasErrors)

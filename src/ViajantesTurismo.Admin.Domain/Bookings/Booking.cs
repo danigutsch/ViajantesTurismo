@@ -155,12 +155,12 @@ public sealed class Booking : Entity<long>
 
         if (basePrice <= 0)
         {
-            errors.Add(BookingErrors.ZeroOrNegativePrice(basePrice));
+            errors.Add(BookingErrors.ZeroOrNegativeBasePrice(basePrice));
         }
 
         if (basePrice > ContractConstants.MaxPrice)
         {
-            errors.Add(BookingErrors.PriceExceedsMaximum(basePrice, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.BasePriceExceedsMaximum(basePrice, ContractConstants.MaxPrice));
         }
 
         if (roomAdditionalCost < 0)
@@ -170,7 +170,7 @@ public sealed class Booking : Entity<long>
 
         if (roomAdditionalCost > ContractConstants.MaxPrice)
         {
-            errors.Add(BookingErrors.PriceExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
         }
 
         if (notes?.Length > ContractConstants.MaxBookingNotesLength)
@@ -263,12 +263,12 @@ public sealed class Booking : Entity<long>
 
         if (newPrice <= 0)
         {
-            return BookingErrors.ZeroOrNegativePrice(newPrice);
+            return BookingErrors.ZeroOrNegativeTotalPrice(newPrice);
         }
 
         if (newPrice > ContractConstants.MaxPrice)
         {
-            return BookingErrors.PriceExceedsMaximum(newPrice, ContractConstants.MaxPrice);
+            return BookingErrors.TotalPriceExceedsMaximum(newPrice, ContractConstants.MaxPrice);
         }
 
         TotalPrice = newPrice;

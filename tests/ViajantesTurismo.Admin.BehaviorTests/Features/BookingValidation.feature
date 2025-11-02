@@ -9,20 +9,20 @@ So that only valid bookings are created and updated
     Scenario: Cannot update booking with zero price
         Given a tour exists with a booking priced at 1500.00
         When I try to update the booking price to 0.00 through the tour
-        Then the booking update should fail with validation error for "price"
-        And the error message should contain "Price must be greater than zero"
+        Then the booking update should fail with validation error for "totalPrice"
+        And the error message should contain "Total price must be greater than zero"
 
     Scenario: Cannot update booking with negative price
         Given a tour exists with a booking
         When I try to update the booking price to -500.00 through the tour
-        Then the booking update should fail with validation error for "price"
-        And the error message should contain "Price must be greater than zero"
+        Then the booking update should fail with validation error for "totalPrice"
+        And the error message should contain "Total price must be greater than zero"
 
     Scenario: Cannot update booking with price exceeding maximum
         Given a tour exists with a booking priced at 1500.00
         When I try to update the booking price to 100001.00 through the tour
-        Then the booking update should fail with validation error for "price"
-        And the error message should contain "Price must be less than 100000"
+        Then the booking update should fail with validation error for "totalPrice"
+        And the error message should contain "Total price must be less than 100000"
 
     Scenario: Update booking with price at maximum allowed value
         Given a tour exists with a booking priced at 1500.00
