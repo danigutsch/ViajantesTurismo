@@ -141,6 +141,15 @@ public sealed class BookingLifecycleSteps(ScenarioContext scenarioContext)
         Assert.True(result.IsSuccess);
     }
 
+    [When(@"the operator updates the notes to null")]
+    public void WhenTheOperatorUpdatesTheNotesToNull()
+    {
+        var tour = scenarioContext.Get<Tour>("Tour");
+        var booking = scenarioContext.Get<Booking>("Booking");
+        var result = tour.UpdateBookingNotes(booking.Id, null);
+        Assert.True(result.IsSuccess);
+    }
+
     [When(@"the operator tries to update the notes to a string longer than (.*) characters")]
     public void WhenTheOperatorTriesToUpdateTheNotesToAStringLongerThanCharacters(int maxLength)
     {

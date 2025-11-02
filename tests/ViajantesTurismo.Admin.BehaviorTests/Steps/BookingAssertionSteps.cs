@@ -29,6 +29,13 @@ public sealed class BookingAssertionSteps(ScenarioContext scenarioContext)
         Assert.Equal(expectedNotes, booking.Notes);
     }
 
+    [Then(@"the booking notes should be null")]
+    public void ThenTheBookingNotesShouldBeNull()
+    {
+        var booking = scenarioContext.Get<Booking>("Booking");
+        Assert.Null(booking.Notes);
+    }
+
     [Then(@"the booking payment status should be ""(.*)""")]
     public void ThenTheBookingPaymentStatusShouldBe(string expectedStatusString)
     {

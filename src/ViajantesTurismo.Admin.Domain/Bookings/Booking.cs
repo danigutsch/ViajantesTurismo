@@ -71,7 +71,7 @@ public sealed class Booking : Entity<long>
     public decimal TotalPrice { get; private set; }
 
     /// <summary>
-    /// The currency of the booking.
+    /// Additional notes for the booking.
     /// </summary>
     public string? Notes { get; private set; }
 
