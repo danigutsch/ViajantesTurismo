@@ -41,10 +41,12 @@ public sealed class ContactInfo
     /// <returns>A Result containing the ContactInfo.</returns>
     public static Result<ContactInfo> Create(string email, string mobile, string? instagram, string? facebook)
     {
-        email = StringSanitizer.Sanitize(email)!;
-        mobile = StringSanitizer.Sanitize(mobile)!;
+        email = StringSanitizer.Sanitize(email);
+        mobile = StringSanitizer.Sanitize(mobile);
         instagram = StringSanitizer.Sanitize(instagram);
+        instagram = string.IsNullOrWhiteSpace(instagram) ? null : instagram;
         facebook = StringSanitizer.Sanitize(facebook);
+        facebook = string.IsNullOrWhiteSpace(facebook) ? null : facebook;
 
         var errors = new ValidationErrors();
 

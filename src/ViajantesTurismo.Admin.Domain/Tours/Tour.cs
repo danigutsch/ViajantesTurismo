@@ -124,8 +124,8 @@ public sealed class Tour : Entity<int>
         Currency currency,
         IEnumerable<string> includedServices)
     {
-        identifier = StringSanitizer.Sanitize(identifier)!;
-        name = StringSanitizer.Sanitize(name)!;
+        identifier = StringSanitizer.Sanitize(identifier);
+        name = StringSanitizer.Sanitize(name);
         price = NumericSanitizer.SanitizePrice(price);
         singleRoomSupplementPrice = NumericSanitizer.SanitizePrice(singleRoomSupplementPrice);
         regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
@@ -255,8 +255,8 @@ public sealed class Tour : Entity<int>
             return errors.ToResult();
         }
 
-        Identifier = sanitizedIdentifier!;
-        Name = sanitizedName!;
+        Identifier = sanitizedIdentifier;
+        Name = sanitizedName;
         return Result.Ok();
     }
 

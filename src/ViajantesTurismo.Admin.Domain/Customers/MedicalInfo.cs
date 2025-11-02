@@ -37,8 +37,10 @@ public sealed class MedicalInfo
     /// <returns>A <see cref="Result{MedicalInfo}"/> containing the medical info or validation errors.</returns>
     public static Result<MedicalInfo> Create(string? allergies, string? additionalInfo)
     {
-        var sanitizedAllergies = StringSanitizer.SanitizeNotes(allergies);
-        var sanitizedAdditionalInfo = StringSanitizer.SanitizeNotes(additionalInfo);
+        var sanitizedAllergies = StringSanitizer.Sanitize(allergies);
+        sanitizedAllergies = string.IsNullOrWhiteSpace(sanitizedAllergies) ? null : sanitizedAllergies;
+        var sanitizedAdditionalInfo = StringSanitizer.Sanitize(additionalInfo);
+        sanitizedAdditionalInfo = string.IsNullOrWhiteSpace(sanitizedAdditionalInfo) ? null : sanitizedAdditionalInfo;
 
         var errors = new ValidationErrors();
 

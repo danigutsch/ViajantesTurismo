@@ -62,11 +62,11 @@ public sealed class PersonalInfo
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
 
-        firstName = StringSanitizer.Sanitize(firstName)!;
-        lastName = StringSanitizer.Sanitize(lastName)!;
-        gender = StringSanitizer.Sanitize(gender)!;
-        nationality = StringSanitizer.Sanitize(nationality)!;
-        profession = StringSanitizer.Sanitize(profession)!;
+        firstName = StringSanitizer.Sanitize(firstName);
+        lastName = StringSanitizer.Sanitize(lastName);
+        gender = StringSanitizer.Sanitize(gender);
+        nationality = StringSanitizer.Sanitize(nationality);
+        profession = StringSanitizer.Sanitize(profession);
 
         var errors = new ValidationErrors();
 
@@ -117,7 +117,7 @@ public sealed class PersonalInfo
 
         var currentDate = timeProvider.GetUtcNow().Date;
         var birthDateOnly = birthDate.Date;
-        
+
         if (birthDateOnly > currentDate)
         {
             errors.Add(FutureBirthDate());

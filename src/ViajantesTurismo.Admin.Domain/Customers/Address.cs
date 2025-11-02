@@ -68,6 +68,7 @@ public sealed class Address
     {
         var sanitizedStreet = StringSanitizer.Sanitize(street);
         var sanitizedComplement = StringSanitizer.Sanitize(complement);
+        sanitizedComplement = string.IsNullOrWhiteSpace(sanitizedComplement) ? null : sanitizedComplement;
         var sanitizedNeighborhood = StringSanitizer.Sanitize(neighborhood);
         var sanitizedPostalCode = StringSanitizer.Sanitize(postalCode);
         var sanitizedCity = StringSanitizer.Sanitize(city);
