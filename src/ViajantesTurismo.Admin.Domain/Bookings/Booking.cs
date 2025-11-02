@@ -15,40 +15,6 @@ namespace ViajantesTurismo.Admin.Domain.Bookings;
 public sealed class Booking : Entity<long>
 {
     /// <summary>
-    /// Creates a new booking with validation and sanitization.
-    /// </summary>
-    /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="customerId">The ID of the customer who made the booking.</param>
-    /// <param name="companionId">The ID of the companion, if any.</param>
-    /// <param name="totalPrice">The total price of the booking.</param>
-    /// <param name="notes">Optional notes about the booking.</param>
-    /// <returns>A Result containing the booking if successful, or validation errors.</returns>
-    internal static Result<Booking> Create(int tourId, int customerId, int? companionId, decimal totalPrice, string? notes)
-    {
-        totalPrice = NumericSanitizer.SanitizePrice(totalPrice);
-        notes = StringSanitizer.SanitizeNotes(notes);
-
-        var errors = new ValidationErrors();
-
-        if (totalPrice <= 0)
-        {
-            errors.Add(BookingErrors.InvalidPrice(totalPrice));
-        }
-
-        if (notes?.Length > ContractConstants.MaxBookingNotesLength)
-        {
-            errors.Add(BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length));
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult<Booking>();
-        }
-
-        return new Booking(tourId, customerId, companionId, totalPrice, notes);
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="Booking"/> class.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
@@ -112,6 +78,45 @@ public sealed class Booking : Entity<long>
     /// Additional notes for the booking.
     /// </summary>
     public string? Notes { get; private set; }
+
+    /// <summary>
+    /// Creates a new booking with validation and sanitization.
+    /// </summary>
+    /// <param name="tourId">The ID of the tour that was booked.</param>
+    /// <param name="customerId">The ID of the customer who made the booking.</param>
+    /// <param name="companionId">The ID of the companion, if any.</param>
+    /// <param name="totalPrice">The total price of the booking.</param>
+    /// <param name="notes">Optional notes about the booking.</param>
+    /// <returns>A Result containing the booking if successful, or validation errors.</returns>
+    internal static Result<Booking> Create(int tourId, int customerId, int? companionId, decimal totalPrice, string? notes)
+    {
+        totalPrice = NumericSanitizer.SanitizePrice(totalPrice);
+        notes = StringSanitizer.SanitizeNotes(notes);
+
+        var errors = new ValidationErrors();
+
+        if (totalPrice <= ContractConstants.MinPrice)
+        {
+            errors.Add(BookingErrors.InvalidPrice(totalPrice));
+        }
+
+        if (totalPrice > ContractConstants.MaxPrice)
+        {
+            errors.Add(BookingErrors.InvalidPrice(totalPrice));
+        }
+
+        if (notes?.Length > ContractConstants.MaxBookingNotesLength)
+        {
+            errors.Add(BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length));
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<Booking>();
+        }
+
+        return new Booking(tourId, customerId, companionId, totalPrice, notes);
+    }
 
     /// <summary>
     /// Updates the payment status of the booking.
@@ -188,7 +193,12 @@ public sealed class Booking : Entity<long>
     {
         newPrice = NumericSanitizer.SanitizePrice(newPrice);
 
-        if (newPrice <= 0)
+        if (newPrice <= ContractConstants.MinPrice)
+        {
+            return BookingErrors.InvalidPrice(newPrice);
+        }
+
+        if (newPrice > ContractConstants.MaxPrice)
         {
             return BookingErrors.InvalidPrice(newPrice);
         }

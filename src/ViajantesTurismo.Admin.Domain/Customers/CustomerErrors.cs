@@ -388,4 +388,23 @@ public static class CustomerErrors
         detail: "Additional information cannot exceed 500 characters.",
         field: "AdditionalInfo",
         message: "Additional information cannot exceed 500 characters.");
+
+    // AccommodationPreferences validation errors
+    /// <summary>
+    /// Indicates that a double room requires a companion.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<AccommodationPreferences> DoubleRoomRequiresCompanion() => Result<AccommodationPreferences>.Invalid(
+        detail: "A double room requires a companion ID.",
+        field: "CompanionId",
+        message: "A double room requires a companion ID.");
+
+    /// <summary>
+    /// Indicates that a single room cannot have a companion.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<AccommodationPreferences> SingleRoomCannotHaveCompanion() => Result<AccommodationPreferences>.Invalid(
+        detail: "A single room cannot have a companion ID.",
+        field: "CompanionId",
+        message: "A single room cannot have a companion ID.");
 }

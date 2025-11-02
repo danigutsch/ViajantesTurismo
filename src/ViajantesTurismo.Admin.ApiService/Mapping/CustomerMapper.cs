@@ -79,10 +79,10 @@ internal static class CustomerMapper
     /// </summary>
     public static AccommodationPreferences MapToAccommodationPreferences(AccommodationPreferencesDto dto)
     {
-        return new AccommodationPreferences(
+        return AccommodationPreferences.Create(
             MapToRoomType(dto.RoomType),
             MapToBedType(dto.BedType),
-            dto.CompanionId);
+            dto.CompanionId).Value;
     }
 
     /// <summary>

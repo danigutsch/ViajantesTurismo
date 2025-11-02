@@ -390,7 +390,9 @@ public sealed class Tour : Entity<int>
     /// <param name="includedServices">The collection of services included in the tour package.</param>
     public void UpdateIncludedServices(IEnumerable<string> includedServices)
     {
-        _includedServices = StringSanitizer.SanitizeCollection(includedServices);
+        var sanitizedServices = StringSanitizer.SanitizeCollection(includedServices);
+
+        _includedServices = sanitizedServices;
     }
 
     /// <summary>

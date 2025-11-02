@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 
@@ -19,4 +20,5 @@ public sealed class TourContext
 #pragma warning restore CA1002
     public required Tour Tour { get; set; }
     public required object Result { get; set; }
+    public Result? UpdateResult { get; set; }
 }

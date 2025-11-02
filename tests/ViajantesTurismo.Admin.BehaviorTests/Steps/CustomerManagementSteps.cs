@@ -41,7 +41,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have valid accommodation preferences")]
     public void GivenIHaveValidAccommodationPreferences()
     {
-        context.AccommodationPreferences = new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null);
+        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, 999).Value;
     }
 
     [Given(@"I have valid emergency contact")]
@@ -73,7 +73,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.ContactInfoResult = ContactInfo.Create("john.smith@example.com", "+1234567890", null, null);
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
         context.PhysicalInfo = PhysicalInfo.Create(75m, 180, BikeType.Regular).Value;
-        context.AccommodationPreferences = new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null);
+        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
         context.EmergencyContactResult = EmergencyContact.Create("Emergency Contact", "+1111111111");
         context.MedicalInfo = MedicalInfo.Create(null, null).Value;
 
@@ -164,7 +164,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I update the customer with new accommodation preferences")]
     public void WhenIUpdateTheCustomerWithNewAccommodationPreferences()
     {
-        var newAccommodationPreferences = new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, 5);
+        var newAccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, 5).Value;
         context.Customer.UpdateAccommodationPreferences(newAccommodationPreferences);
         context.AccommodationPreferences = newAccommodationPreferences;
     }

@@ -36,6 +36,11 @@ public static class ContractConstants
     public const int MaxBookingNotesLength = 2000;
 
     /// <summary>
+    /// The maximum length for medical information fields (allergies and additional info).
+    /// </summary>
+    public const int MaxMedicalInfoLength = 500;
+
+    /// <summary>
     /// The minimum duration in days for a tour.
     /// </summary>
     public const int MinimumTourDurationDays = 5;

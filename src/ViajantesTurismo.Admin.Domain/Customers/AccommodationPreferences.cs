@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -13,7 +14,7 @@ public sealed class AccommodationPreferences
     /// <param name="roomType">The room type.</param>
     /// <param name="bedType">The bed type.</param>
     /// <param name="companionId">The companion's ID.</param>
-    public AccommodationPreferences(RoomType roomType, BedType bedType, int? companionId)
+    private AccommodationPreferences(RoomType roomType, BedType bedType, int? companionId)
     {
         RoomType = roomType;
         BedType = bedType;
@@ -28,6 +29,19 @@ public sealed class AccommodationPreferences
 
     /// <summary>Companion's ID.</summary>
     public int? CompanionId { get; private set; }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="AccommodationPreferences"/>.
+    /// </summary>
+    /// <param name="roomType">The room type.</param>
+    /// <param name="bedType">The bed type.</param>
+    /// <param name="companionId">The companion's ID.</param>
+    /// <returns>A <see cref="Result{AccommodationPreferences}"/> containing the accommodation preferences.</returns>
+    public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, int? companionId)
+    {
+        // No validation needed - all combinations are valid
+        return new AccommodationPreferences(roomType, bedType, companionId);
+    }
 
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.

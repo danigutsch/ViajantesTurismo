@@ -9,17 +9,17 @@ namespace ViajantesTurismo.AdminApi.Contracts;
 public sealed record PhysicalInfoDto
 {
     /// <summary>
-    /// The weight of the customer in kilograms. Valid range is 0 to 500 kg.
+    /// The weight of the customer in kilograms. Valid range is 1 to 500 kg.
     /// </summary>
     [Required]
-    [Range(0, 500)]
+    [Range(1, 500)]
     public required decimal WeightKg { get; init; }
 
     /// <summary>
-    /// The height of the customer in centimeters. Valid range is 0 to 300 cm.
+    /// The height of the customer in centimeters. Valid range is 50 to 300 cm.
     /// </summary>
     [Required]
-    [Range(0, 300)]
+    [Range(50, 300)]
     public required int HeightCentimeters { get; init; }
 
     /// <summary>

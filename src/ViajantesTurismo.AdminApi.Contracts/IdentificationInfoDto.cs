@@ -19,6 +19,6 @@ public sealed record IdentificationInfoDto
     /// The country of issuance for the identification document.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [MaxLength(ContractConstants.MaxDefaultLength)]
     public required string IdNationality { get; init; }
 }
