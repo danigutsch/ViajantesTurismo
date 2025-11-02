@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.AdminApi.Contracts;
 
-namespace ViajantesTurismo.IntegrationTests;
+namespace ViajantesTurismo.Admin.IntegrationTests;
 
 [Collection("Api collection")]
 public sealed class CustomerApiTests : IDisposable
