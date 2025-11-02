@@ -43,8 +43,11 @@ public sealed class BookingApiTests : IDisposable
         var bookingRequest = new CreateBookingDto
         {
             TourId = tourDto.Id,
-            CustomerId = customerDto.Id,
-            CompanionId = null,
+            PrincipalCustomerId = customerDto.Id,
+            PrincipalBikeType = BikeTypeDto.Regular,
+            CompanionCustomerId = null,
+            CompanionBikeType = null,
+            RoomType = RoomTypeDto.SingleRoom,
             Notes = "Test booking"
         };
 
@@ -57,7 +60,7 @@ public sealed class BookingApiTests : IDisposable
         Assert.NotNull(booking);
         Assert.Equal(tourDto.Id, booking.TourId);
         Assert.Equal(customerDto.Id, booking.CustomerId);
-        Assert.Equal(tourDto.Price, booking.TotalPrice);
+        Assert.Equal(2600.00m, booking.TotalPrice);
         Assert.Equal("Test booking", booking.Notes);
     }
 
@@ -72,8 +75,11 @@ public sealed class BookingApiTests : IDisposable
         var bookingRequest = new CreateBookingDto
         {
             TourId = tourDto.Id,
-            CustomerId = customerDto.Id,
-            CompanionId = companionDto.Id,
+            PrincipalCustomerId = customerDto.Id,
+            PrincipalBikeType = BikeTypeDto.Regular,
+            CompanionCustomerId = companionDto.Id,
+            CompanionBikeType = BikeTypeDto.Regular,
+            RoomType = RoomTypeDto.DoubleRoom,
             Notes = "Couple booking"
         };
 
@@ -97,8 +103,11 @@ public sealed class BookingApiTests : IDisposable
         var bookingRequest = new CreateBookingDto
         {
             TourId = 99999,
-            CustomerId = customerDto.Id,
-            CompanionId = null
+            PrincipalCustomerId = customerDto.Id,
+            PrincipalBikeType = BikeTypeDto.Regular,
+            CompanionCustomerId = null,
+            CompanionBikeType = null,
+            RoomType = RoomTypeDto.SingleRoom
         };
 
         // Act
@@ -145,7 +154,7 @@ public sealed class BookingApiTests : IDisposable
         var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(booking);
         Assert.Equal(createdBooking.Id, booking.Id);
-        Assert.Equal(tourDto.Price, booking.TotalPrice);
+        Assert.Equal(2600.00m, booking.TotalPrice);
     }
 
     [Fact]
@@ -437,8 +446,11 @@ public sealed class BookingApiTests : IDisposable
         var bookingRequest = new CreateBookingDto
         {
             TourId = tourId,
-            CustomerId = customerId,
-            CompanionId = companionId,
+            PrincipalCustomerId = customerId,
+            PrincipalBikeType = BikeTypeDto.Regular,
+            CompanionCustomerId = companionId,
+            CompanionBikeType = companionId.HasValue ? BikeTypeDto.Regular : null,
+            RoomType = companionId.HasValue ? RoomTypeDto.DoubleRoom : RoomTypeDto.SingleRoom,
             Notes = "Test booking"
         };
 

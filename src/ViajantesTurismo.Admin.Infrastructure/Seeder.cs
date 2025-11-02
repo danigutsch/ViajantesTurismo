@@ -269,16 +269,16 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             return;
         }
 
-        var booking1 = tours[0].AddBooking(customers[0].Id, null, "Early bird discount applied").Value;
-        var booking2 = tours[1].AddBooking(customers[1].Id, customers[0].Id, "Traveling together as a couple").Value;
-        tours[2].AddBooking(customers[2].Id, null, "Requested vegetarian meals");
-        var booking4 = tours[3].AddBooking(customers[3].Id, customers[4].Id, "Upgraded to premium accommodation").Value;
-        var booking5 = tours[4].AddBooking(customers[5].Id, null, "Excellent tour experience").Value;
-        var booking6 = tours[0].AddBooking(customers[6].Id, null, "Cancelled due to personal reasons").Value;
-        var booking7 = tours[1].AddBooking(customers[7].Id, customers[8].Id, "Special dietary requirements noted").Value;
-        tours[3].AddBooking(customers[9].Id, null, "Interested in photography opportunities");
-        var booking9 = tours[0].AddBooking(customers[4].Id, null, "Solo traveler, single room supplement included").Value;
-        var booking10 = tours[4].AddBooking(customers[8].Id, null, "Payment pending bank transfer").Value;
+        var booking1 = tours[0].AddBooking(customers[0].Id, customers[0].PhysicalInfo.BikeType, null, null, customers[0].AccommodationPreferences.RoomType, "Early bird discount applied").Value;
+        var booking2 = tours[1].AddBooking(customers[1].Id, customers[1].PhysicalInfo.BikeType, customers[0].Id, customers[0].PhysicalInfo.BikeType, customers[1].AccommodationPreferences.RoomType, "Traveling together as a couple").Value;
+        tours[2].AddBooking(customers[2].Id, customers[2].PhysicalInfo.BikeType, null, null, customers[2].AccommodationPreferences.RoomType, "Requested vegetarian meals");
+        var booking4 = tours[3].AddBooking(customers[3].Id, customers[3].PhysicalInfo.BikeType, customers[4].Id, customers[4].PhysicalInfo.BikeType, customers[3].AccommodationPreferences.RoomType, "Upgraded to premium accommodation").Value;
+        var booking5 = tours[4].AddBooking(customers[5].Id, customers[5].PhysicalInfo.BikeType, null, null, customers[5].AccommodationPreferences.RoomType, "Excellent tour experience").Value;
+        var booking6 = tours[0].AddBooking(customers[6].Id, customers[6].PhysicalInfo.BikeType, null, null, customers[6].AccommodationPreferences.RoomType, "Cancelled due to personal reasons").Value;
+        var booking7 = tours[1].AddBooking(customers[7].Id, customers[7].PhysicalInfo.BikeType, customers[8].Id, customers[8].PhysicalInfo.BikeType, customers[7].AccommodationPreferences.RoomType, "Special dietary requirements noted").Value;
+        tours[3].AddBooking(customers[9].Id, customers[9].PhysicalInfo.BikeType, null, null, customers[9].AccommodationPreferences.RoomType, "Interested in photography opportunities");
+        var booking9 = tours[0].AddBooking(customers[4].Id, customers[4].PhysicalInfo.BikeType, null, null, customers[4].AccommodationPreferences.RoomType, "Solo traveler, single room supplement included").Value;
+        var booking10 = tours[4].AddBooking(customers[8].Id, customers[8].PhysicalInfo.BikeType, null, null, customers[8].AccommodationPreferences.RoomType, "Payment pending bank transfer").Value;
 
         dbContext.SaveChanges();
 

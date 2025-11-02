@@ -1,5 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -9,7 +10,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [When(@"I add a booking with price (.*)")]
     public void WhenIAddABookingWithPrice(decimal price)
     {
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -20,10 +21,10 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
         }
     }
 
-    [When(@"I add a booking with notes ""(.*)""")] 
+    [When(@"I add a booking with notes ""(.*)""")]
     public void WhenIAddABookingWithNotes(string notes)
     {
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: notes);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, notes);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -32,7 +33,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     public void WhenIAddABookingWithNotesExceeding2000Characters()
     {
         var longNotes = new string('A', 2001);
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: longNotes);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, longNotes);
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -46,7 +47,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [When(@"I add a booking with null notes")]
     public void WhenIAddABookingWithNullNotes()
     {
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -57,6 +58,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
         Assert.True(result.IsSuccess);
     }
+
     [Then(@"the booking notes should contain normalized whitespace")]
     public void ThenTheBookingNotesShouldContainNormalizedWhitespace()
     {

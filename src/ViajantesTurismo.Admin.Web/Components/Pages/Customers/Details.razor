@@ -409,8 +409,11 @@ else
                 var createDto = new CreateBookingDto
                 {
                     TourId = model.TourId!.Value,
-                    CustomerId = Id,
-                    CompanionId = model.CompanionId,
+                    PrincipalCustomerId = Id,
+                    PrincipalBikeType = BikeTypeDto.Regular,
+                    CompanionCustomerId = model.CompanionId,
+                    CompanionBikeType = model.CompanionId.HasValue ? BikeTypeDto.Regular : null,
+                    RoomType = model.CompanionId.HasValue ? RoomTypeDto.DoubleRoom : RoomTypeDto.SingleRoom,
                     Notes = model.Notes
                 };
 

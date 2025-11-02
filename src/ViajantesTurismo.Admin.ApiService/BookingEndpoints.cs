@@ -137,8 +137,11 @@ internal static class BookingEndpoints
         }
 
         var result = tour.AddBooking(
-            dto.CustomerId,
-            dto.CompanionId,
+            dto.PrincipalCustomerId,
+            BookingMapper.MapToBikeType(dto.PrincipalBikeType),
+            dto.CompanionCustomerId,
+            dto.CompanionBikeType.HasValue ? BookingMapper.MapToBikeType(dto.CompanionBikeType.Value) : null,
+            BookingMapper.MapToRoomType(dto.RoomType),
             dto.Notes);
 
         if (result.IsFailure)

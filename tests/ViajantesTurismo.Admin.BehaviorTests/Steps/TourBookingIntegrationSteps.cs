@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -23,7 +24,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAPendingBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
@@ -33,7 +34,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAConfirmedBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -45,7 +46,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithABookingPricedAt(decimal price)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -54,7 +55,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithABooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -63,7 +64,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithABookingPricedAtAndNotes(decimal price, string notes)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: notes);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, notes);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -72,7 +73,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAPendingBookingPricedAt(decimal price)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
@@ -81,7 +82,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [When(@"I add a booking for the customer to the tour with price (.*)")]
     public void WhenIAddABookingForTheCustomerToTheTourWithPrice(decimal price)
     {
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }

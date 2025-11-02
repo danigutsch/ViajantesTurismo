@@ -57,4 +57,26 @@ public static class BookingErrors
     /// <param name="id">The ID of the booking that was not found.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result BookingNotFound(long id) => Result.NotFound(detail: $"Booking with ID {id} was not found.");
+
+    /// <summary>
+    /// Indicates that the bike price is negative.
+    /// </summary>
+    /// <param name="price">The invalid bike price value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result NegativeBikePrice(decimal price) =>
+        Result.Invalid(
+            detail: $"Bike price cannot be negative. Received: {price}.",
+            field: "bikePrice",
+            message: "Bike price cannot be negative.");
+
+    /// <summary>
+    /// Indicates that the room additional cost is negative.
+    /// </summary>
+    /// <param name="cost">The invalid room cost value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result NegativeRoomCost(decimal cost) =>
+        Result.Invalid(
+            detail: $"Room additional cost cannot be negative. Received: {cost}.",
+            field: "roomAdditionalCost",
+            message: "Room additional cost cannot be negative.");
 }

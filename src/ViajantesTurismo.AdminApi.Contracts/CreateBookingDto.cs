@@ -11,12 +11,23 @@ public sealed class CreateBookingDto
     [Required]
     public required int TourId { get; init; }
 
-    /// <summary>The ID of the customer making the booking.</summary>
+    /// <summary>The ID of the principal customer making the booking.</summary>
     [Required]
-    public required int CustomerId { get; init; }
+    public required int PrincipalCustomerId { get; init; }
+
+    /// <summary>The bike type selected by the principal customer.</summary>
+    [Required]
+    public required BikeTypeDto PrincipalBikeType { get; init; }
 
     /// <summary>The ID of the companion customer, if any.</summary>
-    public int? CompanionId { get; init; }
+    public int? CompanionCustomerId { get; init; }
+
+    /// <summary>The bike type selected by the companion, if any.</summary>
+    public BikeTypeDto? CompanionBikeType { get; init; }
+
+    /// <summary>The room type for the booking.</summary>
+    [Required]
+    public required RoomTypeDto RoomType { get; init; }
 
     /// <summary>Optional notes about the booking.</summary>
     [MaxLength(ContractConstants.MaxBookingNotesLength)]

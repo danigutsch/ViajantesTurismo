@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
@@ -12,7 +13,7 @@ public sealed class BookingValidationSteps(BookingContext bookingContext, TourCo
     public void GivenATourExistsWithACancelledBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
@@ -24,7 +25,7 @@ public sealed class BookingValidationSteps(BookingContext bookingContext, TourCo
     public void GivenATourExistsWithACompletedBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
@@ -35,7 +36,7 @@ public sealed class BookingValidationSteps(BookingContext bookingContext, TourCo
     [When(@"I try to add a booking with price (.*)")]
     public void WhenITryToAddABookingWithPrice(decimal price)
     {
-        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         bookingContext.Result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, price);

@@ -43,7 +43,7 @@ public sealed class ValueObjectTests
     {
         var address = new TestAddress("123 Main St", "Springfield");
 
-        var result = address.Equals((TestAddress?)null);
+        var result = address.Equals(null);
 
         Assert.False(result);
     }

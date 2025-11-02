@@ -70,24 +70,38 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.Property(booking => booking.Id).ValueGeneratedOnAdd();
 
             entity.Property(booking => booking.TourId).IsRequired();
-            entity.Property(booking => booking.CustomerId).IsRequired();
-            entity.Property(booking => booking.CompanionId).IsRequired(false);
+            entity.Property(booking => booking.BasePrice).IsRequired();
+            entity.Property(booking => booking.RoomType).HasConversion<string>().IsRequired();
+            entity.Property(booking => booking.RoomAdditionalCost).IsRequired();
             entity.Property(booking => booking.BookingDate).IsRequired();
             entity.Property(booking => booking.Status).HasConversion<string>().IsRequired();
             entity.Property(booking => booking.PaymentStatus).HasConversion<string>().IsRequired();
             entity.Property(booking => booking.TotalPrice).IsRequired();
             entity.Property(booking => booking.Notes).HasMaxLength(ContractConstants.MaxBookingNotesLength);
 
-            entity.HasOne<Customer>()
-                .WithMany()
-                .HasForeignKey(booking => booking.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.OwnsOne(booking => booking.PrincipalCustomer, customer =>
+            {
+                customer.Property(c => c.CustomerId).IsRequired();
+                customer.Property(c => c.BikeType).HasConversion<string>().IsRequired();
+                customer.Property(c => c.BikePrice).IsRequired();
 
-            entity.HasOne<Customer>()
-                .WithMany()
-                .HasForeignKey(booking => booking.CompanionId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired(false);
+                customer.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(c => c.CustomerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            entity.OwnsOne(booking => booking.CompanionCustomer, customer =>
+            {
+                customer.Property(c => c.CustomerId).IsRequired();
+                customer.Property(c => c.BikeType).HasConversion<string>().IsRequired();
+                customer.Property(c => c.BikePrice).IsRequired();
+
+                customer.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(c => c.CustomerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         });
     }
 }

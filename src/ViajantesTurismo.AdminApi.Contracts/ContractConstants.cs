@@ -21,11 +21,6 @@ public static class ContractConstants
     public const int MaxServiceDescriptionLength = 256;
 
     /// <summary>
-    /// The minimum price value for any tour-related pricing (exclusive - prices must be greater than this).
-    /// </summary>
-    public const int MinPrice = 0;
-
-    /// <summary>
     /// The maximum price value for any tour-related pricing.
     /// </summary>
     public const int MaxPrice = 100_000;
@@ -64,9 +59,4 @@ public static class ContractConstants
     /// The maximum height value in centimeters for physical information (inclusive).
     /// </summary>
     public const int MaxHeightCm = 300;
-
-    /// <summary>
-    /// The minimum price value for range validation requiring values greater than zero (exclusive, use 0.01 for validation).
-    /// </summary>
-    public const int MinPriceExclusive = 0;
 }

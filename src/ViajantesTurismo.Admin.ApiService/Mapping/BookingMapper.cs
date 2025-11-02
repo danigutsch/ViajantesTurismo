@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.ApiService.Mapping;
@@ -8,6 +9,33 @@ namespace ViajantesTurismo.Admin.ApiService.Mapping;
 /// </summary>
 internal static class BookingMapper
 {
+    /// <summary>
+    /// Maps a <see cref="BikeTypeDto"/> to a <see cref="BikeType"/>.
+    /// </summary>
+    public static BikeType MapToBikeType(BikeTypeDto bikeTypeDto)
+    {
+        return bikeTypeDto switch
+        {
+            BikeTypeDto.None => BikeType.None,
+            BikeTypeDto.Regular => BikeType.Regular,
+            BikeTypeDto.EBike => BikeType.EBike,
+            _ => throw new ArgumentOutOfRangeException(nameof(bikeTypeDto), bikeTypeDto, "Invalid bike type value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="RoomTypeDto"/> to a <see cref="RoomType"/>.
+    /// </summary>
+    public static RoomType MapToRoomType(RoomTypeDto roomTypeDto)
+    {
+        return roomTypeDto switch
+        {
+            RoomTypeDto.SingleRoom => RoomType.SingleRoom,
+            RoomTypeDto.DoubleRoom => RoomType.DoubleRoom,
+            _ => throw new ArgumentOutOfRangeException(nameof(roomTypeDto), roomTypeDto, "Invalid room type value.")
+        };
+    }
+
     /// <summary>
     /// Maps a <see cref="BookingStatusDto"/> to a <see cref="BookingStatus"/>.
     /// </summary>

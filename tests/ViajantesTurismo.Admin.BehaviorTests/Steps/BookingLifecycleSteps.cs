@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -11,7 +12,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenAPendingBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
@@ -21,7 +22,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenAPendingBookingExistsWithPrice(decimal price)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
@@ -31,7 +32,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenAConfirmedBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -42,7 +43,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenACancelledBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
@@ -54,7 +55,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenACompletedBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(customerId: 1, companionId: null, notes: null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);

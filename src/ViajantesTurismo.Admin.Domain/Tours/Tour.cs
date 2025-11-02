@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
@@ -166,7 +167,7 @@ public sealed class Tour : Entity<int>
             }
         }
 
-        if (price <= ContractConstants.MinPrice)
+        if (price <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Base price", price));
         }
@@ -175,7 +176,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price));
         }
 
-        if (singleRoomSupplementPrice <= ContractConstants.MinPrice)
+        if (singleRoomSupplementPrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
         }
@@ -184,7 +185,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
         }
 
-        if (regularBikePrice <= ContractConstants.MinPrice)
+        if (regularBikePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
         }
@@ -193,7 +194,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
         }
 
-        if (eBikePrice <= ContractConstants.MinPrice)
+        if (eBikePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
         }
@@ -314,7 +315,7 @@ public sealed class Tour : Entity<int>
 
         var errors = new ValidationErrors();
 
-        if (singleRoomSupplementPrice <= ContractConstants.MinPrice)
+        if (singleRoomSupplementPrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
         }
@@ -323,7 +324,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
         }
 
-        if (regularBikePrice <= ContractConstants.MinPrice)
+        if (regularBikePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
         }
@@ -332,7 +333,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
         }
 
-        if (eBikePrice <= ContractConstants.MinPrice)
+        if (eBikePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
         }
@@ -362,7 +363,7 @@ public sealed class Tour : Entity<int>
     {
         price = NumericSanitizer.SanitizePrice(price);
 
-        if (price <= ContractConstants.MinPrice)
+        if (price <= 0)
         {
             return TourErrors.InvalidPrice("Base price", price).ToResult();
         }
@@ -399,13 +400,47 @@ public sealed class Tour : Entity<int>
     /// <summary>
     /// Adds a new booking to this tour.
     /// </summary>
-    /// <param name="customerId">The ID of the customer making the booking.</param>
-    /// <param name="companionId">The ID of the companion, if any.</param>
+    /// <param name="principalCustomerId">The ID of the principal customer making the booking.</param>
+    /// <param name="principalBikeType">The bike type selected by the principal customer.</param>
+    /// <param name="companionCustomerId">The ID of the companion customer, if any.</param>
+    /// <param name="companionBikeType">The bike type selected by the companion, if any.</param>
+    /// <param name="roomType">The room type for the booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
-    public Result<Booking> AddBooking(int customerId, int? companionId, string? notes)
+    public Result<Booking> AddBooking(
+        int principalCustomerId,
+        BikeType principalBikeType,
+        int? companionCustomerId,
+        BikeType? companionBikeType,
+        RoomType roomType,
+        string? notes)
     {
-        var result = Booking.Create(Id, customerId, companionId, Price, notes);
+        var principalBikePrice = GetBikePrice(principalBikeType);
+        var principalCustomerResult = BookingCustomer.Create(principalCustomerId, principalBikeType, principalBikePrice);
+        if (principalCustomerResult.IsFailure)
+        {
+            return principalCustomerResult.ConvertError<BookingCustomer, Booking>();
+        }
+
+        var companionCustomerResult = CreateCompanionCustomer(companionCustomerId, companionBikeType);
+        if (companionCustomerResult is { IsFailure: true })
+        {
+            return companionCustomerResult.Value.ConvertError<BookingCustomer, Booking>();
+        }
+
+        var companionCustomer = companionCustomerResult?.Value;
+
+        var roomAdditionalCost = CalculateRoomAdditionalCost(roomType);
+
+        var result = Booking.Create(
+            Id,
+            Price,
+            roomType,
+            roomAdditionalCost,
+            principalCustomerResult.Value,
+            companionCustomer,
+            notes);
+
         if (result.IsFailure)
         {
             return result;
@@ -415,6 +450,28 @@ public sealed class Tour : Entity<int>
         _bookings.Add(booking);
         return booking;
     }
+
+    private decimal GetBikePrice(BikeType bikeType) => bikeType switch
+    {
+        BikeType.Regular => RegularBikePrice,
+        BikeType.EBike => EBikePrice,
+        _ => 0m
+    };
+
+    private Result<BookingCustomer>? CreateCompanionCustomer(int? companionCustomerId, BikeType? companionBikeType)
+    {
+        if (companionCustomerId is null)
+        {
+            return null;
+        }
+
+        var bikeType = companionBikeType ?? BikeType.None;
+        var bikePrice = GetBikePrice(bikeType);
+        return BookingCustomer.Create(companionCustomerId.Value, bikeType, bikePrice);
+    }
+
+    private decimal CalculateRoomAdditionalCost(RoomType roomType) =>
+        roomType == RoomType.SingleRoom ? SingleRoomSupplementPrice : 0m;
 
     /// <summary>
     /// Updates the payment status of a specific booking.

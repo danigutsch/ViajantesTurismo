@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Results;
@@ -19,24 +20,38 @@ public sealed class Booking : Entity<long>
     /// Initializes a new instance of the <see cref="Booking"/> class.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="customerId">The ID of the customer who made the booking.</param>
-    /// <param name="companionId">The ID of the companion, if any.</param>
-    /// <param name="totalPrice">The total price of the booking.</param>
+    /// <param name="basePrice">The base price per person at the time of booking.</param>
+    /// <param name="roomType">The room type for the booking.</param>
+    /// <param name="roomAdditionalCost">The additional cost for the room (e.g., single supplement).</param>
+    /// <param name="principalCustomer">The principal customer's booking details.</param>
+    /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>
-    private Booking(int tourId, int customerId, int? companionId, decimal totalPrice, string? notes)
+    private Booking(
+        int tourId,
+        decimal basePrice,
+        RoomType roomType,
+        decimal roomAdditionalCost,
+        BookingCustomer principalCustomer,
+        BookingCustomer? companionCustomer,
+        string? notes)
     {
         TourId = tourId;
-        CustomerId = customerId;
-        CompanionId = companionId;
-        TotalPrice = totalPrice;
+        BasePrice = basePrice;
+        RoomType = roomType;
+        RoomAdditionalCost = roomAdditionalCost;
+        PrincipalCustomer = principalCustomer;
+        CompanionCustomer = companionCustomer;
         Notes = notes;
+        TotalPrice = CalculateTotalPrice(basePrice, roomAdditionalCost, principalCustomer, companionCustomer);
     }
 
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
     [UsedImplicitly]
+#pragma warning disable CS8618
     private Booking()
+#pragma warning restore CS8618
     {
     }
 
@@ -46,14 +61,29 @@ public sealed class Booking : Entity<long>
     public int TourId { get; private init; }
 
     /// <summary>
-    /// The ID of the customer who made the booking.
+    /// The base price per person at the time of booking.
     /// </summary>
-    public int CustomerId { get; private init; }
+    public decimal BasePrice { get; private init; }
 
     /// <summary>
-    /// The ID of the companion, if any.
+    /// The room type for the booking (shared by all participants).
     /// </summary>
-    public int? CompanionId { get; private init; }
+    public RoomType RoomType { get; private init; }
+
+    /// <summary>
+    /// The additional cost for the room (e.g., single room supplement).
+    /// </summary>
+    public decimal RoomAdditionalCost { get; private init; }
+
+    /// <summary>
+    /// The principal customer's booking details including bike selection and price.
+    /// </summary>
+    public BookingCustomer PrincipalCustomer { get; private init; }
+
+    /// <summary>
+    /// The companion customer's booking details including bike selection and price, if any.
+    /// </summary>
+    public BookingCustomer? CompanionCustomer { get; private init; }
 
     /// <summary>
     /// The date when the booking was made.
@@ -80,30 +110,67 @@ public sealed class Booking : Entity<long>
     /// </summary>
     public string? Notes { get; private set; }
 
+    private static decimal CalculateTotalPrice(
+        decimal basePrice,
+        decimal roomAdditionalCost,
+        BookingCustomer principalCustomer,
+        BookingCustomer? companionCustomer)
+    {
+        var customerCount = companionCustomer is null ? 1 : 2;
+        var totalPrice = (basePrice * customerCount) + roomAdditionalCost + principalCustomer.BikePrice;
+
+        if (companionCustomer is not null)
+        {
+            totalPrice += companionCustomer.BikePrice;
+        }
+
+        return totalPrice;
+    }
+
     /// <summary>
     /// Creates a new booking with validation and sanitization.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="customerId">The ID of the customer who made the booking.</param>
-    /// <param name="companionId">The ID of the companion, if any.</param>
-    /// <param name="totalPrice">The total price of the booking.</param>
+    /// <param name="basePrice">The base price per person at the time of booking.</param>
+    /// <param name="roomType">The room type for the booking.</param>
+    /// <param name="roomAdditionalCost">The additional cost for the room (e.g., single supplement).</param>
+    /// <param name="principalCustomer">The principal customer's booking details.</param>
+    /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
-    internal static Result<Booking> Create(int tourId, int customerId, int? companionId, decimal totalPrice, string? notes)
+    internal static Result<Booking> Create(
+        int tourId,
+        decimal basePrice,
+        RoomType roomType,
+        decimal roomAdditionalCost,
+        BookingCustomer principalCustomer,
+        BookingCustomer? companionCustomer,
+        string? notes)
     {
-        totalPrice = NumericSanitizer.SanitizePrice(totalPrice);
+        basePrice = NumericSanitizer.SanitizePrice(basePrice);
+        roomAdditionalCost = NumericSanitizer.SanitizePrice(roomAdditionalCost);
         notes = StringSanitizer.SanitizeNotes(notes);
 
         var errors = new ValidationErrors();
 
-        if (totalPrice <= ContractConstants.MinPrice)
+        if (basePrice <= 0)
         {
-            errors.Add(BookingErrors.ZeroOrNegativePrice(totalPrice));
+            errors.Add(BookingErrors.ZeroOrNegativePrice(basePrice));
         }
 
-        if (totalPrice > ContractConstants.MaxPrice)
+        if (basePrice > ContractConstants.MaxPrice)
         {
-            errors.Add(BookingErrors.PriceExceedsMaximum(totalPrice, ContractConstants.MaxPrice));
+            errors.Add(BookingErrors.PriceExceedsMaximum(basePrice, ContractConstants.MaxPrice));
+        }
+
+        if (roomAdditionalCost < 0)
+        {
+            errors.Add(BookingErrors.NegativeRoomCost(roomAdditionalCost));
+        }
+
+        if (roomAdditionalCost > ContractConstants.MaxPrice)
+        {
+            errors.Add(BookingErrors.PriceExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
         }
 
         if (notes?.Length > ContractConstants.MaxBookingNotesLength)
@@ -116,7 +183,7 @@ public sealed class Booking : Entity<long>
             return errors.ToResult<Booking>();
         }
 
-        return new Booking(tourId, customerId, companionId, totalPrice, notes);
+        return new Booking(tourId, basePrice, roomType, roomAdditionalCost, principalCustomer, companionCustomer, notes);
     }
 
     /// <summary>
@@ -194,7 +261,7 @@ public sealed class Booking : Entity<long>
     {
         newPrice = NumericSanitizer.SanitizePrice(newPrice);
 
-        if (newPrice <= ContractConstants.MinPrice)
+        if (newPrice <= 0)
         {
             return BookingErrors.ZeroOrNegativePrice(newPrice);
         }

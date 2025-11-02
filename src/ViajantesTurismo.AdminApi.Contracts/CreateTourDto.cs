@@ -35,25 +35,25 @@ public sealed record CreateTourDto
     /// <summary>
     /// The base price of the tour per person.
     /// </summary>
-    [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+    [Required, Range(0.01, ContractConstants.MaxPrice)]
     public required decimal Price { get; init; }
 
     /// <summary>
     /// The additional price for a single room supplement.
     /// </summary>
-    [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+    [Required, Range(0.01, ContractConstants.MaxPrice)]
     public required decimal SingleRoomSupplementPrice { get; init; }
 
     /// <summary>
     /// The price for renting a regular bike.
     /// </summary>
-    [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+    [Required, Range(0.01, ContractConstants.MaxPrice)]
     public required decimal RegularBikePrice { get; init; }
 
     /// <summary>
     /// The price for renting an e-bike.
     /// </summary>
-    [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+    [Required, Range(0.01, ContractConstants.MaxPrice)]
     public required decimal EBikePrice { get; init; }
 
     /// <summary>

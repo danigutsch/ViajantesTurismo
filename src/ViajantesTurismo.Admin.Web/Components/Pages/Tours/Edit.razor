@@ -286,16 +286,16 @@ else
         [Required]
         public CurrencyDto Currency { get; set; }
 
-        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal Price { get; set; }
 
-        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal SingleRoomSupplementPrice { get; set; }
 
-        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal RegularBikePrice { get; set; }
 
-        [Required, Range(ContractConstants.MinPrice, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal EBikePrice { get; set; }
 
         [Required]

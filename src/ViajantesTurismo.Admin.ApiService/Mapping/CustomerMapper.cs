@@ -9,33 +9,6 @@ namespace ViajantesTurismo.Admin.ApiService.Mapping;
 internal static class CustomerMapper
 {
     /// <summary>
-    /// Maps a <see cref="BikeTypeDto"/> to a <see cref="BikeType"/>.
-    /// </summary>
-    public static BikeType MapToBikeType(BikeTypeDto bikeTypeDto)
-    {
-        return bikeTypeDto switch
-        {
-            BikeTypeDto.None => BikeType.None,
-            BikeTypeDto.Regular => BikeType.Regular,
-            BikeTypeDto.EBike => BikeType.EBike,
-            _ => throw new ArgumentOutOfRangeException(nameof(bikeTypeDto), bikeTypeDto, "Invalid bike type value.")
-        };
-    }
-
-    /// <summary>
-    /// Maps a <see cref="RoomTypeDto"/> to a <see cref="RoomType"/>.
-    /// </summary>
-    public static RoomType MapToRoomType(RoomTypeDto roomTypeDto)
-    {
-        return roomTypeDto switch
-        {
-            RoomTypeDto.SingleRoom => RoomType.SingleRoom,
-            RoomTypeDto.DoubleRoom => RoomType.DoubleRoom,
-            _ => throw new ArgumentOutOfRangeException(nameof(roomTypeDto), roomTypeDto, "Invalid room type value.")
-        };
-    }
-
-    /// <summary>
     /// Maps a <see cref="BedTypeDto"/> to a <see cref="BedType"/>.
     /// </summary>
     public static BedType MapToBedType(BedTypeDto bedTypeDto)
@@ -71,7 +44,7 @@ internal static class CustomerMapper
         return PhysicalInfo.Create(
             dto.WeightKg,
             dto.HeightCentimeters,
-            MapToBikeType(dto.BikeType)).Value;
+            BookingMapper.MapToBikeType(dto.BikeType)).Value;
     }
 
     /// <summary>
@@ -80,7 +53,7 @@ internal static class CustomerMapper
     public static AccommodationPreferences MapToAccommodationPreferences(AccommodationPreferencesDto dto)
     {
         return AccommodationPreferences.Create(
-            MapToRoomType(dto.RoomType),
+            BookingMapper.MapToRoomType(dto.RoomType),
             MapToBedType(dto.BedType),
             dto.CompanionId).Value;
     }
