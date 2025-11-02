@@ -1,5 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -15,6 +16,7 @@ public sealed class CustomerManagementSteps
     private EmergencyContact _emergencyContact = null!;
     private MedicalInfo _medicalInfo = null!;
     private Customer? _customer;
+    private Result<PersonalInfo>? _personalInfoResult;
 
     [Given(@"I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
@@ -267,5 +269,79 @@ public sealed class CustomerManagementSteps
     {
         Assert.NotNull(_customer);
         Assert.Equal(_medicalInfo, _customer.MedicalInfo);
+    }
+
+    [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")] 
+    public void GivenIHavePersonalInformationForSanitizationWithFirstNameAndLastName(string firstName, string lastName)
+    {
+        _personalInfoResult = PersonalInfo.Create(
+            firstName,
+            lastName,
+            "Male",
+            new DateTime(1990, 1, 1),
+            "American",
+            "Engineer",
+            TimeProvider.System);
+    }
+
+    [When(@"I create personal information from sanitization inputs")]
+    public void WhenICreatePersonalInformationFromSanitizationInputs()
+    {
+        if (_personalInfoResult?.IsSuccess == true)
+        {
+            _personalInfo = _personalInfoResult.Value.Value;
+        }
+    }
+
+    [Then(@"the personal information should be created successfully from sanitization")]
+    public void ThenThePersonalInformationShouldBeCreatedSuccessfullyFromSanitization()
+    {
+        Assert.True(_personalInfoResult?.IsSuccess);
+        Assert.NotNull(_personalInfo);
+    }
+
+    [Then(@"the sanitized first name should be ""(.*)""")] 
+    public void ThenTheSanitizedFirstNameShouldBe(string expectedFirstName)
+    {
+        Assert.Equal(expectedFirstName, _personalInfo.FirstName);
+    }
+
+    [Then(@"the sanitized last name should be ""(.*)""")] 
+    public void ThenTheSanitizedLastNameShouldBe(string expectedLastName)
+    {
+        Assert.Equal(expectedLastName, _personalInfo.LastName);
+    }
+
+    [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")] 
+    public void GivenIHaveAddressForSanitizationWithCityAndCountry(string city, string country)
+    {
+        _address = new Address(
+            "123 Main St",
+            null,
+            "Downtown",
+            "12345",
+            city,
+            "State",
+            country);
+    }
+
+    [When(@"I create address information from sanitization inputs")]
+#pragma warning disable CA1822
+    public void WhenICreateAddressInformationFromSanitizationInputs()
+#pragma warning restore CA1822
+    {
+        // Address is already created in the Given step
+    }
+
+    [Then(@"the sanitized address city should be ""(.*)""")] 
+    public void ThenTheSanitizedAddressCityShouldBe(string expectedCity)
+    {
+        Assert.Equal(expectedCity, _address.City);
+    }
+
+    [Then(@"the sanitized address country should be ""(.*)""")] 
+    public void ThenTheSanitizedAddressCountryShouldBe(string expectedCountry)
+    {
+        Assert.Equal(expectedCountry, _address.Country);
     }
 }

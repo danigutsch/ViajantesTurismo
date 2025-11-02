@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Common;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -16,10 +17,10 @@ public sealed class ContactInfo
     /// <param name="facebook">The Facebook profile.</param>
     public ContactInfo(string email, string mobile, string? instagram, string? facebook)
     {
-        Email = email;
-        Mobile = mobile;
-        Instagram = instagram;
-        Facebook = facebook;
+        Email = StringSanitizer.Sanitize(email);
+        Mobile = StringSanitizer.Sanitize(mobile);
+        Instagram = StringSanitizer.Sanitize(instagram);
+        Facebook = StringSanitizer.Sanitize(facebook);
     }
 
     /// <summary>Email address.</summary>

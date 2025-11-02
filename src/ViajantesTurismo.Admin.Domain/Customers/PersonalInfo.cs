@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Common;
 using ViajantesTurismo.Common.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -60,6 +61,12 @@ public sealed class PersonalInfo
         TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
+
+        firstName = StringSanitizer.Sanitize(firstName);
+        lastName = StringSanitizer.Sanitize(lastName);
+        gender = StringSanitizer.Sanitize(gender);
+        nationality = StringSanitizer.Sanitize(nationality);
+        profession = StringSanitizer.Sanitize(profession);
 
         var errors = new ValidationErrors();
 

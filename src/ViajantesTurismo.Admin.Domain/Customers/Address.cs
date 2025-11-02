@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Common;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -19,13 +20,13 @@ public sealed class Address
     /// <param name="country">The country.</param>
     public Address(string street, string? complement, string neighborhood, string postalCode, string city, string state, string country)
     {
-        Street = street;
-        Complement = complement;
-        Neighborhood = neighborhood;
-        PostalCode = postalCode;
-        City = city;
-        State = state;
-        Country = country;
+        Street = StringSanitizer.Sanitize(street);
+        Complement = StringSanitizer.Sanitize(complement);
+        Neighborhood = StringSanitizer.Sanitize(neighborhood);
+        PostalCode = StringSanitizer.Sanitize(postalCode);
+        City = StringSanitizer.Sanitize(city);
+        State = StringSanitizer.Sanitize(state);
+        Country = StringSanitizer.Sanitize(country);
     }
 
     /// <summary>Street address and number.</summary>

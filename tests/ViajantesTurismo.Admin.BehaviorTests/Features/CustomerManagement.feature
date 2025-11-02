@@ -55,3 +55,16 @@ So that customer records are complete and accurate
         Given I have an existing customer
         When I update the customer with new medical information
         Then the customer medical information should be updated
+
+    Scenario: Customer name with whitespace is trimmed
+        Given I have personal information for sanitization with first name "  John  " and last name "  Doe  "
+        When I create personal information from sanitization inputs
+        Then the personal information should be created successfully from sanitization
+        And the sanitized first name should be "John"
+        And the sanitized last name should be "Doe"
+
+    Scenario: Customer address with whitespace is trimmed
+        Given I have address for sanitization with city "  New York  " and country "  USA  "
+        When I create address information from sanitization inputs
+        Then the sanitized address city should be "New York"
+        And the sanitized address country should be "USA"
