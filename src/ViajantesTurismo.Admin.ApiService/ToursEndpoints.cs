@@ -53,7 +53,7 @@ internal static class ToursEndpoints
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
     {
-        var currency = MapCurrencyDtoToCurrency(tourDto.Currency);
+        var currency = EnumMapper.MapToCurrency(tourDto.Currency);
 
         var result = Tour.Create(
             tourDto.Identifier,
@@ -115,7 +115,7 @@ internal static class ToursEndpoints
             return TourErrors.TourNotFound(id).ToNotFound();
         }
 
-        var currency = MapCurrencyDtoToCurrency(tourDto.Currency);
+        var currency = EnumMapper.MapToCurrency(tourDto.Currency);
 
         var basicInfoResult = tour.UpdateDetails(tourDto.Identifier, tourDto.Name);
         if (basicInfoResult.IsFailure)
@@ -150,16 +150,5 @@ internal static class ToursEndpoints
         await unitOfWork.SaveEntities(ct);
 
         return TypedResults.NoContent();
-    }
-
-    private static Currency MapCurrencyDtoToCurrency(CurrencyDto currencyDto)
-    {
-        return currencyDto switch
-        {
-            CurrencyDto.Real => Currency.Real,
-            CurrencyDto.Euro => Currency.Euro,
-            CurrencyDto.UsDollar => Currency.UsDollar,
-            _ => throw new InvalidEnumArgumentException(nameof(currencyDto), (int)currencyDto, typeof(Currency))
-        };
     }
 }

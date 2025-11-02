@@ -74,7 +74,7 @@ internal static class CustomerEndpoints
         [FromServices] TimeProvider timeProvider,
         CancellationToken ct)
     {
-        var personalInfo = PersonalInfo.Create(
+        var personalInfoResult = PersonalInfo.Create(
             dto.PersonalInfo.FirstName,
             dto.PersonalInfo.LastName,
             dto.PersonalInfo.Gender,
@@ -83,15 +83,34 @@ internal static class CustomerEndpoints
             dto.PersonalInfo.Profession,
             timeProvider);
 
-        var identificationInfo = IdentificationInfo.Create(
+        var identificationInfoResult = IdentificationInfo.Create(
             dto.IdentificationInfo.NationalId,
-            dto.IdentificationInfo.IdNationality).Value;
+            dto.IdentificationInfo.IdNationality);
 
-        var contactInfo = ContactInfo.Create(
+        var contactInfoResult = ContactInfo.Create(
             dto.ContactInfo.Email,
             dto.ContactInfo.Mobile,
             dto.ContactInfo.Instagram,
-            dto.ContactInfo.Facebook).Value;
+            dto.ContactInfo.Facebook);
+
+        var errors = new ViajantesTurismo.Common.Results.ValidationErrors();
+        if (!personalInfoResult.IsSuccess)
+        {
+            errors.Add(personalInfoResult);
+        }
+        if (!identificationInfoResult.IsSuccess)
+        {
+            errors.Add(identificationInfoResult);
+        }
+        if (!contactInfoResult.IsSuccess)
+        {
+            errors.Add(contactInfoResult);
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<GetCustomerDto>().ToValidationProblem();
+        }
 
         var address = new Address(
             dto.Address.Street,
@@ -105,11 +124,11 @@ internal static class CustomerEndpoints
         var physicalInfo = new PhysicalInfo(
             dto.PhysicalInfo.WeightKg,
             dto.PhysicalInfo.HeightCentimeters,
-            (BikeType)dto.PhysicalInfo.BikeType);
+            EnumMapper.MapToBikeType(dto.PhysicalInfo.BikeType));
 
         var accommodationPreferences = new AccommodationPreferences(
-            (RoomType)dto.AccommodationPreferences.RoomType,
-            (BedType)dto.AccommodationPreferences.BedType,
+            EnumMapper.MapToRoomType(dto.AccommodationPreferences.RoomType),
+            EnumMapper.MapToBedType(dto.AccommodationPreferences.BedType),
             dto.AccommodationPreferences.CompanionId);
 
         var emergencyContact = new EmergencyContact(
@@ -121,9 +140,9 @@ internal static class CustomerEndpoints
             dto.MedicalInfo.AdditionalInfo);
 
         var customer = new Customer(
-            personalInfo.Value,
-            identificationInfo,
-            contactInfo,
+            personalInfoResult.Value,
+            identificationInfoResult.Value,
+            contactInfoResult.Value,
             address,
             physicalInfo,
             accommodationPreferences,
@@ -161,24 +180,43 @@ internal static class CustomerEndpoints
             return TypedResults.NotFound();
         }
 
-        var personalInfo = PersonalInfo.Create(
+        var personalInfoResult = PersonalInfo.Create(
             dto.PersonalInfo.FirstName,
             dto.PersonalInfo.LastName,
             dto.PersonalInfo.Gender,
             dto.PersonalInfo.BirthDate.ToUniversalTime(),
             dto.PersonalInfo.Nationality,
             dto.PersonalInfo.Profession,
-            timeProvider).Value;
+            timeProvider);
 
-        var identificationInfo = IdentificationInfo.Create(
+        var identificationInfoResult = IdentificationInfo.Create(
             dto.IdentificationInfo.NationalId,
-            dto.IdentificationInfo.IdNationality).Value;
+            dto.IdentificationInfo.IdNationality);
 
-        var contactInfo = ContactInfo.Create(
+        var contactInfoResult = ContactInfo.Create(
             dto.ContactInfo.Email,
             dto.ContactInfo.Mobile,
             dto.ContactInfo.Instagram,
-            dto.ContactInfo.Facebook).Value;
+            dto.ContactInfo.Facebook);
+
+        var errors = new ViajantesTurismo.Common.Results.ValidationErrors();
+        if (!personalInfoResult.IsSuccess)
+        {
+            errors.Add(personalInfoResult);
+        }
+        if (!identificationInfoResult.IsSuccess)
+        {
+            errors.Add(identificationInfoResult);
+        }
+        if (!contactInfoResult.IsSuccess)
+        {
+            errors.Add(contactInfoResult);
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult().ToValidationProblem();
+        }
 
         var address = new Address(
             dto.Address.Street,
@@ -192,11 +230,11 @@ internal static class CustomerEndpoints
         var physicalInfo = new PhysicalInfo(
             dto.PhysicalInfo.WeightKg,
             dto.PhysicalInfo.HeightCentimeters,
-            (BikeType)dto.PhysicalInfo.BikeType);
+            EnumMapper.MapToBikeType(dto.PhysicalInfo.BikeType));
 
         var accommodationPreferences = new AccommodationPreferences(
-            (RoomType)dto.AccommodationPreferences.RoomType,
-            (BedType)dto.AccommodationPreferences.BedType,
+            EnumMapper.MapToRoomType(dto.AccommodationPreferences.RoomType),
+            EnumMapper.MapToBedType(dto.AccommodationPreferences.BedType),
             dto.AccommodationPreferences.CompanionId);
 
         var emergencyContact = new EmergencyContact(
@@ -207,9 +245,9 @@ internal static class CustomerEndpoints
             dto.MedicalInfo.Allergies,
             dto.MedicalInfo.AdditionalInfo);
 
-        customer.UpdatePersonalInfo(personalInfo);
-        customer.UpdateIdentificationInfo(identificationInfo);
-        customer.UpdateContactInfo(contactInfo);
+        customer.UpdatePersonalInfo(personalInfoResult.Value);
+        customer.UpdateIdentificationInfo(identificationInfoResult.Value);
+        customer.UpdateContactInfo(contactInfoResult.Value);
         customer.UpdateAddress(address);
         customer.UpdatePhysicalInfo(physicalInfo);
         customer.UpdateAccommodationPreferences(accommodationPreferences);

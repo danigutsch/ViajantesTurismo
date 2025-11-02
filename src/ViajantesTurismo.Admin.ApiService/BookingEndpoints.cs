@@ -173,7 +173,7 @@ internal static class BookingEndpoints
 
         tour.UpdateBookingNotes(id, dto.Notes);
 
-        var targetStatus = (BookingStatus)dto.Status;
+        var targetStatus = EnumMapper.MapToBookingStatus(dto.Status);
         var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
         if (booking is not null && booking.Status != targetStatus)
         {
@@ -191,7 +191,7 @@ internal static class BookingEndpoints
             }
         }
 
-        var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, (PaymentStatus)dto.PaymentStatus);
+        var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, EnumMapper.MapToPaymentStatus(dto.PaymentStatus));
         if (paymentUpdateResult.IsFailure)
         {
             paymentUpdateResult.ToNotFound();
