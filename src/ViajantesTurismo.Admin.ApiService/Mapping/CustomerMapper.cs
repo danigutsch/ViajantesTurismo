@@ -68,10 +68,10 @@ internal static class CustomerMapper
     /// </summary>
     public static PhysicalInfo MapToPhysicalInfo(PhysicalInfoDto dto)
     {
-        return new PhysicalInfo(
+        return PhysicalInfo.Create(
             dto.WeightKg,
             dto.HeightCentimeters,
-            MapToBikeType(dto.BikeType));
+            MapToBikeType(dto.BikeType)).Value;
     }
 
     /// <summary>
@@ -100,8 +100,8 @@ internal static class CustomerMapper
     /// </summary>
     public static MedicalInfo MapToMedicalInfo(MedicalInfoDto dto)
     {
-        return new MedicalInfo(
+        return MedicalInfo.Create(
             dto.Allergies,
-            dto.AdditionalInfo);
+            dto.AdditionalInfo).Value;
     }
 }

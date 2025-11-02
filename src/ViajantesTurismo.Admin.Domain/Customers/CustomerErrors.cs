@@ -350,4 +350,42 @@ public static class CustomerErrors
         detail: "Emergency contact mobile cannot exceed 64 characters.",
         field: "Mobile",
         message: "Emergency contact mobile cannot exceed 64 characters.");
+
+    // PhysicalInfo validation errors
+    /// <summary>
+    /// Indicates that the weight is invalid (must be between 1 and 500 kg).
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PhysicalInfo> InvalidWeight() => Result<PhysicalInfo>.Invalid(
+        detail: "Weight must be between 1 and 500 kilograms.",
+        field: "WeightKg",
+        message: "Weight must be between 1 and 500 kilograms.");
+
+    /// <summary>
+    /// Indicates that the height is invalid (must be between 50 and 300 cm).
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PhysicalInfo> InvalidHeight() => Result<PhysicalInfo>.Invalid(
+        detail: "Height must be between 50 and 300 centimeters.",
+        field: "HeightCentimeters",
+        message: "Height must be between 50 and 300 centimeters.");
+
+    // MedicalInfo validation errors
+    /// <summary>
+    /// Indicates that allergies text exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<MedicalInfo> AllergiesTooLong() => Result<MedicalInfo>.Invalid(
+        detail: "Allergies cannot exceed 500 characters.",
+        field: "Allergies",
+        message: "Allergies cannot exceed 500 characters.");
+
+    /// <summary>
+    /// Indicates that additional medical info exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<MedicalInfo> AdditionalInfoTooLong() => Result<MedicalInfo>.Invalid(
+        detail: "Additional information cannot exceed 500 characters.",
+        field: "AdditionalInfo",
+        message: "Additional information cannot exceed 500 characters.");
 }

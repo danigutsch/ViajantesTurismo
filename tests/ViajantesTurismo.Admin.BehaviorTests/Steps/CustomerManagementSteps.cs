@@ -35,7 +35,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have valid physical information")]
     public void GivenIHaveValidPhysicalInformation()
     {
-        context.PhysicalInfo = new PhysicalInfo(75.5m, 180, BikeType.Regular);
+        context.PhysicalInfo = PhysicalInfo.Create(75.5m, 180, BikeType.Regular).Value;
     }
 
     [Given(@"I have valid accommodation preferences")]
@@ -53,7 +53,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have valid medical information")]
     public void GivenIHaveValidMedicalInformation()
     {
-        context.MedicalInfo = new MedicalInfo("Peanuts", "None");
+        context.MedicalInfo = MedicalInfo.Create("Peanuts", "None").Value;
     }
 
     [Given(@"I have an existing customer")]
@@ -72,10 +72,10 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.IdentificationInfoResult = IdentificationInfo.Create("123456789", "American");
         context.ContactInfoResult = ContactInfo.Create("john.smith@example.com", "+1234567890", null, null);
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
-        context.PhysicalInfo = new PhysicalInfo(75m, 180, BikeType.Regular);
+        context.PhysicalInfo = PhysicalInfo.Create(75m, 180, BikeType.Regular).Value;
         context.AccommodationPreferences = new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null);
         context.EmergencyContactResult = EmergencyContact.Create("Emergency Contact", "+1111111111");
-        context.MedicalInfo = new MedicalInfo(null, null);
+        context.MedicalInfo = MedicalInfo.Create(null, null).Value;
 
         context.Customer = new Customer(
             context.PersonalInfo,
@@ -156,7 +156,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I update the customer with new physical information")]
     public void WhenIUpdateTheCustomerWithNewPhysicalInformation()
     {
-        var newPhysicalInfo = new PhysicalInfo(68m, 165, BikeType.EBike);
+        var newPhysicalInfo = PhysicalInfo.Create(68m, 165, BikeType.EBike).Value;
         context.Customer.UpdatePhysicalInfo(newPhysicalInfo);
         context.PhysicalInfo = newPhysicalInfo;
     }
@@ -180,7 +180,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I update the customer with new medical information")]
     public void WhenIUpdateTheCustomerWithNewMedicalInformation()
     {
-        var newMedicalInfo = new MedicalInfo("Lactose", "Requires medication");
+        var newMedicalInfo = MedicalInfo.Create("Lactose", "Requires medication").Value;
         context.Customer.UpdateMedicalInfo(newMedicalInfo);
         context.MedicalInfo = newMedicalInfo;
     }
@@ -442,7 +442,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have medical info with allergies ""(.*)"" and additional info ""(.*)""")]
     public void GivenIHaveMedicalInfoWithAllergiesAndAdditionalInfo(string allergies, string additionalInfo)
     {
-        context.MedicalInfo = new MedicalInfo(allergies, additionalInfo);
+        context.MedicalInfo = MedicalInfo.Create(allergies, additionalInfo).Value;
     }
 
     [When(@"I create medical information")]

@@ -78,100 +78,100 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             IdentificationInfo.Create("123456789", "Brazilian").Value,
             ContactInfo.Create("alice@example.com", "+5511999999999", "@alice", "alice.fb").Value,
             Address.Create("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "Brazil").Value,
-            new PhysicalInfo(60, 165, BikeType.Regular),
+            PhysicalInfo.Create(60, 165, BikeType.Regular).Value,
             new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null),
             EmergencyContact.Create("Bob Smith", "+5511988888888").Value,
-            new MedicalInfo("Peanuts", null)
+            MedicalInfo.Create("Peanuts", null).Value
         ),
         new(
             PersonalInfo.Create("Bob", "Johnson", "Male", new DateTime(1985, 5, 15).ToUniversalTime(), "American", "Teacher", TimeProvider.System).Value,
             IdentificationInfo.Create("987654321", "American").Value,
             ContactInfo.Create("bob@example.com", "+15551234567", null, "bob.johnson").Value,
             Address.Create("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "USA").Value,
-            new PhysicalInfo(75, 180, BikeType.EBike),
+            PhysicalInfo.Create(75, 180, BikeType.EBike).Value,
             new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null),
             EmergencyContact.Create("Jane Johnson", "+15559876543").Value,
-            new MedicalInfo(null, null)
+            MedicalInfo.Create(null, null).Value
         ),
         new(
             PersonalInfo.Create("Carla", "Santos", "Female", new DateTime(1995, 10, 20).ToUniversalTime(), "Portuguese", "Doctor", TimeProvider.System).Value,
             IdentificationInfo.Create("456789123", "Portuguese").Value,
             ContactInfo.Create("carla@example.com", "+351912345678", "@carla_santos", null).Value,
             Address.Create("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "Portugal").Value,
-            new PhysicalInfo(55, 160, BikeType.Regular),
+            PhysicalInfo.Create(55, 160, BikeType.Regular).Value,
             new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null),
             EmergencyContact.Create("Pedro Santos", "+351987654321").Value,
-            new MedicalInfo("Shellfish", null)
+            MedicalInfo.Create("Shellfish", null).Value
         ),
         new(
             PersonalInfo.Create("David", "Lee", "Male", new DateTime(1980, 3, 10).ToUniversalTime(), "Korean", "Chef", TimeProvider.System).Value,
             IdentificationInfo.Create("789123456", "Korean").Value,
             ContactInfo.Create("david@example.com", "+821012345678", null, "david.lee").Value,
             Address.Create("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea").Value,
-            new PhysicalInfo(70, 175, BikeType.None),
+            PhysicalInfo.Create(70, 175, BikeType.None).Value,
             new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null),
             EmergencyContact.Create("Sarah Lee", "+821098765432").Value,
-            new MedicalInfo("Dairy", null)
+            MedicalInfo.Create("Dairy", null).Value
         ),
         new(
             PersonalInfo.Create("Elena", "Rodriguez", "Female", new DateTime(1992, 7, 5).ToUniversalTime(), "Spanish", "Artist", TimeProvider.System).Value,
             IdentificationInfo.Create("321654987", "Spanish").Value,
             ContactInfo.Create("elena@example.com", "+34612345678", "@elena_art", null).Value,
             Address.Create("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "Spain").Value,
-            new PhysicalInfo(58, 168, BikeType.EBike),
+            PhysicalInfo.Create(58, 168, BikeType.EBike).Value,
             new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null),
             EmergencyContact.Create("Miguel Rodriguez", "+34698765432").Value,
-            new MedicalInfo("Pollen", null)
+            MedicalInfo.Create("Pollen", null).Value
         ),
         new(
             PersonalInfo.Create("Frank", "Muller", "Male", new DateTime(1975, 12, 25).ToUniversalTime(), "German", "Mechanic", TimeProvider.System).Value,
             IdentificationInfo.Create("654987321", "German").Value,
             ContactInfo.Create("frank@example.com", "+491512345678", null, "frank.muller").Value,
             Address.Create("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "Germany").Value,
-            new PhysicalInfo(80, 185, BikeType.Regular),
+            PhysicalInfo.Create(80, 185, BikeType.Regular).Value,
             new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null),
             EmergencyContact.Create("Anna Muller", "+491598765432").Value,
-            new MedicalInfo(null, null)
+            MedicalInfo.Create(null, null).Value
         ),
         new(
             PersonalInfo.Create("Gina", "Patel", "Female", new DateTime(1988, 9, 30).ToUniversalTime(), "Indian", "Accountant", TimeProvider.System).Value,
             IdentificationInfo.Create("147258369", "Indian").Value,
             ContactInfo.Create("gina@example.com", "+919876543210", "@gina_patel", null).Value,
             Address.Create("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India").Value,
-            new PhysicalInfo(62, 162, BikeType.None),
+            PhysicalInfo.Create(62, 162, BikeType.None).Value,
             new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null),
             EmergencyContact.Create("Raj Patel", "+919876543211").Value,
-            new MedicalInfo("Nuts", null)
+            MedicalInfo.Create("Nuts", null).Value
         ),
         new(
             PersonalInfo.Create("Hans", "Nielsen", "Male", new DateTime(1998, 4, 14).ToUniversalTime(), "Danish", "Student", TimeProvider.System).Value,
             IdentificationInfo.Create("963852741", "Danish").Value,
             ContactInfo.Create("hans@example.com", "+4520123456", null, "hans.nielsen").Value,
             Address.Create("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "Denmark").Value,
-            new PhysicalInfo(68, 178, BikeType.EBike),
+            PhysicalInfo.Create(68, 178, BikeType.EBike).Value,
             new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null),
             EmergencyContact.Create("Lise Nielsen", "+4520987654").Value,
-            new MedicalInfo("Gluten", null)
+            MedicalInfo.Create("Gluten", null).Value
         ),
         new(
             PersonalInfo.Create("Irina", "Petrov", "Female", new DateTime(1983, 11, 8).ToUniversalTime(), "Russian", "Scientist", TimeProvider.System).Value,
             IdentificationInfo.Create("852741963", "Russian").Value,
             ContactInfo.Create("irina@example.com", "+79123456789", "@irina_petrov", null).Value,
             Address.Create("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "Russia").Value,
-            new PhysicalInfo(56, 170, BikeType.Regular),
+            PhysicalInfo.Create(56, 170, BikeType.Regular).Value,
             new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null),
             EmergencyContact.Create("Alex Petrov", "+79234567890").Value,
-            new MedicalInfo(null, null)
+            MedicalInfo.Create(null, null).Value
         ),
         new(
             PersonalInfo.Create("Jack", "Brown", "Male", new DateTime(1991, 6, 22).ToUniversalTime(), "Australian", "Photographer", TimeProvider.System).Value,
             IdentificationInfo.Create("741963852", "Australian").Value,
             ContactInfo.Create("jack@example.com", "+61412345678", null, "jack.brown").Value,
             Address.Create("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia").Value,
-            new PhysicalInfo(72, 182, BikeType.None),
+            PhysicalInfo.Create(72, 182, BikeType.None).Value,
             new AccommodationPreferences(RoomType.DoubleRoom, BedType.DoubleBed, null),
             EmergencyContact.Create("Emma Brown", "+61498765432").Value,
-            new MedicalInfo("Seafood", null)
+            MedicalInfo.Create("Seafood", null).Value
         )
     ];
 
