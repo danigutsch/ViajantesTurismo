@@ -108,7 +108,10 @@ public sealed class PersonalInfo
             errors.Add(ProfessionTooLong());
         }
 
-        if (birthDate > timeProvider.GetUtcNow().Date)
+        var currentDate = timeProvider.GetUtcNow().Date;
+        var birthDateOnly = birthDate.Date;
+        
+        if (birthDateOnly > currentDate)
         {
             errors.Add(FutureBirthDate());
         }

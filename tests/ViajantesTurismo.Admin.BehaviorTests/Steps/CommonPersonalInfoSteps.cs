@@ -188,7 +188,7 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = "Male";
-        _birthDate = DateTime.Today.AddDays(1);
+        _birthDate = DateTime.UtcNow.Date.AddDays(1);
         _nationality = "American";
         _profession = "Software Engineer";
     }
@@ -199,7 +199,7 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = "Male";
-        _birthDate = DateTime.Today;
+        _birthDate = DateTime.UtcNow.Date;
         _nationality = "American";
         _profession = "Software Engineer";
     }
@@ -210,7 +210,7 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = "Male";
-        _birthDate = DateTime.Today.AddDays(1);
+        _birthDate = DateTime.UtcNow.Date.AddDays(1);
         _nationality = "American";
         _profession = "Software Engineer";
     }
@@ -221,7 +221,7 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = "Male";
-        _birthDate = DateTime.Today.AddDays(-1);
+        _birthDate = DateTime.UtcNow.Date.AddDays(-1);
         _nationality = "American";
         _profession = "Software Engineer";
     }
@@ -232,7 +232,7 @@ public sealed class CommonPersonalInfoSteps
         _firstName = "John";
         _lastName = "Smith";
         _gender = "Male";
-        _birthDate = DateTime.Today.AddYears(-years);
+        _birthDate = DateTime.UtcNow.Date.AddYears(-years);
         _nationality = "American";
         _profession = "Software Engineer";
     }

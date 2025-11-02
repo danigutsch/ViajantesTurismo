@@ -167,7 +167,51 @@ public sealed class TourManagementSteps
         decimal regularBike,
         decimal eBike)
     {
-        _tour!.UpdatePricing(singleRoom, regularBike, eBike, Currency.UsDollar);
+        _result = _tour!.UpdatePricing(singleRoom, regularBike, eBike, Currency.UsDollar);
+    }
+
+    [When(@"I try to update the base price to (.*)")]
+    public void WhenITryToUpdateTheBasePriceTo(decimal newPrice)
+    {
+        _result = _tour!.UpdateBasePrice(newPrice);
+    }
+
+    [When(@"I try to update the identifier to ""(.*)"" and name to ""(.*)""")]
+    public void WhenITryToUpdateTheIdentifierToAndNameTo(string newIdentifier, string newName)
+    {
+        _result = _tour!.UpdateBasicInfo(newIdentifier, newName);
+    }
+
+    [When(@"I try to update the identifier to a string longer than 128 characters")]
+    public void WhenITryToUpdateTheIdentifierToAStringLongerThan128Characters()
+    {
+        var longIdentifier = new string('A', 129);
+        _result = _tour!.UpdateBasicInfo(longIdentifier, "Valid Name");
+    }
+
+    [When(@"I try to update the name to a string longer than 128 characters")]
+    public void WhenITryToUpdateTheNameToAStringLongerThan128Characters()
+    {
+        var longName = new string('A', 129);
+        _result = _tour!.UpdateBasicInfo("VALID2024", longName);
+    }
+
+    [When(@"I try to update pricing with single room (.*)")]
+    public void WhenITryToUpdatePricingWithSingleRoom(decimal singleRoom)
+    {
+        _result = _tour!.UpdatePricing(singleRoom, 100.00m, 200.00m, Currency.UsDollar);
+    }
+
+    [When(@"I try to update pricing with regular bike (.*)")]
+    public void WhenITryToUpdatePricingWithRegularBike(decimal regularBike)
+    {
+        _result = _tour!.UpdatePricing(500.00m, regularBike, 200.00m, Currency.UsDollar);
+    }
+
+    [When(@"I try to update pricing with e-bike (.*)")]
+    public void WhenITryToUpdatePricingWithEBike(decimal eBike)
+    {
+        _result = _tour!.UpdatePricing(500.00m, 100.00m, eBike, Currency.UsDollar);
     }
 
     [Then(@"the tour should be created successfully")]
@@ -252,5 +296,54 @@ public sealed class TourManagementSteps
         Assert.Equal(600.00m, _tour!.SingleRoomSupplementPrice);
         Assert.Equal(150.00m, _tour.RegularBikePrice);
         Assert.Equal(250.00m, _tour.EBikePrice);
+    }
+
+    [Then(@"the tour creation should fail with validation error for ""(.*)""")]
+    public void ThenTheTourCreationShouldFailWithValidationErrorFor(string fieldName)
+    {
+        Assert.NotNull(_result);
+        Assert.IsType<Result<Tour>>(_result);
+        var result = (Result<Tour>)_result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+    }
+
+    [Then(@"the schedule update should fail with validation error for ""(.*)""")]
+    public void ThenTheScheduleUpdateShouldFailWithValidationErrorFor(string fieldName)
+    {
+        Assert.NotNull(_result);
+        Assert.IsType<Result>(_result);
+        var result = (Result)_result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+    }
+
+    [Then(@"the price update should fail")]
+    public void ThenThePriceUpdateShouldFail()
+    {
+        Assert.NotNull(_result);
+        Assert.IsType<Result>(_result);
+        var result = (Result)_result;
+        Assert.False(result.IsSuccess);
+    }
+
+    [Then(@"the basic info update should fail with validation error for ""(.*)""")]
+    public void ThenTheBasicInfoUpdateShouldFailWithValidationErrorFor(string fieldName)
+    {
+        Assert.NotNull(_result);
+        Assert.IsType<Result>(_result);
+        var result = (Result)_result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+    }
+
+    [Then(@"the pricing update should fail with validation error for ""(.*)""")]
+    public void ThenThePricingUpdateShouldFailWithValidationErrorFor(string fieldName)
+    {
+        Assert.NotNull(_result);
+        Assert.IsType<Result>(_result);
+        var result = (Result)_result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 }

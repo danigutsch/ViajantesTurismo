@@ -53,3 +53,78 @@ So that tours have valid and accurate information
         Given an existing tour
         When I update pricing with single room 600.00, regular bike 150.00, e-bike 250.00
         Then the tour pricing should reflect all updates
+
+    Scenario: Cannot create tour with duration too short
+        Given I have tour dates from "2025-06-01" to "2025-06-03"
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "schedule"
+
+    Scenario: Cannot update schedule with duration too short
+        Given an existing tour with dates from "2025-06-01" to "2025-06-10"
+        When I try to update the schedule to "2025-07-01" to "2025-07-03"
+        Then the schedule update should fail with validation error for "schedule"
+
+    Scenario: Cannot update base price with negative value
+        Given an existing tour with base price 2000.00
+        When I try to update the base price to -100.00
+        Then the price update should fail
+
+    Scenario: Cannot update base price exceeding maximum
+        Given an existing tour with base price 2000.00
+        When I try to update the base price to 100001.00
+        Then the price update should fail
+
+    Scenario: Update base price to zero succeeds
+        Given an existing tour with base price 2000.00
+        When I update the base price to 0.00
+        Then the tour base price should be 0.00
+
+    Scenario: Cannot update basic info with empty identifier
+        Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure"
+        When I try to update the identifier to "" and name to "New Name"
+        Then the basic info update should fail with validation error for "identifier"
+
+    Scenario: Cannot update basic info with empty name
+        Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure"
+        When I try to update the identifier to "CUBA2025" and name to ""
+        Then the basic info update should fail with validation error for "name"
+
+    Scenario: Cannot update basic info with identifier too long
+        Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure"
+        When I try to update the identifier to a string longer than 128 characters
+        Then the basic info update should fail with validation error for "identifier"
+
+    Scenario: Cannot update basic info with name too long
+        Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure"
+        When I try to update the name to a string longer than 128 characters
+        Then the basic info update should fail with validation error for "name"
+
+    Scenario: Cannot update pricing with negative single room supplement
+        Given an existing tour
+        When I try to update pricing with single room -100.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with negative regular bike price
+        Given an existing tour
+        When I try to update pricing with regular bike -50.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with negative e-bike price
+        Given an existing tour
+        When I try to update pricing with e-bike -75.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with single room supplement exceeding maximum
+        Given an existing tour
+        When I try to update pricing with single room 100001.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with regular bike price exceeding maximum
+        Given an existing tour
+        When I try to update pricing with regular bike 100001.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with e-bike price exceeding maximum
+        Given an existing tour
+        When I try to update pricing with e-bike 100001.00
+        Then the pricing update should fail with validation error for "price"
