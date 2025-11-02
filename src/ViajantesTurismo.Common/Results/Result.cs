@@ -2,6 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ViajantesTurismo.Common.Results;
 
+#pragma warning disable CA1000 // Result pattern requires static factory methods
+
 /// <summary>
 /// Represents the result of an operation that can succeed or fail.
 /// Used instead of exceptions for business rule validation.
@@ -222,9 +224,7 @@ public readonly struct Result : IEquatable<Result>
 /// Used instead of exceptions for business rule validation.
 /// </summary>
 /// <typeparam name="T">The type of the value returned on success.</typeparam>
-#pragma warning disable CA1000 // Do not declare static members on generic types - this is the Result pattern
 public readonly struct Result<T> : IEquatable<Result<T>>
-#pragma warning restore CA1000
 {
     private readonly T? _value;
     private readonly ResultError? _error;
@@ -283,9 +283,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="value">The value returned by the successful operation.</param>
     /// <returns>A successful result containing the value.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Ok(T value)
-#pragma warning restore CA1000
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -297,9 +295,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="value">The value returned by the successful operation.</param>
     /// <returns>A successful result containing the value.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Created(T value)
-#pragma warning restore CA1000
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -311,9 +307,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="value">The value returned by the successful operation.</param>
     /// <returns>A successful result containing the value.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Accepted(T value)
-#pragma warning restore CA1000
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -327,9 +321,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// <param name="field">The field name that failed validation.</param>
     /// <param name="message">The validation error message for the field.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Invalid(string detail, string field, string message)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
         ArgumentException.ThrowIfNullOrWhiteSpace(field);
@@ -350,9 +342,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// <param name="detail">The error detail describing why the operation failed.</param>
     /// <param name="validationErrors">The combined validation errors.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     internal static Result<T> Invalid(string detail, Dictionary<string, string[]> validationErrors)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -369,9 +359,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing what was not found.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> NotFound(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -383,9 +371,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing the authorization failure.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Unauthorized(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -397,9 +383,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing why access is forbidden.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Forbidden(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -411,9 +395,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing the conflict.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Conflict(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -425,9 +407,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing what went wrong.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Error(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -440,9 +420,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing the critical error.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> CriticalError(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
@@ -454,9 +432,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     /// </summary>
     /// <param name="detail">The error detail describing why the resource is unavailable.</param>
     /// <returns>A failed result.</returns>
-#pragma warning disable CA1000 // Result pattern requires static factory methods
     public static Result<T> Unavailable(string detail)
-#pragma warning restore CA1000
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
