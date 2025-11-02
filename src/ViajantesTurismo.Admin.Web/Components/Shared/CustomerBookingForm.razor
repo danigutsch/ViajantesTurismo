@@ -1,0 +1,163 @@
+@using System.ComponentModel.DataAnnotations
+@using ViajantesTurismo.AdminApi.Contracts
+<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    @if (IsEditMode)
+    {
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> Tour and companion cannot be changed after booking creation.
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Tour <span class="text-danger">*</span></label>
+            <InputSelect @bind-Value="Model.TourId" class="form-select" disabled="@IsEditMode">
+                <option value="">-- Select Tour --</option>
+                @foreach (var tour in Tours)
+                {
+                    <option value="@tour.Id">@tour.Name (@tour.StartDate.ToShortDateString())</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.TourId)" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Companion (Optional)</label>
+            <InputSelect @bind-Value="Model.CompanionId" class="form-select" disabled="@IsEditMode">
+                <option value="">-- No Companion --</option>
+                @foreach (var customer in Customers.Where(c => c.Id != CurrentCustomerId))
+                {
+                    <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.CompanionId)" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="status" class="form-label">Status</label>
+            <InputSelect @bind-Value="Model.Status" class="form-select" id="status">
+                @foreach (var status in Enum.GetValues<BookingStatusDto>())
+                {
+                    <option value="@status">@status</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.Status)" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="paymentStatus" class="form-label">Payment Status</label>
+            <InputSelect @bind-Value="Model.PaymentStatus" class="form-select" id="paymentStatus">
+                @foreach (var paymentStatus in Enum.GetValues<PaymentStatusDto>())
+                {
+                    <option value="@paymentStatus">@paymentStatus</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.PaymentStatus)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <InputTextArea @bind-Value="Model.Notes" class="form-control" id="notes" rows="3" />
+        <ValidationMessage For="@(() => Model.Notes)" />
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+            @if (IsSubmitting)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            }
+            @SubmitButtonText
+        </button>
+        <button type="button" class="btn btn-secondary" @onclick="OnCancel" disabled="@IsSubmitting">
+            Cancel
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? TourId { get; set; }
+
+    [Parameter]
+    public int? CompanionId { get; set; }
+
+    [Parameter]
+    public string? Notes { get; set; }
+
+    [Parameter]
+    public BookingStatusDto Status { get; set; } = BookingStatusDto.Pending;
+
+    [Parameter]
+    public PaymentStatusDto PaymentStatus { get; set; } = PaymentStatusDto.Unpaid;
+
+    [Parameter]
+    public IReadOnlyList<GetTourDto> Tours { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<GetCustomerDto> Customers { get; set; } = [];
+
+    [Parameter]
+    public int CurrentCustomerId { get; set; }
+
+    [Parameter]
+    public EventCallback<BookingFormModel> OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public string SubmitButtonText { get; set; } = "Create Booking";
+
+    [Parameter]
+    public bool IsSubmitting { get; set; }
+
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    private BookingFormModel Model { get; set; } = new();
+
+    protected override void OnParametersSet()
+    {
+        Model = new BookingFormModel
+        {
+            TourId = TourId,
+            CompanionId = CompanionId,
+            Notes = Notes,
+            Status = Status,
+            PaymentStatus = PaymentStatus
+        };
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync(Model);
+    }
+
+    public class CustomerBookingFormModel
+    {
+        [Required(ErrorMessage = "Tour is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a tour")]
+        public int TourId { get; set; }
+
+        public int? CompanionId { get; set; }
+
+        [Required(ErrorMessage = "Total price is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Total price must be greater than zero")]
+        public decimal TotalPrice { get; set; }
+
+        [MaxLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
+        public string? Notes { get; set; }
+
+        public BookingStatusDto Status { get; set; } = BookingStatusDto.Pending;
+
+        public PaymentStatusDto PaymentStatus { get; set; } = PaymentStatusDto.Unpaid;
+    }
+}

@@ -15,8 +15,8 @@
     <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj" Type="Classic C#" />
     <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
     <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj" />
-    <Project Path="src/ViajantesTurismo.Web/ViajantesTurismo.Web.csproj" />
       <Project Path="src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
+      <Project Path="src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj"/>
   </Folder>
   <Folder Name="/tests/">
       <Project Path="tests\ViajantesTurismo.Admin.BehaviorTests\ViajantesTurismo.Admin.BehaviorTests.csproj"

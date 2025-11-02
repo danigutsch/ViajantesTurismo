@@ -20,7 +20,7 @@ var apiService = builder.AddProject<ViajantesTurismo_Admin_ApiService>(ResourceN
     .WaitFor(database)
     .WaitForCompletion(migrationService);
 
-builder.AddProject<ViajantesTurismo_Web>(ResourceNames.WebApp)
+builder.AddProject<ViajantesTurismo_Admin_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(cache)
