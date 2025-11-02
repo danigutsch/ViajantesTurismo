@@ -61,9 +61,23 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## Best Practices
 
-- **Unit Tests**: One concept per test, descriptive names, AAA pattern, test success and failure
-- **Behavior Tests**: Plain English scenarios, focus on business value, independent scenarios
-- **Integration Tests**: Full request/response cycle, verify status codes, test error conditions
+### Unit Tests
+- One concept per test
+- Descriptive names following conventions
+- AAA pattern (Arrange-Act-Assert)
+- Test both success and failure paths
+
+### Behavior Tests (Reqnroll)
+- **Plain English scenarios** focused on business value
+- **Independent scenarios** - each can run standalone
+- **Context Injection** - Use custom POCO classes for sharing data between steps
+- **Avoid ScenarioContext.Current** - Deprecated, use constructor injection instead
+- **Entity-based organization** - Group related steps in binding classes
+
+### Integration Tests
+- Full request/response cycle testing
+- Verify status codes and response content
+- Test error conditions and edge cases
 
 ## Coverage Goals
 
