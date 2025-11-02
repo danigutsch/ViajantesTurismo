@@ -1,4 +1,6 @@
-﻿namespace ViajantesTurismo.Common.Monies;
+﻿using ViajantesTurismo.Common.BuildingBlocks;
+
+namespace ViajantesTurismo.Common.Monies;
 
 /// <summary>
 /// Represents a monetary value with an associated currency.
@@ -6,7 +8,7 @@
 /// <remarks>
 /// The <paramref name="amount"/> should be a non-negative value.
 /// </remarks>
-public class Money(decimal amount, Currency currency)
+public sealed class Money(decimal amount, Currency currency) : ValueObject
 {
     /// <summary>
     /// The monetary amount.
@@ -17,4 +19,11 @@ public class Money(decimal amount, Currency currency)
     /// The currency of the monetary amount.
     /// </summary>
     public Currency Currency { get; } = currency;
+
+    /// <inheritdoc />
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Currency;
+        yield return Amount;
+    }
 }
