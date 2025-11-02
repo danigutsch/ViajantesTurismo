@@ -15,7 +15,7 @@ public sealed class AddressValidationSteps(AddressContext context)
         context.State = state;
         context.Country = country;
         context.PostalCode = postalCode;
-        context.Address = new Address(street, null, "Downtown", postalCode, city, state, country);
+        context.AddressResult = Address.Create(street, null, "Downtown", postalCode, city, state, country);
     }
 
     [When(@"I create address with street ""([^""]*)"" and city ""([^""]*)"" and state ""([^""]*)"" and country ""([^""]*)"" and postal code ""([^""]*)""")]
@@ -26,69 +26,69 @@ public sealed class AddressValidationSteps(AddressContext context)
         context.State = state;
         context.Country = country;
         context.PostalCode = postalCode;
-        context.Address = new Address(street, null, "Downtown", postalCode, city, state, country);
+        context.AddressResult = Address.Create(street, null, "Downtown", postalCode, city, state, country);
     }
 
     [When(@"I create address with street ""([^""]*)""")]
     public void WhenICreateAddressWithStreet(string street)
     {
         context.Street = street;
-        context.Address = new Address(street, null, "Downtown", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create(street, null, "Downtown", "10001", "New York", "NY", "USA");
     }
 
     [When(@"I create address with city ""(.*)""")]
     public void WhenICreateAddressWithCity(string city)
     {
         context.City = city;
-        context.Address = new Address("123 Main St", null, "Downtown", "10001", city, "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", city, "NY", "USA");
     }
 
     [When(@"I create address with state ""(.*)""")]
     public void WhenICreateAddressWithState(string state)
     {
         context.State = state;
-        context.Address = new Address("123 Main St", null, "Downtown", "10001", "New York", state, "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", state, "USA");
     }
 
     [When(@"I create address with country ""(.*)""")]
     public void WhenICreateAddressWithCountry(string country)
     {
         context.Country = country;
-        context.Address = new Address("123 Main St", null, "Downtown", "10001", "New York", "NY", country);
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", country);
     }
 
     [When(@"I create address with postal code ""(.*)""")]
     public void WhenICreateAddressWithPostalCode(string postalCode)
     {
         context.PostalCode = postalCode;
-        context.Address = new Address("123 Main St", null, "Downtown", postalCode, "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", postalCode, "New York", "NY", "USA");
     }
 
     [When(@"I create address with complement null")]
     public void WhenICreateAddressWithComplementNull()
     {
         context.Complement = null!;
-        context.Address = new Address("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA");
     }
 
     [When(@"I create address with complement ""(.*)""")]
     public void WhenICreateAddressWithComplement(string complement)
     {
         context.Complement = complement;
-        context.Address = new Address("123 Main St", complement, "Downtown", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", complement, "Downtown", "10001", "New York", "NY", "USA");
     }
 
     [When(@"I create address with neighborhood ""(.*)""")]
     public void WhenICreateAddressWithNeighborhood(string neighborhood)
     {
         context.Neighborhood = neighborhood;
-        context.Address = new Address("123 Main St", null, neighborhood, "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, neighborhood, "10001", "New York", "NY", "USA");
     }
 
     [When(@"I create address with all fields having extra whitespace")]
     public void WhenICreateAddressWithAllFieldsHavingExtraWhitespace()
     {
-        context.Address = new Address(
+        context.AddressResult = Address.Create(
             "  123    Main    St  ",
             "  Apt   5B  ",
             "  Downtown    Area  ",

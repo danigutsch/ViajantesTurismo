@@ -1,5 +1,8 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common;
+using ViajantesTurismo.Common.Results;
+using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -13,10 +16,10 @@ public sealed class EmergencyContact
     /// </summary>
     /// <param name="name">The emergency contact name.</param>
     /// <param name="mobile">The emergency contact mobile.</param>
-    public EmergencyContact(string name, string mobile)
+    private EmergencyContact(string name, string mobile)
     {
-        Name = StringSanitizer.Sanitize(name)!;
-        Mobile = StringSanitizer.Sanitize(mobile)!;
+        Name = name;
+        Mobile = mobile;
     }
 
     /// <summary>Emergency contact name.</summary>
@@ -24,6 +27,45 @@ public sealed class EmergencyContact
 
     /// <summary>Emergency contact mobile (with DDD).</summary>
     public string Mobile { get; private set; }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="EmergencyContact"/> with validation.
+    /// </summary>
+    /// <param name="name">The emergency contact name.</param>
+    /// <param name="mobile">The emergency contact mobile.</param>
+    /// <returns>A <see cref="Result{EmergencyContact}"/> containing the emergency contact or validation errors.</returns>
+    public static Result<EmergencyContact> Create(string? name, string? mobile)
+    {
+        var sanitizedName = StringSanitizer.Sanitize(name);
+        var sanitizedMobile = StringSanitizer.Sanitize(mobile);
+
+        var errors = new ValidationErrors();
+
+        if (string.IsNullOrWhiteSpace(sanitizedName))
+        {
+            errors.Add(EmptyEmergencyContactName());
+        }
+        else if (sanitizedName.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(EmergencyContactNameTooLong());
+        }
+
+        if (string.IsNullOrWhiteSpace(sanitizedMobile))
+        {
+            errors.Add(EmptyEmergencyContactMobile());
+        }
+        else if (sanitizedMobile.Length > ContractConstants.MaxDefaultLength)
+        {
+            errors.Add(EmergencyContactMobileTooLong());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<EmergencyContact>();
+        }
+
+        return new EmergencyContact(sanitizedName!, sanitizedMobile!);
+    }
 
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.

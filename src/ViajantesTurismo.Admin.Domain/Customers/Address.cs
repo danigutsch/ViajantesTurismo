@@ -1,5 +1,8 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common;
+using ViajantesTurismo.Common.Results;
+using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -18,15 +21,15 @@ public sealed class Address
     /// <param name="city">The city.</param>
     /// <param name="state">The state.</param>
     /// <param name="country">The country.</param>
-    public Address(string street, string? complement, string neighborhood, string postalCode, string city, string state, string country)
+    private Address(string street, string? complement, string neighborhood, string postalCode, string city, string state, string country)
     {
-        Street = StringSanitizer.Sanitize(street)!;
-        Complement = StringSanitizer.Sanitize(complement);
-        Neighborhood = StringSanitizer.Sanitize(neighborhood)!;
-        PostalCode = StringSanitizer.Sanitize(postalCode)!;
-        City = StringSanitizer.Sanitize(city)!;
-        State = StringSanitizer.Sanitize(state)!;
-        Country = StringSanitizer.Sanitize(country)!;
+        Street = street;
+        Complement = complement;
+        Neighborhood = neighborhood;
+        PostalCode = postalCode;
+        City = city;
+        State = state;
+        Country = country;
     }
 
     /// <summary>Street address and number.</summary>
@@ -49,6 +52,96 @@ public sealed class Address
 
     /// <summary>Country.</summary>
     public string Country { get; private set; }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="Address"/> with validation.
+    /// </summary>
+    /// <param name="street">The street address and number.</param>
+    /// <param name="complement">The address complement.</param>
+    /// <param name="neighborhood">The neighborhood.</param>
+    /// <param name="postalCode">The postal code.</param>
+    /// <param name="city">The city.</param>
+    /// <param name="state">The state.</param>
+    /// <param name="country">The country.</param>
+    /// <returns>A <see cref="Result{Address}"/> containing the address or validation errors.</returns>
+    public static Result<Address> Create(string? street, string? complement, string? neighborhood, string? postalCode, string? city, string? state, string? country)
+    {
+        var sanitizedStreet = StringSanitizer.Sanitize(street);
+        var sanitizedComplement = StringSanitizer.Sanitize(complement);
+        var sanitizedNeighborhood = StringSanitizer.Sanitize(neighborhood);
+        var sanitizedPostalCode = StringSanitizer.Sanitize(postalCode);
+        var sanitizedCity = StringSanitizer.Sanitize(city);
+        var sanitizedState = StringSanitizer.Sanitize(state);
+        var sanitizedCountry = StringSanitizer.Sanitize(country);
+
+        var errors = new ValidationErrors();
+
+        if (string.IsNullOrWhiteSpace(sanitizedStreet))
+        {
+            errors.Add(EmptyStreet());
+        }
+        else if (sanitizedStreet.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(StreetTooLong());
+        }
+
+        if (sanitizedComplement?.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(ComplementTooLong());
+        }
+
+        if (string.IsNullOrWhiteSpace(sanitizedNeighborhood))
+        {
+            errors.Add(EmptyNeighborhood());
+        }
+        else if (sanitizedNeighborhood.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(NeighborhoodTooLong());
+        }
+
+        if (string.IsNullOrWhiteSpace(sanitizedPostalCode))
+        {
+            errors.Add(EmptyPostalCode());
+        }
+        else if (sanitizedPostalCode.Length > ContractConstants.MaxDefaultLength)
+        {
+            errors.Add(PostalCodeTooLong());
+        }
+
+        if (string.IsNullOrWhiteSpace(sanitizedCity))
+        {
+            errors.Add(EmptyCity());
+        }
+        else if (sanitizedCity.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(CityTooLong());
+        }
+
+        if (string.IsNullOrWhiteSpace(sanitizedState))
+        {
+            errors.Add(EmptyState());
+        }
+        else if (sanitizedState.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(StateTooLong());
+        }
+
+        if (string.IsNullOrWhiteSpace(sanitizedCountry))
+        {
+            errors.Add(EmptyCountry());
+        }
+        else if (sanitizedCountry.Length > ContractConstants.MaxNameLength)
+        {
+            errors.Add(CountryTooLong());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<Address>();
+        }
+
+        return new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, sanitizedCountry!);
+    }
 
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.

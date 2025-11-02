@@ -53,14 +53,14 @@ internal static class CustomerMapper
     /// </summary>
     public static Address MapToAddress(AddressDto dto)
     {
-        return new Address(
+        return Address.Create(
             dto.Street,
             dto.Complement,
-            dto.Neighborhood!,
+            dto.Neighborhood,
             dto.PostalCode,
             dto.City,
             dto.State,
-            dto.Country);
+            dto.Country).Value;
     }
 
     /// <summary>
@@ -90,9 +90,9 @@ internal static class CustomerMapper
     /// </summary>
     public static EmergencyContact MapToEmergencyContact(EmergencyContactDto dto)
     {
-        return new EmergencyContact(
+        return EmergencyContact.Create(
             dto.Name,
-            dto.Mobile);
+            dto.Mobile).Value;
     }
 
     /// <summary>

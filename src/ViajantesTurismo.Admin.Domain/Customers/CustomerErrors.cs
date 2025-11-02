@@ -195,4 +195,159 @@ public static class CustomerErrors
         detail: "ID nationality cannot exceed 64 characters.",
         field: "IdNationality",
         message: "ID nationality cannot exceed 64 characters.");
+
+    // Address validation errors
+    /// <summary>
+    /// Indicates that the street is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> EmptyStreet() => Result<Address>.Invalid(
+        detail: "Street is required.",
+        field: "Street",
+        message: "Street is required.");
+
+    /// <summary>
+    /// Indicates that the street exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> StreetTooLong() => Result<Address>.Invalid(
+        detail: "Street cannot exceed 128 characters.",
+        field: "Street",
+        message: "Street cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the complement exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> ComplementTooLong() => Result<Address>.Invalid(
+        detail: "Complement cannot exceed 128 characters.",
+        field: "Complement",
+        message: "Complement cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the neighborhood is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> EmptyNeighborhood() => Result<Address>.Invalid(
+        detail: "Neighborhood is required.",
+        field: "Neighborhood",
+        message: "Neighborhood is required.");
+
+    /// <summary>
+    /// Indicates that the neighborhood exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> NeighborhoodTooLong() => Result<Address>.Invalid(
+        detail: "Neighborhood cannot exceed 128 characters.",
+        field: "Neighborhood",
+        message: "Neighborhood cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the postal code is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> EmptyPostalCode() => Result<Address>.Invalid(
+        detail: "Postal code is required.",
+        field: "PostalCode",
+        message: "Postal code is required.");
+
+    /// <summary>
+    /// Indicates that the postal code exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> PostalCodeTooLong() => Result<Address>.Invalid(
+        detail: "Postal code cannot exceed 64 characters.",
+        field: "PostalCode",
+        message: "Postal code cannot exceed 64 characters.");
+
+    /// <summary>
+    /// Indicates that the city is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> EmptyCity() => Result<Address>.Invalid(
+        detail: "City is required.",
+        field: "City",
+        message: "City is required.");
+
+    /// <summary>
+    /// Indicates that the city exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> CityTooLong() => Result<Address>.Invalid(
+        detail: "City cannot exceed 128 characters.",
+        field: "City",
+        message: "City cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the state is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> EmptyState() => Result<Address>.Invalid(
+        detail: "State is required.",
+        field: "State",
+        message: "State is required.");
+
+    /// <summary>
+    /// Indicates that the state exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> StateTooLong() => Result<Address>.Invalid(
+        detail: "State cannot exceed 128 characters.",
+        field: "State",
+        message: "State cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the country is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> EmptyCountry() => Result<Address>.Invalid(
+        detail: "Country is required.",
+        field: "Country",
+        message: "Country is required.");
+
+    /// <summary>
+    /// Indicates that the country exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Address> CountryTooLong() => Result<Address>.Invalid(
+        detail: "Country cannot exceed 128 characters.",
+        field: "Country",
+        message: "Country cannot exceed 128 characters.");
+
+    // EmergencyContact validation errors
+    /// <summary>
+    /// Indicates that the emergency contact name is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<EmergencyContact> EmptyEmergencyContactName() => Result<EmergencyContact>.Invalid(
+        detail: "Emergency contact name is required.",
+        field: "Name",
+        message: "Emergency contact name is required.");
+
+    /// <summary>
+    /// Indicates that the emergency contact name exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<EmergencyContact> EmergencyContactNameTooLong() => Result<EmergencyContact>.Invalid(
+        detail: "Emergency contact name cannot exceed 128 characters.",
+        field: "Name",
+        message: "Emergency contact name cannot exceed 128 characters.");
+
+    /// <summary>
+    /// Indicates that the emergency contact mobile is empty.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<EmergencyContact> EmptyEmergencyContactMobile() => Result<EmergencyContact>.Invalid(
+        detail: "Emergency contact mobile is required.",
+        field: "Mobile",
+        message: "Emergency contact mobile is required.");
+
+    /// <summary>
+    /// Indicates that the emergency contact mobile exceeds maximum length.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<EmergencyContact> EmergencyContactMobileTooLong() => Result<EmergencyContact>.Invalid(
+        detail: "Emergency contact mobile cannot exceed 64 characters.",
+        field: "Mobile",
+        message: "Emergency contact mobile cannot exceed 64 characters.");
 }

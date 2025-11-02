@@ -10,19 +10,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
     {
-        context.IdentificationInfo = IdentificationInfo.Create("123456789", "American").Value;
+        context.IdentificationInfoResult = IdentificationInfo.Create("123456789", "American");
     }
 
     [Given(@"I have valid contact information")]
     public void GivenIHaveValidContactInformation()
     {
-        context.ContactInfo = ContactInfo.Create("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith").Value;
+        context.ContactInfoResult = ContactInfo.Create("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith");
     }
 
     [Given(@"I have valid address information")]
     public void GivenIHaveValidAddressInformation()
     {
-        context.Address = new Address(
+        context.AddressResult = Address.Create(
             "123 Main Street",
             "Apt 4B",
             "Downtown",
@@ -47,7 +47,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have valid emergency contact")]
     public void GivenIHaveValidEmergencyContact()
     {
-        context.EmergencyContact = new EmergencyContact("Jane Smith", "+1987654321");
+        context.EmergencyContactResult = EmergencyContact.Create("Jane Smith", "+1987654321");
     }
 
     [Given(@"I have valid medical information")]
@@ -60,21 +60,21 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void GivenIHaveAnExistingCustomer()
     {
         // Reuse the helper to create personal info
-        context.PersonalInfo = PersonalInfo.Create(
+        context.PersonalInfoResult = PersonalInfo.Create(
             "John",
             "Smith",
             "Male",
             new DateTime(1990, 5, 15),
             "American",
             "Software Engineer",
-            TimeProvider.System).Value;
+            TimeProvider.System);
 
-        context.IdentificationInfo = IdentificationInfo.Create("123456789", "American").Value;
-        context.ContactInfo = ContactInfo.Create("john.smith@example.com", "+1234567890", null, null).Value;
-        context.Address = new Address("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
+        context.IdentificationInfoResult = IdentificationInfo.Create("123456789", "American");
+        context.ContactInfoResult = ContactInfo.Create("john.smith@example.com", "+1234567890", null, null);
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
         context.PhysicalInfo = new PhysicalInfo(75m, 180, BikeType.Regular);
         context.AccommodationPreferences = new AccommodationPreferences(RoomType.SingleRoom, BedType.SingleBed, null);
-        context.EmergencyContact = new EmergencyContact("Emergency Contact", "+1111111111");
+        context.EmergencyContactResult = EmergencyContact.Create("Emergency Contact", "+1111111111");
         context.MedicalInfo = new MedicalInfo(null, null);
 
         context.Customer = new Customer(
@@ -92,14 +92,14 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateACustomer()
     {
         // Personal info must be created through its factory method with validation
-        context.PersonalInfo = PersonalInfo.Create(
+        context.PersonalInfoResult = PersonalInfo.Create(
             "John",
             "Smith",
             "Male",
             new DateTime(1990, 5, 15),
             "American",
             "Software Engineer",
-            TimeProvider.System).Value;
+            TimeProvider.System);
 
         context.Customer = new Customer(
             context.PersonalInfo,
@@ -122,34 +122,35 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             new DateTime(1985, 3, 20),
             "Canadian",
             "Designer",
-            TimeProvider.System).Value;
+            TimeProvider.System);
 
-        context.Customer.UpdatePersonalInfo(newPersonalInfo);
-        context.PersonalInfo = newPersonalInfo;
+        context.Customer.UpdatePersonalInfo(newPersonalInfo.Value);
+        context.PersonalInfoResult = newPersonalInfo;
     }
 
     [When(@"I update the customer with new identification information")]
     public void WhenIUpdateTheCustomerWithNewIdentificationInformation()
     {
-        var newIdentificationInfo = IdentificationInfo.Create("987654321", "Canadian").Value;
-        context.Customer.UpdateIdentificationInfo(newIdentificationInfo);
-        context.IdentificationInfo = newIdentificationInfo;
+        var newIdentificationInfo = IdentificationInfo.Create("987654321", "Canadian");
+        context.Customer.UpdateIdentificationInfo(newIdentificationInfo.Value
+        );
+        context.IdentificationInfoResult = newIdentificationInfo;
     }
 
     [When(@"I update the customer with new contact information")]
     public void WhenIUpdateTheCustomerWithNewContactInformation()
     {
-        var newContactInfo = ContactInfo.Create("jane.doe@example.com", "+9876543210", "@janedoe", null).Value;
-        context.Customer.UpdateContactInfo(newContactInfo);
-        context.ContactInfo = newContactInfo;
+        var newContactInfo = ContactInfo.Create("jane.doe@example.com", "+9876543210", "@janedoe", null);
+        context.Customer.UpdateContactInfo(newContactInfo.Value);
+        context.ContactInfoResult = newContactInfo;
     }
 
     [When(@"I update the customer with new address")]
     public void WhenIUpdateTheCustomerWithNewAddress()
     {
-        var newAddress = new Address("456 Oak Avenue", "Suite 100", "Uptown", "54321", "Toronto", "ON", "Canada");
-        context.Customer.UpdateAddress(newAddress);
-        context.Address = newAddress;
+        var newAddress = Address.Create("456 Oak Avenue", "Suite 100", "Uptown", "54321", "Toronto", "ON", "Canada");
+        context.Customer.UpdateAddress(newAddress.Value);
+        context.AddressResult = newAddress;
     }
 
     [When(@"I update the customer with new physical information")]
@@ -171,9 +172,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I update the customer with new emergency contact")]
     public void WhenIUpdateTheCustomerWithNewEmergencyContact()
     {
-        var newEmergencyContact = new EmergencyContact("Bob Doe", "+5555555555");
-        context.Customer.UpdateEmergencyContact(newEmergencyContact);
-        context.EmergencyContact = newEmergencyContact;
+        var newEmergencyContact = EmergencyContact.Create("Bob Doe", "+5555555555");
+        context.Customer.UpdateEmergencyContact(newEmergencyContact.Value);
+        context.EmergencyContactResult = newEmergencyContact;
     }
 
     [When(@"I update the customer with new medical information")]
@@ -278,7 +279,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     {
         if (context.PersonalInfoResult.IsSuccess)
         {
-            context.PersonalInfo = context.PersonalInfoResult.Value;
+            context.PersonalInfoResult = context.PersonalInfoResult;
         }
     }
 
@@ -304,7 +305,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")]
     public void GivenIHaveAddressForSanitizationWithCityAndCountry(string city, string country)
     {
-        context.Address = new Address(
+        context.AddressResult = Address.Create(
             "123 Main St",
             null,
             "Downtown",
@@ -337,7 +338,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
     public void GivenIHaveContactInfoWithEmailAndMobile(string email, string mobile)
     {
-        context.ContactInfo = ContactInfo.Create(email, mobile, null, null).Value;
+        context.ContactInfoResult = ContactInfo.Create(email, mobile, null, null);
     }
 
     [When(@"I create contact information")]
@@ -363,7 +364,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
     public void GivenIHaveContactInfoWithInstagramAndFacebook(string instagram, string facebook)
     {
-        context.ContactInfo = ContactInfo.Create("john@example.com", "+1234567890", instagram, facebook).Value;
+        context.ContactInfoResult = ContactInfo.Create("john@example.com", "+1234567890", instagram, facebook);
     }
 
     [When(@"I create contact information with social media")]
@@ -387,9 +388,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [Given(@"I have identification info with national ID ""(.*)"" and nationality ""(.*)""")]
-    public void GivenIHaveIdentificationInfoWithNationalIDAndNationality(string nationalId, string nationality)
+    public void GivenIHaveIdentificationInfoWithNationalIdAndNationality(string nationalId, string nationality)
     {
-        context.IdentificationInfo = IdentificationInfo.Create(nationalId, nationality).Value;
+        context.IdentificationInfoResult = IdentificationInfo.Create(nationalId, nationality);
     }
 
     [When(@"I create identification information")]
@@ -401,13 +402,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [Then(@"the sanitized national ID should be ""(.*)""")]
-    public void ThenTheSanitizedNationalIDShouldBe(string expectedNationalId)
+    public void ThenTheSanitizedNationalIdShouldBe(string expectedNationalId)
     {
         Assert.Equal(expectedNationalId, context.IdentificationInfo.NationalId);
     }
 
     [Then(@"the sanitized ID nationality should be ""(.*)""")]
-    public void ThenTheSanitizedIDNationalityShouldBe(string expectedNationality)
+    public void ThenTheSanitizedIdNationalityShouldBe(string expectedNationality)
     {
         Assert.Equal(expectedNationality, context.IdentificationInfo.IdNationality);
     }
@@ -415,7 +416,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have emergency contact with name ""(.*)"" and mobile ""(.*)""")]
     public void GivenIHaveEmergencyContactWithNameAndMobile(string name, string mobile)
     {
-        context.EmergencyContact = new EmergencyContact(name, mobile);
+        context.EmergencyContactResult = EmergencyContact.Create(name, mobile);
     }
 
     [When(@"I create emergency contact information")]
