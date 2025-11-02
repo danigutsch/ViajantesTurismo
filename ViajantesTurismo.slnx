@@ -4,7 +4,7 @@
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
-      <File Path=".gitignore"/>
+    <File Path=".gitignore" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj" />
@@ -15,13 +15,14 @@
     <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj" Type="Classic C#" />
     <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
     <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj" />
-      <Project Path="src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
-      <Project Path="src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj"/>
+    <Project Path="src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj" />
+    <Project Path="src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
-      <Project Path="tests\ViajantesTurismo.Admin.BehaviorTests\ViajantesTurismo.Admin.BehaviorTests.csproj"
+    <Project Path="tests\ViajantesTurismo.Admin.BehaviorTests\ViajantesTurismo.Admin.BehaviorTests.csproj" Type="Classic C#" />
+    <Project Path="tests\ViajantesTurismo.Admin.IntegrationTests\ViajantesTurismo.Admin.IntegrationTests.csproj" />
+    <Project Path="tests\ViajantesTurismo.Admin.UnitTests\ViajantesTurismo.Admin.UnitTests.csproj" Type="Classic C#" />
+      <Project Path="tests\ViajantesTurismo.Common.UnitTests\ViajantesTurismo.Common.UnitTests.csproj"
                Type="Classic C#"/>
-      <Project Path="tests\ViajantesTurismo.Admin.IntegrationTests\ViajantesTurismo.Admin.IntegrationTests.csproj"/>
-      <Project Path="tests\ViajantesTurismo.Admin.UnitTests\ViajantesTurismo.Admin.UnitTests.csproj" Type="Classic C#"/>
   </Folder>
 </Solution>
