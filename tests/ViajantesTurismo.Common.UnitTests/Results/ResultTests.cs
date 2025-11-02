@@ -291,4 +291,46 @@ public class ResultTests
         Assert.Contains("Error", str);
         Assert.Contains("Something went wrong", str);
     }
+
+    [Fact]
+    public void Equals_Object_Returns_False_For_Non_Result_Object()
+    {
+        var result = Result.Ok();
+
+        Assert.False(result.Equals(new object()));
+        Assert.False(result.Equals(null));
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        Assert.False(result.Equals("string"));
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        Assert.False(result.Equals(42));
+    }
+
+    [Fact]
+    public void Equals_Object_Returns_True_For_Boxed_Equal_Result()
+    {
+        var result1 = Result.Ok();
+        object result2 = Result.Ok();
+
+        Assert.True(result1.Equals(result2));
+    }
+
+    [Fact]
+    public void Different_Success_Statuses_Are_Not_Equal()
+    {
+        var ok = Result.Ok();
+        var noContent = Result.NoContent();
+        var accepted = Result.Accepted();
+
+        Assert.NotEqual(ok, noContent);
+        Assert.NotEqual(ok, accepted);
+        Assert.NotEqual(noContent, accepted);
+    }
+
+    [Fact]
+    public void Success_Result_ErrorDetails_Returns_Null()
+    {
+        var result = Result.Ok();
+
+        Assert.Null(result.ErrorDetails);
+    }
 }

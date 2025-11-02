@@ -398,4 +398,52 @@ public class ResultOfTTests
 
         Assert.Same(list, result.Value);
     }
+
+    [Fact]
+    public void Equals_Object_Returns_False_For_Non_Result_Object()
+    {
+        var result = Result<int>.Ok(42);
+
+        Assert.False(result.Equals(new object()));
+        Assert.False(result.Equals(null));
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        Assert.False(result.Equals("string"));
+    }
+
+    [Fact]
+    public void Equals_Object_Returns_True_For_Boxed_Equal_Result()
+    {
+        var result1 = Result<int>.Ok(42);
+        object result2 = Result<int>.Ok(42);
+
+        Assert.True(result1.Equals(result2));
+    }
+
+    [Fact]
+    public void Success_Result_ErrorDetails_Returns_Null()
+    {
+        var result = Result<int>.Ok(42);
+
+        Assert.Null(result.ErrorDetails);
+    }
+
+    [Fact]
+    public void Failed_Result_Value_Access_Shows_Error_Detail_In_Exception()
+    {
+        var result = Result<int>.NotFound("Resource not found");
+
+        var exception = Assert.Throws<InvalidOperationException>(() => result.Value);
+        Assert.Contains("Resource not found", exception.Message);
+    }
+
+    [Fact]
+    public void Implicit_Conversion_Throws_For_Null_Value()
+    {
+        string? nullString = null;
+
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            Result<string> _ = nullString!;
+        });
+    }
 }
