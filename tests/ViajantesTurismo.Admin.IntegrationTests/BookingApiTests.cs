@@ -244,7 +244,6 @@ public sealed class BookingApiTests : IDisposable
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        // Verify the update
         var getResponse = await _client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
         var updatedBooking = await getResponse.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedBooking);
@@ -308,7 +307,6 @@ public sealed class BookingApiTests : IDisposable
         var customerDto = await CreateTestCustomer("Laura", "Brown");
         var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null);
 
-        // Verify initial status is Pending
         Assert.Equal(BookingStatusDto.Pending, createdBooking.Status);
 
         // Act
@@ -320,7 +318,6 @@ public sealed class BookingApiTests : IDisposable
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        // Verify booking is cancelled
         var getResponse = await _client.GetAsync(
             new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative),
             TestContext.Current.CancellationToken);

@@ -2,7 +2,7 @@ using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
-public class ResultOfTTests
+public sealed class ResultOfTTests
 {
     [Fact]
     public void Ok_Creates_Successful_Result_With_Value()

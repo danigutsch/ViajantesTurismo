@@ -2,7 +2,7 @@ using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
-public class ResultErrorTests
+public sealed class ResultErrorTests
 {
     [Fact]
     public void ResultError_Can_Be_Created_With_Detail_Only()

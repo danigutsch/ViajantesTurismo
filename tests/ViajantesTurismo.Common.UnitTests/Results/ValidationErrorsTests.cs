@@ -2,7 +2,7 @@ using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
-public class ValidationErrorsTests
+public sealed class ValidationErrorsTests
 {
     [Fact]
     public void Add_Accepts_Invalid_Result()

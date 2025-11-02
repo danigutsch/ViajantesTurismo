@@ -2,7 +2,7 @@ using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
-public class ResultStatusTests
+public sealed class ResultStatusTests
 {
     [Fact]
     public void ResultStatus_Has_Correct_Values()
