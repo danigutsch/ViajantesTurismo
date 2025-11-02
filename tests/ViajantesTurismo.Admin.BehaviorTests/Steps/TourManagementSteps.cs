@@ -132,6 +132,9 @@ public sealed class TourManagementSteps
         _startDate = DateTime.UtcNow.AddMonths(1);
         _endDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
         _basePrice = price;
+        _singleRoomSupplementPrice = 500.00m;
+        _regularBikePrice = 100.00m;
+        _eBikePrice = 200.00m;
     }
 
     [Given(@"I have tour details with single room supplement (.*)")]

@@ -119,11 +119,25 @@ So that tours have valid and accurate information
         When I try to create the tour
         Then the tour creation should fail with validation error for "price"
 
-    Scenario: Create tour with zero base price succeeds
+    Scenario: Cannot create tour with zero base price
         Given I have tour details with base price 0.00
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour base price should be 0.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with zero single room supplement
+        Given I have tour details with single room supplement 0.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with zero regular bike price
+        Given I have tour details with regular bike price 0.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
+
+    Scenario: Cannot create tour with zero e-bike price
+        Given I have tour details with e-bike price 0.00
+        When I try to create the tour
+        Then the tour creation should fail with validation error for "price"
 
     Scenario: Create tour with multiple validation errors
         Given I have tour details with multiple invalid values
@@ -145,10 +159,10 @@ So that tours have valid and accurate information
         When I try to update the base price to 100001.00
         Then the price update should fail
 
-    Scenario: Update base price to zero succeeds
+    Scenario: Cannot update base price to zero
         Given an existing tour with base price 2000.00
-        When I update the base price to 0.00
-        Then the tour base price should be 0.00
+        When I try to update the base price to 0.00
+        Then the price update should fail
 
     Scenario: Cannot update basic info with empty identifier
         Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure"
@@ -183,6 +197,21 @@ So that tours have valid and accurate information
     Scenario: Cannot update pricing with negative e-bike price
         Given an existing tour
         When I try to update pricing with e-bike -75.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with zero single room supplement
+        Given an existing tour
+        When I try to update pricing with single room 0.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with zero regular bike price
+        Given an existing tour
+        When I try to update pricing with regular bike 0.00
+        Then the pricing update should fail with validation error for "price"
+
+    Scenario: Cannot update pricing with zero e-bike price
+        Given an existing tour
+        When I try to update pricing with e-bike 0.00
         Then the pricing update should fail with validation error for "price"
 
     Scenario: Cannot update pricing with single room supplement exceeding maximum

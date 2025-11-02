@@ -21,7 +21,7 @@ public static class ContractConstants
     public const int MaxServiceDescriptionLength = 256;
 
     /// <summary>
-    /// The minimum price value for any tour-related pricing.
+    /// The minimum price value (exclusive) for any tour-related pricing.
     /// </summary>
     public const int MinPrice = 0;
 

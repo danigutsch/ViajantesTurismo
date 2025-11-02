@@ -157,7 +157,7 @@ public sealed class Tour : Entity<int>
             }
         }
 
-        if (price < 0)
+        if (price <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("Base price", price));
         }
@@ -166,7 +166,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price));
         }
 
-        if (singleRoomSupplementPrice < ContractConstants.MinPrice)
+        if (singleRoomSupplementPrice <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
         }
@@ -175,7 +175,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
         }
 
-        if (regularBikePrice < ContractConstants.MinPrice)
+        if (regularBikePrice <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
         }
@@ -184,7 +184,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
         }
 
-        if (eBikePrice < ContractConstants.MinPrice)
+        if (eBikePrice <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
         }
@@ -298,7 +298,7 @@ public sealed class Tour : Entity<int>
     {
         var errors = new ValidationErrors();
 
-        if (singleRoomSupplementPrice < ContractConstants.MinPrice)
+        if (singleRoomSupplementPrice <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
         }
@@ -307,7 +307,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
         }
 
-        if (regularBikePrice < ContractConstants.MinPrice)
+        if (regularBikePrice <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
         }
@@ -316,7 +316,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
         }
 
-        if (eBikePrice < ContractConstants.MinPrice)
+        if (eBikePrice <= ContractConstants.MinPrice)
         {
             errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
         }
@@ -344,7 +344,7 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateBasePrice(decimal price)
     {
-        if (price < ContractConstants.MinPrice)
+        if (price <= ContractConstants.MinPrice)
         {
             return TourErrors.InvalidPrice("Base price", price).ToResult();
         }
