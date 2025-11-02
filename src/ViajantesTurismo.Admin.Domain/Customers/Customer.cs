@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using ViajantesTurismo.Common;
+using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

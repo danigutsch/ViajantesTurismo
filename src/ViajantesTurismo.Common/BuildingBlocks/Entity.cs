@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Common;
+namespace ViajantesTurismo.Common.BuildingBlocks;
 
 /// <summary>
 /// Base class for Domain Entities.

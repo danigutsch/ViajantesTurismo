@@ -40,8 +40,40 @@ if (result.IsFailure) { /* use result.Error */ }
 ### Base Types
 
 - **Entity<TId>**: Base class for all domain entities with identity
+- **ValueObject**: Base class for immutable value objects compared by their attributes
+
+#### ValueObject
+
+Value objects are immutable objects defined by their attributes rather than identity.
+
+```csharp
+public class Address : ValueObject
+{
+    public string Street { get; }
+    public string City { get; }
+    public string PostalCode { get; }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Street;
+        yield return City;
+        yield return PostalCode;
+    }
+}
+
+// Two addresses with the same values are equal
+var address1 = new Address("123 Main St", "Springfield", "12345");
+var address2 = new Address("123 Main St", "Springfield", "12345");
+address1 == address2; // true
+```
+
+**Characteristics**:
+
+- Immutable: State cannot change after creation
+- Equality by value: Compared by their attributes, not identity
+- No identity: Don't have unique identifiers
+- Side-effect free: Operations return new instances
 
 ## Dependencies
 
 Zero external dependencies - only .NET BCL.
-
