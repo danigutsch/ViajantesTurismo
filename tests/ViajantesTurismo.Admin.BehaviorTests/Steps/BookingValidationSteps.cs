@@ -12,16 +12,16 @@ public sealed class BookingValidationSteps(
     TourContext tourContext,
     BookingCustomerContext bookingCustomerContext)
 {
-    [Given(@"a tour exists with a confirmed booking")]
-    public void GivenATourExistsWithAConfirmedBooking()
+    [When(@"I try to add a booking to tour with invalid room type (.*)")]
+    public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
-        Assert.True(addResult.IsSuccess);
-        bookingContext.Booking = addResult.Value;
-        var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
-        Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
+        bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType, null);
+    }
+
+    [When(@"I try to update the booking payment status with invalid value (.*) through the tour")]
+    public void WhenITryToUpdateTheBookingPaymentStatusWithInvalidValueThroughTheTour(int invalidValue)
+    {
+        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, (PaymentStatus)invalidValue);
     }
 
     [When(@"I try to update the booking notes with (\d+) characters through the tour")]
@@ -31,20 +31,22 @@ public sealed class BookingValidationSteps(
         bookingContext.Result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
     }
 
-    [When(@"I try to add a booking to tour with invalid room type (.*)")]
-    public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
+    [When(@"I try to confirm the booking through the tour")]
+    public void WhenITryToConfirmTheBookingThroughTheTour()
     {
-        var tour = tourContext.Tour;
+        bookingContext.Result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+    }
 
-        var result = tour.AddBooking(
-            1,
-            BikeType.Regular,
-            null,
-            null,
-            (RoomType)invalidRoomType,
-            null);
+    [When(@"I try to cancel the booking through the tour")]
+    public void WhenITryToCancelTheBookingThroughTheTour()
+    {
+        bookingContext.Result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
+    }
 
-        bookingContext.Result = result;
+    [When(@"I try to complete the booking through the tour")]
+    public void WhenITryToCompleteTheBookingThroughTheTour()
+    {
+        bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
     [Then(@"the booking creation should fail with validation error for ""(.*)""")]
@@ -74,6 +76,7 @@ public sealed class BookingValidationSteps(
     [Then(@"the error message should contain ""(.*)""")]
     public void ThenTheErrorMessageShouldContain(string expectedMessage)
     {
+        // Try to get error details from any context that has a result
         ResultError? errorDetails = null;
 
         if (bookingContext.Result != null)
