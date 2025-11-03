@@ -8,17 +8,6 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Scope(Feature = "Address Validation")]
 public sealed class AddressValidationSteps(AddressContext context)
 {
-    [When(@"I create address with street ""([^""]*)"", city ""([^""]*)"", state ""([^""]*)"", country ""([^""]*)"", postal code ""([^""]*)""")]
-    public void WhenICreateAddressWithStreetCityStateCountryPostalCodeCommas(string street, string city, string state, string country, string postalCode)
-    {
-        context.Street = street;
-        context.City = city;
-        context.State = state;
-        context.Country = country;
-        context.PostalCode = postalCode;
-        context.AddressResult = Address.Create(street, null, "Downtown", postalCode, city, state, country);
-    }
-
     [When(@"I create address with street ""([^""]*)"" and city ""([^""]*)"" and state ""([^""]*)"" and country ""([^""]*)"" and postal code ""([^""]*)""")]
     public void WhenICreateAddressWithStreetCityStateCountryPostalCode(string street, string city, string state, string country, string postalCode)
     {
