@@ -9,6 +9,20 @@ namespace ViajantesTurismo.Admin.Application.Mapping;
 public static class CustomerMapper
 {
     /// <summary>
+    /// Maps a <see cref="BikeType"/> to a <see cref="BikeTypeDto"/>.
+    /// </summary>
+    public static BikeTypeDto MapToBikeTypeDto(BikeType bikeType)
+    {
+        return bikeType switch
+        {
+            BikeType.None => BikeTypeDto.None,
+            BikeType.Regular => BikeTypeDto.Regular,
+            BikeType.EBike => BikeTypeDto.EBike,
+            _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, "Invalid bike type value.")
+        };
+    }
+
+    /// <summary>
     /// Maps a <see cref="BedTypeDto"/> to a <see cref="BedType"/>.
     /// </summary>
     public static BedType MapToBedType(BedTypeDto bedTypeDto)
