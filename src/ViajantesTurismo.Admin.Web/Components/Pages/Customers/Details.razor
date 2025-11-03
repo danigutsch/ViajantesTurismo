@@ -259,19 +259,26 @@ else
                         {
                             <div class="border rounded p-3 mb-3">
                                 <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
-                                <CustomerBookingForm TourId="@_bookingFormModel.TourId"
-                                                     CompanionId="@_bookingFormModel.CompanionId"
-                                                     Notes="@_bookingFormModel.Notes"
-                                                     Status="@_bookingFormModel.Status"
-                                                     PaymentStatus="@_bookingFormModel.PaymentStatus"
-                                                     Tours="@_tours"
-                                                     Customers="@_customers"
-                                                     CurrentCustomerId="@Id"
-                                                     OnValidSubmit="@HandleSaveBooking"
-                                                     OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
-                                                     SubmitButtonText="@(_editingBookingId.HasValue ? "Update Booking" : "Create Booking")"
-                                                     IsSubmitting="@_isSubmitting"
-                                                     IsEditMode="@_editingBookingId.HasValue" />
+                                @if (_editingBookingId.HasValue)
+                                {
+                                    <CustomerBookingEditForm Model="_bookingFormModel"
+                                                             Tours="@_tours"
+                                                             Customers="@_customers"
+                                                             CurrentCustomerId="@Id"
+                                                             OnValidSubmit="@HandleSaveBooking"
+                                                             OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                                             IsSubmitting="@_isSubmitting"/>
+                                }
+                                else
+                                {
+                                    <CustomerBookingCreateForm Model="_bookingFormModel"
+                                                               Tours="@_tours"
+                                                               Customers="@_customers"
+                                                               CurrentCustomerId="@Id"
+                                                               OnValidSubmit="@HandleSaveBooking"
+                                                               OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                                               IsSubmitting="@_isSubmitting"/>
+                                }
                             </div>
                         }
                         else

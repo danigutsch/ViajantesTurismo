@@ -110,13 +110,23 @@ else if (_tour != null)
             {
                 <div class="border rounded p-3 mb-3">
                     <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
-                    <BookingForm Model="_bookingFormModel"
-                                 Customers="_customers"
-                                 OnValidSubmit="@HandleSaveBooking"
-                                 OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
-                                 SubmitButtonText="@(_editingBookingId.HasValue ? "Update Booking" : "Create Booking")"
-                                 IsSubmitting="_isSubmitting"
-                                 IsEditMode="_editingBookingId.HasValue" />
+                    @if (_editingBookingId.HasValue)
+                    {
+                        <BookingEditForm Model="_bookingFormModel"
+                                         Customers="_customers"
+                                         OnValidSubmit="@HandleSaveBooking"
+                                         OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                         IsSubmitting="_isSubmitting"/>
+                    }
+                    else
+                    {
+                        <BookingCreateForm Model="_bookingFormModel"
+                                           Customers="_customers"
+                                           Tours="_tours"
+                                           OnValidSubmit="@HandleSaveBooking"
+                                           OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                           IsSubmitting="_isSubmitting"/>
+                    }
                 </div>
             }
             else
@@ -151,6 +161,7 @@ else if (_tour != null)
     private long? _editingBookingId;
 
     private GetCustomerDto[] _customers = [];
+    private GetTourDto[] _tours = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
 
@@ -169,7 +180,7 @@ else if (_tour != null)
             }
             else
             {
-                await Task.WhenAll(LoadBookings(), LoadCustomers());
+                await Task.WhenAll(LoadBookings(), LoadCustomers(), LoadTours());
             }
         }
         catch (Exception)
@@ -204,6 +215,18 @@ else if (_tour != null)
         catch (Exception)
         {
             _customers = [];
+        }
+    }
+
+    private async Task LoadTours()
+    {
+        try
+        {
+            _tours = (await ToursApi.GetTours()).ToArray();
+        }
+        catch (Exception)
+        {
+            _tours = [];
         }
     }
 
