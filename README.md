@@ -13,16 +13,20 @@ powerful tools to create and manage tour packages.
 - **Tour Management**: Create and manage bike tour packages with detailed itineraries
 - **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences, and medical details
 - **Booking Management**: 
-  - Create bookings for customers and optional companions
+    - Create bookings with room type selection (Single/Double)
+    - Optional companion for shared accommodations
+    - Bike type selection (Regular/E-bike) with customer preference pre-population
   - Domain-driven operations: Confirm, Cancel, Complete bookings
-  - Update booking details (price and notes)
-  - Track booking and payment status
+    - Update booking notes through dedicated endpoint
+    - Track booking status and payment status
+    - Automatic total price calculation (transparent, consistent)
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
-    - Base tour pricing per person
-    - Single room supplement options
+    - Base tour pricing for single room (not per person)
+    - Double room supplement for larger accommodations
     - Regular bike and E-bike rental pricing
+    - Calculated total price (transparent, consistent)
 - **Service Packages**: Customizable included services (hotels, meals, guided tours, etc.)
 - **RESTful API**: Modern API-first architecture with behavior-driven endpoints
 - **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
@@ -43,18 +47,23 @@ powerful tools to create and manage tour packages.
 ```
 ViajantesTurismo/
 ├── src/
-│   ├── ViajantesTurismo.Admin.Domain/         # Domain interfaces and models
+│   ├── ViajantesTurismo.Admin.Domain/         # Domain entities and business logic
+│   ├── ViajantesTurismo.Admin.Application/    # Application layer (mappers, interfaces)
 │   ├── ViajantesTurismo.Admin.Infrastructure/ # Infrastructure (EF Core, DB context, stores)
 │   ├── ViajantesTurismo.AdminApi.Contracts/   # API contracts and DTOs
-│   ├── ViajantesTurismo.ApiService/           # Main API service
+│   ├── ViajantesTurismo.Admin.ApiService/     # Main API service
+│   ├── ViajantesTurismo.Admin.Web/            # Blazor admin web frontend
 │   ├── ViajantesTurismo.AppHost/              # Aspire orchestration
-│   ├── ViajantesTurismo.Common/               # Shared domain models
+│   ├── ViajantesTurismo.Common/               # Shared domain models and utilities
 │   ├── ViajantesTurismo.MigrationService/     # Database migration worker
 │   ├── ViajantesTurismo.Resources/            # Resource definitions
 │   ├── ViajantesTurismo.ServiceDefaults/      # Service defaults and extensions
-│   └── ViajantesTurismo.Web/                  # Blazor web frontend
+│   └── ViajantesTurismo.Web/                  # Blazor public web frontend
 └── tests/
-    └── ViajantesTurismo.IntegrationTests/     # Integration tests
+    ├── ViajantesTurismo.Admin.UnitTests/      # Domain unit tests
+    ├── ViajantesTurismo.Admin.BehaviorTests/  # BDD/Gherkin tests
+    ├── ViajantesTurismo.Admin.IntegrationTests/ # API integration tests
+    └── ViajantesTurismo.Common.UnitTests/     # Common utilities tests
 ```
 
 ## Getting Started
@@ -124,10 +133,11 @@ dotnet test
 - `GET /bookings/tour/{tourId}` - Get bookings for a specific tour
 - `GET /bookings/customer/{customerId}` - Get bookings for a specific customer
 - `POST /bookings` - Create a new booking
+- `PUT /bookings/{id}` - Update booking status, payment, and notes
 - `PATCH /bookings/{id}/confirm` - Confirm a pending booking
 - `PATCH /bookings/{id}/cancel` - Cancel a booking
 - `PATCH /bookings/{id}/complete` - Complete a confirmed booking
-- `PATCH /bookings/{id}/details` - Update booking price and notes
+- `PATCH /bookings/{id}/notes` - Update booking notes
 - `DELETE /bookings/{id}` - Delete a booking
 
 ## Tour Package Information
@@ -137,10 +147,29 @@ Each tour includes:
 - **Unique Identifier** - Tour code (e.g., "CUBA2024")
 - **Name** - Descriptive tour name
 - **Dates** - Start and end dates
-- **Pricing** - Base price, single room supplement, bike rentals (all prices displayed and entered with correct currency
-  formatting)
+- **Pricing** - Base price (single room), double room supplement, bike rentals (all prices displayed and entered with
+  correct currency formatting)
 - **Currency** - Real, Euro, or US Dollar
 - **Included Services** - Hotels, meals, activities, etc.
+
+## Architecture
+
+This project follows **Clean Architecture** and **Domain-Driven Design** principles:
+
+- **Domain Layer**: Entities, value objects, domain logic, business rules
+- **Application Layer**: Mappers, query interfaces, application orchestration
+- **Infrastructure Layer**: EF Core, database, external services
+- **API Layer**: HTTP endpoints, DTOs, request/response handling
+- **Web Layer**: Blazor UI, forms, user interactions
+
+Key patterns:
+
+- **CQRS**: Separate read (queries) and write (commands) operations
+- **Result Pattern**: Explicit error handling without exceptions
+- **Factory Methods**: Domain entities ensure valid state from creation
+- **Aggregate Roots**: Tour manages all Booking operations
+
+See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for detailed architectural decisions.
 
 ## Development
 

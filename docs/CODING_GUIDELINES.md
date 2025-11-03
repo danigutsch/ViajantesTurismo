@@ -37,6 +37,7 @@ PUT /bookings/{id}  // with status field in body
 PATCH /bookings/{id}/confirm
 PATCH /bookings/{id}/cancel
 PATCH /bookings/{id}/complete
+PATCH /bookings/{id}/notes
 ```
 
 ### Benefits
@@ -49,39 +50,48 @@ PATCH /bookings/{id}/complete
 
 ### Granular Domain Methods for Events
 
-Even when endpoints group related updates (e.g., price and notes together), domain methods should remain **granular** to enable domain events.
+Domain methods should be **granular** and focused on specific business operations to enable domain events and maintain
+single responsibility.
 
 ❌ **Don't do this:**
 ```csharp
-public void UpdateDetails(decimal price, string? notes)
+public void UpdateDetails(BookingStatus status, PaymentStatus payment, string? notes)
 {
-    TotalPrice = price;
+    Status = status;
+    PaymentStatus = payment;
     Notes = notes;
 }
 ```
 
 ✅ **Do this instead:**
 ```csharp
-public void UpdatePrice(decimal newPrice)
+public Result Confirm()
 {
-    TotalPrice = newPrice;
-    // Can raise PriceChangedEvent here
+    // Validation logic for state transition
+    Status = BookingStatus.Confirmed;
+    // Can raise BookingConfirmedEvent here
 }
 
-public void UpdateNotes(string? notes)
+public void UpdatePaymentStatus(PaymentStatus status)
 {
+    PaymentStatus = status;
+    // Can raise PaymentStatusChangedEvent here
+}
+
+public Result UpdateNotes(string? notes)
+{
+    // Validation logic
     Notes = notes;
     // Can raise NotesUpdatedEvent here
 }
 ```
 
-Then compose them in the aggregate root or application layer:
+Then compose them in the aggregate root:
 ```csharp
-public void UpdateBookingDetails(long bookingId, decimal newPrice, string? notes)
+public Result UpdateBookingNotes(long bookingId, string? notes)
 {
     var booking = GetBooking(bookingId);
-    booking.UpdatePrice(newPrice);  // Raises PriceChangedEvent
-    booking.UpdateNotes(notes);     // Raises NotesUpdatedEvent
+    return booking.UpdateNotes(notes);  // Raises NotesUpdatedEvent
 }
 ```
 
@@ -165,7 +175,7 @@ tour.UpdateSchedule(newStartDate, newEndDate);
 var rate = await currencyService.GetRate(Currency.EUR, Currency.USD);
 tour.UpdatePricing(
     tour.Price * rate,
-    tour.SingleRoomSupplementPrice * rate,
+    tour.DoubleRoomSupplementPrice * rate,
     tour.RegularBikePrice * rate,
     tour.EBikePrice * rate,
     Currency.USD
@@ -185,17 +195,18 @@ customer.UpdateAddress(new Address(street, city, state, postalCode, country));
 **Booking Lifecycle:**
 ```csharp
 // 1. Create booking (pending)
-var booking = tour.AddBooking(customerId, companionId, totalPrice, "Early bird");
+var result = tour.AddBooking(customerId, BikeType.Regular, companionId, BikeType.EBike, RoomType.DoubleRoom, "Early bird");
+var booking = result.Value;
 
 // 2. Customer confirms and pays deposit
-booking.Confirm();
-booking.UpdatePaymentStatus(PaymentStatus.PartiallyPaid);
+tour.ConfirmBooking(booking.Id);
+tour.UpdateBookingPaymentStatus(booking.Id, PaymentStatus.PartiallyPaid);
 
 // 3. Customer pays balance
-booking.UpdatePaymentStatus(PaymentStatus.Paid);
+tour.UpdateBookingPaymentStatus(booking.Id, PaymentStatus.Paid);
 
 // 4. Tour completes
-booking.Complete();
+tour.CompleteBooking(booking.Id);
 ```
 
 ### API Layer Considerations
@@ -217,7 +228,7 @@ private static async Task<Results<NoContent, NotFound>> UpdateTour(
     // Delegate to granular domain methods
     tour.UpdateBasicInfo(dto.Identifier, dto.Name);
     tour.UpdateSchedule(dto.StartDate, dto.EndDate);
-    tour.UpdatePricing(dto.Price, dto.SingleRoomSupplementPrice, 
+    tour.UpdatePricing(dto.Price, dto.DoubleRoomSupplementPrice, 
         dto.RegularBikePrice, dto.EBikePrice, (Currency)dto.Currency);
     tour.UpdateIncludedServices([.. dto.IncludedServices]);
 

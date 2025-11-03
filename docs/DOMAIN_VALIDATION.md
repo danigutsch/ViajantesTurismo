@@ -57,12 +57,15 @@ Update methods return `Result`:
 ```csharp
 public Result UpdateSchedule(DateTime newStartDate, DateTime newEndDate)
 {
+    newStartDate = DateTimeSanitizer.SanitizeDate(newStartDate);
+    newEndDate = DateTimeSanitizer.SanitizeDate(newEndDate);
+
     if (newEndDate <= newStartDate)
         return TourErrors.InvalidDateRangeForUpdate();
     
     StartDate = newStartDate;
     EndDate = newEndDate;
-    return Result.Success();
+    return Result.Ok();
 }
 ```
 
@@ -103,12 +106,10 @@ public static class ContractConstants
 ```csharp
 var result = Tour.Create(dto.Identifier, dto.Name, ...);
 if (!result.IsSuccess)
-    return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-    {
-        ["Tour"] = [result.ErrorDetails!.Detail]
-    });
+    return result.ToValidationProblem();
 
 var tour = result.Value;
+await unitOfWork.SaveEntities(ct);
 ```
 
 ## Testing

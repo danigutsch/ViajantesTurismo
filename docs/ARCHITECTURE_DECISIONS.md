@@ -233,6 +233,118 @@ Never use `as` operator with Result types (they are structs).
 
 ---
 
+## ADR-007: Application Layer for Mappers and Query Interfaces
+
+**Status:** Implemented
+
+**Context:**
+Mapping logic between domain entities and DTOs was scattered across the API layer. The IQueryService interface was in
+the Domain layer but is actually an application concern.
+
+**Decision:**
+Create a separate Application layer (`ViajantesTurismo.Admin.Application`) containing:
+
+- Mapper classes for domain ↔ DTO conversions
+- `IQueryService` interface for read operations
+- `IUnitOfWork` interface for transaction management
+
+**Consequences:**
+
+**Positive:**
+
+- Clear separation between domain logic and application orchestration
+- Mappers isolated from API and domain layers
+- Application services can coordinate multiple domain operations
+- Follows Clean Architecture principles
+
+**Negative:**
+
+- Additional layer adds complexity
+- More projects to maintain
+
+**Implementation:**
+
+- `BookingMapper`, `CustomerMapper`, `TourMapper` classes
+- Static mapping methods (e.g., `MapToBikeType`, `MapToDto`)
+- `IQueryService` provides read-only query methods returning DTOs
+- Domain layer focuses purely on business logic
+
+---
+
+## ADR-008: TotalPrice as Calculated Property
+
+**Status:** Implemented
+
+**Context:**
+Booking total price was stored in the database and could be manually updated, leading to inconsistencies with actual
+component prices (base price, room cost, bike prices).
+
+**Decision:**
+Make `TotalPrice` a calculated property:
+
+```csharp
+public decimal TotalPrice => CalculateTotalPrice(BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer);
+```
+
+**Consequences:**
+
+**Positive:**
+
+- Price is always correct and consistent
+- Single source of truth for pricing logic
+- Cannot be manually overridden
+- Transparent calculation visible to users
+
+**Negative:**
+
+- Cannot store historical prices if components change
+- Migration required to remove TotalPrice column
+
+**Implementation:**
+
+- Removed `TotalPrice` column from database
+- Added `entity.Ignore(booking => booking.TotalPrice)` in EF Core configuration
+- Formula: `BasePrice + RoomAdditionalCost + PrincipalCustomer.BikePrice + CompanionCustomer?.BikePrice ?? 0`
+- Base price is for single room (not per person)
+- Double room adds supplement cost
+
+---
+
+## ADR-009: Room Pricing Model - Base Price = Single Room
+
+**Status:** Implemented
+
+**Context:**
+Initial implementation incorrectly multiplied base price by customer count and added supplement for single rooms.
+
+**Decision:**
+Base price represents a single room cost:
+
+- Single room: Base price + 0 supplement
+- Double room: Base price + double room supplement
+- Companion does NOT multiply base price, only adds bike cost
+
+**Consequences:**
+
+**Positive:**
+
+- Correct business model: double rooms cost MORE than single rooms
+- Transparent pricing for customers
+- Simpler calculation logic
+
+**Negative:**
+
+- Breaking change requiring data migration
+- All existing tests needed updates
+
+**Implementation:**
+
+- Changed `SingleRoomSupplementPrice` → `DoubleRoomSupplementPrice`
+- Updated `CalculateRoomAdditionalCost()` to return supplement only for double rooms
+- Removed customer count multiplication from price calculation
+
+---
+
 ## Summary
 
 These architectural decisions establish a robust domain validation approach:
@@ -243,10 +355,15 @@ These architectural decisions establish a robust domain validation approach:
 4. **Error classes** centralize error creation
 5. **No comments** keeps code clean and self-documenting
 6. **Type-safe testing** handles multiple Result types correctly
+7. **Application layer** separates mapping and query concerns from domain
+8. **Calculated properties** ensure derived values are always consistent
+9. **Correct pricing model** reflects actual business rules
 
 This architecture prioritizes:
 
 - Compile-time safety over runtime checks
 - Explicit over implicit error handling
 - Domain logic centralization
+- Clean Architecture layering
+- Data consistency and correctness
 - Testability and maintainability
