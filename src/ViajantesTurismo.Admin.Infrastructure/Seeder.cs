@@ -281,17 +281,14 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
 
         dbContext.SaveChanges();
 
-        _ = tours[0].UpdateBookingPrice(booking1.Id, 1800m);
         _ = tours[0].UpdateBookingNotes(booking1.Id, "Early bird discount applied");
         _ = tours[0].ConfirmBooking(booking1.Id);
         _ = tours[0].UpdateBookingPaymentStatus(booking1.Id, PaymentStatus.Paid);
 
-        _ = tours[1].UpdateBookingPrice(booking2.Id, 4400m);
         _ = tours[1].UpdateBookingNotes(booking2.Id, "Traveling together as a couple");
         _ = tours[1].ConfirmBooking(booking2.Id);
         _ = tours[1].UpdateBookingPaymentStatus(booking2.Id, PaymentStatus.PartiallyPaid);
 
-        _ = tours[3].UpdateBookingPrice(booking4.Id, 4950m);
         _ = tours[3].UpdateBookingNotes(booking4.Id, "Upgraded to premium accommodation");
         _ = tours[3].ConfirmBooking(booking4.Id);
         _ = tours[3].UpdateBookingPaymentStatus(booking4.Id, PaymentStatus.Paid);
@@ -299,12 +296,10 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         _ = tours[4].CompleteBooking(booking5.Id);
         _ = tours[0].CancelBooking(booking6.Id);
 
-        _ = tours[1].UpdateBookingPrice(booking7.Id, 4400m);
         _ = tours[1].UpdateBookingNotes(booking7.Id, "Special dietary requirements noted");
         _ = tours[1].ConfirmBooking(booking7.Id);
         _ = tours[1].UpdateBookingPaymentStatus(booking7.Id, PaymentStatus.PartiallyPaid);
 
-        _ = tours[0].UpdateBookingPrice(booking9.Id, 1650m);
         _ = tours[0].UpdateBookingNotes(booking9.Id, "Solo traveler, single room supplement included");
         _ = tours[0].ConfirmBooking(booking9.Id);
         _ = tours[0].UpdateBookingPaymentStatus(booking9.Id, PaymentStatus.Paid);

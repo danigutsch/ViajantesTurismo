@@ -48,18 +48,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         bookingContext.Action = null!;
     }
 
-    [Then(@"the booking price update should fail")]
-    public void ThenTheBookingPriceUpdateShouldFail()
-    {
-        var result = bookingContext.Result switch
-        {
-            Result r => r,
-            Result<Booking> rb => rb.ToResult(),
-            _ => throw new InvalidOperationException("Result is not set")
-        };
-        Assert.False(result.IsSuccess);
-    }
-
     [When(@"I try to create a booking with base price (.*) and room cost (.*)")]
     public void WhenITryToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
@@ -178,18 +166,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCompleteTheBooking()
     {
         bookingContext.Result = bookingContext.Booking.Complete();
-    }
-
-    [When(@"I update the booking total price to (.*)")]
-    public void WhenIUpdateTheBookingTotalPriceTo(decimal price)
-    {
-        bookingContext.Result = bookingContext.Booking.UpdatePrice(price);
-    }
-
-    [When(@"I try to update the booking total price to (.*)")]
-    public void WhenITryToUpdateTheBookingTotalPriceTo(decimal price)
-    {
-        bookingContext.Result = bookingContext.Booking.UpdatePrice(price);
     }
 
     [When(@"I update the booking notes to ""(.*)""")]

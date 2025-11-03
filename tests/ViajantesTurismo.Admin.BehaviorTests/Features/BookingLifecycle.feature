@@ -63,21 +63,6 @@ So that bookings follow valid business rules
         When the operator tries to complete the booking
         Then the result should fail with message "Cannot transition from Cancelled to Completed."
 
-    Scenario: Updating booking price
-        Given a pending booking exists with price 1500.00
-        When the operator updates the price to 1800.00
-        Then the booking price should be 1800.00
-
-    Scenario: Cannot update booking price to zero or negative
-        Given a pending booking exists with price 1500.00
-        When the operator tries to update the price to 0
-        Then the result should fail with message "Total price must be greater than zero. Received: 0."
-
-    Scenario: Cannot update booking price to negative value
-        Given a pending booking exists with price 1500.00
-        When the operator tries to update the price to -100
-        Then the result should fail with message "Total price must be greater than zero. Received: -100."
-
     Scenario: Updating booking notes
         Given a pending booking exists
         When the operator updates the notes to "Customer requested vegetarian meals"
@@ -108,11 +93,6 @@ So that bookings follow valid business rules
         When the operator updates the notes to "  Customer needs assistance  "
         Then the booking notes should be "Customer needs assistance"
 
-    Scenario: Booking price is rounded to two decimals
-        Given a pending booking exists with price 1500.00
-        When the operator updates the price to 1899.997
-        Then the booking price should be 1900.00
-
     Scenario: Booking notes preserves multiple lines and formatting
         Given a pending booking exists
         When the operator updates the notes to "Line 1\nLine 2\n\nLine 4"
@@ -122,13 +102,3 @@ So that bookings follow valid business rules
         Given a pending booking exists
         When the operator updates the notes to "  Important:\n- Item 1\n- Item 2  "
         Then the booking notes should be "Important:\n- Item 1\n- Item 2"
-
-    Scenario: Booking price rounding edge cases
-        Given a pending booking exists with price 1500.00
-        When the operator updates the price to 1899.995
-        Then the booking price should be 1900.00
-
-    Scenario: Booking price rounding down
-        Given a pending booking exists with price 1500.00
-        When the operator updates the price to 1899.994
-        Then the booking price should be 1899.99

@@ -539,23 +539,6 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
-    /// Updates the price of a booking.
-    /// </summary>
-    /// <param name="bookingId">The ID of the booking to update.</param>
-    /// <param name="newPrice">The new total price.</param>
-    /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateBookingPrice(long bookingId, decimal newPrice)
-    {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
-        {
-            return TourErrors.BookingNotFound(bookingId);
-        }
-
-        return booking.UpdatePrice(newPrice);
-    }
-
-    /// <summary>
     /// Updates the notes of a booking.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>

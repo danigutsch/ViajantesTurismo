@@ -126,34 +126,6 @@ So that booking data integrity is maintained independently of the aggregate root
         Then the status transition should fail
         And the error should mention "Cancelled" and "Completed"
 
-    Scenario: Update booking price
-        Given a booking exists
-        When I update the booking total price to 2500
-        Then the booking total price should be 2500
-
-    Scenario: Update booking price at maximum
-        Given a booking exists
-        When I update the booking total price to 100000
-        Then the booking total price should be 100000
-
-    Scenario: Cannot update booking price to zero
-        Given a booking exists
-        When I try to update the booking total price to 0
-        Then the booking price update should fail
-        And the error should be for field "totalPrice"
-
-    Scenario: Cannot update booking price to negative
-        Given a booking exists
-        When I try to update the booking total price to -100
-        Then the booking price update should fail
-        And the error should be for field "totalPrice"
-
-    Scenario: Cannot update booking price exceeding maximum
-        Given a booking exists
-        When I try to update the booking total price to 100001
-        Then the booking price update should fail
-        And the error should be for field "totalPrice"
-
     Scenario: Update booking notes
         Given a booking exists
         When I update the booking notes to "Updated notes"

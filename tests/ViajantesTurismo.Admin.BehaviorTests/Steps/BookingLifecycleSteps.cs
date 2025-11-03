@@ -104,19 +104,6 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
-    [When(@"the operator updates the price to (.*)")]
-    public void WhenTheOperatorUpdatesThePriceTo(decimal newPrice)
-    {
-        var result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, newPrice);
-        Assert.True(result.IsSuccess);
-    }
-
-    [When(@"the operator tries to update the price to (.*)")]
-    public void WhenTheOperatorTriesToUpdateThePriceTo(decimal newPrice)
-    {
-        bookingContext.Result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, newPrice);
-    }
-
     [When(@"the operator updates the notes to ""(.*)""")]
     public void WhenTheOperatorUpdatesTheNotesTo(string notes)
     {

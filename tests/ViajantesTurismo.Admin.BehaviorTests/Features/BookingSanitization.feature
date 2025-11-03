@@ -36,9 +36,3 @@ So that data is clean and consistent in the system
     Scenario: Very long booking notes is trimmed to max length during validation
         When I add a booking with notes exceeding 2000 characters
         Then the booking creation should fail with notes validation error
-
-    Scenario: Multiple sanitization operations on update
-        Given a tour exists with a booking priced at 1000.00
-        When I update both price to 1234.5678 and notes to "  New Notes  " through the tour
-        Then the booking price should be 1234.57
-        And the booking notes should be "New Notes"

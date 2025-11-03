@@ -77,6 +77,12 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
         response.EnsureSuccessStatusCode();
     }
 
+    public async Task UpdateBookingNotes(long id, UpdateBookingNotesDto dto, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PatchAsJsonAsync($"/bookings/{id}/notes", dto, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+
     public async Task CancelBooking(long id, CancellationToken cancellationToken = default)
     {
         var response = await httpClient.PatchAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null, cancellationToken);

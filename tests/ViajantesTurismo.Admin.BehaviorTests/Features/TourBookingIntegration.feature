@@ -25,21 +25,10 @@ So that tour bookings are properly tracked
         When I complete the booking through the tour
         Then the booking status should be "Completed"
 
-    Scenario: Updating booking price through the tour
-        Given a tour exists with a booking priced at 1500.00
-        When I update the booking price to 1800.00 through the tour
-        Then the booking price should be 1800.00
-
     Scenario: Updating booking notes through the tour
         Given a tour exists with a booking
         When I update the booking notes to "Dietary restrictions noted" through the tour
         Then the booking notes should be "Dietary restrictions noted"
-
-    Scenario: Updating booking details through the tour
-        Given a tour exists with a booking priced at 1500.00 and notes "Original notes"
-        When I update both price to 1800.00 and notes to "Updated notes" through the tour
-        Then the booking price should be 1800.00
-        And the booking notes should be "Updated notes"
 
     Scenario: Removing a booking from a tour
         Given a tour exists with a booking
@@ -61,14 +50,9 @@ So that tour bookings are properly tracked
         When I try to cancel a non-existent booking
         Then the result should fail with message "not found in this tour"
 
-    Scenario: Cannot complete booking that doesn't exist in tour
+    Scenario: Cannot complete a booking that doesn't exist in tour
         Given a tour exists
         When I try to complete a non-existent booking
-        Then the result should fail with message "not found in this tour"
-
-    Scenario: Cannot update price for booking that doesn't exist in tour
-        Given a tour exists
-        When I try to update price for a non-existent booking
         Then the result should fail with message "not found in this tour"
 
     Scenario: Cannot update notes for booking that doesn't exist in tour
@@ -80,11 +64,3 @@ So that tour bookings are properly tracked
         Given a tour exists
         When I try to update payment status for a non-existent booking
         Then the result should fail with message "not found in this tour"
-
-    Scenario: Full booking update through tour
-        Given a tour exists with a pending booking priced at 1500.00
-        When I update the booking with price 2000.00, notes "Updated", status "Confirmed", and payment "Paid"
-        Then the booking price should be 2000.00
-        And the booking notes should be "Updated"
-        And the booking status should be "Confirmed"
-        And the booking payment status should be "Paid"

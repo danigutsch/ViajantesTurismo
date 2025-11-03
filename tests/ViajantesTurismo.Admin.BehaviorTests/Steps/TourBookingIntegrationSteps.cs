@@ -108,27 +108,11 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"I update the booking price to (.*) through the tour")]
-    public void WhenIUpdateTheBookingPriceToThroughTheTour(decimal newPrice)
-    {
-        var result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, newPrice);
-        Assert.True(result.IsSuccess);
-    }
-
     [When(@"I update the booking notes to ""(.*)"" through the tour")]
     public void WhenIUpdateTheBookingNotesToThroughTheTour(string notes)
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
         Assert.True(result.IsSuccess);
-    }
-
-    [When(@"I update both price to (.*) and notes to ""(.*)"" through the tour")]
-    public void WhenIUpdateBothPriceToAndNotesToThroughTheTour(decimal price, string notes)
-    {
-        var priceResult = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, price);
-        Assert.True(priceResult.IsSuccess);
-        var notesResult = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
-        Assert.True(notesResult.IsSuccess);
     }
 
     [When(@"I remove the booking from the tour")]
@@ -162,12 +146,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         bookingContext.Result = tourContext.Tour.CompleteBooking(99999);
     }
 
-    [When(@"I try to update price for a non-existent booking")]
-    public void WhenITryToUpdatePriceForANonExistentBooking()
-    {
-        bookingContext.Result = tourContext.Tour.UpdateBookingPrice(99999, 1000.00m);
-    }
-
     [When(@"I try to update notes for a non-existent booking")]
     public void WhenITryToUpdateNotesForANonExistentBooking()
     {
@@ -178,44 +156,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void WhenITryToUpdatePaymentStatusForANonExistentBooking()
     {
         bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(99999, PaymentStatus.Paid);
-    }
-
-    [When(@"I update the booking with price (.*), notes ""(.*)"", status ""(.*)"", and payment ""(.*)""")]
-    public void WhenIUpdateTheBookingWithPriceNotesStatusAndPayment(
-        decimal price,
-        string notes,
-        string statusString,
-        string paymentString)
-    {
-        var status = TestHelpers.ParseBookingStatus(statusString);
-        var payment = TestHelpers.ParsePaymentStatus(paymentString);
-
-        var priceResult = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, price);
-        Assert.True(priceResult.IsSuccess);
-        var notesResult = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
-        Assert.True(notesResult.IsSuccess);
-
-        if (bookingContext.Booking.Status != status)
-        {
-            switch (status)
-            {
-                case BookingStatus.Confirmed:
-                    var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-                    Assert.True(confirmResult.IsSuccess);
-                    break;
-                case BookingStatus.Cancelled:
-                    var cancelResult = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-                    Assert.True(cancelResult.IsSuccess);
-                    break;
-                case BookingStatus.Completed:
-                    var completeResult = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-                    Assert.True(completeResult.IsSuccess);
-                    break;
-            }
-        }
-
-        var result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, payment);
-        Assert.True(result.IsSuccess);
     }
 
     [Then(@"the tour should have the booking")]

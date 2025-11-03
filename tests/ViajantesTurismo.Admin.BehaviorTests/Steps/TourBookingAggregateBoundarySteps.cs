@@ -36,7 +36,6 @@ public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingCont
         Assert.NotNull(tourType.GetMethod("ConfirmBooking"));
         Assert.NotNull(tourType.GetMethod("CancelBooking"));
         Assert.NotNull(tourType.GetMethod("CompleteBooking"));
-        Assert.NotNull(tourType.GetMethod("UpdateBookingPrice"));
         Assert.NotNull(tourType.GetMethod("UpdateBookingNotes"));
         Assert.NotNull(tourType.GetMethod("RemoveBooking"));
     }

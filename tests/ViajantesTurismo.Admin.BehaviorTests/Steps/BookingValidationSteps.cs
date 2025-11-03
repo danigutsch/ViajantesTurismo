@@ -33,21 +33,6 @@ public sealed class BookingValidationSteps(BookingContext bookingContext, TourCo
         Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
     }
 
-    [When(@"I try to add a booking with price (.*)")]
-    public void WhenITryToAddABookingWithPrice(decimal price)
-    {
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
-        Assert.True(addResult.IsSuccess);
-        bookingContext.Booking = addResult.Value;
-        bookingContext.Result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, price);
-    }
-
-    [When(@"I try to update the booking price to (.*) through the tour")]
-    public void WhenITryToUpdateTheBookingPriceToThroughTheTour(decimal newPrice)
-    {
-        bookingContext.Result = tourContext.Tour.UpdateBookingPrice(bookingContext.Booking.Id, newPrice);
-    }
-
     [When(@"I try to update the booking notes with (\d+) characters through the tour")]
     public void WhenITryToUpdateTheBookingNotesWithCharactersThroughTheTour(int characterCount)
     {

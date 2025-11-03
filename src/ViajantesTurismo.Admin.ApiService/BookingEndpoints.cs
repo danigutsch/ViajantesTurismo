@@ -70,10 +70,10 @@ internal static class BookingEndpoints
             .WithDescription("Confirms a booking by setting its status to Confirmed.")
             .WithSummary("Confirms a booking.");
 
-        bookingsGroup.MapPatch("/{id:long}/details", UpdateBookingDetails)
-            .WithName("UpdateBookingDetails")
-            .WithDescription("Updates the price and notes of a booking.")
-            .WithSummary("Updates booking details.");
+        bookingsGroup.MapPatch("/{id:long}/notes", UpdateBookingNotes)
+            .WithName("UpdateBookingNotes")
+            .WithDescription("Updates the notes of a booking.")
+            .WithSummary("Updates booking notes.");
 
         bookingsGroup.MapPatch("/{id:long}/complete", CompleteBooking)
             .WithName("CompleteBooking")
@@ -283,9 +283,18 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound>> UpdateBookingDetails(
+    /// <summary>
+    /// Updates the notes for a booking.
+    /// </summary>
+    /// <param name="id">The booking ID.</param>
+    /// <param name="dto">The update data containing notes.</param>
+    /// <param name="tourStore">The tour store for retrieving tours.</param>
+    /// <param name="unitOfWork">The unit of work for saving changes.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>NoContent if successful, NotFound if the booking doesn't exist.</returns>
+    private static async Task<Results<NoContent, NotFound>> UpdateBookingNotes(
         [FromRoute] long id,
-        [FromBody] UpdateBookingDetailsDto dto,
+        [FromBody] UpdateBookingNotesDto dto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -296,7 +305,6 @@ internal static class BookingEndpoints
             return TypedResults.NotFound();
         }
 
-        tour.UpdateBookingPrice(id, dto.TotalPrice);
         tour.UpdateBookingNotes(id, dto.Notes);
 
         await unitOfWork.SaveEntities(ct);

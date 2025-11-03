@@ -11,17 +11,17 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// Represents a booking made by a customer for a tour.
 /// </summary>
 /// <remarks>
-/// Part of the Tour aggregate. In production code, modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingPrice()</c>).
+/// Part of the Tour aggregate. In production code, modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingNotes()</c>).
 /// </remarks>
 public sealed class Booking : Entity<long>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Booking"/> class.
+    /// Initialises a new instance of the <see cref="Booking"/> class.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
     /// <param name="basePrice">The base price for a single room (not per person).</param>
     /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The additional cost for double room (0 for single room).</param>
+    /// <param name="roomAdditionalCost">The additional cost for a double room (0 for a single room).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>
@@ -41,11 +41,10 @@ public sealed class Booking : Entity<long>
         PrincipalCustomer = principalCustomer;
         CompanionCustomer = companionCustomer;
         Notes = notes;
-        TotalPrice = CalculateTotalPrice(basePrice, roomAdditionalCost, principalCustomer, companionCustomer);
     }
 
     /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
     [UsedImplicitly]
 #pragma warning disable CS8618
@@ -70,7 +69,7 @@ public sealed class Booking : Entity<long>
     public RoomType RoomType { get; private init; }
 
     /// <summary>
-    /// The additional cost for the room (e.g., single room supplement).
+    /// The additional cost for the room (e.g. single room supplement).
     /// </summary>
     public decimal RoomAdditionalCost { get; private init; }
 
@@ -102,7 +101,7 @@ public sealed class Booking : Entity<long>
     /// <summary>
     /// The total price of the booking.
     /// </summary>
-    public decimal TotalPrice { get; private set; }
+    public decimal TotalPrice => CalculateTotalPrice(BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer);
 
     /// <summary>
     /// Additional notes for the booking.
@@ -111,7 +110,7 @@ public sealed class Booking : Entity<long>
 
     /// <summary>
     /// Calculates the total price for a booking.
-    /// Base price is for a single room (not per person).
+    /// The base price is for a single room (not per person).
     /// RoomAdditionalCost is added for double rooms.
     /// Bike prices are added for principal and companion customers.
     /// </summary>
@@ -132,12 +131,12 @@ public sealed class Booking : Entity<long>
     }
 
     /// <summary>
-    /// Creates a new booking with validation and sanitization.
+    /// Creates a new booking with validation and sanitisation.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
     /// <param name="basePrice">The base price for a single room (not per person).</param>
     /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The additional cost for double room (0 for single room).</param>
+    /// <param name="roomAdditionalCost">The additional cost for a double room (0 for a single room).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>
@@ -256,28 +255,6 @@ public sealed class Booking : Entity<long>
         }
     }
 
-    /// <summary>
-    /// Updates the total price of the booking.
-    /// </summary>
-    /// <param name="newPrice">The new total price.</param>
-    /// <returns>A result indicating success or failure.</returns>
-    public Result UpdatePrice(decimal newPrice)
-    {
-        newPrice = NumericSanitizer.SanitizePrice(newPrice);
-
-        if (newPrice <= 0)
-        {
-            return BookingErrors.ZeroOrNegativeTotalPrice(newPrice);
-        }
-
-        if (newPrice > ContractConstants.MaxPrice)
-        {
-            return BookingErrors.TotalPriceExceedsMaximum(newPrice, ContractConstants.MaxPrice);
-        }
-
-        TotalPrice = newPrice;
-        return Result.Ok();
-    }
 
     /// <summary>
     /// Updates the notes for the booking.

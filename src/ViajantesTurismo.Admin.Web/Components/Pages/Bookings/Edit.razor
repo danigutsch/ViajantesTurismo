@@ -78,8 +78,10 @@ else
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="totalPrice" class="form-label">Total Price</label>
-                        <InputNumber id="totalPrice" class="form-control" @bind-Value="_model.TotalPrice" @bind-Value:format="F2"/>
+                        <label for="totalPrice" class="form-label">Total Price (Calculated)</label>
+                        <input type="text" id="totalPrice" class="form-control"
+                               value="@_booking.TotalPrice.ToString("F2")" readonly/>
+                        <div class="form-text">Price is automatically calculated from room type and bikes</div>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -179,7 +181,6 @@ else
 
             _model = new BookingFormModel
             {
-                TotalPrice = _booking.TotalPrice,
                 Notes = _booking.Notes ?? string.Empty,
                 Status = _booking.Status,
                 PaymentStatus = _booking.PaymentStatus
@@ -264,7 +265,6 @@ else
 
     private class BookingFormModel
     {
-        public decimal TotalPrice { get; set; }
         public string Notes { get; set; } = string.Empty;
         public BookingStatusDto Status { get; set; }
         public PaymentStatusDto PaymentStatus { get; set; }

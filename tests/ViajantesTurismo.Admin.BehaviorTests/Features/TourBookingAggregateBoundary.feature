@@ -21,13 +21,8 @@ So that aggregate boundaries are respected and data consistency is maintained
         When I remove the booking from the tour
         Then the tour should not have the booking
 
-    Scenario: Cannot operate on non-existent booking
+    Scenario: Cannot confirm non-existent booking
         When I try to confirm a non-existent booking
-        Then the operation should fail with not found error
-        And the error message should contain "Booking with ID 99999 not found"
-
-    Scenario: Cannot update price for non-existent booking
-        When I try to update price for a non-existent booking
         Then the operation should fail with not found error
         And the error message should contain "Booking with ID 99999 not found"
 
@@ -71,8 +66,6 @@ So that aggregate boundaries are respected and data consistency is maintained
         Given a tour exists
         When I add a booking for the customer to the tour with price 1500.00
         And I confirm the booking through the tour
-        And I update the booking price to 1800.00 through the tour
         And I update the booking notes to "VIP customer" through the tour
         Then the booking status should be "Confirmed"
-        And the booking price should be 1800.00
         And the booking notes should be "VIP customer"
