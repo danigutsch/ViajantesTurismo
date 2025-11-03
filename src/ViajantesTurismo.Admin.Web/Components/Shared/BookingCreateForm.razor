@@ -17,20 +17,33 @@
         </div>
     }
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Customer <span class="text-danger">*</span></label>
-            <InputSelect @bind-Value="Model.CustomerId" class="form-select">
-                <option value="">-- Select Customer --</option>
-                @foreach (var customer in Customers)
-                {
-                    <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="@(() => Model.CustomerId)"/>
-        </div>
+    <div class="mb-3">
+        <label class="form-label">Customer <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.CustomerId" class="form-select">
+            <option value="">-- Select Customer --</option>
+            @foreach (var customer in Customers)
+            {
+                <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.CustomerId)"/>
+    </div>
 
-        <div class="col-md-6 mb-3">
+    <div class="mb-3">
+        <label class="form-label">Room Type <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
+            <option value="@RoomTypeDto.SingleRoom">Single Room (+ Single Supplement Fee)</option>
+            <option value="@RoomTypeDto.DoubleRoom">Double Room (Standard Base Price)</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.RoomType)"/>
+        <div class="form-text">
+            Single rooms incur an additional supplement fee. Double rooms are priced at the standard tour rate.
+        </div>
+    </div>
+
+    @if (Model.RoomType == RoomTypeDto.DoubleRoom)
+    {
+        <div class="mb-3">
             <label class="form-label">Companion (Optional)</label>
             <InputSelect @bind-Value="Model.CompanionId" class="form-select">
                 <option value="">-- No Companion --</option>
@@ -40,20 +53,11 @@
                 }
             </InputSelect>
             <ValidationMessage For="@(() => Model.CompanionId)"/>
+            <div class="form-text">
+                Companion is optional for double rooms (allows single occupancy of double room).
+            </div>
         </div>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Room Type <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.RoomType" class="form-select">
-            <option value="@RoomTypeDto.SingleRoom">Single Room (+ Single Supplement Fee)</option>
-            <option value="@RoomTypeDto.DoubleRoom">Double Room (Standard Base Price)</option>
-        </InputSelect>
-        <ValidationMessage For="@(() => Model.RoomType)"/>
-        <div class="form-text">
-            Single rooms incur an additional supplement fee. Double rooms are priced at the standard tour rate.
-        </div>
-    </div>
+    }
 
     <div class="mb-3">
         <label for="notes" class="form-label">Notes</label>
@@ -94,6 +98,15 @@
 
     [Parameter]
     public bool IsSubmitting { get; set; }
+
+    private void OnRoomTypeChanged()
+    {
+        // Clear companion when switching to single room
+        if (Model.RoomType == RoomTypeDto.SingleRoom)
+        {
+            Model.CompanionId = null;
+        }
+    }
 
     private async Task HandleValidSubmit()
     {
