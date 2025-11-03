@@ -4,6 +4,7 @@ using ViajantesTurismo.Admin.ApiService.Mapping;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -94,15 +95,17 @@ internal static class CustomerEndpoints
             dto.ContactInfo.Instagram,
             dto.ContactInfo.Facebook);
 
-        var errors = new ViajantesTurismo.Common.Results.ValidationErrors();
+        var errors = new ValidationErrors();
         if (!personalInfoResult.IsSuccess)
         {
             errors.Add(personalInfoResult);
         }
+
         if (!identificationInfoResult.IsSuccess)
         {
             errors.Add(identificationInfoResult);
         }
+
         if (!contactInfoResult.IsSuccess)
         {
             errors.Add(contactInfoResult);
@@ -140,7 +143,8 @@ internal static class CustomerEndpoints
             LastName = customer.PersonalInfo.LastName,
             Email = customer.ContactInfo.Email,
             Mobile = customer.ContactInfo.Mobile,
-            Nationality = customer.PersonalInfo.Nationality
+            Nationality = customer.PersonalInfo.Nationality,
+            BikeType = BookingMapper.MapToBikeTypeDto(customer.PhysicalInfo.BikeType)
         };
 
         return TypedResults.Created($"/customers/{customer.Id}", customerDto);
@@ -179,15 +183,17 @@ internal static class CustomerEndpoints
             dto.ContactInfo.Instagram,
             dto.ContactInfo.Facebook);
 
-        var errors = new ViajantesTurismo.Common.Results.ValidationErrors();
+        var errors = new ValidationErrors();
         if (!personalInfoResult.IsSuccess)
         {
             errors.Add(personalInfoResult);
         }
+
         if (!identificationInfoResult.IsSuccess)
         {
             errors.Add(identificationInfoResult);
         }
+
         if (!contactInfoResult.IsSuccess)
         {
             errors.Add(contactInfoResult);

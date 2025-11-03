@@ -129,9 +129,9 @@
         if (Model.CustomerId.HasValue)
         {
             var customer = Customers.FirstOrDefault(c => c.Id == Model.CustomerId.Value);
-            if (customer?.BikeType is not null)
+            if (customer is not null)
             {
-                Model.PrincipalBikeType = customer.BikeType.Value;
+                Model.PrincipalBikeType = customer.BikeType;
             }
         }
     }
@@ -154,9 +154,9 @@
         else
         {
             var companion = Customers.FirstOrDefault(c => c.Id == Model.CompanionId.Value);
-            if (companion?.BikeType is not null)
+            if (companion is not null)
             {
-                Model.CompanionBikeType = companion.BikeType.Value;
+                Model.CompanionBikeType = companion.BikeType;
             }
         }
     }

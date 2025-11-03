@@ -24,6 +24,20 @@ internal static class BookingMapper
     }
 
     /// <summary>
+    /// Maps a <see cref="BikeType"/> to a <see cref="BikeTypeDto"/>.
+    /// </summary>
+    public static BikeTypeDto MapToBikeTypeDto(BikeType bikeType)
+    {
+        return bikeType switch
+        {
+            BikeType.None => BikeTypeDto.None,
+            BikeType.Regular => BikeTypeDto.Regular,
+            BikeType.EBike => BikeTypeDto.EBike,
+            _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, "Invalid bike type value.")
+        };
+    }
+
+    /// <summary>
     /// Maps a <see cref="RoomTypeDto"/> to a <see cref="RoomType"/>.
     /// </summary>
     public static RoomType MapToRoomType(RoomTypeDto roomTypeDto)

@@ -39,5 +39,5 @@ public sealed record GetCustomerDto
     /// <summary>
     /// The preferred bike type from customer's physical information.
     /// </summary>
-    public BikeTypeDto? BikeType { get; init; }
+    public required BikeTypeDto BikeType { get; init; }
 }
