@@ -32,14 +32,14 @@ public sealed record GetTourDto
     public required DateTime EndDate { get; init; }
 
     /// <summary>
-    /// Base price for the tour.
+    /// Base price for a single room (not per person).
     /// </summary>
     public required decimal Price { get; init; }
 
     /// <summary>
-    /// Additional price for a single room supplement.
+    /// Additional price for a double room (larger space).
     /// </summary>
-    public required decimal SingleRoomSupplementPrice { get; init; }
+    public required decimal DoubleRoomSupplementPrice { get; init; }
 
     /// <summary>
     /// Price for renting a regular bike.

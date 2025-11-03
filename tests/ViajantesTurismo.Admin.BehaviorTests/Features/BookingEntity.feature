@@ -9,14 +9,14 @@ So that booking data integrity is maintained independently of the aggregate root
         And the booking total price should be 1100
 
     Scenario: Create booking with principal and companion customers
-        When I create a booking with base price 1000, room type "DoubleRoom", room cost 0, regular bike 100 for principal, and eBike 200 for companion
+        When I create a booking with base price 1000, room type "DoubleRoom", room cost 200, regular bike 100 for principal, and eBike 200 for companion
         Then the booking should be created successfully
-        And the booking total price should be 2300
+        And the booking total price should be 1500
 
     Scenario: Create booking with single room supplement
-        When I create a booking with base price 1000, room type "SingleRoom", room cost 500, and regular bike 100 for principal
+        When I create a booking with base price 1000, room type "SingleRoom", room cost 0, and regular bike 100 for principal
         Then the booking should be created successfully
-        And the booking total price should be 1600
+        And the booking total price should be 1100
 
     Scenario: Cannot create booking with zero base price
         When I try to create a booking with base price 0

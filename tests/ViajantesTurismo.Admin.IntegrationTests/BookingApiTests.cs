@@ -60,7 +60,7 @@ public sealed class BookingApiTests : IDisposable
         Assert.NotNull(booking);
         Assert.Equal(tourDto.Id, booking.TourId);
         Assert.Equal(customerDto.Id, booking.CustomerId);
-        Assert.Equal(2600.00m, booking.TotalPrice);
+        Assert.Equal(2100.00m, booking.TotalPrice); // Base(2000) + RoomSupplement(0 for single) + Bike(100)
         Assert.Equal("Test booking", booking.Notes);
     }
 
@@ -154,7 +154,7 @@ public sealed class BookingApiTests : IDisposable
         var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(booking);
         Assert.Equal(createdBooking.Id, booking.Id);
-        Assert.Equal(2600.00m, booking.TotalPrice);
+        Assert.Equal(2100.00m, booking.TotalPrice); // Base(2000) + RoomSupplement(0 for single) + Bike(100)
     }
 
     [Fact]
@@ -362,7 +362,7 @@ public sealed class BookingApiTests : IDisposable
             StartDate = DateTime.UtcNow.AddMonths(2),
             EndDate = DateTime.UtcNow.AddMonths(2).AddDays(10),
             Price = 2000.00m,
-            SingleRoomSupplementPrice = 500.00m,
+            DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
             Currency = CurrencyDto.UsDollar,

@@ -39,10 +39,10 @@ public sealed record UpdateTourDto
     public required decimal Price { get; init; }
 
     /// <summary>
-    /// Additional price for a single room supplement.
+    /// Additional price for a double room.
     /// </summary>
     [Required, Range(0.01, ContractConstants.MaxPrice)]
-    public required decimal SingleRoomSupplementPrice { get; init; }
+    public required decimal DoubleRoomSupplementPrice { get; init; }
 
     /// <summary>
     /// Price for renting a regular bike.

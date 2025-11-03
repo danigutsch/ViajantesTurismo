@@ -69,8 +69,8 @@
             <InputNumber id="price" class="form-control" @bind-Value="_model.Price" @bind-Value:format="F2"/>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="singleRoom" class="form-label">Single Room Supplement</label>
-            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"
+            <label for="singleRoom" class="form-label">Double Room Supplement</label>
+            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.DoubleRoomSupplementPrice"
                          @bind-Value:format="F2"/>
         </div>
     </div>
@@ -129,7 +129,7 @@
                     EndDate = _model.EndDate.ToUniversalTime(),
                     Currency = _model.Currency,
                     Price = _model.Price,
-                    SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
+                    DoubleRoomSupplementPrice = _model.DoubleRoomSupplementPrice,
                     RegularBikePrice = _model.RegularBikePrice,
                     EBikePrice = _model.EBikePrice,
                     IncludedServices = _model.ServicesInput
@@ -182,7 +182,7 @@
         public decimal Price { get; set; }
 
         [Required, Range(0.01, ContractConstants.MaxPrice)]
-        public decimal SingleRoomSupplementPrice { get; set; }
+        public decimal DoubleRoomSupplementPrice { get; set; }
 
         [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal RegularBikePrice { get; set; }

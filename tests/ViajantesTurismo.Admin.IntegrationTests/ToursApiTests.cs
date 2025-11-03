@@ -60,7 +60,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = new DateTime(2024, 10, 20).ToUniversalTime(),
             Currency = CurrencyDto.Real,
             Price = 2500.00m,
-            SingleRoomSupplementPrice = 300.00m,
+            DoubleRoomSupplementPrice = 300.00m,
             RegularBikePrice = 150.00m,
             EBikePrice = 250.00m,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
@@ -88,7 +88,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = new DateTime(2025, 10, 20).ToUniversalTime(),
             Currency = CurrencyDto.Real,
             Price = 2600.00m,
-            SingleRoomSupplementPrice = 350.00m,
+            DoubleRoomSupplementPrice = 350.00m,
             RegularBikePrice = 160.00m,
             EBikePrice = 260.00m,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
@@ -138,7 +138,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = new DateTime(2026, 10, 20).ToUniversalTime(),
             Currency = CurrencyDto.Real,
             Price = 2700.00m,
-            SingleRoomSupplementPrice = 360.00m,
+            DoubleRoomSupplementPrice = 360.00m,
             RegularBikePrice = 170.00m,
             EBikePrice = 270.00m,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
@@ -158,7 +158,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = new DateTime(2026, 11, 20).ToUniversalTime(),
             Currency = CurrencyDto.Real,
             Price = 2800.00m,
-            SingleRoomSupplementPrice = 370.00m,
+            DoubleRoomSupplementPrice = 370.00m,
             RegularBikePrice = 180.00m,
             EBikePrice = 280.00m,
             IncludedServices = ["Hotel", "Breakfast", "City Tour", "Dinner"]
@@ -194,7 +194,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = new DateTime(2027, 1, 10).ToUniversalTime(),
             Currency = CurrencyDto.Real,
             Price = 1000.00m,
-            SingleRoomSupplementPrice = 100.00m,
+            DoubleRoomSupplementPrice = 100.00m,
             RegularBikePrice = 50.00m,
             EBikePrice = 80.00m,
             IncludedServices = ["None"]
@@ -219,7 +219,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
             Currency = CurrencyDto.Real,
             Price = 2000.00m,
-            SingleRoomSupplementPrice = 500.00m,
+            DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
             IncludedServices = ["Hotel", "Breakfast"]
@@ -247,7 +247,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
             Currency = CurrencyDto.Real,
             Price = invalidPrice,
-            SingleRoomSupplementPrice = 500.00m,
+            DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
             IncludedServices = ["Hotel"]
@@ -277,7 +277,7 @@ public sealed class ToursApiTests : IDisposable
             EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
             Currency = CurrencyDto.Real,
             Price = negativeBasePrice,
-            SingleRoomSupplementPrice = 500.00m,
+            DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
             IncludedServices = ["Hotel", "Breakfast"]

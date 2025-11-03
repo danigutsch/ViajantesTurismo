@@ -40,7 +40,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             price: price,
-            singleRoomSupplementPrice: 500.00m,
+            doubleRoomSupplementPrice: 500.00m,
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
@@ -57,7 +57,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
+            doubleRoomSupplementPrice: 500.00m,
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
@@ -74,7 +74,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             price: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
+            doubleRoomSupplementPrice: 500.00m,
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: currency,
@@ -121,7 +121,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
         tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
         tourContext.BasePrice = price;
-        tourContext.SingleRoomSupplementPrice = 500.00m;
+        tourContext.DoubleRoomSupplementPrice = 500.00m;
         tourContext.RegularBikePrice = 100.00m;
         tourContext.EBikePrice = 200.00m;
     }
@@ -133,7 +133,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Name = "Test Tour";
         tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
         tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
-        tourContext.SingleRoomSupplementPrice = price;
+        tourContext.DoubleRoomSupplementPrice = price;
     }
 
     [Given(@"I have tour details with regular bike price (.*)")]
@@ -164,7 +164,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
         tourContext.EndDate = tourContext.StartDate.AddDays(2);
         tourContext.BasePrice = -100m;
-        tourContext.SingleRoomSupplementPrice = -50m;
+        tourContext.DoubleRoomSupplementPrice = -50m;
         tourContext.RegularBikePrice = -30m;
         tourContext.EBikePrice = -40m;
     }
@@ -185,7 +185,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
         tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
         tourContext.BasePrice = basePrice;
-        tourContext.SingleRoomSupplementPrice = singleRoom;
+        tourContext.DoubleRoomSupplementPrice = singleRoom;
         tourContext.RegularBikePrice = regularBike;
         tourContext.EBikePrice = eBike;
     }
@@ -209,7 +209,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             startDate: tourContext.StartDate,
             endDate: tourContext.EndDate,
             price: tourContext.BasePrice,
-            singleRoomSupplementPrice: tourContext.SingleRoomSupplementPrice,
+            doubleRoomSupplementPrice: tourContext.DoubleRoomSupplementPrice,
             regularBikePrice: tourContext.RegularBikePrice,
             eBikePrice: tourContext.EBikePrice,
             currency: Currency.UsDollar,
@@ -407,7 +407,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then(@"the tour pricing should reflect all updates")]
     public void ThenTheTourPricingShouldReflectAllUpdates()
     {
-        Assert.Equal(600.00m, tourContext.Tour.SingleRoomSupplementPrice);
+        Assert.Equal(600.00m, tourContext.Tour.DoubleRoomSupplementPrice);
         Assert.Equal(150.00m, tourContext.Tour.RegularBikePrice);
         Assert.Equal(250.00m, tourContext.Tour.EBikePrice);
     }
@@ -468,7 +468,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then(@"the tour single room supplement should be (.*)")]
     public void ThenTheTourSingleRoomSupplementShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.SingleRoomSupplementPrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.DoubleRoomSupplementPrice);
     }
 
     [Then(@"the tour regular bike price should be (.*)")]

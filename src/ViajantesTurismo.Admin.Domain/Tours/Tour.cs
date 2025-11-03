@@ -27,7 +27,7 @@ public sealed class Tour : Entity<int>
         DateTime startDate,
         DateTime endDate,
         decimal price,
-        decimal singleRoomSupplementPrice,
+        decimal doubleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency,
@@ -38,7 +38,7 @@ public sealed class Tour : Entity<int>
         StartDate = startDate;
         EndDate = endDate;
         Price = price;
-        SingleRoomSupplementPrice = singleRoomSupplementPrice;
+        DoubleRoomSupplementPrice = doubleRoomSupplementPrice;
         RegularBikePrice = regularBikePrice;
         EBikePrice = eBikePrice;
         Currency = currency;
@@ -66,14 +66,14 @@ public sealed class Tour : Entity<int>
     public DateTime EndDate { get; private set; }
 
     /// <summary>
-    /// Gets the base price of the tour per person.
+    /// Gets the base price for a single room (not per person).
     /// </summary>
     public decimal Price { get; private set; }
 
     /// <summary>
-    /// Gets the additional price for a single room supplement.
+    /// Gets the additional price for a double room (larger space, more expensive than single room).
     /// </summary>
-    public decimal SingleRoomSupplementPrice { get; private set; }
+    public decimal DoubleRoomSupplementPrice { get; private set; }
 
     /// <summary>
     /// Gets the price for renting a regular bike.
@@ -107,8 +107,8 @@ public sealed class Tour : Entity<int>
     /// <param name="name">The descriptive name of the tour.</param>
     /// <param name="startDate">The start date of the tour.</param>
     /// <param name="endDate">The end date of the tour.</param>
-    /// <param name="price">The base price of the tour per person.</param>
-    /// <param name="singleRoomSupplementPrice">The additional price for a single room supplement.</param>
+    /// <param name="price">The base price for a single room (not per person).</param>
+    /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all pricing.</param>
@@ -120,7 +120,7 @@ public sealed class Tour : Entity<int>
         DateTime startDate,
         DateTime endDate,
         decimal price,
-        decimal singleRoomSupplementPrice,
+        decimal doubleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency,
@@ -129,7 +129,7 @@ public sealed class Tour : Entity<int>
         identifier = StringSanitizer.Sanitize(identifier);
         name = StringSanitizer.Sanitize(name);
         price = NumericSanitizer.SanitizePrice(price);
-        singleRoomSupplementPrice = NumericSanitizer.SanitizePrice(singleRoomSupplementPrice);
+        doubleRoomSupplementPrice = NumericSanitizer.SanitizePrice(doubleRoomSupplementPrice);
         regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
         eBikePrice = NumericSanitizer.SanitizePrice(eBikePrice);
         var sanitizedServices = StringSanitizer.SanitizeCollection(includedServices);
@@ -176,13 +176,13 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price));
         }
 
-        if (singleRoomSupplementPrice <= 0)
+        if (doubleRoomSupplementPrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
+            errors.Add(TourErrors.InvalidPrice("Double room supplement price", doubleRoomSupplementPrice));
         }
-        else if (singleRoomSupplementPrice > ContractConstants.MaxPrice)
+        else if (doubleRoomSupplementPrice > ContractConstants.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
+            errors.Add(TourErrors.PriceTooHigh("Double room supplement price", ContractConstants.MaxPrice, doubleRoomSupplementPrice));
         }
 
         if (regularBikePrice <= 0)
@@ -214,7 +214,7 @@ public sealed class Tour : Entity<int>
             startDate,
             endDate,
             price,
-            singleRoomSupplementPrice,
+            doubleRoomSupplementPrice,
             regularBikePrice,
             eBikePrice,
             currency,
@@ -298,30 +298,30 @@ public sealed class Tour : Entity<int>
     /// <summary>
     /// Updates all pricing for the tour except for base price, but including supplements, and bike rentals.
     /// </summary>
-    /// <param name="singleRoomSupplementPrice">The additional price for a single room supplement.</param>
+    /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all pricing.</param>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdatePricing(
-        decimal singleRoomSupplementPrice,
+        decimal doubleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency)
     {
-        singleRoomSupplementPrice = NumericSanitizer.SanitizePrice(singleRoomSupplementPrice);
+        doubleRoomSupplementPrice = NumericSanitizer.SanitizePrice(doubleRoomSupplementPrice);
         regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
         eBikePrice = NumericSanitizer.SanitizePrice(eBikePrice);
 
         var errors = new ValidationErrors();
 
-        if (singleRoomSupplementPrice <= 0)
+        if (doubleRoomSupplementPrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
+            errors.Add(TourErrors.InvalidPrice("Double room supplement price", doubleRoomSupplementPrice));
         }
-        else if (singleRoomSupplementPrice > ContractConstants.MaxPrice)
+        else if (doubleRoomSupplementPrice > ContractConstants.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
+            errors.Add(TourErrors.PriceTooHigh("Double room supplement price", ContractConstants.MaxPrice, doubleRoomSupplementPrice));
         }
 
         if (regularBikePrice <= 0)
@@ -347,7 +347,7 @@ public sealed class Tour : Entity<int>
             return errors.ToResult();
         }
 
-        SingleRoomSupplementPrice = singleRoomSupplementPrice;
+        DoubleRoomSupplementPrice = doubleRoomSupplementPrice;
         RegularBikePrice = regularBikePrice;
         EBikePrice = eBikePrice;
         Currency = currency;
@@ -471,7 +471,7 @@ public sealed class Tour : Entity<int>
     }
 
     private decimal CalculateRoomAdditionalCost(RoomType roomType) =>
-        roomType == RoomType.SingleRoom ? SingleRoomSupplementPrice : 0m;
+        roomType == RoomType.DoubleRoom ? DoubleRoomSupplementPrice : 0m;
 
     /// <summary>
     /// Updates the payment status of a specific booking.

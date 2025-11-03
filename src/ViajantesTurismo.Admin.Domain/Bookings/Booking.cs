@@ -19,9 +19,9 @@ public sealed class Booking : Entity<long>
     /// Initializes a new instance of the <see cref="Booking"/> class.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="basePrice">The base price per person at the time of booking.</param>
+    /// <param name="basePrice">The base price for a single room (not per person).</param>
     /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The additional cost for the room (e.g., single supplement).</param>
+    /// <param name="roomAdditionalCost">The additional cost for double room (0 for single room).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>
@@ -115,8 +115,9 @@ public sealed class Booking : Entity<long>
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer)
     {
-        var customerCount = companionCustomer is null ? 1 : 2;
-        var totalPrice = (basePrice * customerCount) + roomAdditionalCost + principalCustomer.BikePrice;
+        // Base price is for a single room (not per person)
+        // RoomAdditionalCost is added for double rooms
+        var totalPrice = basePrice + roomAdditionalCost + principalCustomer.BikePrice;
 
         if (companionCustomer is not null)
         {
@@ -130,9 +131,9 @@ public sealed class Booking : Entity<long>
     /// Creates a new booking with validation and sanitization.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="basePrice">The base price per person at the time of booking.</param>
+    /// <param name="basePrice">The base price for a single room (not per person).</param>
     /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The additional cost for the room (e.g., single supplement).</param>
+    /// <param name="roomAdditionalCost">The additional cost for double room (0 for single room).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>

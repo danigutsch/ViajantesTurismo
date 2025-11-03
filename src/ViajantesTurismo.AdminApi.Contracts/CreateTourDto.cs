@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ViajantesTurismo.AdminApi.Contracts;
 
@@ -39,10 +39,10 @@ public sealed record CreateTourDto
     public required decimal Price { get; init; }
 
     /// <summary>
-    /// The additional price for a single room supplement.
+    /// The additional price for a double room.
     /// </summary>
     [Required, Range(0.01, ContractConstants.MaxPrice)]
-    public required decimal SingleRoomSupplementPrice { get; init; }
+    public required decimal DoubleRoomSupplementPrice { get; init; }
 
     /// <summary>
     /// The price for renting a regular bike.

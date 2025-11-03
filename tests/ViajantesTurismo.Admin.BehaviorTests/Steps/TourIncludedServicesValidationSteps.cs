@@ -22,7 +22,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         var startDate = DateTime.Parse(data["StartDate"], CultureInfo.InvariantCulture).ToUniversalTime();
         var endDate = DateTime.Parse(data["EndDate"], CultureInfo.InvariantCulture).ToUniversalTime();
         var price = decimal.Parse(data["Price"], CultureInfo.InvariantCulture);
-        var singleRoomSupplementPrice = decimal.Parse(data["SingleRoomSupplementPrice"], CultureInfo.InvariantCulture);
+        var doubleRoomSupplementPrice = decimal.Parse(data["DoubleRoomSupplementPrice"], CultureInfo.InvariantCulture);
         var regularBikePrice = decimal.Parse(data["RegularBikePrice"], CultureInfo.InvariantCulture);
         var eBikePrice = decimal.Parse(data["EBikePrice"], CultureInfo.InvariantCulture);
         var currency = ParseCurrency(data["Currency"]);
@@ -33,7 +33,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
             startDate: startDate,
             endDate: endDate,
             price: price,
-            singleRoomSupplementPrice: singleRoomSupplementPrice,
+            doubleRoomSupplementPrice: doubleRoomSupplementPrice,
             regularBikePrice: regularBikePrice,
             eBikePrice: eBikePrice,
             currency: currency,

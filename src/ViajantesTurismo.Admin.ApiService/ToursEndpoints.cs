@@ -60,7 +60,7 @@ internal static class ToursEndpoints
             tourDto.StartDate,
             tourDto.EndDate,
             tourDto.Price,
-            tourDto.SingleRoomSupplementPrice,
+            tourDto.DoubleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency,
@@ -129,7 +129,7 @@ internal static class ToursEndpoints
         }
 
         var pricingResult = tour.UpdatePricing(
-            tourDto.SingleRoomSupplementPrice,
+            tourDto.DoubleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency);

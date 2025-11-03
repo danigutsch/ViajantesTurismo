@@ -183,15 +183,17 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void ThenTheBookingShouldIncludeSingleRoomSupplement()
     {
         Assert.NotNull(bookingContext.Booking);
-        var tour = tourContext.Tour;
-        Assert.Equal(tour.SingleRoomSupplementPrice, bookingContext.Booking.RoomAdditionalCost);
+        // With new pricing model: Single room = NO supplement (base price only)
+        Assert.Equal(0m, bookingContext.Booking.RoomAdditionalCost);
     }
 
     [Then(@"the booking should not include single room supplement")]
     public void ThenTheBookingShouldNotIncludeSingleRoomSupplement()
     {
         Assert.NotNull(bookingContext.Booking);
-        Assert.Equal(0m, bookingContext.Booking.RoomAdditionalCost);
+        var tour = tourContext.Tour;
+        // With new pricing model: Double room = HAS supplement
+        Assert.Equal(tour.DoubleRoomSupplementPrice, bookingContext.Booking.RoomAdditionalCost);
     }
 
     [Then(@"the companion should have no bike price")]

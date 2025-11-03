@@ -32,13 +32,13 @@
     <div class="mb-3">
         <label class="form-label">Room Type <span class="text-danger">*</span></label>
         <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
-            <option value="@RoomTypeDto.SingleRoom">Single Room (Base Price + Supplement)</option>
-            <option value="@RoomTypeDto.DoubleRoom">Double Room (Base Price Only)</option>
+            <option value="@RoomTypeDto.SingleRoom">Single Room (Base Price)</option>
+            <option value="@RoomTypeDto.DoubleRoom">Double Room (Base Price + Supplement)</option>
         </InputSelect>
         <ValidationMessage For="@(() => Model.RoomType)"/>
         <div class="form-text">
-            Single rooms: Tour base price per person + single room supplement fee.<br/>
-            Double rooms: Tour base price per person only (no supplement).
+            Single Room: Tour base price (standard room).<br/>
+            Double Room: Tour base price + double room supplement (larger space, more expensive).
         </div>
     </div>
 
