@@ -35,6 +35,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.AdminApi.Contracts\ViajantesTurismo.AdminApi.Contracts.csproj"/>
     </ItemGroup>
 
 </Project>

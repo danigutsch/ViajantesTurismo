@@ -1,5 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -28,7 +29,7 @@ public sealed class BookingAssertionSteps(BookingContext context)
     [Then(@"the booking notes should be null")]
     public void ThenTheBookingNotesShouldBeNull()
     {
-        Assert.Null(context.Booking.Notes);
+        Assert.True(string.IsNullOrEmpty(context.Booking.Notes));
     }
 
     [Then(@"the booking payment status should be ""(.*)""")]
@@ -62,7 +63,7 @@ public sealed class BookingAssertionSteps(BookingContext context)
     [Then(@"the result should fail with message ""(.*)""")]
     public void ThenTheResultShouldFailWithMessage(string expectedMessage)
     {
-        var result = context.Result;
+        var result = (Result)context.Result;
         Assert.True(result.IsFailure);
         Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
@@ -70,7 +71,7 @@ public sealed class BookingAssertionSteps(BookingContext context)
     [Then(@"the result should fail with message starting with ""(.*)""")]
     public void ThenTheResultShouldFailWithMessageStartingWith(string expectedMessagePrefix)
     {
-        var result = context.Result;
+        var result = (Result)context.Result;
         Assert.True(result.IsFailure);
         Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }

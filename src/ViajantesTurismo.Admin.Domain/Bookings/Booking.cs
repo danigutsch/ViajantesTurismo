@@ -11,8 +11,7 @@ namespace ViajantesTurismo.Admin.Domain.Bookings;
 /// Represents a booking made by a customer for a tour.
 /// </summary>
 /// <remarks>
-/// Part of the Tour aggregate. Modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingPrice()</c>).
-/// Methods are <c>internal</c> to enforce aggregate boundary.
+/// Part of the Tour aggregate. In production code, modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingPrice()</c>).
 /// </remarks>
 public sealed class Booking : Entity<long>
 {
@@ -138,7 +137,7 @@ public sealed class Booking : Entity<long>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
-    internal static Result<Booking> Create(
+    public static Result<Booking> Create(
         int tourId,
         decimal basePrice,
         RoomType roomType,
@@ -190,7 +189,7 @@ public sealed class Booking : Entity<long>
     /// Updates the payment status of the booking.
     /// </summary>
     /// <param name="paymentStatus">The new payment status.</param>
-    internal void UpdatePaymentStatus(PaymentStatus paymentStatus)
+    public void UpdatePaymentStatus(PaymentStatus paymentStatus)
     {
         PaymentStatus = paymentStatus;
     }
@@ -199,7 +198,7 @@ public sealed class Booking : Entity<long>
     /// Confirms the booking, setting its status to Confirmed. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
-    internal Result Confirm()
+    public Result Confirm()
     {
         switch (Status)
         {
@@ -218,7 +217,7 @@ public sealed class Booking : Entity<long>
     /// Cancels the booking, setting its status to Cancelled. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
-    internal Result Cancel()
+    public Result Cancel()
     {
         switch (Status)
         {
@@ -237,7 +236,7 @@ public sealed class Booking : Entity<long>
     /// Marks the booking as completed. Is idempotent.
     /// </summary>
     /// <returns>A result indicating success or failure.</returns>
-    internal Result Complete()
+    public Result Complete()
     {
         switch (Status)
         {
@@ -257,7 +256,7 @@ public sealed class Booking : Entity<long>
     /// </summary>
     /// <param name="newPrice">The new total price.</param>
     /// <returns>A result indicating success or failure.</returns>
-    internal Result UpdatePrice(decimal newPrice)
+    public Result UpdatePrice(decimal newPrice)
     {
         newPrice = NumericSanitizer.SanitizePrice(newPrice);
 
@@ -280,7 +279,7 @@ public sealed class Booking : Entity<long>
     /// </summary>
     /// <param name="notes">The updated notes.</param>
     /// <returns>A result indicating success or failure.</returns>
-    internal Result UpdateNotes(string? notes)
+    public Result UpdateNotes(string? notes)
     {
         notes = StringSanitizer.SanitizeNotes(notes);
 

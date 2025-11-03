@@ -44,8 +44,9 @@ public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingCont
     [Then(@"the operation should fail with not found error")]
     public void ThenTheOperationShouldFailWithNotFoundError()
     {
-        Assert.False(bookingContext.Result.IsSuccess);
-        Assert.Equal(ResultStatus.NotFound, bookingContext.Result.Status);
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.NotFound, result.Status);
     }
 
     [Then(@"the tour should have (\d+) bookings")]

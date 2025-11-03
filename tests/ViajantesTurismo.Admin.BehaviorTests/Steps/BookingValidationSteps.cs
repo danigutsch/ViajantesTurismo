@@ -78,46 +78,60 @@ public sealed class BookingValidationSteps(BookingContext bookingContext, TourCo
     {
         var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
         bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, paymentStatus);
-        Assert.True(bookingContext.Result.IsSuccess);
+        var result = (Result)bookingContext.Result;
+        Assert.True(result.IsSuccess);
     }
 
     [Then(@"the booking creation should fail with validation error for ""(.*)""")]
     public void ThenTheBookingCreationShouldFailWithValidationErrorFor(string fieldName)
     {
-        Assert.False(bookingContext.Result.IsSuccess);
-        Assert.True(bookingContext.Result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 
     [Then(@"the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {
-        Assert.True(bookingContext.Result.IsSuccess);
-        Assert.NotNull(bookingContext.Booking);
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsSuccess);
+                bookingContext.Booking = typedResult.Value;
+                break;
+            case Result result:
+                Assert.True(result.IsSuccess);
+                Assert.NotNull(bookingContext.Booking);
+                break;
+        }
     }
 
     [Then(@"the booking update should fail with validation error for ""(.*)""")]
     public void ThenTheBookingUpdateShouldFailWithValidationErrorFor(string fieldName)
     {
-        Assert.False(bookingContext.Result.IsSuccess);
-        Assert.True(bookingContext.Result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 
     [Then(@"the booking update should fail with conflict error")]
     public void ThenTheBookingUpdateShouldFailWithConflictError()
     {
-        Assert.False(bookingContext.Result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, bookingContext.Result.Status);
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Conflict, result.Status);
     }
 
     [Then(@"the error message should contain ""(.*)""")]
     public void ThenTheErrorMessageShouldContain(string expectedMessage)
     {
-        Assert.NotNull(bookingContext.Result.ErrorDetails);
+        var result = (Result)bookingContext.Result;
+        Assert.NotNull(result.ErrorDetails);
 
-        var messageFound = bookingContext.Result.ErrorDetails.Detail.Contains(expectedMessage, StringComparison.Ordinal);
-        if (!messageFound && bookingContext.Result.ErrorDetails.ValidationErrors != null)
+        var messageFound = result.ErrorDetails.Detail.Contains(expectedMessage, StringComparison.Ordinal);
+        if (!messageFound && result.ErrorDetails.ValidationErrors != null)
         {
-            messageFound = bookingContext.Result.ErrorDetails.ValidationErrors.Values
+            messageFound = result.ErrorDetails.ValidationErrors.Values
                 .SelectMany(errors => errors)
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
@@ -128,7 +142,8 @@ public sealed class BookingValidationSteps(BookingContext bookingContext, TourCo
     [Then(@"the booking notes should be updated successfully")]
     public void ThenTheBookingNotesShouldBeUpdatedSuccessfully()
     {
-        Assert.True(bookingContext.Result.IsSuccess);
+        var result = (Result)bookingContext.Result;
+        Assert.True(result.IsSuccess);
     }
 
     [Then(@"the booking notes should be null or empty")]

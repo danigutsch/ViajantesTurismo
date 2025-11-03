@@ -152,17 +152,17 @@ So that tours have valid and accurate information
     Scenario: Cannot update base price with negative value
         Given an existing tour with base price 2000.00
         When I try to update the base price to -100.00
-        Then the price update should fail
+        Then the tour price update should fail
 
     Scenario: Cannot update base price exceeding maximum
         Given an existing tour with base price 2000.00
         When I try to update the base price to 100001.00
-        Then the price update should fail
+        Then the tour price update should fail
 
     Scenario: Cannot update base price to zero
         Given an existing tour with base price 2000.00
         When I try to update the base price to 0.00
-        Then the price update should fail
+        Then the tour price update should fail
 
     Scenario: Cannot update basic info with empty identifier
         Given an existing tour with identifier "CUBA2024" and name "Cuba Adventure"

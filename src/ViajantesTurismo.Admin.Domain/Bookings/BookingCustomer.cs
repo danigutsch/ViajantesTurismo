@@ -54,7 +54,7 @@ public sealed class BookingCustomer
     /// <param name="bikeType">The type of bike selected.</param>
     /// <param name="bikePrice">The price of the bike rental.</param>
     /// <returns>A Result containing the BookingCustomer if successful, or validation errors.</returns>
-    internal static Result<BookingCustomer> Create(int customerId, BikeType bikeType, decimal bikePrice)
+    public static Result<BookingCustomer> Create(int customerId, BikeType bikeType, decimal bikePrice)
     {
         bikePrice = NumericSanitizer.SanitizePrice(bikePrice);
 

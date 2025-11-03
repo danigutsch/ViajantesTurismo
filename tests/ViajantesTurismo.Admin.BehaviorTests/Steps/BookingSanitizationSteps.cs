@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -72,8 +73,9 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [Then(@"the booking creation should fail with notes validation error")]
     public void ThenTheBookingCreationShouldFailWithNotesValidationError()
     {
-        Assert.False(bookingContext.Result.IsSuccess);
-        Assert.True(bookingContext.Result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false);
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false);
     }
 
     [Then(@"the booking price validation should fail")]

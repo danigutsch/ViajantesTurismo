@@ -162,7 +162,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Identifier = "";
         tourContext.Name = "";
         tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = tourContext.StartDate.AddDays(2); // Too short duration
+        tourContext.EndDate = tourContext.StartDate.AddDays(2);
         tourContext.BasePrice = -100m;
         tourContext.SingleRoomSupplementPrice = -50m;
         tourContext.RegularBikePrice = -30m;
@@ -346,7 +346,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
 
         Assert.False(isSuccess);
 
-        // Check if message is in the detail or in validation errors
         var messageFound = errorDetail?.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
         if (!messageFound && validationErrors != null)
         {
@@ -433,12 +432,15 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 
-    [Then(@"the price update should fail")]
-    public void ThenThePriceUpdateShouldFail()
+    [Then(@"the tour price update should fail")]
+    public void ThenTheTourPriceUpdateShouldFail()
     {
-        Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result>(tourContext.Result);
-        var result = (Result)tourContext.Result;
+        var result = tourContext.Result switch
+        {
+            Result r => r,
+            Result<Tour> rt => rt.ToResult(),
+            _ => throw new InvalidOperationException("Result is not set")
+        };
         Assert.False(result.IsSuccess);
     }
 
