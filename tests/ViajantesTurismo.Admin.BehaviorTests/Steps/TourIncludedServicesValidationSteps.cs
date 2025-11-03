@@ -89,13 +89,11 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     {
         var services = tourContext.Tour.IncludedServices;
 
-        // Check that services don't have leading/trailing whitespace
         foreach (var service in services)
         {
             Assert.Equal(service.Trim(), service);
         }
 
-        // Check that multiple spaces are normalized to single spaces
         Assert.DoesNotContain(services, s => s.Contains("  ", StringComparison.Ordinal));
     }
 

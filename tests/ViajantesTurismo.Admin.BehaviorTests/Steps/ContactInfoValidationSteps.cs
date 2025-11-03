@@ -57,7 +57,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     [When(@"I create contact info with email of (\d+) characters")]
     public void WhenICreateContactInfoWithEmailOfLength(int length)
     {
-        var email = new string('a', length - 12) + "@example.com"; // Account for @example.com
+        var email = new string('a', length - 12) + "@example.com";
         context.Email = email;
         context.Result = ContactInfo.Create(email, "+1234567890", null, null);
         if (context.Result.IsSuccess)
@@ -232,4 +232,3 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         Assert.Contains(expectedError, allErrors);
     }
 }
-

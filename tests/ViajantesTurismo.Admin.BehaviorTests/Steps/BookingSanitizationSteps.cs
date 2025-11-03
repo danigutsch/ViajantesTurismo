@@ -64,9 +64,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     public void ThenTheBookingNotesShouldContainNormalizedWhitespace()
     {
         Assert.NotNull(bookingContext.Booking.Notes);
-        // Should not have multiple consecutive spaces
         Assert.DoesNotContain("  ", bookingContext.Booking.Notes, StringComparison.Ordinal);
-        // Should not have leading/trailing whitespace
         Assert.Equal(bookingContext.Booking.Notes.Trim(), bookingContext.Booking.Notes);
     }
 
@@ -81,8 +79,6 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [Then(@"the booking price validation should fail")]
     public void ThenTheBookingPriceValidationShouldFail()
     {
-        // When adding booking with invalid price, it should fail
-        // We need to verify that the booking was not added to the tour
         Assert.Empty(tourContext.Tour.Bookings);
     }
 }

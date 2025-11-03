@@ -59,7 +59,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have an existing customer")]
     public void GivenIHaveAnExistingCustomer()
     {
-        // Reuse the helper to create personal info
         context.PersonalInfoResult = PersonalInfo.Create(
             "John",
             "Smith",
@@ -91,7 +90,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I create a customer")]
     public void WhenICreateACustomer()
     {
-        // Personal info must be created through its factory method with validation
         context.PersonalInfoResult = PersonalInfo.Create(
             "John",
             "Smith",
@@ -320,7 +318,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateAddressInformationFromSanitizationInputs()
 #pragma warning restore CA1822
     {
-        // Address is already created in the Given step
     }
 
     [Then(@"the sanitized address city should be ""(.*)""")]
@@ -346,7 +343,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateContactInformation()
 #pragma warning restore CA1822
     {
-        // ContactInfo is already created in the Given step
     }
 
     [Then(@"the sanitized email should be ""(.*)""")]
@@ -372,7 +368,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateContactInformationWithSocialMedia()
 #pragma warning restore CA1822
     {
-        // ContactInfo is already created in the Given step
     }
 
     [Then(@"the sanitized Instagram should be ""(.*)""")]
@@ -398,7 +393,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateIdentificationInformation()
 #pragma warning restore CA1822
     {
-        // IdentificationInfo is already created in the Given step
     }
 
     [Then(@"the sanitized national ID should be ""(.*)""")]
@@ -424,7 +418,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateEmergencyContactInformation()
 #pragma warning restore CA1822
     {
-        // EmergencyContact is already created in the Given step
     }
 
     [Then(@"the sanitized emergency contact name should be ""(.*)""")]
@@ -450,7 +443,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateMedicalInformation()
 #pragma warning restore CA1822
     {
-        // MedicalInfo is already created in the Given step
     }
 
     [Then(@"the sanitized allergies should be ""(.*)""")]

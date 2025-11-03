@@ -18,7 +18,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given(@"a customer exists")]
     public static void GivenACustomerExists()
     {
-        // Customer ID will be mocked as 1 for testing
     }
 
     [Given(@"a tour exists with a pending booking")]

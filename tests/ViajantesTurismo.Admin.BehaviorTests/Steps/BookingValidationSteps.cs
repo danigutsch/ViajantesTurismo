@@ -76,9 +76,9 @@ public sealed class BookingValidationSteps(
     [Then(@"the error message should contain ""(.*)""")]
     public void ThenTheErrorMessageShouldContain(string expectedMessage)
     {
-        // Try to get error details from any context that has a result
         ResultError? errorDetails = null;
 
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (bookingContext.Result != null)
         {
             errorDetails = bookingContext.Result switch
@@ -88,6 +88,7 @@ public sealed class BookingValidationSteps(
                 _ => null
             };
         }
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         else if (bookingCustomerContext.Result != null)
         {
             var result = (Result<BookingCustomer>)bookingCustomerContext.Result;
