@@ -187,6 +187,36 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         bookingContext.Result = bookingContext.Booking.UpdateNotes(notes);
     }
 
+    [When(@"I try to create a booking with invalid room type (-?\d+)")]
+    public void WhenITryToCreateABookingWithInvalidRoomType(int invalidRoomType)
+    {
+        var principal = CreatePrincipalCustomer();
+        bookingContext.Result = Booking.Create(1, 1000m, (RoomType)invalidRoomType, 0m, principal, null, null);
+        bookingContext.Action = null!;
+    }
+
+    [When(@"I try to update the booking payment status with invalid value (-?\d+)")]
+    public void WhenITryToUpdateTheBookingPaymentStatusWithInvalidValue(int invalidPaymentStatus)
+    {
+        bookingContext.Result = bookingContext.Booking.UpdatePaymentStatus((PaymentStatus)invalidPaymentStatus);
+    }
+
+    [Then(@"the booking should have room type ""(.*)""")]
+    public void ThenTheBookingShouldHaveRoomType(string expectedRoomType)
+    {
+        var type = Enum.Parse<RoomType>(expectedRoomType);
+        Assert.Equal(type, bookingContext.Booking.RoomType);
+    }
+
+    [Then(@"the booking update should fail with validation error for ""(.*)""")]
+    public void ThenTheBookingUpdateShouldFailWithValidationErrorFor(string fieldName)
+    {
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(fieldName, result.ErrorDetails!.ValidationErrors!.Keys);
+    }
+
     [Then(@"the booking creation should fail")]
     public void ThenTheBookingCreationShouldFail()
     {

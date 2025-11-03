@@ -6,6 +6,18 @@ So that only valid bookings are created and updated
     Background:
         Given a tour exists
 
+    Scenario: Cannot create booking with invalid room type
+        When I try to add a booking to tour with invalid room type 99
+        Then the booking creation should fail
+        And the error should be for field "roomType"
+        And the error message should contain "Invalid room type"
+
+    Scenario: Cannot update payment status with invalid value
+        Given a tour exists with a booking
+        When I try to update the booking payment status with invalid value 99 through the tour
+        Then the booking update should fail with validation error for "paymentStatus"
+        And the error message should contain "Invalid payment status"
+
     Scenario: Cannot update booking notes exceeding maximum length
         Given a tour exists with a booking
         When I try to update the booking notes with 2001 characters through the tour

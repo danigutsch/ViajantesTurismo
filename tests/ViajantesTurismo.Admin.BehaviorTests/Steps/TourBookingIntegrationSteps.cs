@@ -30,16 +30,73 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
-    [Given(@"a tour exists with a confirmed booking")]
-    public void GivenATourExistsWithAConfirmedBooking()
+    [Given(@"a tour exists with a cancelled booking")]
+    public void GivenATourExistsWithACancelledBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
         var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
-        var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
-        Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
+        Assert.Equal(BookingStatus.Cancelled, bookingContext.Booking.Status);
+    }
+
+    [Given(@"a tour exists with a completed booking")]
+    public void GivenATourExistsWithACompletedBooking()
+    {
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, null);
+        Assert.True(addResult.IsSuccess);
+        bookingContext.Booking = addResult.Value;
+        tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
+    }
+
+    [When(@"I update the payment status to ""(.*)"" through the tour")]
+    public void WhenIUpdateThePaymentStatusToThroughTheTour(string status)
+    {
+        var paymentStatus = Enum.Parse<PaymentStatus>(status);
+        var result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, paymentStatus);
+        Assert.True(result.IsSuccess);
+    }
+
+    [When(@"I try to update the booking payment status with invalid value (.*) through the tour")]
+    public void WhenITryToUpdateTheBookingPaymentStatusWithInvalidValueThroughTheTour(int invalidPaymentStatus)
+    {
+        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, (PaymentStatus)invalidPaymentStatus);
+    }
+
+    [When(@"I add a booking to tour with bike type ""(.*)"" and no companion")]
+    public void WhenIAddABookingToTourWithBikeTypeAndNoCompanion(string bikeType)
+    {
+        var type = Enum.Parse<BikeType>(bikeType);
+        var result = tourContext.Tour.AddBooking(1, type, null, null, RoomType.SingleRoom, null);
+        bookingContext.Result = result;
+        if (result.IsSuccess)
+        {
+            bookingContext.Booking = result.Value;
+        }
+    }
+
+    [When(@"I add a booking to tour with room type ""(.*)""")]
+    public void WhenIAddABookingToTourWithRoomType(string roomType)
+    {
+        var type = Enum.Parse<RoomType>(roomType);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, type, null);
+        bookingContext.Result = result;
+        if (result.IsSuccess)
+        {
+            bookingContext.Booking = result.Value;
+        }
+    }
+
+    [When(@"I try to confirm the booking through the tour")]
+    public void WhenITryToConfirmTheBookingThroughTheTour()
+    {
+        bookingContext.Result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
     }
 
     [Given(@"a tour exists with a booking priced at (.*)")]
@@ -101,11 +158,23 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         Assert.True(result.IsSuccess);
     }
 
+    [When(@"I try to cancel the booking through the tour")]
+    public void WhenITryToCancelTheBookingThroughTheTour()
+    {
+        bookingContext.Result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
+    }
+
     [When(@"I complete the booking through the tour")]
     public void WhenICompleteTheBookingThroughTheTour()
     {
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
+    }
+
+    [When(@"I try to complete the booking through the tour")]
+    public void WhenITryToCompleteTheBookingThroughTheTour()
+    {
+        bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
     [When(@"I update the booking notes to ""(.*)"" through the tour")]

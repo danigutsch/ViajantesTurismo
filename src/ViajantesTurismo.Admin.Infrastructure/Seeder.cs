@@ -107,7 +107,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             IdentificationInfo.Create("789123456", "Korean").Value,
             ContactInfo.Create("david@example.com", "+821012345678", null, "david.lee").Value,
             Address.Create("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea").Value,
-            PhysicalInfo.Create(70, 175, BikeType.None).Value,
+            PhysicalInfo.Create(70, 175, BikeType.EBike).Value,
             AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Sarah Lee", "+821098765432").Value,
             MedicalInfo.Create("Dairy", null).Value
@@ -137,7 +137,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             IdentificationInfo.Create("147258369", "Indian").Value,
             ContactInfo.Create("gina@example.com", "+919876543210", "@gina_patel", null).Value,
             Address.Create("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India").Value,
-            PhysicalInfo.Create(62, 162, BikeType.None).Value,
+            PhysicalInfo.Create(62, 162, BikeType.Regular).Value,
             AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value,
             EmergencyContact.Create("Raj Patel", "+919876543211").Value,
             MedicalInfo.Create("Nuts", null).Value
@@ -167,7 +167,7 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             IdentificationInfo.Create("741963852", "Australian").Value,
             ContactInfo.Create("jack@example.com", "+61412345678", null, "jack.brown").Value,
             Address.Create("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia").Value,
-            PhysicalInfo.Create(72, 182, BikeType.None).Value,
+            PhysicalInfo.Create(72, 182, BikeType.Regular).Value,
             AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Emma Brown", "+61498765432").Value,
             MedicalInfo.Create("Seafood", null).Value

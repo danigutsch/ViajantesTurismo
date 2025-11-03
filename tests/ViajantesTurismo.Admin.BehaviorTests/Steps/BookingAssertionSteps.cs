@@ -5,8 +5,16 @@ using ViajantesTurismo.Common.Results;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class BookingAssertionSteps(BookingContext context)
+public sealed class BookingAssertionSteps(BookingContext context, TourContext tourContext)
 {
+    [Then(@"the booking update should fail with conflict error")]
+    public void ThenTheBookingUpdateShouldFailWithConflictError()
+    {
+        var result = (Result)context.Result;
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Conflict, result.Status);
+    }
+
     [Then(@"the booking status should be ""(.*)""")]
     public void ThenTheBookingStatusShouldBe(string expectedStatus)
     {
@@ -74,5 +82,29 @@ public sealed class BookingAssertionSteps(BookingContext context)
         var result = (Result)context.Result;
         Assert.True(result.IsFailure);
         Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+    }
+
+    [Then(@"the booking room additional cost should be (.*)")]
+    public void ThenTheBookingRoomAdditionalCostShouldBe(decimal expectedCost)
+    {
+        Assert.Equal(expectedCost, context.Booking.RoomAdditionalCost);
+    }
+
+    [Then(@"the booking room additional cost should be the tour double room supplement")]
+    public void ThenTheBookingRoomAdditionalCostShouldBeTheTourDoubleRoomSupplement()
+    {
+        Assert.Equal(tourContext.Tour.DoubleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
+    }
+
+    [Then(@"the booking principal customer bike price should be the tour regular bike price")]
+    public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourRegularBikePrice()
+    {
+        Assert.Equal(tourContext.Tour.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+    }
+
+    [Then(@"the booking principal customer bike price should be the tour ebike price")]
+    public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourEbikePrice()
+    {
+        Assert.Equal(tourContext.Tour.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);
     }
 }

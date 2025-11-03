@@ -157,3 +157,34 @@ So that booking data integrity is maintained independently of the aggregate root
         Given a booking exists with status "Confirmed"
         When I complete the booking
         Then the booking status should be "Completed"
+
+    Scenario: Create booking with SingleRoom room type
+        When I create a booking with base price 1000, room type "SingleRoom", room cost 0, and regular bike 100 for principal
+        Then the booking should be created successfully
+        And the booking should have room type "SingleRoom"
+
+    Scenario Outline: Cannot create booking with invalid RoomType values
+        When I try to create a booking with invalid room type <invalidValue>
+        Then the booking creation should fail
+        And the error should be for field "roomType"
+        And the error message should contain "Invalid room type"
+
+        Examples:
+          | invalidValue |
+          | -1           |
+          | 2            |
+          | 99           |
+          | 999          |
+
+    Scenario Outline: Invalid PaymentStatus values are rejected
+        Given a booking exists
+        When I try to update the booking payment status with invalid value <invalidValue>
+        Then the booking update should fail with validation error for "paymentStatus"
+        And the error message should contain "Invalid payment status"
+
+        Examples:
+          | invalidValue |
+          | -1           |
+          | 4            |
+          | 99           |
+          | 999          |

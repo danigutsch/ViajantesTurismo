@@ -15,11 +15,24 @@ So that customer bike selections are properly validated
         And the booking customer should have bike type "EBike"
         And the booking customer should have bike price 200
 
-    Scenario: Create booking customer with no bike
-        When I create a booking customer with id 1, bike type "None", and bike price 0
-        Then the booking customer should be created successfully
-        And the booking customer should have bike type "None"
-        And the booking customer should have bike price 0
+    Scenario: Cannot create booking customer with bike type None
+        When I try to create a booking customer with bike type "None"
+        Then the booking customer creation should fail
+        And the error should be for field "bikeType"
+        And the error message should contain "Bike type must be selected"
+
+    Scenario Outline: Cannot create booking customer with invalid bike type values
+        When I try to create a booking customer with invalid bike type <invalidValue>
+        Then the booking customer creation should fail
+        And the error should be for field "bikeType"
+        And the error message should contain "Invalid bike type"
+
+        Examples:
+          | invalidValue |
+          | -1           |
+          | 3            |
+          | 99           |
+          | 999          |
 
     Scenario: Cannot create booking customer with negative bike price
         When I try to create a booking customer with bike price -50

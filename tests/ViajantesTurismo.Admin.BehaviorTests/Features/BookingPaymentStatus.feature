@@ -27,3 +27,15 @@ So that I can track payments separately from booking lifecycle
         And the operator confirms the booking
         Then the booking status should be "Confirmed"
         And the booking payment status should be "Paid"
+
+    Scenario Outline: All valid PaymentStatus values are accepted
+        Given a pending booking exists
+        When the operator updates the payment status to "<status>"
+        Then the booking payment status should be "<status>"
+
+        Examples:
+          | status        |
+          | Unpaid        |
+          | PartiallyPaid |
+          | Paid          |
+          | Refunded      |

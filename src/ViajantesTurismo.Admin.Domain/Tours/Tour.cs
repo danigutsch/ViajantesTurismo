@@ -398,6 +398,7 @@ public sealed class Tour : Entity<int>
 
     /// <summary>
     /// Adds a new booking to this tour.
+    /// Validates that BikeType.None is not used per US-11 requirement (None is a placeholder value, not a valid booking choice).
     /// </summary>
     /// <param name="principalCustomerId">The ID of the principal customer making the booking.</param>
     /// <param name="principalBikeType">The bike type selected by the principal customer.</param>
@@ -414,6 +415,23 @@ public sealed class Tour : Entity<int>
         RoomType roomType,
         string? notes)
     {
+        var principalValidation = ValidatePrincipalBikeType(principalBikeType);
+        if (principalValidation.IsFailure)
+        {
+            return principalValidation.ConvertError<Booking>();
+        }
+
+        var companionValidation = ValidateCompanionBikeType(companionCustomerId, companionBikeType);
+        if (companionValidation.IsFailure)
+        {
+            return companionValidation.ConvertError<Booking>();
+        }
+
+        if (!Enum.IsDefined(roomType))
+        {
+            return BookingErrors.InvalidRoomType(roomType).ConvertError<Booking>();
+        }
+
         var principalBikePrice = GetBikePrice(principalBikeType);
         var principalCustomerResult = BookingCustomer.Create(principalCustomerId, principalBikeType, principalBikePrice);
         if (principalCustomerResult.IsFailure)
@@ -450,9 +468,55 @@ public sealed class Tour : Entity<int>
         return booking;
     }
 
+    private static Result ValidatePrincipalBikeType(BikeType principalBikeType)
+    {
+        if (!Enum.IsDefined(principalBikeType))
+        {
+            return Result.Invalid(
+                $"Invalid bike type: {principalBikeType}. Valid values are: {string.Join(", ", Enum.GetNames<BikeType>())}.",
+                "principalBikeType",
+                $"Invalid bike type: {principalBikeType}.");
+        }
+
+        if (principalBikeType == BikeType.None)
+        {
+            return Result.Invalid(
+                "Bike type must be selected for principal customer. Please choose Regular or EBike.",
+                "principalBikeType",
+                "Bike type must be selected");
+        }
+
+        return Result.Ok();
+    }
+
+    private static Result ValidateCompanionBikeType(int? companionCustomerId, BikeType? companionBikeType)
+    {
+        if (!companionCustomerId.HasValue)
+        {
+            return Result.Ok();
+        }
+
+        if (!companionBikeType.HasValue || companionBikeType.Value == BikeType.None)
+        {
+            return Result.Invalid(
+                "Bike type must be selected for companion. Please choose Regular or EBike.",
+                "companionBikeType",
+                "Bike type must be selected");
+        }
+
+        if (!Enum.IsDefined(companionBikeType.Value))
+        {
+            return Result.Invalid(
+                $"Invalid bike type: {companionBikeType.Value}. Valid values are: {string.Join(", ", Enum.GetNames<BikeType>())}.",
+                "companionBikeType",
+                $"Invalid bike type: {companionBikeType.Value}.");
+        }
+
+        return Result.Ok();
+    }
+
     private decimal GetBikePrice(BikeType bikeType) => bikeType switch
     {
-        BikeType.None => 0m,
         BikeType.Regular => RegularBikePrice,
         BikeType.EBike => EBikePrice,
         _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, $"Invalid bike type: {bikeType}")

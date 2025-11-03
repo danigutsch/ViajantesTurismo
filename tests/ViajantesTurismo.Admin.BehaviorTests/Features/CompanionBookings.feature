@@ -36,20 +36,22 @@ So that couples and friends can book together with appropriate pricing
         Then the booking should not have a companion customer
         And the booking should include single room supplement
 
-    Scenario: Create booking with companion but no bike type defaults to None
+    Scenario: Cannot create booking with companion when no bike type provided
         Given a tour exists
         And a principal customer exists
         And a companion customer exists
         When I add a booking with principal customer 1 on regular bike and companion customer 2 with no bike type in double room
-        Then the booking should have a companion customer
-        And the companion should have no bike price
+        Then the booking creation should fail
+        And the error should be for field "companionBikeType"
+        And the error message should contain "Bike type must be selected"
 
-    Scenario: Create booking where principal has no bike type defaults to None
+    Scenario: Cannot create booking when principal has no bike type
         Given a tour exists
         And a principal customer exists
         When I add a booking with principal customer 1 with no bike type without companion in single room
-        Then the booking should not have a companion customer
-        And the principal should have no bike price
+        Then the booking creation should fail
+        And the error should be for field "principalBikeType"
+        And the error message should contain "Bike type must be selected"
 
     Scenario: Double room with companion has no single room supplement
         Given a tour exists

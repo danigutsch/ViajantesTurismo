@@ -96,6 +96,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             RoomType.DoubleRoom,
             null);
 
+        bookingContext.Result = result;
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -112,6 +113,8 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             RoomType.SingleRoom,
             null);
+
+        bookingContext.Result = result;
 
         if (result.IsSuccess)
         {

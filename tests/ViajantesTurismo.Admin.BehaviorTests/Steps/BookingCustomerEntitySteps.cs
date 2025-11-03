@@ -22,6 +22,19 @@ public sealed class BookingCustomerEntitySteps(BookingCustomerContext context)
         context.Result = BookingCustomer.Create(1, BikeType.Regular, bikePrice);
     }
 
+    [When(@"I try to create a booking customer with bike type ""(.*)""")]
+    public void WhenITryToCreateABookingCustomerWithBikeType(string bikeType)
+    {
+        var type = Enum.Parse<BikeType>(bikeType);
+        context.Result = BookingCustomer.Create(1, type, 0m);
+    }
+
+    [When(@"I try to create a booking customer with invalid bike type (.*)")]
+    public void WhenITryToCreateABookingCustomerWithInvalidBikeType(int invalidBikeType)
+    {
+        context.Result = BookingCustomer.Create(1, (BikeType)invalidBikeType, 50m);
+    }
+
     [Then(@"the booking customer should be created successfully")]
     public void ThenTheBookingCustomerShouldBeCreatedSuccessfully()
     {

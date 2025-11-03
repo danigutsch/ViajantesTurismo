@@ -64,3 +64,84 @@ So that tour bookings are properly tracked
         Given a tour exists
         When I try to update payment status for a non-existent booking
         Then the result should fail with message "not found in this tour"
+
+    Scenario Outline: Valid PaymentStatus values can be updated through tour
+        Given a tour exists with a booking
+        When I update the payment status to "<status>" through the tour
+        Then the booking payment status should be "<status>"
+
+        Examples:
+          | status        |
+          | Unpaid        |
+          | PartiallyPaid |
+          | Paid          |
+          | Refunded      |
+
+    Scenario Outline: Invalid PaymentStatus values are rejected when updating through tour
+        Given a tour exists with a booking
+        When I try to update the booking payment status with invalid value <invalidValue> through the tour
+        Then the booking update should fail with validation error for "paymentStatus"
+        And the error message should contain "Invalid payment status"
+
+        Examples:
+          | invalidValue |
+          | -1           |
+          | 4            |
+          | 99           |
+          | 999          |
+
+    Scenario: Tour AddBooking handles BikeType Regular correctly
+        Given a tour exists
+        When I add a booking to tour with bike type "Regular" and no companion
+        Then the booking should be created successfully
+        And the booking principal customer bike price should be the tour regular bike price
+
+    Scenario: Tour AddBooking handles BikeType EBike correctly
+        Given a tour exists
+        When I add a booking to tour with bike type "EBike" and no companion
+        Then the booking should be created successfully
+        And the booking principal customer bike price should be the tour ebike price
+
+    Scenario: Tour AddBooking handles SingleRoom room type correctly
+        Given a tour exists
+        When I add a booking to tour with room type "SingleRoom"
+        Then the booking should be created successfully
+        And the booking room additional cost should be 0
+
+    Scenario: Tour AddBooking handles DoubleRoom room type correctly
+        Given a tour exists
+        When I add a booking to tour with room type "DoubleRoom"
+        Then the booking should be created successfully
+        And the booking room additional cost should be the tour double room supplement
+
+    Scenario: Tour status transitions handle all BookingStatus values - Confirm
+        Given a tour exists with a pending booking
+        When I confirm the booking through the tour
+        Then the booking status should be "Confirmed"
+
+    Scenario: Tour status transitions handle all BookingStatus values - Cancel
+        Given a tour exists with a pending booking
+        When I cancel the booking through the tour
+        Then the booking status should be "Cancelled"
+
+    Scenario: Tour status transitions handle all BookingStatus values - Complete
+        Given a tour exists with a confirmed booking
+        When I complete the booking through the tour
+        Then the booking status should be "Completed"
+
+    Scenario: Tour Confirm handles Confirmed status (idempotent)
+        Given a tour exists with a confirmed booking
+        When I confirm the booking through the tour
+        Then the booking status should be "Confirmed"
+
+    Scenario: Tour Confirm handles Cancelled status (invalid transition)
+        Given a tour exists with a cancelled booking
+        When I try to confirm the booking through the tour
+        Then the booking update should fail with conflict error
+        And the error message should contain "Cannot transition from Cancelled to Confirmed"
+
+    Scenario: Tour Confirm handles Completed status (invalid transition)
+        Given a tour exists with a completed booking
+        When I try to confirm the booking through the tour
+        Then the booking update should fail with conflict error
+        And the error message should contain "Cannot transition from Completed to Confirmed"
