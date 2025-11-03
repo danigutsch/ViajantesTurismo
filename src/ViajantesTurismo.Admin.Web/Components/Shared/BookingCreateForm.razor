@@ -32,20 +32,31 @@
     <div class="mb-3">
         <label class="form-label">Room Type <span class="text-danger">*</span></label>
         <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
-            <option value="@RoomTypeDto.SingleRoom">Single Room (+ Single Supplement Fee)</option>
-            <option value="@RoomTypeDto.DoubleRoom">Double Room (Standard Base Price)</option>
+            <option value="@RoomTypeDto.SingleRoom">Single Room (Base Price + Supplement)</option>
+            <option value="@RoomTypeDto.DoubleRoom">Double Room (Base Price Only)</option>
         </InputSelect>
         <ValidationMessage For="@(() => Model.RoomType)"/>
         <div class="form-text">
-            Single rooms incur an additional supplement fee. Double rooms are priced at the standard tour rate.
+            Single rooms: Tour base price per person + single room supplement fee.<br/>
+            Double rooms: Tour base price per person only (no supplement).
         </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Principal Customer Bike <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.PrincipalBikeType" class="form-select">
+            <option value="@BikeTypeDto.None">No Bike</option>
+            <option value="@BikeTypeDto.Regular">Regular Bike</option>
+            <option value="@BikeTypeDto.EBike">E-Bike</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.PrincipalBikeType)"/>
     </div>
 
     @if (Model.RoomType == RoomTypeDto.DoubleRoom)
     {
         <div class="mb-3">
             <label class="form-label">Companion (Optional)</label>
-            <InputSelect @bind-Value="Model.CompanionId" class="form-select">
+            <InputSelect @bind-Value="Model.CompanionId" class="form-select" @bind-Value:after="OnCompanionChanged">
                 <option value="">-- No Companion --</option>
                 @foreach (var customer in Customers.Where(c => !Model.CustomerId.HasValue || c.Id != Model.CustomerId.Value))
                 {
@@ -57,6 +68,19 @@
                 Companion is optional for double rooms (allows single occupancy of double room).
             </div>
         </div>
+
+        @if (Model.CompanionId.HasValue)
+        {
+            <div class="mb-3">
+                <label class="form-label">Companion Bike <span class="text-danger">*</span></label>
+                <InputSelect @bind-Value="Model.CompanionBikeType" class="form-select">
+                    <option value="@BikeTypeDto.None">No Bike</option>
+                    <option value="@BikeTypeDto.Regular">Regular Bike</option>
+                    <option value="@BikeTypeDto.EBike">E-Bike</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => Model.CompanionBikeType)"/>
+            </div>
+        }
     }
 
     <div class="mb-3">
@@ -105,6 +129,16 @@
         if (Model.RoomType == RoomTypeDto.SingleRoom)
         {
             Model.CompanionId = null;
+            Model.CompanionBikeType = null;
+        }
+    }
+
+    private void OnCompanionChanged()
+    {
+        // Clear companion bike type when companion is removed
+        if (!Model.CompanionId.HasValue)
+        {
+            Model.CompanionBikeType = null;
         }
     }
 

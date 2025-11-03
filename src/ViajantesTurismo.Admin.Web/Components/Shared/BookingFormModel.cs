@@ -21,6 +21,13 @@ public class BookingFormModel
     [Required(ErrorMessage = "Room type is required")]
     public RoomTypeDto RoomType { get; set; } = RoomTypeDto.SingleRoom;
 
+    /// <summary>Bike type for the principal customer.</summary>
+    [Required(ErrorMessage = "Bike type is required for principal customer")]
+    public BikeTypeDto PrincipalBikeType { get; set; } = BikeTypeDto.None;
+
+    /// <summary>Bike type for the companion customer (if applicable).</summary>
+    public BikeTypeDto? CompanionBikeType { get; set; }
+
     /// <summary>Optional notes about the booking.</summary>
     [MaxLength(ContractConstants.MaxBookingNotesLength, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; set; }

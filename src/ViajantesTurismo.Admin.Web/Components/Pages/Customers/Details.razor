@@ -417,9 +417,9 @@ else
                 {
                     TourId = model.TourId!.Value,
                     PrincipalCustomerId = Id,
-                    PrincipalBikeType = BikeTypeDto.Regular,
+                    PrincipalBikeType = model.PrincipalBikeType,
                     CompanionCustomerId = model.CompanionId,
-                    CompanionBikeType = model.CompanionId.HasValue ? BikeTypeDto.Regular : null,
+                    CompanionBikeType = model.CompanionBikeType,
                     RoomType = model.RoomType,
                     Notes = model.Notes
                 };

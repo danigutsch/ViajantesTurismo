@@ -283,9 +283,9 @@ else if (_tour != null)
                 {
                     TourId = Id,
                     PrincipalCustomerId = model.CustomerId!.Value,
-                    PrincipalBikeType = BikeTypeDto.Regular,
+                    PrincipalBikeType = model.PrincipalBikeType,
                     CompanionCustomerId = model.CompanionId,
-                    CompanionBikeType = model.CompanionId.HasValue ? BikeTypeDto.Regular : null,
+                    CompanionBikeType = model.CompanionBikeType,
                     RoomType = model.RoomType,
                     Notes = model.Notes
                 };
