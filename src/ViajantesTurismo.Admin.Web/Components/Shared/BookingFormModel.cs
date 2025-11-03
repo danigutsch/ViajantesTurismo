@@ -17,6 +17,10 @@ public class BookingFormModel
     /// <summary>Optional companion customer identifier.</summary>
     public int? CompanionId { get; set; }
 
+    /// <summary>Room type for the booking.</summary>
+    [Required(ErrorMessage = "Room type is required")]
+    public RoomTypeDto RoomType { get; set; } = RoomTypeDto.SingleRoom;
+
     /// <summary>Optional notes about the booking.</summary>
     [MaxLength(ContractConstants.MaxBookingNotesLength, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; set; }

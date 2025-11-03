@@ -44,6 +44,18 @@
     </div>
 
     <div class="mb-3">
+        <label class="form-label">Room Type <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.RoomType" class="form-select">
+            <option value="@RoomTypeDto.SingleRoom">Single Room (+ Single Supplement Fee)</option>
+            <option value="@RoomTypeDto.DoubleRoom">Double Room (Standard Base Price)</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.RoomType)"/>
+        <div class="form-text">
+            Single rooms incur an additional supplement fee. Double rooms are priced at the standard tour rate.
+        </div>
+    </div>
+
+    <div class="mb-3">
         <label for="notes" class="form-label">Notes</label>
         <InputTextArea @bind-Value="Model.Notes" class="form-control" id="notes" rows="3"/>
         <ValidationMessage For="@(() => Model.Notes)"/>

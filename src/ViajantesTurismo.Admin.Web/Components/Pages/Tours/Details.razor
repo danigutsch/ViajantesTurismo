@@ -286,7 +286,7 @@ else if (_tour != null)
                     PrincipalBikeType = BikeTypeDto.Regular,
                     CompanionCustomerId = model.CompanionId,
                     CompanionBikeType = model.CompanionId.HasValue ? BikeTypeDto.Regular : null,
-                    RoomType = model.CompanionId.HasValue ? RoomTypeDto.DoubleRoom : RoomTypeDto.SingleRoom,
+                    RoomType = model.RoomType,
                     Notes = model.Notes
                 };
 
