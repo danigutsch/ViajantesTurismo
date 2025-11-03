@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 
-namespace ViajantesTurismo.Admin.Application.Mapping;
+namespace ViajantesTurismo.Admin.Application.Mappings;
 
 /// <summary>
 /// Maps Booking-related DTOs to domain objects.

@@ -1,7 +1,7 @@
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.Admin.Application.Mapping;
+namespace ViajantesTurismo.Admin.Application.Mappings;
 
 /// <summary>
 /// Maps Tour-related DTOs to domain objects.

@@ -1,6 +1,6 @@
 ﻿using ViajantesTurismo.AdminApi.Contracts;
 
-namespace ViajantesTurismo.Admin.Domain;
+namespace ViajantesTurismo.Admin.Application;
 
 /// <summary>
 /// Provides query operations for the admin domain (read-only operations).
