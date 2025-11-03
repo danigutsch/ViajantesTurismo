@@ -159,7 +159,6 @@ public sealed class Booking : Entity<long>
         if (!Enum.IsDefined(roomType))
         {
             errors.Add(BookingErrors.InvalidRoomType(roomType));
-            return errors.ToResult<Booking>();
         }
 
         if (basePrice <= 0)
