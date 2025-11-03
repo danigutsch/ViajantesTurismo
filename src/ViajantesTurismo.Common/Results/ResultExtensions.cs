@@ -22,6 +22,10 @@ public static class ResultExtensions
 
         return source.Status switch
         {
+            ResultStatus.Ok => throw new InvalidOperationException("Cannot convert a successful result. Only failed results can be converted."),
+            ResultStatus.Created => throw new InvalidOperationException("Cannot convert a successful result. Only failed results can be converted."),
+            ResultStatus.Accepted => throw new InvalidOperationException("Cannot convert a successful result. Only failed results can be converted."),
+            ResultStatus.NoContent => throw new InvalidOperationException("Cannot convert a successful result. Only failed results can be converted."),
             ResultStatus.Invalid => Result<TTarget>.Invalid(source.ErrorDetails.Detail, source.ErrorDetails.ValidationErrors!),
             ResultStatus.NotFound => Result<TTarget>.NotFound(source.ErrorDetails.Detail),
             ResultStatus.Unauthorized => Result<TTarget>.Unauthorized(source.ErrorDetails.Detail),
@@ -30,6 +34,7 @@ public static class ResultExtensions
             ResultStatus.Conflict => Result<TTarget>.Conflict(source.ErrorDetails.Detail),
             ResultStatus.CriticalError => Result<TTarget>.CriticalError(source.ErrorDetails.Detail),
             ResultStatus.Unavailable => Result<TTarget>.Unavailable(source.ErrorDetails.Detail),
+            ResultStatus.Unknown => throw new InvalidOperationException($"Unsupported result status: {source.Status}"),
             _ => throw new InvalidOperationException($"Unsupported result status: {source.Status}")
         };
     }
