@@ -1,27 +1,13 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 
-namespace ViajantesTurismo.Admin.ApiService.Mapping;
+namespace ViajantesTurismo.Admin.Application.Mapping;
 
 /// <summary>
 /// Maps Customer-related DTOs to domain objects.
 /// </summary>
-internal static class CustomerMapper
+public static class CustomerMapper
 {
-    /// <summary>
-    /// Maps a <see cref="BikeType"/> to a <see cref="BikeTypeDto"/>.
-    /// </summary>
-    public static BikeTypeDto MapToBikeTypeDto(BikeType bikeType)
-    {
-        return bikeType switch
-        {
-            BikeType.None => BikeTypeDto.None,
-            BikeType.Regular => BikeTypeDto.Regular,
-            BikeType.EBike => BikeTypeDto.EBike,
-            _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, "Invalid bike type value.")
-        };
-    }
-
     /// <summary>
     /// Maps a <see cref="BedTypeDto"/> to a <see cref="BedType"/>.
     /// </summary>
@@ -40,6 +26,8 @@ internal static class CustomerMapper
     /// </summary>
     public static Address MapToAddress(AddressDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         return Address.Create(
             dto.Street,
             dto.Complement,
@@ -55,6 +43,8 @@ internal static class CustomerMapper
     /// </summary>
     public static PhysicalInfo MapToPhysicalInfo(PhysicalInfoDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         return PhysicalInfo.Create(
             dto.WeightKg,
             dto.HeightCentimeters,
@@ -66,6 +56,8 @@ internal static class CustomerMapper
     /// </summary>
     public static AccommodationPreferences MapToAccommodationPreferences(AccommodationPreferencesDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         return AccommodationPreferences.Create(
             BookingMapper.MapToRoomType(dto.RoomType),
             MapToBedType(dto.BedType),
@@ -77,6 +69,8 @@ internal static class CustomerMapper
     /// </summary>
     public static EmergencyContact MapToEmergencyContact(EmergencyContactDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         return EmergencyContact.Create(
             dto.Name,
             dto.Mobile).Value;
@@ -87,6 +81,8 @@ internal static class CustomerMapper
     /// </summary>
     public static MedicalInfo MapToMedicalInfo(MedicalInfoDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         return MedicalInfo.Create(
             dto.Allergies,
             dto.AdditionalInfo).Value;

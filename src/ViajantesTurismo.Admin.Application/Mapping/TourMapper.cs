@@ -1,12 +1,12 @@
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.Admin.ApiService.Mapping;
+namespace ViajantesTurismo.Admin.Application.Mapping;
 
 /// <summary>
 /// Maps Tour-related DTOs to domain objects.
 /// </summary>
-internal static class TourMapper
+public static class TourMapper
 {
     /// <summary>
     /// Maps a <see cref="CurrencyDto"/> to a <see cref="Currency"/>.

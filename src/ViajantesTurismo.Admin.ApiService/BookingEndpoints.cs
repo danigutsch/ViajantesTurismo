@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using ViajantesTurismo.Admin.ApiService.Mapping;
+using ViajantesTurismo.Admin.Application.Mapping;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Tours;

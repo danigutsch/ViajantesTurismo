@@ -2,12 +2,12 @@ using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 
-namespace ViajantesTurismo.Admin.ApiService.Mapping;
+namespace ViajantesTurismo.Admin.Application.Mapping;
 
 /// <summary>
 /// Maps Booking-related DTOs to domain objects.
 /// </summary>
-internal static class BookingMapper
+public static class BookingMapper
 {
     /// <summary>
     /// Maps a <see cref="BikeTypeDto"/> to a <see cref="BikeType"/>.
