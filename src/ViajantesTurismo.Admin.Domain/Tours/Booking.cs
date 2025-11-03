@@ -156,6 +156,12 @@ public sealed class Booking : Entity<long>
 
         var errors = new ValidationErrors();
 
+        if (!Enum.IsDefined(roomType))
+        {
+            errors.Add(BookingErrors.InvalidRoomType(roomType));
+            return errors.ToResult<Booking>();
+        }
+
         if (basePrice <= 0)
         {
             errors.Add(BookingErrors.ZeroOrNegativeBasePrice(basePrice));
@@ -193,9 +199,16 @@ public sealed class Booking : Entity<long>
     /// Updates the payment status of the booking.
     /// </summary>
     /// <param name="paymentStatus">The new payment status.</param>
-    public void UpdatePaymentStatus(PaymentStatus paymentStatus)
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdatePaymentStatus(PaymentStatus paymentStatus)
     {
+        if (!Enum.IsDefined(paymentStatus))
+        {
+            return BookingErrors.InvalidPaymentStatus(paymentStatus);
+        }
+
         PaymentStatus = paymentStatus;
+        return Result.Ok();
     }
 
     /// <summary>
@@ -204,16 +217,18 @@ public sealed class Booking : Entity<long>
     /// <returns>A result indicating success or failure.</returns>
     public Result Confirm()
     {
-        switch (Status)
+        return Status switch
         {
-            case BookingStatus.Confirmed:
-                return Result.Ok();
-            case BookingStatus.Cancelled or BookingStatus.Completed:
-                return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Confirmed);
-            case BookingStatus.Pending:
-            default:
-                Status = BookingStatus.Confirmed;
-                return Result.Ok();
+            BookingStatus.Confirmed => Result.Ok(),
+            BookingStatus.Cancelled or BookingStatus.Completed => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Confirmed),
+            BookingStatus.Pending => ConfirmInternal(),
+            _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
+        };
+
+        Result ConfirmInternal()
+        {
+            Status = BookingStatus.Confirmed;
+            return Result.Ok();
         }
     }
 
@@ -223,16 +238,18 @@ public sealed class Booking : Entity<long>
     /// <returns>A result indicating success or failure.</returns>
     public Result Cancel()
     {
-        switch (Status)
+        return Status switch
         {
-            case BookingStatus.Cancelled:
-                return Result.Ok();
-            case BookingStatus.Completed:
-                return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Cancelled);
-            case BookingStatus.Pending or BookingStatus.Confirmed:
-            default:
-                Status = BookingStatus.Cancelled;
-                return Result.Ok();
+            BookingStatus.Cancelled => Result.Ok(),
+            BookingStatus.Completed => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Cancelled),
+            BookingStatus.Pending or BookingStatus.Confirmed => CancelInternal(),
+            _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
+        };
+
+        Result CancelInternal()
+        {
+            Status = BookingStatus.Cancelled;
+            return Result.Ok();
         }
     }
 
@@ -242,16 +259,18 @@ public sealed class Booking : Entity<long>
     /// <returns>A result indicating success or failure.</returns>
     public Result Complete()
     {
-        switch (Status)
+        return Status switch
         {
-            case BookingStatus.Completed:
-                return Result.Ok();
-            case BookingStatus.Cancelled:
-                return BookingErrors.InvalidStatusTransition(Status, BookingStatus.Completed);
-            case BookingStatus.Pending or BookingStatus.Confirmed:
-            default:
-                Status = BookingStatus.Completed;
-                return Result.Ok();
+            BookingStatus.Completed => Result.Ok(),
+            BookingStatus.Cancelled => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Completed),
+            BookingStatus.Pending or BookingStatus.Confirmed => CompleteInternal(),
+            _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
+        };
+
+        Result CompleteInternal()
+        {
+            Status = BookingStatus.Completed;
+            return Result.Ok();
         }
     }
 

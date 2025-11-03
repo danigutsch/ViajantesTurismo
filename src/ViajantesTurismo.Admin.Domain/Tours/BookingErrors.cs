@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
@@ -126,4 +127,47 @@ public static class BookingErrors
             detail: $"Room additional cost must be less than {maxCost}. Received: {cost}.",
             field: "roomAdditionalCost",
             message: $"Room additional cost must be less than {maxCost}.");
+
+    /// <summary>
+    /// Indicates that an invalid bike type value was provided.
+    /// </summary>
+    /// <param name="bikeType">The invalid bike type value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidBikeType(BikeType bikeType) =>
+        Result.Invalid(
+            detail: $"Invalid bike type: {bikeType}. Valid values are: {string.Join(", ", Enum.GetNames<BikeType>())}.",
+            field: "bikeType",
+            message: $"Invalid bike type: {bikeType}.");
+
+    /// <summary>
+    /// Indicates that bike type must be selected (None is not allowed).
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result BikeTypeNotSelected() =>
+        Result.Invalid(
+            detail: "Bike type must be selected. Please choose Regular or EBike.",
+            field: "bikeType",
+            message: "Bike type must be selected.");
+
+    /// <summary>
+    /// Indicates that an invalid room type value was provided.
+    /// </summary>
+    /// <param name="roomType">The invalid room type value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidRoomType(RoomType roomType) =>
+        Result.Invalid(
+            detail: $"Invalid room type: {roomType}. Valid values are: {string.Join(", ", Enum.GetNames<RoomType>())}.",
+            field: "roomType",
+            message: $"Invalid room type: {roomType}.");
+
+    /// <summary>
+    /// Indicates that an invalid payment status value was provided.
+    /// </summary>
+    /// <param name="paymentStatus">The invalid payment status value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidPaymentStatus(PaymentStatus paymentStatus) =>
+        Result.Invalid(
+            detail: $"Invalid payment status: {paymentStatus}. Valid values are: {string.Join(", ", Enum.GetNames<PaymentStatus>())}.",
+            field: "paymentStatus",
+            message: $"Invalid payment status: {paymentStatus}.");
 }

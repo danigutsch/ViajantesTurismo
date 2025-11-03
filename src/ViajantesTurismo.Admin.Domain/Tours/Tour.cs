@@ -452,9 +452,10 @@ public sealed class Tour : Entity<int>
 
     private decimal GetBikePrice(BikeType bikeType) => bikeType switch
     {
+        BikeType.None => 0m,
         BikeType.Regular => RegularBikePrice,
         BikeType.EBike => EBikePrice,
-        _ => 0m
+        _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, $"Invalid bike type: {bikeType}")
     };
 
     private Result<BookingCustomer>? CreateCompanionCustomer(int? companionCustomerId, BikeType? companionBikeType)
@@ -469,8 +470,12 @@ public sealed class Tour : Entity<int>
         return BookingCustomer.Create(companionCustomerId.Value, bikeType, bikePrice);
     }
 
-    private decimal CalculateRoomAdditionalCost(RoomType roomType) =>
-        roomType == RoomType.DoubleRoom ? DoubleRoomSupplementPrice : 0m;
+    private decimal CalculateRoomAdditionalCost(RoomType roomType) => roomType switch
+    {
+        RoomType.SingleRoom => 0m,
+        RoomType.DoubleRoom => DoubleRoomSupplementPrice,
+        _ => throw new ArgumentOutOfRangeException(nameof(roomType), roomType, $"Invalid room type: {roomType}")
+    };
 
     /// <summary>
     /// Updates the payment status of a specific booking.
@@ -486,8 +491,7 @@ public sealed class Tour : Entity<int>
             return TourErrors.BookingNotFound(bookingId);
         }
 
-        booking.UpdatePaymentStatus(paymentStatus);
-        return Result.Ok();
+        return booking.UpdatePaymentStatus(paymentStatus);
     }
 
     /// <summary>

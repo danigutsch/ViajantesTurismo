@@ -60,6 +60,18 @@ public sealed class BookingCustomer
 
         var errors = new ValidationErrors();
 
+        if (!Enum.IsDefined(bikeType))
+        {
+            errors.Add(BookingErrors.InvalidBikeType(bikeType));
+            return errors.ToResult<BookingCustomer>();
+        }
+
+        if (bikeType == BikeType.None)
+        {
+            errors.Add(BookingErrors.BikeTypeNotSelected());
+            return errors.ToResult<BookingCustomer>();
+        }
+
         if (bikePrice < 0)
         {
             errors.Add(BookingErrors.NegativeBikePrice(bikePrice));

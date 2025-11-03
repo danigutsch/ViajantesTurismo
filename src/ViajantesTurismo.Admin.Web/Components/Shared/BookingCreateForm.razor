@@ -45,7 +45,7 @@
     <div class="mb-3">
         <label class="form-label">Principal Customer Bike <span class="text-danger">*</span></label>
         <InputSelect @bind-Value="Model.PrincipalBikeType" class="form-select">
-            <option value="@BikeTypeDto.None">No Bike</option>
+            <option value="">-- Select Bike Type --</option>
             <option value="@BikeTypeDto.Regular">Regular Bike</option>
             <option value="@BikeTypeDto.EBike">E-Bike</option>
         </InputSelect>
@@ -75,7 +75,7 @@
             <div class="mb-3">
                 <label class="form-label">Companion Bike <span class="text-danger">*</span></label>
                 <InputSelect @bind-Value="Model.CompanionBikeType" class="form-select">
-                    <option value="@BikeTypeDto.None">No Bike</option>
+                    <option value="">-- Select Bike Type --</option>
                     <option value="@BikeTypeDto.Regular">Regular Bike</option>
                     <option value="@BikeTypeDto.EBike">E-Bike</option>
                 </InputSelect>
