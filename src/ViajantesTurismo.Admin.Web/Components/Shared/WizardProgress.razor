@@ -2,9 +2,8 @@
 
 <div class="wizard-progress mb-4">
     <div class="progress-steps">
-        @for (int i = 1; i <= 8; i++)
+        @for (var stepNum = 1; stepNum <= 8; stepNum++)
         {
-            var stepNum = i;
             <div class="step @GetStepClass(stepNum)">
                 <div class="step-circle">
                     @if (State.IsStepCompleted(stepNum))
@@ -18,7 +17,7 @@
                 </div>
                 <div class="step-label">@GetStepName(stepNum)</div>
             </div>
-            @if (i < 8)
+            @if (stepNum < 8)
             {
                 <div class="step-connector @(State.IsStepCompleted(stepNum) ? "completed" : "")"></div>
             }
@@ -113,7 +112,7 @@
             : "pending";
     }
 
-    private string GetStepName(int step) => step switch
+    private static string GetStepName(int step) => step switch
     {
             1 => "Personal",
             2 => "ID",

@@ -126,23 +126,27 @@
 
     private void OnPrincipalCustomerChanged()
     {
-        if (Model.CustomerId.HasValue)
+        if (!Model.CustomerId.HasValue)
         {
-            var customer = Customers.FirstOrDefault(c => c.Id == Model.CustomerId.Value);
-            if (customer is not null)
-            {
-                Model.PrincipalBikeType = customer.BikeType;
-            }
+            return;
+        }
+
+        var customer = Customers.FirstOrDefault(c => c.Id == Model.CustomerId.Value);
+        if (customer is not null)
+        {
+            Model.PrincipalBikeType = customer.BikeType;
         }
     }
 
     private void OnRoomTypeChanged()
     {
-        if (Model.RoomType == RoomTypeDto.SingleRoom)
+        if (Model.RoomType != RoomTypeDto.SingleRoom)
         {
-            Model.CompanionId = null;
-            Model.CompanionBikeType = null;
+            return;
         }
+
+        Model.CompanionId = null;
+        Model.CompanionBikeType = null;
     }
 
     private void OnCompanionCustomerChanged()

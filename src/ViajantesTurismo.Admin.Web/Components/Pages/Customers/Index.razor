@@ -32,15 +32,15 @@ else
 {
     <QuickGrid Items="@_customers.AsQueryable()" Class="table table-hover" Pagination="@(_customers.Count > 10 ? _pagination : null)">
         <PropertyColumn Property="@(c => c.Id)" Title="ID" Sortable="true" />
-        
+
         <TemplateColumn Title="Name" Sortable="true" SortBy="GridSort<GetCustomerDto>.ByAscending(c => c.FirstName).ThenAscending(c => c.LastName)">
             @context.FirstName @context.LastName
         </TemplateColumn>
-        
+
         <PropertyColumn Property="@(c => c.Email)" Title="Email" Sortable="true" />
         <PropertyColumn Property="@(c => c.Mobile)" Title="Mobile" />
         <PropertyColumn Property="@(c => c.Nationality)" Title="Nationality" Sortable="true" />
-        
+
         <TemplateColumn Title="Actions">
             <div class="btn-group" role="group">
                 <NavLink href="@($"/customers/{context.Id}")" class="btn btn-sm btn-info">
@@ -52,7 +52,7 @@ else
             </div>
         </TemplateColumn>
     </QuickGrid>
-    
+
     @if (_customers.Count > 10)
     {
         <Paginator State="@_pagination" />
@@ -65,7 +65,7 @@ else
 
 @code {
     private IReadOnlyList<GetCustomerDto>? _customers;
-    private PaginationState _pagination = new() { ItemsPerPage = 10 };
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

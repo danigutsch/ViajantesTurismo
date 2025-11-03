@@ -10,7 +10,7 @@ else
 {
     <QuickGrid Items="@Bookings.AsQueryable()" Class="table table-hover" Pagination="@(Bookings.Count() > 10 ? _pagination : null)">
         <PropertyColumn Property="@(b => b.BookingDate)" Title="Booking Date" Format="dd/MM/yyyy HH:mm" Sortable="true" />
-        
+
         @if (ShowTourInfo)
         {
             <TemplateColumn Title="Tour" Sortable="true" SortBy="GridSort<GetBookingDto>.ByAscending(b => b.TourName)">
@@ -19,14 +19,14 @@ else
                 <small class="text-muted">@context.TourIdentifier</small>
             </TemplateColumn>
         }
-        
+
         @if (ShowCustomerInfo)
         {
             <TemplateColumn Title="Customer" Sortable="true" SortBy="GridSort<GetBookingDto>.ByAscending(b => b.CustomerName)">
                 <a href="/customers/@context.CustomerId">@context.CustomerName</a>
             </TemplateColumn>
         }
-        
+
         <TemplateColumn Title="Companion">
             @if (context.CompanionId.HasValue)
             {
@@ -37,17 +37,17 @@ else
                 <span class="text-muted">-</span>
             }
         </TemplateColumn>
-        
+
         <PropertyColumn Property="@(b => b.TotalPrice)" Title="Total Price" Format="C" Sortable="true" />
-        
+
         <TemplateColumn Title="Status">
             <BookingStatusBadge Status="@context.Status"/>
         </TemplateColumn>
-        
+
         <TemplateColumn Title="Payment">
             <PaymentStatusBadge Status="@context.PaymentStatus"/>
         </TemplateColumn>
-        
+
         <TemplateColumn Title="Actions">
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-sm btn-primary"
@@ -82,7 +82,7 @@ else
             </div>
         </TemplateColumn>
     </QuickGrid>
-    
+
     @if (Bookings.Count() > 10)
     {
         <Paginator State="@_pagination" />
@@ -90,7 +90,7 @@ else
 }
 
 @code {
-    private PaginationState _pagination = new() { ItemsPerPage = 10 };
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
 
     [Parameter]
     public IEnumerable<GetBookingDto>? Bookings { get; set; }

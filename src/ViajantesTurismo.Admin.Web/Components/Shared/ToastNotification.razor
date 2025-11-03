@@ -18,7 +18,7 @@
 }
 
 @code {
-    private readonly List<ToastMessage> _toasts = new();
+    private readonly List<ToastMessage> _toasts = [];
     private int _nextId = 1;
 
     /// <summary>
@@ -41,26 +41,6 @@
         ShowToast(message, ToastType.Error, durationMs);
     }
 
-    /// <summary>
-    /// Show a warning toast notification.
-    /// </summary>
-    /// <param name="message">The message to display.</param>
-    /// <param name="durationMs">The duration in milliseconds the toast should be visible. Default is 6000ms.</param>
-    public void ShowWarning(string message, int durationMs = 6000)
-    {
-        ShowToast(message, ToastType.Warning, durationMs);
-    }
-
-    /// <summary>
-	/// Show an info toast notification.
-    /// </summary>
-    /// <param name="message">The message to display.</param>
-	/// <param name="durationMs">The duration in milliseconds the toast should be visible. Default is 5000ms.</param>
-    public void ShowInfo(string message, int durationMs = 5000)
-    {
-        ShowToast(message, ToastType.Info, durationMs);
-    }
-
     private void ShowToast(string message, ToastType type, int durationMs)
     {
         var toast = new ToastMessage
@@ -79,11 +59,13 @@
     private void RemoveToast(int id)
     {
         var toast = _toasts.FirstOrDefault(t => t.Id == id);
-        if (toast != null)
+        if (toast == null)
         {
-            _toasts.Remove(toast);
-            InvokeAsync(StateHasChanged);
+            return;
         }
+
+        _toasts.Remove(toast);
+        InvokeAsync(StateHasChanged);
     }
 
     private static string GetHeaderClass(ToastType type) => type switch
