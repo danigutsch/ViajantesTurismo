@@ -196,7 +196,6 @@ public static class CustomerErrors
         field: "IdNationality",
         message: "ID nationality cannot exceed 64 characters.");
 
-    // Address validation errors
     /// <summary>
     /// Indicates that the street is empty.
     /// </summary>
@@ -314,7 +313,6 @@ public static class CustomerErrors
         field: "Country",
         message: "Country cannot exceed 128 characters.");
 
-    // EmergencyContact validation errors
     /// <summary>
     /// Indicates that the emergency contact name is empty.
     /// </summary>
@@ -351,7 +349,6 @@ public static class CustomerErrors
         field: "Mobile",
         message: "Emergency contact mobile cannot exceed 64 characters.");
 
-    // PhysicalInfo validation errors
     /// <summary>
     /// Indicates that the weight is invalid (must be between 1 and 500 kg).
     /// </summary>
@@ -370,7 +367,6 @@ public static class CustomerErrors
         field: "HeightCentimeters",
         message: "Height must be between 50 and 300 centimeters.");
 
-    // MedicalInfo validation errors
     /// <summary>
     /// Indicates that allergies text exceeds maximum length.
     /// </summary>

@@ -39,7 +39,6 @@ public sealed class AccommodationPreferences
     /// <returns>A <see cref="Result{AccommodationPreferences}"/> containing the accommodation preferences.</returns>
     public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, int? companionId)
     {
-        // No validation needed - all combinations are valid
         return new AccommodationPreferences(roomType, bedType, companionId);
     }
 

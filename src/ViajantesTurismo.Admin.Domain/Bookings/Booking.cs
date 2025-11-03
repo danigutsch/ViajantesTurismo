@@ -109,14 +109,18 @@ public sealed class Booking : Entity<long>
     /// </summary>
     public string? Notes { get; private set; }
 
+    /// <summary>
+    /// Calculates the total price for a booking.
+    /// Base price is for a single room (not per person).
+    /// RoomAdditionalCost is added for double rooms.
+    /// Bike prices are added for principal and companion customers.
+    /// </summary>
     private static decimal CalculateTotalPrice(
         decimal basePrice,
         decimal roomAdditionalCost,
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer)
     {
-        // Base price is for a single room (not per person)
-        // RoomAdditionalCost is added for double rooms
         var totalPrice = basePrice + roomAdditionalCost + principalCustomer.BikePrice;
 
         if (companionCustomer is not null)
