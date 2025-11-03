@@ -52,7 +52,7 @@ So that we maintain valid customer addresses
         Then all address fields should be properly trimmed and normalized
 
     Scenario: Cannot create address with empty street
-        When I create address with street "" and city "New York" and state "NY" and country "USA" and postal code "10001"
+        When I create address with street "", city "New York", state "NY", country "USA", postal code "10001"
         Then the address creation should fail
         And the error should be "Street is required."
 
@@ -62,7 +62,7 @@ So that we maintain valid customer addresses
         And the error should be "Street is required."
 
     Scenario: Cannot create address with whitespace only street
-        When I create address with street "   " and city "New York" and state "NY" and country "USA" and postal code "10001"
+        When I create address with street "   ", city "New York", state "NY", country "USA", postal code "10001"
         Then the address creation should fail
         And the error should be "Street is required."
 
@@ -155,7 +155,7 @@ So that we maintain valid customer addresses
         Then the address should be created successfully
 
     Scenario: Cannot create address with multiple validation errors
-        When I create address with street "" and city "" and state "" and country "" and postal code "" and neighborhood ""
+        When I create address with street "", city "", state "", country "", postal code "", neighborhood ""
         Then the address creation should fail
         And the error should be "Street is required."
         And the error should be "Neighborhood is required."
