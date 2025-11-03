@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <NoWarn>$(NoWarn);CA1812</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Admin.BehaviorTests</RootNamespace>
         <InvariantGlobalization>false</InvariantGlobalization>
