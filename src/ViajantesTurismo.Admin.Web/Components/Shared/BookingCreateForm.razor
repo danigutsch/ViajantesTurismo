@@ -19,7 +19,7 @@
 
     <div class="mb-3">
         <label class="form-label">Customer <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.CustomerId" class="form-select">
+        <InputSelect @bind-Value="Model.CustomerId" class="form-select" @bind-Value:after="OnPrincipalCustomerChanged">
             <option value="">-- Select Customer --</option>
             @foreach (var customer in Customers)
             {
@@ -56,7 +56,8 @@
     {
         <div class="mb-3">
             <label class="form-label">Companion (Optional)</label>
-            <InputSelect @bind-Value="Model.CompanionId" class="form-select" @bind-Value:after="OnCompanionChanged">
+            <InputSelect @bind-Value="Model.CompanionId" class="form-select"
+                         @bind-Value:after="OnCompanionCustomerChanged">
                 <option value="">-- No Companion --</option>
                 @foreach (var customer in Customers.Where(c => !Model.CustomerId.HasValue || c.Id != Model.CustomerId.Value))
                 {
@@ -123,9 +124,20 @@
     [Parameter]
     public bool IsSubmitting { get; set; }
 
+    private void OnPrincipalCustomerChanged()
+    {
+        if (Model.CustomerId.HasValue)
+        {
+            var customer = Customers.FirstOrDefault(c => c.Id == Model.CustomerId.Value);
+            if (customer?.BikeType is not null)
+            {
+                Model.PrincipalBikeType = customer.BikeType.Value;
+            }
+        }
+    }
+
     private void OnRoomTypeChanged()
     {
-        // Clear companion when switching to single room
         if (Model.RoomType == RoomTypeDto.SingleRoom)
         {
             Model.CompanionId = null;
@@ -133,12 +145,19 @@
         }
     }
 
-    private void OnCompanionChanged()
+    private void OnCompanionCustomerChanged()
     {
-        // Clear companion bike type when companion is removed
         if (!Model.CompanionId.HasValue)
         {
             Model.CompanionBikeType = null;
+        }
+        else
+        {
+            var companion = Customers.FirstOrDefault(c => c.Id == Model.CompanionId.Value);
+            if (companion?.BikeType is not null)
+            {
+                Model.CompanionBikeType = companion.BikeType.Value;
+            }
         }
     }
 

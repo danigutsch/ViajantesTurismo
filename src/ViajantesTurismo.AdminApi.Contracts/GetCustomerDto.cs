@@ -35,4 +35,9 @@ public sealed record GetCustomerDto
     /// The nationality of the customer.
     /// </summary>
     public required string Nationality { get; init; }
+
+    /// <summary>
+    /// The preferred bike type from customer's physical information.
+    /// </summary>
+    public BikeTypeDto? BikeType { get; init; }
 }
