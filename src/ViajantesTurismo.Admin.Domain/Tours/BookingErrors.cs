@@ -1,6 +1,6 @@
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Domain.Bookings;
+namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Provides predefined booking-related error results.

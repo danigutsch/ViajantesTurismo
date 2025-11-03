@@ -1,5 +1,4 @@
 ﻿using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Domain.Bookings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;

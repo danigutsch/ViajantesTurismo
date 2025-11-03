@@ -5,7 +5,7 @@ using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
-namespace ViajantesTurismo.Admin.Domain.Bookings;
+namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Represents a booking made by a customer for a tour.

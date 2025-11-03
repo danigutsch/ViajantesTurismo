@@ -4,7 +4,7 @@ using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
-namespace ViajantesTurismo.Admin.Domain.Bookings;
+namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Represents a customer's participation in a booking, including their bike selection and price.

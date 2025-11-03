@@ -1,5 +1,4 @@
-﻿using ViajantesTurismo.Admin.Domain.Bookings;
-using ViajantesTurismo.Admin.Domain.Customers;
+﻿using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
 

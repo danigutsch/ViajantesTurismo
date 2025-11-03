@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Domain.Bookings;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 

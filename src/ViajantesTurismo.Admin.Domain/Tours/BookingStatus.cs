@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Domain.Bookings;
+﻿namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Represents the status of a booking.
