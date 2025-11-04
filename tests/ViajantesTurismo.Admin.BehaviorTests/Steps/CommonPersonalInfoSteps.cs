@@ -13,6 +13,8 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Scope(Feature = "Profession Validation")]
 [Scope(Feature = "Birth Date Validation")]
 [Scope(Feature = "Customer Management")]
+[Scope(Feature = "Customer Creation")]
+[Scope(Feature = "Customer Sanitization")]
 public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
 {
     [Given(@"I have valid personal information")]
