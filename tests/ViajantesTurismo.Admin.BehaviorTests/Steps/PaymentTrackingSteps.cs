@@ -46,7 +46,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var payments = bookingContext.Booking.Payments.ToList();
         var orderedPayments = payments.OrderBy(p => p.PaymentDate).ToList();
 
-        for (int i = 0; i < payments.Count; i++)
+        for (var i = 0; i < payments.Count; i++)
         {
             Assert.Equal(orderedPayments[i].Id, payments[i].Id);
         }

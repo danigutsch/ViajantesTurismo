@@ -21,7 +21,9 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: currency,
-            includedServices: ["Hotel", "Breakfast"]).Value;
+            includedServices: ["Hotel", "Breakfast"],
+            minCustomers: 4,
+            maxCustomers: 12).Value;
     }
 
     [When(@"I update the currency to ""(.*)""")]

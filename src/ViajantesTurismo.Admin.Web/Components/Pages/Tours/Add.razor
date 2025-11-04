@@ -134,7 +134,9 @@
                     EBikePrice = _model.EBikePrice,
                     IncludedServices = _model.ServicesInput
                             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                            .ToList()
+                            .ToList(),
+                    MinCustomers = _model.MinCustomers,
+                    MaxCustomers = _model.MaxCustomers
             };
 
             var response = await ToursApi.CreateTour(tour, CancellationToken.None);
@@ -189,6 +191,12 @@
 
         [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal EBikePrice { get; set; }
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+        public int MinCustomers { get; set; } = ContractConstants.MinTourCustomers;
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+        public int MaxCustomers { get; set; } = ContractConstants.MaxTourCustomers;
 
         [Required]
         public string ServicesInput { get; set; } = string.Empty;

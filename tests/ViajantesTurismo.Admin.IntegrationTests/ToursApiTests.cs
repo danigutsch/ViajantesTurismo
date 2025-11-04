@@ -63,6 +63,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 300.00m,
             RegularBikePrice = 150.00m,
             EBikePrice = 250.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
 
@@ -91,6 +93,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 350.00m,
             RegularBikePrice = 160.00m,
             EBikePrice = 260.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
         var createResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
@@ -141,6 +145,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 360.00m,
             RegularBikePrice = 170.00m,
             EBikePrice = 270.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
         var postResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
@@ -161,6 +167,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 370.00m,
             RegularBikePrice = 180.00m,
             EBikePrice = 280.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour", "Dinner"]
         };
 
@@ -197,6 +205,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 100.00m,
             RegularBikePrice = 50.00m,
             EBikePrice = 80.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["None"]
         };
 
@@ -222,6 +232,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast"]
         };
 
@@ -250,6 +262,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel"]
         };
 
@@ -280,6 +294,8 @@ public sealed class ToursApiTests : IDisposable
             DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast"]
         };
 

@@ -67,4 +67,16 @@ public sealed record CreateTourDto
     /// </summary>
     [Required]
     public required ICollection<string> IncludedServices { get; init; }
+
+    /// <summary>
+    /// Minimum number of customers required for the tour to proceed.
+    /// </summary>
+    [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+    public required int MinCustomers { get; init; }
+
+    /// <summary>
+    /// Maximum number of customers allowed on the tour.
+    /// </summary>
+    [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+    public required int MaxCustomers { get; init; }
 }

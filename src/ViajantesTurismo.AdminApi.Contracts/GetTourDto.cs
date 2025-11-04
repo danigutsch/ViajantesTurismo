@@ -60,4 +60,19 @@ public sealed record GetTourDto
     /// List of services included in the tour.
     /// </summary>
     public required ICollection<string> IncludedServices { get; init; }
+
+    /// <summary>
+    /// Minimum number of customers required for the tour to proceed.
+    /// </summary>
+    public required int MinCustomers { get; init; }
+
+    /// <summary>
+    /// Maximum number of customers allowed on the tour.
+    /// </summary>
+    public required int MaxCustomers { get; init; }
+
+    /// <summary>
+    /// Current count of customers across all confirmed bookings (principal + companions).
+    /// </summary>
+    public required int CurrentCustomerCount { get; init; }
 }

@@ -30,7 +30,9 @@ public sealed class Tour : Entity<int>
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency,
-        IEnumerable<string> includedServices)
+        IEnumerable<string> includedServices,
+        int minCustomers,
+        int maxCustomers)
     {
         Identifier = identifier;
         Name = name;
@@ -42,6 +44,8 @@ public sealed class Tour : Entity<int>
         EBikePrice = eBikePrice;
         Currency = currency;
         _includedServices = [..includedServices];
+        MinCustomers = minCustomers;
+        MaxCustomers = maxCustomers;
     }
 
     /// <summary>
@@ -95,6 +99,39 @@ public sealed class Tour : Entity<int>
     public IReadOnlyList<string> IncludedServices => _includedServices.AsReadOnly();
 
     /// <summary>
+    /// Gets the minimum number of customers required for the tour to proceed.
+    /// </summary>
+    public int MinCustomers { get; private set; }
+
+    /// <summary>
+    /// Gets the maximum number of customers allowed on the tour.
+    /// </summary>
+    public int MaxCustomers { get; private set; }
+
+    /// <summary>
+    /// Gets the current count of customers across all confirmed bookings (principal + companions).
+    /// </summary>
+    public int CurrentCustomerCount =>
+        _bookings
+            .Where(b => b.Status == BookingStatus.Confirmed)
+            .Sum(b => b.CompanionCustomer is null ? 1 : 2);
+
+    /// <summary>
+    /// Gets the number of available spots remaining.
+    /// </summary>
+    public int AvailableSpots => MaxCustomers - CurrentCustomerCount;
+
+    /// <summary>
+    /// Gets whether the tour has reached its minimum capacity.
+    /// </summary>
+    public bool IsAtMinimumCapacity => CurrentCustomerCount >= MinCustomers;
+
+    /// <summary>
+    /// Gets whether the tour is fully booked (at maximum capacity).
+    /// </summary>
+    public bool IsFullyBooked => CurrentCustomerCount >= MaxCustomers;
+
+    /// <summary>
     /// Gets the bookings for this tour.
     /// </summary>
     public IReadOnlyList<Booking> Bookings => _bookings.AsReadOnly();
@@ -112,6 +149,8 @@ public sealed class Tour : Entity<int>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all prices.</param>
     /// <param name="includedServices">The collection of services included in the tour package.</param>
+    /// <param name="minCustomers">The minimum number of customers required.</param>
+    /// <param name="maxCustomers">The maximum number of customers allowed.</param>
     /// <returns>A Result containing the Tour if validation succeeds, or an error if validation fails.</returns>
     public static Result<Tour> Create(
         string identifier,
@@ -123,7 +162,9 @@ public sealed class Tour : Entity<int>
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency,
-        IEnumerable<string> includedServices)
+        IEnumerable<string> includedServices,
+        int minCustomers,
+        int maxCustomers)
     {
         identifier = StringSanitizer.Sanitize(identifier);
         name = StringSanitizer.Sanitize(name);
@@ -202,6 +243,21 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.PriceTooHigh("E-bike price", ContractConstants.MaxPrice, eBikePrice));
         }
 
+        if (minCustomers < 1 || minCustomers > 20)
+        {
+            errors.Add(TourErrors.InvalidMinCustomers(minCustomers));
+        }
+
+        if (maxCustomers < 1 || maxCustomers > 20)
+        {
+            errors.Add(TourErrors.InvalidMaxCustomers(maxCustomers));
+        }
+
+        if (maxCustomers < minCustomers)
+        {
+            errors.Add(TourErrors.MaxCustomersLessThanMin(minCustomers, maxCustomers));
+        }
+
         if (errors.HasErrors)
         {
             return errors.ToResult<Tour>();
@@ -217,7 +273,9 @@ public sealed class Tour : Entity<int>
             regularBikePrice,
             eBikePrice,
             currency,
-            sanitizedServices);
+            sanitizedServices,
+            minCustomers,
+            maxCustomers);
     }
 
     /// <summary>
@@ -397,6 +455,41 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
+    /// Updates the minimum and maximum customer capacity for the tour.
+    /// </summary>
+    /// <param name="minCustomers">The minimum number of customers required.</param>
+    /// <param name="maxCustomers">The maximum number of customers allowed.</param>
+    /// <returns>A Result indicating success or failure.</returns>
+    public Result UpdateCapacity(int minCustomers, int maxCustomers)
+    {
+        var errors = new ValidationErrors();
+
+        if (minCustomers < 1 || minCustomers > 20)
+        {
+            errors.Add(TourErrors.InvalidMinCustomersUpdate(minCustomers));
+        }
+
+        if (maxCustomers < 1 || maxCustomers > 20)
+        {
+            errors.Add(TourErrors.InvalidMaxCustomersUpdate(maxCustomers));
+        }
+
+        if (maxCustomers < minCustomers)
+        {
+            errors.Add(TourErrors.MaxCustomersLessThanMinUpdate(minCustomers, maxCustomers));
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
+        MinCustomers = minCustomers;
+        MaxCustomers = maxCustomers;
+        return Result.Ok();
+    }
+
+    /// <summary>
     /// Adds a new booking to this tour.
     /// Validates that BikeType.None is not used per US-11 requirement (None is a placeholder value, not a valid booking choice).
     /// </summary>
@@ -421,6 +514,12 @@ public sealed class Tour : Entity<int>
         string? discountReason,
         string? notes)
     {
+        // Check if tour is fully booked (US-36)
+        if (IsFullyBooked)
+        {
+            return TourErrors.TourFullyBooked(MaxCustomers, CurrentCustomerCount).ConvertError<Booking>();
+        }
+
         var principalValidation = ValidatePrincipalBikeType(principalBikeType);
         if (principalValidation.IsFailure)
         {

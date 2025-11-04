@@ -65,7 +65,9 @@ internal static class ToursEndpoints
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             currency,
-            tourDto.IncludedServices);
+            tourDto.IncludedServices,
+            tourDto.MinCustomers,
+            tourDto.MaxCustomers);
 
         if (result.IsFailure)
         {

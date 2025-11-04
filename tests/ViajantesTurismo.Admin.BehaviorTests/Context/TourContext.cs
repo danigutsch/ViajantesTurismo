@@ -21,4 +21,5 @@ public sealed class TourContext
     public required Tour Tour { get; set; }
     public required object Result { get; set; }
     public Result? UpdateResult { get; set; }
+    public Result<Booking>? BookingResult { get; set; }
 }

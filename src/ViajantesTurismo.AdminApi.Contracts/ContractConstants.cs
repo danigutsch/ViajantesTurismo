@@ -84,4 +84,14 @@ public static class ContractConstants
     /// The maximum length for payment notes.
     /// </summary>
     public const int MaxPaymentNotesLength = 500;
+
+    /// <summary>
+    /// The minimum number of customers allowed for a tour.
+    /// </summary>
+    public const int MinTourCustomers = 1;
+
+    /// <summary>
+    /// The maximum number of customers allowed for a tour.
+    /// </summary>
+    public const int MaxTourCustomers = 20;
 }

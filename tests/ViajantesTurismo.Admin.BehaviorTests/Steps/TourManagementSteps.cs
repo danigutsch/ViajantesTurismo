@@ -31,7 +31,9 @@ public sealed class TourManagementSteps(TourContext tourContext)
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
-            includedServices: services).Value;
+            includedServices: services,
+            minCustomers: 4,
+            maxCustomers: 12).Value;
     }
 
     [Given(@"I have tour details with identifier ""(.*)"" and name ""(.*)""")]
@@ -160,7 +162,9 @@ public sealed class TourManagementSteps(TourContext tourContext)
             regularBikePrice: tourContext.RegularBikePrice,
             eBikePrice: tourContext.EBikePrice,
             currency: Currency.UsDollar,
-            includedServices: services);
+            includedServices: services,
+            minCustomers: 4,
+            maxCustomers: 12);
 
         if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
         {

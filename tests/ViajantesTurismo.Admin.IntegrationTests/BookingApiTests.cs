@@ -366,6 +366,8 @@ public sealed class BookingApiTests : IDisposable
             DoubleRoomSupplementPrice = 500.00m,
             RegularBikePrice = 100.00m,
             EBikePrice = 200.00m,
+            MinCustomers = 4,
+            MaxCustomers = 12,
             Currency = CurrencyDto.UsDollar,
             IncludedServices = ["Hotel", "Breakfast", "Bike"]
         };

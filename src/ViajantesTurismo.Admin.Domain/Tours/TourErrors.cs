@@ -133,4 +133,75 @@ public static class TourErrors
         detail: "Principal customer and companion cannot be the same person.",
         field: "companionCustomerId",
         message: "Principal and companion must be different customers.");
+
+    /// <summary>
+    /// Indicates that MinCustomers must be a positive integer.
+    /// </summary>
+    /// <param name="value">The invalid value provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Tour> InvalidMinCustomers(int value) => Result<Tour>.Invalid(
+        detail: $"Minimum customers must be between 1 and 20. Received: {value}.",
+        field: "minCustomers",
+        message: "Minimum customers must be between 1 and 20.");
+
+    /// <summary>
+    /// Indicates that MaxCustomers must be a positive integer.
+    /// </summary>
+    /// <param name="value">The invalid value provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Tour> InvalidMaxCustomers(int value) => Result<Tour>.Invalid(
+        detail: $"Maximum customers must be between 1 and 20. Received: {value}.",
+        field: "maxCustomers",
+        message: "Maximum customers must be between 1 and 20.");
+
+    /// <summary>
+    /// Indicates that MaxCustomers must be greater than or equal to MinCustomers.
+    /// </summary>
+    /// <param name="minCustomers">The minimum customers value.</param>
+    /// <param name="maxCustomers">The maximum customers value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<Tour> MaxCustomersLessThanMin(int minCustomers, int maxCustomers) => Result<Tour>.Invalid(
+        detail: $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
+        field: "maxCustomers",
+        message: $"Maximum must be >= minimum ({minCustomers}).");
+
+    /// <summary>
+    /// Indicates that the tour is fully booked and cannot accept more bookings.
+    /// </summary>
+    /// <param name="maxCustomers">The maximum capacity.</param>
+    /// <param name="currentCount">The current number of customers.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result TourFullyBooked(int maxCustomers, int currentCount) => Result.Conflict(
+        detail: $"Tour is fully booked. Maximum capacity: {maxCustomers}, Current bookings: {currentCount}. Cannot accept more bookings.");
+
+    /// <summary>
+    /// Indicates that MinCustomers must be a positive integer (update operation).
+    /// </summary>
+    /// <param name="value">The invalid value provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidMinCustomersUpdate(int value) => Result.Invalid(
+        detail: $"Minimum customers must be between 1 and 20. Received: {value}.",
+        field: "minCustomers",
+        message: "Minimum customers must be between 1 and 20.");
+
+    /// <summary>
+    /// Indicates that MaxCustomers must be a positive integer (update operation).
+    /// </summary>
+    /// <param name="value">The invalid value provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidMaxCustomersUpdate(int value) => Result.Invalid(
+        detail: $"Maximum customers must be between 1 and 20. Received: {value}.",
+        field: "maxCustomers",
+        message: "Maximum customers must be between 1 and 20.");
+
+    /// <summary>
+    /// Indicates that MaxCustomers must be greater than or equal to MinCustomers (update operation).
+    /// </summary>
+    /// <param name="minCustomers">The minimum customers value.</param>
+    /// <param name="maxCustomers">The maximum customers value.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result MaxCustomersLessThanMinUpdate(int minCustomers, int maxCustomers) => Result.Invalid(
+        detail: $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
+        field: "maxCustomers",
+        message: $"Maximum must be >= minimum ({minCustomers}).");
 }

@@ -180,7 +180,9 @@ else
                 DoubleRoomSupplementPrice = tour.DoubleRoomSupplementPrice,
                 RegularBikePrice = tour.RegularBikePrice,
                 EBikePrice = tour.EBikePrice,
-                ServicesInput = string.Join(", ", tour.IncludedServices)
+                ServicesInput = string.Join(", ", tour.IncludedServices),
+                MinCustomers = tour.MinCustomers,
+                MaxCustomers = tour.MaxCustomers
             };
         }
         catch (Exception ex)
@@ -221,8 +223,9 @@ else
                 RegularBikePrice = _model.RegularBikePrice,
                 EBikePrice = _model.EBikePrice,
                 IncludedServices = _model.ServicesInput
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    .ToList()
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                MinCustomers = _model.MinCustomers,
+                MaxCustomers = _model.MaxCustomers
             };
 
             await ToursApi.UpdateTour(Id, tour, CancellationToken.None);
@@ -242,7 +245,7 @@ else
             }
             catch (TaskCanceledException)
             {
-                /* Cancelled by user */
+                /* Cancelled by the user */
             }
         }
         catch (Exception ex)
@@ -297,6 +300,12 @@ else
 
         [Required, Range(0.01, ContractConstants.MaxPrice)]
         public decimal EBikePrice { get; set; }
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+        public int MinCustomers { get; set; }
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+        public int MaxCustomers { get; set; }
 
         [Required]
         public string ServicesInput { get; set; } = string.Empty;

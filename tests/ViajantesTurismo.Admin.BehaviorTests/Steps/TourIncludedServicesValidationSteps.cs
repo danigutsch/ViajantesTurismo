@@ -37,7 +37,9 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
             regularBikePrice: regularBikePrice,
             eBikePrice: eBikePrice,
             currency: currency,
-            includedServices: DefaultService).Value;
+            includedServices: DefaultService,
+            minCustomers: 4,
+            maxCustomers: 12).Value;
     }
 
     [When(@"I update the tour's included services with:")]

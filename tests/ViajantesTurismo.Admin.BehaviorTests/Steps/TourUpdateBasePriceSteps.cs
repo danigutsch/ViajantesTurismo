@@ -22,7 +22,9 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]).Value;
+            includedServices: ["Hotel", "Breakfast"],
+            minCustomers: 4,
+            maxCustomers: 12).Value;
     }
 
     [When(@"I update the base price to (.*)")]

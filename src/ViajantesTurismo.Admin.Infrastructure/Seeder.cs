@@ -18,7 +18,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             100m,
             200m,
             Currency.Real,
-            ["Hotel", "Breakfast", "City Tour"]
+            ["Hotel", "Breakfast", "City Tour"],
+            6,
+            15
         ).Value,
         Tour.Create(
             "HIST002",
@@ -30,7 +32,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             150m,
             250m,
             Currency.Euro,
-            ["Hotel", "Breakfast", "Museum Tickets"]
+            ["Hotel", "Breakfast", "Museum Tickets"],
+            8,
+            20
         ).Value,
         Tour.Create(
             "CULT001",
@@ -42,7 +46,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             120m,
             220m,
             Currency.UsDollar,
-            ["Hotel", "Breakfast", "Cultural Show"]
+            ["Hotel", "Breakfast", "Cultural Show"],
+            4,
+            12
         ).Value,
         Tour.Create(
             "NATR001",
@@ -54,7 +60,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             180m,
             280m,
             Currency.Real,
-            ["Hotel", "Breakfast", "Hiking Tour"]
+            ["Hotel", "Breakfast", "Hiking Tour"],
+            5,
+            18
         ).Value,
         Tour.Create(
             "FOWI003",
@@ -66,7 +74,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             200m,
             300m,
             Currency.Euro,
-            ["Hotel", "Breakfast", "Wine Tasting"]
+            ["Hotel", "Breakfast", "Wine Tasting"],
+            6,
+            16
         ).Value
     ];
 
@@ -189,7 +199,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             t.RegularBikePrice,
             t.EBikePrice,
             t.Currency,
-            t.IncludedServices
+            t.IncludedServices,
+            t.MinCustomers,
+            t.MaxCustomers
         ).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
@@ -231,7 +243,9 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
             t.RegularBikePrice,
             t.EBikePrice,
             t.Currency,
-            t.IncludedServices
+            t.IncludedServices,
+            t.MinCustomers,
+            t.MaxCustomers
         ).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
