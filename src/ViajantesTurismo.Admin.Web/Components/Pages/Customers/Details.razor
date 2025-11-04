@@ -1,4 +1,5 @@
 @page "/customers/{id:int}"
+@using ViajantesTurismo.Admin.Web.Exceptions
 @using ViajantesTurismo.Admin.Web.Models
 @using ViajantesTurismo.AdminApi.Contracts
 @rendermode InteractiveServer
@@ -514,6 +515,10 @@ else
             await LoadBookings();
             HideBookingForm();
             _toast.ShowSuccess(_editingBookingId.HasValue ? "Booking updated successfully." : "Booking created successfully.");
+        }
+        catch (ApiValidationException)
+        {
+            _toast.ShowError("Validation failed. Please check the form for errors.");
         }
         catch (Exception ex)
         {

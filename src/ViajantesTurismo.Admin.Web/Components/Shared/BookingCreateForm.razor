@@ -229,6 +229,13 @@
     [Parameter]
     public bool IsSubmitting { get; set; }
 
+    public EditContext? EditContext { get; private set; }
+
+    protected override void OnParametersSet()
+    {
+        EditContext = new EditContext(Model);
+    }
+
     private void OnPrincipalCustomerChanged()
     {
         if (!Model.CustomerId.HasValue)

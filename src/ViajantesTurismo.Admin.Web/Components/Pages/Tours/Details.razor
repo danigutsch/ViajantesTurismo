@@ -1,4 +1,6 @@
 @page "/tours/{id:int}"
+@using ViajantesTurismo.Admin.Web.Exceptions
+@using ViajantesTurismo.Admin.Web.Helpers
 @using ViajantesTurismo.Admin.Web.Models
 @using ViajantesTurismo.AdminApi.Contracts
 @rendermode InteractiveServer
@@ -179,7 +181,8 @@ else if (_tour != null)
                     }
                     else
                     {
-                        <BookingCreateForm Model="_bookingFormModel"
+                        <BookingCreateForm @ref="_bookingCreateFormRef"
+                                           Model="_bookingFormModel"
                                            Customers="_customers"
                                            Tours="_tours"
                                            SelectedTour="_tour"
@@ -225,6 +228,7 @@ else if (_tour != null)
     private GetTourDto[] _tours = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
+    private BookingCreateForm? _bookingCreateFormRef;
 
     private bool _showPaymentForm;
     private PaymentFormModel _paymentFormModel = new();
@@ -379,6 +383,15 @@ else if (_tour != null)
 
             await LoadBookings();
             HideBookingForm();
+        }
+        catch (ApiValidationException ex)
+        {
+            if (_bookingCreateFormRef?.EditContext is not null)
+            {
+                EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, ex);
+            }
+
+            _toast.ShowError("Validation failed. Please check the form for errors.");
         }
         catch (Exception ex)
         {
