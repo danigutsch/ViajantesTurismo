@@ -9,20 +9,6 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class BookingSanitizationSteps(BookingContext bookingContext, TourContext tourContext)
 {
-    [When(@"I add a booking with price (.*)")]
-    public void WhenIAddABookingWithPrice(decimal price)
-    {
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
-        if (result.IsSuccess)
-        {
-            bookingContext.Booking = result.Value;
-        }
-        else
-        {
-            bookingContext.Result = result.ToResult();
-        }
-    }
-
     [When(@"I add a booking with notes ""(.*)""")]
     public void WhenIAddABookingWithNotes(string notes)
     {
@@ -61,25 +47,11 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
         Assert.True(result.IsSuccess);
     }
 
-    [Then(@"the booking notes should contain normalized whitespace")]
-    public void ThenTheBookingNotesShouldContainNormalizedWhitespace()
-    {
-        Assert.NotNull(bookingContext.Booking.Notes);
-        Assert.DoesNotContain("  ", bookingContext.Booking.Notes, StringComparison.Ordinal);
-        Assert.Equal(bookingContext.Booking.Notes.Trim(), bookingContext.Booking.Notes);
-    }
-
     [Then(@"the booking creation should fail with notes validation error")]
     public void ThenTheBookingCreationShouldFailWithNotesValidationError()
     {
         var result = (Result)bookingContext.Result;
         Assert.False(result.IsSuccess);
         Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false);
-    }
-
-    [Then(@"the booking price validation should fail")]
-    public void ThenTheBookingPriceValidationShouldFail()
-    {
-        Assert.Empty(tourContext.Tour.Bookings);
     }
 }

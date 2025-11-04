@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -59,32 +60,15 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Given(@"I have an existing customer")]
     public void GivenIHaveAnExistingCustomer()
     {
-        context.PersonalInfoResult = PersonalInfo.Create(
-            "John",
-            "Smith",
-            "Male",
-            new DateTime(1990, 5, 15),
-            "American",
-            "Software Engineer",
-            TimeProvider.System);
-
-        context.IdentificationInfoResult = IdentificationInfo.Create("123456789", "American");
-        context.ContactInfoResult = ContactInfo.Create("john.smith@example.com", "+1234567890", null, null);
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "12345", "New York", "NY", "USA");
-        context.PhysicalInfo = PhysicalInfo.Create(75m, 180, BikeType.Regular).Value;
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
-        context.EmergencyContactResult = EmergencyContact.Create("Emergency Contact", "+1111111111");
-        context.MedicalInfo = MedicalInfo.Create(null, null).Value;
-
-        context.Customer = new Customer(
-            context.PersonalInfo,
-            context.IdentificationInfo,
-            context.ContactInfo,
-            context.Address,
-            context.PhysicalInfo,
-            context.AccommodationPreferences,
-            context.EmergencyContact,
-            context.MedicalInfo);
+        context.Customer = TestHelpers.CreateTestCustomer();
+        context.PersonalInfoResult = Result<PersonalInfo>.Ok(context.Customer.PersonalInfo);
+        context.IdentificationInfoResult = Result<IdentificationInfo>.Ok(context.Customer.IdentificationInfo);
+        context.ContactInfoResult = Result<ContactInfo>.Ok(context.Customer.ContactInfo);
+        context.AddressResult = Result<Address>.Ok(context.Customer.Address);
+        context.PhysicalInfo = context.Customer.PhysicalInfo;
+        context.AccommodationPreferences = context.Customer.AccommodationPreferences;
+        context.EmergencyContactResult = Result<EmergencyContact>.Ok(context.Customer.EmergencyContact);
+        context.MedicalInfo = context.Customer.MedicalInfo;
     }
 
     [When(@"I create a customer")]
