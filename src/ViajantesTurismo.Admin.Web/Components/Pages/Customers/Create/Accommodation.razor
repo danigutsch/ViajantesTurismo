@@ -90,7 +90,7 @@
 
         State.NavigateToStep(6);
 
-        _customers = await CustomersApi.GetCustomers();
+        _customers = await CustomersApi.GetCustomers(CancellationToken.None);
     }
 
     private void HandleValidSubmit()

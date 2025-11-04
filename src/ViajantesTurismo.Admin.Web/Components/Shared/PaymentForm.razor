@@ -1,0 +1,101 @@
+@using ViajantesTurismo.Admin.Web.Models
+@using ViajantesTurismo.AdminApi.Contracts
+<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator/>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                <InputNumber @bind-Value="Model.Amount" class="form-control" id="amount" step="0.01"/>
+            </div>
+            <ValidationMessage For="@(() => Model.Amount)"/>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label for="paymentDate" class="form-label">Payment Date <span class="text-danger">*</span></label>
+            <InputDate @bind-Value="Model.PaymentDate" class="form-control" id="paymentDate"/>
+            <ValidationMessage For="@(() => Model.PaymentDate)"/>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="method" class="form-label">Payment Method <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.Method" class="form-select" id="method">
+            <option value="">-- Select Payment Method --</option>
+            @foreach (var method in Enum.GetValues<PaymentMethodDto>())
+            {
+                <option value="@method">@FormatPaymentMethod(method)</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.Method)"/>
+    </div>
+
+    <div class="mb-3">
+        <label for="referenceNumber" class="form-label">Reference Number</label>
+        <InputText @bind-Value="Model.ReferenceNumber" class="form-control" id="referenceNumber"
+                   placeholder="e.g., Transaction ID, Check Number"/>
+        <ValidationMessage For="@(() => Model.ReferenceNumber)"/>
+    </div>
+
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <InputTextArea @bind-Value="Model.Notes" class="form-control" id="notes" rows="3"
+                       placeholder="Optional notes about this payment"/>
+        <ValidationMessage For="@(() => Model.Notes)"/>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+            @if (IsSubmitting)
+            {
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <text>Recording...</text>
+            }
+            else
+            {
+                <i class="bi bi-cash-stack me-1"></i>
+                <text>Record Payment</text>
+            }
+        </button>
+        @if (OnCancel.HasDelegate)
+        {
+            <button type="button" class="btn btn-secondary" @onclick="OnCancel" disabled="@IsSubmitting">
+                Cancel
+            </button>
+        }
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public required PaymentFormModel Model { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public bool IsSubmitting { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync();
+    }
+
+    private static string FormatPaymentMethod(PaymentMethodDto method) => method switch
+    {
+        PaymentMethodDto.CreditCard => "Credit Card",
+        PaymentMethodDto.BankTransfer => "Bank Transfer",
+        PaymentMethodDto.Cash => "Cash",
+        PaymentMethodDto.Check => "Check",
+        PaymentMethodDto.PayPal => "PayPal",
+        PaymentMethodDto.Other => "Other",
+        _ => method.ToString()
+    };
+
+}

@@ -1,0 +1,139 @@
+@using ViajantesTurismo.AdminApi.Contracts
+@if (!Payments.Any())
+{
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle"></i> No payments recorded yet.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Payment Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Notes</th>
+                    <th>Recorded At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payment in Payments.OrderByDescending(p => p.PaymentDate))
+                {
+                    <tr>
+                        <td>@payment.PaymentDate.ToShortDateString()</td>
+                        <td><strong>@payment.Amount.ToString("C")</strong></td>
+                        <td>
+                            <span class="badge @GetMethodBadgeClass(payment.Method)">
+                                @FormatPaymentMethod(payment.Method)
+                            </span>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
+                            {
+                                <code class="small">@payment.ReferenceNumber</code>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(payment.Notes))
+                            {
+                                <span title="@payment.Notes">
+                                    @TruncateNotes(payment.Notes, 30)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            <small class="text-muted" title="@payment.RecordedAt.ToLocalTime().ToString("g")">
+                                @FormatRecordedAt(payment.RecordedAt)
+                            </small>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-active">
+                    <td><strong>Total Paid</strong></td>
+                    <td colspan="5"><strong>@TotalPaid.ToString("C")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyCollection<GetPaymentDto> Payments { get; set; }
+
+    private decimal TotalPaid => Payments.Sum(p => p.Amount);
+
+    private static string FormatPaymentMethod(PaymentMethodDto method) => method switch
+    {
+        PaymentMethodDto.CreditCard => "Credit Card",
+        PaymentMethodDto.BankTransfer => "Bank Transfer",
+        PaymentMethodDto.Cash => "Cash",
+        PaymentMethodDto.Check => "Check",
+        PaymentMethodDto.PayPal => "PayPal",
+        PaymentMethodDto.Other => "Other",
+        _ => method.ToString()
+    };
+
+    private static string GetMethodBadgeClass(PaymentMethodDto method) => method switch
+    {
+        PaymentMethodDto.CreditCard => "bg-primary",
+        PaymentMethodDto.BankTransfer => "bg-info",
+        PaymentMethodDto.Cash => "bg-success",
+        PaymentMethodDto.Check => "bg-warning text-dark",
+        PaymentMethodDto.PayPal => "bg-secondary",
+        PaymentMethodDto.Other => "bg-light text-dark",
+        _ => "bg-secondary"
+    };
+
+    private static string TruncateNotes(string notes, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(notes) || notes.Length <= maxLength)
+        {
+            return notes;
+        }
+
+        return notes[..maxLength] + "...";
+    }
+
+    private static string FormatRecordedAt(DateTime recordedAt)
+    {
+        var localTime = recordedAt.ToLocalTime();
+        var now = DateTime.Now;
+        var diff = now - localTime;
+
+        if (diff.TotalMinutes < 1)
+        {
+            return "Just now";
+        }
+
+        if (diff.TotalMinutes < 60)
+        {
+            return $"{(int)diff.TotalMinutes}m ago";
+        }
+
+        if (diff.TotalHours < 24)
+        {
+            return $"{(int)diff.TotalHours}h ago";
+        }
+
+        if (diff.TotalDays < 7)
+        {
+            return $"{(int)diff.TotalDays}d ago";
+        }
+
+        return localTime.ToShortDateString();
+    }
+}

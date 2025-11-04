@@ -70,7 +70,7 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _customers = await CustomersApi.GetCustomers();
+        _customers = await CustomersApi.GetCustomers(CancellationToken.None);
     }
 
 }

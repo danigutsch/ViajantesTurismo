@@ -70,7 +70,7 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _tours = await ToursApi.GetTours();
+        _tours = await ToursApi.GetTours(CancellationToken.None);
     }
 
     private static string FormatPrice(decimal price, CurrencyDto currency)

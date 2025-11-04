@@ -219,7 +219,7 @@ else
     {
         try
         {
-            _booking = await BookingsApi.GetBookingById(Id);
+            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
 
             if (_booking is null)
             {
@@ -273,7 +273,7 @@ else
                 DiscountReason = _model.DiscountReason
             };
 
-            await BookingsApi.UpdateBooking(Id, updateDto);
+            await BookingsApi.UpdateBooking(Id, updateDto, CancellationToken.None);
 
             _success = true;
             _pendingRedirect = true;
@@ -291,7 +291,7 @@ else
             }
             catch (TaskCanceledException)
             {
-                /* Cancelled by user */
+                /* Cancelled by the user */
             }
         }
         catch (Exception ex)

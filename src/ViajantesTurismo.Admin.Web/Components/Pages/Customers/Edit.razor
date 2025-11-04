@@ -348,7 +348,7 @@ else
     {
         try
         {
-            var customer = await CustomersApi.GetCustomerById(Id);
+            var customer = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
 
             if (customer is null)
             {
@@ -406,7 +406,7 @@ else
                 MedicalInfo = _model.MedicalInfo.ToDto()
             };
 
-            await CustomersApi.UpdateCustomer(Id, customer);
+            await CustomersApi.UpdateCustomer(Id, customer, CancellationToken.None);
 
             _success = true;
             _pendingRedirect = true;

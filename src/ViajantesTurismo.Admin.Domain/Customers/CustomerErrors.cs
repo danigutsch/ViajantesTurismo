@@ -384,4 +384,11 @@ public static class CustomerErrors
         detail: "Additional information cannot exceed 500 characters.",
         field: "AdditionalInfo",
         message: "Additional information cannot exceed 500 characters.");
+
+    /// <summary>
+    /// Indicates that a customer with the specified ID was not found.
+    /// </summary>
+    /// <param name="id">The ID of the customer that was not found.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CustomerNotFound(int id) => Result.NotFound(detail: $"Customer with ID {id} was not found.");
 }

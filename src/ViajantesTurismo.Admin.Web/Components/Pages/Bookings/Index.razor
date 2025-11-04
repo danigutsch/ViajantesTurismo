@@ -63,7 +63,7 @@
         _loading = true;
         try
         {
-            _bookings = await BookingsApi.GetAllBookings();
+            _bookings = await BookingsApi.GetAllBookings(CancellationToken.None);
         }
         finally
         {
@@ -81,7 +81,7 @@
     {
         try
         {
-            await BookingsApi.ConfirmBooking(bookingId);
+            await BookingsApi.ConfirmBooking(bookingId, CancellationToken.None);
             await LoadBookings();
             _toast.ShowSuccess("Booking confirmed successfully.");
         }
@@ -97,7 +97,7 @@
         {
             try
             {
-                await BookingsApi.CancelBooking(bookingId);
+                await BookingsApi.CancelBooking(bookingId, CancellationToken.None);
                 await LoadBookings();
                 _toast.ShowSuccess("Booking cancelled successfully.");
             }
@@ -112,7 +112,7 @@
     {
         try
         {
-            await BookingsApi.CompleteBooking(bookingId);
+            await BookingsApi.CompleteBooking(bookingId, CancellationToken.None);
             await LoadBookings();
             _toast.ShowSuccess("Booking completed successfully.");
         }
@@ -128,7 +128,7 @@
         {
             try
             {
-                await BookingsApi.DeleteBooking(bookingId);
+                await BookingsApi.DeleteBooking(bookingId, CancellationToken.None);
                 await LoadBookings();
                 _toast.ShowSuccess("Booking deleted successfully.");
             }

@@ -161,7 +161,7 @@ else
     {
         try
         {
-            var tour = await ToursApi.GetTourById(Id);
+            var tour = await ToursApi.GetTourById(Id, CancellationToken.None);
 
             if (tour is null)
             {
@@ -225,7 +225,7 @@ else
                     .ToList()
             };
 
-            await ToursApi.UpdateTour(Id, tour);
+            await ToursApi.UpdateTour(Id, tour, CancellationToken.None);
 
             _success = true;
             _pendingRedirect = true;

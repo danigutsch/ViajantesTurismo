@@ -56,7 +56,7 @@ internal static class CustomerEndpoints
         return TypedResults.Ok(customers);
     }
 
-    private static async Task<Results<Ok<CustomerDetailsDto>, NotFound>> GetCustomerById(
+    private static async Task<Results<Ok<CustomerDetailsDto>, NotFound<ProblemDetails>>> GetCustomerById(
         [FromRoute] int id,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
@@ -64,7 +64,7 @@ internal static class CustomerEndpoints
         var customerDto = await queryService.GetCustomerDetailsById(id, ct);
         if (customerDto is null)
         {
-            return TypedResults.NotFound();
+            return CustomerErrors.CustomerNotFound(id).ToNotFound();
         }
 
         return TypedResults.Ok(customerDto);
@@ -151,7 +151,7 @@ internal static class CustomerEndpoints
         return TypedResults.Created($"/customers/{customer.Id}", customerDto);
     }
 
-    private static async Task<Results<NoContent, NotFound, ValidationProblem>> UpdateCustomer(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateCustomer(
         [FromRoute] int id,
         [FromBody] UpdateCustomerDto dto,
         [FromServices] ICustomerStore customerStore,
@@ -162,7 +162,7 @@ internal static class CustomerEndpoints
         var customer = await customerStore.GetById(id, ct);
         if (customer is null)
         {
-            return TypedResults.NotFound();
+            return CustomerErrors.CustomerNotFound(id).ToNotFound();
         }
 
         var personalInfoResult = PersonalInfo.Create(

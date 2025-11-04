@@ -4,7 +4,7 @@ namespace ViajantesTurismo.Admin.Web;
 
 internal sealed class ToursApiClient(HttpClient httpClient)
 {
-    public async Task<GetTourDto[]> GetTours(int maxItems = 10, CancellationToken cancellationToken = default)
+    public async Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = 10)
     {
         List<GetTourDto>? tours = null;
 
@@ -27,12 +27,12 @@ internal sealed class ToursApiClient(HttpClient httpClient)
         return tours?.ToArray() ?? [];
     }
 
-    public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken = default)
+    public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken)
     {
         return await httpClient.GetFromJsonAsync<GetTourDto>($"/tours/{id}", cancellationToken);
     }
 
-    public async Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken = default)
+    public async Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -40,7 +40,7 @@ internal sealed class ToursApiClient(HttpClient httpClient)
         return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
     }
 
-    public async Task UpdateTour(int id, UpdateTourDto dto, CancellationToken cancellationToken = default)
+    public async Task UpdateTour(int id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, cancellationToken);
         response.EnsureSuccessStatusCode();

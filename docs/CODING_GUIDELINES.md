@@ -587,3 +587,44 @@ Practical decision matrix (short):
 - You will add/remove items in the aggregate: use `List<T>` internally + expose `IReadOnlyCollection<T>`.
 - You need uniqueness: `HashSet<T>` (internal) + expose read-only.
 - You need keyed lookup: `Dictionary<TKey, TValue>` (internal).
+
+## Asynchronous Programming
+
+### Do Not Use Default Values for CancellationToken
+
+**Never provide default values for `CancellationToken` parameters in public APIs.**
+
+❌ **Don't do this:**
+
+```csharp
+public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken = default)
+{
+    return await httpClient.GetFromJsonAsync<GetTourDto>($"/tours/{id}", cancellationToken);
+}
+```
+
+✅ **Do this instead:**
+
+```csharp
+public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken)
+{
+    return await httpClient.GetFromJsonAsync<GetTourDto>($"/tours/{id}", cancellationToken);
+}
+```
+
+**Why avoid default values?**
+
+1. **Explicit intent**: Callers must consciously decide whether to support cancellation
+2. **Prevents silent bugs**: Missing cancellation tokens become compile errors, not runtime issues
+3. **Better discoverability**: Developers see that the operation supports cancellation
+4. **Consistent patterns**: All async methods clearly show cancellation support
+
+**For callers who don't need cancellation:**
+
+```csharp
+// Explicitly pass CancellationToken.None
+var tour = await toursApi.GetTourById(tourId, CancellationToken.None);
+```
+
+**Exception:** Private helper methods within a class may use `= default` for convenience, but all public APIs should
+require explicit cancellation tokens.

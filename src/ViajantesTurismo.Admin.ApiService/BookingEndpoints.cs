@@ -80,6 +80,11 @@ internal static class BookingEndpoints
             .WithDescription("Completes a booking by setting its status to Completed.")
             .WithSummary("Completes a booking.");
 
+        bookingsGroup.MapPost("/{id:long}/payments", RecordPayment)
+            .WithName("RecordPayment")
+            .WithDescription("Records a payment for a booking.")
+            .WithSummary("Records a payment.");
+
         return app;
     }
 
@@ -91,7 +96,7 @@ internal static class BookingEndpoints
         return TypedResults.Ok(bookings);
     }
 
-    private static async Task<Results<Ok<GetBookingDto>, NotFound>> GetBookingById(
+    private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>>> GetBookingById(
         [FromRoute] long id,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
@@ -99,7 +104,7 @@ internal static class BookingEndpoints
         var booking = await queryService.GetBookingById(id, ct);
         if (booking is null)
         {
-            return TypedResults.NotFound();
+            return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
         return TypedResults.Ok(booking);
@@ -241,21 +246,13 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound(new ProblemDetails()
-            {
-                Status = StatusCodes.Status404NotFound,
-                Detail = "Booking not found."
-            });
+            return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
         var result = tour.CancelBooking(id);
         if (result.IsFailure)
         {
-            return TypedResults.NotFound(new ProblemDetails()
-            {
-                Status = StatusCodes.Status404NotFound,
-                Detail = result.ErrorDetails!.Detail
-            });
+            return result.ToNotFound();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -263,7 +260,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound>> ConfirmBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> ConfirmBooking(
         [FromRoute] long id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -272,13 +269,13 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound();
+            return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
         var result = tour.ConfirmBooking(id);
         if (result.IsFailure)
         {
-            return TypedResults.NotFound();
+            return result.ToNotFound();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -286,16 +283,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    /// <summary>
-    /// Updates the notes for a booking.
-    /// </summary>
-    /// <param name="id">The booking ID.</param>
-    /// <param name="dto">The update data containing notes.</param>
-    /// <param name="tourStore">The tour store for retrieving tours.</param>
-    /// <param name="unitOfWork">The unit of work for saving changes.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>NoContent if successful, NotFound if the booking doesn't exist.</returns>
-    private static async Task<Results<NoContent, NotFound>> UpdateBookingNotes(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> UpdateBookingNotes(
         [FromRoute] long id,
         [FromBody] UpdateBookingNotesDto dto,
         [FromServices] ITourStore tourStore,
@@ -305,7 +293,7 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound();
+            return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
         tour.UpdateBookingNotes(id, dto.Notes);
@@ -324,25 +312,66 @@ internal static class BookingEndpoints
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
         {
-            return TypedResults.NotFound(new ProblemDetails()
-            {
-                Status = StatusCodes.Status404NotFound,
-                Detail = "Booking not found."
-            });
+            return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
         var result = tour.CompleteBooking(id);
         if (result.IsFailure)
         {
-            return TypedResults.NotFound(new ProblemDetails()
-            {
-                Status = StatusCodes.Status404NotFound,
-                Detail = result.ErrorDetails!.Detail
-            });
+            return result.ToNotFound();
         }
 
         await unitOfWork.SaveEntities(ct);
 
         return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<Created<GetPaymentDto>, NotFound<ProblemDetails>, ValidationProblem>> RecordPayment(
+        [FromRoute] long id,
+        [FromBody] CreatePaymentDto dto,
+        [FromServices] ITourStore tourStore,
+        [FromServices] IQueryService queryService,
+        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] TimeProvider timeProvider,
+        CancellationToken ct)
+    {
+        var tour = await tourStore.GetByBookingId(id, ct);
+        if (tour is null)
+        {
+            return BookingErrors.BookingNotFound(id).ToNotFound();
+        }
+
+        var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
+        if (booking is null)
+        {
+            return BookingErrors.BookingNotFound(id).ToNotFound();
+        }
+
+        var result = booking.RecordPayment(
+            dto.Amount,
+            dto.PaymentDate,
+            BookingMapper.MapToPaymentMethod(dto.Method),
+            timeProvider,
+            dto.ReferenceNumber,
+            dto.Notes);
+
+        if (result.IsFailure)
+        {
+            return result.ToValidationProblem();
+        }
+
+        var payment = result.Value;
+
+        await unitOfWork.SaveEntities(ct);
+
+        var updatedBooking = await queryService.GetBookingById(id, ct);
+        var paymentDto = updatedBooking?.Payments.FirstOrDefault(p => p.Id == payment.Id);
+
+        if (paymentDto is null)
+        {
+            return BookingErrors.BookingNotFound(id).ToNotFound();
+        }
+
+        return TypedResults.Created($"/bookings/{id}/payments/{payment.Id}", paymentDto);
     }
 }

@@ -137,7 +137,7 @@
                             .ToList()
             };
 
-            var response = await ToursApi.CreateTour(tour);
+            var response = await ToursApi.CreateTour(tour, CancellationToken.None);
 
             _createdTourUrl = response.ToString();
             _success = true;
