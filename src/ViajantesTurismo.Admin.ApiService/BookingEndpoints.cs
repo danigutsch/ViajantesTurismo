@@ -55,6 +55,11 @@ internal static class BookingEndpoints
             .WithDescription("Updates an existing booking.")
             .WithSummary("Updates an existing booking.");
 
+        bookingsGroup.MapPut("/{id:long}/details", UpdateBookingDetails)
+            .WithName("UpdateBookingDetails")
+            .WithDescription("Updates booking details (room type, bikes, companion).")
+            .WithSummary("Updates booking details.");
+
         bookingsGroup.MapDelete("/{id:long}", DeleteBooking)
             .WithName("DeleteBooking")
             .WithDescription("Deletes a booking.")
@@ -373,5 +378,35 @@ internal static class BookingEndpoints
         }
 
         return TypedResults.Created($"/bookings/{id}/payments/{payment.Id}", paymentDto);
+    }
+
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDetails(
+        [FromRoute] long id,
+        [FromBody] UpdateBookingDetailsDto dto,
+        [FromServices] ITourStore tourStore,
+        [FromServices] IUnitOfWork unitOfWork,
+        CancellationToken ct)
+    {
+        var tour = await tourStore.GetByBookingId(id, ct);
+        if (tour is null)
+        {
+            return BookingErrors.BookingNotFound(id).ToNotFound();
+        }
+
+        var result = tour.UpdateBookingDetails(
+            id,
+            BookingMapper.MapToRoomType(dto.RoomType),
+            BookingMapper.MapToBikeType(dto.PrincipalBikeType),
+            dto.CompanionCustomerId.HasValue ? (int)dto.CompanionCustomerId.Value : null,
+            dto.CompanionBikeType.HasValue ? BookingMapper.MapToBikeType(dto.CompanionBikeType.Value) : null);
+
+        if (result.IsFailure)
+        {
+            return result.ToValidationProblem();
+        }
+
+        await unitOfWork.SaveEntities(ct);
+
+        return TypedResults.NoContent();
     }
 }

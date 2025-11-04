@@ -124,4 +124,13 @@ public static class TourErrors
     /// <param name="id">The ID of the tour that was not found.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result<Tour> TourNotFound(int id) => Result<Tour>.NotFound(detail: $"Tour with ID {id} was not found.");
+
+    /// <summary>
+    /// Indicates that the principal customer and companion cannot be the same person.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result PrincipalAndCompanionCannotBeSame() => Result.Invalid(
+        detail: "Principal customer and companion cannot be the same person.",
+        field: "companionCustomerId",
+        message: "Principal and companion must be different customers.");
 }

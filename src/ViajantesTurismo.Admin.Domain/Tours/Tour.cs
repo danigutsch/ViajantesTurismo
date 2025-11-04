@@ -637,6 +637,94 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
+    /// Updates the details of a booking (room type, bikes, companion).
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to update.</param>
+    /// <param name="roomType">The new room type.</param>
+    /// <param name="principalBikeType">The new bike type for the principal customer.</param>
+    /// <param name="companionCustomerId">The companion customer ID (null to remove companion).</param>
+    /// <param name="companionBikeType">The bike type for the companion (required if companion present).</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateBookingDetails(
+        long bookingId,
+        RoomType roomType,
+        BikeType principalBikeType,
+        int? companionCustomerId,
+        BikeType? companionBikeType)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
+
+        if (!Enum.IsDefined(roomType))
+        {
+            return BookingErrors.InvalidRoomType(roomType);
+        }
+
+        if (!Enum.IsDefined(principalBikeType))
+        {
+            return BookingErrors.InvalidBikeType(principalBikeType);
+        }
+
+        if (companionBikeType.HasValue && !Enum.IsDefined(companionBikeType.Value))
+        {
+            return BookingErrors.InvalidBikeType(companionBikeType.Value);
+        }
+
+        var principalBikePrice = GetBikePrice(principalBikeType);
+        var principalCustomerResult = BookingCustomer.Create(
+            booking.PrincipalCustomer.CustomerId,
+            principalBikeType,
+            principalBikePrice);
+
+        if (principalCustomerResult.IsFailure)
+        {
+            return principalCustomerResult.ConvertError();
+        }
+
+        BookingCustomer? companionCustomer = null;
+        if (companionCustomerId.HasValue)
+        {
+            if (!companionBikeType.HasValue)
+            {
+                return Result.Invalid(
+                    detail: "Companion bike type is required when companion is present.",
+                    field: "companionBikeType",
+                    message: "Companion bike type is required.");
+            }
+
+            if (booking.PrincipalCustomer.CustomerId == companionCustomerId.Value)
+            {
+                return TourErrors.PrincipalAndCompanionCannotBeSame();
+            }
+
+            var companionBikePrice = GetBikePrice(companionBikeType.Value);
+            var companionCustomerResult = BookingCustomer.Create(
+                companionCustomerId.Value,
+                companionBikeType.Value,
+                companionBikePrice);
+
+            if (companionCustomerResult.IsFailure)
+            {
+                return companionCustomerResult.ConvertError();
+            }
+
+            companionCustomer = companionCustomerResult.Value;
+        }
+
+        var roomAdditionalCost = CalculateRoomAdditionalCost(roomType);
+
+        return booking.UpdateDetails(
+            roomType,
+            roomAdditionalCost,
+            principalCustomerResult.Value,
+            companionCustomer,
+            booking.Discount);
+    }
+
+    /// <summary>
     /// Removes a booking from this tour.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to remove.</param>

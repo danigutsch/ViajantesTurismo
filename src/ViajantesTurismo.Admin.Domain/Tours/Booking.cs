@@ -71,22 +71,22 @@ public sealed class Booking : Entity<long>
     /// <summary>
     /// The room type for the booking (shared by all participants).
     /// </summary>
-    public RoomType RoomType { get; private init; }
+    public RoomType RoomType { get; private set; }
 
     /// <summary>
     /// The additional cost for the room (e.g. single room supplement).
     /// </summary>
-    public decimal RoomAdditionalCost { get; private init; }
+    public decimal RoomAdditionalCost { get; private set; }
 
     /// <summary>
     /// The principal customer's booking details including bike selection and price.
     /// </summary>
-    public BookingCustomer PrincipalCustomer { get; private init; }
+    public BookingCustomer PrincipalCustomer { get; private set; }
 
     /// <summary>
     /// The companion customer's booking details including bike selection and price, if any.
     /// </summary>
-    public BookingCustomer? CompanionCustomer { get; private init; }
+    public BookingCustomer? CompanionCustomer { get; private set; }
 
     /// <summary>
     /// The discount applied to this booking.
@@ -331,6 +331,77 @@ public sealed class Booking : Entity<long>
         }
 
         Notes = notes;
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Updates the booking details (room type, bikes, companion) after creation.
+    /// </summary>
+    /// <param name="roomType">The new room type.</param>
+    /// <param name="roomAdditionalCost">The new room additional cost.</param>
+    /// <param name="principalCustomer">The updated principal customer details.</param>
+    /// <param name="companionCustomer">The updated companion customer details (null to remove).</param>
+    /// <param name="discount">The discount applied to this booking.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateDetails(
+        RoomType roomType,
+        decimal roomAdditionalCost,
+        BookingCustomer principalCustomer,
+        BookingCustomer? companionCustomer,
+        Discount discount)
+    {
+        ArgumentNullException.ThrowIfNull(principalCustomer);
+        ArgumentNullException.ThrowIfNull(discount);
+
+        // Validate booking can be modified
+        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        {
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+        }
+
+        roomAdditionalCost = NumericSanitizer.SanitizePrice(roomAdditionalCost);
+
+        var errors = new ValidationErrors();
+
+        if (!Enum.IsDefined(roomType))
+        {
+            errors.Add(BookingErrors.InvalidRoomType(roomType));
+        }
+
+        if (roomAdditionalCost < 0)
+        {
+            errors.Add(BookingErrors.NegativeRoomCost(roomAdditionalCost));
+        }
+
+        if (roomAdditionalCost > ContractConstants.MaxPrice)
+        {
+            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
+        var subtotal = CalculateSubtotal(BasePrice, roomAdditionalCost, principalCustomer, companionCustomer);
+
+        if (discount.Type == DiscountType.Absolute && discount.Amount > subtotal)
+        {
+            return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, subtotal);
+        }
+
+        var finalPrice = subtotal - discount.CalculateDiscountAmount(subtotal);
+        if (finalPrice <= 0)
+        {
+            return DiscountErrors.FinalPriceNotPositive(finalPrice);
+        }
+
+        // Update properties
+        RoomType = roomType;
+        RoomAdditionalCost = roomAdditionalCost;
+        PrincipalCustomer = principalCustomer;
+        CompanionCustomer = companionCustomer;
+
         return Result.Ok();
     }
 

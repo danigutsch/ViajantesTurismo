@@ -147,4 +147,16 @@ public static class BookingErrors
             detail: $"Invalid payment status: {paymentStatus}. Valid values are: {string.Join(", ", Enum.GetNames<PaymentStatus>())}.",
             field: "paymentStatus",
             message: $"Invalid payment status: {paymentStatus}.");
+
+    /// <summary>
+    /// Indicates that a cancelled or completed booking cannot be modified.
+    /// </summary>
+    /// <param name="bookingId">The booking ID.</param>
+    /// <param name="status">The current booking status.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CannotModifyCancelledOrCompletedBooking(long bookingId, BookingStatus status) =>
+        Result.Invalid(
+            detail: $"Booking {bookingId} is {status} and cannot be modified.",
+            field: "status",
+            message: $"Cannot modify {status.ToString().ToLowerInvariant()} bookings.");
 }
