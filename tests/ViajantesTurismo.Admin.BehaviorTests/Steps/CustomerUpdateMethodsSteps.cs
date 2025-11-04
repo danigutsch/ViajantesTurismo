@@ -67,35 +67,35 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
             "USA",
             "Engineer",
             TimeProvider.System).Value;
-        customerContext.Customer!.UpdatePersonalInfo(personalInfo);
+        customerContext.Customer.UpdatePersonalInfo(personalInfo);
     }
 
     [When(@"I update the identification info to passport ""(.*)""")]
     public void WhenIUpdateTheIdentificationInfoToPassport(string passport)
     {
         var identificationInfo = IdentificationInfo.Create(passport, "USA").Value;
-        customerContext.Customer!.UpdateIdentificationInfo(identificationInfo);
+        customerContext.Customer.UpdateIdentificationInfo(identificationInfo);
     }
 
     [When(@"I update the contact info to email ""(.*)""")]
     public void WhenIUpdateTheContactInfoToEmail(string email)
     {
         var contactInfo = ContactInfo.Create(email, "+1234567890", null, null).Value;
-        customerContext.Customer!.UpdateContactInfo(contactInfo);
+        customerContext.Customer.UpdateContactInfo(contactInfo);
     }
 
     [When(@"I update the address to city ""(.*)""")]
     public void WhenIUpdateTheAddressToCity(string city)
     {
         var address = Address.Create("123 Main St", null, "Downtown", "12345", city, "CA", "USA").Value;
-        customerContext.Customer!.UpdateAddress(address);
+        customerContext.Customer.UpdateAddress(address);
     }
 
     [When(@"I update the physical info to height (.*)")]
     public void WhenIUpdateThePhysicalInfoToHeight(int height)
     {
         var physicalInfo = PhysicalInfo.Create(70, height, BikeType.Regular).Value;
-        customerContext.Customer!.UpdatePhysicalInfo(physicalInfo);
+        customerContext.Customer.UpdatePhysicalInfo(physicalInfo);
     }
 
     [When(@"I update the accommodation preferences to bed type ""(.*)""")]
@@ -103,21 +103,21 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     {
         var bedTypeEnum = Enum.Parse<BedType>(bedType + "Bed");
         var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, bedTypeEnum, null).Value;
-        customerContext.Customer!.UpdateAccommodationPreferences(accommodationPreferences);
+        customerContext.Customer.UpdateAccommodationPreferences(accommodationPreferences);
     }
 
     [When(@"I update the emergency contact to ""(.*)""")]
     public void WhenIUpdateTheEmergencyContactTo(string name)
     {
         var emergencyContact = EmergencyContact.Create(name, "+9876543210").Value;
-        customerContext.Customer!.UpdateEmergencyContact(emergencyContact);
+        customerContext.Customer.UpdateEmergencyContact(emergencyContact);
     }
 
     [When(@"I update the medical info to allergies ""(.*)""")]
     public void WhenIUpdateTheMedicalInfoToAllergies(string allergies)
     {
         var medicalInfo = MedicalInfo.Create(allergies, "None").Value;
-        customerContext.Customer!.UpdateMedicalInfo(medicalInfo);
+        customerContext.Customer.UpdateMedicalInfo(medicalInfo);
     }
 
     [Then(@"the customer personal info update should succeed")]
@@ -177,55 +177,55 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Then(@"the customer should have first name ""(.*)""")]
     public void ThenTheCustomerShouldHaveFirstName(string expectedFirstName)
     {
-        Assert.Equal(expectedFirstName, customerContext.Customer!.PersonalInfo.FirstName);
+        Assert.Equal(expectedFirstName, customerContext.Customer.PersonalInfo.FirstName);
     }
 
     [Then(@"the customer should have last name ""(.*)""")]
     public void ThenTheCustomerShouldHaveLastName(string expectedLastName)
     {
-        Assert.Equal(expectedLastName, customerContext.Customer!.PersonalInfo.LastName);
+        Assert.Equal(expectedLastName, customerContext.Customer.PersonalInfo.LastName);
     }
 
     [Then(@"the customer should have passport ""(.*)""")]
     public void ThenTheCustomerShouldHavePassport(string expectedPassport)
     {
-        Assert.Equal(expectedPassport, customerContext.Customer!.IdentificationInfo.NationalId);
+        Assert.Equal(expectedPassport, customerContext.Customer.IdentificationInfo.NationalId);
     }
 
     [Then(@"the customer should have email ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmail(string expectedEmail)
     {
-        Assert.Equal(expectedEmail, customerContext.Customer!.ContactInfo.Email);
+        Assert.Equal(expectedEmail, customerContext.Customer.ContactInfo.Email);
     }
 
     [Then(@"the customer should have city ""(.*)""")]
     public void ThenTheCustomerShouldHaveCity(string expectedCity)
     {
-        Assert.Equal(expectedCity, customerContext.Customer!.Address.City);
+        Assert.Equal(expectedCity, customerContext.Customer.Address.City);
     }
 
     [Then(@"the customer should have height (.*)")]
     public void ThenTheCustomerShouldHaveHeight(int expectedHeight)
     {
-        Assert.Equal(expectedHeight, customerContext.Customer!.PhysicalInfo.HeightCentimeters);
+        Assert.Equal(expectedHeight, customerContext.Customer.PhysicalInfo.HeightCentimeters);
     }
 
     [Then(@"the customer should have bed type ""(.*)""")]
     public void ThenTheCustomerShouldHaveBedType(string expectedBedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(expectedBedType + "Bed");
-        Assert.Equal(bedTypeEnum, customerContext.Customer!.AccommodationPreferences.BedType);
+        Assert.Equal(bedTypeEnum, customerContext.Customer.AccommodationPreferences.BedType);
     }
 
     [Then(@"the customer should have emergency contact ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmergencyContact(string expectedName)
     {
-        Assert.Equal(expectedName, customerContext.Customer!.EmergencyContact.Name);
+        Assert.Equal(expectedName, customerContext.Customer.EmergencyContact.Name);
     }
 
     [Then(@"the customer should have allergies ""(.*)""")]
     public void ThenTheCustomerShouldHaveAllergies(string expectedAllergies)
     {
-        Assert.Equal(expectedAllergies, customerContext.Customer!.MedicalInfo.Allergies);
+        Assert.Equal(expectedAllergies, customerContext.Customer.MedicalInfo.Allergies);
     }
 }

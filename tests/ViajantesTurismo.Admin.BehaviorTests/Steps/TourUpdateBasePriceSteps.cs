@@ -28,7 +28,7 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
     [When(@"I update the base price to (.*)")]
     public void WhenIUpdateTheBasePriceTo(decimal newPrice)
     {
-        tourContext.Result = tourContext.Tour!.UpdateBasePrice(newPrice);
+        tourContext.Result = tourContext.Tour.UpdateBasePrice(newPrice);
     }
 
     [Then(@"the tour base price update should succeed")]
@@ -48,6 +48,6 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
     [Then(@"the tour should have base price (.*)")]
     public void ThenTheTourShouldHaveBasePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour!.Price);
+        Assert.Equal(expectedPrice, tourContext.Tour.Price);
     }
 }

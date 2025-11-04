@@ -29,7 +29,7 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
             _ => throw new ArgumentException($"Unknown currency: {currencyCode}")
         };
 
-        tourContext.Result = tourContext.Tour!.UpdatePricing(
+        tourContext.Result = tourContext.Tour.UpdatePricing(
             doubleRoomSupplement,
             regularBike,
             eBike,
@@ -53,32 +53,20 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     [Then(@"the tour should have double room supplement (.*)")]
     public void ThenTheTourShouldHaveDoubleRoomSupplement(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour!.DoubleRoomSupplementPrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.DoubleRoomSupplementPrice);
     }
 
     [Then(@"the tour should have regular bike price (.*)")]
     public void ThenTheTourShouldHaveRegularBikePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour!.RegularBikePrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.RegularBikePrice);
     }
 
     [Then(@"the tour should have e-bike price (.*)")]
     public void ThenTheTourShouldHaveEBikePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour!.EBikePrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
     }
 
-    [Then(@"the tour should have currency ""(.*)""")]
-    public void ThenTheTourShouldHaveCurrency(string expectedCurrencyCode)
-    {
-        var expectedCurrency = expectedCurrencyCode switch
-        {
-            "USD" => Currency.UsDollar,
-            "EUR" => Currency.Euro,
-            "BRL" => Currency.Real,
-            _ => throw new ArgumentException($"Unknown currency: {expectedCurrencyCode}")
-        };
-
-        Assert.Equal(expectedCurrency, tourContext.Tour!.Currency);
-    }
+    // Note: Currency assertion moved to TourUpdateCurrencySteps for focused currency testing
 }

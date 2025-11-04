@@ -16,21 +16,21 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [When(@"I update the tour details to identifier ""(.*)"" and name ""(.*)""")]
     public void WhenIUpdateTheTourDetailsToIdentifierAndName(string identifier, string name)
     {
-        tourContext.Result = tourContext.Tour!.UpdateDetails(identifier, name);
+        tourContext.Result = tourContext.Tour.UpdateDetails(identifier, name);
     }
 
     [When(@"I update the tour details to identifier with (.*) characters and name ""(.*)""")]
     public void WhenIUpdateTheTourDetailsToIdentifierWithCharactersAndName(int length, string name)
     {
         var longIdentifier = new string('X', length);
-        tourContext.Result = tourContext.Tour!.UpdateDetails(longIdentifier, name);
+        tourContext.Result = tourContext.Tour.UpdateDetails(longIdentifier, name);
     }
 
     [When(@"I update the tour details to identifier ""(.*)"" and name with (.*) characters")]
     public void WhenIUpdateTheTourDetailsToIdentifierAndNameWithCharacters(string identifier, int length)
     {
         var longName = new string('X', length);
-        tourContext.Result = tourContext.Tour!.UpdateDetails(identifier, longName);
+        tourContext.Result = tourContext.Tour.UpdateDetails(identifier, longName);
     }
 
     [Then(@"the tour details update should succeed")]
@@ -50,13 +50,13 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [Then(@"the tour should have identifier ""(.*)""")]
     public void ThenTheTourShouldHaveIdentifier(string expectedIdentifier)
     {
-        Assert.Equal(expectedIdentifier, tourContext.Tour!.Identifier);
+        Assert.Equal(expectedIdentifier, tourContext.Tour.Identifier);
     }
 
     [Then(@"the tour should have name ""(.*)""")]
     public void ThenTheTourShouldHaveName(string expectedName)
     {
-        Assert.Equal(expectedName, tourContext.Tour!.Name);
+        Assert.Equal(expectedName, tourContext.Tour.Name);
     }
 
     [Then(@"the error should contain ""(.*)""")]

@@ -256,12 +256,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour.UpdateIncludedServices(services);
     }
 
-    [When(@"I update the currency to ""(.*)""")]
-    public void WhenIUpdateTheCurrencyTo(string currencyCode)
-    {
-        var currency = TestHelpers.ParseCurrency(currencyCode);
-        tourContext.Tour.UpdateCurrency(currency);
-    }
+    // Note: Currency update step moved to TourUpdateCurrencySteps for focused currency testing
 
     [When(@"I update pricing with single room (.*), regular bike (.*), e-bike (.*)")]
     public void WhenIUpdatePricingWithBaseSingleRoomRegularBikeEBike(
