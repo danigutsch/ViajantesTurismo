@@ -64,4 +64,14 @@ public static class ContractConstants
     /// The maximum percentage value for discount (100%).
     /// </summary>
     public const int MaxDiscountPercentage = 100;
+
+    /// <summary>
+    /// The maximum length for discount reason.
+    /// </summary>
+    public const int MaxDiscountReasonLength = 500;
+
+    /// <summary>
+    /// The minimum length for discount reason when discount is applied.
+    /// </summary>
+    public const int MinDiscountReasonLength = 10;
 }

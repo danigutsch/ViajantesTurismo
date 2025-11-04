@@ -90,6 +90,59 @@
         <ValidationMessage For="@(() => Model.Notes)"/>
     </div>
 
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-percent"></i> Discount (Optional)</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="discountType" class="form-label">Discount Type</label>
+                <InputSelect id="discountType" class="form-select" @bind-Value="Model.DiscountType">
+                    <option value="@DiscountTypeDto.None">No Discount</option>
+                    <option value="@DiscountTypeDto.Percentage">Percentage (0-100%)</option>
+                    <option value="@DiscountTypeDto.Absolute">Absolute Amount (in tour currency)</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => Model.DiscountType)"/>
+            </div>
+
+            @if (Model.DiscountType != DiscountTypeDto.None)
+            {
+                <div class="mb-3">
+                    <label for="discountAmount" class="form-label">
+                        @if (Model.DiscountType == DiscountTypeDto.Percentage)
+                        {
+                            <text>Discount Percentage <span class="text-danger">*</span></text>
+                        }
+                        else
+                        {
+                            <text>Discount Amount <span class="text-danger">*</span></text>
+                        }
+                    </label>
+                    <InputNumber id="discountAmount" class="form-control" @bind-Value="Model.DiscountAmount"
+                                 @bind-Value:format="F2" step="0.01"/>
+                    <ValidationMessage For="@(() => Model.DiscountAmount)"/>
+                    @if (Model.DiscountType == DiscountTypeDto.Percentage)
+                    {
+                        <div class="form-text">Enter a value between 0 and 100</div>
+                    }
+                    else
+                    {
+                        <div class="form-text">Enter the discount amount in the tour currency</div>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label for="discountReason" class="form-label">Discount Reason <span
+                            class="text-danger">*</span></label>
+                    <InputTextArea id="discountReason" class="form-control" @bind-Value="Model.DiscountReason"
+                                   rows="2" placeholder="e.g., Early bird discount, Loyalty customer, Group discount"/>
+                    <ValidationMessage For="@(() => Model.DiscountReason)"/>
+                    <div class="form-text">Required for audit purposes (10-500 characters)</div>
+                </div>
+            }
+        </div>
+    </div>
+
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
             @if (IsSubmitting)
