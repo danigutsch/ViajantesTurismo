@@ -1,7 +1,6 @@
 ﻿using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
@@ -24,6 +23,7 @@ public sealed class Booking : Entity<long>
     /// <param name="roomAdditionalCost">The additional cost for a double room (0 for a single room).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
+    /// <param name="discount">The discount applied to this booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     private Booking(
         int tourId,
@@ -32,6 +32,7 @@ public sealed class Booking : Entity<long>
         decimal roomAdditionalCost,
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer,
+        Discount discount,
         string? notes)
     {
         TourId = tourId;
@@ -40,6 +41,7 @@ public sealed class Booking : Entity<long>
         RoomAdditionalCost = roomAdditionalCost;
         PrincipalCustomer = principalCustomer;
         CompanionCustomer = companionCustomer;
+        Discount = discount;
         Notes = notes;
     }
 
@@ -84,6 +86,11 @@ public sealed class Booking : Entity<long>
     public BookingCustomer? CompanionCustomer { get; private init; }
 
     /// <summary>
+    /// The discount applied to this booking.
+    /// </summary>
+    public Discount Discount { get; private init; }
+
+    /// <summary>
     /// The date when the booking was made.
     /// </summary>
     public DateTime BookingDate { get; private init; } = DateTime.UtcNow;
@@ -99,35 +106,34 @@ public sealed class Booking : Entity<long>
     public PaymentStatus PaymentStatus { get; private set; } = PaymentStatus.Unpaid;
 
     /// <summary>
-    /// The total price of the booking.
+    /// The subtotal before discount (base price + room cost + bike prices).
     /// </summary>
-    public decimal TotalPrice => CalculateTotalPrice(BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer);
+    public decimal Subtotal => CalculateSubtotal(BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer);
+
+    /// <summary>
+    /// The total price of the booking (subtotal minus discount).
+    /// </summary>
+    public decimal TotalPrice => Subtotal - Discount.CalculateDiscountAmount(Subtotal);
 
     /// <summary>
     /// Additional notes for the booking.
     /// </summary>
     public string? Notes { get; private set; }
 
-    /// <summary>
-    /// Calculates the total price for a booking.
-    /// The base price is for a single room (not per person).
-    /// RoomAdditionalCost is added for double rooms.
-    /// Bike prices are added for principal and companion customers.
-    /// </summary>
-    private static decimal CalculateTotalPrice(
+    private static decimal CalculateSubtotal(
         decimal basePrice,
         decimal roomAdditionalCost,
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer)
     {
-        var totalPrice = basePrice + roomAdditionalCost + principalCustomer.BikePrice;
+        var subtotal = basePrice + roomAdditionalCost + principalCustomer.BikePrice;
 
         if (companionCustomer is not null)
         {
-            totalPrice += companionCustomer.BikePrice;
+            subtotal += companionCustomer.BikePrice;
         }
 
-        return totalPrice;
+        return subtotal;
     }
 
     /// <summary>
@@ -139,6 +145,7 @@ public sealed class Booking : Entity<long>
     /// <param name="roomAdditionalCost">The additional cost for a double room (0 for a single room).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
+    /// <param name="discount">The discount applied to this booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
     public static Result<Booking> Create(
@@ -148,8 +155,12 @@ public sealed class Booking : Entity<long>
         decimal roomAdditionalCost,
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer,
+        Discount discount,
         string? notes)
     {
+        ArgumentNullException.ThrowIfNull(principalCustomer);
+        ArgumentNullException.ThrowIfNull(discount);
+
         basePrice = NumericSanitizer.SanitizePrice(basePrice);
         roomAdditionalCost = NumericSanitizer.SanitizePrice(roomAdditionalCost);
         notes = StringSanitizer.SanitizeNotes(notes);
@@ -191,7 +202,20 @@ public sealed class Booking : Entity<long>
             return errors.ToResult<Booking>();
         }
 
-        return new Booking(tourId, basePrice, roomType, roomAdditionalCost, principalCustomer, companionCustomer, notes);
+        var subtotal = CalculateSubtotal(basePrice, roomAdditionalCost, principalCustomer, companionCustomer);
+
+        if (discount.Type == DiscountType.Absolute && discount.Amount > subtotal)
+        {
+            return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, subtotal).ConvertError<Booking>();
+        }
+
+        var finalPrice = subtotal - discount.CalculateDiscountAmount(subtotal);
+        if (finalPrice <= 0)
+        {
+            return DiscountErrors.FinalPriceNotPositive(finalPrice).ConvertError<Booking>();
+        }
+
+        return new Booking(tourId, basePrice, roomType, roomAdditionalCost, principalCustomer, companionCustomer, discount, notes);
     }
 
     /// <summary>

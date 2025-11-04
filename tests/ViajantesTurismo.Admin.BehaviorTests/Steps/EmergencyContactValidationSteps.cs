@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 public sealed class EmergencyContactValidationSteps(EmergencyContactContext context)
 {
     [When(@"I create emergency contact with name ""([^""]*)"" and mobile ""([^""]*)""")]
-    public void WhenICreateEmergencyContactWithNameAndMobile(string name, string mobile)
+    public void WhenICreateEmergencyContactWithName(string name, string mobile)
     {
         context.Name = name;
         context.Mobile = mobile;
@@ -57,7 +57,7 @@ public sealed class EmergencyContactValidationSteps(EmergencyContactContext cont
     }
 
     [When(@"I create emergency contact with name of (\d+) characters")]
-    public void WhenICreateEmergencyContactWithNameOfCharacters(int length)
+    public void WhenICreateEmergencyContactWithNameOfDCharacters(int length)
     {
         var name = new string('A', length);
         context.Name = name;
@@ -69,7 +69,7 @@ public sealed class EmergencyContactValidationSteps(EmergencyContactContext cont
     }
 
     [When(@"I create emergency contact with mobile of (\d+) characters")]
-    public void WhenICreateEmergencyContactWithMobileOfCharacters(int length)
+    public void WhenICreateEmergencyContactWithMobileOfDCharacters(int length)
     {
         var mobile = new string('1', length);
         context.Mobile = mobile;
@@ -106,7 +106,7 @@ public sealed class EmergencyContactValidationSteps(EmergencyContactContext cont
     }
 
     [Then(@"the error should be ""(.*)""")]
-    public void ThenTheEmergencyContactErrorShouldBe(string expectedError)
+    public void ThenTheErrorShouldBe(string expectedError)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;

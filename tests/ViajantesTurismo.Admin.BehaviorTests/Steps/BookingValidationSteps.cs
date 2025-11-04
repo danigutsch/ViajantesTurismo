@@ -15,7 +15,7 @@ public sealed class BookingValidationSteps(
     [When(@"I try to add a booking to tour with invalid room type (.*)")]
     public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
     {
-        bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType, null);
+        bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType, DiscountType.None, 0m, null, null);
     }
 
     [When(@"I try to update the booking payment status with invalid value (.*) through the tour")]
@@ -25,7 +25,7 @@ public sealed class BookingValidationSteps(
     }
 
     [When(@"I try to update the booking notes with (\d+) characters through the tour")]
-    public void WhenITryToUpdateTheBookingNotesWithCharactersThroughTheTour(int characterCount)
+    public void WhenITryToUpdateTheBookingNotesWithDCharactersThroughTheTour(int characterCount)
     {
         var notes = new string('A', characterCount);
         bookingContext.Result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);

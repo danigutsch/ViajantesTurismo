@@ -101,6 +101,13 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
                     .HasForeignKey(c => c.CustomerId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            entity.OwnsOne(booking => booking.Discount, discount =>
+            {
+                discount.Property(d => d.Type).HasConversion<string>().IsRequired();
+                discount.Property(d => d.Amount).IsRequired();
+                discount.Property(d => d.Reason).HasMaxLength(ContractConstants.MaxBookingNotesLength);
+            });
         });
     }
 }

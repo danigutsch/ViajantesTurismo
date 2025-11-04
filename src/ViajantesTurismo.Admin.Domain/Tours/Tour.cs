@@ -405,6 +405,9 @@ public sealed class Tour : Entity<int>
     /// <param name="companionCustomerId">The ID of the companion customer, if any.</param>
     /// <param name="companionBikeType">The bike type selected by the companion, if any.</param>
     /// <param name="roomType">The room type for the booking.</param>
+    /// <param name="discountType">The type of discount to apply (None, Percentage, or Absolute).</param>
+    /// <param name="discountAmount">The discount amount.</param>
+    /// <param name="discountReason">Optional reason for the discount.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
     public Result<Booking> AddBooking(
@@ -413,6 +416,9 @@ public sealed class Tour : Entity<int>
         int? companionCustomerId,
         BikeType? companionBikeType,
         RoomType roomType,
+        DiscountType discountType,
+        decimal discountAmount,
+        string? discountReason,
         string? notes)
     {
         var principalValidation = ValidatePrincipalBikeType(principalBikeType);
@@ -449,6 +455,12 @@ public sealed class Tour : Entity<int>
 
         var roomAdditionalCost = CalculateRoomAdditionalCost(roomType);
 
+        var discountResult = Discount.Create(discountType, discountAmount, discountReason);
+        if (discountResult.IsFailure)
+        {
+            return discountResult.ConvertError<Discount, Booking>();
+        }
+
         var result = Booking.Create(
             Id,
             Price,
@@ -456,6 +468,7 @@ public sealed class Tour : Entity<int>
             roomAdditionalCost,
             principalCustomerResult.Value,
             companionCustomer,
+            discountResult.Value,
             notes);
 
         if (result.IsFailure)

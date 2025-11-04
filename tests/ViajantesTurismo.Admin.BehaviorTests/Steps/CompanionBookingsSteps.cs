@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -18,7 +19,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on regular bike in double room")]
-    public void WhenIAddABookingWithPrincipalOnRegularBikeAndCompanionOnRegularBikeInDoubleRoom(int principalId, int companionId)
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnRegularBikeInDoubleRoom(int principalId, int companionId)
     {
         var result = tourContext.Tour.AddBooking(
             principalId,
@@ -26,6 +27,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             companionId,
             BikeType.Regular,
             RoomType.DoubleRoom,
+            DiscountType.None,
+            0m,
+            null,
             null);
 
         if (result.IsSuccess)
@@ -35,7 +39,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on e-bike in double room")]
-    public void WhenIAddABookingWithPrincipalOnRegularBikeAndCompanionOnEBikeInDoubleRoom(int principalId, int companionId)
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId, int companionId)
     {
         var result = tourContext.Tour.AddBooking(
             principalId,
@@ -43,6 +47,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             companionId,
             BikeType.EBike,
             RoomType.DoubleRoom,
+            DiscountType.None,
+            0m,
+            null,
             null);
 
         if (result.IsSuccess)
@@ -52,7 +59,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     }
 
     [When(@"I add a booking with principal customer (\d+) on e-bike and companion customer (\d+) on e-bike in double room")]
-    public void WhenIAddABookingWithPrincipalOnEBikeAndCompanionOnEBikeInDoubleRoom(int principalId, int companionId)
+    public void WhenIAddABookingWithPrincipalCustomerDOnEBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId, int companionId)
     {
         var result = tourContext.Tour.AddBooking(
             principalId,
@@ -60,6 +67,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             companionId,
             BikeType.EBike,
             RoomType.DoubleRoom,
+            DiscountType.None,
+            0m,
+            null,
             null);
 
         if (result.IsSuccess)
@@ -69,7 +79,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike without companion in single room")]
-    public void WhenIAddABookingWithPrincipalOnRegularBikeWithoutCompanionInSingleRoom(int principalId)
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeWithoutCompanionInSingleRoom(int principalId)
     {
         var result = tourContext.Tour.AddBooking(
             principalId,
@@ -77,6 +87,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null,
             RoomType.SingleRoom,
+            DiscountType.None,
+            0m,
+            null,
             null);
 
         if (result.IsSuccess)
@@ -86,7 +99,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) with no bike type in double room")]
-    public void WhenIAddABookingWithPrincipalOnRegularBikeAndCompanionWithNoBikeTypeInDoubleRoom(int principalId, int companionId)
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDWithNoBikeTypeInDoubleRoom(int principalId, int companionId)
     {
         var result = tourContext.Tour.AddBooking(
             principalId,
@@ -94,6 +107,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             companionId,
             null,
             RoomType.DoubleRoom,
+            DiscountType.None,
+            0m,
+            null,
             null);
 
         bookingContext.Result = result;
@@ -104,7 +120,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     }
 
     [When(@"I add a booking with principal customer (\d+) with no bike type without companion in single room")]
-    public void WhenIAddABookingWithPrincipalWithNoBikeTypeWithoutCompanionInSingleRoom(int principalId)
+    public void WhenIAddABookingWithPrincipalCustomerDWithNoBikeTypeWithoutCompanionInSingleRoom(int principalId)
     {
         var result = tourContext.Tour.AddBooking(
             principalId,
@@ -112,6 +128,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null,
             RoomType.SingleRoom,
+            DiscountType.None,
+            0m,
+            null,
             null);
 
         bookingContext.Result = result;
