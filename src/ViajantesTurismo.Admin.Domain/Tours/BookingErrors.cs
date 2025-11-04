@@ -41,29 +41,6 @@ public static class BookingErrors
             message: $"Base price must be less than {maxPrice}.");
 
     /// <summary>
-    /// Indicates that the total price is zero or negative.
-    /// </summary>
-    /// <param name="price">The invalid total price value.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result ZeroOrNegativeTotalPrice(decimal price) =>
-        Result.Invalid(
-            detail: $"Total price must be greater than zero. Received: {price}.",
-            field: "totalPrice",
-            message: "Total price must be greater than zero.");
-
-    /// <summary>
-    /// Indicates that the total price exceeds the maximum allowed value.
-    /// </summary>
-    /// <param name="price">The invalid total price value.</param>
-    /// <param name="maxPrice">The maximum allowed total price.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result TotalPriceExceedsMaximum(decimal price, decimal maxPrice) =>
-        Result.Invalid(
-            detail: $"Total price must be less than {maxPrice}. Received: {price}.",
-            field: "totalPrice",
-            message: $"Total price must be less than {maxPrice}.");
-
-    /// <summary>
     /// Indicates that the notes exceed the maximum allowed length.
     /// </summary>
     /// <param name="maxLength">The maximum allowed length.</param>
