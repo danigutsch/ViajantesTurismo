@@ -21,4 +21,18 @@ public static class TourMapper
             _ => throw new ArgumentOutOfRangeException(nameof(currencyDto), currencyDto, "Invalid currency value.")
         };
     }
+
+    /// <summary>
+    /// Maps a <see cref="Currency"/> to a <see cref="CurrencyDto"/>.
+    /// </summary>
+    public static CurrencyDto MapToCurrencyDto(Currency currency)
+    {
+        return currency switch
+        {
+            Currency.Real => CurrencyDto.Real,
+            Currency.Euro => CurrencyDto.Euro,
+            Currency.UsDollar => CurrencyDto.UsDollar,
+            _ => throw new ArgumentOutOfRangeException(nameof(currency), currency, "Invalid currency value.")
+        };
+    }
 }

@@ -47,4 +47,46 @@ public class TourMapperTests
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TourMapper.MapToCurrency(invalidValue));
         Assert.Contains("Invalid currency value", exception.Message);
     }
+
+    [Theory]
+    [InlineData(Currency.Real, CurrencyDto.Real)]
+    [InlineData(Currency.Euro, CurrencyDto.Euro)]
+    [InlineData(Currency.UsDollar, CurrencyDto.UsDollar)]
+    public void MapToCurrencyDto_ShouldMapAllValidValues(Currency domain, CurrencyDto expected)
+    {
+        // Arrange
+        // Act
+        var result = TourMapper.MapToCurrencyDto(domain);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToCurrencyDto_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDomainValues = Enum.GetValues<Currency>();
+
+        foreach (var domainValue in allDomainValues)
+        {
+            // Act
+            var mappedEnum = TourMapper.MapToCurrencyDto(domainValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToCurrencyDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const Currency invalidValue = (Currency)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TourMapper.MapToCurrencyDto(invalidValue));
+        Assert.Contains("Invalid currency value", exception.Message);
+    }
 }

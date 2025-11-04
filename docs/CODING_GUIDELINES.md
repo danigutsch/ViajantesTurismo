@@ -369,6 +369,43 @@ This codebase follows the **CQRS (Command Query Responsibility Segregation)** pa
 - Clear separation of concerns
 - Easier to maintain and test
 
+## Use Mappers Instead of Casts
+
+**Always use mapper methods to convert between domain enums and DTOs instead of direct casting.**
+
+❌ **Don't do this:**
+
+```csharp
+Currency = (CurrencyDto)tour.Currency,
+Status = (BookingStatusDto)booking.Status,
+BikeType = (BikeTypeDto)customer.PhysicalInfo.BikeType
+```
+
+✅ **Do this instead:**
+
+```csharp
+Currency = TourMapper.MapToCurrencyDto(tour.Currency),
+Status = BookingMapper.MapToBookingStatusDto(booking.Status),
+BikeType = BookingMapper.MapToBikeTypeDto(customer.PhysicalInfo.BikeType)
+```
+
+**Why use mappers?**
+
+1. **Type safety**: Mappers catch enum mismatches at compile time if enum values don't align
+2. **Explicit intent**: Code clearly shows a conversion is happening
+3. **Maintainability**: When enum values change, you only update the mapper
+4. **Consistency**: All conversions go through the same path
+5. **Testability**: Mappers can be unit tested independently
+
+**Pattern:**
+
+- Create static mapper classes in `Application/Mappings/` folder
+- Name methods `MapTo{TargetType}` for clarity
+- Always throw `ArgumentOutOfRangeException` for unknown enum values
+- Provide both directions (domain ↔ DTO) when needed
+
+**Exception:** Direct casts are acceptable in test code where the simplicity outweighs the benefits of mappers.
+
 ## Method Complexity
 
 Prefer extracting code into well-named methods rather than using multiple levels of abstraction within a single method.
@@ -550,7 +587,24 @@ public class OrderProcessor
 ### Collection types by intent
 Choose collection types to clearly express intent (mutability, uniqueness, ordering, and expected operations). Prefer exposing the least-powerful interface that conveys how the collection should be used.
 
+**Prefer arrays for immutable collections and simple iteration scenarios where the collection won't be modified after
+initialization.**
+
 Guidelines:
+
+- Arrays for simple immutable collections:
+    - Use arrays (`T[]`) when the collection size is known at initialization and won't change
+    - Arrays are more efficient for iteration and have lower memory overhead
+    - Expose as arrays or `IReadOnlyList<T>` depending on whether callers need to know it's an array
+    - Example:
+  ```csharp
+  public IReadOnlyList<string> IncludedServices { get; private set; } = [];
+  
+  public void UpdateIncludedServices(string[] services)
+  {
+      IncludedServices = services;
+  }
+  ```
 
 - Mutability intent (aggregates / domain models):
   - Internally use mutable collections when you need to add/remove items frequently (e.g. `List<T>`).
@@ -581,9 +635,12 @@ Guidelines:
   - For immutable semantics or when sharing between threads, prefer the `System.Collections.Immutable` types (e.g. `ImmutableList<T>`).
 
 - Query projections / API responses:
-  - For read/query surfaces prefer returning `IEnumerable<T>` or a DTO collection type. If consumers need count or index access, prefer `IReadOnlyCollection<T>`/`IReadOnlyList<T>`.
+    - For read/query surfaces prefer returning arrays or `IEnumerable<T>`. If consumers need count or index access,
+      prefer arrays or `IReadOnlyCollection<T>`/`IReadOnlyList<T>`.
 
 Practical decision matrix (short):
+
+- Collection size known and won't change: use arrays.
 - You will add/remove items in the aggregate: use `List<T>` internally + expose `IReadOnlyCollection<T>`.
 - You need uniqueness: `HashSet<T>` (internal) + expose read-only.
 - You need keyed lookup: `Dictionary<TKey, TValue>` (internal).

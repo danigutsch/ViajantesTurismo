@@ -505,4 +505,172 @@ public class BookingMapperTests
         // Assert
         Assert.Equal(expectedDto, result.Method);
     }
+
+    [Theory]
+    [InlineData(BookingStatus.Pending, BookingStatusDto.Pending)]
+    [InlineData(BookingStatus.Confirmed, BookingStatusDto.Confirmed)]
+    [InlineData(BookingStatus.Cancelled, BookingStatusDto.Cancelled)]
+    [InlineData(BookingStatus.Completed, BookingStatusDto.Completed)]
+    public void MapToBookingStatusDto_ShouldMapAllValidValues(BookingStatus domain, BookingStatusDto expected)
+    {
+        // Arrange
+        // Act
+        var result = BookingMapper.MapToBookingStatusDto(domain);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToBookingStatusDto_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDomainValues = Enum.GetValues<BookingStatus>();
+
+        foreach (var domainValue in allDomainValues)
+        {
+            // Act
+            var mappedEnum = BookingMapper.MapToBookingStatusDto(domainValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToBookingStatusDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const BookingStatus invalidValue = (BookingStatus)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBookingStatusDto(invalidValue));
+        Assert.Contains("Invalid booking status value", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(PaymentStatus.Unpaid, PaymentStatusDto.Unpaid)]
+    [InlineData(PaymentStatus.PartiallyPaid, PaymentStatusDto.PartiallyPaid)]
+    [InlineData(PaymentStatus.Paid, PaymentStatusDto.Paid)]
+    [InlineData(PaymentStatus.Refunded, PaymentStatusDto.Refunded)]
+    public void MapToPaymentStatusDto_ShouldMapAllValidValues(PaymentStatus domain, PaymentStatusDto expected)
+    {
+        // Arrange
+        // Act
+        var result = BookingMapper.MapToPaymentStatusDto(domain);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToPaymentStatusDto_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDomainValues = Enum.GetValues<PaymentStatus>();
+
+        foreach (var domainValue in allDomainValues)
+        {
+            // Act
+            var mappedEnum = BookingMapper.MapToPaymentStatusDto(domainValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToPaymentStatusDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const PaymentStatus invalidValue = (PaymentStatus)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentStatusDto(invalidValue));
+        Assert.Contains("Invalid payment status value", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(RoomType.SingleRoom, RoomTypeDto.SingleRoom)]
+    [InlineData(RoomType.DoubleRoom, RoomTypeDto.DoubleRoom)]
+    public void MapToRoomTypeDto_ShouldMapAllValidValues(RoomType domain, RoomTypeDto expected)
+    {
+        // Arrange
+        // Act
+        var result = BookingMapper.MapToRoomTypeDto(domain);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToRoomTypeDto_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDomainValues = Enum.GetValues<RoomType>();
+
+        foreach (var domainValue in allDomainValues)
+        {
+            // Act
+            var mappedEnum = BookingMapper.MapToRoomTypeDto(domainValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToRoomTypeDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const RoomType invalidValue = (RoomType)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToRoomTypeDto(invalidValue));
+        Assert.Contains("Invalid room type value", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(BedType.SingleBed, BedTypeDto.SingleBed)]
+    [InlineData(BedType.DoubleBed, BedTypeDto.DoubleBed)]
+    public void MapToBedTypeDto_ShouldMapAllValidValues(BedType domain, BedTypeDto expected)
+    {
+        // Arrange
+        // Act
+        var result = BookingMapper.MapToBedTypeDto(domain);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToBedTypeDto_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDomainValues = Enum.GetValues<BedType>();
+
+        foreach (var domainValue in allDomainValues)
+        {
+            // Act
+            var mappedEnum = BookingMapper.MapToBedTypeDto(domainValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToBedTypeDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const BedType invalidValue = (BedType)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBedTypeDto(invalidValue));
+        Assert.Contains("Invalid bed type value", exception.Message);
+    }
 }

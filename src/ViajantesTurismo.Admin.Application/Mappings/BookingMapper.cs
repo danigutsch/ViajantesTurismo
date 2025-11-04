@@ -81,6 +81,62 @@ public static class BookingMapper
     }
 
     /// <summary>
+    /// Maps a <see cref="PaymentStatus"/> to a <see cref="PaymentStatusDto"/>.
+    /// </summary>
+    public static PaymentStatusDto MapToPaymentStatusDto(PaymentStatus paymentStatus)
+    {
+        return paymentStatus switch
+        {
+            PaymentStatus.Unpaid => PaymentStatusDto.Unpaid,
+            PaymentStatus.PartiallyPaid => PaymentStatusDto.PartiallyPaid,
+            PaymentStatus.Paid => PaymentStatusDto.Paid,
+            PaymentStatus.Refunded => PaymentStatusDto.Refunded,
+            _ => throw new ArgumentOutOfRangeException(nameof(paymentStatus), paymentStatus, "Invalid payment status value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="BookingStatus"/> to a <see cref="BookingStatusDto"/>.
+    /// </summary>
+    public static BookingStatusDto MapToBookingStatusDto(BookingStatus bookingStatus)
+    {
+        return bookingStatus switch
+        {
+            BookingStatus.Pending => BookingStatusDto.Pending,
+            BookingStatus.Confirmed => BookingStatusDto.Confirmed,
+            BookingStatus.Cancelled => BookingStatusDto.Cancelled,
+            BookingStatus.Completed => BookingStatusDto.Completed,
+            _ => throw new ArgumentOutOfRangeException(nameof(bookingStatus), bookingStatus, "Invalid booking status value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="RoomType"/> to a <see cref="RoomTypeDto"/>.
+    /// </summary>
+    public static RoomTypeDto MapToRoomTypeDto(RoomType roomType)
+    {
+        return roomType switch
+        {
+            RoomType.SingleRoom => RoomTypeDto.SingleRoom,
+            RoomType.DoubleRoom => RoomTypeDto.DoubleRoom,
+            _ => throw new ArgumentOutOfRangeException(nameof(roomType), roomType, "Invalid room type value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="BedType"/> to a <see cref="BedTypeDto"/>.
+    /// </summary>
+    public static BedTypeDto MapToBedTypeDto(BedType bedType)
+    {
+        return bedType switch
+        {
+            BedType.SingleBed => BedTypeDto.SingleBed,
+            BedType.DoubleBed => BedTypeDto.DoubleBed,
+            _ => throw new ArgumentOutOfRangeException(nameof(bedType), bedType, "Invalid bed type value.")
+        };
+    }
+
+    /// <summary>
     /// Maps a <see cref="DiscountTypeDto"/> to a <see cref="DiscountType"/>.
     /// </summary>
     public static DiscountType MapToDiscountType(DiscountTypeDto discountTypeDto)
