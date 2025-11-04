@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class DiscountTests
 {
     [Fact]
-    public void InvalidDiscountType_ShouldReturnInvalidResult()
+    public void Invalid_Discount_Type_Should_Return_Invalid_Result()
     {
         // Arrange
         const DiscountType invalidType = (DiscountType)999;
@@ -25,7 +25,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void InvalidDiscountType_ShouldIncludeAllValidValues()
+    public void Invalid_Discount_Type_Should_Include_All_Valid_Values()
     {
         // Arrange
         const DiscountType invalidType = (DiscountType)999;
@@ -43,7 +43,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void NegativeDiscountAmount_ShouldReturnInvalidResult()
+    public void Negative_Discount_Amount_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal negativeAmount = -10.50m;
@@ -62,7 +62,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void PercentageExceedsMaximum_ShouldReturnInvalidResult()
+    public void Percentage_Exceeds_Maximum_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal amount = 150m;
@@ -83,7 +83,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void AbsoluteDiscountExceedsSubtotal_ShouldReturnInvalidResult()
+    public void Absolute_Discount_Exceeds_Subtotal_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal amount = 1000m;
@@ -105,7 +105,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void FinalPriceNotPositive_ShouldReturnInvalidResult()
+    public void Final_Price_Not_Positive_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal finalPrice = -5.00m;
@@ -124,7 +124,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void FinalPriceNotPositive_WithZero_ShouldReturnInvalidResult()
+    public void Final_Price_Not_Positive_With_Zero_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal finalPrice = 0m;

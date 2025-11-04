@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -198,7 +198,7 @@ public sealed class CustomerApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_Customer_By_Id_Returns_NotFound_For_Invalid_Id()
+    public async Task Get_Customer_By_Id_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
         const int invalidId = -1;
@@ -358,7 +358,7 @@ public sealed class CustomerApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Update_Customer_Returns_NotFound_For_Invalid_Id()
+    public async Task Update_Customer_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
         const int invalidId = 999999;

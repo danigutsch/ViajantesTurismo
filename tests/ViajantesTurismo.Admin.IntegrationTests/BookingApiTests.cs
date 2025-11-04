@@ -95,7 +95,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Create_Booking_Returns_NotFound_For_Invalid_TourId()
+    public async Task Create_Booking_Returns_Not_Found_For_Invalid_Tour_Id()
     {
         // Arrange
         var customerDto = await CreateTestCustomer("Test", "User");
@@ -158,7 +158,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_Booking_By_Id_Returns_NotFound_For_Invalid_Id()
+    public async Task Get_Booking_By_Id_Returns_Not_Found_For_Invalid_Id()
     {
         // Act
         var response = await _client.GetAsync(new Uri("/bookings/99999", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -168,7 +168,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Can_Get_Bookings_By_TourId()
+    public async Task Can_Get_Bookings_By_Tour_Id()
     {
         // Arrange
         var tourDto = await CreateTestTour();
@@ -190,7 +190,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Can_Get_Bookings_By_CustomerId()
+    public async Task Can_Get_Bookings_By_Customer_Id()
     {
         // Arrange
         var tour1 = await CreateTestTour();
@@ -212,7 +212,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_Bookings_By_CustomerId_Includes_Bookings_As_Companion()
+    public async Task Get_Bookings_By_Customer_Id_Includes_Bookings_As_Companion()
     {
         // Arrange
         var tourDto = await CreateTestTour();
@@ -265,7 +265,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Update_Booking_Notes_Returns_NotFound_For_Invalid_Id()
+    public async Task Update_Booking_Notes_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
         var updateRequest = new UpdateBookingNotesDto
@@ -300,7 +300,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Delete_Booking_Returns_NotFound_For_Invalid_Id()
+    public async Task Delete_Booking_Returns_Not_Found_For_Invalid_Id()
     {
         // Act
         var response = await _client.DeleteAsync(new Uri("/bookings/99999", UriKind.Relative), TestContext.Current.CancellationToken);
@@ -341,7 +341,7 @@ public sealed class BookingApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Cancel_Booking_Returns_NotFound_For_Invalid_Id()
+    public async Task Cancel_Booking_Returns_Not_Found_For_Invalid_Id()
     {
         // Act
         var response = await _client.PostAsync(

@@ -95,7 +95,7 @@ public sealed class EntityTests
     }
 
     [Fact]
-    public void GetHashCode_Returns_Same_Value_For_Same_Id()
+    public void Get_Hash_Code_Returns_Same_Value_For_Same_Id()
     {
         var entity1 = new TestEntity(1);
         var entity2 = new TestEntity(1);
@@ -107,7 +107,7 @@ public sealed class EntityTests
     }
 
     [Fact]
-    public void GetHashCode_Returns_Different_Values_For_Different_Ids()
+    public void Get_Hash_Code_Returns_Different_Values_For_Different_Ids()
     {
         var entity1 = new TestEntity(1);
         var entity2 = new TestEntity(2);
@@ -119,7 +119,7 @@ public sealed class EntityTests
     }
 
     [Fact]
-    public void GetHashCode_Throws_When_Id_Is_Null()
+    public void Get_Hash_Code_Throws_When_Id_Is_Null()
     {
         var entity = new TestEntityNullableId(null);
 
@@ -150,7 +150,7 @@ public sealed class EntityTests
     }
 
     [Fact]
-    public void Entity_Can_Be_Used_In_HashSet()
+    public void Entity_Can_Be_Used_In_Hash_Set()
     {
         var hashSet = new HashSet<TestEntity>();
         var entity1 = new TestEntity(1);
@@ -163,7 +163,7 @@ public sealed class EntityTests
     }
 
     [Fact]
-    public void Entity_HashSet_Contains_Works_With_Equal_Instance()
+    public void Entity_Hash_Set_Contains_Works_With_Equal_Instance()
     {
         var hashSet = new HashSet<TestEntity>();
         var entity1 = new TestEntity(1);

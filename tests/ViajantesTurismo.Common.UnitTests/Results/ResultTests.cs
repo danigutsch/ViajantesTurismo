@@ -16,7 +16,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void NoContent_Creates_Successful_Result()
+    public void No_Content_Creates_Successful_Result()
     {
         var result = Result.NoContent();
 
@@ -77,7 +77,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void NotFound_Creates_Failed_Result()
+    public void Not_Found_Creates_Failed_Result()
     {
         var result = Result.NotFound("Resource not found");
 
@@ -89,7 +89,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void NotFound_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Not_Found_Throws_When_Detail_Is_Null_Or_Empty()
     {
         Assert.Throws<ArgumentException>(() => Result.NotFound(""));
         Assert.Throws<ArgumentNullException>(() => Result.NotFound(null!));
@@ -177,7 +177,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void CriticalError_Creates_Failed_Result()
+    public void Critical_Error_Creates_Failed_Result()
     {
         var result = Result.CriticalError("Critical failure");
 
@@ -189,7 +189,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void CriticalError_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Critical_Error_Throws_When_Detail_Is_Null_Or_Empty()
     {
         Assert.Throws<ArgumentException>(() => Result.CriticalError(""));
         Assert.Throws<ArgumentNullException>(() => Result.CriticalError(null!));
@@ -259,7 +259,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void GetHashCode_Is_Consistent()
+    public void Get_Hash_Code_Is_Consistent()
     {
         var result = Result.Ok();
 
@@ -270,7 +270,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void ToString_Returns_Success_Status_For_Success()
+    public void To_String_Returns_Success_Status_For_Success()
     {
         var result = Result.Ok();
 
@@ -281,7 +281,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void ToString_Returns_Failure_Status_And_Error_For_Failure()
+    public void To_String_Returns_Failure_Status_And_Error_For_Failure()
     {
         var result = Result.Error("Something went wrong");
 
@@ -327,7 +327,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Success_Result_ErrorDetails_Returns_Null()
+    public void Success_Result_Error_Details_Returns_Null()
     {
         var result = Result.Ok();
 

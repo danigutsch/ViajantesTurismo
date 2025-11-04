@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public sealed class ResultStatusTests
 {
     [Fact]
-    public void ResultStatus_Has_Correct_Values()
+    public void Result_Status_Has_Correct_Values()
     {
         Assert.Equal(0, (int)ResultStatus.Unknown);
         Assert.Equal(200, (int)ResultStatus.Ok);
@@ -36,7 +36,7 @@ public sealed class ResultStatusTests
     [InlineData("Error", ResultStatus.Error)]
     [InlineData("CriticalError", ResultStatus.CriticalError)]
     [InlineData("Unavailable", ResultStatus.Unavailable)]
-    public void ResultStatus_Can_Be_Parsed_From_String(string input, ResultStatus expected)
+    public void Result_Status_Can_Be_Parsed_From_String(string input, ResultStatus expected)
     {
         Assert.True(Enum.TryParse<ResultStatus>(input, out var result));
         Assert.Equal(expected, result);

@@ -98,7 +98,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void NotFound_Creates_Failed_Result()
+    public void Not_Found_Creates_Failed_Result()
     {
         var result = Result<string>.NotFound("User not found");
 
@@ -110,7 +110,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void NotFound_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Not_Found_Throws_When_Detail_Is_Null_Or_Empty()
     {
         Assert.Throws<ArgumentException>(() => Result<int>.NotFound(""));
         Assert.Throws<ArgumentNullException>(() => Result<int>.NotFound(null!));
@@ -198,7 +198,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void CriticalError_Creates_Failed_Result()
+    public void Critical_Error_Creates_Failed_Result()
     {
         var result = Result<string>.CriticalError("Critical failure");
 
@@ -210,7 +210,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void CriticalError_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Critical_Error_Throws_When_Detail_Is_Null_Or_Empty()
     {
         Assert.Throws<ArgumentException>(() => Result<int>.CriticalError(""));
         Assert.Throws<ArgumentNullException>(() => Result<int>.CriticalError(null!));
@@ -238,7 +238,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Value_Throws_InvalidOperationException_When_Accessing_Failed_Result()
+    public void Value_Throws_Invalid_Operation_Exception_When_Accessing_Failed_Result()
     {
         var result = Result<int>.Error("Failed");
 
@@ -258,7 +258,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void ToResult_Converts_Success_Result_To_Non_Generic()
+    public void To_Result_Converts_Success_Result_To_Non_Generic()
     {
         var result = Result<int>.Ok(42);
 
@@ -270,7 +270,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void ToResult_Converts_Failed_Result_To_Non_Generic()
+    public void To_Result_Converts_Failed_Result_To_Non_Generic()
     {
         var result = Result<int>.Error("Failed");
 
@@ -338,7 +338,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void GetHashCode_Is_Consistent()
+    public void Get_Hash_Code_Is_Consistent()
     {
         var result = Result<int>.Ok(42);
 
@@ -349,7 +349,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void GetHashCode_Differs_For_Different_Values()
+    public void Get_Hash_Code_Differs_For_Different_Values()
     {
         var result1 = Result<int>.Ok(42);
         var result2 = Result<int>.Ok(43);
@@ -358,7 +358,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void ToString_Returns_Success_Status_And_Value_For_Success()
+    public void To_String_Returns_Success_Status_And_Value_For_Success()
     {
         var result = Result<int>.Ok(42);
 
@@ -370,7 +370,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void ToString_Returns_Failure_Status_And_Error_For_Failure()
+    public void To_String_Returns_Failure_Status_And_Error_For_Failure()
     {
         var result = Result<string>.Error("Something went wrong");
 
@@ -420,7 +420,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Success_Result_ErrorDetails_Returns_Null()
+    public void Success_Result_Error_Details_Returns_Null()
     {
         var result = Result<int>.Ok(42);
 

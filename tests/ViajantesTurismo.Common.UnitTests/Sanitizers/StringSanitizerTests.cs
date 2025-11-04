@@ -170,7 +170,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Returns_Null_When_Input_Is_Null()
+    public void Sanitize_Notes_Returns_Null_When_Input_Is_Null()
     {
         var result = StringSanitizer.SanitizeNotes(null);
 
@@ -178,7 +178,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Returns_Empty_String_When_Input_Is_Empty()
+    public void Sanitize_Notes_Returns_Empty_String_When_Input_Is_Empty()
     {
         var result = StringSanitizer.SanitizeNotes(string.Empty);
 
@@ -186,7 +186,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Trims_Leading_And_Trailing_Whitespace()
+    public void Sanitize_Notes_Trims_Leading_And_Trailing_Whitespace()
     {
         var result = StringSanitizer.SanitizeNotes("   Hello World   ");
 
@@ -194,7 +194,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Preserves_Newlines_Within_Text()
+    public void Sanitize_Notes_Preserves_Newlines_Within_Text()
     {
         var input = "Line 1\nLine 2\nLine 3";
         var result = StringSanitizer.SanitizeNotes(input);
@@ -203,7 +203,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Preserves_Multiple_Newlines()
+    public void Sanitize_Notes_Preserves_Multiple_Newlines()
     {
         var input = "Paragraph 1\n\nParagraph 2";
         var result = StringSanitizer.SanitizeNotes(input);
@@ -212,7 +212,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Preserves_Tabs_Within_Text()
+    public void Sanitize_Notes_Preserves_Tabs_Within_Text()
     {
         var input = "Column1\tColumn2\tColumn3";
         var result = StringSanitizer.SanitizeNotes(input);
@@ -221,7 +221,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Preserves_Multiple_Spaces()
+    public void Sanitize_Notes_Preserves_Multiple_Spaces()
     {
         var input = "Hello    World";
         var result = StringSanitizer.SanitizeNotes(input);
@@ -230,7 +230,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Preserves_Formatting_In_Multi_Line_Notes()
+    public void Sanitize_Notes_Preserves_Formatting_In_Multi_Line_Notes()
     {
         var input = "Note:\n  - Item 1\n  - Item 2\n  - Item 3";
         var result = StringSanitizer.SanitizeNotes(input);
@@ -239,7 +239,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeNotes_Handles_String_With_Only_Whitespace()
+    public void Sanitize_Notes_Handles_String_With_Only_Whitespace()
     {
         var result = StringSanitizer.SanitizeNotes("   \t\n   ");
 
@@ -247,7 +247,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Returns_Empty_Array_When_Input_Is_Null()
+    public void Sanitize_Collection_Returns_Empty_Array_When_Input_Is_Null()
     {
         var result = StringSanitizer.SanitizeCollection(null);
 
@@ -256,7 +256,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Returns_Empty_Array_When_Input_Is_Empty()
+    public void Sanitize_Collection_Returns_Empty_Array_When_Input_Is_Empty()
     {
         var result = StringSanitizer.SanitizeCollection([]);
 
@@ -265,7 +265,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Removes_Null_Entries()
+    public void Sanitize_Collection_Removes_Null_Entries()
     {
         var input = new[] { "Hello", null, "World" };
         var result = StringSanitizer.SanitizeCollection(input!);
@@ -276,7 +276,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Removes_Empty_String_Entries()
+    public void Sanitize_Collection_Removes_Empty_String_Entries()
     {
         var input = new[] { "Hello", "", "World" };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -287,7 +287,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Removes_Whitespace_Only_Entries()
+    public void Sanitize_Collection_Removes_Whitespace_Only_Entries()
     {
         var input = new[] { "Hello", "   ", "World" };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -298,7 +298,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Trims_Each_Entry()
+    public void Sanitize_Collection_Trims_Each_Entry()
     {
         var input = new[] { "  Hello  ", "  World  " };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -309,7 +309,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Removes_Duplicate_Entries_Case_Insensitive()
+    public void Sanitize_Collection_Removes_Duplicate_Entries_Case_Insensitive()
     {
         var input = new[] { "Hello", "hello", "HELLO", "World" };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -320,7 +320,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Preserves_First_Occurrence_Of_Duplicate()
+    public void Sanitize_Collection_Preserves_First_Occurrence_Of_Duplicate()
     {
         var input = new[] { "Hello", "hello" };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -330,7 +330,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Sanitizes_Each_Entry()
+    public void Sanitize_Collection_Sanitizes_Each_Entry()
     {
         var input = new[] { "  Hello" + "\x00" + "  ", "  World\t\t  " };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -341,7 +341,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Handles_Complex_Collection_With_Multiple_Issues()
+    public void Sanitize_Collection_Handles_Complex_Collection_With_Multiple_Issues()
     {
         var input = new[] { "  Item1  ", null, "", "item1", "  Item2  ", "   ", "Item3" };
         var result = StringSanitizer.SanitizeCollection(input!);
@@ -353,7 +353,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Returns_Empty_Array_When_All_Entries_Are_Invalid()
+    public void Sanitize_Collection_Returns_Empty_Array_When_All_Entries_Are_Invalid()
     {
         var input = new[] { null, "", "   ", "\t\n" };
         var result = StringSanitizer.SanitizeCollection(input!);
@@ -363,7 +363,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Preserves_Order_Of_First_Occurrences()
+    public void Sanitize_Collection_Preserves_Order_Of_First_Occurrences()
     {
         var input = new[] { "Zebra", "Apple", "Banana" };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -375,7 +375,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Handles_Collection_With_Special_Characters()
+    public void Sanitize_Collection_Handles_Collection_With_Special_Characters()
     {
         var input = new[] { "Item@1", "Item#2", "Item$3" };
         var result = StringSanitizer.SanitizeCollection(input);
@@ -387,7 +387,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void SanitizeCollection_Handles_Collection_With_Unicode_Characters()
+    public void Sanitize_Collection_Handles_Collection_With_Unicode_Characters()
     {
         var input = new[] { "José", "José", "María" };
         var result = StringSanitizer.SanitizeCollection(input);

@@ -47,7 +47,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Returns_Single_Error_When_Only_One_Error_Exists()
+    public void To_Result_Returns_Single_Error_When_Only_One_Error_Exists()
     {
         var errors = new ValidationErrors();
         var singleError = Result.Invalid("Validation failed", "Name", "Name is required");
@@ -65,7 +65,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Generic_Returns_Single_Error_When_Only_One_Error_Exists()
+    public void To_Result_Generic_Returns_Single_Error_When_Only_One_Error_Exists()
     {
         var errors = new ValidationErrors();
         var singleError = Result<int>.Invalid("Validation failed", "Age", "Age must be positive");
@@ -83,7 +83,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Merges_Multiple_Errors_From_Different_Fields()
+    public void To_Result_Merges_Multiple_Errors_From_Different_Fields()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error 1", "Name", "Name is required"));
@@ -101,7 +101,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Generic_Merges_Multiple_Errors_From_Different_Fields()
+    public void To_Result_Generic_Merges_Multiple_Errors_From_Different_Fields()
     {
         var errors = new ValidationErrors();
         errors.Add(Result<int>.Invalid("Error 1", "Name", "Name is required"));
@@ -119,7 +119,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Merges_Multiple_Errors_For_Same_Field()
+    public void To_Result_Merges_Multiple_Errors_For_Same_Field()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error 1", "Name", "Name is required"));
@@ -139,7 +139,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void HasErrors_Returns_True_When_Errors_Exist()
+    public void Has_Errors_Returns_True_When_Errors_Exist()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error", "Name", "Name is required"));
@@ -148,7 +148,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void HasErrors_Returns_False_When_No_Errors_Exist()
+    public void Has_Errors_Returns_False_When_No_Errors_Exist()
     {
         var errors = new ValidationErrors();
 
@@ -156,7 +156,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Throws_When_No_Errors_Exist()
+    public void To_Result_Throws_When_No_Errors_Exist()
     {
         var errors = new ValidationErrors();
 
@@ -165,7 +165,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void ToResult_Generic_Throws_When_No_Errors_Exist()
+    public void To_Result_Generic_Throws_When_No_Errors_Exist()
     {
         var errors = new ValidationErrors();
 

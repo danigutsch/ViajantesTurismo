@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Sanitizers;
 public sealed class NumericSanitizerTests
 {
     [Fact]
-    public void SanitizePrice_Returns_Zero_When_Input_Is_Zero()
+    public void Sanitize_Price_Returns_Zero_When_Input_Is_Zero()
     {
         var result = NumericSanitizer.SanitizePrice(0m);
 
@@ -13,7 +13,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Preserves_Integer_Values()
+    public void Sanitize_Price_Preserves_Integer_Values()
     {
         var result = NumericSanitizer.SanitizePrice(100m);
 
@@ -21,7 +21,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Preserves_One_Decimal_Place()
+    public void Sanitize_Price_Preserves_One_Decimal_Place()
     {
         var result = NumericSanitizer.SanitizePrice(99.9m);
 
@@ -29,7 +29,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Preserves_Two_Decimal_Places()
+    public void Sanitize_Price_Preserves_Two_Decimal_Places()
     {
         var result = NumericSanitizer.SanitizePrice(99.99m);
 
@@ -37,7 +37,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Three_Decimal_Places()
+    public void Sanitize_Price_Rounds_Three_Decimal_Places()
     {
         var result = NumericSanitizer.SanitizePrice(99.995m);
 
@@ -45,7 +45,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Down_When_Below_Midpoint()
+    public void Sanitize_Price_Rounds_Down_When_Below_Midpoint()
     {
         var result = NumericSanitizer.SanitizePrice(99.994m);
 
@@ -53,7 +53,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Up_When_Above_Midpoint()
+    public void Sanitize_Price_Rounds_Up_When_Above_Midpoint()
     {
         var result = NumericSanitizer.SanitizePrice(99.996m);
 
@@ -61,7 +61,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Midpoint_Away_From_Zero_For_Positive()
+    public void Sanitize_Price_Rounds_Midpoint_Away_From_Zero_For_Positive()
     {
         var result = NumericSanitizer.SanitizePrice(99.995m);
 
@@ -69,7 +69,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Midpoint_Away_From_Zero_For_Negative()
+    public void Sanitize_Price_Rounds_Midpoint_Away_From_Zero_For_Negative()
     {
         var result = NumericSanitizer.SanitizePrice(-99.995m);
 
@@ -77,7 +77,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Negative_Values()
+    public void Sanitize_Price_Handles_Negative_Values()
     {
         var result = NumericSanitizer.SanitizePrice(-50.75m);
 
@@ -85,7 +85,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Small_Values()
+    public void Sanitize_Price_Handles_Small_Values()
     {
         var result = NumericSanitizer.SanitizePrice(0.01m);
 
@@ -93,7 +93,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Very_Small_Values()
+    public void Sanitize_Price_Rounds_Very_Small_Values()
     {
         var result = NumericSanitizer.SanitizePrice(0.001m);
 
@@ -101,7 +101,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Very_Small_Values_Up()
+    public void Sanitize_Price_Rounds_Very_Small_Values_Up()
     {
         var result = NumericSanitizer.SanitizePrice(0.009m);
 
@@ -109,7 +109,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Large_Values()
+    public void Sanitize_Price_Handles_Large_Values()
     {
         var result = NumericSanitizer.SanitizePrice(999999.99m);
 
@@ -117,7 +117,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Large_Values_With_Extra_Decimals()
+    public void Sanitize_Price_Rounds_Large_Values_With_Extra_Decimals()
     {
         var result = NumericSanitizer.SanitizePrice(999999.999m);
 
@@ -125,7 +125,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Maximum_Decimal_Value()
+    public void Sanitize_Price_Handles_Maximum_Decimal_Value()
     {
         var result = NumericSanitizer.SanitizePrice(decimal.MaxValue);
 
@@ -133,7 +133,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Minimum_Decimal_Value()
+    public void Sanitize_Price_Handles_Minimum_Decimal_Value()
     {
         var result = NumericSanitizer.SanitizePrice(decimal.MinValue);
 
@@ -141,7 +141,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Rounds_Multiple_Trailing_Decimals()
+    public void Sanitize_Price_Rounds_Multiple_Trailing_Decimals()
     {
         var result = NumericSanitizer.SanitizePrice(12.3456789m);
 
@@ -149,7 +149,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Banker_Rounding_Case_Positive_Even()
+    public void Sanitize_Price_Handles_Banker_Rounding_Case_Positive_Even()
     {
         // 2.225 with AwayFromZero should round to 2.23
         var result = NumericSanitizer.SanitizePrice(2.225m);
@@ -158,7 +158,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Banker_Rounding_Case_Positive_Odd()
+    public void Sanitize_Price_Handles_Banker_Rounding_Case_Positive_Odd()
     {
         // 2.215 with AwayFromZero should round to 2.22
         var result = NumericSanitizer.SanitizePrice(2.215m);
@@ -167,7 +167,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Floating_Point_Precision_Issue()
+    public void Sanitize_Price_Handles_Floating_Point_Precision_Issue()
     {
         // Common floating point issue: 0.1 + 0.2 = 0.30000000000000004
         var result = NumericSanitizer.SanitizePrice(0.1m + 0.2m);
@@ -183,7 +183,7 @@ public sealed class NumericSanitizerTests
     [InlineData(10.994, 10.99)]
     [InlineData(10.995, 11.00)]
     [InlineData(10.996, 11.00)]
-    public void SanitizePrice_Rounds_Correctly_For_Various_Inputs(decimal input, decimal expected)
+    public void Sanitize_Price_Rounds_Correctly_For_Various_Inputs(decimal input, decimal expected)
     {
         var result = NumericSanitizer.SanitizePrice(input);
 
@@ -197,7 +197,7 @@ public sealed class NumericSanitizerTests
     [InlineData(100)]
     [InlineData(1000)]
     [InlineData(10000)]
-    public void SanitizePrice_Preserves_Integer_Values_Theory(decimal value)
+    public void Sanitize_Price_Preserves_Integer_Values_Theory(decimal value)
     {
         var result = NumericSanitizer.SanitizePrice(value);
 
@@ -210,7 +210,7 @@ public sealed class NumericSanitizerTests
     [InlineData(1.005, 1.01)]
     [InlineData(1.006, 1.01)]
     [InlineData(1.009, 1.01)]
-    public void SanitizePrice_Rounds_Third_Decimal_Place_Correctly(decimal input, decimal expected)
+    public void Sanitize_Price_Rounds_Third_Decimal_Place_Correctly(decimal input, decimal expected)
     {
         var result = NumericSanitizer.SanitizePrice(input);
 
@@ -218,7 +218,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Is_Idempotent()
+    public void Sanitize_Price_Is_Idempotent()
     {
         var value = 99.999m;
         var firstRound = NumericSanitizer.SanitizePrice(value);
@@ -228,7 +228,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void SanitizePrice_Handles_Currency_Typical_Values()
+    public void Sanitize_Price_Handles_Currency_Typical_Values()
     {
         var result = NumericSanitizer.SanitizePrice(1234.5678m);
 

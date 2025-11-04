@@ -10,7 +10,7 @@ public class CustomerMapperTests
     [InlineData(BikeType.None, BikeTypeDto.None)]
     [InlineData(BikeType.Regular, BikeTypeDto.Regular)]
     [InlineData(BikeType.EBike, BikeTypeDto.EBike)]
-    public void MapToBikeTypeDto_ShouldMapAllValidValues(BikeType domain, BikeTypeDto expected)
+    public void Map_To_Bike_Type_Dto_Should_Map_All_Valid_Values(BikeType domain, BikeTypeDto expected)
     {
         // Arrange
         // Act
@@ -21,7 +21,7 @@ public class CustomerMapperTests
     }
 
     [Fact]
-    public void MapToBikeTypeDto_ShouldCoverAllEnumValues()
+    public void Map_To_Bike_Type_Dto_Should_Cover_All_Enum_Values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<BikeType>();
@@ -39,7 +39,7 @@ public class CustomerMapperTests
     [Theory]
     [InlineData(BedTypeDto.SingleBed, BedType.SingleBed)]
     [InlineData(BedTypeDto.DoubleBed, BedType.DoubleBed)]
-    public void MapToBedType_ShouldMapAllValidValues(BedTypeDto dto, BedType expected)
+    public void Map_To_Bed_Type_Should_Map_All_Valid_Values(BedTypeDto dto, BedType expected)
     {
         // Arrange
         // Act
@@ -50,7 +50,7 @@ public class CustomerMapperTests
     }
 
     [Fact]
-    public void MapToBedType_ShouldCoverAllEnumValues()
+    public void Map_To_Bed_Type_Should_Cover_All_Enum_Values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<BedTypeDto>();
@@ -66,7 +66,7 @@ public class CustomerMapperTests
     }
 
     [Fact]
-    public void MapToBikeTypeDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    public void Map_To_Bike_Type_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
     {
         // Arrange
         const BikeType invalidValue = (BikeType)999;
@@ -78,7 +78,7 @@ public class CustomerMapperTests
     }
 
     [Fact]
-    public void MapToBedType_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    public void Map_To_Bed_Type_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
     {
         // Arrange
         const BedTypeDto invalidValue = (BedTypeDto)999;

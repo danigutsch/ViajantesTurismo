@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public sealed class ResultErrorTests
 {
     [Fact]
-    public void ResultError_Can_Be_Created_With_Detail_Only()
+    public void Result_Error_Can_Be_Created_With_Detail_Only()
     {
         var error = new ResultError("Something went wrong");
 
@@ -14,7 +14,7 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
-    public void ResultError_Can_Be_Created_With_ValidationErrors()
+    public void Result_Error_Can_Be_Created_With_Validation_Errors()
     {
         var validationErrors = new Dictionary<string, string[]>
         {
@@ -31,7 +31,7 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
-    public void ResultError_Equality_Works_For_Same_Values()
+    public void Result_Error_Equality_Works_For_Same_Values()
     {
         var error1 = new ResultError("Error");
         var error2 = new ResultError("Error");
@@ -40,7 +40,7 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
-    public void ResultError_Equality_Fails_For_Different_Details()
+    public void Result_Error_Equality_Fails_For_Different_Details()
     {
         var error1 = new ResultError("Error 1");
         var error2 = new ResultError("Error 2");
@@ -49,7 +49,7 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
-    public void ResultError_Equality_Works_With_ValidationErrors()
+    public void Result_Error_Equality_Works_With_Validation_Errors()
     {
         var validationErrors = new Dictionary<string, string[]>
         {
@@ -62,7 +62,7 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
-    public void ResultError_GetHashCode_Is_Consistent()
+    public void Result_Error_Get_Hash_Code_Is_Consistent()
     {
         var error = new ResultError("Error");
 
@@ -73,7 +73,7 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
-    public void ResultError_ToString_Returns_String_Representation()
+    public void Result_Error_To_String_Returns_String_Representation()
     {
         var error = new ResultError("Error message");
 

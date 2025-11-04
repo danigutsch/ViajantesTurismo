@@ -117,7 +117,7 @@ public sealed class ToursApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_Tour_By_Id_Returns_NotFound_For_Invalid_Id()
+    public async Task Get_Tour_By_Id_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
         const int invalidId = -1;
@@ -189,7 +189,7 @@ public sealed class ToursApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Update_Tour_Returns_NotFound_For_Invalid_Id()
+    public async Task Update_Tour_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
         const int invalidId = -1;
@@ -218,7 +218,7 @@ public sealed class ToursApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Create_Tour_Returns_BadRequest_For_Invalid_Data()
+    public async Task Create_Tour_Returns_Bad_Request_For_Invalid_Data()
     {
         const string invalidIdentifier = "";
         var request = new CreateTourDto
@@ -279,7 +279,7 @@ public sealed class ToursApiTests : IDisposable
     }
 
     [Fact]
-    public async Task Create_Tour_Returns_BadRequest_For_Invalid_Price()
+    public async Task Create_Tour_Returns_Bad_Request_For_Invalid_Price()
     {
         // Arrange
         const decimal negativeBasePrice = -100.00m;

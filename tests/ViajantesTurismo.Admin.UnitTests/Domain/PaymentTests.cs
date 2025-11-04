@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class PaymentTests
 {
     [Fact]
-    public void InvalidAmount_ShouldReturnInvalidResult()
+    public void Invalid_Amount_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal invalidAmount = 0m;
@@ -24,7 +24,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void InvalidAmount_WithNegative_ShouldReturnInvalidResult()
+    public void Invalid_Amount_With_Negative_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal invalidAmount = -50.00m;
@@ -40,7 +40,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void InvalidPaymentMethod_ShouldReturnInvalidResult()
+    public void Invalid_Payment_Method_Should_Return_Invalid_Result()
     {
         // Arrange
         const PaymentMethod invalidMethod = (PaymentMethod)999;
@@ -60,7 +60,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void InvalidPaymentMethod_ShouldIncludeAllValidValues()
+    public void Invalid_Payment_Method_Should_Include_All_Valid_Values()
     {
         // Arrange
         const PaymentMethod invalidMethod = (PaymentMethod)999;
@@ -78,7 +78,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void FuturePaymentDate_ShouldReturnInvalidResult()
+    public void Future_Payment_Date_Should_Return_Invalid_Result()
     {
         // Arrange
         var futureDate = new DateTime(2026, 12, 31, 10, 30, 0, DateTimeKind.Utc);
@@ -97,7 +97,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void ExceedsRemainingBalance_ShouldReturnInvalidResult()
+    public void Exceeds_Remaining_Balance_Should_Return_Invalid_Result()
     {
         // Arrange
         const decimal paymentAmount = 500.00m;
@@ -119,7 +119,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void PaymentNotFound_ShouldReturnNotFoundResult()
+    public void Payment_Not_Found_Should_Return_Not_Found_Result()
     {
         // Arrange
         const long paymentId = 12345L;
@@ -136,7 +136,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void PaymentNotFound_WithDifferentId_ShouldIncludeCorrectId()
+    public void Payment_Not_Found_With_Different_Id_Should_Include_Correct_Id()
     {
         // Arrange
         const long paymentId = 999L;

@@ -10,7 +10,7 @@ public class TourMapperTests
     [InlineData(CurrencyDto.Real, Currency.Real)]
     [InlineData(CurrencyDto.Euro, Currency.Euro)]
     [InlineData(CurrencyDto.UsDollar, Currency.UsDollar)]
-    public void MapToCurrency_ShouldMapAllValidValues(CurrencyDto dto, Currency expected)
+    public void Map_To_Currency_Should_Map_All_Valid_Values(CurrencyDto dto, Currency expected)
     {
         // Arrange
         // Act
@@ -21,7 +21,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void MapToCurrency_ShouldCoverAllEnumValues()
+    public void Map_To_Currency_Should_Cover_All_Enum_Values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<CurrencyDto>();
@@ -37,7 +37,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void MapToCurrency_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    public void Map_To_Currency_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
     {
         // Arrange
         const CurrencyDto invalidValue = (CurrencyDto)999;
@@ -52,7 +52,7 @@ public class TourMapperTests
     [InlineData(Currency.Real, CurrencyDto.Real)]
     [InlineData(Currency.Euro, CurrencyDto.Euro)]
     [InlineData(Currency.UsDollar, CurrencyDto.UsDollar)]
-    public void MapToCurrencyDto_ShouldMapAllValidValues(Currency domain, CurrencyDto expected)
+    public void Map_To_Currency_Dto_Should_Map_All_Valid_Values(Currency domain, CurrencyDto expected)
     {
         // Arrange
         // Act
@@ -63,7 +63,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void MapToCurrencyDto_ShouldCoverAllEnumValues()
+    public void Map_To_Currency_Dto_Should_Cover_All_Enum_Values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<Currency>();
@@ -79,7 +79,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void MapToCurrencyDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    public void Map_To_Currency_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
     {
         // Arrange
         const Currency invalidValue = (Currency)999;
