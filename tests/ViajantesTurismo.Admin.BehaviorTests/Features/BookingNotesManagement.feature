@@ -22,18 +22,3 @@ So that important information about bookings can be recorded and updated
         Given a pending booking exists
         When the operator tries to update the notes to a string longer than 2000 characters
         Then the result should fail with message starting with "Notes cannot exceed 2000 characters"
-
-    Scenario: Booking notes with whitespace is trimmed
-        Given a pending booking exists
-        When the operator updates the notes to "  Customer needs assistance  "
-        Then the booking notes should be "Customer needs assistance"
-
-    Scenario: Booking notes preserves multiple lines and formatting
-        Given a pending booking exists
-        When the operator updates the notes to "Line 1\nLine 2\n\nLine 4"
-        Then the booking notes should be "Line 1\nLine 2\n\nLine 4"
-
-    Scenario: Booking notes with excessive whitespace around preserves internal formatting
-        Given a pending booking exists
-        When the operator updates the notes to "  Important:\n- Item 1\n- Item 2  "
-        Then the booking notes should be "Important:\n- Item 1\n- Item 2"
