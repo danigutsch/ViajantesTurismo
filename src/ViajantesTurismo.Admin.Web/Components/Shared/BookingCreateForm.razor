@@ -39,6 +39,11 @@
         <div class="form-text">
             Single Room: Tour base price (standard room).<br/>
             Double Room: Tour base price + double room supplement (larger space, more expensive).
+            @if (Model.RoomType == RoomTypeDto.DoubleRoom && !Model.CompanionId.HasValue)
+            {
+                <br/>
+                <span class="badge bg-info mt-1"><i class="bi bi-info-circle"></i> Single Occupancy - No companion selected</span>
+            }
         </div>
     </div>
 
