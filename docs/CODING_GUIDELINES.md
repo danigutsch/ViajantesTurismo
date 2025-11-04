@@ -1,5 +1,9 @@
 # Coding Guidelines
 
+**Related Documents:**
+
+- **[TEST_GUIDELINES.md](TEST_GUIDELINES.md)** - Comprehensive testing standards and best practices
+
 ## Domain-Driven Design Principles
 
 ### Use Domain Language in Methods
@@ -337,49 +341,6 @@ private async Task<Results<NoContent, NotFound>> UpdateBooking(...)
 ```
 
 The method names, variable names, and code structure should be clear enough that comments are unnecessary.
-
-### Test Comments
-
-Tests should use `// Arrange`, `// Act`, `// Assert` comments to clearly separate the three sections of each test
-method. This is one of the few acceptable uses of comments as it provides a standard, widely-recognized structure that
-improves test readability.
-
-### Test Method Naming Convention
-
-**Use underscores to separate all words in test method names for improved readability.**
-
-✅ **Do this:**
-
-```csharp
-public void Map_To_Currency_Dto_Should_Map_All_Valid_Values()
-public void Invalid_Amount_With_Negative_Should_Return_Invalid_Result()
-public void Sanitize_Collection_Removes_Duplicate_Entries_Case_Insensitive()
-```
-
-❌ **Don't do this:**
-
-```csharp
-public void MapToCurrencyDto_ShouldMapAllValidValues()  // Hard to read
-public void InvalidAmount_WithNegative_ShouldReturnInvalidResult()  // Inconsistent
-public void SanitizeCollection_RemovesDuplicateEntries_CaseInsensitive()  // Mixed style
-```
-
-**Pattern:** `Method_Name_Context_Description_Expected_Behavior`
-
-- Insert underscores between all word boundaries (camelCase → Snake_Case)
-- Makes test names easier to read in test explorers and failure reports
-- Provides visual separation between method name, context, and expected behavior
-- Works well with long, descriptive test names
-
-**Behavior Tests Exception:**
-Behavior test step definitions should follow Gherkin/SpecFlow conventions or use the analyzer/code fix to name them
-correctly. They use regex patterns like:
-
-```csharp
-[Given(@"I have valid tour details")]
-[When(@"I update the tour price to (.*)")]
-[Then(@"the booking total should be (.*)")]
-```
 
 ## CQRS Pattern
 
