@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 public sealed class ContactInfoValidationSteps(ContactInfoContext context)
 {
     [When(@"I create contact info with email ""([^""]*)"", mobile ""([^""]*)"", instagram ""([^""]*)"", facebook ""([^""]*)""")]
-    public void WhenICreateContactInfoWithEmailMobileInstagramFacebookCommas(string email, string mobile, string instagram, string facebook)
+    public void WhenICreateContactInfoWithEmailInstagram(string email, string mobile, string instagram, string facebook)
     {
         context.Email = email;
         context.Mobile = mobile;
@@ -23,7 +23,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     }
 
     [When(@"I create contact info with email ""([^""]*)"" and mobile ""([^""]*)"" and instagram ""([^""]*)"" and facebook ""([^""]*)""")]
-    public void WhenICreateContactInfoWithEmailMobileInstagramFacebook(string email, string mobile, string instagram, string facebook)
+    public void WhenICreateContactInfoWithEmailAndInstagram(string email, string mobile, string instagram, string facebook)
     {
         context.Email = email;
         context.Mobile = mobile;
@@ -55,7 +55,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     }
 
     [When(@"I create contact info with email of (\d+) characters")]
-    public void WhenICreateContactInfoWithEmailOfLength(int length)
+    public void WhenICreateContactInfoWithEmailOfDCharacters(int length)
     {
         var email = new string('a', length - 12) + "@example.com";
         context.Email = email;
@@ -85,7 +85,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     }
 
     [When(@"I create contact info with mobile of (\d+) characters")]
-    public void WhenICreateContactInfoWithMobileOfLength(int length)
+    public void WhenICreateContactInfoWithMobileOfDCharacters(int length)
     {
         var mobile = new string('1', length);
         context.Mobile = mobile;
@@ -119,7 +119,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     }
 
     [When(@"I create contact info with Instagram of (\d+) characters")]
-    public void WhenICreateContactInfoWithInstagramOfLength(int length)
+    public void WhenICreateContactInfoWithInstagramOfDCharacters(int length)
     {
         var instagram = new string('a', length);
         context.Instagram = instagram;
@@ -153,7 +153,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     }
 
     [When(@"I create contact info with Facebook of (\d+) characters")]
-    public void WhenICreateContactInfoWithFacebookOfLength(int length)
+    public void WhenICreateContactInfoWithFacebookOfDCharacters(int length)
     {
         var facebook = new string('a', length);
         context.Facebook = facebook;
@@ -165,7 +165,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     }
 
     [When(@"I create contact info with email ""([^""]*)"" and mobile ""([^""]*)""")]
-    public void WhenICreateContactInfoWithEmailAndMobile(string email, string mobile)
+    public void WhenICreateContactInfoWithEmail(string email, string mobile)
     {
         context.Email = email;
         context.Mobile = mobile;

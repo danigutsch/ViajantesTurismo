@@ -18,16 +18,6 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
-    [Given(@"a pending booking exists with price (.*)")]
-    public void GivenAPendingBookingExistsWithPrice(decimal price)
-    {
-        tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
-        Assert.True(result.IsSuccess);
-        bookingContext.Booking = result.Value;
-        Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
-    }
-
     [Given(@"a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
