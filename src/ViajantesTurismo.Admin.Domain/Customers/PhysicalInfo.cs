@@ -43,12 +43,12 @@ public sealed class PhysicalInfo
     {
         var errors = new ValidationErrors();
 
-        if (weightKg < ContractConstants.MinWeightKg || weightKg > ContractConstants.MaxWeightKg)
+        if (weightKg is < ContractConstants.MinWeightKg or > ContractConstants.MaxWeightKg)
         {
             errors.Add(InvalidWeight());
         }
 
-        if (heightCentimeters < ContractConstants.MinHeightCm || heightCentimeters > ContractConstants.MaxHeightCm)
+        if (heightCentimeters is < ContractConstants.MinHeightCm or > ContractConstants.MaxHeightCm)
         {
             errors.Add(InvalidHeight());
         }

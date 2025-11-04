@@ -496,7 +496,7 @@ public sealed class Tour : Entity<int>
             return Result.Ok();
         }
 
-        if (!companionBikeType.HasValue || companionBikeType.Value == BikeType.None)
+        if (companionBikeType is null or BikeType.None)
         {
             return Result.Invalid(
                 "Bike type must be selected for companion. Please choose Regular or EBike.",
