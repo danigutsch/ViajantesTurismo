@@ -376,6 +376,113 @@ Prefer extracting code into well-named methods rather than using multiple levels
 Each method should do **one thing** at an appropriate level of abstraction. If a method is doing too much or requires
 comments to explain its sections, extract those sections into separate methods.
 
+### Enum Guidelines
+
+**Always assign 0 to Unknown, None, or Other values in enums.**
+
+This ensures that:
+
+1. Default values are meaningful (uninitialized enums default to 0)
+2. Database storage is consistent
+3. Validation logic is simplified (valid values are non-zero)
+
+✅ **Do this:**
+
+```csharp
+public enum PaymentMethod
+{
+    Other = 0,        // Unknown/fallback value is 0
+    CreditCard = 1,
+    BankTransfer = 2,
+    Cash = 3
+}
+
+public enum BookingStatus
+{
+    None = 0,         // Default/uninitialized state
+    Pending = 1,
+    Confirmed = 2,
+    Cancelled = 3
+}
+```
+
+❌ **Don't do this:**
+
+```csharp
+public enum PaymentMethod
+{
+    CreditCard = 0,   // Don't start with specific values
+    BankTransfer = 1,
+    Cash = 2,
+    Other = 3         // Other/Unknown should be 0
+}
+```
+
+### TimeProvider for Testable Time-Dependent Code
+
+**Use `TimeProvider` instead of `DateTime.UtcNow` or `DateTimeOffset.UtcNow` in domain logic.**
+
+This makes code testable by allowing time to be controlled in tests.
+
+✅ **Do this:**
+
+```csharp
+public static Result<Payment> Create(
+    long bookingId,
+    decimal amount,
+    DateTime paymentDate,
+    PaymentMethod method,
+    TimeProvider timeProvider,
+    string? referenceNumber = null,
+    string? notes = null)
+{
+    ArgumentNullException.ThrowIfNull(timeProvider);
+
+    var now = timeProvider.GetUtcNow().UtcDateTime;
+    if (paymentDate > now)
+    {
+        return PaymentErrors.FuturePaymentDate(paymentDate);
+    }
+
+    return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, now);
+}
+```
+
+❌ **Don't do this:**
+
+```csharp
+public static Result<Payment> Create(
+    long bookingId,
+    decimal amount,
+    DateTime paymentDate,
+    PaymentMethod method,
+    string? referenceNumber = null,
+    string? notes = null)
+{
+    // Hard to test - time is fixed to system clock
+    if (paymentDate > DateTime.UtcNow)
+    {
+        return PaymentErrors.FuturePaymentDate(paymentDate);
+    }
+
+    return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, DateTime.UtcNow);
+}
+```
+
+**Benefits:**
+
+- **Testability**: Tests can control time using `FakeTimeProvider`
+- **Deterministic**: Same inputs always produce same outputs in tests
+- **Time Travel**: Can test future/past scenarios easily
+- **Production**: Use `TimeProvider.System` for real applications
+
+**Pattern:**
+
+- Factory methods take `TimeProvider` as parameter
+- Get time once at start: `var now = timeProvider.GetUtcNow().UtcDateTime;`
+- Pass time to constructor for property assignment
+- Tests use `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing` package
+
 ### Collection types by intent
 Choose collection types to clearly express intent (mutability, uniqueness, ordering, and expected operations). Prefer exposing the least-powerful interface that conveys how the collection should be used.
 
