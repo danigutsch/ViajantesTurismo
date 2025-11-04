@@ -30,6 +30,20 @@ entities.
 
 - Database schema versioning
 - Schema evolution tracking
+- Located in `Migrations/` directory
+
+**Creating Migrations:**
+
+```powershell
+# From repository root:
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService
+
+# Or from this directory:
+dotnet ef migrations add MigrationName --startup-project ../ViajantesTurismo.MigrationService
+```
+
+**Important:** Always use `ViajantesTurismo.MigrationService` as the `--startup-project`. This project contains the
+DbContext configuration and connection strings.
 
 ## Database
 

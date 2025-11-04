@@ -261,12 +261,20 @@ dotnet build
 ### Database Migrations
 
 ```powershell
-# Add migration
-dotnet ef migrations add MigrationName --project src/ViajantesTurismo.ApiService
+# Add migration (run from repository root)
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService
 
-# Update database
-dotnet ef database update --project src/ViajantesTurismo.ApiService
+# Update database (run from repository root)
+dotnet ef database update --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService
+
+# Alternative: Navigate to Infrastructure project directory
+cd src/ViajantesTurismo.Admin.Infrastructure
+dotnet ef migrations add MigrationName --startup-project ../ViajantesTurismo.MigrationService
+dotnet ef database update --startup-project ../ViajantesTurismo.MigrationService
 ```
+
+**Note:** Always use `ViajantesTurismo.MigrationService` as the startup project for EF Core commands. Migrations are
+stored in `ViajantesTurismo.Admin.Infrastructure/Migrations/`.
 
 ## Contributing
 

@@ -12,6 +12,20 @@ up-to-date before the API starts.
 - **Migrations**: Apply pending EF Core migrations to database
 - **Seeding**: Populate initial data for development/testing
 - **Startup Order**: Runs before API service starts (via `WaitForCompletion()`)
+- **EF Core Tooling**: Serves as startup project for `dotnet ef` commands
+
+## Creating Migrations
+
+This project **must** be used as the `--startup-project` when running EF Core commands:
+
+```powershell
+# From repository root:
+dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService
+
+# From Infrastructure directory:
+cd src/ViajantesTurismo.Admin.Infrastructure
+dotnet ef migrations add MigrationName --startup-project ../ViajantesTurismo.MigrationService
+```
 
 ## Execution
 
