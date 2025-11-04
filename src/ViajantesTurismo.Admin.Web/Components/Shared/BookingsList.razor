@@ -40,6 +40,20 @@ else
 
         <PropertyColumn Property="@(b => b.TotalPrice)" Title="Total Price" Format="C" Sortable="true" />
 
+        <TemplateColumn Title="Discount">
+            @if (context.DiscountType != DiscountTypeDto.None)
+            {
+                <span class="badge @GetDiscountBadgeClass(context.DiscountType)"
+                      title="@GetDiscountTooltip(context)">
+                    <i class="bi bi-percent"></i> @GetDiscountDisplayText(context)
+                </span>
+            }
+            else
+            {
+                <span class="text-muted">-</span>
+            }
+        </TemplateColumn>
+
         <TemplateColumn Title="Status">
             <BookingStatusBadge Status="@context.Status"/>
         </TemplateColumn>
@@ -139,6 +153,43 @@ else
     private async Task OnDeleteClicked(long bookingId)
     {
         await OnDelete.InvokeAsync(bookingId);
+    }
+
+    private string GetDiscountBadgeClass(DiscountTypeDto discountType)
+    {
+        return discountType switch
+        {
+            DiscountTypeDto.None => "bg-secondary",
+            DiscountTypeDto.Percentage => "bg-primary",
+            DiscountTypeDto.Absolute => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetDiscountDisplayText(GetBookingDto booking)
+    {
+        return booking.DiscountType switch
+        {
+            DiscountTypeDto.Percentage => $"{booking.DiscountAmount:F2}%",
+            DiscountTypeDto.Absolute => $"{booking.DiscountAmount:C}",
+            _ => "-"
+        };
+    }
+
+    private string GetDiscountTooltip(GetBookingDto booking)
+    {
+        if (booking.DiscountType == DiscountTypeDto.None)
+        {
+            return "No discount applied";
+        }
+
+        var discountTypeText = booking.DiscountType == DiscountTypeDto.Percentage
+            ? "Percentage Discount"
+            : "Absolute Discount";
+
+        return string.IsNullOrWhiteSpace(booking.DiscountReason)
+            ? discountTypeText
+            : $"{discountTypeText}: {booking.DiscountReason}";
     }
 
 }

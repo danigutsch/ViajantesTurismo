@@ -143,6 +143,55 @@
         </div>
     </div>
 
+    @if (SelectedTour is not null)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="bi bi-calculator"></i> Price Breakdown</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var subtotal = Model.CalculateSubtotal(
+                        SelectedTour.Price,
+                        SelectedTour.DoubleRoomSupplementPrice,
+                        SelectedTour.RegularBikePrice,
+                        SelectedTour.EBikePrice);
+                    var discountAmount = Model.CalculateDiscountAmount(subtotal);
+                    var finalTotal = Model.CalculateFinalTotal(subtotal);
+                }
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-8">Subtotal (before discount):</dt>
+                    <dd class="col-sm-4 text-end">@FormatPrice(subtotal, SelectedTour.Currency)</dd>
+
+                    @if (Model.DiscountType != DiscountTypeDto.None && discountAmount > 0)
+                    {
+                        <dt class="col-sm-8 text-danger">
+                            Discount
+                            @if (Model.DiscountType == DiscountTypeDto.Percentage)
+                            {
+                                <text>(@Model.DiscountAmount.ToString("F2")%)</text>
+                            }
+                            :
+                        </dt>
+                        <dd class="col-sm-4 text-end text-danger">
+                            -@FormatPrice(discountAmount, SelectedTour.Currency)</dd>
+                    }
+
+                    <dt class="col-sm-8 fw-bold border-top pt-2">Final Total:</dt>
+                    <dd class="col-sm-4 text-end fw-bold border-top pt-2">@FormatPrice(finalTotal, SelectedTour.Currency)</dd>
+                </dl>
+
+                @if (finalTotal <= 0 && Model.DiscountType != DiscountTypeDto.None)
+                {
+                    <div class="alert alert-warning mb-0 mt-2">
+                        <i class="bi bi-exclamation-triangle"></i> Warning: Final price cannot be zero or negative.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
             @if (IsSubmitting)
@@ -167,6 +216,9 @@
 
     [Parameter]
     public IReadOnlyList<GetTourDto> Tours { get; set; } = [];
+
+    [Parameter]
+    public GetTourDto? SelectedTour { get; set; }
 
     [Parameter]
     public EventCallback<BookingFormModel> OnValidSubmit { get; set; }
@@ -221,6 +273,17 @@
     private async Task HandleValidSubmit()
     {
         await OnValidSubmit.InvokeAsync(Model);
+    }
+
+    private static string FormatPrice(decimal amount, CurrencyDto currency)
+    {
+        return currency switch
+        {
+            CurrencyDto.Euro => $"€{amount:N2}",
+            CurrencyDto.UsDollar => $"${amount:N2}",
+            CurrencyDto.Real => $"R${amount:N2}",
+            _ => $"{amount:N2}"
+        };
     }
 
 }

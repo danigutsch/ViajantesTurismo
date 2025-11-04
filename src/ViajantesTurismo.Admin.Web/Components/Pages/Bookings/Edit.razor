@@ -109,6 +109,54 @@ else
                     <label for="notes" class="form-label">Notes</label>
                     <InputTextArea id="notes" class="form-control" @bind-Value="_model.Notes" rows="4" placeholder="Additional notes or comments..."/>
                 </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="bi bi-percent"></i> Discount</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="discountType" class="form-label">Discount Type</label>
+                            <InputSelect id="discountType" class="form-select" @bind-Value="_model.DiscountType">
+                                <option value="@DiscountTypeDto.None">No Discount</option>
+                                <option value="@DiscountTypeDto.Percentage">Percentage (0-100%)</option>
+                                <option value="@DiscountTypeDto.Absolute">Absolute Amount</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => _model.DiscountType)"/>
+                        </div>
+
+                        @if (_model.DiscountType != DiscountTypeDto.None)
+                        {
+                            <div class="mb-3">
+                                <label for="discountAmount" class="form-label">
+                                    @if (_model.DiscountType == DiscountTypeDto.Percentage)
+                                    {
+                                        <text>Discount Percentage <span class="text-danger">*</span></text>
+                                    }
+                                    else
+                                    {
+                                        <text>Discount Amount <span class="text-danger">*</span></text>
+                                    }
+                                </label>
+                                <InputNumber id="discountAmount" class="form-control" @bind-Value="_model.DiscountAmount"
+                                             @bind-Value:format="F2" step="0.01"/>
+                                <ValidationMessage For="@(() => _model.DiscountAmount)"/>
+                                @if (_model.DiscountType == DiscountTypeDto.Percentage)
+                                {
+                                    <div class="form-text">Enter a value between 0 and 100</div>
+                                }
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="discountReason" class="form-label">Discount Reason <span class="text-danger">*</span></label>
+                                <InputTextArea id="discountReason" class="form-control" @bind-Value="_model.DiscountReason"
+                                               rows="2" placeholder="e.g., Early bird discount, Loyalty customer, Group discount"/>
+                                <ValidationMessage For="@(() => _model.DiscountReason)"/>
+                                <div class="form-text">Required for audit purposes (10-500 characters)</div>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -183,7 +231,10 @@ else
             {
                 Notes = _booking.Notes ?? string.Empty,
                 Status = _booking.Status,
-                PaymentStatus = _booking.PaymentStatus
+                PaymentStatus = _booking.PaymentStatus,
+                DiscountType = _booking.DiscountType,
+                DiscountAmount = _booking.DiscountAmount,
+                DiscountReason = _booking.DiscountReason ?? string.Empty
             };
         }
         catch (Exception ex)
@@ -216,7 +267,10 @@ else
             {
                 Notes = _model.Notes,
                 Status = _model.Status,
-                PaymentStatus = _model.PaymentStatus
+                PaymentStatus = _model.PaymentStatus,
+                DiscountType = _model.DiscountType,
+                DiscountAmount = _model.DiscountAmount,
+                DiscountReason = _model.DiscountReason
             };
 
             await BookingsApi.UpdateBooking(Id, updateDto);
@@ -268,5 +322,8 @@ else
         public string Notes { get; set; } = string.Empty;
         public BookingStatusDto Status { get; set; }
         public PaymentStatusDto PaymentStatus { get; set; }
+        public DiscountTypeDto DiscountType { get; set; } = DiscountTypeDto.None;
+        public decimal DiscountAmount { get; set; }
+        public string DiscountReason { get; set; } = string.Empty;
     }
 }

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.AdminApi.Contracts;
 /// <summary>
 /// DTO for creating a new booking.
 /// </summary>
-public sealed class CreateBookingDto
+public sealed class CreateBookingDto : IValidatableObject
 {
     /// <summary>The ID of the tour being booked.</summary>
     [Required]
@@ -35,11 +35,40 @@ public sealed class CreateBookingDto
     /// <summary>The discount amount (0-100 for percentage, fixed amount for absolute).</summary>
     public decimal DiscountAmount { get; init; }
 
-    /// <summary>Optional reason for the discount.</summary>
-    [MaxLength(ContractConstants.MaxBookingNotesLength)]
+    /// <summary>Reason for the discount (required when discount is applied).</summary>
+    [StringLength(ContractConstants.MaxDiscountReasonLength, MinimumLength = ContractConstants.MinDiscountReasonLength)]
     public string? DiscountReason { get; init; }
 
     /// <summary>Optional notes about the booking.</summary>
     [MaxLength(ContractConstants.MaxBookingNotesLength)]
     public string? Notes { get; init; }
+
+    /// <summary>
+    /// Validates the discount fields based on business rules.
+    /// Returns multiple validation errors when multiple fields are invalid.
+    /// </summary>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (DiscountType != DiscountTypeDto.None)
+        {
+            if (DiscountAmount <= 0)
+            {
+                yield return DiscountErrors.AmountMustBePositive();
+            }
+
+            if (DiscountType == DiscountTypeDto.Percentage && DiscountAmount > ContractConstants.MaxDiscountPercentage)
+            {
+                yield return DiscountErrors.PercentageTooHigh(ContractConstants.MaxDiscountPercentage);
+            }
+
+            if (string.IsNullOrWhiteSpace(DiscountReason))
+            {
+                yield return DiscountErrors.ReasonRequired();
+            }
+            else if (DiscountReason.Length < ContractConstants.MinDiscountReasonLength)
+            {
+                yield return DiscountErrors.ReasonTooShort(ContractConstants.MinDiscountReasonLength);
+            }
+        }
+    }
 }

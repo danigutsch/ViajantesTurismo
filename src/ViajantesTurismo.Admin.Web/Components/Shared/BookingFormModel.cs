@@ -4,7 +4,7 @@ using ViajantesTurismo.AdminApi.Contracts;
 namespace ViajantesTurismo.Admin.Web.Components.Shared;
 
 /// <summary>
-/// Form model for creating and editing bookings.
+/// The form model for creating and editing bookings.
 /// </summary>
 public class BookingFormModel : IValidatableObject
 {
@@ -51,6 +51,7 @@ public class BookingFormModel : IValidatableObject
 
     /// <summary>
     /// Validates the discount fields based on business rules.
+    /// Returns multiple validation errors when multiple fields are invalid.
     /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -58,18 +59,88 @@ public class BookingFormModel : IValidatableObject
         {
             if (DiscountAmount <= 0)
             {
-                yield return new ValidationResult("Discount amount must be greater than 0 when a discount is applied", new[] { nameof(DiscountAmount) });
+                yield return DiscountErrors.AmountMustBePositive();
             }
 
             if (DiscountType == DiscountTypeDto.Percentage && DiscountAmount > ContractConstants.MaxDiscountPercentage)
             {
-                yield return new ValidationResult($"Percentage discount cannot exceed {ContractConstants.MaxDiscountPercentage}%", new[] { nameof(DiscountAmount) });
+                yield return DiscountErrors.PercentageTooHigh(ContractConstants.MaxDiscountPercentage);
             }
 
             if (string.IsNullOrWhiteSpace(DiscountReason))
             {
-                yield return new ValidationResult("Discount reason is required when applying a discount", new[] { nameof(DiscountReason) });
+                yield return DiscountErrors.ReasonRequired();
+            }
+            else if (DiscountReason.Length < ContractConstants.MinDiscountReasonLength)
+            {
+                yield return DiscountErrors.ReasonTooShort(ContractConstants.MinDiscountReasonLength);
             }
         }
+    }
+
+    /// <summary>
+    /// Calculates the subtotal price before discount.
+    /// </summary>
+    /// <param name="basePrice">Tour base price per person</param>
+    /// <param name="doubleRoomSupplement">Double room supplement price</param>
+    /// <param name="regularBikePrice">Regular bike price</param>
+    /// <param name="eBikePrice">E-bike price</param>
+    public decimal CalculateSubtotal(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice, decimal eBikePrice)
+    {
+        var customerCount = CompanionId.HasValue ? 2 : 1;
+        var subtotal = basePrice * customerCount;
+
+        if (RoomType == RoomTypeDto.DoubleRoom)
+        {
+            subtotal += doubleRoomSupplement;
+        }
+
+        subtotal += PrincipalBikeType switch
+        {
+            BikeTypeDto.Regular => regularBikePrice,
+            BikeTypeDto.EBike => eBikePrice,
+            _ => 0m
+        };
+
+        if (CompanionBikeType.HasValue)
+        {
+            subtotal += CompanionBikeType.Value switch
+            {
+                BikeTypeDto.Regular => regularBikePrice,
+                BikeTypeDto.EBike => eBikePrice,
+                _ => 0m
+            };
+        }
+
+        return subtotal;
+    }
+
+    /// <summary>
+    /// Calculates the discount amount based on discount type.
+    /// </summary>
+    /// <param name="subtotal">Subtotal price before discount</param>
+    public decimal CalculateDiscountAmount(decimal subtotal)
+    {
+        if (DiscountType == DiscountTypeDto.None || DiscountAmount <= 0)
+        {
+            return 0m;
+        }
+
+        return DiscountType switch
+        {
+            DiscountTypeDto.Percentage => subtotal * (DiscountAmount / 100m),
+            DiscountTypeDto.Absolute => DiscountAmount,
+            _ => 0m
+        };
+    }
+
+    /// <summary>
+    /// Calculates the final total price after discount.
+    /// </summary>
+    /// <param name="subtotal">Subtotal price before discount</param>
+    public decimal CalculateFinalTotal(decimal subtotal)
+    {
+        var discountAmount = CalculateDiscountAmount(subtotal);
+        return Math.Max(0, subtotal - discountAmount);
     }
 }

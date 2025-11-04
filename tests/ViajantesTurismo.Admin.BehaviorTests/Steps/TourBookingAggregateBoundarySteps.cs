@@ -40,7 +40,7 @@ public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingCont
     }
 
     [Then(@"the tour should have (\d+) bookings")]
-    public void ThenTheTourShouldHaveBookings(int expectedCount)
+    public void ThenTheTourShouldHaveDBookings(int expectedCount)
     {
         Assert.Equal(expectedCount, tourContext.Tour.Bookings.Count);
     }

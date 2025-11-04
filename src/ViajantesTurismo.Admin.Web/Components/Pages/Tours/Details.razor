@@ -123,6 +123,7 @@ else if (_tour != null)
                         <BookingCreateForm Model="_bookingFormModel"
                                            Customers="_customers"
                                            Tours="_tours"
+                                           SelectedTour="_tour"
                                            OnValidSubmit="@HandleSaveBooking"
                                            OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
                                            IsSubmitting="_isSubmitting"/>
@@ -287,7 +288,10 @@ else if (_tour != null)
                     CompanionCustomerId = model.CompanionId,
                     CompanionBikeType = model.CompanionBikeType,
                     RoomType = model.RoomType,
-                    Notes = model.Notes
+                    Notes = model.Notes,
+                    DiscountType = model.DiscountType,
+                    DiscountAmount = model.DiscountAmount,
+                    DiscountReason = model.DiscountReason
                 };
 
                 await BookingsApi.CreateBooking(createDto);

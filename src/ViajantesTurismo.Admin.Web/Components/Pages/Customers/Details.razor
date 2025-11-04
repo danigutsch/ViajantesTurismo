@@ -421,7 +421,10 @@ else
                     CompanionCustomerId = model.CompanionId,
                     CompanionBikeType = model.CompanionBikeType,
                     RoomType = model.RoomType,
-                    Notes = model.Notes
+                    Notes = model.Notes,
+                    DiscountType = model.DiscountType,
+                    DiscountAmount = model.DiscountAmount,
+                    DiscountReason = model.DiscountReason
                 };
 
                 await BookingsApi.CreateBooking(createDto);
