@@ -247,11 +247,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour.UpdateDetails(newIdentifier, newName);
     }
 
-    [When(@"I update the base price to (.*)")]
-    public void WhenIUpdateTheBasePriceTo(decimal newPrice)
-    {
-        tourContext.Tour.UpdateBasePrice(newPrice);
-    }
+    // Note: Ambiguous binding removed - use TourUpdateBasePriceSteps for base price updates in isolated scenarios
 
     [When(@"I update the services to ""(.*)""")]
     public void WhenIUpdateTheServicesTo(string servicesString)

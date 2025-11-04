@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
 
@@ -104,5 +105,158 @@ public static class TestHelpers
             "BRL" => Currency.Real,
             _ => throw new ArgumentException($"Unknown currency: {currencyCode}", nameof(currencyCode))
         };
+    }
+
+    /// <summary>
+    /// Creates a test customer with default values.
+    /// </summary>
+    public static Customer CreateTestCustomer()
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("john@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, null, "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Jane Doe", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific names.
+    /// </summary>
+    public static Customer CreateTestCustomerWithNames(string firstName, string lastName)
+    {
+        var personalInfo = PersonalInfo.Create(firstName, lastName, "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific passport.
+    /// </summary>
+    public static Customer CreateTestCustomerWithPassport(string passport)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create(passport, "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific email.
+    /// </summary>
+    public static Customer CreateTestCustomerWithEmail(string email)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create(email, "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific city.
+    /// </summary>
+    public static Customer CreateTestCustomerWithCity(string city)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", city, "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific height.
+    /// </summary>
+    public static Customer CreateTestCustomerWithHeight(int height)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, height, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific bed type.
+    /// </summary>
+    public static Customer CreateTestCustomerWithBedType(BedType bedType)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, bedType, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific emergency contact.
+    /// </summary>
+    public static Customer CreateTestCustomerWithEmergencyContact(string name)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create(name, "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+    }
+
+    /// <summary>
+    /// Creates a test customer with specific allergies.
+    /// </summary>
+    public static Customer CreateTestCustomerWithAllergies(string allergies)
+    {
+        var personalInfo = PersonalInfo.Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("A12345678", "USA").Value;
+        var contactInfo = ContactInfo.Create("test@example.com", "+1234567890", null, null).Value;
+        var address = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA").Value;
+        var physicalInfo = PhysicalInfo.Create(75, 175, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("Emergency Contact", "+9876543210").Value;
+        var medicalInfo = MedicalInfo.Create(allergies, "None").Value;
+
+        return new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
     }
 }
