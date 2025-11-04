@@ -34,12 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj" />
-        <ProjectReference Include="..\..\src\ViajantesTurismo.AdminApi.Contracts\ViajantesTurismo.AdminApi.Contracts.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Tours\"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
     </ItemGroup>
 
 </Project>
