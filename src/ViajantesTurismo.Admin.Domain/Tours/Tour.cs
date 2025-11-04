@@ -637,6 +637,35 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
+    /// Updates the discount of a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to update.</param>
+    /// <param name="discountType">The discount type.</param>
+    /// <param name="discountAmount">The discount amount.</param>
+    /// <param name="discountReason">The discount reason.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateBookingDiscount(
+        long bookingId,
+        DiscountType discountType,
+        decimal discountAmount,
+        string? discountReason)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId);
+        }
+
+        var discountResult = Discount.Create(discountType, discountAmount, discountReason);
+        if (discountResult.IsFailure)
+        {
+            return discountResult.ConvertError();
+        }
+
+        return booking.UpdateDiscount(discountResult.Value);
+    }
+
+    /// <summary>
     /// Updates the details of a booking (room type, bikes, companion).
     /// </summary>
     /// <param name="bookingId">The ID of the booking to update.</param>

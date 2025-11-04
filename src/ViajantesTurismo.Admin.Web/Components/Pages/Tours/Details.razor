@@ -351,14 +351,24 @@ else if (_tour != null)
         {
             if (_editingBookingId.HasValue)
             {
-                var updateDto = new UpdateBookingDto
-                {
-                    Notes = model.Notes,
-                    Status = model.Status,
-                    PaymentStatus = model.PaymentStatus
-                };
+                // Update notes
+                var notesDto = new UpdateBookingNotesDto { Notes = model.Notes };
+                await BookingsApi.UpdateBookingNotes(_editingBookingId.Value, notesDto, CancellationToken.None);
 
-                await BookingsApi.UpdateBooking(_editingBookingId.Value, updateDto, CancellationToken.None);
+                // Handle status transitions (idempotent - safe to call even if already in that state)
+                switch (model.Status)
+                {
+                    case BookingStatusDto.Confirmed:
+                        await BookingsApi.ConfirmBooking(_editingBookingId.Value, CancellationToken.None);
+                        break;
+                    case BookingStatusDto.Cancelled:
+                        await BookingsApi.CancelBooking(_editingBookingId.Value, CancellationToken.None);
+                        break;
+                    case BookingStatusDto.Completed:
+                        await BookingsApi.CompleteBooking(_editingBookingId.Value, CancellationToken.None);
+                        break;
+                }
+
                 _toast.ShowSuccess("Booking updated successfully.");
             }
             else

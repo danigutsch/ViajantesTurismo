@@ -263,17 +263,43 @@ else
 
         try
         {
-            var updateDto = new UpdateBookingDto
+            // Update discount if changed
+            if (_model.DiscountType != _booking!.DiscountType ||
+                _model.DiscountAmount != _booking.DiscountAmount ||
+                _model.DiscountReason != _booking.DiscountReason)
             {
-                Notes = _model.Notes,
-                Status = _model.Status,
-                PaymentStatus = _model.PaymentStatus,
-                DiscountType = _model.DiscountType,
-                DiscountAmount = _model.DiscountAmount,
-                DiscountReason = _model.DiscountReason
-            };
+                var discountDto = new UpdateBookingDiscountDto
+                {
+                    DiscountType = _model.DiscountType,
+                    DiscountAmount = _model.DiscountAmount,
+                    DiscountReason = _model.DiscountReason
+                };
+                await BookingsApi.UpdateBookingDiscount(Id, discountDto, CancellationToken.None);
+            }
 
-            await BookingsApi.UpdateBooking(Id, updateDto, CancellationToken.None);
+            // Update notes if changed
+            if (_model.Notes != _booking.Notes)
+            {
+                var notesDto = new UpdateBookingNotesDto { Notes = _model.Notes };
+                await BookingsApi.UpdateBookingNotes(Id, notesDto, CancellationToken.None);
+            }
+
+            // Handle status transitions if changed
+            if (_model.Status != _booking.Status)
+            {
+                switch (_model.Status)
+                {
+                    case BookingStatusDto.Confirmed:
+                        await BookingsApi.ConfirmBooking(Id, CancellationToken.None);
+                        break;
+                    case BookingStatusDto.Cancelled:
+                        await BookingsApi.CancelBooking(Id, CancellationToken.None);
+                        break;
+                    case BookingStatusDto.Completed:
+                        await BookingsApi.CompleteBooking(Id, CancellationToken.None);
+                        break;
+                }
+            }
 
             _success = true;
             _pendingRedirect = true;

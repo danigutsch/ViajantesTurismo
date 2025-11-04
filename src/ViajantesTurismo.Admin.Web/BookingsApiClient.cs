@@ -72,9 +72,9 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
         return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
     }
 
-    public async Task UpdateBooking(long id, UpdateBookingDto dto, CancellationToken cancellationToken)
+    public async Task UpdateBookingDiscount(long id, UpdateBookingDiscountDto dto, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PutAsJsonAsync($"/bookings/{id}", dto, cancellationToken);
+        var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/discount", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
@@ -92,19 +92,19 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
 
     public async Task CancelBooking(long id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PatchAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null, cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
     public async Task ConfirmBooking(long id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PatchAsync(new Uri($"/bookings/{id}/confirm", UriKind.Relative), null, cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/confirm", UriKind.Relative), null, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
     public async Task CompleteBooking(long id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PatchAsync(new Uri($"/bookings/{id}/complete", UriKind.Relative), null, cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/complete", UriKind.Relative), null, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 

@@ -5,7 +5,6 @@ using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -50,10 +49,10 @@ internal static class BookingEndpoints
             .WithDescription("Creates a new booking for a tour.")
             .WithSummary("Creates a new booking.");
 
-        bookingsGroup.MapPut("/{id:long}", UpdateBooking)
-            .WithName("UpdateBooking")
-            .WithDescription("Updates an existing booking.")
-            .WithSummary("Updates an existing booking.");
+        bookingsGroup.MapPut("/{id:long}/discount", UpdateBookingDiscount)
+            .WithName("UpdateBookingDiscount")
+            .WithDescription("Updates the discount for a booking.")
+            .WithSummary("Updates booking discount.");
 
         bookingsGroup.MapPut("/{id:long}/details", UpdateBookingDetails)
             .WithName("UpdateBookingDetails")
@@ -65,14 +64,14 @@ internal static class BookingEndpoints
             .WithDescription("Deletes a booking.")
             .WithSummary("Deletes a booking.");
 
-        bookingsGroup.MapPatch("/{id:long}/cancel", CancelBooking)
+        bookingsGroup.MapPost("/{id:long}/cancel", CancelBooking)
             .WithName("CancelBooking")
-            .WithDescription("Cancels a booking by setting its status to Cancelled.")
+            .WithDescription("Cancels a booking by transitioning its status to Cancelled.")
             .WithSummary("Cancels a booking.");
 
-        bookingsGroup.MapPatch("/{id:long}/confirm", ConfirmBooking)
+        bookingsGroup.MapPost("/{id:long}/confirm", ConfirmBooking)
             .WithName("ConfirmBooking")
-            .WithDescription("Confirms a booking by setting its status to Confirmed.")
+            .WithDescription("Confirms a booking by transitioning its status to Confirmed.")
             .WithSummary("Confirms a booking.");
 
         bookingsGroup.MapPatch("/{id:long}/notes", UpdateBookingNotes)
@@ -80,9 +79,9 @@ internal static class BookingEndpoints
             .WithDescription("Updates the notes of a booking.")
             .WithSummary("Updates booking notes.");
 
-        bookingsGroup.MapPatch("/{id:long}/complete", CompleteBooking)
+        bookingsGroup.MapPost("/{id:long}/complete", CompleteBooking)
             .WithName("CompleteBooking")
-            .WithDescription("Completes a booking by setting its status to Completed.")
+            .WithDescription("Completes a booking by transitioning its status to Completed.")
             .WithSummary("Completes a booking.");
 
         bookingsGroup.MapPost("/{id:long}/payments", RecordPayment)
@@ -175,9 +174,9 @@ internal static class BookingEndpoints
         return TypedResults.Created($"/bookings/{booking.Id}", bookingDto);
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> UpdateBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDiscount(
         [FromRoute] long id,
-        [FromBody] UpdateBookingDto dto,
+        [FromBody] UpdateBookingDiscountDto dto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -188,30 +187,15 @@ internal static class BookingEndpoints
             return BookingErrors.BookingNotFound(id).ToNotFound();
         }
 
-        tour.UpdateBookingNotes(id, dto.Notes);
+        var result = tour.UpdateBookingDiscount(
+            id,
+            BookingMapper.MapToDiscountType(dto.DiscountType),
+            dto.DiscountAmount,
+            dto.DiscountReason);
 
-        var targetStatus = BookingMapper.MapToBookingStatus(dto.Status);
-        var booking = tour.Bookings.FirstOrDefault(b => b.Id == id);
-        if (booking is not null && booking.Status != targetStatus)
+        if (result.IsFailure)
         {
-            var statusUpdateResult = targetStatus switch
-            {
-                BookingStatus.Confirmed => tour.ConfirmBooking(id),
-                BookingStatus.Cancelled => tour.CancelBooking(id),
-                BookingStatus.Completed => tour.CompleteBooking(id),
-                _ => Result.Ok()
-            };
-
-            if (statusUpdateResult.IsFailure)
-            {
-                return statusUpdateResult.ToNotFound();
-            }
-        }
-
-        var paymentUpdateResult = tour.UpdateBookingPaymentStatus(id, BookingMapper.MapToPaymentStatus(dto.PaymentStatus));
-        if (paymentUpdateResult.IsFailure)
-        {
-            paymentUpdateResult.ToNotFound();
+            return result.ToValidationProblem();
         }
 
         await unitOfWork.SaveEntities(ct);

@@ -3,22 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ViajantesTurismo.AdminApi.Contracts;
 
 /// <summary>
-/// DTO for updating an existing booking.
+/// DTO for updating booking discount after creation.
 /// </summary>
-public sealed class UpdateBookingDto : IValidatableObject
+public sealed class UpdateBookingDiscountDto : IValidatableObject
 {
-    /// <summary>Optional notes about the booking.</summary>
-    [MaxLength(ContractConstants.MaxBookingNotesLength)]
-    public string? Notes { get; init; }
-
-    /// <summary>The booking status.</summary>
-    [Required]
-    public required BookingStatusDto Status { get; init; }
-
-    /// <summary>The payment status.</summary>
-    [Required]
-    public required PaymentStatusDto PaymentStatus { get; init; }
-
     /// <summary>The discount type (None, Percentage, or Absolute).</summary>
     public DiscountTypeDto DiscountType { get; init; } = DiscountTypeDto.None;
 

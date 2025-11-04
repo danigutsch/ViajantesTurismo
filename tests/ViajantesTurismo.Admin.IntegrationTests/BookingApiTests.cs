@@ -240,40 +240,41 @@ public sealed class BookingApiTests : IDisposable
         var customerDto = await CreateTestCustomer("Jack", "Martin");
         var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id, null);
 
-        var updateRequest = new UpdateBookingDto
-        {
-            Notes = "Updated notes",
-            Status = BookingStatusDto.Confirmed,
-            PaymentStatus = PaymentStatusDto.Paid
-        };
+        // Update notes
+        var notesRequest = new UpdateBookingNotesDto { Notes = "Updated notes" };
+        var notesResponse = await _client.PatchAsJsonAsync(
+            new Uri($"/bookings/{createdBooking.Id}/notes", UriKind.Relative),
+            notesRequest,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, notesResponse.StatusCode);
 
-        // Act
-        var response = await _client.PutAsJsonAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+        // Confirm booking
+        var confirmResponse = await _client.PostAsync(
+            new Uri($"/bookings/{createdBooking.Id}/confirm", UriKind.Relative),
+            null,
+            TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, confirmResponse.StatusCode);
 
         var getResponse = await _client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
         var updatedBooking = await getResponse.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedBooking);
         Assert.Equal("Updated notes", updatedBooking.Notes);
         Assert.Equal(BookingStatusDto.Confirmed, updatedBooking.Status);
-        Assert.Equal(PaymentStatusDto.Paid, updatedBooking.PaymentStatus);
     }
 
     [Fact]
-    public async Task Update_Booking_Returns_NotFound_For_Invalid_Id()
+    public async Task Update_Booking_Notes_Returns_NotFound_For_Invalid_Id()
     {
         // Arrange
-        var updateRequest = new UpdateBookingDto
+        var updateRequest = new UpdateBookingNotesDto
         {
-            Notes = "Test",
-            Status = BookingStatusDto.Confirmed,
-            PaymentStatus = PaymentStatusDto.Paid
+            Notes = "Test"
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync(new Uri("/bookings/99999", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+        var response = await _client.PatchAsJsonAsync(new Uri("/bookings/99999/notes", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -319,7 +320,7 @@ public sealed class BookingApiTests : IDisposable
         Assert.Equal(BookingStatusDto.Pending, createdBooking.Status);
 
         // Act
-        var response = await _client.PatchAsync(
+        var response = await _client.PostAsync(
             new Uri($"/bookings/{createdBooking.Id}/cancel", UriKind.Relative),
             null,
             TestContext.Current.CancellationToken);
@@ -343,7 +344,7 @@ public sealed class BookingApiTests : IDisposable
     public async Task Cancel_Booking_Returns_NotFound_For_Invalid_Id()
     {
         // Act
-        var response = await _client.PatchAsync(
+        var response = await _client.PostAsync(
             new Uri("/bookings/99999/cancel", UriKind.Relative),
             null,
             TestContext.Current.CancellationToken);

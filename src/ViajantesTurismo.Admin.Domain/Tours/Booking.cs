@@ -91,7 +91,7 @@ public sealed class Booking : Entity<long>
     /// <summary>
     /// The discount applied to this booking.
     /// </summary>
-    public Discount Discount { get; private init; }
+    public Discount Discount { get; private set; }
 
     /// <summary>
     /// The date when the booking was made.
@@ -331,6 +331,37 @@ public sealed class Booking : Entity<long>
         }
 
         Notes = notes;
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Updates the discount for the booking.
+    /// </summary>
+    /// <param name="discount">The new discount.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateDiscount(Discount discount)
+    {
+        ArgumentNullException.ThrowIfNull(discount);
+
+        // Validate booking can be modified
+        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        {
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+        }
+
+        // Validate discount against current subtotal
+        if (discount.Type == DiscountType.Absolute && discount.Amount > Subtotal)
+        {
+            return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, Subtotal);
+        }
+
+        var finalPrice = Subtotal - discount.CalculateDiscountAmount(Subtotal);
+        if (finalPrice <= 0)
+        {
+            return DiscountErrors.FinalPriceNotPositive(finalPrice);
+        }
+
+        Discount = discount;
         return Result.Ok();
     }
 
