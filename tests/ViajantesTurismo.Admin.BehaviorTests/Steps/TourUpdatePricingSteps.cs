@@ -67,6 +67,4 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
     }
-
-    // Note: Currency assertion moved to TourUpdateCurrencySteps for focused currency testing
 }

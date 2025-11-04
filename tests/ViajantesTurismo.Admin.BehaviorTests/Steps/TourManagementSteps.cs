@@ -256,8 +256,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour.UpdateIncludedServices(services);
     }
 
-    // Note: Currency update step moved to TourUpdateCurrencySteps for focused currency testing
-
     [When(@"I update pricing with single room (.*), regular bike (.*), e-bike (.*)")]
     public void WhenIUpdatePricingWithBaseSingleRoomRegularBikeEBike(
         decimal singleRoom,
