@@ -61,32 +61,23 @@ public class BookingFormModel : IValidatableObject
 
     public decimal CalculateSubtotal(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice, decimal eBikePrice)
     {
-        var customerCount = CompanionId.HasValue ? 2 : 1;
-        var subtotal = basePrice * customerCount;
+        var roomCost = RoomType == RoomTypeDto.DoubleRoom ? doubleRoomSupplement : 0m;
 
-        if (RoomType == RoomTypeDto.DoubleRoom)
-        {
-            subtotal += doubleRoomSupplement;
-        }
-
-        subtotal += PrincipalBikeType switch
+        var principalBikeCost = PrincipalBikeType switch
         {
             BikeTypeDto.Regular => regularBikePrice,
             BikeTypeDto.EBike => eBikePrice,
             _ => 0m
         };
 
-        if (CompanionBikeType.HasValue)
+        var companionBikeCost = CompanionBikeType switch
         {
-            subtotal += CompanionBikeType.Value switch
-            {
-                BikeTypeDto.Regular => regularBikePrice,
-                BikeTypeDto.EBike => eBikePrice,
-                _ => 0m
-            };
-        }
+            BikeTypeDto.Regular => regularBikePrice,
+            BikeTypeDto.EBike => eBikePrice,
+            _ => 0m
+        };
 
-        return subtotal;
+        return basePrice + roomCost + principalBikeCost + companionBikeCost;
     }
 
     public decimal CalculateDiscountAmount(decimal subtotal)
