@@ -50,6 +50,51 @@ Validation rules enforced in `Tour.Create()`:
 
 All constraints defined in `ContractConstants`.
 
+### Booking Entity
+
+Validation rules enforced in `Booking.Create()` and update operations:
+
+**Creation:**
+
+- Base price: Must be > 0 and <= 100,000
+- Room additional cost: Must be >= 0 and <= 100,000
+- Notes: Max 2000 characters
+- Discount: If absolute, cannot exceed subtotal
+- Final price: Must be > 0 after discount
+- BikeType: Cannot be `BikeType.None` for principal or companion
+- Companion: Cannot be same as principal customer
+
+**State Transitions:**
+
+- Pending → Confirmed: Allowed
+- Pending → Cancelled: Allowed
+- Confirmed → Completed: Allowed
+- Confirmed → Cancelled: Allowed
+- Cancelled → *: Blocked (terminal state)
+- Completed → *: Blocked (terminal state)
+
+**Updates:**
+
+- Cannot modify Cancelled or Completed bookings
+- Discount changes must keep final price > 0
+- Room type changes validated for companion presence
+
+**Payments:**
+
+- Amount: Must be > 0
+- Amount: Cannot exceed remaining balance
+- Payment date: Cannot be in the future
+- Payment method: Must be valid enum value (Other, CreditCard, BankTransfer, Cash, Check, PayPal)
+
+### Customer Entity
+
+Validation rules enforced in `Customer.Create()`:
+
+- Personal info: FirstName, LastName not empty, max lengths
+- Email: Valid format, max 256 characters
+- Phone: Valid format
+- Birth date: Between 18 and 120 years old
+
 ### Update Operations
 
 Update methods return `Result`:
@@ -103,12 +148,51 @@ public static class ContractConstants
 
 ## API Integration
 
+**Tour Creation:**
 ```csharp
 var result = Tour.Create(dto.Identifier, dto.Name, ...);
 if (!result.IsSuccess)
     return result.ToValidationProblem();
 
 var tour = result.Value;
+await unitOfWork.SaveEntities(ct);
+```
+
+**Booking Creation:**
+
+```csharp
+var result = tour.AddBooking(
+    principalCustomerId,
+    principalBikeType,
+    companionCustomerId,
+    companionBikeType,
+    roomType,
+    discountType,
+    discountAmount,
+    discountReason,
+    notes);
+    
+if (!result.IsSuccess)
+    return result.ToValidationProblem();
+
+var booking = result.Value;
+await unitOfWork.SaveEntities(ct);
+```
+
+**Payment Recording:**
+
+```csharp
+var result = booking.RecordPayment(
+    amount,
+    paymentDate,
+    method,
+    TimeProvider.System,
+    referenceNumber,
+    notes);
+    
+if (!result.IsSuccess)
+    return result.ToValidationProblem();
+
 await unitOfWork.SaveEntities(ct);
 ```
 

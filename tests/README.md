@@ -44,7 +44,11 @@ Domain validation uses the **Result pattern** instead of exceptions.
 - Valid transitions: Pending→Confirmed, Pending→Cancelled, Confirmed→Completed, Confirmed→Cancelled
 - Cancelled and Completed are terminal states (immutable)
 - Customer and companion cannot be the same person
-- Total price must be > 0
+- BikeType.None not allowed for tour bookings
+- Total price must be > 0 after discount
+- Discount validation: percentage 0-100%, absolute cannot exceed subtotal
+- Payment validation: amount > 0, cannot exceed remaining balance, payment date not in future
+- Cannot modify or record payments for Cancelled/Completed bookings
 
 ## Running Tests
 
@@ -64,8 +68,8 @@ dotnet test --collect:"XPlat Code Coverage"
 To run tests and generate a code coverage report:
 
 ```powershell
-# Run tests with coverage collection
-dotnet test --collect:"XPlat Code Coverage" --results-directory:TestResults
+# Run tests with coverage collection using the solution runsettings (excludes Migrations, etc.)
+dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory:TestResults
 
 # Generate HTML coverage report
 dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html

@@ -304,9 +304,12 @@ public decimal TotalPrice => CalculateTotalPrice(BasePrice, RoomAdditionalCost, 
 
 - Removed `TotalPrice` column from database
 - Added `entity.Ignore(booking => booking.TotalPrice)` in EF Core configuration
-- Formula: `BasePrice + RoomAdditionalCost + PrincipalCustomer.BikePrice + CompanionCustomer?.BikePrice ?? 0`
+- Formula: `Subtotal - DiscountAmount` where:
+    - `Subtotal = BasePrice + RoomAdditionalCost + PrincipalCustomer.BikePrice + CompanionCustomer?.BikePrice ?? 0`
+    - `DiscountAmount = Discount.CalculateDiscountAmount(Subtotal)`
 - Base price is for single room (not per person)
 - Double room adds supplement cost
+- Discounts applied after subtotal calculation
 
 ---
 
@@ -345,6 +348,162 @@ Base price represents a single room cost:
 
 ---
 
+---
+
+## ADR-010: Discount as Value Object with Audit Trail
+
+**Status:** Implemented
+
+**Context:**
+Bookings need flexible discount support for promotions, early bird pricing, and custom negotiations. Discounts must be
+traceable for audit purposes.
+
+**Decision:**
+Implement `Discount` as a value object owned by `Booking`:
+
+```csharp
+public sealed class Discount
+{
+    public DiscountType Type { get; }  // None, Percentage, Absolute
+    public decimal Amount { get; }     // 0-100 for percentage, fixed amount for absolute
+    public string? Reason { get; }     // Audit trail: "Early bird", "VIP customer", etc.
+    
+    public decimal CalculateDiscountAmount(decimal subtotal) { }
+}
+```
+
+**Consequences:**
+
+**Positive:**
+
+- Discount logic encapsulated in single value object
+- Reason field provides audit trail
+- Type-safe discount types (percentage vs absolute)
+- Validation ensures discounts don't exceed subtotal or result in negative price
+
+**Negative:**
+
+- Cannot change discount type without creating new Discount instance
+- Reason required when discount applied (adds form complexity)
+
+**Implementation:**
+
+- `DiscountType` enum: None (0), Percentage (1), Absolute (2)
+- Percentage validation: 0-100%
+- Absolute validation: cannot exceed subtotal
+- Final price validation: must be > 0 after discount
+- UI shows real-time discount calculation
+
+---
+
+## ADR-011: Payment Tracking with Immutable Payment Records
+
+**Status:** Implemented
+
+**Context:**
+Bookings need to track multiple payments over time (down payment, installments, final payment). Payment records must be
+immutable for audit and accounting purposes.
+
+**Decision:**
+Implement `Payment` as immutable entity with full audit trail:
+
+```csharp
+public sealed class Payment : Entity<long>
+{
+    public long BookingId { get; }
+    public decimal Amount { get; }
+    public DateTime PaymentDate { get; }
+    public PaymentMethod Method { get; }  // CreditCard, BankTransfer, Cash, Check, PayPal, Other
+    public string? ReferenceNumber { get; }
+    public string? Notes { get; }
+    public DateTime RecordedAt { get; }  // Audit: when payment was recorded in system
+}
+```
+
+Payment status automatically calculated:
+
+- `Unpaid`: No payments recorded
+- `PartiallyPaid`: AmountPaid < TotalPrice
+- `Paid`: AmountPaid >= TotalPrice
+
+**Consequences:**
+
+**Positive:**
+
+- Complete payment history preserved
+- Cannot edit/delete payments (immutability ensures audit integrity)
+- Automatic payment status transitions
+- Prevents overpayment (validation: amount <= remaining balance)
+- Multiple payment methods supported
+
+**Negative:**
+
+- Cannot correct payment errors (must add offsetting payment)
+- No refund workflow (would need separate Refund entity)
+
+**Implementation:**
+
+- Payments stored in separate collection: `Booking._payments`
+- `AmountPaid` calculated property: `_payments.Sum(p => p.Amount)`
+- `RemainingBalance` calculated property: `TotalPrice - AmountPaid`
+- `TimeProvider` parameter for testable timestamps
+- `RecordedAt` captures when payment entered into system
+
+---
+
+## ADR-012: Booking Details Update After Creation
+
+**Status:** Implemented
+
+**Context:**
+Customers may change accommodation or bike preferences after initial booking. Bookings should be modifiable unless in
+terminal state (Cancelled/Completed).
+
+**Decision:**
+Add `Booking.UpdateDetails()` method allowing post-creation modifications:
+
+```csharp
+public Result UpdateDetails(
+    RoomType roomType,
+    decimal roomAdditionalCost,
+    BookingCustomer principalCustomer,
+    BookingCustomer? companionCustomer,
+    Discount discount)
+{
+    // Validate not in terminal state
+    if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+    
+    // Update properties with validation
+    // Price recalculates automatically
+}
+```
+
+**Consequences:**
+
+**Positive:**
+
+- No need to cancel/recreate bookings for simple changes
+- Price automatically recalculates with new selections
+- Preserves payment history and booking ID
+- Customer experience improved (flexible changes)
+
+**Negative:**
+
+- UI more complex (edit forms, confirmation dialogs)
+- Price changes may affect payment status
+- No audit trail of what changed (would need ADR-009 US-9 audit log)
+
+**Implementation:**
+
+- `PUT /bookings/{id}/details` endpoint
+- Can change: room type, bikes, companion, discount
+- Cannot change: tour, principal customer, booking date
+- Terminal states (Cancelled/Completed) prevent all modifications
+- UI shows warning when removing companion from double room
+
+---
+
 ## Summary
 
 These architectural decisions establish a robust domain validation approach:
@@ -358,6 +517,9 @@ These architectural decisions establish a robust domain validation approach:
 7. **Application layer** separates mapping and query concerns from domain
 8. **Calculated properties** ensure derived values are always consistent
 9. **Correct pricing model** reflects actual business rules
+10. **Discount value objects** provide flexible pricing with audit trails
+11. **Immutable payments** ensure financial integrity and complete history
+12. **Post-creation updates** improve customer experience without compromising data integrity
 
 This architecture prioritizes:
 

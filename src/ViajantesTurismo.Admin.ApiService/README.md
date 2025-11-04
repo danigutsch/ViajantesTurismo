@@ -27,9 +27,19 @@ error handling.
 
 ### Bookings
 
-- `POST /tours/{tourId}/bookings` - Add booking to tour
-- `PUT /tours/{tourId}/bookings/{bookingId}` - Update booking
-- `DELETE /tours/{tourId}/bookings/{bookingId}` - Remove booking
+- `GET /bookings` - List all bookings
+- `GET /bookings/{id}` - Get booking by ID
+- `GET /bookings/tour/{tourId}` - Get bookings for tour
+- `GET /bookings/customer/{customerId}` - Get bookings for customer
+- `POST /bookings` - Create booking with discount support
+- `PUT /bookings/{id}/discount` - Update booking discount
+- `PUT /bookings/{id}/details` - Update room type, bikes, companion
+- `POST /bookings/{id}/confirm` - Confirm booking
+- `POST /bookings/{id}/cancel` - Cancel booking
+- `POST /bookings/{id}/complete` - Complete booking
+- `PATCH /bookings/{id}/notes` - Update booking notes
+- `POST /bookings/{id}/payments` - Record payment
+- `DELETE /bookings/{id}` - Delete booking
 
 ## Features
 

@@ -14,19 +14,23 @@ powerful tools to create and manage tour packages.
 - **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences, and medical details
 - **Booking Management**: 
     - Create bookings with room type selection (Single/Double)
-    - Optional companion for shared accommodations
+  - Optional companion for double rooms (supports single occupancy)
     - Bike type selection (Regular/E-bike) with customer preference pre-population
+  - Discount support (percentage or absolute amount with audit trail)
+  - Automatic total price calculation (base + room + bikes - discount)
   - Domain-driven operations: Confirm, Cancel, Complete bookings
-      - Update booking notes through a dedicated endpoint
-    - Track booking status and payment status
-    - Automatic total price calculation (transparent, consistent)
+  - Update booking notes, discount, and details after creation
+  - Payment tracking with multiple payment methods and automatic status updates
+  - Track booking status and payment status (Unpaid → PartiallyPaid → Paid)
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
     - Base tour pricing for single room (not per person)
     - Double room supplement for larger accommodations
     - Regular bike and E-bike rental pricing
+  - Discount system (percentage 0-100% or absolute amount)
     - Calculated total price (transparent, consistent)
+  - Payment tracking with configurable payment methods
 - **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
 - **RESTful API**: Modern API-first architecture with behaviour-driven endpoints
 - **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
@@ -110,6 +114,43 @@ ViajantesTurismo/
 dotnet test
 ```
 
+### Using the coverage runsettings
+
+A solution-level Coverlet runsettings file is provided at `coverlet.runsettings` (repository root). It excludes EF Core
+Migrations and the MigrationService project from coverage.
+
+- Command line (recommended):
+    - Collect coverage with the runsettings applied
+      ```powershell
+      dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory:TestResults
+      ```
+    - Generate an HTML report (after running tests above)
+      ```powershell
+      dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
+      # Open report (Windows)
+      Invoke-Item TestResults\CoverageReport\index.html
+      ```
+
+- Visual Studio (Windows):
+    1) Test → Configure Run Settings → Select Solution Wide runsettings File… → choose `coverlet.runsettings` at the
+       solution root.
+    2) Run tests with coverage (Test Explorer → Run → Analyze Code Coverage).
+
+- JetBrains Rider:
+    - File → Settings → Tools → Unit Testing → Check "Use .runsettings file" and select `coverlet.runsettings`.
+    - Or per Run Configuration: Edit Configuration → Tests → Advanced → Settings file.
+
+- VS Code:
+    - Update your test task/command to include the settings file:
+      ```powershell
+      dotnet test --collect:"XPlat Code Coverage" --settings ${workspaceFolder}/coverlet.runsettings
+      ```
+
+Notes:
+
+- Keep forward slashes in the globs inside runsettings (e.g., `**/Migrations/**/*.cs`) even on Windows.
+- If you change exclusions, commit `coverlet.runsettings` so all environments stay in sync.
+
 ## API Endpoints
 
 ### Tours API
@@ -132,12 +173,14 @@ dotnet test
 - `GET /bookings/{id}` - Get booking by ID
 - `GET /bookings/tour/{tourId}` - Get bookings for a specific tour
 - `GET /bookings/customer/{customerId}` - Get bookings for a specific customer
-- `POST /bookings` - Create a new booking
-- `PUT /bookings/{id}` - Update booking status, payment, and notes
-- `PATCH /bookings/{id}/confirm` - Confirm a pending booking
-- `PATCH /bookings/{id}/cancel` - Cancel a booking
-- `PATCH /bookings/{id}/complete` - Complete a confirmed booking
+- `POST /bookings` - Create a new booking with optional discount
+- `PUT /bookings/{id}/discount` - Update booking discount
+- `PUT /bookings/{id}/details` - Update room type, bikes, and companion
+- `POST /bookings/{id}/confirm` - Confirm a pending booking
+- `POST /bookings/{id}/cancel` - Cancel a booking
+- `POST /bookings/{id}/complete` - Complete a confirmed booking
 - `PATCH /bookings/{id}/notes` - Update booking notes
+- `POST /bookings/{id}/payments` - Record a payment for the booking
 - `DELETE /bookings/{id}` - Delete a booking
 
 ## Tour Package Information
