@@ -483,6 +483,70 @@ public static Result<Payment> Create(
 - Pass time to constructor for property assignment
 - Tests use `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing` package
 
+### Do Not Use Regions
+
+**Avoid using `#region` directives in code.**
+
+Regions hide code structure and make navigation harder. If code needs regions to be "organized," it's usually a sign
+that:
+
+1. The class is doing too much (violates Single Responsibility Principle)
+2. Methods should be extracted to separate classes
+3. Code needs better logical grouping through proper class design
+
+❌ **Don't do this:**
+
+```csharp
+public class OrderService
+{
+    #region Validation
+    private void ValidateOrder() { }
+    private void ValidateCustomer() { }
+    #endregion
+
+    #region Processing
+    private void ProcessPayment() { }
+    private void SendConfirmation() { }
+    #endregion
+}
+```
+
+✅ **Do this instead:**
+
+```csharp
+public class OrderService
+{
+    private readonly OrderValidator _validator;
+    private readonly OrderProcessor _processor;
+    
+    public OrderService(OrderValidator validator, OrderProcessor processor)
+    {
+        _validator = validator;
+        _processor = processor;
+    }
+}
+
+public class OrderValidator
+{
+    public void ValidateOrder() { }
+    public void ValidateCustomer() { }
+}
+
+public class OrderProcessor  
+{
+    public void ProcessPayment() { }
+    public void SendConfirmation() { }
+}
+```
+
+**Benefits of avoiding regions:**
+
+- Forces better class design and separation of concerns
+- Code structure is visible without expanding/collapsing
+- Easier to navigate with IDE features (Go to Definition, etc.)
+- Simpler code reviews
+- Encourages proper refactoring
+
 ### Collection types by intent
 Choose collection types to clearly express intent (mutability, uniqueness, ordering, and expected operations). Prefer exposing the least-powerful interface that conveys how the collection should be used.
 

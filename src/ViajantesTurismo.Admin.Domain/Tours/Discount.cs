@@ -32,13 +32,13 @@ public sealed class Discount
 
     /// <summary>
     /// Gets the discount amount.
-    /// For Percentage: value between 0 and 100 (e.g., 15 = 15%).
+    /// For Percentage: value between 0 and 100 (e.g. 15 = 15%).
     /// For Absolute: the fixed amount in the booking currency.
     /// </summary>
     public decimal Amount { get; private init; }
 
     /// <summary>
-    /// Gets the optional reason or notes for the discount (e.g., "Early bird discount", "VIP customer").
+    /// Gets the optional reason or notes for the discount (e.g. "Early bird discount", "VIP customer").
     /// </summary>
     public string? Reason { get; private init; }
 
@@ -60,7 +60,7 @@ public sealed class Discount
 
     /// <summary>
     /// Creates a new discount with validation.
-    /// If type is None, returns a discount with 0 amount.
+    /// If the type is None, returns a discount with amount 0.
     /// </summary>
     /// <param name="type">The discount type (None, Percentage, or Absolute).</param>
     /// <param name="amount">The discount amount.</param>

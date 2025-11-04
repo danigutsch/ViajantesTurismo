@@ -99,8 +99,8 @@ public sealed class Payment : Entity<long>
         DateTime paymentDate,
         PaymentMethod method,
         TimeProvider timeProvider,
-        string? referenceNumber = null,
-        string? notes = null)
+        string? referenceNumber,
+        string? notes)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
 

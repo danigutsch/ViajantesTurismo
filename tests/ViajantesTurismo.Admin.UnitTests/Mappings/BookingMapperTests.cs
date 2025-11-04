@@ -301,4 +301,208 @@ public class BookingMapperTests
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToDiscountTypeDto(invalidValue));
         Assert.Contains("Invalid discount type value", exception.Message);
     }
+
+    [Theory]
+    [InlineData(PaymentMethodDto.CreditCard, PaymentMethod.CreditCard)]
+    [InlineData(PaymentMethodDto.BankTransfer, PaymentMethod.BankTransfer)]
+    [InlineData(PaymentMethodDto.Cash, PaymentMethod.Cash)]
+    [InlineData(PaymentMethodDto.Check, PaymentMethod.Check)]
+    [InlineData(PaymentMethodDto.PayPal, PaymentMethod.PayPal)]
+    [InlineData(PaymentMethodDto.Other, PaymentMethod.Other)]
+    public void MapToPaymentMethod_ShouldMapAllValidValues(PaymentMethodDto dto, PaymentMethod expected)
+    {
+        // Arrange
+        // Act
+        var result = BookingMapper.MapToPaymentMethod(dto);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToPaymentMethod_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDtoValues = Enum.GetValues<PaymentMethodDto>();
+
+        foreach (var dtoValue in allDtoValues)
+        {
+            // Act
+            var mappedEnum = BookingMapper.MapToPaymentMethod(dtoValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToPaymentMethod_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const PaymentMethodDto invalidValue = (PaymentMethodDto)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentMethod(invalidValue));
+        Assert.Contains("Invalid payment method value", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(PaymentMethod.CreditCard, PaymentMethodDto.CreditCard)]
+    [InlineData(PaymentMethod.BankTransfer, PaymentMethodDto.BankTransfer)]
+    [InlineData(PaymentMethod.Cash, PaymentMethodDto.Cash)]
+    [InlineData(PaymentMethod.Check, PaymentMethodDto.Check)]
+    [InlineData(PaymentMethod.PayPal, PaymentMethodDto.PayPal)]
+    [InlineData(PaymentMethod.Other, PaymentMethodDto.Other)]
+    public void MapToPaymentMethodDto_ShouldMapAllValidValues(PaymentMethod domain, PaymentMethodDto expected)
+    {
+        // Arrange
+        // Act
+        var result = BookingMapper.MapToPaymentMethodDto(domain);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MapToPaymentMethodDto_ShouldCoverAllEnumValues()
+    {
+        // Arrange
+        var allDomainValues = Enum.GetValues<PaymentMethod>();
+
+        foreach (var domainValue in allDomainValues)
+        {
+            // Act
+            var mappedEnum = BookingMapper.MapToPaymentMethodDto(domainValue);
+
+            // Assert
+            Assert.True(Enum.IsDefined(mappedEnum));
+        }
+    }
+
+    [Fact]
+    public void MapToPaymentMethodDto_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        const PaymentMethod invalidValue = (PaymentMethod)999;
+
+        // Act
+        // Assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentMethodDto(invalidValue));
+        Assert.Contains("Invalid payment method value", exception.Message);
+    }
+
+    [Fact]
+    public void MapToPaymentDto_ShouldMapAllProperties()
+    {
+        // Arrange
+        var bookingId = 1L;
+        var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
+        var timeProvider = TimeProvider.System;
+
+        var paymentResult = Payment.Create(
+            bookingId,
+            150.50m,
+            paymentDate,
+            PaymentMethod.CreditCard,
+            timeProvider,
+            "REF-12345",
+            "Payment for tour booking"
+        );
+
+        Assert.True(paymentResult.IsSuccess);
+        var payment = paymentResult.Value;
+
+        // Act
+        var result = BookingMapper.MapToPaymentDto(payment);
+
+        // Assert
+        Assert.Equal(payment.Id, result.Id);
+        Assert.Equal(bookingId, result.BookingId);
+        Assert.Equal(150.50m, result.Amount);
+        Assert.Equal(paymentDate, result.PaymentDate);
+        Assert.Equal(PaymentMethodDto.CreditCard, result.Method);
+        Assert.Equal("REF-12345", result.ReferenceNumber);
+        Assert.Equal("Payment for tour booking", result.Notes);
+        Assert.Equal(payment.RecordedAt, result.RecordedAt);
+    }
+
+    [Fact]
+    public void MapToPaymentDto_WithNullPayment_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        Payment? payment = null;
+
+        // Act
+        // Assert
+        Assert.Throws<ArgumentNullException>(() => BookingMapper.MapToPaymentDto(payment!));
+    }
+
+    [Fact]
+    public void MapToPaymentDto_WithNullOptionalFields_ShouldMapCorrectly()
+    {
+        // Arrange
+        const long bookingId = 1L;
+        var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
+        var timeProvider = TimeProvider.System;
+
+        var paymentResult = Payment.Create(
+            bookingId,
+            100.00m,
+            paymentDate,
+            PaymentMethod.Cash,
+            timeProvider,
+            null,
+            null
+        );
+
+        Assert.True(paymentResult.IsSuccess);
+        var payment = paymentResult.Value;
+
+        // Act
+        var result = BookingMapper.MapToPaymentDto(payment);
+
+        // Assert
+        Assert.Equal(payment.Id, result.Id);
+        Assert.Equal(bookingId, result.BookingId);
+        Assert.Equal(100.00m, result.Amount);
+        Assert.Equal(paymentDate, result.PaymentDate);
+        Assert.Equal(PaymentMethodDto.Cash, result.Method);
+        Assert.Null(result.ReferenceNumber);
+        Assert.Null(result.Notes);
+        Assert.Equal(payment.RecordedAt, result.RecordedAt);
+    }
+
+    [Theory]
+    [InlineData(PaymentMethod.CreditCard, PaymentMethodDto.CreditCard)]
+    [InlineData(PaymentMethod.BankTransfer, PaymentMethodDto.BankTransfer)]
+    [InlineData(PaymentMethod.Cash, PaymentMethodDto.Cash)]
+    [InlineData(PaymentMethod.Check, PaymentMethodDto.Check)]
+    [InlineData(PaymentMethod.PayPal, PaymentMethodDto.PayPal)]
+    [InlineData(PaymentMethod.Other, PaymentMethodDto.Other)]
+    public void MapToPaymentDto_ShouldMapAllPaymentMethods(PaymentMethod domainMethod, PaymentMethodDto expectedDto)
+    {
+        // Arrange
+        var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
+        var timeProvider = TimeProvider.System;
+
+        var paymentResult = Payment.Create(
+            1L,
+            100.00m,
+            paymentDate,
+            domainMethod,
+            timeProvider,
+            null,
+            null
+        );
+
+        Assert.True(paymentResult.IsSuccess);
+        var payment = paymentResult.Value;
+
+        // Act
+        var result = BookingMapper.MapToPaymentDto(payment);
+
+        // Assert
+        Assert.Equal(expectedDto, result.Method);
+    }
 }

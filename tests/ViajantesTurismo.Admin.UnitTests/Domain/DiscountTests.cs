@@ -1,0 +1,141 @@
+using ViajantesTurismo.Admin.Domain.Tours;
+
+namespace ViajantesTurismo.Admin.UnitTests.Domain;
+
+public class DiscountTests
+{
+    [Fact]
+    public void InvalidDiscountType_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        const DiscountType invalidType = (DiscountType)999;
+
+        // Act
+        var result = DiscountErrors.InvalidDiscountType(invalidType);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Invalid discount type", result.ErrorDetails.Detail);
+        Assert.Contains("999", result.ErrorDetails.Detail);
+        Assert.Contains("Valid values are:", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountType"));
+        Assert.Contains("Invalid discount type", result.ErrorDetails.ValidationErrors["discountType"][0]);
+    }
+
+    [Fact]
+    public void InvalidDiscountType_ShouldIncludeAllValidValues()
+    {
+        // Arrange
+        const DiscountType invalidType = (DiscountType)999;
+
+        // Act
+        var result = DiscountErrors.InvalidDiscountType(invalidType);
+
+        // Assert
+        Assert.NotNull(result.ErrorDetails);
+        var allValidTypes = Enum.GetNames<DiscountType>();
+        foreach (var validType in allValidTypes)
+        {
+            Assert.Contains(validType, result.ErrorDetails.Detail);
+        }
+    }
+
+    [Fact]
+    public void NegativeDiscountAmount_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        const decimal negativeAmount = -10.50m;
+
+        // Act
+        var result = DiscountErrors.NegativeDiscountAmount(negativeAmount);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Discount amount cannot be negative", result.ErrorDetails.Detail);
+        Assert.Contains("-10.50", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount"));
+        Assert.Equal("Discount amount cannot be negative.", result.ErrorDetails.ValidationErrors["discountAmount"][0]);
+    }
+
+    [Fact]
+    public void PercentageExceedsMaximum_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        const decimal amount = 150m;
+        const decimal maxPercentage = 100m;
+
+        // Act
+        var result = DiscountErrors.PercentageExceedsMaximum(amount, maxPercentage);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Percentage discount cannot exceed", result.ErrorDetails.Detail);
+        Assert.Contains("100%", result.ErrorDetails.Detail);
+        Assert.Contains("150%", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount"));
+        Assert.Contains("cannot exceed 100%", result.ErrorDetails.ValidationErrors["discountAmount"][0]);
+    }
+
+    [Fact]
+    public void AbsoluteDiscountExceedsSubtotal_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        const decimal amount = 1000m;
+        const decimal subtotal = 800m;
+
+        // Act
+        var result = DiscountErrors.AbsoluteDiscountExceedsSubtotal(amount, subtotal);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Absolute discount amount", result.ErrorDetails.Detail);
+        Assert.Contains("1000", result.ErrorDetails.Detail);
+        Assert.Contains("800", result.ErrorDetails.Detail);
+        Assert.Contains("cannot exceed subtotal", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount"));
+        Assert.Equal("Discount amount cannot exceed subtotal.", result.ErrorDetails.ValidationErrors["discountAmount"][0]);
+    }
+
+    [Fact]
+    public void FinalPriceNotPositive_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        const decimal finalPrice = -5.00m;
+
+        // Act
+        var result = DiscountErrors.FinalPriceNotPositive(finalPrice);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail);
+        Assert.Contains("-5", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discount"));
+        Assert.Equal("Final price after discount must be greater than zero.", result.ErrorDetails.ValidationErrors["discount"][0]);
+    }
+
+    [Fact]
+    public void FinalPriceNotPositive_WithZero_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        const decimal finalPrice = 0m;
+
+        // Act
+        var result = DiscountErrors.FinalPriceNotPositive(finalPrice);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail);
+        Assert.Contains("0", result.ErrorDetails.Detail);
+    }
+}
