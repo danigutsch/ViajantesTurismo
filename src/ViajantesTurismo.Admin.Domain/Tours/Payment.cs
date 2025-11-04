@@ -20,13 +20,15 @@ public sealed class Payment : Entity<long>
     /// <param name="method">The payment method used.</param>
     /// <param name="referenceNumber">Optional reference number for the payment.</param>
     /// <param name="notes">Optional notes about the payment.</param>
+    /// <param name="recordedAt">The timestamp when this payment was recorded (UTC).</param>
     private Payment(
         long bookingId,
         decimal amount,
-        DateOnly paymentDate,
+        DateTime paymentDate,
         PaymentMethod method,
         string? referenceNumber,
-        string? notes)
+        string? notes,
+        DateTime recordedAt)
     {
         BookingId = bookingId;
         Amount = amount;
@@ -34,7 +36,7 @@ public sealed class Payment : Entity<long>
         Method = method;
         ReferenceNumber = referenceNumber;
         Notes = notes;
-        RecordedAt = DateTime.UtcNow;
+        RecordedAt = recordedAt;
     }
 
     /// <summary>
@@ -58,7 +60,7 @@ public sealed class Payment : Entity<long>
     /// <summary>
     /// The date the payment was made.
     /// </summary>
-    public DateOnly PaymentDate { get; private init; }
+    public DateTime PaymentDate { get; private init; }
 
     /// <summary>
     /// The payment method used.
@@ -87,17 +89,21 @@ public sealed class Payment : Entity<long>
     /// <param name="amount">The payment amount.</param>
     /// <param name="paymentDate">The date the payment was made.</param>
     /// <param name="method">The payment method used.</param>
+    /// <param name="timeProvider">The time provider for getting current time.</param>
     /// <param name="referenceNumber">Optional reference number for the payment.</param>
     /// <param name="notes">Optional notes about the payment.</param>
     /// <returns>A Result containing the Payment if successful, or validation errors.</returns>
     public static Result<Payment> Create(
         long bookingId,
         decimal amount,
-        DateOnly paymentDate,
+        DateTime paymentDate,
         PaymentMethod method,
+        TimeProvider timeProvider,
         string? referenceNumber = null,
         string? notes = null)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         amount = NumericSanitizer.SanitizePrice(amount);
         referenceNumber = StringSanitizer.Sanitize(referenceNumber);
         notes = StringSanitizer.SanitizeNotes(notes);
@@ -114,7 +120,8 @@ public sealed class Payment : Entity<long>
             errors.Add(PaymentErrors.InvalidPaymentMethod(method));
         }
 
-        if (paymentDate > DateOnly.FromDateTime(DateTime.UtcNow))
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        if (paymentDate > now)
         {
             errors.Add(PaymentErrors.FuturePaymentDate(paymentDate));
         }
@@ -124,6 +131,6 @@ public sealed class Payment : Entity<long>
             return errors.ToResult<Payment>();
         }
 
-        return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes);
+        return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, now);
     }
 }

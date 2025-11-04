@@ -46,7 +46,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test tour with specific identifier and name.
+    /// Creates a test tour with a specific identifier and name.
     /// </summary>
     public static Tour CreateTestTourWithIdentifierAndName(string identifier, string name)
     {
@@ -56,6 +56,25 @@ public static class TestHelpers
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             price: 2000.00m,
+            doubleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: Currency.UsDollar,
+            includedServices: ["Hotel", "Breakfast"]).Value;
+    }
+
+    /// <summary>
+    /// Creates a test tour with a specific base price for payment testing.
+    /// With a base price of 900 and regular bike (100), a single room booking has TotalPrice = 1000.
+    /// </summary>
+    public static Tour CreateTestTourForPaymentTests()
+    {
+        return Tour.Create(
+            identifier: "PAY2024",
+            name: "Payment Test Tour",
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            price: 900.00m,
             doubleRoomSupplementPrice: 500.00m,
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
@@ -142,7 +161,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test customer with specific passport.
+    /// Creates a test customer with a specific passport.
     /// </summary>
     public static Customer CreateTestCustomerWithPassport(string passport)
     {
@@ -159,7 +178,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test customer with specific email.
+    /// Creates a test customer with a specific email.
     /// </summary>
     public static Customer CreateTestCustomerWithEmail(string email)
     {
@@ -176,7 +195,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test customer with specific city.
+    /// Creates a test customer with a specific city.
     /// </summary>
     public static Customer CreateTestCustomerWithCity(string city)
     {
@@ -193,7 +212,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test customer with specific height.
+    /// Creates a test customer with a specific height.
     /// </summary>
     public static Customer CreateTestCustomerWithHeight(int height)
     {
@@ -210,7 +229,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test customer with specific bed type.
+    /// Creates a test customer with a specific bed type.
     /// </summary>
     public static Customer CreateTestCustomerWithBedType(BedType bedType)
     {
@@ -227,7 +246,7 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test customer with specific emergency contact.
+    /// Creates a test customer with a specific emergency contact.
     /// </summary>
     public static Customer CreateTestCustomerWithEmergencyContact(string name)
     {

@@ -340,22 +340,26 @@ public sealed class Booking : Entity<long>
     /// <param name="amount">The payment amount.</param>
     /// <param name="paymentDate">The date the payment was made.</param>
     /// <param name="method">The payment method used.</param>
+    /// <param name="timeProvider">The time provider for getting current time.</param>
     /// <param name="referenceNumber">Optional reference number for the payment.</param>
     /// <param name="notes">Optional notes about the payment.</param>
     /// <returns>A result containing the recorded Payment if successful, or validation errors.</returns>
     public Result<Payment> RecordPayment(
         decimal amount,
-        DateOnly paymentDate,
+        DateTime paymentDate,
         PaymentMethod method,
+        TimeProvider timeProvider,
         string? referenceNumber = null,
         string? notes = null)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         if (amount > RemainingBalance)
         {
             return PaymentErrors.ExceedsRemainingBalance(amount, RemainingBalance).ConvertError<Payment>();
         }
 
-        var paymentResult = Payment.Create(Id, amount, paymentDate, method, referenceNumber, notes);
+        var paymentResult = Payment.Create(Id, amount, paymentDate, method, timeProvider, referenceNumber, notes);
         if (paymentResult.IsFailure)
         {
             return paymentResult;

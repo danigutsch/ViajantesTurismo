@@ -34,7 +34,7 @@ public static class PaymentErrors
     /// </summary>
     /// <param name="date">The invalid payment date.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result FuturePaymentDate(DateOnly date) =>
+    public static Result FuturePaymentDate(DateTime date) =>
         Result.Invalid(
             detail: $"Payment date cannot be in the future. Received: {date}.",
             field: "paymentDate",

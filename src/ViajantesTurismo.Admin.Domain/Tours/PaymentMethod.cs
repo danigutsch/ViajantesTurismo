@@ -6,32 +6,32 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 public enum PaymentMethod
 {
     /// <summary>
+    /// Payment made by another method.
+    /// </summary>
+    Other = 0,
+
+    /// <summary>
     /// Payment made by credit card.
     /// </summary>
-    CreditCard = 0,
+    CreditCard = 1,
 
     /// <summary>
     /// Payment made by bank transfer.
     /// </summary>
-    BankTransfer = 1,
+    BankTransfer = 2,
 
     /// <summary>
     /// Payment made in cash.
     /// </summary>
-    Cash = 2,
+    Cash = 3,
 
     /// <summary>
     /// Payment made by check/cheque.
     /// </summary>
-    Check = 3,
+    Check = 4,
 
     /// <summary>
     /// Payment made via PayPal.
     /// </summary>
-    PayPal = 4,
-
-    /// <summary>
-    /// Payment made by other method.
-    /// </summary>
-    Other = 5
+    PayPal = 5
 }

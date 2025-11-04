@@ -14,7 +14,7 @@ public sealed class CreatePaymentDto
 
     /// <summary>The date the payment was made.</summary>
     [Required]
-    public required DateOnly PaymentDate { get; init; }
+    public required DateTime PaymentDate { get; init; }
 
     /// <summary>The payment method used.</summary>
     [Required]
