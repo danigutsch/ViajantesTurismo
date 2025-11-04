@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Exclude>
+            <ModulePaths>
+              <Exclude>
+                <ModulePath>.*ViajantesTurismo\.AppHost\.dll$</ModulePath>
+              </Exclude>
+            </ModulePaths>
+            <Attributes />
+            <Sources />
+          </Exclude>
+
+          <ExcludeByFile>
+            <Exclude>**/Migrations/*.cs</Exclude>
+            <Exclude>**/Migrations/**/*.cs</Exclude>
+          </ExcludeByFile>
+
+          <ExcludeByAttribute>
+            <Attribute>System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute</Attribute>
+            <Attribute>System.Diagnostics.CodeAnalysis.GeneratedCodeAttribute</Attribute>
+            <Attribute>CompilerGeneratedAttribute</Attribute>
+          </ExcludeByAttribute>
+
+          <Format>cobertura,lcov,opencover</Format>
+          <SkipAutoProps>true</SkipAutoProps>
+          <SingleHit>false</SingleHit>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
