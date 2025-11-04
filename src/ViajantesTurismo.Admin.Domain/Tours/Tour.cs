@@ -70,7 +70,7 @@ public sealed class Tour : Entity<int>
     public decimal Price { get; private set; }
 
     /// <summary>
-    /// Gets the additional price for a double room (larger space, more expensive than single room).
+    /// Gets the additional price for a double room (larger space, more expensive than a single room).
     /// </summary>
     public decimal DoubleRoomSupplementPrice { get; private set; }
 
@@ -85,12 +85,12 @@ public sealed class Tour : Entity<int>
     public decimal EBikePrice { get; private set; }
 
     /// <summary>
-    /// Gets the currency used for all pricing in this tour.
+    /// Gets the currency used for all prices in this tour.
     /// </summary>
     public Currency Currency { get; private set; }
 
     /// <summary>
-    /// Gets the array of services included in the tour package (e.g., "Hotel", "Breakfast", "City Tour").
+    /// Gets the array of services included in the tour package (e.g. "Hotel", "Breakfast", "City Tour").
     /// </summary>
     public IReadOnlyList<string> IncludedServices => _includedServices.AsReadOnly();
 
@@ -102,7 +102,7 @@ public sealed class Tour : Entity<int>
     /// <summary>
     /// Creates a new instance of the <see cref="Tour"/> class with validation.
     /// </summary>
-    /// <param name="identifier">The unique business identifier for the tour (e.g., "CUBA2024").</param>
+    /// <param name="identifier">The unique business identifier for the tour (e.g. "CUBA2024").</param>
     /// <param name="name">The descriptive name of the tour.</param>
     /// <param name="startDate">The start date of the tour.</param>
     /// <param name="endDate">The end date of the tour.</param>
@@ -110,7 +110,7 @@ public sealed class Tour : Entity<int>
     /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
-    /// <param name="currency">The currency for all pricing.</param>
+    /// <param name="currency">The currency for all prices.</param>
     /// <param name="includedServices">The collection of services included in the tour package.</param>
     /// <returns>A Result containing the Tour if validation succeeds, or an error if validation fails.</returns>
     public static Result<Tour> Create(
@@ -295,12 +295,12 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
-    /// Updates all pricing for the tour except for base price, but including supplements, and bike rentals.
+    /// Updates all pricing for the tour except for base price but including supplements, and bike rentals.
     /// </summary>
     /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
-    /// <param name="currency">The currency for all pricing.</param>
+    /// <param name="currency">The currency for all prices.</param>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdatePricing(
         decimal doubleRoomSupplementPrice,
@@ -377,7 +377,7 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
-    /// Updates the currency used for all tour pricing.
+    /// Updates the currency used for all tour prices.
     /// </summary>
     /// <param name="currency">The new currency.</param>
     public void UpdateCurrency(Currency currency)
@@ -671,8 +671,8 @@ public sealed class Tour : Entity<int>
     /// <param name="bookingId">The ID of the booking to update.</param>
     /// <param name="roomType">The new room type.</param>
     /// <param name="principalBikeType">The new bike type for the principal customer.</param>
-    /// <param name="companionCustomerId">The companion customer ID (null to remove companion).</param>
-    /// <param name="companionBikeType">The bike type for the companion (required if companion present).</param>
+    /// <param name="companionCustomerId">The companion customer ID (null to remove the companion).</param>
+    /// <param name="companionBikeType">The bike type for the companion (required if a companion present).</param>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateBookingDetails(
         long bookingId,
@@ -713,34 +713,14 @@ public sealed class Tour : Entity<int>
             return principalCustomerResult.ConvertError();
         }
 
-        BookingCustomer? companionCustomer = null;
-        if (companionCustomerId.HasValue)
+        var companionCustomerResult = CreateCompanionCustomerForUpdate(
+            booking.PrincipalCustomer.CustomerId,
+            companionCustomerId,
+            companionBikeType);
+
+        if (companionCustomerResult.IsFailure)
         {
-            if (!companionBikeType.HasValue)
-            {
-                return Result.Invalid(
-                    detail: "Companion bike type is required when companion is present.",
-                    field: "companionBikeType",
-                    message: "Companion bike type is required.");
-            }
-
-            if (booking.PrincipalCustomer.CustomerId == companionCustomerId.Value)
-            {
-                return TourErrors.PrincipalAndCompanionCannotBeSame();
-            }
-
-            var companionBikePrice = GetBikePrice(companionBikeType.Value);
-            var companionCustomerResult = BookingCustomer.Create(
-                companionCustomerId.Value,
-                companionBikeType.Value,
-                companionBikePrice);
-
-            if (companionCustomerResult.IsFailure)
-            {
-                return companionCustomerResult.ConvertError();
-            }
-
-            companionCustomer = companionCustomerResult.Value;
+            return companionCustomerResult.ConvertError();
         }
 
         var roomAdditionalCost = CalculateRoomAdditionalCost(roomType);
@@ -749,8 +729,42 @@ public sealed class Tour : Entity<int>
             roomType,
             roomAdditionalCost,
             principalCustomerResult.Value,
-            companionCustomer,
+            companionCustomerResult.Value,
             booking.Discount);
+    }
+
+    private Result<BookingCustomer?> CreateCompanionCustomerForUpdate(
+        int principalCustomerId,
+        int? companionCustomerId,
+        BikeType? companionBikeType)
+    {
+        if (!companionCustomerId.HasValue)
+        {
+            return Result<BookingCustomer?>.Ok(null);
+        }
+
+        if (!companionBikeType.HasValue)
+        {
+            return Result<BookingCustomer?>.Invalid(
+                detail: "Companion bike type is required when companion is present.",
+                field: "companionBikeType",
+                message: "Companion bike type is required.");
+        }
+
+        if (principalCustomerId == companionCustomerId.Value)
+        {
+            return TourErrors.PrincipalAndCompanionCannotBeSame().ConvertError<BookingCustomer?>();
+        }
+
+        var companionBikePrice = GetBikePrice(companionBikeType.Value);
+        var companionCustomerResult = BookingCustomer.Create(
+            companionCustomerId.Value,
+            companionBikeType.Value,
+            companionBikePrice);
+
+        return companionCustomerResult.IsSuccess
+            ? Result<BookingCustomer?>.Ok(companionCustomerResult.Value)
+            : companionCustomerResult.ConvertError<BookingCustomer, BookingCustomer?>();
     }
 
     /// <summary>
@@ -771,7 +785,7 @@ public sealed class Tour : Entity<int>
     }
 
     /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
     [UsedImplicitly]
 #pragma warning disable CS8618
