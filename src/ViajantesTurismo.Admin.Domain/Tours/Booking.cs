@@ -15,6 +15,8 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// </remarks>
 public sealed class Booking : Entity<long>
 {
+    private readonly List<Payment> _payments = [];
+
     /// <summary>
     /// Initialises a new instance of the <see cref="Booking"/> class.
     /// </summary>
@@ -120,6 +122,21 @@ public sealed class Booking : Entity<long>
     /// Additional notes for the booking.
     /// </summary>
     public string? Notes { get; private set; }
+
+    /// <summary>
+    /// The payments recorded for this booking.
+    /// </summary>
+    public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
+
+    /// <summary>
+    /// The total amount paid so far.
+    /// </summary>
+    public decimal AmountPaid => _payments.Sum(p => p.Amount);
+
+    /// <summary>
+    /// The remaining balance to be paid.
+    /// </summary>
+    public decimal RemainingBalance => TotalPrice - AmountPaid;
 
     private static decimal CalculateSubtotal(
         decimal basePrice,
@@ -315,5 +332,56 @@ public sealed class Booking : Entity<long>
 
         Notes = notes;
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// Records a payment for this booking with validation.
+    /// </summary>
+    /// <param name="amount">The payment amount.</param>
+    /// <param name="paymentDate">The date the payment was made.</param>
+    /// <param name="method">The payment method used.</param>
+    /// <param name="referenceNumber">Optional reference number for the payment.</param>
+    /// <param name="notes">Optional notes about the payment.</param>
+    /// <returns>A result containing the recorded Payment if successful, or validation errors.</returns>
+    public Result<Payment> RecordPayment(
+        decimal amount,
+        DateOnly paymentDate,
+        PaymentMethod method,
+        string? referenceNumber = null,
+        string? notes = null)
+    {
+        if (amount > RemainingBalance)
+        {
+            return PaymentErrors.ExceedsRemainingBalance(amount, RemainingBalance).ConvertError<Payment>();
+        }
+
+        var paymentResult = Payment.Create(Id, amount, paymentDate, method, referenceNumber, notes);
+        if (paymentResult.IsFailure)
+        {
+            return paymentResult;
+        }
+
+        var payment = paymentResult.Value;
+        _payments.Add(payment);
+
+        UpdatePaymentStatusFromPayments();
+
+        return payment;
+    }
+
+    /// <summary>
+    /// Updates the payment status based on the total amount paid.
+    /// </summary>
+    private void UpdatePaymentStatusFromPayments()
+    {
+        var amountPaid = AmountPaid;
+        var totalPrice = TotalPrice;
+
+        PaymentStatus = amountPaid switch
+        {
+            0 => PaymentStatus.Unpaid,
+            _ when amountPaid >= totalPrice => PaymentStatus.Paid,
+            _ => PaymentStatus.PartiallyPaid
+        };
     }
 }

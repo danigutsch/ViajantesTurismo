@@ -107,4 +107,58 @@ public static class BookingMapper
             _ => throw new ArgumentOutOfRangeException(nameof(discountType), discountType, "Invalid discount type value.")
         };
     }
+
+    /// <summary>
+    /// Maps a <see cref="PaymentMethodDto"/> to a <see cref="PaymentMethod"/>.
+    /// </summary>
+    public static PaymentMethod MapToPaymentMethod(PaymentMethodDto paymentMethodDto)
+    {
+        return paymentMethodDto switch
+        {
+            PaymentMethodDto.CreditCard => PaymentMethod.CreditCard,
+            PaymentMethodDto.BankTransfer => PaymentMethod.BankTransfer,
+            PaymentMethodDto.Cash => PaymentMethod.Cash,
+            PaymentMethodDto.Check => PaymentMethod.Check,
+            PaymentMethodDto.PayPal => PaymentMethod.PayPal,
+            PaymentMethodDto.Other => PaymentMethod.Other,
+            _ => throw new ArgumentOutOfRangeException(nameof(paymentMethodDto), paymentMethodDto, "Invalid payment method value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="PaymentMethod"/> to a <see cref="PaymentMethodDto"/>.
+    /// </summary>
+    public static PaymentMethodDto MapToPaymentMethodDto(PaymentMethod paymentMethod)
+    {
+        return paymentMethod switch
+        {
+            PaymentMethod.CreditCard => PaymentMethodDto.CreditCard,
+            PaymentMethod.BankTransfer => PaymentMethodDto.BankTransfer,
+            PaymentMethod.Cash => PaymentMethodDto.Cash,
+            PaymentMethod.Check => PaymentMethodDto.Check,
+            PaymentMethod.PayPal => PaymentMethodDto.PayPal,
+            PaymentMethod.Other => PaymentMethodDto.Other,
+            _ => throw new ArgumentOutOfRangeException(nameof(paymentMethod), paymentMethod, "Invalid payment method value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="Payment"/> to a <see cref="GetPaymentDto"/>.
+    /// </summary>
+    public static GetPaymentDto MapToPaymentDto(Payment payment)
+    {
+        ArgumentNullException.ThrowIfNull(payment);
+
+        return new GetPaymentDto
+        {
+            Id = payment.Id,
+            BookingId = payment.BookingId,
+            Amount = payment.Amount,
+            PaymentDate = payment.PaymentDate,
+            Method = MapToPaymentMethodDto(payment.Method),
+            ReferenceNumber = payment.ReferenceNumber,
+            Notes = payment.Notes,
+            RecordedAt = payment.RecordedAt
+        };
+    }
 }

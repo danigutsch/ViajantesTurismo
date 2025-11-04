@@ -74,4 +74,14 @@ public static class ContractConstants
     /// The minimum length for discount reason when discount is applied.
     /// </summary>
     public const int MinDiscountReasonLength = 10;
+
+    /// <summary>
+    /// The maximum length for payment reference numbers.
+    /// </summary>
+    public const int MaxReferenceNumberLength = 128;
+
+    /// <summary>
+    /// The maximum length for payment notes.
+    /// </summary>
+    public const int MaxPaymentNotesLength = 500;
 }

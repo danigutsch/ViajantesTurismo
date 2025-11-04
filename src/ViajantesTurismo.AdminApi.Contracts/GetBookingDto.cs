@@ -52,4 +52,13 @@ public sealed class GetBookingDto
 
     /// <summary>Notes about the booking.</summary>
     public string? Notes { get; init; }
+
+    /// <summary>The payments recorded for this booking.</summary>
+    public required IReadOnlyCollection<GetPaymentDto> Payments { get; init; }
+
+    /// <summary>The total amount paid so far.</summary>
+    public required decimal AmountPaid { get; init; }
+
+    /// <summary>The remaining balance to be paid.</summary>
+    public required decimal RemainingBalance { get; init; }
 }

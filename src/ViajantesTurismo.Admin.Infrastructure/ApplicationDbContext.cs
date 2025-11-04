@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -108,6 +108,28 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
                 discount.Property(d => d.Amount).IsRequired();
                 discount.Property(d => d.Reason).HasMaxLength(ContractConstants.MaxBookingNotesLength);
             });
+
+            entity.HasMany(booking => booking.Payments)
+                .WithOne()
+                .HasForeignKey(payment => payment.BookingId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .Metadata.PrincipalToDependent!.SetField("_payments");
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(payment => payment.Id);
+            entity.Property(payment => payment.Id).ValueGeneratedOnAdd();
+
+            entity.Property(payment => payment.BookingId).IsRequired();
+            entity.Property(payment => payment.Amount).IsRequired();
+            entity.Property(payment => payment.PaymentDate).IsRequired();
+            entity.Property(payment => payment.Method).HasConversion<string>().IsRequired();
+            entity.Property(payment => payment.ReferenceNumber).HasMaxLength(ContractConstants.MaxReferenceNumberLength);
+            entity.Property(payment => payment.Notes).HasMaxLength(ContractConstants.MaxPaymentNotesLength);
+            entity.Property(payment => payment.RecordedAt).IsRequired();
+
+            entity.HasIndex(payment => payment.BookingId);
         });
     }
 }
