@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
@@ -10,11 +11,6 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// </summary>
 public sealed class Discount
 {
-    /// <summary>
-    /// The maximum percentage discount allowed (100%).
-    /// </summary>
-    public const decimal MaxPercentageDiscount = 100m;
-
     private Discount(DiscountType type, decimal amount, string? reason)
     {
         Type = type;
@@ -28,11 +24,6 @@ public sealed class Discount
     {
     }
 #pragma warning restore CS8618
-
-    /// <summary>
-    /// Gets an empty discount (0% discount) to represent no discount.
-    /// </summary>
-    public static Discount Empty => new(DiscountType.Percentage, 0m, null);
 
     /// <summary>
     /// Gets the type of discount (Percentage or Absolute).
@@ -60,6 +51,7 @@ public sealed class Discount
     {
         return Type switch
         {
+            DiscountType.None => 0m,
             DiscountType.Percentage => subtotal * (Amount / 100m),
             DiscountType.Absolute => Amount,
             _ => throw new InvalidOperationException($"Invalid discount type: {Type}")
@@ -68,7 +60,7 @@ public sealed class Discount
 
     /// <summary>
     /// Creates a new discount with validation.
-    /// If type is None, returns Discount.Empty regardless of amount.
+    /// If type is None, returns a discount with 0 amount.
     /// </summary>
     /// <param name="type">The discount type (None, Percentage, or Absolute).</param>
     /// <param name="amount">The discount amount.</param>
@@ -81,7 +73,7 @@ public sealed class Discount
     {
         if (type == DiscountType.None)
         {
-            return Empty;
+            return new Discount(DiscountType.None, 0m, null);
         }
 
         var sanitizedAmount = NumericSanitizer.SanitizePrice(amount);
@@ -99,9 +91,9 @@ public sealed class Discount
             errors.Add(DiscountErrors.NegativeDiscountAmount(sanitizedAmount));
         }
 
-        if (type == DiscountType.Percentage && sanitizedAmount > MaxPercentageDiscount)
+        if (type == DiscountType.Percentage && sanitizedAmount > ContractConstants.MaxDiscountPercentage)
         {
-            errors.Add(DiscountErrors.PercentageExceedsMaximum(sanitizedAmount, MaxPercentageDiscount));
+            errors.Add(DiscountErrors.PercentageExceedsMaximum(sanitizedAmount, ContractConstants.MaxDiscountPercentage));
         }
 
         if (errors.HasErrors)

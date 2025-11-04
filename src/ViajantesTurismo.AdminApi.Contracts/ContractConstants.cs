@@ -59,4 +59,9 @@ public static class ContractConstants
     /// The maximum height value in centimeters for physical information (inclusive).
     /// </summary>
     public const int MaxHeightCm = 300;
+
+    /// <summary>
+    /// The maximum percentage value for discount (100%).
+    /// </summary>
+    public const int MaxDiscountPercentage = 100;
 }

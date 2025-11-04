@@ -142,9 +142,9 @@ internal static class BookingEndpoints
             dto.CompanionCustomerId,
             dto.CompanionBikeType.HasValue ? BookingMapper.MapToBikeType(dto.CompanionBikeType.Value) : null,
             BookingMapper.MapToRoomType(dto.RoomType),
-            DiscountType.None,
-            0m,
-            null,
+            BookingMapper.MapToDiscountType(dto.DiscountType),
+            dto.DiscountAmount,
+            dto.DiscountReason,
             dto.Notes);
 
         if (result.IsFailure)

@@ -29,6 +29,16 @@ public sealed class CreateBookingDto
     [Required]
     public required RoomTypeDto RoomType { get; init; }
 
+    /// <summary>The discount type (None, Percentage, or Absolute).</summary>
+    public DiscountTypeDto DiscountType { get; init; } = DiscountTypeDto.None;
+
+    /// <summary>The discount amount (0-100 for percentage, fixed amount for absolute).</summary>
+    public decimal DiscountAmount { get; init; }
+
+    /// <summary>Optional reason for the discount.</summary>
+    [MaxLength(ContractConstants.MaxBookingNotesLength)]
+    public string? DiscountReason { get; init; }
+
     /// <summary>Optional notes about the booking.</summary>
     [MaxLength(ContractConstants.MaxBookingNotesLength)]
     public string? Notes { get; init; }

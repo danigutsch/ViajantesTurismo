@@ -26,7 +26,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     {
         var principal = CreatePrincipalCustomer(bikePrice);
         var room = Enum.Parse<RoomType>(roomType);
-        bookingContext.Result = Booking.Create(1, basePrice, room, roomCost, principal, null, Discount.Empty, null);
+        bookingContext.Result = Booking.Create(1, basePrice, room, roomCost, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Action = null!;
     }
 
@@ -36,7 +36,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var principal = CreatePrincipalCustomer(principalBikePrice);
         var companion = CreateCompanionCustomer(companionBikePrice);
         var room = Enum.Parse<RoomType>(roomType);
-        bookingContext.Result = Booking.Create(1, basePrice, room, roomCost, principal, companion, Discount.Empty, null);
+        bookingContext.Result = Booking.Create(1, basePrice, room, roomCost, principal, companion, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Action = null!;
     }
 
@@ -44,7 +44,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCreateABookingWithBasePrice(decimal basePrice)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(1, basePrice, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, null);
+        bookingContext.Result = Booking.Create(1, basePrice, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Action = null!;
     }
 
@@ -52,7 +52,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(1, basePrice, RoomType.SingleRoom, roomCost, principal, null, Discount.Empty, null);
+        bookingContext.Result = Booking.Create(1, basePrice, RoomType.SingleRoom, roomCost, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Action = null!;
     }
 
@@ -61,7 +61,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     {
         var principal = CreatePrincipalCustomer();
         var notes = new string('x', length);
-        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, notes);
+        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, notes);
         bookingContext.Action = null!;
     }
 
@@ -70,7 +70,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     {
         var principal = CreatePrincipalCustomer();
         var notes = new string('x', length);
-        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, notes);
+        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, notes);
         bookingContext.Action = null!;
     }
 
@@ -78,7 +78,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenICreateABookingWithNotes(string notes)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, notes);
+        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, notes);
         bookingContext.Action = null!;
     }
 
@@ -86,7 +86,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void GivenABookingExists()
     {
         var principal = CreatePrincipalCustomer();
-        var result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, null);
+        var result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Booking = result.Value;
         bookingContext.Result = result;
         bookingContext.Action = null!;
@@ -96,7 +96,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void GivenABookingExistsWithNotes(string notes)
     {
         var principal = CreatePrincipalCustomer();
-        var result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, notes);
+        var result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, notes);
         bookingContext.Booking = result.Value;
         bookingContext.Result = result;
         bookingContext.Action = null!;
@@ -106,7 +106,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void GivenABookingExistsWithStatus(string status)
     {
         var principal = CreatePrincipalCustomer();
-        var result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Empty, null);
+        var result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Booking = result.Value;
         bookingContext.Result = result;
         bookingContext.Action = null!;
@@ -191,7 +191,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCreateABookingWithInvalidRoomTypeD(int invalidRoomType)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(1, 1000m, (RoomType)invalidRoomType, 0m, principal, null, Discount.Empty, null);
+        bookingContext.Result = Booking.Create(1, 1000m, (RoomType)invalidRoomType, 0m, principal, null, Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.Action = null!;
     }
 

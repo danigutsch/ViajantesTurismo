@@ -79,4 +79,32 @@ public static class BookingMapper
             _ => throw new ArgumentOutOfRangeException(nameof(paymentStatusDto), paymentStatusDto, "Invalid payment status value.")
         };
     }
+
+    /// <summary>
+    /// Maps a <see cref="DiscountTypeDto"/> to a <see cref="DiscountType"/>.
+    /// </summary>
+    public static DiscountType MapToDiscountType(DiscountTypeDto discountTypeDto)
+    {
+        return discountTypeDto switch
+        {
+            DiscountTypeDto.None => DiscountType.None,
+            DiscountTypeDto.Percentage => DiscountType.Percentage,
+            DiscountTypeDto.Absolute => DiscountType.Absolute,
+            _ => throw new ArgumentOutOfRangeException(nameof(discountTypeDto), discountTypeDto, "Invalid discount type value.")
+        };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="DiscountType"/> to a <see cref="DiscountTypeDto"/>.
+    /// </summary>
+    public static DiscountTypeDto MapToDiscountTypeDto(DiscountType discountType)
+    {
+        return discountType switch
+        {
+            DiscountType.None => DiscountTypeDto.None,
+            DiscountType.Percentage => DiscountTypeDto.Percentage,
+            DiscountType.Absolute => DiscountTypeDto.Absolute,
+            _ => throw new ArgumentOutOfRangeException(nameof(discountType), discountType, "Invalid discount type value.")
+        };
+    }
 }

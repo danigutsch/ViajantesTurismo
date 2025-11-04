@@ -41,6 +41,15 @@ public sealed class GetBookingDto
     /// <summary>The total price of the booking.</summary>
     public required decimal TotalPrice { get; init; }
 
+    /// <summary>The discount type applied to this booking.</summary>
+    public required DiscountTypeDto DiscountType { get; init; }
+
+    /// <summary>The discount amount applied to this booking.</summary>
+    public required decimal DiscountAmount { get; init; }
+
+    /// <summary>The reason for the discount, if any.</summary>
+    public string? DiscountReason { get; init; }
+
     /// <summary>Notes about the booking.</summary>
     public string? Notes { get; init; }
 }
