@@ -353,7 +353,6 @@ public sealed class BookingApiTests : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    // Helper methods
     private async Task<GetTourDto> CreateTestTour(string identifier = "CUBA2024", string name = "Cuba Adventure 2024")
     {
         var tourRequest = new CreateTourDto
