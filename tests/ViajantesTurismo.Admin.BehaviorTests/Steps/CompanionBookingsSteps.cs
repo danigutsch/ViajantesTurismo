@@ -215,19 +215,4 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         var tour = tourContext.Tour;
         Assert.Equal(tour.DoubleRoomSupplementPrice, bookingContext.Booking.RoomAdditionalCost);
     }
-
-    [Then(@"the companion should have no bike price")]
-    public void ThenTheCompanionShouldHaveNoBikePrice()
-    {
-        Assert.NotNull(bookingContext.Booking);
-        Assert.NotNull(bookingContext.Booking.CompanionCustomer);
-        Assert.Equal(0m, bookingContext.Booking.CompanionCustomer.BikePrice);
-    }
-
-    [Then(@"the principal should have no bike price")]
-    public void ThenThePrincipalShouldHaveNoBikePrice()
-    {
-        Assert.NotNull(bookingContext.Booking);
-        Assert.Equal(0m, bookingContext.Booking.PrincipalCustomer.BikePrice);
-    }
 }

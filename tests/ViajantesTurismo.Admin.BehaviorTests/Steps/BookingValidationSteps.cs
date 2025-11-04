@@ -49,14 +49,6 @@ public sealed class BookingValidationSteps(
         bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
-    [Then(@"the booking creation should fail with validation error for ""(.*)""")]
-    public void ThenTheBookingCreationShouldFailWithValidationErrorFor(string fieldName)
-    {
-        var result = (Result)bookingContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
-    }
-
     [Then(@"the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {

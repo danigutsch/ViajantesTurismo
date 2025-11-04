@@ -80,21 +80,6 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
         Assert.NotNull(context.AccommodationPreferences);
     }
 
-    [Then(@"the accommodation preferences creation should fail")]
-    public void ThenTheAccommodationPreferencesCreationShouldFail()
-    {
-        Assert.False(context.Result.IsSuccess);
-    }
-
-    [Then(@"the error should be ""(.*)""")]
-    public void ThenTheErrorShouldBe(string expectedError)
-    {
-        Assert.True(context.Result.IsFailure, "Expected failure but got success");
-        var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains(expectedError, allErrors, StringComparer.Ordinal);
-    }
-
     [Then(@"the companion ID should be (\d+)")]
     public void ThenTheCompanionIdShouldBe(int expectedCompanionId)
     {

@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -57,20 +56,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.MedicalInfo = MedicalInfo.Create("Peanuts", "None").Value;
     }
 
-    [Given(@"I have an existing customer")]
-    public void GivenIHaveAnExistingCustomer()
-    {
-        context.Customer = TestHelpers.CreateTestCustomer();
-        context.PersonalInfoResult = Result<PersonalInfo>.Ok(context.Customer.PersonalInfo);
-        context.IdentificationInfoResult = Result<IdentificationInfo>.Ok(context.Customer.IdentificationInfo);
-        context.ContactInfoResult = Result<ContactInfo>.Ok(context.Customer.ContactInfo);
-        context.AddressResult = Result<Address>.Ok(context.Customer.Address);
-        context.PhysicalInfo = context.Customer.PhysicalInfo;
-        context.AccommodationPreferences = context.Customer.AccommodationPreferences;
-        context.EmergencyContactResult = Result<EmergencyContact>.Ok(context.Customer.EmergencyContact);
-        context.MedicalInfo = context.Customer.MedicalInfo;
-    }
-
     [When(@"I create a customer")]
     public void WhenICreateACustomer()
     {
@@ -94,79 +79,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             context.MedicalInfo);
     }
 
-    [When(@"I update the customer with new personal information")]
-    public void WhenIUpdateTheCustomerWithNewPersonalInformation()
-    {
-        var newPersonalInfo = PersonalInfo.Create(
-            "Jane",
-            "Doe",
-            "Female",
-            new DateTime(1985, 3, 20),
-            "Canadian",
-            "Designer",
-            TimeProvider.System);
-
-        context.Customer.UpdatePersonalInfo(newPersonalInfo.Value);
-        context.PersonalInfoResult = newPersonalInfo;
-    }
-
-    [When(@"I update the customer with new identification information")]
-    public void WhenIUpdateTheCustomerWithNewIdentificationInformation()
-    {
-        var newIdentificationInfo = IdentificationInfo.Create("987654321", "Canadian");
-        context.Customer.UpdateIdentificationInfo(newIdentificationInfo.Value
-        );
-        context.IdentificationInfoResult = newIdentificationInfo;
-    }
-
-    [When(@"I update the customer with new contact information")]
-    public void WhenIUpdateTheCustomerWithNewContactInformation()
-    {
-        var newContactInfo = ContactInfo.Create("jane.doe@example.com", "+9876543210", "@janedoe", null);
-        context.Customer.UpdateContactInfo(newContactInfo.Value);
-        context.ContactInfoResult = newContactInfo;
-    }
-
-    [When(@"I update the customer with new address")]
-    public void WhenIUpdateTheCustomerWithNewAddress()
-    {
-        var newAddress = Address.Create("456 Oak Avenue", "Suite 100", "Uptown", "54321", "Toronto", "ON", "Canada");
-        context.Customer.UpdateAddress(newAddress.Value);
-        context.AddressResult = newAddress;
-    }
-
-    [When(@"I update the customer with new physical information")]
-    public void WhenIUpdateTheCustomerWithNewPhysicalInformation()
-    {
-        var newPhysicalInfo = PhysicalInfo.Create(68m, 165, BikeType.EBike).Value;
-        context.Customer.UpdatePhysicalInfo(newPhysicalInfo);
-        context.PhysicalInfo = newPhysicalInfo;
-    }
-
-    [When(@"I update the customer with new accommodation preferences")]
-    public void WhenIUpdateTheCustomerWithNewAccommodationPreferences()
-    {
-        var newAccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, 5).Value;
-        context.Customer.UpdateAccommodationPreferences(newAccommodationPreferences);
-        context.AccommodationPreferences = newAccommodationPreferences;
-    }
-
-    [When(@"I update the customer with new emergency contact")]
-    public void WhenIUpdateTheCustomerWithNewEmergencyContact()
-    {
-        var newEmergencyContact = EmergencyContact.Create("Bob Doe", "+5555555555");
-        context.Customer.UpdateEmergencyContact(newEmergencyContact.Value);
-        context.EmergencyContactResult = newEmergencyContact;
-    }
-
-    [When(@"I update the customer with new medical information")]
-    public void WhenIUpdateTheCustomerWithNewMedicalInformation()
-    {
-        var newMedicalInfo = MedicalInfo.Create("Lactose", "Requires medication").Value;
-        context.Customer.UpdateMedicalInfo(newMedicalInfo);
-        context.MedicalInfo = newMedicalInfo;
-    }
-
     [Then(@"the customer should be created successfully")]
     public void ThenTheCustomerShouldBeCreatedSuccessfully()
     {
@@ -187,64 +99,8 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         Assert.Equal(context.MedicalInfo, context.Customer.MedicalInfo);
     }
 
-    [Then(@"the customer personal information should be updated")]
-    public void ThenTheCustomerPersonalInformationShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.PersonalInfo, context.Customer.PersonalInfo);
-    }
-
-    [Then(@"the customer identification information should be updated")]
-    public void ThenTheCustomerIdentificationInformationShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.IdentificationInfo, context.Customer.IdentificationInfo);
-    }
-
-    [Then(@"the customer contact information should be updated")]
-    public void ThenTheCustomerContactInformationShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.ContactInfo, context.Customer.ContactInfo);
-    }
-
-    [Then(@"the customer address should be updated")]
-    public void ThenTheCustomerAddressShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.Address, context.Customer.Address);
-    }
-
-    [Then(@"the customer physical information should be updated")]
-    public void ThenTheCustomerPhysicalInformationShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.PhysicalInfo, context.Customer.PhysicalInfo);
-    }
-
-    [Then(@"the customer accommodation preferences should be updated")]
-    public void ThenTheCustomerAccommodationPreferencesShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.AccommodationPreferences, context.Customer.AccommodationPreferences);
-    }
-
-    [Then(@"the customer emergency contact should be updated")]
-    public void ThenTheCustomerEmergencyContactShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.EmergencyContact, context.Customer.EmergencyContact);
-    }
-
-    [Then(@"the customer medical information should be updated")]
-    public void ThenTheCustomerMedicalInformationShouldBeUpdated()
-    {
-        Assert.NotNull(context.Customer);
-        Assert.Equal(context.MedicalInfo, context.Customer.MedicalInfo);
-    }
-
     [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]
-    public void GivenIHavePersonalInformationForSanitizationWithFirstNameAndLastName(string firstName, string lastName)
+    public void GivenIHavePersonalInformationForSanitizationWithFirstName(string firstName, string lastName)
     {
         context.PersonalInfoResult = PersonalInfo.Create(
             firstName,

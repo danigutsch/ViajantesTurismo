@@ -22,12 +22,6 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
         Assert.Equal(expected, context.Booking.Status);
     }
 
-    [Then(@"the booking price should be (.*)")]
-    public void ThenTheBookingPriceShouldBe(decimal expectedPrice)
-    {
-        Assert.Equal(expectedPrice, context.Booking.TotalPrice);
-    }
-
     [Then(@"the booking notes should be ""(.*)""")]
     public void ThenTheBookingNotesShouldBe(string expectedNotes)
     {
@@ -45,27 +39,6 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     {
         var expected = TestHelpers.ParsePaymentStatus(expectedStatusString);
         Assert.Equal(expected, context.Booking.PaymentStatus);
-    }
-
-    [Then(@"the operation should fail with message ""(.*)""")]
-    public void ThenTheOperationShouldFailWithMessage(string expectedMessage)
-    {
-        var exception = Assert.ThrowsAny<Exception>(context.Action);
-        Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
-    }
-
-    [Then(@"the operation should fail with argument exception ""(.*)""")]
-    public void ThenTheOperationShouldFailWithArgumentException(string expectedMessage)
-    {
-        var exception = Assert.Throws<ArgumentException>(context.Action);
-        Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
-    }
-
-    [Then(@"the operation should fail with invalid operation exception ""(.*)""")]
-    public void ThenTheOperationShouldFailWithInvalidOperationException(string expectedMessage)
-    {
-        var exception = Assert.Throws<InvalidOperationException>(context.Action);
-        Assert.Contains(expectedMessage, exception.Message, StringComparison.Ordinal);
     }
 
     [Then(@"the result should fail with message ""(.*)""")]

@@ -22,20 +22,6 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         }
     }
 
-    [When(@"I create contact info with email ""([^""]*)"" and mobile ""([^""]*)"" and instagram ""([^""]*)"" and facebook ""([^""]*)""")]
-    public void WhenICreateContactInfoWithEmailAndInstagram(string email, string mobile, string instagram, string facebook)
-    {
-        context.Email = email;
-        context.Mobile = mobile;
-        context.Instagram = instagram;
-        context.Facebook = facebook;
-        context.Result = ContactInfo.Create(email, mobile, instagram, facebook);
-        if (context.Result.IsSuccess)
-        {
-            context.ContactInfo = context.Result.Value;
-        }
-    }
-
     [When(@"I create contact info with email ""([^""]*)""")]
     public void WhenICreateContactInfoWithEmail(string email)
     {
@@ -207,12 +193,6 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
     public void ThenTheInstagramShouldBeNull()
     {
         Assert.Null(context.ContactInfo.Instagram);
-    }
-
-    [Then(@"the facebook should be ""(.*)""")]
-    public void ThenTheFacebookShouldBe(string expectedFacebook)
-    {
-        Assert.Equal(expectedFacebook, context.ContactInfo.Facebook);
     }
 
     [Then(@"the facebook should be null")]

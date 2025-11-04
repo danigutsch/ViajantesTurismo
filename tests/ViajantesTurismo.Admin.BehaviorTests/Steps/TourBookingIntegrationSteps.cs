@@ -66,15 +66,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
     }
 
-    [Given(@"a tour exists with a booking priced at (.*)")]
-    public void GivenATourExistsWithABookingPricedAt(decimal price)
-    {
-        tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
-        Assert.True(result.IsSuccess);
-        bookingContext.Booking = result.Value;
-    }
-
     [Given(@"a tour exists with a booking")]
     public void GivenATourExistsWithABooking()
     {
@@ -91,16 +82,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, notes);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
-    }
-
-    [Given(@"a tour exists with a pending booking priced at (.*)")]
-    public void GivenATourExistsWithAPendingBookingPricedAt(decimal price)
-    {
-        tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
-        Assert.True(result.IsSuccess);
-        bookingContext.Booking = result.Value;
-        Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [When(@"I add a booking for the customer to the tour with price (.*)")]

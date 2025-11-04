@@ -17,36 +17,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.EndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
     }
 
-    [Given(@"an existing tour with dates from ""(.*)"" to ""(.*)""")]
-    public void GivenAnExistingTourWithDatesFromTo(string startDateString, string endDateString)
-    {
-        tourContext.StartDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.EndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.Tour = TestHelpers.CreateTestTourWithDates(tourContext.StartDate, tourContext.EndDate);
-    }
-
-    [Given(@"an existing tour with identifier ""(.*)"" and name ""(.*)""")]
-    public void GivenAnExistingTourWithIdentifierAndName(string identifier, string name)
-    {
-        tourContext.Tour = TestHelpers.CreateTestTourWithIdentifierAndName(identifier, name);
-    }
-
-    [Given(@"an existing tour with base price (.*)")]
-    public void GivenAnExistingTourWithBasePrice(decimal price)
-    {
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: price,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"]).Value;
-    }
-
     [Given(@"an existing tour with services ""(.*)""")]
     public void GivenAnExistingTourWithServices(string servicesString)
     {
@@ -62,29 +32,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,
             includedServices: services).Value;
-    }
-
-    [Given(@"an existing tour with currency ""(.*)""")]
-    public void GivenAnExistingTourWithCurrency(string currencyCode)
-    {
-        var currency = TestHelpers.ParseCurrency(currencyCode);
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: currency,
-            includedServices: ["Hotel", "Breakfast"]).Value;
-    }
-
-    [Given(@"an existing tour")]
-    public void GivenAnExistingTour()
-    {
-        tourContext.Tour = TestHelpers.CreateTestTour();
     }
 
     [Given(@"I have tour details with identifier ""(.*)"" and name ""(.*)""")]
@@ -221,34 +168,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
         }
     }
 
-    [When(@"I update the schedule to ""(.*)"" to ""(.*)""")]
-    public void WhenIUpdateTheScheduleToTo(string startDateString, string endDateString)
-    {
-        var newStartDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        var newEndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-
-        tourContext.Result = tourContext.Tour.UpdateSchedule(newStartDate, newEndDate);
-
-        (tourContext.StartDate, tourContext.EndDate) = tourContext.Result is Result { IsSuccess: true } ? (newStartDate, newEndDate) : (tourContext.StartDate, tourContext.EndDate);
-    }
-
-    [When(@"I try to update the schedule to ""(.*)"" to ""(.*)""")]
-    public void WhenITryToUpdateTheScheduleToTo(string startDateString, string endDateString)
-    {
-        var newStartDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        var newEndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-
-        tourContext.Result = tourContext.Tour.UpdateSchedule(newStartDate, newEndDate);
-    }
-
-    [When(@"I update the identifier to ""(.*)"" and name to ""(.*)""")]
-    public void WhenIUpdateTheIdentifierToAndNameTo(string newIdentifier, string newName)
-    {
-        tourContext.Tour.UpdateDetails(newIdentifier, newName);
-    }
-
-    // Note: Ambiguous binding removed - use TourUpdateBasePriceSteps for base price updates in isolated scenarios
-
     [When(@"I update the services to ""(.*)""")]
     public void WhenIUpdateTheServicesTo(string servicesString)
     {
@@ -256,69 +175,10 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour.UpdateIncludedServices(services);
     }
 
-    [When(@"I update pricing with single room (.*), regular bike (.*), e-bike (.*)")]
-    public void WhenIUpdatePricingWithBaseSingleRoomRegularBikeEBike(
-        decimal singleRoom,
-        decimal regularBike,
-        decimal eBike)
-    {
-        tourContext.Result = tourContext.Tour.UpdatePricing(singleRoom, regularBike, eBike, Currency.UsDollar);
-    }
-
-    [When(@"I try to update the base price to (.*)")]
-    public void WhenITryToUpdateTheBasePriceTo(decimal newPrice)
-    {
-        tourContext.Result = tourContext.Tour.UpdateBasePrice(newPrice);
-    }
-
-    [When(@"I try to update the identifier to ""(.*)"" and name to ""(.*)""")]
-    public void WhenITryToUpdateTheIdentifierToAndNameTo(string newIdentifier, string newName)
-    {
-        tourContext.Result = tourContext.Tour.UpdateDetails(newIdentifier, newName);
-    }
-
-    [When(@"I try to update the identifier to a string longer than 128 characters")]
-    public void WhenITryToUpdateTheIdentifierToAStringLongerThan128Characters()
-    {
-        var longIdentifier = new string('A', 129);
-        tourContext.Result = tourContext.Tour.UpdateDetails(longIdentifier, "Valid Name");
-    }
-
-    [When(@"I try to update the name to a string longer than 128 characters")]
-    public void WhenITryToUpdateTheNameToAStringLongerThan128Characters()
-    {
-        var longName = new string('A', 129);
-        tourContext.Result = tourContext.Tour.UpdateDetails("VALID2024", longName);
-    }
-
-    [When(@"I try to update pricing with single room (.*)")]
-    public void WhenITryToUpdatePricingWithSingleRoom(decimal singleRoom)
-    {
-        tourContext.Result = tourContext.Tour.UpdatePricing(singleRoom, 100.00m, 200.00m, Currency.UsDollar);
-    }
-
-    [When(@"I try to update pricing with regular bike (.*)")]
-    public void WhenITryToUpdatePricingWithRegularBike(decimal regularBike)
-    {
-        tourContext.Result = tourContext.Tour.UpdatePricing(500.00m, regularBike, 200.00m, Currency.UsDollar);
-    }
-
-    [When(@"I try to update pricing with e-bike (.*)")]
-    public void WhenITryToUpdatePricingWithEBike(decimal eBike)
-    {
-        tourContext.Result = tourContext.Tour.UpdatePricing(500.00m, 100.00m, eBike, Currency.UsDollar);
-    }
-
     [Then(@"the tour should be created successfully")]
     public void ThenTheTourShouldBeCreatedSuccessfully()
     {
         Assert.NotNull(tourContext.Tour);
-    }
-
-    [Then(@"the tour creation should fail with message ""(.*)""")]
-    public static void ThenTheTourCreationShouldFailWithMessage(string expectedMessage)
-    {
-        Assert.Fail("This assertion step needs to be updated to work with Result pattern");
     }
 
     [Then(@"the tour creation should fail with argument exception ""(.*)""")]
@@ -344,16 +204,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
         }
 
         Assert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details or validation errors.");
-    }
-
-    [Then(@"the tour dates should be ""(.*)"" to ""(.*)""")]
-    public void ThenTheTourDatesShouldBeTo(string expectedStartString, string expectedEndString)
-    {
-        var expectedStart = DateTime.Parse(expectedStartString, CultureInfo.InvariantCulture).ToUniversalTime();
-        var expectedEnd = DateTime.Parse(expectedEndString, CultureInfo.InvariantCulture).ToUniversalTime();
-
-        Assert.Equal(expectedStart, tourContext.Tour.StartDate);
-        Assert.Equal(expectedEnd, tourContext.Tour.EndDate);
     }
 
     [Then(@"the tour identifier should be ""(.*)""")]
@@ -386,59 +236,12 @@ public sealed class TourManagementSteps(TourContext tourContext)
         }
     }
 
-    [Then(@"the tour currency should be ""(.*)""")]
-    public void ThenTheTourCurrencyShouldBe(string currencyCode)
-    {
-        var expectedCurrency = TestHelpers.ParseCurrency(currencyCode);
-        Assert.Equal(expectedCurrency, tourContext.Tour.Currency);
-    }
-
-    [Then(@"the tour pricing should reflect all updates")]
-    public void ThenTheTourPricingShouldReflectAllUpdates()
-    {
-        Assert.Equal(600.00m, tourContext.Tour.DoubleRoomSupplementPrice);
-        Assert.Equal(150.00m, tourContext.Tour.RegularBikePrice);
-        Assert.Equal(250.00m, tourContext.Tour.EBikePrice);
-    }
-
     [Then(@"the tour creation should fail with validation error for ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithValidationErrorFor(string fieldName)
     {
         Assert.NotNull(tourContext.Result);
         Assert.IsType<Result<Tour>>(tourContext.Result);
         var result = (Result<Tour>)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
-    }
-
-    [Then(@"the schedule update should fail with validation error for ""(.*)""")]
-    public void ThenTheScheduleUpdateShouldFailWithValidationErrorFor(string fieldName)
-    {
-        Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result>(tourContext.Result);
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
-    }
-
-    [Then(@"the tour price update should fail")]
-    public void ThenTheTourPriceUpdateShouldFail()
-    {
-        var result = tourContext.Result switch
-        {
-            Result r => r,
-            Result<Tour> rt => rt.ToResult(),
-            _ => throw new InvalidOperationException("Result is not set")
-        };
-        Assert.False(result.IsSuccess);
-    }
-
-    [Then(@"the basic info update should fail with validation error for ""(.*)""")]
-    public void ThenTheBasicInfoUpdateShouldFailWithValidationErrorFor(string fieldName)
-    {
-        Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result>(tourContext.Result);
-        var result = (Result)tourContext.Result;
         Assert.False(result.IsSuccess);
         Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
@@ -470,15 +273,5 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
-    }
-
-    [Then(@"the pricing update should fail with validation error for ""(.*)""")]
-    public void ThenThePricingUpdateShouldFailWithValidationErrorFor(string fieldName)
-    {
-        Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result>(tourContext.Result);
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
     }
 }
