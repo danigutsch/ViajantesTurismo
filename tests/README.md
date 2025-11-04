@@ -59,6 +59,29 @@ dotnet test tests/ViajantesTurismo.Admin.UnitTests
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
+### Running Tests with Coverage
+
+To run tests and generate a code coverage report:
+
+```powershell
+# Run tests with coverage collection
+dotnet test --collect:"XPlat Code Coverage" --results-directory:TestResults
+
+# Generate HTML coverage report
+dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
+
+# Open the report (Windows)
+Invoke-Item TestResults\CoverageReport\index.html
+```
+
+The coverage report provides detailed insights into:
+- Line and branch coverage percentages
+- Uncovered code sections
+- Coverage by project and class
+- Historical coverage trends
+
+**Note:** The `dotnet reportgenerator` tool is included in the repository's local tool manifest (`.config/dotnet-tools.json`). Run `dotnet tool restore` from the repository root to ensure it's installed.
+
 ## Best Practices
 
 ### Unit Tests

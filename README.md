@@ -1,6 +1,6 @@
 # ViajantesTurismo 🚴‍♂️🌍
 
-A modern tourism agency application specializing in group bike tours around the world.
+A modern tourism agency application specialising in group bike tours around the world.
 
 ## Overview
 
@@ -17,7 +17,7 @@ powerful tools to create and manage tour packages.
     - Optional companion for shared accommodations
     - Bike type selection (Regular/E-bike) with customer preference pre-population
   - Domain-driven operations: Confirm, Cancel, Complete bookings
-    - Update booking notes through dedicated endpoint
+      - Update booking notes through a dedicated endpoint
     - Track booking status and payment status
     - Automatic total price calculation (transparent, consistent)
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
@@ -27,8 +27,8 @@ powerful tools to create and manage tour packages.
     - Double room supplement for larger accommodations
     - Regular bike and E-bike rental pricing
     - Calculated total price (transparent, consistent)
-- **Service Packages**: Customizable included services (hotels, meals, guided tours, etc.)
-- **RESTful API**: Modern API-first architecture with behavior-driven endpoints
+- **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
+- **RESTful API**: Modern API-first architecture with behaviour-driven endpoints
 - **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
 
 ## Technology Stack
@@ -179,12 +179,35 @@ This project uses a .NET tool manifest (`.config/dotnet-tools.json`) to manage l
 included:
 
 - **dotnet-ef** - Entity Framework Core command-line tools for migrations and database management
+- **dotnet-reportgenerator-globaltool** - Code coverage report generator for analyzing test coverage
 
 After cloning the repository, restore the tools with:
 
 ```powershell
 dotnet tool restore
 ```
+
+### Running Tests with Coverage
+
+To run tests and generate a code coverage report:
+
+```powershell
+# Run tests with coverage collection
+dotnet test --collect:"XPlat Code Coverage" --results-directory:TestResults
+
+# Generate HTML coverage report
+dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
+
+# Open the report (Windows)
+Invoke-Item TestResults\CoverageReport\index.html
+```
+
+The coverage report provides detailed insights into:
+
+- Line and branch coverage percentages
+- Uncovered code sections
+- Coverage by project and class
+- Historical coverage trends
 
 ### Building the Solution
 
