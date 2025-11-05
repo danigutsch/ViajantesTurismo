@@ -255,6 +255,356 @@ This provides:
 - **Domain Events**: Fine-grained events for each business operation
 - **Type Safety**: Invalid operations prevented at compile time
 
+## Value Objects
+
+**Value Objects** are immutable objects defined by their attributes rather than identity. Two value objects with the
+same attributes are considered equal.
+
+### Characteristics
+
+- **Immutable**: State cannot change after creation
+- **Equality by value**: Compared by attributes, not identity
+- **No identity**: Don't have unique identifiers
+- **Side-effect free**: Operations return new instances
+
+### Implementation Pattern
+
+Inherit from `ValueObject` base class and implement `GetEqualityComponents()`:
+
+```csharp
+public sealed class DateRange : ValueObject
+{
+    public DateTime StartDate { get; }
+    public DateTime EndDate { get; }
+
+    public DateRange(DateTime startDate, DateTime endDate)
+    {
+        StartDate = startDate;
+        EndDate = endDate;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return StartDate;
+        yield return EndDate;
+    }
+}
+```
+
+### When to Use Value Objects
+
+Use value objects for:
+
+- **Complex domain concepts**: Money, Address, ContactInfo, PhysicalInfo
+- **Related attributes**: DateRange (start/end), TourPricing (multiple prices)
+- **Validation**: Encapsulate validation logic within the value object
+- **Reducing parameter lists**: Group related parameters into value objects
+
+✅ **Good - Value object groups related data:**
+
+```csharp
+public static Result<Tour> Create(
+    string identifier,
+    string name,
+    DateRange schedule,
+    TourPricing pricing,
+    TourCapacity capacity,
+    string[] includedServices)
+{
+    // 6 parameters instead of 12
+}
+```
+
+❌ **Avoid - Primitive obsession:**
+
+```csharp
+public static Result<Tour> Create(
+    string identifier,
+    string name,
+    DateTime startDate,
+    DateTime endDate,
+    decimal price,
+    decimal doubleRoomSupplementPrice,
+    decimal regularBikePrice,
+    decimal eBikePrice,
+    Currency currency,
+    int minCustomers,
+    int maxCustomers,
+    string[] includedServices)
+{
+    // 12 parameters - hard to read and maintain
+}
+```
+
+### Validation in Value Objects
+
+Value objects should validate their own invariants:
+
+```csharp
+public sealed class DateRange : ValueObject
+{
+    public DateTime StartDate { get; }
+    public DateTime EndDate { get; }
+
+    public static Result<DateRange> Create(DateTime startDate, DateTime endDate)
+    {
+        if (endDate <= startDate)
+        {
+            return Result<DateRange>.Invalid(
+                "End date must be after start date.",
+                field: "schedule",
+                message: "End date must be after start date.");
+        }
+
+        return new DateRange(startDate, endDate);
+    }
+
+    private DateRange(DateTime startDate, DateTime endDate)
+    {
+        StartDate = startDate;
+        EndDate = endDate;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return StartDate;
+        yield return EndDate;
+    }
+}
+```
+
+## Factory Method Pattern
+
+**Use static factory methods instead of public constructors for entities and value objects.**
+
+### Benefits
+
+- **Validation before construction**: Ensures objects are always in valid state
+- **Explicit error handling**: Returns `Result<T>` instead of throwing exceptions
+- **Encapsulation**: Private constructor prevents direct instantiation
+- **EF Core compatibility**: Parameterless constructor for ORM
+
+### Pattern
+
+```csharp
+public sealed class Tour : Entity<int>
+{
+    // Public factory method
+    public static Result<Tour> Create(
+        string identifier,
+        string name,
+        DateRange schedule,
+        TourPricing pricing,
+        TourCapacity capacity,
+        string[] includedServices)
+    {
+        // Validation logic
+        var errors = new ValidationErrors();
+        
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            errors.Add(TourErrors.EmptyIdentifier());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<Tour>();
+        }
+
+        // Construction only after validation
+        return new Tour(identifier, name, schedule, pricing, capacity, includedServices);
+    }
+
+    // Private constructor for valid construction
+    private Tour(string identifier, string name, ...)
+    {
+        Identifier = identifier;
+        Name = name;
+        // ...
+    }
+
+    // Parameterless constructor for EF Core
+    [UsedImplicitly]
+    private Tour() { }
+}
+```
+
+## Aggregate Pattern
+
+**Aggregates** are clusters of domain objects treated as a single unit for data changes. One entity is the **aggregate
+root**, and all operations on the aggregate go through the root.
+
+### Principles
+
+- **Aggregate root**: Single entry point for modifications (e.g., `Tour`)
+- **Consistency boundary**: Root enforces invariants for entire aggregate
+- **Internal entities**: Cannot be accessed or modified directly (e.g., `Booking`)
+- **Transactional consistency**: Changes to aggregate are atomic
+
+### Implementation
+
+```csharp
+// Tour is the aggregate root
+public sealed class Tour : Entity<int>
+{
+    private readonly List<Booking> _bookings = [];
+    
+    // Read-only access to internal entities
+    public IReadOnlyList<Booking> Bookings => _bookings;
+
+    // All modifications go through aggregate root
+    public Result<Booking> AddBooking(...)
+    {
+        // Validation and business rules
+        if (CurrentCustomerCount >= MaxCustomers)
+        {
+            return TourErrors.TourFullyBooked(MaxCustomers, CurrentCustomerCount);
+        }
+
+        var booking = new Booking(...);
+        _bookings.Add(booking);
+        return booking;
+    }
+
+    public Result ConfirmBooking(long bookingId)
+    {
+        var booking = GetBooking(bookingId);
+        return booking.Confirm();
+    }
+}
+
+// Booking is an internal entity
+public sealed class Booking : Entity<long>
+{
+    // Internal modifier prevents external access
+    internal void Confirm() { ... }
+}
+```
+
+✅ **Good - Through aggregate root:**
+
+```csharp
+var result = tour.AddBooking(customerId, bikeType, ...);
+tour.ConfirmBooking(bookingId);
+tour.RecordPayment(bookingId, amount, ...);
+```
+
+❌ **Avoid - Direct entity manipulation:**
+
+```csharp
+// Cannot compile - Confirm() is internal
+booking.Confirm();
+
+// Cannot compile - no public constructor
+var booking = new Booking(...);
+tour.Bookings.Add(booking);
+```
+
+## Encapsulation Best Practices
+
+### Private Setters
+
+**Use private setters to prevent external state mutation.**
+
+✅ **Good:**
+
+```csharp
+public sealed class Tour : Entity<int>
+{
+    public string Name { get; private set; }
+    public decimal Price { get; private set; }
+
+    public void UpdateName(string name)
+    {
+        // Validation logic
+        Name = name;
+    }
+
+    public void UpdatePrice(decimal price)
+    {
+        // Validation and business rules
+        Price = price;
+    }
+}
+```
+
+❌ **Avoid:**
+
+```csharp
+public sealed class Tour : Entity<int>
+{
+    public string Name { get; set; }  // Public setter bypasses validation
+    public decimal Price { get; set; }  // No business rule enforcement
+}
+```
+
+### Expose Collections as Read-Only
+
+**Never expose mutable collections directly.**
+
+✅ **Good:**
+
+```csharp
+public sealed class Tour : Entity<int>
+{
+    private readonly List<Booking> _bookings = [];
+    
+    // Read-only view
+    public IReadOnlyList<Booking> Bookings => _bookings;
+
+    // Controlled modification
+    public Result<Booking> AddBooking(...)
+    {
+        var booking = new Booking(...);
+        _bookings.Add(booking);
+        return booking;
+    }
+}
+```
+
+❌ **Avoid:**
+
+```csharp
+public sealed class Tour : Entity<int>
+{
+    // Allows external code to modify collection directly
+    public List<Booking> Bookings { get; set; } = [];
+}
+```
+
+### Immutable Value Objects
+
+**Value objects should be immutable with no setters.**
+
+✅ **Good:**
+
+```csharp
+public sealed class ContactInfo : ValueObject
+{
+    public string Email { get; }  // No setter
+    public string Mobile { get; }
+
+    public ContactInfo(string email, string mobile)
+    {
+        Email = email;
+        Mobile = mobile;
+    }
+
+    // Return new instance for changes
+    public ContactInfo WithEmail(string email) => new(email, Mobile);
+}
+```
+
+❌ **Avoid:**
+
+```csharp
+public sealed class ContactInfo : ValueObject
+{
+    public string Email { get; set; }  // Mutable - breaks value object contract
+    public string Mobile { get; set; }
+}
+```
+
 ## Code Comments
 
 **Avoid comments in source code and tests.** Comments should only be added if absolutely necessary.

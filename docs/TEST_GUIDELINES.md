@@ -14,11 +14,15 @@ Tests for domain logic: entities, aggregates, mappers, business rules. Fast (< 2
 
 ### `ViajantesTurismo.Admin.IntegrationTests`
 
-Tests for API endpoints with real PostgreSQL database. Slower (~24s), tests complete request-response cycle.
+Tests for API endpoints with real PostgreSQL database. Slower (~24s currently), tests complete request-response cycle.
 
 ### `ViajantesTurismo.Admin.BehaviorTests`
 
-Behavior-driven tests using Gherkin/SpecFlow. Medium speed (~3s), written in business language.
+Behavior-driven tests using Gherkin/SpecFlow for backend domain scenarios. Currently fast (~3s), written in business
+language.
+
+**Note:** Future frontend integration/end-to-end tests may be added as behavior tests, which would increase execution
+time as they test the full stack including UI.
 
 ## Test Naming Conventions
 
@@ -135,7 +139,8 @@ public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception(
 
 ### FIRST Principles
 
-- **Fast**: Unit tests < 100ms, Integration < 5s, Behavior < 10s
+- **Fast**: Unit tests < 100ms, Integration ~24s (includes database setup), Behavior < 10s (frontend E2E tests when
+  added will be slower)
 - **Independent**: Tests run in any order without shared state
 - **Repeatable**: Same result every time (use `FakeTimeProvider` instead of `DateTime.UtcNow`)
 - **Self-Validating**: Clear pass/fail without manual inspection
