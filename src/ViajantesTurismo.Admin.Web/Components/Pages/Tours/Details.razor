@@ -77,6 +77,32 @@ else if (_tour != null)
                         <dt class="col-sm-6">E-Bike Price:</dt>
                         <dd class="col-sm-6">@FormatPrice(_tour.EBikePrice, _tour.Currency)</dd>
                     </dl>
+
+                    <h5 class="mt-4">Capacity</h5>
+                    <dl class="row">
+                        <dt class="col-sm-6">Minimum Customers:</dt>
+                        <dd class="col-sm-6">@_tour.MinCustomers</dd>
+
+                        <dt class="col-sm-6">Maximum Customers:</dt>
+                        <dd class="col-sm-6">@_tour.MaxCustomers</dd>
+
+                        <dt class="col-sm-6">Current Bookings:</dt>
+                        <dd class="col-sm-6">
+                            @_tour.CurrentCustomerCount / @_tour.MaxCustomers customers
+                            @if (IsFullyBooked(_tour))
+                            {
+                                <span class="badge bg-danger ms-2">Fully Booked</span>
+                            }
+                            else if (IsBelowMinimum(_tour))
+                            {
+                                <span class="badge bg-warning ms-2">Below Minimum</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success ms-2">@GetAvailableSpots(_tour) spots available</span>
+                            }
+                        </dd>
+                    </dl>
                 </div>
             </div>
 
@@ -519,5 +545,11 @@ else if (_tour != null)
         };
         return $"{symbol}{price:N2}";
     }
+
+    private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
+
+    private static bool IsBelowMinimum(GetTourDto tour) => tour.CurrentCustomerCount < tour.MinCustomers;
+
+    private static int GetAvailableSpots(GetTourDto tour) => tour.MaxCustomers - tour.CurrentCustomerCount;
 
 }

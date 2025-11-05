@@ -93,6 +93,19 @@
                    placeholder="e.g., Hotel, Breakfast, City Tour"/>
     </div>
 
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="minCustomers" class="form-label">Minimum Customers</label>
+            <InputNumber id="minCustomers" class="form-control" @bind-Value="_model.MinCustomers"/>
+            <div class="form-text">Minimum number of customers required (1-20)</div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="maxCustomers" class="form-label">Maximum Customers</label>
+            <InputNumber id="maxCustomers" class="form-control" @bind-Value="_model.MaxCustomers"/>
+            <div class="form-text">Maximum number of customers allowed (1-20)</div>
+        </div>
+    </div>
+
     <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
         @if (_isSubmitting)
         {
