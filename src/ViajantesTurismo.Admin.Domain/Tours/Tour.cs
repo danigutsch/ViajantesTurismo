@@ -104,7 +104,7 @@ public sealed class Tour : Entity<int>
     public int MaxCustomers { get; private set; }
 
     /// <summary>
-    /// Gets the current count of customers across all confirmed bookings (principal + companions).
+    /// Gets the current count of customers across all confirmed bookings (principal and companions).
     /// </summary>
     public int CurrentCustomerCount =>
         _bookings
@@ -177,7 +177,7 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
         }
 
-        if (schedule.DurationDays <= ContractConstants.MinimumTourDurationDays)
+        if (schedule.DurationDays < ContractConstants.MinimumTourDurationDays)
         {
             errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, schedule.DurationDays));
         }
@@ -254,7 +254,7 @@ public sealed class Tour : Entity<int>
         else
         {
             var duration = (endDate - startDate).TotalDays;
-            if (duration <= ContractConstants.MinimumTourDurationDays)
+            if (duration < ContractConstants.MinimumTourDurationDays)
             {
                 errors.Add(TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, duration));
             }

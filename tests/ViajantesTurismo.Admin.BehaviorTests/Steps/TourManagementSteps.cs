@@ -19,6 +19,14 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.EndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
     }
 
+    [Given(@"I have UTC tour dates from ""(.*)"" to ""(.*)""")]
+    public void GivenIHaveUtcTourDatesFromTo(string startDateString, string endDateString)
+    {
+        ContextHelpers.SetupValidTour(tourContext);
+        tourContext.StartDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+        tourContext.EndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+    }
+
     [Given(@"an existing tour with services ""(.*)""")]
     public void GivenAnExistingTourWithServices(string servicesString)
     {
@@ -310,5 +318,45 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
+    }
+
+    [Then(@"the tour should preserve UTC time zone")]
+    public void ThenTheTourShouldPreserveUtcTimeZone()
+    {
+        Assert.NotNull(tourContext.Tour);
+        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.StartDate.Kind);
+        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.EndDate.Kind);
+    }
+
+    [Then(@"the tour duration should be greater than (.*) days")]
+    public void ThenTheTourDurationShouldBeGreaterThanDays(int days)
+    {
+        Assert.NotNull(tourContext.Tour);
+        var duration = (tourContext.Tour.EndDate - tourContext.Tour.StartDate).TotalDays;
+        Assert.True(duration > days, $"Expected duration greater than {days} days but got {duration}");
+    }
+
+    [Then(@"the tour duration should be (.*) days")]
+    public void ThenTheTourDurationShouldBeDays(int expectedDays)
+    {
+        Assert.NotNull(tourContext.Tour);
+        var duration = (tourContext.Tour.EndDate - tourContext.Tour.StartDate).TotalDays;
+        Assert.Equal(expectedDays, duration);
+    }
+
+    [Then(@"the tour StartDate should be ""(.*)""")]
+    public void ThenTheTourStartDateShouldBe(string expectedDateString)
+    {
+        Assert.NotNull(tourContext.Tour);
+        var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        Assert.Equal(expectedDate, tourContext.Tour.StartDate);
+    }
+
+    [Then(@"the tour EndDate should be ""(.*)""")]
+    public void ThenTheTourEndDateShouldBe(string expectedDateString)
+    {
+        Assert.NotNull(tourContext.Tour);
+        var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        Assert.Equal(expectedDate, tourContext.Tour.EndDate);
     }
 }

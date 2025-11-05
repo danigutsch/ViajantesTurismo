@@ -23,6 +23,54 @@ So that only properly validated tours enter the system
         When I try to create the tour
         Then the tour creation should fail with validation error for "schedule"
 
+    Scenario: Create tour with minimum valid duration (just over 3 days)
+        Given I have tour dates from "2025-06-01" to "2025-06-06"
+        When I create the tour
+        Then the tour should be created successfully
+
+    Scenario: DateRange preserves UTC time zone information
+        Given I have UTC tour dates from "2025-06-01T10:00:00Z" to "2025-06-10T18:00:00Z"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour should preserve UTC time zone
+
+    Scenario: DateRange calculates duration with partial days
+        Given I have tour dates from "2025-06-01T08:00:00" to "2025-06-06T14:00:00"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour duration should be greater than 5 days
+
+    Scenario: DateRange calculates duration correctly across months
+        Given I have tour dates from "2025-05-28" to "2025-06-05"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour duration should be 8 days
+
+    Scenario: DateRange calculates duration correctly across years
+        Given I have tour dates from "2025-12-28" to "2026-01-05"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour duration should be 8 days
+
+    Scenario: DateRange with leap year date handling
+        Given I have tour dates from "2024-02-28" to "2024-03-05"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour duration should be 6 days
+
+    Scenario: Tour stores DateRange properties correctly
+        Given I have UTC tour dates from "2025-06-15T14:30:00Z" to "2025-06-25T16:45:00Z"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour StartDate should be "2025-06-15T14:30:00Z"
+        And the tour EndDate should be "2025-06-25T16:45:00Z"
+
+    Scenario: Create tour with long duration
+        Given I have tour dates from "2025-06-01" to "2025-06-30"
+        When I create the tour
+        Then the tour should be created successfully
+        And the tour duration should be 29 days
+
     Scenario: Cannot create tour with empty identifier
         Given I have tour details with identifier "" and name "Cuba Tour"
         When I try to create the tour

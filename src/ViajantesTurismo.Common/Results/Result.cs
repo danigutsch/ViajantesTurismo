@@ -41,7 +41,7 @@ public readonly struct Result : IEquatable<Result>
     public ResultError? ErrorDetails => IsFailure ? _error : null;
 
     /// <summary>
-    /// Creates a successful result with Ok status.
+    /// Creates a successful result with OK status.
     /// </summary>
     /// <returns>A successful result.</returns>
     public static Result Ok() => new(ResultStatus.Ok, null);
@@ -86,9 +86,10 @@ public readonly struct Result : IEquatable<Result>
     /// <param name="detail">The error detail describing why the operation failed.</param>
     /// <param name="validationErrors">The combined validation errors.</param>
     /// <returns>A failed result.</returns>
-    internal static Result Invalid(string detail, Dictionary<string, string[]> validationErrors)
+    public static Result Invalid(string detail, Dictionary<string, string[]> validationErrors)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+        ArgumentNullException.ThrowIfNull(validationErrors);
 
         if (validationErrors.Count == 0)
         {
@@ -111,9 +112,9 @@ public readonly struct Result : IEquatable<Result>
     }
 
     /// <summary>
-    /// Creates a failed result with Unauthorized status.
+    /// Creates a failed result with Unauthorised status.
     /// </summary>
-    /// <param name="detail">The error detail describing the authorization failure.</param>
+    /// <param name="detail">The error detail describing the authorisation failure.</param>
     /// <returns>A failed result.</returns>
     public static Result Unauthorized(string detail)
     {
@@ -279,7 +280,7 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     public ResultError? ErrorDetails => IsFailure ? _error : null;
 
     /// <summary>
-    /// Creates a successful result with a value and Ok status.
+    /// Creates a successful result with a value and OK status.
     /// </summary>
     /// <param name="value">The value returned by the successful operation.</param>
     /// <returns>A successful result containing the value.</returns>
@@ -367,9 +368,9 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     }
 
     /// <summary>
-    /// Creates a failed result with Unauthorized status.
+    /// Creates a failed result with Unauthorised status.
     /// </summary>
-    /// <param name="detail">The error detail describing the authorization failure.</param>
+    /// <param name="detail">The error detail describing the authorisation failure.</param>
     /// <returns>A failed result.</returns>
     public static Result<T> Unauthorized(string detail)
     {

@@ -77,6 +77,16 @@ public sealed class ResultTests
     }
 
     [Fact]
+    public void Invalid_With_Empty_ValidationErrors_Dictionary_Throws_ArgumentOutOfRangeException()
+    {
+        // Arrange
+        var emptyDictionary = new Dictionary<string, string[]>();
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => Result.Invalid("Some detail", emptyDictionary));
+    }
+
+    [Fact]
     public void Not_Found_Creates_Failed_Result()
     {
         var result = Result.NotFound("Resource not found");
