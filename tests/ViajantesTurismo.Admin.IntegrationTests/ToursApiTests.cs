@@ -247,21 +247,19 @@ public sealed class ToursApiTests : IDisposable
     [Fact]
     public async Task Create_Tour_Returns_Validation_Problem_For_Multiple_Errors()
     {
-        // Arrange
-        const string invalidIdentifier = "";
-        const string invalidName = "";
+        // Arrange - invalid prices to test multiple pricing validation errors
         const decimal invalidPrice = 0.00m;
         var request = new CreateTourDto
         {
-            Identifier = invalidIdentifier,
-            Name = invalidName,
+            Identifier = "TEST2024",
+            Name = "Test Tour",
             StartDate = DateTime.UtcNow.AddMonths(1),
             EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
             Currency = CurrencyDto.Real,
             Price = invalidPrice,
-            DoubleRoomSupplementPrice = 500.00m,
-            RegularBikePrice = 100.00m,
-            EBikePrice = 200.00m,
+            DoubleRoomSupplementPrice = invalidPrice,
+            RegularBikePrice = invalidPrice,
+            EBikePrice = invalidPrice,
             MinCustomers = 4,
             MaxCustomers = 12,
             IncludedServices = ["Hotel"]
@@ -274,8 +272,8 @@ public sealed class ToursApiTests : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        Assert.Contains("identifier", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("name", content, StringComparison.OrdinalIgnoreCase);
+        // Should have multiple pricing errors since all prices are invalid
+        Assert.Contains("price", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

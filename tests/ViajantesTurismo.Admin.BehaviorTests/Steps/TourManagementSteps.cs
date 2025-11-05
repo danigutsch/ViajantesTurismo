@@ -2,6 +2,7 @@ using System.Globalization;
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
 
@@ -13,6 +14,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
     public void GivenIHaveTourDatesFromTo(string startDateString, string endDateString)
     {
+        ContextHelpers.SetupValidTour(tourContext);
         tourContext.StartDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         tourContext.EndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
     }
@@ -24,16 +26,10 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: services,
-            minCustomers: 4,
-            maxCustomers: 12).Value;
+            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
+            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
+            capacity: TourCapacity.Create(4, 12).Value,
+            includedServices: services).Value;
     }
 
     [Given(@"I have tour details with identifier ""(.*)"" and name ""(.*)""")]
@@ -47,19 +43,17 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Given(@"I have tour details with identifier longer than 128 characters")]
     public void GivenIHaveTourDetailsWithIdentifierLongerThan128Characters()
     {
+        ContextHelpers.SetupValidTour(tourContext);
         tourContext.Identifier = new string('A', 129);
         tourContext.Name = "Valid Tour Name";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
     }
 
     [Given(@"I have tour details with name longer than 128 characters")]
     public void GivenIHaveTourDetailsWithNameLongerThan128Characters()
     {
+        ContextHelpers.SetupValidTour(tourContext);
         tourContext.Identifier = "VALID2024";
         tourContext.Name = new string('A', 129);
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
     }
 
     [Given(@"I have tour details with base price (.*)")]
@@ -108,14 +102,14 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Given(@"I have tour details with multiple invalid values")]
     public void GivenIHaveTourDetailsWithMultipleInvalidValues()
     {
-        tourContext.Identifier = "";
-        tourContext.Name = "";
+        tourContext.Identifier = "TEST2024";
+        tourContext.Name = "Test Tour";
         tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = tourContext.StartDate.AddDays(2);
-        tourContext.BasePrice = -100m;
-        tourContext.DoubleRoomSupplementPrice = -50m;
-        tourContext.RegularBikePrice = -30m;
-        tourContext.EBikePrice = -40m;
+        tourContext.EndDate = tourContext.StartDate.AddDays(7);
+        tourContext.BasePrice = 0m;
+        tourContext.DoubleRoomSupplementPrice = 0m;
+        tourContext.RegularBikePrice = 0m;
+        tourContext.EBikePrice = 0m;
     }
 
     [Given(@"I have tour details with services ""(.*)""")]
@@ -152,19 +146,35 @@ public sealed class TourManagementSteps(TourContext tourContext)
             ? tourContext.IncludedServices
             : ["Hotel", "Breakfast"];
 
+        var scheduleResult = DateRange.Create(tourContext.StartDate, tourContext.EndDate);
+        var pricingResult = TourPricing.Create(tourContext.BasePrice, tourContext.DoubleRoomSupplementPrice, tourContext.RegularBikePrice, tourContext.EBikePrice, Currency.UsDollar);
+        var capacityResult = TourCapacity.Create(4, 12);
+
+        if (scheduleResult.IsFailure)
+        {
+            tourContext.Result = scheduleResult;
+            return;
+        }
+
+        if (pricingResult.IsFailure)
+        {
+            tourContext.Result = pricingResult;
+            return;
+        }
+
+        if (capacityResult.IsFailure)
+        {
+            tourContext.Result = capacityResult;
+            return;
+        }
+
         tourContext.Result = Tour.Create(
             identifier: tourContext.Identifier,
             name: tourContext.Name,
-            startDate: tourContext.StartDate,
-            endDate: tourContext.EndDate,
-            price: tourContext.BasePrice,
-            doubleRoomSupplementPrice: tourContext.DoubleRoomSupplementPrice,
-            regularBikePrice: tourContext.RegularBikePrice,
-            eBikePrice: tourContext.EBikePrice,
-            currency: Currency.UsDollar,
-            includedServices: services,
-            minCustomers: 4,
-            maxCustomers: 12);
+            schedule: scheduleResult.Value,
+            pricing: pricingResult.Value,
+            capacity: capacityResult.Value,
+            includedServices: services);
 
         if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
         {
@@ -193,6 +203,9 @@ public sealed class TourManagementSteps(TourContext tourContext)
         var (isSuccess, errorDetail, validationErrors) = tourContext.Result switch
         {
             Result<Tour> tr => (tr.IsSuccess, tr.ErrorDetails?.Detail, tr.ErrorDetails?.ValidationErrors),
+            Result<DateRange> dr => (dr.IsSuccess, dr.ErrorDetails?.Detail, dr.ErrorDetails?.ValidationErrors),
+            Result<TourPricing> pr => (pr.IsSuccess, pr.ErrorDetails?.Detail, pr.ErrorDetails?.ValidationErrors),
+            Result<TourCapacity> cr => (cr.IsSuccess, cr.ErrorDetails?.Detail, cr.ErrorDetails?.ValidationErrors),
             Result r => (r.IsSuccess, r.ErrorDetails?.Detail, r.ErrorDetails?.ValidationErrors),
             _ => throw new InvalidOperationException("Unexpected result type")
         };
@@ -244,21 +257,41 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void ThenTheTourCreationShouldFailWithValidationErrorFor(string fieldName)
     {
         Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result<Tour>>(tourContext.Result);
-        var result = (Result<Tour>)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey(fieldName) ?? false);
+
+        var (isSuccess, validationErrors) = tourContext.Result switch
+        {
+            Result<Tour> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result<TourPricing> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result<DateRange> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result<TourCapacity> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
+        };
+
+        Assert.False(isSuccess);
+        Assert.True(validationErrors?.ContainsKey(fieldName) ?? false, $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", validationErrors.Keys)}");
     }
 
     [Then(@"the tour creation should fail with multiple validation errors")]
     public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
     {
         Assert.NotNull(tourContext.Result);
-        Assert.IsType<Result<Tour>>(tourContext.Result);
-        var result = (Result<Tour>)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.ErrorDetails?.ValidationErrors);
-        Assert.True(result.ErrorDetails.ValidationErrors.Count > 1, "Expected multiple validation errors");
+
+        var (isSuccess, validationErrors) = tourContext.Result switch
+        {
+            Result<Tour> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result<TourPricing> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result<DateRange> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result<TourCapacity> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            Result r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
+            _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
+        };
+
+        Assert.False(isSuccess);
+        Assert.NotNull(validationErrors);
+
+        var totalErrors = validationErrors.Values.SelectMany(e => e).Count();
+        Assert.True(totalErrors > 1, $"Expected multiple validation errors but found {totalErrors}");
     }
 
     [Then(@"the tour single room supplement should be (.*)")]

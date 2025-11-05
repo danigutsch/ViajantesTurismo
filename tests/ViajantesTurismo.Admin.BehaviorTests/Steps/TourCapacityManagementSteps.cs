@@ -2,6 +2,7 @@ using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
 
@@ -22,16 +23,10 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: minCustomers,
-            maxCustomers: maxCustomers).Value;
+            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
+            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
+            capacity: TourCapacity.Create(minCustomers, maxCustomers).Value,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     [Given(@"the tour has (.*) confirmed bookings? with (.*) customers? each")]
@@ -146,19 +141,35 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     [When(@"I try to create a tour with minimum (.*) and maximum (.*) customers")]
     public void WhenICreateATourWithMinimumAndMaximumCustomers(int minCustomers, int maxCustomers)
     {
+        var scheduleResult = DateRange.Create(tourContext.StartDate, tourContext.EndDate);
+        var pricingResult = TourPricing.Create(tourContext.BasePrice, tourContext.DoubleRoomSupplementPrice, tourContext.RegularBikePrice, tourContext.EBikePrice, Currency.UsDollar);
+        var capacityResult = TourCapacity.Create(minCustomers, maxCustomers);
+
+        if (scheduleResult.IsFailure)
+        {
+            tourContext.Result = scheduleResult;
+            return;
+        }
+
+        if (pricingResult.IsFailure)
+        {
+            tourContext.Result = pricingResult;
+            return;
+        }
+
+        if (capacityResult.IsFailure)
+        {
+            tourContext.Result = capacityResult;
+            return;
+        }
+
         tourContext.Result = Tour.Create(
             identifier: tourContext.Identifier,
             name: tourContext.Name,
-            startDate: tourContext.StartDate,
-            endDate: tourContext.EndDate,
-            price: tourContext.BasePrice,
-            doubleRoomSupplementPrice: tourContext.DoubleRoomSupplementPrice,
-            regularBikePrice: tourContext.RegularBikePrice,
-            eBikePrice: tourContext.EBikePrice,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: minCustomers,
-            maxCustomers: maxCustomers);
+            schedule: scheduleResult.Value,
+            pricing: pricingResult.Value,
+            capacity: capacityResult.Value,
+            includedServices: ["Hotel", "Breakfast"]);
 
         if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
         {
@@ -188,11 +199,8 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
             null,
             null);
 
-        // Confirm the booking so it counts toward capacity
-        if (result.IsSuccess)
-        {
-            result.Value.Confirm();
-        }
+        Assert.True(result.IsSuccess);
+        result.Value.Confirm();
 
         bookingContext.Result = result;
     }
@@ -200,7 +208,6 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     [When(@"I try to add a booking for a fourth customer")]
     public void WhenITryToAddABookingForAFourthCustomer()
     {
-        // Create the fourth customer if it doesn't exist
         if (customerContext.Customers.Count < 4)
         {
             var newCustomer = TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
@@ -246,6 +253,10 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
         {
             Assert.True(resultOfTour.IsFailure);
         }
+        else if (tourContext.Result is Result<TourCapacity> capacityResult)
+        {
+            Assert.True(capacityResult.IsFailure);
+        }
         else
         {
             var result = (Result)tourContext.Result;
@@ -265,6 +276,15 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
             Assert.Contains("maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
         }
+        else if (tourContext.Result is Result<TourCapacity> capacityResult)
+        {
+            Assert.True(capacityResult.IsFailure);
+            var errors = capacityResult.ErrorDetails?.ValidationErrors;
+            var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
+            var combinedErrors = string.Join(" ", allErrors);
+            Assert.Contains("maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+        }
         else
         {
             var result = (Result)tourContext.Result;
@@ -278,12 +298,21 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     }
 
     [Then(@"the error should indicate minimum must be at least 1")]
-    public void ThenTheErrorShouldIndicateMinimumMustBeAtLeast1()
+    public void ThenTheErrorShouldIndicateMinimumMustBeAtLeast()
     {
         if (tourContext.Result is Result<Tour> resultOfTour)
         {
             Assert.True(resultOfTour.IsFailure);
             var errors = resultOfTour.ErrorDetails?.ValidationErrors;
+            var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
+            var combinedErrors = string.Join(" ", allErrors);
+            Assert.Contains("Minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("1", combinedErrors, StringComparison.Ordinal);
+        }
+        else if (tourContext.Result is Result<TourCapacity> capacityResult)
+        {
+            Assert.True(capacityResult.IsFailure);
+            var errors = capacityResult.ErrorDetails?.ValidationErrors;
             var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
             var combinedErrors = string.Join(" ", allErrors);
             Assert.Contains("Minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
@@ -302,12 +331,21 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     }
 
     [Then(@"the error should indicate maximum cannot exceed 20")]
-    public void ThenTheErrorShouldIndicateMaximumCannotExceed20()
+    public void ThenTheErrorShouldIndicateMaximumCannotExceed()
     {
         if (tourContext.Result is Result<Tour> resultOfTour)
         {
             Assert.True(resultOfTour.IsFailure);
             var errors = resultOfTour.ErrorDetails?.ValidationErrors;
+            var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
+            var combinedErrors = string.Join(" ", allErrors);
+            Assert.Contains("Maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("20", combinedErrors, StringComparison.Ordinal);
+        }
+        else if (tourContext.Result is Result<TourCapacity> capacityResult)
+        {
+            Assert.True(capacityResult.IsFailure);
+            var errors = capacityResult.ErrorDetails?.ValidationErrors;
             var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
             var combinedErrors = string.Join(" ", allErrors);
             Assert.Contains("Maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);

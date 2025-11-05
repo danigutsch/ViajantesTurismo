@@ -5,6 +5,8 @@ using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Common.BuildingBlocks;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -55,19 +57,43 @@ internal static class ToursEndpoints
     {
         var currency = TourMapper.MapToCurrency(tourDto.Currency);
 
-        var result = Tour.Create(
-            tourDto.Identifier,
-            tourDto.Name,
-            tourDto.StartDate,
-            tourDto.EndDate,
+        var errors = new ValidationErrors();
+
+        var scheduleResult = DateRange.Create(tourDto.StartDate, tourDto.EndDate);
+        if (scheduleResult.IsFailure)
+        {
+            errors.Add(scheduleResult);
+        }
+
+        var pricingResult = TourPricing.Create(
             tourDto.Price,
             tourDto.DoubleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
-            currency,
-            tourDto.IncludedServices,
-            tourDto.MinCustomers,
-            tourDto.MaxCustomers);
+            currency);
+        if (pricingResult.IsFailure)
+        {
+            errors.Add(pricingResult);
+        }
+
+        var capacityResult = TourCapacity.Create(tourDto.MinCustomers, tourDto.MaxCustomers);
+        if (capacityResult.IsFailure)
+        {
+            errors.Add(capacityResult);
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult<Tour>().ToValidationProblem();
+        }
+
+        var result = Tour.Create(
+            tourDto.Identifier,
+            tourDto.Name,
+            scheduleResult.Value,
+            pricingResult.Value,
+            capacityResult.Value,
+            tourDto.IncludedServices);
 
         if (result.IsFailure)
         {

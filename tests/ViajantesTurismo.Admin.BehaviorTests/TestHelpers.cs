@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.BehaviorTests;
@@ -17,16 +18,10 @@ public static class TestHelpers
         return Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: 4,
-            maxCustomers: 12).Value;
+            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
+            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
+            capacity: TourCapacity.Create(4, 12).Value,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>
@@ -37,16 +32,10 @@ public static class TestHelpers
         return Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            startDate: startDate,
-            endDate: endDate,
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: 4,
-            maxCustomers: 12).Value;
+            schedule: DateRange.Create(startDate, endDate).Value,
+            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
+            capacity: TourCapacity.Create(4, 12).Value,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>
@@ -57,16 +46,10 @@ public static class TestHelpers
         return Tour.Create(
             identifier: identifier,
             name: name,
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: 4,
-            maxCustomers: 12).Value;
+            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
+            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
+            capacity: TourCapacity.Create(4, 12).Value,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>
@@ -78,16 +61,10 @@ public static class TestHelpers
         return Tour.Create(
             identifier: "PAY2024",
             name: "Payment Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 900.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: 4,
-            maxCustomers: 12).Value;
+            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
+            pricing: TourPricing.Create(900.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
+            capacity: TourCapacity.Create(4, 12).Value,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     /// <summary>

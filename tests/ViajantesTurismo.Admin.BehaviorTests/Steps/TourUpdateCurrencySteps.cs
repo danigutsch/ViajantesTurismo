@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -14,16 +15,10 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            price: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: currency,
-            includedServices: ["Hotel", "Breakfast"],
-            minCustomers: 4,
-            maxCustomers: 12).Value;
+            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
+            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, currency).Value,
+            capacity: TourCapacity.Create(4, 12).Value,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     [When(@"I update the currency to ""(.*)""")]

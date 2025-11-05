@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
@@ -11,72 +12,42 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         Tour.Create(
             "CITY001",
             "City Highlights",
-            DateTime.UtcNow.AddDays(1),
-            DateTime.UtcNow.AddDays(7),
-            1500m,
-            300m,
-            100m,
-            200m,
-            Currency.Real,
-            ["Hotel", "Breakfast", "City Tour"],
-            6,
-            15
+            DateRange.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(7)).Value,
+            TourPricing.Create(1500m, 300m, 100m, 200m, Currency.Real).Value,
+            TourCapacity.Create(6, 15).Value,
+            ["Hotel", "Breakfast", "City Tour"]
         ).Value,
         Tour.Create(
             "HIST002",
             "Historical Landmarks",
-            DateTime.UtcNow.AddDays(4),
-            DateTime.UtcNow.AddDays(10),
-            2000m,
-            400m,
-            150m,
-            250m,
-            Currency.Euro,
-            ["Hotel", "Breakfast", "Museum Tickets"],
-            8,
-            20
+            DateRange.Create(DateTime.UtcNow.AddDays(4), DateTime.UtcNow.AddDays(10)).Value,
+            TourPricing.Create(2000m, 400m, 150m, 250m, Currency.Euro).Value,
+            TourCapacity.Create(8, 20).Value,
+            ["Hotel", "Breakfast", "Museum Tickets"]
         ).Value,
         Tour.Create(
             "CULT001",
             "Cultural Experience",
-            DateTime.UtcNow.AddDays(7),
-            DateTime.UtcNow.AddDays(13),
-            1800m,
-            350m,
-            120m,
-            220m,
-            Currency.UsDollar,
-            ["Hotel", "Breakfast", "Cultural Show"],
-            4,
-            12
+            DateRange.Create(DateTime.UtcNow.AddDays(7), DateTime.UtcNow.AddDays(13)).Value,
+            TourPricing.Create(1800m, 350m, 120m, 220m, Currency.UsDollar).Value,
+            TourCapacity.Create(4, 12).Value,
+            ["Hotel", "Breakfast", "Cultural Show"]
         ).Value,
         Tour.Create(
             "NATR001",
             "Nature and Adventure",
-            DateTime.UtcNow.AddDays(11),
-            DateTime.UtcNow.AddDays(17),
-            2200m,
-            450m,
-            180m,
-            280m,
-            Currency.Real,
-            ["Hotel", "Breakfast", "Hiking Tour"],
-            5,
-            18
+            DateRange.Create(DateTime.UtcNow.AddDays(11), DateTime.UtcNow.AddDays(17)).Value,
+            TourPricing.Create(2200m, 450m, 180m, 280m, Currency.Real).Value,
+            TourCapacity.Create(5, 18).Value,
+            ["Hotel", "Breakfast", "Hiking Tour"]
         ).Value,
         Tour.Create(
             "FOWI003",
             "Food and Wine Tour",
-            DateTime.UtcNow.AddDays(16),
-            DateTime.UtcNow.AddDays(22),
-            2500m,
-            500m,
-            200m,
-            300m,
-            Currency.Euro,
-            ["Hotel", "Breakfast", "Wine Tasting"],
-            6,
-            16
+            DateRange.Create(DateTime.UtcNow.AddDays(16), DateTime.UtcNow.AddDays(22)).Value,
+            TourPricing.Create(2500m, 500m, 200m, 300m, Currency.Euro).Value,
+            TourCapacity.Create(6, 16).Value,
+            ["Hotel", "Breakfast", "Wine Tasting"]
         ).Value
     ];
 
@@ -192,16 +163,10 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,
             t.Name,
-            t.StartDate,
-            t.EndDate,
-            t.Price,
-            t.DoubleRoomSupplementPrice,
-            t.RegularBikePrice,
-            t.EBikePrice,
-            t.Currency,
-            t.IncludedServices,
-            t.MinCustomers,
-            t.MaxCustomers
+            DateRange.Create(t.StartDate, t.EndDate).Value,
+            TourPricing.Create(t.Price, t.DoubleRoomSupplementPrice, t.RegularBikePrice, t.EBikePrice, t.Currency).Value,
+            TourCapacity.Create(t.MinCustomers, t.MaxCustomers).Value,
+            t.IncludedServices
         ).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
@@ -236,16 +201,10 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
         var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,
             t.Name,
-            t.StartDate,
-            t.EndDate,
-            t.Price,
-            t.DoubleRoomSupplementPrice,
-            t.RegularBikePrice,
-            t.EBikePrice,
-            t.Currency,
-            t.IncludedServices,
-            t.MinCustomers,
-            t.MaxCustomers
+            DateRange.Create(t.StartDate, t.EndDate).Value,
+            TourPricing.Create(t.Price, t.DoubleRoomSupplementPrice, t.RegularBikePrice, t.EBikePrice, t.Currency).Value,
+            TourCapacity.Create(t.MinCustomers, t.MaxCustomers).Value,
+            t.IncludedServices
         ).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
