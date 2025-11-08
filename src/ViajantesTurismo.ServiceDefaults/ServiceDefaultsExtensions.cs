@@ -25,6 +25,10 @@ public static class ServiceDefaultsExtensions
     /// Adds a set of default services and configurations to the host builder, including OpenTelemetry,
     /// health checks, and service discovery.
     /// </summary>
+    /// <remarks>
+    /// Clients that require HTTPS-only service discovery can configure <c>ServiceDiscoveryOptions.AllowedSchemes</c>
+    /// via dependency injection before calling this method.
+    /// </remarks>
     /// <typeparam name="TBuilder">The type of the host application builder.</typeparam>
     /// <param name="builder">The host application builder.</param>
     /// <returns>The updated host application builder.</returns>
@@ -42,12 +46,6 @@ public static class ServiceDefaultsExtensions
 
             http.AddServiceDiscovery();
         });
-
-        // Uncomment the following to restrict the allowed schemes for service discovery.
-        // builder.Services.Configure<ServiceDiscoveryOptions>(options =>
-        // {
-        //     options.AllowedSchemes = ["https"];
-        // });
 
         return builder;
     }
@@ -118,6 +116,10 @@ public static class ServiceDefaultsExtensions
     /// <summary>
     /// Configures default health check endpoints for the application when running in the development environment.
     /// </summary>
+    /// <remarks>
+    /// Exposing health check endpoints in production environments should be evaluated carefully because it can
+    /// disclose infrastructure details. See https://aka.ms/dotnet/aspire/healthchecks for guidance.
+    /// </remarks>
     /// <param name="app">The <see cref="WebApplication"/> instance to configure with default endpoints.</param>
     /// <returns>The same <see cref="WebApplication"/> instance, with health check endpoints mapped if the environment is
     /// development.</returns>
@@ -125,14 +127,10 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        // Adding health checks endpoints to applications in non-development environments has security implications.
-        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
         if (app.Environment.IsDevelopment())
         {
-            // All health checks must pass for app to be considered ready to accept traffic after starting
             app.MapHealthChecks(HealthEndpointPath);
 
-            // Only health checks tagged with the "live" tag must pass for app to be considered alive
             app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
             {
                 Predicate = r => r.Tags.Contains("live")
