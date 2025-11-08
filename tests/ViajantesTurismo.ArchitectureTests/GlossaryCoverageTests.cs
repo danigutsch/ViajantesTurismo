@@ -86,13 +86,13 @@ public sealed class GlossaryCoverageTests
 
     private static bool IsTermDocumented(string term)
     {
-        var pattern = $"^\\|\\s*{Regex.Escape(term)}\\s*\\|";
+        var pattern = $@"^\|\s*{Regex.Escape(term)}\s*\|";
         return Regex.IsMatch(GlossaryText.Value, pattern, RegexOptions.Multiline);
     }
 
     private static string LoadGlossaryText()
     {
-        var glossaryPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "GLOSSARY.md"));
+        var glossaryPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "domain", "GLOSSARY.md"));
         return File.ReadAllText(glossaryPath);
     }
 }
