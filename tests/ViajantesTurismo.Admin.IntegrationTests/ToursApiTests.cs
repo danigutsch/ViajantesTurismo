@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Infrastructure;
-using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.IntegrationTests;
 

@@ -1,5 +1,5 @@
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.Application.Mappings;
 

@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 

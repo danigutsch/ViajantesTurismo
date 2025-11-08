@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Mappings;
-using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.UnitTests.Mappings;

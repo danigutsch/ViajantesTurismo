@@ -1,4 +1,4 @@
-﻿using ViajantesTurismo.AdminApi.Contracts;
+﻿using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.Application;
 
