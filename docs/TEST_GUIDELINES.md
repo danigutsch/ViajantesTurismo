@@ -364,7 +364,7 @@ dotnet test --collect:"XPlat Code Coverage"         # With coverage
 ❌ Tests depending on execution order or shared state
 ❌ Complex logic in tests (loops, conditionals)
 
-## Summary
+## Conclusion
 
 Good tests are **Fast**, **Independent**, **Repeatable**, **Self-Validating**, and **Timely** (FIRST). Follow these
 guidelines to maintain a high-quality test suite that gives confidence when making changes.
