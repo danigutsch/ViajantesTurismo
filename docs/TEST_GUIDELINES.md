@@ -25,7 +25,7 @@ alignment through BDD scenarios.
 - **`ViajantesTurismo.Admin.IntegrationTests`** — API endpoints with real PostgreSQL database. Slower, tests complete
   request-response cycle.
 - **`ViajantesTurismo.Admin.BehaviorTests`** — Behavior-driven tests using Gherkin/SpecFlow for backend domain
-  scenarios. Currently fast (~3s), written in business language.
+  scenarios, written in business language.
 
 ### Suggested Structure (Future Evolution)
 
@@ -57,7 +57,7 @@ public void TestCreateTour()  // Not descriptive
 
 **Pattern:** `<aggregate>-<capability>.feature`
 
-```
+```text
 tour-creation.feature
 booking-capacity-management.feature
 payment-recording.feature
