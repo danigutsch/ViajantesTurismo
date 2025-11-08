@@ -64,9 +64,9 @@ Document each aggregate with purpose, invariants, commands, and events.
 
 **Related**
 
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/Features/Tour*.feature`
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/Features/Booking*.feature`
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/Features/Payment*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Tour*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Booking*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Payment*.feature`
 - ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
 - ADRs: [Result Pattern Over Exceptions](../adr/20251108-result-pattern-over-exceptions.md)
 
@@ -118,6 +118,6 @@ accommodation information.
 
 **Related**
 
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/Features/Customer*.feature`
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/Features/*Validation.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Customer*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/*Validation.feature`
 - ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
