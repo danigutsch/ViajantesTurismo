@@ -2,7 +2,6 @@ using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
 
@@ -23,9 +22,15 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
-            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
-            capacity: TourCapacity.Create(minCustomers, maxCustomers).Value,
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice: 2000.00m,
+            doubleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: Currency.UsDollar,
+            minCustomers: minCustomers,
+            maxCustomers: maxCustomers,
             includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
@@ -141,34 +146,18 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     [When(@"I try to create a tour with minimum (.*) and maximum (.*) customers")]
     public void WhenICreateATourWithMinimumAndMaximumCustomers(int minCustomers, int maxCustomers)
     {
-        var scheduleResult = DateRange.Create(tourContext.StartDate, tourContext.EndDate);
-        var pricingResult = TourPricing.Create(tourContext.BasePrice, tourContext.DoubleRoomSupplementPrice, tourContext.RegularBikePrice, tourContext.EBikePrice, Currency.UsDollar);
-        var capacityResult = TourCapacity.Create(minCustomers, maxCustomers);
-
-        if (scheduleResult.IsFailure)
-        {
-            tourContext.Result = scheduleResult;
-            return;
-        }
-
-        if (pricingResult.IsFailure)
-        {
-            tourContext.Result = pricingResult;
-            return;
-        }
-
-        if (capacityResult.IsFailure)
-        {
-            tourContext.Result = capacityResult;
-            return;
-        }
-
         tourContext.Result = Tour.Create(
             identifier: tourContext.Identifier,
             name: tourContext.Name,
-            schedule: scheduleResult.Value,
-            pricing: pricingResult.Value,
-            capacity: capacityResult.Value,
+            startDate: tourContext.StartDate,
+            endDate: tourContext.EndDate,
+            basePrice: tourContext.BasePrice,
+            doubleRoomSupplementPrice: tourContext.DoubleRoomSupplementPrice,
+            regularBikePrice: tourContext.RegularBikePrice,
+            eBikePrice: tourContext.EBikePrice,
+            currency: Currency.UsDollar,
+            minCustomers: minCustomers,
+            maxCustomers: maxCustomers,
             includedServices: ["Hotel", "Breakfast"]);
 
         if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
@@ -231,13 +220,13 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     [Then(@"the minimum capacity should be (.*)")]
     public void ThenTheMinimumCapacityShouldBe(int expected)
     {
-        Assert.Equal(expected, tourContext.Tour.MinCustomers);
+        Assert.Equal(expected, tourContext.Tour.Capacity.MinCustomers);
     }
 
     [Then(@"the maximum capacity should be (.*)")]
     public void ThenTheMaximumCapacityShouldBe(int expected)
     {
-        Assert.Equal(expected, tourContext.Tour.MaxCustomers);
+        Assert.Equal(expected, tourContext.Tour.Capacity.MaxCustomers);
     }
 
     [Then(@"the capacity update should succeed")]

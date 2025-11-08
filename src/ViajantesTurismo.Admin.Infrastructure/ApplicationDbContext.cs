@@ -30,13 +30,28 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
 
             entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(ContractConstants.MaxDefaultLength);
             entity.Property(tour => tour.Name).IsRequired().HasMaxLength(ContractConstants.MaxNameLength);
-            entity.Property(tour => tour.StartDate).IsRequired();
-            entity.Property(tour => tour.EndDate).IsRequired();
-            entity.Property(tour => tour.Price).IsRequired();
-            entity.Property(tour => tour.DoubleRoomSupplementPrice).IsRequired();
-            entity.Property(tour => tour.RegularBikePrice).IsRequired();
-            entity.Property(tour => tour.EBikePrice).IsRequired();
-            entity.Property(tour => tour.Currency).HasConversion<string>().IsRequired();
+
+            entity.OwnsOne(tour => tour.Schedule, schedule =>
+            {
+                schedule.Property(s => s.StartDate).HasColumnName("StartDate").IsRequired();
+                schedule.Property(s => s.EndDate).HasColumnName("EndDate").IsRequired();
+            });
+
+            entity.OwnsOne(tour => tour.Pricing, pricing =>
+            {
+                pricing.Property(p => p.BasePrice).HasColumnName("Price").IsRequired();
+                pricing.Property(p => p.DoubleRoomSupplementPrice).HasColumnName("DoubleRoomSupplementPrice").IsRequired();
+                pricing.Property(p => p.RegularBikePrice).HasColumnName("RegularBikePrice").IsRequired();
+                pricing.Property(p => p.EBikePrice).HasColumnName("EBikePrice").IsRequired();
+                pricing.Property(p => p.Currency).HasColumnName("Currency").HasConversion<string>().IsRequired();
+            });
+
+            entity.OwnsOne(tour => tour.Capacity, capacity =>
+            {
+                capacity.Property(c => c.MinCustomers).HasColumnName("MinCustomers").IsRequired();
+                capacity.Property(c => c.MaxCustomers).HasColumnName("MaxCustomers").IsRequired();
+            });
+
             entity.Property<string[]>("_includedServices")
                 .HasColumnName("IncludedServices")
                 .IsRequired();

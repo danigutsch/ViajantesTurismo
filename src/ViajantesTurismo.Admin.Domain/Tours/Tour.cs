@@ -31,16 +31,10 @@ public sealed class Tour : Entity<int>
     {
         Identifier = identifier;
         Name = name;
-        StartDate = schedule.StartDate;
-        EndDate = schedule.EndDate;
-        Price = pricing.BasePrice;
-        DoubleRoomSupplementPrice = pricing.DoubleRoomSupplementPrice;
-        RegularBikePrice = pricing.RegularBikePrice;
-        EBikePrice = pricing.EBikePrice;
-        Currency = pricing.Currency;
+        Schedule = schedule;
+        Pricing = pricing;
+        Capacity = capacity;
         _includedServices = [..includedServices];
-        MinCustomers = capacity.MinCustomers;
-        MaxCustomers = capacity.MaxCustomers;
     }
 
     /// <summary>
@@ -54,54 +48,24 @@ public sealed class Tour : Entity<int>
     public string Name { get; private set; }
 
     /// <summary>
-    /// Gets the start date of the tour.
+    /// Gets the schedule (date range) for the tour.
     /// </summary>
-    public DateTime StartDate { get; private set; }
+    public DateRange Schedule { get; private set; }
 
     /// <summary>
-    /// Gets the end date of the tour.
+    /// Gets the pricing information for the tour.
     /// </summary>
-    public DateTime EndDate { get; private set; }
+    public TourPricing Pricing { get; private set; }
 
     /// <summary>
-    /// Gets the base price for a single room (not per person).
+    /// Gets the capacity constraints for the tour.
     /// </summary>
-    public decimal Price { get; private set; }
-
-    /// <summary>
-    /// Gets the additional price for a double room (larger space, more expensive than a single room).
-    /// </summary>
-    public decimal DoubleRoomSupplementPrice { get; private set; }
-
-    /// <summary>
-    /// Gets the price for renting a regular bike.
-    /// </summary>
-    public decimal RegularBikePrice { get; private set; }
-
-    /// <summary>
-    /// Gets the price for renting an e-bike.
-    /// </summary>
-    public decimal EBikePrice { get; private set; }
-
-    /// <summary>
-    /// Gets the currency used for all prices in this tour.
-    /// </summary>
-    public Currency Currency { get; private set; }
+    public TourCapacity Capacity { get; private set; }
 
     /// <summary>
     /// Gets the array of services included in the tour package (e.g. "Hotel", "Breakfast", "City Tour").
     /// </summary>
     public IReadOnlyList<string> IncludedServices => _includedServices.AsReadOnly();
-
-    /// <summary>
-    /// Gets the minimum number of customers required for the tour to proceed.
-    /// </summary>
-    public int MinCustomers { get; private set; }
-
-    /// <summary>
-    /// Gets the maximum number of customers allowed on the tour.
-    /// </summary>
-    public int MaxCustomers { get; private set; }
 
     /// <summary>
     /// Gets the current count of customers across all confirmed bookings (principal and companions).
@@ -114,17 +78,17 @@ public sealed class Tour : Entity<int>
     /// <summary>
     /// Gets the number of available spots remaining.
     /// </summary>
-    public int AvailableSpots => MaxCustomers - CurrentCustomerCount;
+    public int AvailableSpots => Capacity.MaxCustomers - CurrentCustomerCount;
 
     /// <summary>
     /// Gets whether the tour has reached its minimum capacity.
     /// </summary>
-    public bool IsAtMinimumCapacity => CurrentCustomerCount >= MinCustomers;
+    public bool IsAtMinimumCapacity => CurrentCustomerCount >= Capacity.MinCustomers;
 
     /// <summary>
     /// Gets whether the tour is fully booked (at maximum capacity).
     /// </summary>
-    public bool IsFullyBooked => CurrentCustomerCount >= MaxCustomers;
+    public bool IsFullyBooked => CurrentCustomerCount >= Capacity.MaxCustomers;
 
     /// <summary>
     /// Gets the bookings for this tour.
@@ -136,23 +100,31 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="identifier">The unique business identifier for the tour (e.g. "CUBA2024").</param>
     /// <param name="name">The descriptive name of the tour.</param>
-    /// <param name="schedule">The date range for the tour.</param>
-    /// <param name="pricing">The pricing information for the tour.</param>
-    /// <param name="capacity">The capacity constraints for the tour.</param>
+    /// <param name="startDate">The start date of the tour.</param>
+    /// <param name="endDate">The end date of the tour.</param>
+    /// <param name="basePrice">The base price for a single room.</param>
+    /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
+    /// <param name="regularBikePrice">The price for renting a regular bike.</param>
+    /// <param name="eBikePrice">The price for renting an e-bike.</param>
+    /// <param name="currency">The currency for all prices.</param>
+    /// <param name="minCustomers">The minimum number of customers required.</param>
+    /// <param name="maxCustomers">The maximum number of customers allowed.</param>
     /// <param name="includedServices">The collection of services included in the tour package.</param>
     /// <returns>A Result containing the Tour if validation succeeds, or an error if validation fails.</returns>
     public static Result<Tour> Create(
         string identifier,
         string name,
-        DateRange schedule,
-        TourPricing pricing,
-        TourCapacity capacity,
+        DateTime startDate,
+        DateTime endDate,
+        decimal basePrice,
+        decimal doubleRoomSupplementPrice,
+        decimal regularBikePrice,
+        decimal eBikePrice,
+        Currency currency,
+        int minCustomers,
+        int maxCustomers,
         IEnumerable<string> includedServices)
     {
-        ArgumentNullException.ThrowIfNull(schedule);
-        ArgumentNullException.ThrowIfNull(pricing);
-        ArgumentNullException.ThrowIfNull(capacity);
-
         identifier = StringSanitizer.Sanitize(identifier);
         name = StringSanitizer.Sanitize(name);
         var sanitizedServices = StringSanitizer.SanitizeCollection(includedServices);
@@ -177,9 +149,26 @@ public sealed class Tour : Entity<int>
             errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
         }
 
-        if (schedule.DurationDays < ContractConstants.MinimumTourDurationDays)
+        var scheduleResult = DateRange.Create(startDate, endDate);
+        if (scheduleResult.IsFailure)
         {
-            errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, schedule.DurationDays));
+            errors.Add(scheduleResult);
+        }
+        else if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
+        {
+            errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, scheduleResult.Value.DurationDays));
+        }
+
+        var pricingResult = TourPricing.Create(basePrice, doubleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
+        if (pricingResult.IsFailure)
+        {
+            errors.Add(pricingResult);
+        }
+
+        var capacityResult = TourCapacity.Create(minCustomers, maxCustomers);
+        if (capacityResult.IsFailure)
+        {
+            errors.Add(capacityResult);
         }
 
         if (errors.HasErrors)
@@ -190,9 +179,9 @@ public sealed class Tour : Entity<int>
         return new Tour(
             identifier,
             name,
-            schedule,
-            pricing,
-            capacity,
+            scheduleResult.Value,
+            pricingResult.Value,
+            capacityResult.Value,
             sanitizedServices);
     }
 
@@ -245,28 +234,18 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateSchedule(DateTime startDate, DateTime endDate)
     {
-        var errors = new ValidationErrors();
-
-        if (endDate <= startDate)
+        var scheduleResult = DateRange.Create(startDate, endDate);
+        if (scheduleResult.IsFailure)
         {
-            errors.Add(TourErrors.InvalidDateRangeUpdate());
-        }
-        else
-        {
-            var duration = (endDate - startDate).TotalDays;
-            if (duration < ContractConstants.MinimumTourDurationDays)
-            {
-                errors.Add(TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, duration));
-            }
+            return scheduleResult.ConvertError();
         }
 
-        if (errors.HasErrors)
+        if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
         {
-            return errors.ToResult();
+            return TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, scheduleResult.Value.DurationDays);
         }
 
-        StartDate = startDate;
-        EndDate = endDate;
+        Schedule = scheduleResult.Value;
         return Result.Ok();
     }
 
@@ -284,48 +263,19 @@ public sealed class Tour : Entity<int>
         decimal eBikePrice,
         Currency currency)
     {
-        doubleRoomSupplementPrice = NumericSanitizer.SanitizePrice(doubleRoomSupplementPrice);
-        regularBikePrice = NumericSanitizer.SanitizePrice(regularBikePrice);
-        eBikePrice = NumericSanitizer.SanitizePrice(eBikePrice);
+        var pricingResult = TourPricing.Create(
+            Pricing.BasePrice,
+            doubleRoomSupplementPrice,
+            regularBikePrice,
+            eBikePrice,
+            currency);
 
-        var errors = new ValidationErrors();
-
-        if (doubleRoomSupplementPrice <= 0)
+        if (pricingResult.IsFailure)
         {
-            errors.Add(TourErrors.InvalidPrice("Double room supplement price", doubleRoomSupplementPrice));
-        }
-        else if (doubleRoomSupplementPrice > ContractConstants.MaxPrice)
-        {
-            errors.Add(TourErrors.PriceTooHigh("Double room supplement price", ContractConstants.MaxPrice, doubleRoomSupplementPrice));
+            return pricingResult.ConvertError();
         }
 
-        if (regularBikePrice <= 0)
-        {
-            errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
-        }
-        else if (regularBikePrice > ContractConstants.MaxPrice)
-        {
-            errors.Add(TourErrors.PriceTooHigh("Regular bike price", ContractConstants.MaxPrice, regularBikePrice));
-        }
-
-        if (eBikePrice <= 0)
-        {
-            errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
-        }
-        else if (eBikePrice > ContractConstants.MaxPrice)
-        {
-            errors.Add(TourErrors.PriceTooHigh("E-bike price", ContractConstants.MaxPrice, eBikePrice));
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult();
-        }
-
-        DoubleRoomSupplementPrice = doubleRoomSupplementPrice;
-        RegularBikePrice = regularBikePrice;
-        EBikePrice = eBikePrice;
-        Currency = currency;
+        Pricing = pricingResult.Value;
         return Result.Ok();
     }
 
@@ -336,19 +286,19 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateBasePrice(decimal price)
     {
-        price = NumericSanitizer.SanitizePrice(price);
+        var pricingResult = TourPricing.Create(
+            price,
+            Pricing.DoubleRoomSupplementPrice,
+            Pricing.RegularBikePrice,
+            Pricing.EBikePrice,
+            Pricing.Currency);
 
-        if (price <= 0)
+        if (pricingResult.IsFailure)
         {
-            return TourErrors.InvalidPrice("Base price", price).ToResult();
+            return pricingResult.ConvertError();
         }
 
-        if (price > ContractConstants.MaxPrice)
-        {
-            return TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, price).ToResult();
-        }
-
-        Price = price;
+        Pricing = pricingResult.Value;
         return Result.Ok();
     }
 
@@ -358,7 +308,17 @@ public sealed class Tour : Entity<int>
     /// <param name="currency">The new currency.</param>
     public void UpdateCurrency(Currency currency)
     {
-        Currency = currency;
+        var pricingResult = TourPricing.Create(
+            Pricing.BasePrice,
+            Pricing.DoubleRoomSupplementPrice,
+            Pricing.RegularBikePrice,
+            Pricing.EBikePrice,
+            currency);
+
+        if (pricingResult.IsSuccess)
+        {
+            Pricing = pricingResult.Value;
+        }
     }
 
     /// <summary>
@@ -380,30 +340,13 @@ public sealed class Tour : Entity<int>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateCapacity(int minCustomers, int maxCustomers)
     {
-        var errors = new ValidationErrors();
-
-        if (minCustomers is < 1 or > 20)
+        var capacityResult = TourCapacity.Create(minCustomers, maxCustomers);
+        if (capacityResult.IsFailure)
         {
-            errors.Add(TourErrors.InvalidMinCustomersUpdate(minCustomers));
+            return capacityResult.ConvertError();
         }
 
-        if (maxCustomers is < 1 or > 20)
-        {
-            errors.Add(TourErrors.InvalidMaxCustomersUpdate(maxCustomers));
-        }
-
-        if (maxCustomers < minCustomers)
-        {
-            errors.Add(TourErrors.MaxCustomersLessThanMinUpdate(minCustomers, maxCustomers));
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult();
-        }
-
-        MinCustomers = minCustomers;
-        MaxCustomers = maxCustomers;
+        Capacity = capacityResult.Value;
         return Result.Ok();
     }
 
@@ -434,7 +377,7 @@ public sealed class Tour : Entity<int>
     {
         if (IsFullyBooked)
         {
-            return TourErrors.TourFullyBooked(MaxCustomers, CurrentCustomerCount).ConvertError<Booking>();
+            return TourErrors.TourFullyBooked(Capacity.MaxCustomers, CurrentCustomerCount).ConvertError<Booking>();
         }
 
         var principalValidation = ValidatePrincipalBikeType(principalBikeType);
@@ -479,7 +422,7 @@ public sealed class Tour : Entity<int>
 
         var result = Booking.Create(
             Id,
-            Price,
+            Pricing.BasePrice,
             roomType,
             roomAdditionalCost,
             principalCustomerResult.Value,
@@ -546,8 +489,8 @@ public sealed class Tour : Entity<int>
 
     private decimal GetBikePrice(BikeType bikeType) => bikeType switch
     {
-        BikeType.Regular => RegularBikePrice,
-        BikeType.EBike => EBikePrice,
+        BikeType.Regular => Pricing.RegularBikePrice,
+        BikeType.EBike => Pricing.EBikePrice,
         _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, $"Invalid bike type: {bikeType}")
     };
 
@@ -566,7 +509,7 @@ public sealed class Tour : Entity<int>
     private decimal CalculateRoomAdditionalCost(RoomType roomType) => roomType switch
     {
         RoomType.SingleRoom => 0m,
-        RoomType.DoubleRoom => DoubleRoomSupplementPrice,
+        RoomType.DoubleRoom => Pricing.DoubleRoomSupplementPrice,
         _ => throw new ArgumentOutOfRangeException(nameof(roomType), roomType, $"Invalid room type: {roomType}")
     };
 

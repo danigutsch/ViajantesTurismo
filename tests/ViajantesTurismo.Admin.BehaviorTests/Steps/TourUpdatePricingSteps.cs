@@ -53,18 +53,18 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     [Then(@"the tour should have double room supplement (.*)")]
     public void ThenTheTourShouldHaveDoubleRoomSupplement(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.DoubleRoomSupplementPrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.DoubleRoomSupplementPrice);
     }
 
     [Then(@"the tour should have regular bike price (.*)")]
     public void ThenTheTourShouldHaveRegularBikePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.RegularBikePrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
     }
 
     [Then(@"the tour should have e-bike price (.*)")]
     public void ThenTheTourShouldHaveEBikePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
     }
 }

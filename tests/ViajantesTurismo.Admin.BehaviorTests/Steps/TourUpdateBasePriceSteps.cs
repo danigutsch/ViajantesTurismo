@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
 
@@ -16,9 +15,15 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
-            pricing: TourPricing.Create(basePrice, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
-            capacity: TourCapacity.Create(4, 12).Value,
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice: basePrice,
+            doubleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: Currency.UsDollar,
+            minCustomers: 4,
+            maxCustomers: 12,
             includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
@@ -45,6 +50,6 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
     [Then(@"the tour should have base price (.*)")]
     public void ThenTheTourShouldHaveBasePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Price);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
     }
 }

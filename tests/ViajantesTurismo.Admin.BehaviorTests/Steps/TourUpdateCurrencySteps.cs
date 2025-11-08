@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -15,9 +14,15 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
-            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, currency).Value,
-            capacity: TourCapacity.Create(4, 12).Value,
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice: 2000.00m,
+            doubleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: currency,
+            minCustomers: 4,
+            maxCustomers: 12,
             includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
@@ -32,6 +37,6 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     public void ThenTheTourShouldHaveCurrency(string expectedCurrencyCode)
     {
         var expectedCurrency = TestHelpers.ParseCurrency(expectedCurrencyCode);
-        Assert.Equal(expectedCurrency, tourContext.Tour.Currency);
+        Assert.Equal(expectedCurrency, tourContext.Tour.Pricing.Currency);
     }
 }

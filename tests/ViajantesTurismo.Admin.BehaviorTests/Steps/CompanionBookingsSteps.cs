@@ -160,7 +160,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     {
         Assert.NotNull(bookingContext.Booking);
         var tour = tourContext.Tour;
-        var expectedBikePrice = tour.RegularBikePrice;
+        var expectedBikePrice = tour.Pricing.RegularBikePrice;
         Assert.Equal(expectedBikePrice, bookingContext.Booking.PrincipalCustomer.BikePrice);
     }
 
@@ -170,7 +170,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         Assert.NotNull(bookingContext.Booking);
         Assert.NotNull(bookingContext.Booking.CompanionCustomer);
         var tour = tourContext.Tour;
-        var expectedBikePrice = tour.RegularBikePrice;
+        var expectedBikePrice = tour.Pricing.RegularBikePrice;
         Assert.Equal(expectedBikePrice, bookingContext.Booking.CompanionCustomer.BikePrice);
     }
 
@@ -179,7 +179,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     {
         Assert.NotNull(bookingContext.Booking);
         var tour = tourContext.Tour;
-        Assert.Equal(tour.RegularBikePrice, bookingContext.Booking.PrincipalCustomer.BikePrice);
+        Assert.Equal(tour.Pricing.RegularBikePrice, bookingContext.Booking.PrincipalCustomer.BikePrice);
     }
 
     [Then(@"the booking should include companion e-bike price")]
@@ -188,7 +188,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         Assert.NotNull(bookingContext.Booking);
         Assert.NotNull(bookingContext.Booking.CompanionCustomer);
         var tour = tourContext.Tour;
-        Assert.Equal(tour.EBikePrice, bookingContext.Booking.CompanionCustomer.BikePrice);
+        Assert.Equal(tour.Pricing.EBikePrice, bookingContext.Booking.CompanionCustomer.BikePrice);
     }
 
     [Then(@"both customers should have e-bike pricing")]
@@ -197,8 +197,8 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         Assert.NotNull(bookingContext.Booking);
         Assert.NotNull(bookingContext.Booking.CompanionCustomer);
         var tour = tourContext.Tour;
-        Assert.Equal(tour.EBikePrice, bookingContext.Booking.PrincipalCustomer.BikePrice);
-        Assert.Equal(tour.EBikePrice, bookingContext.Booking.CompanionCustomer.BikePrice);
+        Assert.Equal(tour.Pricing.EBikePrice, bookingContext.Booking.PrincipalCustomer.BikePrice);
+        Assert.Equal(tour.Pricing.EBikePrice, bookingContext.Booking.CompanionCustomer.BikePrice);
     }
 
     [Then(@"the booking should include single room supplement")]
@@ -213,6 +213,6 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     {
         Assert.NotNull(bookingContext.Booking);
         var tour = tourContext.Tour;
-        Assert.Equal(tour.DoubleRoomSupplementPrice, bookingContext.Booking.RoomAdditionalCost);
+        Assert.Equal(tour.Pricing.DoubleRoomSupplementPrice, bookingContext.Booking.RoomAdditionalCost);
     }
 }

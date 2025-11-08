@@ -34,9 +34,15 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
-            schedule: DateRange.Create(DateTime.UtcNow.AddMonths(1), DateTime.UtcNow.AddMonths(1).AddDays(7)).Value,
-            pricing: TourPricing.Create(2000.00m, 500.00m, 100.00m, 200.00m, Currency.UsDollar).Value,
-            capacity: TourCapacity.Create(4, 12).Value,
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice: 2000.00m,
+            doubleRoomSupplementPrice: 500.00m,
+            regularBikePrice: 100.00m,
+            eBikePrice: 200.00m,
+            currency: Currency.UsDollar,
+            minCustomers: 4,
+            maxCustomers: 12,
             includedServices: services).Value;
     }
 
@@ -154,34 +160,18 @@ public sealed class TourManagementSteps(TourContext tourContext)
             ? tourContext.IncludedServices
             : ["Hotel", "Breakfast"];
 
-        var scheduleResult = DateRange.Create(tourContext.StartDate, tourContext.EndDate);
-        var pricingResult = TourPricing.Create(tourContext.BasePrice, tourContext.DoubleRoomSupplementPrice, tourContext.RegularBikePrice, tourContext.EBikePrice, Currency.UsDollar);
-        var capacityResult = TourCapacity.Create(4, 12);
-
-        if (scheduleResult.IsFailure)
-        {
-            tourContext.Result = scheduleResult;
-            return;
-        }
-
-        if (pricingResult.IsFailure)
-        {
-            tourContext.Result = pricingResult;
-            return;
-        }
-
-        if (capacityResult.IsFailure)
-        {
-            tourContext.Result = capacityResult;
-            return;
-        }
-
         tourContext.Result = Tour.Create(
             identifier: tourContext.Identifier,
             name: tourContext.Name,
-            schedule: scheduleResult.Value,
-            pricing: pricingResult.Value,
-            capacity: capacityResult.Value,
+            startDate: tourContext.StartDate,
+            endDate: tourContext.EndDate,
+            basePrice: tourContext.BasePrice,
+            doubleRoomSupplementPrice: tourContext.DoubleRoomSupplementPrice,
+            regularBikePrice: tourContext.RegularBikePrice,
+            eBikePrice: tourContext.EBikePrice,
+            currency: Currency.UsDollar,
+            minCustomers: 4,
+            maxCustomers: 12,
             includedServices: services);
 
         if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
@@ -246,7 +236,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then(@"the tour base price should be (.*)")]
     public void ThenTheTourBasePriceShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Price);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
     }
 
     [Then(@"the tour should include services ""(.*)""")]
@@ -305,42 +295,42 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then(@"the tour single room supplement should be (.*)")]
     public void ThenTheTourSingleRoomSupplementShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.DoubleRoomSupplementPrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.DoubleRoomSupplementPrice);
     }
 
     [Then(@"the tour regular bike price should be (.*)")]
     public void ThenTheTourRegularBikePriceShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.RegularBikePrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
     }
 
     [Then(@"the tour e-bike price should be (.*)")]
     public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.EBikePrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
     }
 
     [Then(@"the tour should preserve UTC time zone")]
     public void ThenTheTourShouldPreserveUtcTimeZone()
     {
         Assert.NotNull(tourContext.Tour);
-        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.StartDate.Kind);
-        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.EndDate.Kind);
+        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.StartDate.Kind);
+        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.EndDate.Kind);
     }
 
     [Then(@"the tour duration should be greater than (.*) days")]
     public void ThenTheTourDurationShouldBeGreaterThanDays(int days)
     {
         Assert.NotNull(tourContext.Tour);
-        var duration = (tourContext.Tour.EndDate - tourContext.Tour.StartDate).TotalDays;
-        Assert.True(duration > days, $"Expected duration greater than {days} days but got {duration}");
+        var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
+        Assert.True(duration > days, $"Expected duration greater than {days} days but got {duration:F1}");
     }
 
     [Then(@"the tour duration should be (.*) days")]
     public void ThenTheTourDurationShouldBeDays(int expectedDays)
     {
         Assert.NotNull(tourContext.Tour);
-        var duration = (tourContext.Tour.EndDate - tourContext.Tour.StartDate).TotalDays;
+        var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
         Assert.Equal(expectedDays, duration);
     }
 
@@ -349,7 +339,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     {
         Assert.NotNull(tourContext.Tour);
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        Assert.Equal(expectedDate, tourContext.Tour.StartDate);
+        Assert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
     }
 
     [Then(@"the tour EndDate should be ""(.*)""")]
@@ -357,6 +347,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
     {
         Assert.NotNull(tourContext.Tour);
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        Assert.Equal(expectedDate, tourContext.Tour.EndDate);
+        Assert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
     }
 }

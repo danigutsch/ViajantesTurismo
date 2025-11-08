@@ -66,18 +66,18 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then(@"the booking room additional cost should be the tour double room supplement")]
     public void ThenTheBookingRoomAdditionalCostShouldBeTheTourDoubleRoomSupplement()
     {
-        Assert.Equal(tourContext.Tour.DoubleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
+        Assert.Equal(tourContext.Tour.Pricing.DoubleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
     }
 
     [Then(@"the booking principal customer bike price should be the tour regular bike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourRegularBikePrice()
     {
-        Assert.Equal(tourContext.Tour.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+        Assert.Equal(tourContext.Tour.Pricing.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
     }
 
     [Then(@"the booking principal customer bike price should be the tour ebike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourEbikePrice()
     {
-        Assert.Equal(tourContext.Tour.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+        Assert.Equal(tourContext.Tour.Pricing.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);
     }
 }

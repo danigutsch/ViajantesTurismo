@@ -2,7 +2,6 @@ using System.Globalization;
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
 
@@ -31,9 +30,15 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         tourContext.Tour = Tour.Create(
             identifier: data["Identifier"],
             name: data["Name"],
-            schedule: DateRange.Create(startDate, endDate).Value,
-            pricing: TourPricing.Create(price, doubleRoomSupplementPrice, regularBikePrice, eBikePrice, currency).Value,
-            capacity: TourCapacity.Create(4, 12).Value,
+            startDate: startDate,
+            endDate: endDate,
+            basePrice: price,
+            doubleRoomSupplementPrice: doubleRoomSupplementPrice,
+            regularBikePrice: regularBikePrice,
+            eBikePrice: eBikePrice,
+            currency: currency,
+            minCustomers: 4,
+            maxCustomers: 12,
             includedServices: DefaultService).Value;
     }
 
