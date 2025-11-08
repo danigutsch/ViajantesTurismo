@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.ApiService;
 

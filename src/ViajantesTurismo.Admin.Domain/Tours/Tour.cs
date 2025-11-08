@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.AdminApi.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;

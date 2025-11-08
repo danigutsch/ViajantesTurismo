@@ -1,5 +1,5 @@
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Models;
-using ViajantesTurismo.AdminApi.Contracts;
 
 namespace ViajantesTurismo.Admin.Web;
 

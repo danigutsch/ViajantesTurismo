@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.Web.Components.Shared;
 

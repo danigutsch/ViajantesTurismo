@@ -1,4 +1,4 @@
-using ViajantesTurismo.AdminApi.Contracts;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
