@@ -50,7 +50,7 @@ public sealed class UpdateBookingDetailsDto : IValidatableObject
                 [nameof(PrincipalBikeType)]);
         }
 
-        if (CompanionBikeType.HasValue && CompanionBikeType.Value == BikeTypeDto.None)
+        if (CompanionBikeType is BikeTypeDto.None)
         {
             yield return new ValidationResult(
                 "Companion must select a bike type (Regular or E-Bike).",
