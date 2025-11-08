@@ -2,8 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ViajantesTurismo.Common.Results;
 
-#pragma warning disable CA1000 // Result pattern requires static factory methods
-
 /// <summary>
 /// Represents the result of an operation that can succeed or fail.
 /// Used instead of exceptions for business rule validation.
@@ -225,6 +223,7 @@ public readonly struct Result : IEquatable<Result>
 /// Used instead of exceptions for business rule validation.
 /// </summary>
 /// <typeparam name="T">The type of the value returned on success.</typeparam>
+[SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Result<T> exposes static factory methods for discoverability and fluent usage; external factory would reduce ergonomics and clarity.")]
 public readonly struct Result<T> : IEquatable<Result<T>>
 {
     private readonly T? _value;

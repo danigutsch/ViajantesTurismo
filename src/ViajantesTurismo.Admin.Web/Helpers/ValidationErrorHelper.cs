@@ -44,7 +44,7 @@ internal static class ValidationErrorHelper
         }
         catch (JsonException)
         {
-            // Failed to parse as ValidationProblemDetails, fallback to standard error
+            response.EnsureSuccessStatusCode();
         }
 
         response.EnsureSuccessStatusCode();
