@@ -1,47 +1,38 @@
-# ADR-008: TotalPrice as Calculated Property
+# TotalPrice as calculated property
 
-**Date:** 2025-11-08  
-**Status:** Accepted
+**Status**: Accepted — 2025-11-08
 
 ## Context
-
-Booking total price was stored in the database and could be manually updated, leading to inconsistencies with actual
-component prices (base price, room cost, bike prices).
+Booking total price was stored in the database and could be manually updated, leading to inconsistencies with actual component prices (base price, room supplement, bike prices, discounts). No single source of truth existed for pricing logic.
 
 ## Decision
-
-Make `TotalPrice` a calculated property:
-
+Make `TotalPrice` a **calculated property** (not stored in DB):
 ```csharp
-public decimal TotalPrice => CalculateTotalPrice(BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer);
+public decimal TotalPrice => CalculateTotalPrice(
+    BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer, Discount);
 ```
+Formula: **`Subtotal - DiscountAmount`** where:
+- `Subtotal = BasePrice + RoomAdditionalCost + PrincipalCustomer.BikePrice + (CompanionCustomer?.BikePrice ?? 0)`
+- `DiscountAmount = Discount.CalculateDiscountAmount(Subtotal)`
+
+EF Core configuration: `entity.Ignore(booking => booking.TotalPrice)`
 
 ## Consequences
+**Pros**
+- Price is always correct and consistent with component prices.
+- Single source of truth for pricing logic in domain.
+- Cannot be manually overridden — prevents data integrity issues.
+- Transparent calculation visible in code and to users.
+- Price automatically updates when components change.
 
-### Positive
+**Cons**
+- Cannot store historical prices if component prices change over time (future: consider price snapshots).
+- Requires database migration to remove `TotalPrice` column.
 
-- Price is always correct and consistent
-- Single source of truth for pricing logic
-- Cannot be manually overridden
-- Transparent calculation visible to users
-
-### Negative
-
-- Cannot store historical prices if components change
-- Migration required to remove TotalPrice column
-
-## Implementation
-
-- Removed `TotalPrice` column from database
-- Added `entity.Ignore(booking => booking.TotalPrice)` in EF Core configuration
-- Formula: `Subtotal - DiscountAmount` where:
-    - `Subtotal = BasePrice + RoomAdditionalCost + PrincipalCustomer.BikePrice + CompanionCustomer?.BikePrice ?? 0`
-    - `DiscountAmount = Discount.CalculateDiscountAmount(Subtotal)`
-- Base price is for single room (not per person)
-- Double room adds supplement cost
-- Discounts applied after subtotal calculation
+## Alternatives considered
+- Store `TotalPrice` in DB and recalculate on update — rejected due to risk of inconsistency.
+- Snapshot prices at booking creation — deferred until historical pricing is required.
 
 ## Links
-
 - Related: [ADR-009: Room Pricing Model](20251108-room-pricing-model.md)
 - Related: [ADR-010: Discount as Value Object](20251108-discount-value-object.md)

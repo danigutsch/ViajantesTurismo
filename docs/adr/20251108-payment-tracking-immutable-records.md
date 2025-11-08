@@ -1,55 +1,46 @@
-# ADR-011: Payment Tracking with Immutable Payment Records
+# Payment tracking with immutable payment records
 
-**Date:** 2025-11-08  
-**Status:** Accepted
+**Status**: Accepted — 2025-11-08
 
 ## Context
-
-Bookings need to track multiple payments over time (down payment, installments, final payment). Payment records must be
-immutable for audit and accounting purposes.
+Bookings must track multiple payments over time (down payment, installments, final payment). Payment records must be immutable for audit, accounting, and compliance purposes. Payment history is critical for financial reconciliation.
 
 ## Decision
-
-Implement `Payment` as immutable entity with full audit trail:
-
+Implement **`Payment` as an immutable entity** with full audit trail:
 ```csharp
 public sealed class Payment : Entity<long>
 {
     public long BookingId { get; }
     public decimal Amount { get; }
     public DateTime PaymentDate { get; }
-    public PaymentMethod Method { get; }  // CreditCard, BankTransfer, Cash, Check, PayPal, Other
+    public PaymentMethod Method { get; }      // Enum: CreditCard, BankTransfer, Cash, etc.
     public string? ReferenceNumber { get; }
     public string? Notes { get; }
-    public DateTime RecordedAt { get; }  // Audit: when payment was recorded in system
+    public DateTime RecordedAt { get; }       // Audit: when entered into system
 }
 ```
-
-Payment status automatically calculated:
-
+Payment **status automatically calculated** based on `AmountPaid` vs `TotalPrice`:
 - `Unpaid`: No payments recorded
-- `PartiallyPaid`: AmountPaid < TotalPrice
-- `Paid`: AmountPaid >= TotalPrice
+- `PartiallyPaid`: `AmountPaid < TotalPrice`
+- `Paid`: `AmountPaid >= TotalPrice`
 
 ## Consequences
+**Pros**
+- Complete payment history preserved — no deletions allowed.
+- Immutability ensures audit integrity (cannot edit/delete payments).
+- Automatic payment status transitions based on calculated totals.
+- Prevents overpayment with validation: `amount <= remaining balance`.
+- Multiple payment methods supported.
+- `RecordedAt` timestamp provides system audit trail.
 
-### Positive
+**Cons**
+- Cannot correct payment errors — must add offsetting (reversal) payment.
+- No refund workflow built in (future: requires separate `Refund` entity or negative payments).
 
-- Complete payment history preserved
-- Cannot edit/delete payments (immutability ensures audit integrity)
-- Automatic payment status transitions
-- Prevents overpayment (validation: amount <= remaining balance)
-- Multiple payment methods supported
+## Alternatives considered
+- Allow payment edits/deletes — rejected due to audit requirements.
+- Single payment per booking — rejected as it doesn't support installments.
+- Store payment status in DB — rejected in favor of calculated property for consistency.
 
-### Negative
-
-- Cannot correct payment errors (must add offsetting payment)
-- No refund workflow (would need separate Refund entity)
-
-## Implementation
-
-- Payments stored in separate collection: `Booking._payments`
-- `AmountPaid` calculated property: `_payments.Sum(p => p.Amount)`
-- `RemainingBalance` calculated property: `TotalPrice - AmountPaid`
-- `TimeProvider` parameter for testable timestamps
-- `RecordedAt` captures when payment entered into system
+## Links
+- Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)

@@ -1,20 +1,17 @@
-# ADR-003: Validation Constants in Contracts Project
+# Validation constants in Contracts project
 
-**Date:** 2025-11-08  
-**Status:** Accepted
+**Status**: Accepted — 2025-11-08
 
 ## Context
-
-Validation constants like max lengths and minimum durations need to be shared between:
-
+Validation constraints like max lengths, minimum durations, and price limits must be shared consistently across:
 - Domain validation logic
-- API contract DTOs
-- Test scenarios
+- API contract DTOs (for DataAnnotations)
+- Test scenarios (Given/When/Then steps)
+
+Duplicating these constants leads to inconsistencies and maintenance burden.
 
 ## Decision
-
-Define all external validation constraints in `ContractConstants` class in the Contracts project:
-
+Define all **external validation constraints** in a `ContractConstants` static class within the **Contracts project**:
 ```csharp
 public static class ContractConstants
 {
@@ -23,22 +20,22 @@ public static class ContractConstants
     public const double MaxPrice = 100_000;
 }
 ```
+Domain, API, and test projects reference these constants for validation and annotations.
 
 ## Consequences
+**Pros**
+- Single source of truth for validation constraints.
+- Changes propagate automatically to domain, DTOs, and tests.
+- Clear API contract documentation — consumers know the limits.
+- No duplication across layers.
 
-### Positive
+**Cons**
+- Domain layer references Contracts project (acceptable dependency for shared constants).
+- Cannot have different constraints for API vs domain (intentional — enforces consistency).
 
-- Single source of truth for constraints
-- Shared between domain, contracts, and tests
-- Changes propagate automatically
-- Clear API contract documentation
+## Alternatives considered
+- Constants in domain with duplicates in contracts — rejected due to duplication and drift risk.
+- Constants in shared Common project — rejected because constraints are API-contract-specific.
 
-### Negative
-
-- Domain layer references Contracts project
-- Cannot have different constraints for API vs domain
-
-## Alternatives
-
-- **Constants in domain with duplicates in contracts** — Rejected due to duplication
-- **Constants in shared Common project** — Rejected because contracts are API-specific
+## Links
+- See `ViajantesTurismo.Admin.Contracts/ContractConstants.cs`

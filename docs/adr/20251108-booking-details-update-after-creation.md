@@ -1,17 +1,12 @@
-# ADR-012: Booking Details Update After Creation
+# Booking details update after creation
 
-**Date:** 2025-11-08  
-**Status:** Accepted
+**Status**: Accepted — 2025-11-08
 
 ## Context
-
-Customers may change accommodation or bike preferences after initial booking. Bookings should be modifiable unless in
-terminal state (Cancelled/Completed).
+Customers may change accommodation (room type) or bike preferences after initial booking creation. Forcing customers to cancel and recreate bookings for simple changes is poor UX and loses payment history.
 
 ## Decision
-
-Add `Booking.UpdateDetails()` method allowing post-creation modifications:
-
+Add a **`Booking.UpdateDetails()`** method allowing post-creation modifications:
 ```csharp
 public Result UpdateDetails(
     RoomType roomType,
@@ -20,34 +15,32 @@ public Result UpdateDetails(
     BookingCustomer? companionCustomer,
     Discount discount)
 {
-    // Validate not in terminal state
     if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
         return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
     
     // Update properties with validation
-    // Price recalculates automatically
+    // TotalPrice recalculates automatically
 }
 ```
+**Can change**: room type, room cost, bikes, companion, discount  
+**Cannot change**: tour, principal customer, booking date, booking ID  
+**Blocked states**: Cancelled, Completed
 
 ## Consequences
+**Pros**
+- No need to cancel/recreate bookings for simple changes — better UX.
+- `TotalPrice` automatically recalculates with new selections (calculated property).
+- Preserves payment history and booking ID.
+- Customer flexibility improved (modify bookings as plans change).
 
-### Positive
+**Cons**
+- UI more complex (edit forms, confirmation dialogs, warnings).
+- Price changes may affect payment status (partially paid → unpaid).
+- No audit trail of what changed (future enhancement: domain events or history table).
 
-- No need to cancel/recreate bookings for simple changes
-- Price automatically recalculates with new selections
-- Preserves payment history and booking ID
-- Customer experience improved (flexible changes)
+## Alternatives considered
+- Cancel and recreate bookings — rejected due to lost payment history and poor UX.
+- Allow updates in any status — rejected to preserve data integrity for completed/cancelled bookings.
 
-### Negative
-
-- UI more complex (edit forms, confirmation dialogs)
-- Price changes may affect payment status
-- No audit trail of what changed (future enhancement needed)
-
-## Implementation
-
-- `PUT /bookings/{id}/details` endpoint
-- Can change: room type, bikes, companion, discount
-- Cannot change: tour, principal customer, booking date
-- Terminal states (Cancelled/Completed) prevent all modifications
-- UI shows warning when removing companion from double room
+## Links
+- Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)

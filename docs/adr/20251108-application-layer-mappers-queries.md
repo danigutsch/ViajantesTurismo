@@ -1,38 +1,32 @@
-# ADR-007: Application Layer for Mappers and Query Interfaces
+# Application layer for mappers and query interfaces
 
-**Date:** 2025-11-08  
-**Status:** Accepted
+**Status**: Accepted — 2025-11-08
 
 ## Context
-
-Mapping logic between domain entities and DTOs was scattered across the API layer. The IQueryService interface was in
-the Domain layer but is actually an application concern.
+Mapping logic between domain entities and DTOs was scattered across the API layer. The `IQueryService` interface was mistakenly placed in the Domain layer, but is actually an application concern. No clear place existed for orchestrating multi-aggregate operations.
 
 ## Decision
-
-Create a separate Application layer (`ViajantesTurismo.Admin.Application`) containing:
-
-- Mapper classes for domain ↔ DTO conversions
-- `IQueryService` interface for read operations
-- `IUnitOfWork` interface for transaction management
+Create a separate **Application layer** (`ViajantesTurismo.Admin.Application`) containing:
+- **Mapper classes** for domain ↔ DTO conversions (`BookingMapper`, `CustomerMapper`, `TourMapper`).
+- **`IQueryService`** interface for read-only operations returning DTOs.
+- **`IUnitOfWork`** interface for transaction management.
+- Application services that coordinate multiple domain operations.
 
 ## Consequences
+**Pros**
+- Clear separation between domain logic (business rules) and application orchestration (workflows).
+- Mappers isolated from API and domain layers — single responsibility.
+- Application services can coordinate multiple aggregates without polluting domain.
+- Follows Clean Architecture principles (domain has no knowledge of DTOs).
+- Read and write models clearly separated (CQRS-friendly).
 
-### Positive
+**Cons**
+- Additional layer adds complexity and more projects to maintain.
+- Mapping logic is boilerplate (consider AutoMapper for complex scenarios).
 
-- Clear separation between domain logic and application orchestration
-- Mappers isolated from API and domain layers
-- Application services can coordinate multiple domain operations
-- Follows Clean Architecture principles
+## Alternatives considered
+- Keep mappers in API layer — rejected because it couples API to domain entity shapes.
+- Use AutoMapper — deferred until mapping complexity justifies it.
 
-### Negative
-
-- Additional layer adds complexity
-- More projects to maintain
-
-## Implementation
-
-- `BookingMapper`, `CustomerMapper`, `TourMapper` classes
-- Static mapping methods (e.g., `MapToBikeType`, `MapToDto`)
-- `IQueryService` provides read-only query methods returning DTOs
-- Domain layer focuses purely on business logic
+## Links
+- See `src/ViajantesTurismo.Admin.Application/README.md`

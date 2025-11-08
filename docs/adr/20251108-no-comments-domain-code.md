@@ -1,31 +1,31 @@
-# ADR-005: No Comments in Domain Code
+# No inline comments in domain code
 
-**Date:** 2025-11-08  
-**Status:** Accepted
+**Status**: Accepted — 2025-11-08
 
 ## Context
-
-Comments in domain code often become outdated and add noise. Well-named methods and validation errors are
-self-documenting.
+Inline comments in domain code often become outdated, add noise, and duplicate information already expressed in well-named methods and validation errors. Maintaining comment accuracy is an overhead that does not scale.
 
 ## Decision
-
-Remove inline comments from domain entities. Document:
-
-- Public API with XML comments on classes/public methods
-- Complex patterns in separate markdown files
-- Business rules in error messages themselves
+**Remove inline comments** from domain entities. Document intent through:
+- **XML comments** on public API surfaces (classes, public methods).
+- **Separate markdown files** in `docs/` for complex patterns and architecture decisions.
+- **Error messages** themselves that express business rules clearly.
+- **Well-named methods and variables** that are self-documenting.
 
 ## Consequences
+**Pros**
+- Code is more readable without comment clutter.
+- Forces better naming conventions and expressive code.
+- No risk of outdated comments contradicting code.
+- Documentation in `docs/` folder is versioned and reviewed explicitly.
 
-### Positive
+**Cons**
+- Less immediate context for complex business rules when reading code.
+- May need to read error classes or docs to understand validation rules.
 
-- Code is more readable
-- Forces better naming
-- No outdated comment maintenance
-- Documentation in docs/ folder stays current
+## Alternatives considered
+- Keep inline comments for complex logic — rejected because comments drift over time.
+- Require comments for all public methods — rejected in favor of XML doc comments for public API only.
 
-### Negative
-
-- Less context for complex business rules
-- May need to read error classes for validation rules
+## Links
+- See `docs/CODING_GUIDELINES.md` for naming conventions.
