@@ -44,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="Features\**\*.feature">
+        <None Update="specs\**\*.feature">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
