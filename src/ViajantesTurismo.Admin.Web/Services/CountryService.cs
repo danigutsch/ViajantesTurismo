@@ -20,7 +20,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
     /// Gets the list of countries asynchronously.
     /// </summary>
     /// <returns>A list of country information.</returns>
-    public async Task<CountryInfo[]> GetCountriesAsync()
+    public async Task<CountryInfo[]> GetCountries()
     {
         if (_countries is not null)
         {
