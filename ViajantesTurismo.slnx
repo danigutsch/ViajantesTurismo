@@ -1,31 +1,32 @@
 <Solution>
-  <Folder Name="/Solution Items/">
-      <File Path="global.json"/>
-    <File Path="README.md" />
-    <File Path=".editorconfig" />
-    <File Path="Directory.Build.props" />
-    <File Path="Directory.Packages.props" />
-    <File Path=".gitignore" />
-  </Folder>
-  <Folder Name="/src/">
-    <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj" />
-    <Project Path="src/ViajantesTurismo.Common/ViajantesTurismo.Common.csproj" />
-      <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj"/>
-    <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
-    <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj" />
-  </Folder>
+    <Folder Name="/Solution Items/">
+        <File Path="global.json"/>
+        <File Path="README.md"/>
+        <File Path=".editorconfig"/>
+        <File Path="Directory.Build.props"/>
+        <File Path="Directory.Packages.props"/>
+        <File Path=".gitignore"/>
+    </Folder>
+    <Folder Name="/src/">
+        <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj"/>
+        <Project Path="src/ViajantesTurismo.Common/ViajantesTurismo.Common.csproj"/>
+        <Project Path="src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj"/>
+        <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj"/>
+        <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"/>
+    </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj"/>
         <Project Path="src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj"/>
         <Project Path="src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj"/>
-    <Project Path="src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj" />
+        <Project Path="src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
         <Project Path="src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
-    <Project Path="src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-      <Project Path="tests\ViajantesTurismo.Admin.BehaviorTests\ViajantesTurismo.Admin.BehaviorTests.csproj"/>
-    <Project Path="tests\ViajantesTurismo.Admin.IntegrationTests\ViajantesTurismo.Admin.IntegrationTests.csproj" />
-      <Project Path="tests\ViajantesTurismo.Admin.UnitTests\ViajantesTurismo.Admin.UnitTests.csproj"/>
-      <Project Path="tests\ViajantesTurismo.Common.UnitTests\ViajantesTurismo.Common.UnitTests.csproj"/>
-  </Folder>
+        <Project Path="src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" Type="C#"/>
+        <Project Path="tests\ViajantesTurismo.Admin.BehaviorTests\ViajantesTurismo.Admin.BehaviorTests.csproj"/>
+        <Project Path="tests\ViajantesTurismo.Admin.IntegrationTests\ViajantesTurismo.Admin.IntegrationTests.csproj"/>
+        <Project Path="tests\ViajantesTurismo.Admin.UnitTests\ViajantesTurismo.Admin.UnitTests.csproj"/>
+        <Project Path="tests\ViajantesTurismo.Common.UnitTests\ViajantesTurismo.Common.UnitTests.csproj"/>
+    </Folder>
 </Solution>
