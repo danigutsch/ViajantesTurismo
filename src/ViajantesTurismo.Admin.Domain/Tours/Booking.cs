@@ -343,13 +343,11 @@ public sealed class Booking : Entity<long>
     {
         ArgumentNullException.ThrowIfNull(discount);
 
-        // Validate booking can be modified
         if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
         }
 
-        // Validate discount against current subtotal
         if (discount.Type == DiscountType.Absolute && discount.Amount > Subtotal)
         {
             return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, Subtotal);
@@ -384,7 +382,6 @@ public sealed class Booking : Entity<long>
         ArgumentNullException.ThrowIfNull(principalCustomer);
         ArgumentNullException.ThrowIfNull(discount);
 
-        // Validate booking can be modified
         if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
@@ -427,7 +424,6 @@ public sealed class Booking : Entity<long>
             return DiscountErrors.FinalPriceNotPositive(finalPrice);
         }
 
-        // Update properties
         RoomType = roomType;
         RoomAdditionalCost = roomAdditionalCost;
         PrincipalCustomer = principalCustomer;
