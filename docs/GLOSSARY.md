@@ -52,6 +52,7 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 | BikeType      | Type of bicycle for a tour participant.      | None(0), Regular(1), EBike(2)                                          | None is invalid for bookings (validation error).          |
 | RoomType      | Accommodation room configuration.            | None(0), SingleRoom(1), DoubleRoom(2)                                  | Affects pricing (double room may have supplement).        |
 | DiscountType  | Type of discount applied to a booking.       | None(0), Percentage(1), Absolute(2)                                    | Percentage limited to max 100%. Absolute is fixed amount. |
+| BedType       | Bed configuration preference within a room.  | SingleBed(0), DoubleBed(1)                                             | Used in accommodation preferences.                        |
 | Currency      | Currency for financial amounts.              | EUR(0), USD(1), GBP(2), ARS(3)                                         | All prices in a tour use same currency.                   |
 
 ## Domain Operations

@@ -45,7 +45,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     [When(@"I update the tour's included services with:")]
     public void WhenIUpdateTheToursIncludedServicesWith(Table table)
     {
-        _servicesToUpdate = table.Rows.Select(row => row["Service"]).ToList();
+        _servicesToUpdate = [.. table.Rows.Select(row => row["Service"])];
         tourContext.Tour.UpdateIncludedServices(_servicesToUpdate);
         tourContext.UpdateResult = Result.Ok();
     }
