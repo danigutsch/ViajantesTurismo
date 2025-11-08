@@ -1,10 +1,137 @@
 # Coding Guidelines
 
+> **Purpose**: This document establishes coding standards for the ViajantesTurismo .NET project to ensure consistency,
+> maintainability, and adherence to domain-driven design principles.
+
 **Related Documents:**
-
 - **[TEST_GUIDELINES.md](TEST_GUIDELINES.md)** - Comprehensive testing standards and best practices
+- **[ARCHITECTURE_DECISIONS.md](ARCHITECTURE_DECISIONS.md)** - Architectural decision records
 
-## Domain-Driven Design Principles
+---
+
+## Table of Contents
+
+1. [Project Configuration](#project-configuration)
+2. [Architecture Principles](#architecture-principles)
+3. [Domain-Driven Design](#domain-driven-design)
+4. [Code Style](#code-style)
+5. [Asynchronous Programming](#asynchronous-programming)
+6. [Exception Handling](#exception-handling)
+7. [Logging and Telemetry](#logging-and-telemetry)
+
+---
+
+## Project Configuration
+
+### SDK and Language Version
+
+- Pin the .NET SDK version using `global.json` to ensure consistent builds across environments
+- Keep `.editorconfig` as the authoritative source for code style
+- Enable nullable reference types project-wide
+- Treat warnings as errors to maintain code quality
+
+### Package Management
+
+- Use `Directory.Packages.props` to centralize package version management
+- This prevents version conflicts across projects and simplifies maintenance
+
+### Code Analysis
+
+- Enable Roslyn analyzers with `AnalysisMode=AllEnabledByDefault`
+- Configure analyzer rules via `.editorconfig`
+- Use [dotnet-format](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) to automatically enforce style
+  guidelines
+- Run code analysis as part of CI builds
+
+### Visibility Modifiers
+
+- Prefer `internal` over `public` for types not intended for external consumption
+- Default to `sealed` classes unless extensibility is explicitly required
+- Always specify visibility, even when it's the default (e.g., `private string _field` not `string _field`)
+- Visibility should be the first modifier (e.g., `public abstract` not `abstract public`)
+
+### Composition Over Inheritance
+
+- Favor composition over inheritance for code reuse
+- Use interfaces and extension methods for shared behavior
+- Reserve inheritance for true "is-a" relationships
+
+---
+
+## Architecture Principles
+
+### Clean Architecture Boundaries
+
+This project follows Clean Architecture with clear separation of concerns:
+
+#### Domain Layer
+
+- **Pure business logic only**: Entities, Value Objects, Aggregates, Domain Events, Domain Services
+- **No infrastructure dependencies**: No references to databases, external APIs, or frameworks
+- **Framework-agnostic**: Should be testable without any infrastructure
+
+#### Application Layer
+
+- **Use cases and orchestration**: Commands, queries, handlers
+- **Transaction boundaries**: Defines unit of work scope
+- **May depend on**: Domain layer only
+- **Does not depend on**: Infrastructure layer
+
+#### Infrastructure Layer
+
+- **External concerns**: Persistence (EF Core), message brokers, external APIs
+- **Implements interfaces**: Defined in Application/Domain layers
+- **Depends on**: Domain and Application layers as needed
+- **Referenced by**: API/UI hosts via dependency injection
+
+#### API/UI Layer
+
+- **Thin controllers/endpoints**: Minimal logic, delegate to Application layer
+- **Depends on**: Application layer
+- **Responsibility**: HTTP concerns, serialization, authentication
+
+### Dependency Rules
+
+```
+API/UI → Application → Domain
+         ↓
+    Infrastructure
+```
+
+**Key Principle**: Dependencies point inward. Inner layers never reference outer layers.
+
+### Avoid Cyclic Dependencies
+
+- Keep dependencies acyclic
+- Consider architecture tests to enforce boundaries
+- Keep `ViajantesTurismo.Common` minimal - treat it as Shared Kernel for cross-cutting abstractions only
+
+---
+
+## Domain-Driven Design
+
+### Ubiquitous Language in Code
+
+Domain objects should express business operations using **ubiquitous language** from the domain, not generic CRUD terms.
+
+❌ **Don't do this:**
+
+```csharp
+booking.Status = BookingStatus.Confirmed;  // Direct property mutation
+```
+
+✅ **Do this instead:**
+
+```csharp
+booking.Confirm();  // Intention-revealing method
+```
+
+### Why Domain Language Matters
+
+1. **Intent is clear**: `booking.Confirm()` clearly expresses what business operation is happening
+2. **Encapsulation**: Business rules for confirming a booking are encapsulated within the method
+3. **Maintainability**: If confirmation rules change, there's one place to update
+4. **Prevents invalid states**: Generic setters allow invalid state transitions; domain methods enforce invariants
 
 ### Use Domain Language in Methods
 
@@ -1033,3 +1160,261 @@ var tour = await toursApi.GetTourById(tourId, CancellationToken.None);
 
 **Exception:** Private helper methods within a class may use `= default` for convenience, but all public APIs should
 require explicit cancellation tokens.
+
+---
+
+## Code Style
+
+### General Formatting
+
+- Follow [Allman style](http://en.wikipedia.org/wiki/Indent_style#Allman_style) bracing (each brace on new line)
+- Use four spaces for indentation (no tabs)
+- Avoid more than one empty line at any time
+- One statement per line
+- One declaration per line
+- Add at least one blank line between method and property definitions
+
+### Naming Conventions
+
+#### Fields
+
+- Use `_camelCase` for internal and private instance fields (prefix with underscore)
+- Use `s_camelCase` for static fields (prefix with `s_`)
+- Use `t_camelCase` for thread-static fields (prefix with `t_`)
+- Use `readonly` where possible (comes after `static` for static fields)
+- Public fields should use `PascalCase` with no prefix (use sparingly)
+
+```csharp
+public sealed class Example
+{
+    private readonly string _instanceField;
+    private static readonly string s_staticField;
+    [ThreadStatic]
+    private static string t_threadStaticField;
+}
+```
+
+#### Methods and Properties
+
+- Use `PascalCase` for all method names, including local functions
+- Use `PascalCase` for all constant fields and local variables
+- Use `PascalCase` for properties
+
+#### Type Keywords
+
+- Use language keywords instead of BCL types (e.g., `int`, `string`, `float` instead of `Int32`, `String`, `Single`)
+- Use language keywords for method calls (e.g., `int.Parse` instead of `Int32.Parse`)
+
+#### Nameof and Literals
+
+- Use `nameof(...)` instead of string literals whenever possible
+- When including non-ASCII characters, use Unicode escape sequences (`\uXXXX`) instead of literal characters
+
+### Modifiers and Visibility
+
+- Always specify visibility, even if it's the default
+- Visibility should be the first modifier (e.g., `public abstract` not `abstract public`)
+- Avoid `this.` unless absolutely necessary
+
+### Var Usage
+
+- Only use `var` when the type is explicitly named on the right-hand side
+- Permitted: `var stream = new FileStream(...)` or `var result = (IEnumerable<int>)items`
+- Not permitted: `var stream = OpenStandardInput()`
+- Target-typed `new()` requires explicit type on left: `FileStream stream = new(...);`
+
+### Namespace Imports
+
+- Specify at the top of the file, outside of `namespace` declarations
+- Sort alphabetically
+- `System.*` namespaces placed first, then all others alphabetically
+
+### Type Declarations
+
+- Fields should be specified at the top within type declarations
+- Make all internal and private types `static` or `sealed` unless derivation is required
+
+### Control Flow
+
+#### Single-Statement If
+
+- Never use single-line form
+- Braces may be omitted only if the body of every block in an `if`/`else if`/`else` compound statement is on a single
+  line
+- Braces required if any block spans multiple lines or uses braces
+
+✅ **Acceptable:**
+
+```csharp
+if (condition)
+    DoSomething();
+
+if (condition)
+{
+    DoSomething();
+}
+```
+
+❌ **Not acceptable:**
+
+```csharp
+if (condition) DoSomething();  // Single-line form not allowed
+
+if (condition)
+    DoSomething();
+else
+{
+    DoSomethingElse();  // Inconsistent - this block has braces
+}
+```
+
+#### Labels
+
+- When using labels (for `goto`), indent the label one less than the current indentation
+
+### Primary Constructors
+
+- Parameters should use `camelCase` (not prefixed with `_`)
+- For small types where parameter usage is obvious, use parameters directly
+- For larger types, assign to private fields prefixed with `_`
+
+```csharp
+// Small type - parameters used directly
+public class Point(int x, int y)
+{
+    public int X => x;
+    public int Y => y;
+}
+
+// Larger type - assign to fields
+public class ComplexService(ILogger logger, IOptions options, ICache cache)
+{
+    private readonly ILogger _logger = logger;
+    private readonly IOptions _options = options;
+    private readonly ICache _cache = cache;
+}
+```
+
+---
+
+## Exception Handling
+
+### Validation vs Exceptions
+
+- **Validate invariants** in Aggregates and Value Objects using guard clauses
+- **Exceptions are for exceptional control flow**, not expected validation failures
+- For validation errors, return `Result<T>` types instead of throwing
+- Use `ProblemDetails` in API responses for structured error information
+
+### Exception Best Practices
+
+- Only catch exceptions you can properly handle
+- Avoid catching general `System.Exception` without an exception filter
+- Use specific exception types for meaningful error messages
+- Include problem codes and correlation IDs for troubleshooting
+
+✅ **Good:**
+
+```csharp
+public static Result<Tour> Create(string identifier, string name, ...)
+{
+    var errors = new ValidationErrors();
+    
+    if (string.IsNullOrWhiteSpace(identifier))
+    {
+        errors.Add(TourErrors.EmptyIdentifier());
+    }
+    
+    if (errors.HasErrors)
+    {
+        return errors.ToResult<Tour>();
+    }
+    
+    return new Tour(identifier, name, ...);
+}
+```
+
+❌ **Avoid:**
+
+```csharp
+public static Tour Create(string identifier, string name, ...)
+{
+    if (string.IsNullOrWhiteSpace(identifier))
+    {
+        throw new ArgumentException("Identifier cannot be empty");  // Use Result instead
+    }
+    
+    return new Tour(identifier, name, ...);
+}
+```
+
+---
+
+## Logging and Telemetry
+
+### Logger Guidelines
+
+- Use `ILogger<T>` dependency injection (no static loggers)
+- Use structured logging with named properties for better searchability
+- Use distributed tracing where applicable (correlation IDs, spans)
+
+### Log Levels
+
+- **INFO**: Business milestones and important state changes
+- **DEBUG**: Detailed diagnostics for development
+- **WARN**: Recoverable issues that don't prevent operation
+- **ERROR**: Failures that prevent normal operation
+
+✅ **Good - Structured logging:**
+
+```csharp
+_logger.LogInformation(
+    "Booking {BookingId} confirmed for tour {TourId} by customer {CustomerId}",
+    booking.Id, tour.Id, customerId);
+```
+
+❌ **Avoid - String interpolation:**
+
+```csharp
+_logger.LogInformation($"Booking {booking.Id} confirmed");  // Not searchable
+```
+
+---
+
+## Development Workflow
+
+### Branching and Pull Requests
+
+- Keep PRs small and focused
+- Include links to Architecture Decision Records (ADRs) if architecture changes
+- Update per-project README and domain documentation when touching Domain/Application code
+- Ensure CI builds pass before requesting review
+
+### Code Reviews
+
+- Use automated tools: dotnet-format, analyzers, architecture tests
+- Verify adherence to these guidelines
+- Check for proper test coverage (see [TEST_GUIDELINES.md](TEST_GUIDELINES.md))
+
+### Tools and Automation
+
+- Use `.editorconfig` for automatic style enforcement in Visual Studio
+- Run `dotnet format` before committing
+- Enable code analysis in CI to catch violations early
+- Use architecture tests to enforce layer boundaries
+
+---
+
+## Summary
+
+These guidelines prioritize:
+
+1. **Correctness**: Code that works reliably even after modifications
+2. **Teaching**: Clear examples of proper patterns and practices
+3. **Consistency**: Uniform style across the entire codebase
+4. **Maintainability**: Code that's easy to understand and evolve
+5. **Domain focus**: Rich domain models that express business intent
+
+Remember: Guidelines evolve. When in doubt, follow the principle that makes code more readable, maintainable, and
+aligned with business goals. If you find code that doesn't follow these guidelines, consider it an opportunity for
+improvement through refactoring.
