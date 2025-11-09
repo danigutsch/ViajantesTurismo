@@ -4,7 +4,9 @@
 
 ## Context
 
-Error creation was duplicated across domain methods, and error messages were inconsistent. Each validation failure constructed `Result` inline, leading to scattered error messages and duplication.
+Error creation was duplicated across domain methods, and error messages were inconsistent.
+Each validation failure constructed `Result` inline, leading to scattered error messages
+and duplication.
 
 ## Decision
 

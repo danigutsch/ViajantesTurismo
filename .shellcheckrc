@@ -1,0 +1,21 @@
+# ShellCheck configuration
+# More info: https://www.shellcheck.net/wiki/
+
+# Enable all optional checks
+enable=all
+
+# Treat specific warnings as errors (fail build)
+# SC2086: Double quote to prevent globbing and word splitting
+# SC2115: Use "${var:?}" to ensure var is never empty
+# SC2154: Referenced but not assigned variable
+# SC2155: Declare and assign separately to avoid masking return values
+error=SC2086,SC2115,SC2154,SC2155
+
+# Severity threshold (error, warning, info, style)
+severity=style
+
+# Specific shell dialect (bash, sh, dash, ksh)
+shell=bash
+
+# Exclude specific checks if needed (none by default for strictness)
+# disable=SC1091  # Example: Not following sourced files

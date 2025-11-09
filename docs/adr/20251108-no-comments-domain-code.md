@@ -4,7 +4,9 @@
 
 ## Context
 
-Inline comments in domain code often become outdated, add noise, and duplicate information already expressed in well-named methods and validation errors. Maintaining comment accuracy is an overhead that does not scale.
+Inline comments in domain code often become outdated, add noise, and duplicate information already
+expressed in well-named methods and validation errors. Maintaining comment accuracy is an overhead
+that does not scale.
 
 ## Decision
 

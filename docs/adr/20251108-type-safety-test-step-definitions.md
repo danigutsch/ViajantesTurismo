@@ -4,7 +4,9 @@
 
 ## Context
 
-Behavior test steps need to handle both `Result` (no return value) and `Result<T>` (typed return value) from different domain operations. `Result` and `Result<T>` are value types (structs), not classes, so standard polymorphism techniques don't apply.
+Behavior test steps need to handle both `Result` (no return value) and `Result<T>` (typed return value)
+from different domain operations. `Result` and `Result<T>` are value types (structs), not classes,
+so standard polymorphism techniques don't apply.
 
 ## Decision
 

@@ -317,16 +317,10 @@ public sealed class ValueObjectTests
         Assert.False(order1 == order3);
     }
 
-    private sealed class TestAddress : ValueObject
+    private sealed class TestAddress(string street, string? city) : ValueObject
     {
-        public TestAddress(string street, string? city)
-        {
-            Street = street;
-            City = city;
-        }
-
-        public string Street { get; }
-        public string? City { get; }
+        public string Street { get; } = street;
+        public string? City { get; } = city;
 
         protected override IEnumerable<object?> GetEqualityComponents()
         {
@@ -335,16 +329,10 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestMoney : ValueObject
+    private sealed class TestMoney(decimal amount, string currency) : ValueObject
     {
-        public TestMoney(decimal amount, string currency)
-        {
-            Amount = amount;
-            Currency = currency;
-        }
-
-        public decimal Amount { get; }
-        public string Currency { get; }
+        public decimal Amount { get; } = amount;
+        public string Currency { get; } = currency;
 
         protected override IEnumerable<object?> GetEqualityComponents()
         {
@@ -353,16 +341,10 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestTwoStrings : ValueObject
+    private sealed class TestTwoStrings(string first, string second) : ValueObject
     {
-        public TestTwoStrings(string first, string second)
-        {
-            First = first;
-            Second = second;
-        }
-
-        public string First { get; }
-        public string Second { get; }
+        public string First { get; } = first;
+        public string Second { get; } = second;
 
         protected override IEnumerable<object?> GetEqualityComponents()
         {
@@ -371,18 +353,11 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestPerson : ValueObject
+    private sealed class TestPerson(string firstName, string lastName, int age) : ValueObject
     {
-        public TestPerson(string firstName, string lastName, int age)
-        {
-            FirstName = firstName;
-            LastName = lastName;
-            Age = age;
-        }
-
-        public string FirstName { get; }
-        public string LastName { get; }
-        public int Age { get; }
+        public string FirstName { get; } = firstName;
+        public string LastName { get; } = lastName;
+        public int Age { get; } = age;
 
         protected override IEnumerable<object?> GetEqualityComponents()
         {
@@ -392,16 +367,10 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestOrder : ValueObject
+    private sealed class TestOrder(TestMoney price, TestAddress address) : ValueObject
     {
-        public TestOrder(TestMoney price, TestAddress address)
-        {
-            Price = price;
-            Address = address;
-        }
-
-        public TestMoney Price { get; }
-        public TestAddress Address { get; }
+        public TestMoney Price { get; } = price;
+        public TestAddress Address { get; } = address;
 
         protected override IEnumerable<object?> GetEqualityComponents()
         {

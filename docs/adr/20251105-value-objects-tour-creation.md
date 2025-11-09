@@ -4,7 +4,8 @@
 
 ## Context
 
-Factory methods with many primitive parameters (strings, decimals, ints, DateTimes) become difficult to read, maintain, and use correctly. Related parameters are not grouped logically, leading to:
+Factory methods with many primitive parameters (strings, decimals, ints, DateTimes) become difficult
+to read, maintain, and use correctly. Related parameters are not grouped logically, leading to:
 
 - Long parameter lists (10+ parameters)
 - Easy to mix up parameter order
@@ -16,7 +17,8 @@ Factory methods with many primitive parameters (strings, decimals, ints, DateTim
 
 This decision was **superseded** by keeping primitive parameters in factory methods.
 
-The original approach introduced value objects to group related parameters (e.g., `PricingInfo`, `ScheduleInfo`), but was reverted in favor of:
+The original approach introduced value objects to group related parameters (e.g., `PricingInfo`, `ScheduleInfo`),
+but was reverted in favor of:
 
 - Keeping factory methods with **primitive parameters** for simplicity.
 - Direct validation in the factory method.

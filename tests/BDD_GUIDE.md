@@ -33,7 +33,8 @@ Behavior-Driven Development (BDD) is a collaborative approach that:
 
 ### Living Documentation
 
-Feature files are **Living Documentation** - always up-to-date because they're executed as tests. Unlike traditional documentation:
+Feature files are **Living Documentation** - always up-to-date because they're executed as tests.
+Unlike traditional documentation:
 
 - ✅ **Never out of date** - Tests fail when behavior changes
 - ✅ **Stakeholder readable** - Business people can understand and validate
@@ -128,7 +129,8 @@ This structure provides:
 - Easy discovery of which features are tested
 - Natural alignment with domain model documentation
 - Support for running tests by aggregate or bounded context
-- Avoids the [Feature-coupled step definitions anti-pattern](https://cucumber.io/docs/guides/anti-patterns#feature-coupled-step-definitions)
+- Avoids the [Feature-coupled step definitions anti-pattern](
+  https://cucumber.io/docs/guides/anti-patterns#feature-coupled-step-definitions)
 
 ### Tags for Traceability
 

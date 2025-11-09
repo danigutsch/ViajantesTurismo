@@ -4,7 +4,9 @@
 
 ## Context
 
-Mapping logic between domain entities and DTOs was scattered across the API layer. The `IQueryService` interface was mistakenly placed in the Domain layer, but is actually an application concern. No clear place existed for orchestrating multi-aggregate operations.
+Mapping logic between domain entities and DTOs was scattered across the API layer.
+The `IQueryService` interface was mistakenly placed in the Domain layer, but is actually
+an application concern. No clear place existed for orchestrating multi-aggregate operations.
 
 ## Decision
 

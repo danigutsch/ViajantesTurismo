@@ -4,7 +4,9 @@
 
 ## Context
 
-Bookings need flexible discount support for promotions, early bird pricing, and custom negotiations. Discounts must be traceable for audit and accounting purposes, and validation must ensure pricing integrity.
+Bookings need flexible discount support for promotions, early bird pricing, and custom negotiations.
+Discounts must be traceable for audit and accounting purposes, and validation must ensure pricing
+integrity.
 
 ## Decision
 

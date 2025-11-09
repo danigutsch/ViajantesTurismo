@@ -104,7 +104,9 @@ internal sealed class CustomerCreationState
     public void NavigateToStep(int step)
     {
         if (step is < 1 or > 8)
+        {
             throw new ArgumentOutOfRangeException(nameof(step), "Step must be between 1 and 8.");
+        }
 
         CurrentStep = step;
     }

@@ -93,7 +93,8 @@ The coverage report provides detailed insights into:
 - Coverage by project and class
 - Historical coverage trends
 
-**Note:** The `dotnet reportgenerator` tool is included in the repository's local tool manifest (`.config/dotnet-tools.json`). Run `dotnet tool restore` from the repository root to ensure it's installed.
+**Note:** The `dotnet reportgenerator` tool is included in the repository's local tool manifest
+(`.config/dotnet-tools.json`). Run `dotnet tool restore` from the repository root to ensure it's installed.
 
 ## Best Practices
 

@@ -4,7 +4,9 @@
 
 ## Context
 
-Customers may change accommodation (room type) or bike preferences after initial booking creation. Forcing customers to cancel and recreate bookings for simple changes is poor UX and loses payment history.
+Customers may change accommodation (room type) or bike preferences after initial booking creation.
+Forcing customers to cancel and recreate bookings for simple changes is poor UX and loses payment
+history.
 
 ## Decision
 

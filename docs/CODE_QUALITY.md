@@ -20,8 +20,8 @@ and [Electron](https://github.com/electron/electron), we use a **multi-layer app
 2. **Pre-commit Hooks** - Optional safety net before committing
 3. **CI/CD Pipeline** - Enforces standards for all team members
 
-**Note**: We deliberately **do not** run these checks during .NET builds. Documentation and code style quality checks are separate
-from code compilation, preventing unnecessary build failures and keeping builds fast.
+**Note**: We deliberately **do not** run these checks during .NET builds. Documentation and code style quality checks
+are separate from code compilation, preventing unnecessary build failures and keeping builds fast.
 
 ## Markdown Linting
 
@@ -57,7 +57,8 @@ Markdown files are automatically fixed and re-staged by the pre-commit hook.
 
 ### VS Code Integration
 
-The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) is **already installed** and provides:
+The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) is
+**already installed** and provides:
 
 - **Real-time linting** as you type (primary quality gate)
 - **Auto-fix on save** (can be enabled in VS Code settings)
@@ -126,7 +127,9 @@ PowerShell scripts are automatically analyzed (non-blocking warnings) by the pre
 
 ### Configuration
 
-Code formatting rules are defined in `.editorconfig` at the solution root. This file follows [EditorConfig](https://editorconfig.org/) standards and is automatically recognized by Visual Studio, Rider, and VS Code.
+Code formatting rules are defined in `.editorconfig` at the solution root.
+This file follows [EditorConfig](https://editorconfig.org/) standards and is automatically recognized
+by Visual Studio, Rider, and VS Code.
 
 **Key Settings:**
 

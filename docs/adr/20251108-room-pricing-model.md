@@ -4,7 +4,9 @@
 
 ## Context
 
-Initial implementation incorrectly modeled room pricing by multiplying base price by customer count and adding a supplement for single rooms. This inverted the actual business model where double rooms cost more than single rooms.
+Initial implementation incorrectly modeled room pricing by multiplying base price by customer count
+and adding a supplement for single rooms. This inverted the actual business model where double rooms
+cost more than single rooms.
 
 ## Decision
 

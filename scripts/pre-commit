@@ -34,16 +34,17 @@ CHANGED_SH_FILES=$(get_staged_files '\.(sh|bash)$|scripts/(pre-commit|post-commi
 if [ -n "$CHANGED_SH_FILES" ]; then
     echo "${YELLOW}Linting and formatting shell scripts...${NC}"
     
-    # ShellCheck for linting (warnings only)
+    # ShellCheck for linting (with .shellcheckrc config)
     for file in $CHANGED_SH_FILES; do
-        if ! npx shellcheck "$file" 2>/dev/null; then
-            echo "${YELLOW}⚠️  ShellCheck warnings in $file (non-blocking)${NC}"
+        if ! npx shellcheck "$file"; then
+            echo "${RED}✗ ShellCheck errors in $file${NC}"
+            exit 1
         fi
     done
     
-    # shfmt for formatting
+    # shfmt for formatting (uses .editorconfig settings)
     for file in $CHANGED_SH_FILES; do
-        npx shfmt -w -i 4 -ci "$file" 2>/dev/null && git add "$file"
+        npx shfmt -w -i 4 -ci -bn -sr "$file" && git add "$file"
     done
     echo "${GREEN}✓ Shell scripts formatted and re-staged${NC}"
 fi

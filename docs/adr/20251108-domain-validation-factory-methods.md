@@ -4,14 +4,18 @@
 
 ## Context
 
-Domain entities were being created with public constructors, allowing invalid state. Validation was scattered across DTOs and application layer, violating DDD principles. Entities could be instantiated in invalid states, and validation logic lacked a single authoritative location.
+Domain entities were being created with public constructors, allowing invalid state.
+Validation was scattered across DTOs and application layer, violating DDD principles.
+Entities could be instantiated in invalid states, and validation logic lacked a single
+authoritative location.
 
 ## Decision
 
 Implement the **factory method pattern** for all aggregate roots:
 
 - Static `Create()` method returns `Result<T>` with all validation.
-- Private constructors prevent direct instantiation, ensuring entities are created only through validated factory methods.
+- Private constructors prevent direct instantiation, ensuring entities are created only through
+  validated factory methods.
 - All business rule validation happens in the factory method before construction.
 - Update operations return `Result` to indicate success/failure.
 - Parameterless private constructor marked `[UsedImplicitly]` for EF Core.

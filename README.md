@@ -11,7 +11,8 @@ powerful tools to create and manage tour packages.
 ## Features
 
 - **Tour Management**: Create and manage bike tour packages with detailed itineraries
-- **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences, and medical details
+- **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences,
+  and medical details
 - **Booking Management**:
     - Create bookings with room type selection (Single/Double)
     - Optional companion for double rooms (supports single occupancy)

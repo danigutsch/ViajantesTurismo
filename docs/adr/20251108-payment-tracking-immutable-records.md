@@ -4,7 +4,9 @@
 
 ## Context
 
-Bookings must track multiple payments over time (down payment, installments, final payment). Payment records must be immutable for audit, accounting, and compliance purposes. Payment history is critical for financial reconciliation.
+Bookings must track multiple payments over time (down payment, installments, final payment).
+Payment records must be immutable for audit, accounting, and compliance purposes.
+Payment history is critical for financial reconciliation.
 
 ## Decision
 

@@ -1,0 +1,22 @@
+# shfmt configuration via .editorconfig
+# More info: https://github.com/mvdan/sh
+
+[*.sh]
+# Indent with spaces (0 = tabs, >0 = number of spaces)
+indent_size = 4
+indent_style = space
+
+# Binary operators like && and | may start a line
+binary_next_line = true
+
+# Redirect operators will be followed by a space
+space_redirects = true
+
+# Switch cases will be indented
+switch_case_indent = true
+
+# Keep column alignment paddings
+keep_padding = false
+
+# Function opening braces on same line
+function_next_line = false

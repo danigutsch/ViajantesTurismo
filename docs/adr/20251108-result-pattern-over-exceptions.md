@@ -4,7 +4,9 @@
 
 ## Context
 
-Validation failures and business rule violations were throwing exceptions, making error paths implicit and hard to test. Exceptions for expected domain failures introduce performance overhead and obscure control flow.
+Validation failures and business rule violations were throwing exceptions, making error paths implicit
+and hard to test. Exceptions for expected domain failures introduce performance overhead and obscure
+control flow.
 
 ## Decision
 

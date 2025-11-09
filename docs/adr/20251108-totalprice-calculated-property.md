@@ -4,7 +4,9 @@
 
 ## Context
 
-Booking total price was stored in the database and could be manually updated, leading to inconsistencies with actual component prices (base price, room supplement, bike prices, discounts). No single source of truth existed for pricing logic.
+Booking total price was stored in the database and could be manually updated, leading to inconsistencies
+with actual component prices (base price, room supplement, bike prices, discounts).
+No single source of truth existed for pricing logic.
 
 ## Decision
 
