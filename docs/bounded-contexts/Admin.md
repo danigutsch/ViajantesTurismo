@@ -13,11 +13,20 @@ Document each aggregate with purpose, invariants, commands, and events.
 - Tour identifier must be unique and non-empty (max 128 chars)
 - Tour name required (max 128 chars)
 - End date must be after start date with minimum 5 days duration
-- All prices must be >= 0 and <= 100,000
-- Capacity: 1 <= minCustomers <= maxCustomers <= 100
+- All prices must be > 0 and <= 100,000 (strictly positive)
+- Capacity: 1 <= minCustomers <= maxCustomers <= 20
 - Cannot exceed maximum customer capacity (confirmed bookings only count)
 - Bookings can only be created/modified through Tour methods (aggregate boundary)
 - Cannot delete tour with confirmed bookings
+- Principal and companion customers cannot be the same person
+- BikeType.None cannot be used for bookings (must select Regular or EBike)
+- Bookings cannot be modified if status is Cancelled or Completed
+- Bookings can only be removed if status is Pending
+- Payment amount cannot exceed remaining balance
+- Payment date cannot be in the future
+- Absolute discount cannot exceed booking subtotal
+- Final price after discount must be positive
+- Percentage discount cannot exceed 100%
 
 ### Commands (Tour)
 
@@ -79,11 +88,25 @@ accommodation information.
 
 ### Invariants
 
-- Email must be unique and valid format
-- Customer must be 18+ years old
+- Email must be unique and valid format (max 128 chars)
+- Customer must be 18+ years old (birth date cannot be in the future)
 - Contact information properly formatted and valid
 - All value objects validated on creation and update
-- Personal information required (name, DOB, nationality)
+- Personal information required (name, DOB, nationality, profession)
+- First name and last name required (max 128 chars each)
+- Gender required (max 64 chars)
+- Nationality required (max 128 chars)
+- Profession required (max 128 chars)
+- Email and mobile phone required
+- Mobile phone max 64 chars
+- Instagram and Facebook handles max 64 chars (optional)
+- Physical characteristics: weight 1-500 kg, height 50-300 cm
+- National ID and issuing nationality required (max 64 chars each)
+- Address fields required: street, neighborhood, postal code, city, state, country (max 128 chars)
+- Address complement optional (max 128 chars)
+- Postal code max 64 chars
+- Emergency contact name and mobile required (max 128 and 64 chars respectively)
+- Medical info fields optional (allergies and additional info max 500 chars each)
 
 ### Commands
 
