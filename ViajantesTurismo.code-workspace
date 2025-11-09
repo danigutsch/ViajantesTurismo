@@ -1,0 +1,169 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		// Hide build artifacts and generated files from Explorer
+		"files.exclude": {
+			"**/bin": true,
+			"**/obj": true,
+			"**/TestResults": true,
+			"**/*.feature.cs": true,
+			"**/.vs": true,
+			"**/node_modules": true
+		},
+
+		// Search exclusions (performance)
+		"search.exclude": {
+			"**/bin": true,
+			"**/obj": true,
+			"**/TestResults": true,
+			"**/node_modules": true,
+			"**/.git": true
+		},
+
+		// C# formatter (use EditorConfig settings)
+		"dotnet.preferCSharpExtension": true,
+		"dotnet.defaultSolution": "ViajantesTurismo.slnx",
+		"omnisharp.enableEditorConfigSupport": true,
+		"omnisharp.enableRoslynAnalyzers": true,
+
+		// Files
+		"files.trimTrailingWhitespace": true,
+		"files.insertFinalNewline": true,
+		"files.eol": "\r\n",
+
+		// Markdown
+		"markdownlint.config": {
+			"extends": "${workspaceFolder}/.markdownlint.json"
+		},
+
+		// Format on save - disabled by default, developers can opt-in
+		"editor.formatOnSave": false,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.markdownlint": "explicit",
+			"source.organizeImports": "explicit"
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-dotnettools.csdevkit",
+			"ms-dotnettools.aspire",
+			"editorconfig.editorconfig",
+			"davidanson.vscode-markdownlint",
+			"alexkrechik.cucumberautocomplete",
+			"ms-vscode.powershell"
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "build",
+				"command": "dotnet",
+				"type": "process",
+				"args": ["build", "${workspaceFolder}/ViajantesTurismo.slnx"],
+				"problemMatcher": "$msCompile",
+				"group": "build"
+			},
+			{
+				"label": "test",
+				"command": "dotnet",
+				"type": "process",
+				"args": ["test", "${workspaceFolder}/ViajantesTurismo.slnx"],
+				"problemMatcher": "$msCompile",
+				"group": "test"
+			},
+			{
+				"label": "test with coverage",
+				"command": "dotnet",
+				"type": "process",
+				"args": [
+					"test",
+					"--collect:XPlat Code Coverage",
+					"--settings", "${workspaceFolder}/coverlet.runsettings",
+					"--results-directory", "${workspaceFolder}/TestResults"
+				],
+				"problemMatcher": "$msCompile",
+				"group": "test"
+			},
+			{
+				"label": "format code",
+				"command": "dotnet",
+				"type": "process",
+				"args": ["format", "${workspaceFolder}/ViajantesTurismo.slnx"],
+				"problemMatcher": []
+			},
+			{
+				"label": "restore tools",
+				"command": "dotnet",
+				"type": "process",
+				"args": ["tool", "restore"],
+				"problemMatcher": []
+			},
+			{
+				"label": "npm install",
+				"command": "npm",
+				"type": "shell",
+				"args": ["install"],
+				"problemMatcher": []
+			},
+			{
+				"label": "setup dev environment (PowerShell)",
+				"type": "shell",
+				"command": "powershell",
+				"args": ["-File", "${workspaceFolder}/setup-dev.ps1"],
+				"problemMatcher": [],
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				},
+				"windows": {
+					"command": "powershell"
+				}
+			},
+			{
+				"label": "setup dev environment (Bash)",
+				"type": "shell",
+				"command": "bash",
+				"args": ["${workspaceFolder}/setup-dev.sh"],
+				"problemMatcher": [],
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				},
+				"linux": {
+					"command": "bash"
+				},
+				"osx": {
+					"command": "bash"
+				}
+			},
+			{
+				"label": "run pre-commit checks (PowerShell)",
+				"type": "shell",
+				"command": "powershell",
+				"args": ["-File", "${workspaceFolder}/scripts/pre-commit.ps1"],
+				"problemMatcher": [],
+				"windows": {
+					"command": "powershell"
+				}
+			},
+			{
+				"label": "run pre-commit checks (Bash)",
+				"type": "shell",
+				"command": "bash",
+				"args": ["${workspaceFolder}/scripts/pre-commit"],
+				"problemMatcher": [],
+				"linux": {
+					"command": "bash"
+				},
+				"osx": {
+					"command": "bash"
+				}
+			}
+		]
+	}
+}

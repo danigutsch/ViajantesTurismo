@@ -1,0 +1,42 @@
+{
+  // Hide build artifacts and generated files from Explorer
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/TestResults": true,
+    "**/*.feature.cs": true,
+    "**/.vs": true,
+    "**/node_modules": true
+  },
+
+  // Search exclusions for better performance
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/TestResults": true,
+    "**/node_modules": true,
+    "**/.git": true
+  },
+
+  // C# formatter - use EditorConfig settings
+  "dotnet.preferCSharpExtension": true,
+  "dotnet.defaultSolution": "ViajantesTurismo.slnx",
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+
+  // File settings
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.eol": "\r\n",
+
+  // Markdown linting
+  "markdownlint.config": {
+    "extends": "${workspaceFolder}/.markdownlint.json"
+  },
+
+  // Code actions on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.markdownlint": "explicit",
+    "source.organizeImports": "explicit"
+  }
+}
