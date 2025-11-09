@@ -64,7 +64,7 @@ public class BookingSteps
 public Booking Booking { get; set; } = null!;  // Use null!
 ```
 
-**Value Types (Structs like Result<\T>)**:
+**Value Types (Structs like Result\<T>)**:
 
 ```csharp
 public Result<Tour> Result { get; set; }  // No initializer for structs
