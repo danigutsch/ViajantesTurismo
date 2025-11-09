@@ -34,28 +34,18 @@ CHANGED_SH_FILES=$(get_staged_files '\.(sh|bash)$|scripts/(pre-commit|post-commi
 if [ -n "$CHANGED_SH_FILES" ]; then
     echo "${YELLOW}Linting and formatting shell scripts...${NC}"
     
-    # ShellCheck for linting (warnings only, skip if not available)
-    if command -v shellcheck >/dev/null 2>&1 || npx --no-install shellcheck --version >/dev/null 2>&1; then
-        for file in $CHANGED_SH_FILES; do
-            if ! npx --no-install shellcheck "$file" 2>/dev/null && ! shellcheck "$file" 2>/dev/null; then
-                echo "${YELLOW}⚠️  ShellCheck warnings in $file (non-blocking)${NC}"
-            fi
-        done
-    else
-        echo "${YELLOW}⚠️  ShellCheck not available, skipping shell linting${NC}"
-    fi
+    # ShellCheck for linting (warnings only)
+    for file in $CHANGED_SH_FILES; do
+        if ! npx shellcheck "$file" 2>/dev/null; then
+            echo "${YELLOW}⚠️  ShellCheck warnings in $file (non-blocking)${NC}"
+        fi
+    done
     
-    # shfmt for formatting (skip if not available)
-    if command -v shfmt >/dev/null 2>&1 || npx --no-install shfmt --version >/dev/null 2>&1; then
-        for file in $CHANGED_SH_FILES; do
-            if npx --no-install shfmt -w -i 4 -ci "$file" 2>/dev/null || shfmt -w -i 4 -ci "$file" 2>/dev/null; then
-                git add "$file"
-            fi
-        done
-        echo "${GREEN}✓ Shell scripts formatted and re-staged${NC}"
-    else
-        echo "${YELLOW}⚠️  shfmt not available, skipping shell formatting${NC}"
-    fi
+    # shfmt for formatting
+    for file in $CHANGED_SH_FILES; do
+        npx shfmt -w -i 4 -ci "$file" 2>/dev/null && git add "$file"
+    done
+    echo "${GREEN}✓ Shell scripts formatted and re-staged${NC}"
 fi
 
 # PowerShell script linting
