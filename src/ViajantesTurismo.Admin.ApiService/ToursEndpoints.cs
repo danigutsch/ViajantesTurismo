@@ -18,7 +18,7 @@ internal static class ToursEndpoints
     /// </summary>
     /// <param name="app">The web application builder.</param>
     /// <returns>The web application for chaining.</returns>
-    public static WebApplication MapToursEndpoints(this WebApplication app)
+    public static void MapToursEndpoints(this WebApplication app)
     {
         var toursGroup = app.MapGroup("/tours")
             .WithGroupName("Tours")
@@ -43,8 +43,6 @@ internal static class ToursEndpoints
             .WithName("UpdateTour")
             .WithDescription("Updates an existing tour.")
             .WithSummary("Updates an existing tour.");
-
-        return app;
     }
 
     private static async Task<Results<Created<Tour>, ValidationProblem>> CreateTour(

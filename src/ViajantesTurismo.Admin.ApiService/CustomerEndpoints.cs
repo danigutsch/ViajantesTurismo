@@ -19,7 +19,7 @@ internal static class CustomerEndpoints
     /// </summary>
     /// <param name="app">The web application builder.</param>
     /// <returns>The web application for chaining.</returns>
-    public static WebApplication MapCustomerEndpoints(this WebApplication app)
+    public static void MapCustomerEndpoints(this WebApplication app)
     {
         var customersGroup = app.MapGroup("/customers")
             .WithGroupName("Customers")
@@ -44,8 +44,6 @@ internal static class CustomerEndpoints
             .WithName("UpdateCustomer")
             .WithDescription("Updates an existing customer.")
             .WithSummary("Updates an existing customer.");
-
-        return app;
     }
 
     private static async Task<Ok<IReadOnlyList<GetCustomerDto>>> GetAllCustomers(

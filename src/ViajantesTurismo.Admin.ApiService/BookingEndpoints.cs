@@ -18,7 +18,7 @@ internal static class BookingEndpoints
     /// </summary>
     /// <param name="app">The web application builder.</param>
     /// <returns>The web application for chaining.</returns>
-    public static WebApplication MapBookingEndpoints(this WebApplication app)
+    public static void MapBookingEndpoints(this WebApplication app)
     {
         var bookingsGroup = app.MapGroup("/bookings")
             .WithGroupName("Bookings")
@@ -88,8 +88,6 @@ internal static class BookingEndpoints
             .WithName("RecordPayment")
             .WithDescription("Records a payment for a booking.")
             .WithSummary("Records a payment.");
-
-        return app;
     }
 
     private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetAllBookings(
