@@ -81,31 +81,6 @@ else
     printf "%b" "   ${CYAN}💡 Install from: https://github.com/PowerShell/PowerShell${NC}\n"
 fi
 
-# Check for Go (optional - only for shfmt shell formatter)
-printf "\n%b" "${YELLOW}🔍 Checking Go for shell script formatting...${NC}\n"
-if command -v go > /dev/null 2>&1; then
-    GO_VERSION=$(go version | awk '{print $3}')
-    printf "%b" "   ${GREEN}✅ Go installed: ${GO_VERSION}${NC}\n"
-
-    # Check if shfmt is installed
-    if command -v shfmt > /dev/null 2>&1; then
-        SHFMT_VERSION=$(shfmt --version)
-        printf "%b" "   ${GREEN}✅ shfmt installed: v${SHFMT_VERSION}${NC}\n"
-    else
-        printf "%b" "   ${CYAN}💡 Installing Go tools (shfmt)...${NC}\n"
-        if go generate -tags tools tools.go > /dev/null 2>&1; then
-            printf "%b" "   ${GREEN}✅ shfmt installed${NC}\n"
-        else
-            printf "%b" "   ${YELLOW}⚠️  Failed to install Go tools${NC}\n"
-            printf "%b" "   ${CYAN}💡 Manual install: go install mvdan.cc/sh/v3/cmd/shfmt@latest${NC}\n"
-        fi
-    fi
-else
-    printf "%b" "   ${YELLOW}⚠️  Go not available - shell script auto-formatting will be skipped${NC}\n"
-    printf "%b" "   ${CYAN}💡 Install from: https://go.dev/dl/${NC}\n"
-    printf "%b" "   ${CYAN}   After installing Go, run: ./setup-dev.sh${NC}\n"
-fi
-
 # Check Node.js and npm
 if [ "${SKIP_NPM}" = false ]; then
     printf "\n%b" "${YELLOW}📦 Checking Node.js and npm...${NC}\n"
@@ -115,13 +90,13 @@ if [ "${SKIP_NPM}" = false ]; then
 
         printf "\n%b" "${YELLOW}📦 Installing npm dependencies...${NC}\n"
         if npm install > /dev/null 2>&1; then
-            printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck)${NC}\n"
+            printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt)${NC}\n"
         else
             printf "%b" "   ${RED}❌ Failed to install npm dependencies${NC}\n"
             exit 1
         fi
     else
-        printf "%b" "   ${YELLOW}⚠️  Node.js not found - markdown and shell linting will not be available${NC}\n"
+        printf "%b" "   ${YELLOW}⚠️  Node.js not found - markdown linting and shell script tools will not be available${NC}\n"
         printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
     fi
 fi

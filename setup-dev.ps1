@@ -71,7 +71,7 @@ if (-not $SkipNpm) {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "   ✅ Node.js installed: $nodeVersion" -ForegroundColor Green
         
-        Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yello
+        Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yellow
         npm install
         if ($LASTEXITCODE -eq 0) {
             Write-Host "   ✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt)" -ForegroundColor Green
