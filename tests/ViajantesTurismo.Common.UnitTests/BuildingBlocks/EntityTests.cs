@@ -271,7 +271,6 @@ public sealed class EntityTests
 
     private sealed class TestEntityWithProperties(int id, string name) : Entity<int>(id)
     {
-        [UsedImplicitly]
-        public string Name { get; } = name;
+        [UsedImplicitly] public string Name { get; } = name;
     }
 }

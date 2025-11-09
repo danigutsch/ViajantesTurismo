@@ -60,7 +60,6 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
                         null);
                     break;
                 case 2:
-                {
                     var companion = TestHelpers.CreateTestCustomerWithNames($"Companion{i}", $"Test{i}");
                     customerContext.Customers.Add(companion);
 
@@ -75,7 +74,6 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
                         null,
                         null);
                     break;
-                }
                 default:
                     throw new ArgumentException($"Unsupported customer count: {customersPerBooking}");
             }

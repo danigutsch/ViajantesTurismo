@@ -34,7 +34,7 @@ public sealed class Tour : Entity<int>
         Schedule = schedule;
         Pricing = pricing;
         Capacity = capacity;
-        _includedServices = [..includedServices];
+        _includedServices = [.. includedServices];
     }
 
     /// <summary>
