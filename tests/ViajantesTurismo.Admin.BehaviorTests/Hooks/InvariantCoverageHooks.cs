@@ -1,5 +1,8 @@
+#pragma warning disable CA1303
+
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Reqnroll;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Hooks;
@@ -9,10 +12,11 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
 {
     private static readonly InvariantCoverageValidator Validator = new();
 
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = true };
+
     [BeforeScenario(Order = -50)]
     public void TrackInvariantCoverage()
     {
-        // Check if scenario has @Invariant tags
         var invariantTags = scenarioContext.ScenarioInfo.Tags
             .Where(tag => tag.StartsWith("Invariant:", StringComparison.Ordinal))
             .Distinct()
@@ -30,7 +34,6 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
     {
         var report = Validator.GenerateReport();
 
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
         Console.WriteLine("\n" + new string('=', 80));
         Console.WriteLine("INVARIANT COVERAGE REPORT");
         Console.WriteLine(new string('=', 80));
@@ -60,13 +63,18 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
 
         Console.WriteLine(new string('=', 80) + "\n");
 
-        Console.WriteLine($"Coverage report written to: {Path.Combine("TestResults", "InvariantCoverage.md")}");
-#pragma warning restore CA1303
 
-        var reportPath = Path.Combine("TestResults", "InvariantCoverage.md");
         Directory.CreateDirectory("TestResults");
 
-        File.WriteAllText(reportPath, GenerateMarkdownReport(report));
+        var markdownPath = Path.Combine("TestResults", "InvariantCoverage.md");
+        var jsonPath = Path.Combine("TestResults", "InvariantCoverage.json");
+
+        File.WriteAllText(markdownPath, GenerateMarkdownReport(report));
+        File.WriteAllText(jsonPath, GenerateJsonReport(report));
+
+        Console.WriteLine("Coverage reports written to:");
+        Console.WriteLine($"  - {markdownPath}");
+        Console.WriteLine($"  - {jsonPath}");
     }
 
     private static string GenerateMarkdownReport(CoverageReport report)
@@ -110,5 +118,32 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
         }
 
         return sb.ToString();
+    }
+
+    private static string GenerateJsonReport(CoverageReport report)
+    {
+        var json = new
+        {
+            generatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+            summary = new
+            {
+                totalInvariants = report.TotalInvariants,
+                coveredInvariants = report.CoveredInvariants,
+                uncoveredCount = report.UncoveredInvariants.Count,
+                coveragePercentage = Math.Round(report.CoveragePercentage, 2)
+            },
+            uncoveredInvariants = report.UncoveredInvariants.OrderBy(i => i, StringComparer.Ordinal).ToArray(),
+            coverage = report.InvariantToScenarios
+                .OrderBy(kvp => kvp.Key, StringComparer.Ordinal)
+                .Select(kvp => new
+                {
+                    invariantId = kvp.Key,
+                    scenarios = kvp.Value.ToArray(),
+                    scenarioCount = kvp.Value.Count
+                })
+                .ToArray()
+        };
+
+        return JsonSerializer.Serialize(json, JsonSerializerOptions);
     }
 }

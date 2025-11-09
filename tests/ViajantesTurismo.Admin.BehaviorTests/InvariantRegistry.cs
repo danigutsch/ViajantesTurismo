@@ -9,22 +9,19 @@ public static class InvariantRegistry
     /// <summary>
     /// Get all invariant IDs for an aggregate.
     /// </summary>
-    public static string[] GetInvariantsForAggregate(string aggregateName)
+    public static string[] GetInvariantsForAggregate(Type aggregateType)
     {
-        return aggregateName switch
+        if (aggregateType == typeof(Tour))
         {
-            "Tour" =>
-            [
-                .. typeof(Tour).GetFields()
-                    .Select(f => (string)f.GetValue(null)!)
-            ],
-            "Customer" =>
-            [
-                .. typeof(Customer).GetFields()
-                    .Select(f => (string)f.GetValue(null)!)
-            ],
-            _ => []
-        };
+            return [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)];
+        }
+
+        if (aggregateType == typeof(Customer))
+        {
+            return [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)];
+        }
+
+        return [];
     }
 
     /// <summary>

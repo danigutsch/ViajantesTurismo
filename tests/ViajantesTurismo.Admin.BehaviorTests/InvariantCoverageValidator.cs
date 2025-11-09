@@ -10,9 +10,8 @@ public class InvariantCoverageValidator
 
     public InvariantCoverageValidator()
     {
-        // Load all invariants from registry
-        _allInvariants.UnionWith(InvariantRegistry.GetInvariantsForAggregate("Tour"));
-        _allInvariants.UnionWith(InvariantRegistry.GetInvariantsForAggregate("Customer"));
+        _allInvariants.UnionWith(InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour)));
+        _allInvariants.UnionWith(InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer)));
     }
 
     /// <summary>
@@ -21,7 +20,7 @@ public class InvariantCoverageValidator
     /// </summary>
     public void RecordScenarioCoverage(string invariantId, string scenarioTitle)
     {
-        if (!_invariantToScenarios.TryGetValue(invariantId, out List<string>? scenarios))
+        if (!_invariantToScenarios.TryGetValue(invariantId, out var scenarios))
         {
             scenarios = [];
             _invariantToScenarios[invariantId] = scenarios;
