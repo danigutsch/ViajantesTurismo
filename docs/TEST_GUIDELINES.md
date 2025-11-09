@@ -350,7 +350,7 @@ getters/setters.
 ## Running Tests
 
 ```powershell
-dotnet test                                          # All tests
+dotnet test                                         # All tests
 dotnet test tests/ViajantesTurismo.Admin.UnitTests  # Specific project
 dotnet test --filter "FullyQualifiedName~Mapper"    # Filtered
 dotnet test --collect:"XPlat Code Coverage"         # With coverage
