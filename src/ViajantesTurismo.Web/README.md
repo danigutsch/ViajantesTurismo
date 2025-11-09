@@ -20,7 +20,7 @@ Customer-facing website where users can explore available tours, view details, a
 
 ## Structure
 
-```
+```bash
 ViajantesTurismo.Web/
 ├── Components/        # Blazor components
 │   ├── Pages/        # Routable pages

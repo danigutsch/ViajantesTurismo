@@ -86,7 +86,7 @@ var roomType = BookingMapper.MapToRoomType(dto.RoomType);
 
 ## Architecture Position
 
-```
+```text
 ┌─────────────────────────────────────┐
 │     API Layer (HTTP Endpoints)      │
 └─────────────────┬───────────────────┘

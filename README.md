@@ -12,10 +12,10 @@ powerful tools to create and manage tour packages.
 
 - **Tour Management**: Create and manage bike tour packages with detailed itineraries
 - **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences, and medical details
-- **Booking Management**: 
+- **Booking Management**:
     - Create bookings with room type selection (Single/Double)
   - Optional companion for double rooms (supports single occupancy)
-    - Bike type selection (Regular/E-bike) with customer preference pre-population
+      - Bike type selection (Regular/E-bike) with customer preference pre-population
   - Discount support (percentage or absolute amount with audit trail)
   - Automatic total price calculation (base + room + bikes - discount)
   - Domain-driven operations: Confirm, Cancel, Complete bookings
@@ -29,7 +29,7 @@ powerful tools to create and manage tour packages.
     - Double room supplement for larger accommodations
     - Regular bike and E-bike rental pricing
   - Discount system (percentage 0-100% or absolute amount)
-    - Calculated total price (transparent, consistent)
+      - Calculated total price (transparent, consistent)
   - Payment tracking with configurable payment methods
 - **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
 - **RESTful API**: Modern API-first architecture with behaviour-driven endpoints
@@ -48,7 +48,7 @@ powerful tools to create and manage tour packages.
 
 ## Project Structure
 
-```
+```bash
 ViajantesTurismo/
 ├── src/
 │   ├── ViajantesTurismo.Admin.Domain/         # Domain entities and business logic
@@ -83,22 +83,26 @@ ViajantesTurismo/
 ### Running the Application
 
 1. **Clone the repository**
+
    ```powershell
    git clone https://github.com/danigutsch/ViajantesTurismo.git
    cd ViajantesTurismo
    ```
 
 2. **Restore dependencies**
+
    ```powershell
    dotnet restore
    ```
 
 3. **Restore .NET tools**
+
    ```powershell
    dotnet tool restore
    ```
 
 4. **Run with Aspire AppHost**
+
    ```powershell
    dotnet run --project src/ViajantesTurismo.AppHost
    ```
@@ -121,10 +125,13 @@ Migrations and the MigrationService project from coverage.
 
 - Command line (recommended):
     - Collect coverage with the runsettings applied
+
       ```powershell
       dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory:TestResults
       ```
+
     - Generate an HTML report (after running tests above)
+
       ```powershell
       dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
       # Open report (Windows)
@@ -142,6 +149,7 @@ Migrations and the MigrationService project from coverage.
 
 - VS Code:
     - Update your test task/command to include the settings file:
+
       ```powershell
       dotnet test --collect:"XPlat Code Coverage" --settings ${workspaceFolder}/coverlet.runsettings
       ```

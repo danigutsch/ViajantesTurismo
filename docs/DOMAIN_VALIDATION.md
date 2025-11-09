@@ -228,6 +228,7 @@ See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation
 ## API Integration
 
 **Tour Creation:**
+
 ```csharp
 var result = Tour.Create(dto.Identifier, dto.Name, ...);
 if (!result.IsSuccess)
@@ -342,7 +343,8 @@ public void ThenOperationShouldFail()
 - [Architectural Decision Records](ARCHITECTURE_DECISIONS.md) — Core architectural patterns and decisions
 - [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
 - [Test Guidelines](TEST_GUIDELINES.md) — Testing patterns and BDD scenarios
-- [Result Pattern](../src/ViajantesTurismo.Common/RESULT_PATTERN.md) — Detailed Result<T> usage
+- [Result Pattern](../src/ViajantesTurismo.Common/RESULT_PATTERN.md) — Detailed Result\<T\> usage
+
 ```csharp
 var result = booking.RecordPayment(
     amount,
@@ -358,7 +360,7 @@ if (!result.IsSuccess)
 await unitOfWork.SaveEntities(ct);
 ```
 
-## Testing
+## Testing Validation Errors Validation Errors Validation Errors
 
 ```csharp
 [Then(@"the operation should fail")]

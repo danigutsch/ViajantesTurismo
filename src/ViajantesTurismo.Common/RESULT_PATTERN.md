@@ -19,7 +19,7 @@ public readonly struct Result
 }
 ```
 
-### Result<T> (Generic)
+### Result\<T\> (Generic)
 
 Used for operations that return a value on success:
 

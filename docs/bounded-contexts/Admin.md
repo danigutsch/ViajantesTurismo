@@ -1,135 +1,123 @@
-# Admin Bounded Context
+# Aggregates & Invariants
 
-**Responsibility**: Tour and customer management for cycling tour operations, including bookings, payments, and administrative reference data.
+Document each aggregate with purpose, invariants, commands, and events.
 
-## Core Domain
+---
 
-### Tour Aggregate
+## Tour (Admin)
 
-**Aggregate Root: Tour**
-- Manages cycling tour offerings with schedules, pricing, capacity, and included services
-- Controls all booking operations and lifecycle within its consistency boundary
-- Business identifier (e.g., "CUBA2024"), date range, pricing model, capacity constraints
-- Enforces invariants: tour duration minimum 5 days, prices within valid range, capacity management
+**Purpose**: Manage cycling tour offerings, schedules, pricing, capacity, and all associated bookings.
 
-**Entities**
-- **Booking** — Customer reservations with state machine (Pending → Confirmed → Completed/Cancelled). Can only be modified through Tour methods. Tracks room type, bikes, principal/companion customers, discounts, payments. Pricing calculated as: base price + room supplement + bike costs - discount.
-- **Payment** — Immutable financial records. Tracks amount, date, method, reference number, system recording timestamp. Payment status automatically calculated: Unpaid → PartiallyPaid → Paid.
-- **BookingCustomer** — Embedded entity representing customer participation (principal or companion). Links customer ID, bike selection, and bike price.
+### Invariants
 
-**Value Objects**
-- **DateRange** — Tour schedule with start/end dates and duration
-- **TourPricing** — Base price, room supplements, bike rental prices, currency
-- **TourCapacity** — Minimum and maximum customer limits
-- **Discount** — Type (None/Percentage/Absolute), amount, reason
+- Tour identifier must be unique and non-empty (max 128 chars)
+- Tour name required (max 128 chars)
+- End date must be after start date with minimum 5 days duration
+- All prices must be >= 0 and <= 100,000
+- Capacity: 1 <= minCustomers <= maxCustomers <= 100
+- Cannot exceed maximum customer capacity (confirmed bookings only count)
+- Bookings can only be created/modified through Tour methods (aggregate boundary)
+- Cannot delete tour with confirmed bookings
 
-**Business Rules**
-- Base price represents single room cost (double room adds supplement)
-- BikeType.None invalid for bookings (must select Regular or EBike)
-- Discounts validated: percentage 0-100%, absolute cannot exceed subtotal
-- Room rules: single room forbids companion, double room allows optional companion
-- Payments immutable after creation, cannot exceed remaining balance
-- State transitions idempotent with terminal states (Cancelled/Completed)
-- Capacity management: confirmed bookings count toward tour maximum
+### Commands (Tour)
 
-### Customer Aggregate
+- Create — Initialize tour with identifier, name, schedule, pricing, capacity, included services
+- UpdateDetails — Modify identifier and name
+- UpdateSchedule — Change start and end dates
+- UpdatePricing — Modify base price, room supplements, bike prices, currency
+- UpdateBasePrice — Change base price only
+- UpdateCapacity — Adjust minimum and maximum customer limits
+- UpdateIncludedServices — Modify list of included services
 
-**Aggregate Root: Customer**
-- Self-contained entity representing customer profiles
-- Comprehensive information: personal, contact, identification, physical, medical, accommodation preferences
-- No child entities — all customer data encapsulated in value objects
+### Commands (Booking Lifecycle via Tour)
 
-**Value Objects**
-- **PersonalInfo** — Name, date of birth, gender, nationality, profession
-- **ContactInfo** — Email, mobile, Instagram, Facebook
-- **Address** — Street, city, state/province, postal code, country
-- **PhysicalInfo** — Height, weight, bike preference, shoe size
-- **IdentificationInfo** — Passport number, issue/expiry dates, issuing country
-- **MedicalInfo** — Conditions, allergies, medications, dietary restrictions
-- **EmergencyContact** — Name, relationship, phone numbers
-- **AccommodationPreferences** — Room and dietary preferences
+- AddBooking — Create new booking with customer, bike, room, discount details
+- ConfirmBooking — Transition booking from Pending to Confirmed
+- CancelBooking — Transition booking to Cancelled status
+- CompleteBooking — Transition booking from Confirmed to Completed
+- UpdateBookingNotes — Modify booking administrative notes
+- UpdateBookingDiscount — Change discount type, amount, and reason
+- UpdateBookingDetails — Modify room type, bike selections, companion
+- UpdateBookingPaymentStatus — Change payment status (deprecated — use RecordPayment)
+- RemoveBooking — Delete a booking (only if Pending)
 
-**Business Rules**
+### Commands (Payment via Tour → Booking)
+
+- RecordPayment — Record payment with amount, date, method, reference, notes
+
+### Events
+
+- TourCreated, TourDetailsUpdated, TourScheduleUpdated, TourPricingUpdated
+- BookingAdded, BookingConfirmed, BookingCancelled, BookingCompleted
+- BookingDiscountUpdated, BookingDetailsUpdated
+- PaymentRecorded, PaymentStatusChanged
+
+### Entities
+
+- Booking (state machine: Pending → Confirmed → Completed/Cancelled)
+- Payment (immutable financial records)
+- BookingCustomer (embedded entity for principal/companion)
+
+### Value Objects
+
+- DateRange, TourPricing, TourCapacity, Discount
+
+### Related
+
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Tour*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Booking*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Payment*.feature`
+- ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
+- ADRs: [Result Pattern Over Exceptions](../adr/20251108-result-pattern-over-exceptions.md)
+
+---
+
+## Customer (Admin)
+
+**Purpose**: Represent customer profiles with comprehensive personal, contact, identification, physical, medical, and
+accommodation information.
+
+### Invariants
+
 - Email must be unique and valid format
 - Customer must be 18+ years old
+- Contact information properly formatted and valid
 - All value objects validated on creation and update
+- Personal information required (name, DOB, nationality)
 
-## Projects
+### Commands
 
-**ViajantesTurismo.Admin.Domain**  
-Core business logic with DDD patterns: aggregate roots, entities, value objects, factory methods, Result pattern for validation
+- Create — Initialize customer with all required value objects
+- UpdatePersonalInfo — Modify name, DOB, gender, nationality, profession
+- UpdateContactInfo — Change email, mobile, social media contacts
+- UpdateAddress — Update street, city, state, postal code, country
+- UpdatePhysicalInfo — Modify height, weight, bike preference, shoe size
+- UpdateIdentificationInfo — Change passport number, issue/expiry dates, country
+- UpdateMedicalInfo — Update conditions, allergies, medications, dietary restrictions
+- UpdateEmergencyContact — Modify emergency contact person and phone numbers
+- UpdateAccommodationPreferences — Change room and dietary preferences
+- UpdateProfession — Modify occupation details
 
-**ViajantesTurismo.Admin.Application**  
-Application layer following CQRS: IQueryService (read-only DTOs), ITourStore/ICustomerStore (command operations), IUnitOfWork (transactions), mapping between domain and DTOs
+### Events
 
-**ViajantesTurismo.Admin.Infrastructure**  
-EF Core persistence with ApplicationDbContext, repository implementations (TourStore, CustomerStore, QueryService), migrations, seeding
+- CustomerCreated
+- CustomerPersonalInfoUpdated, CustomerContactInfoUpdated
+- CustomerAddressUpdated, CustomerPhysicalInfoUpdated
+- CustomerIdentificationInfoUpdated, CustomerMedicalInfoUpdated
+- CustomerEmergencyContactUpdated, CustomerAccommodationPreferencesUpdated
 
-**ViajantesTurismo.Admin.ApiService**  
-Minimal API endpoints organized by aggregate: ToursEndpoints, BookingsEndpoints, CustomerEndpoints. Command/query separation enforced.
+### Entities
 
-**ViajantesTurismo.Admin.Web**  
-Blazor Server UI for administrative operations, API clients (ToursApiClient, CustomersApiClient, BookingsApiClient), country reference data service
+- None (self-contained aggregate)
 
-**ViajantesTurismo.Admin.Contracts**  
-DTOs for API contracts, validation constants (ContractConstants), shared enums and data contracts
+### Value Objects
 
-## Architecture Patterns
+- PersonalInfo, ContactInfo, Address
+- PhysicalInfo, IdentificationInfo, MedicalInfo
+- EmergencyContact, AccommodationPreferences, Profession
 
-**Domain-Driven Design**
-- Aggregate pattern with Tour as root for booking operations
-- Factory methods returning Result<T> for all entity creation
-- Dedicated error classes per aggregate (TourErrors, BookingErrors, CustomerErrors)
-- Ubiquitous language enforced across code, docs, and tests
+### Related
 
-**CQRS Separation**
-- IQueryService: read-only operations returning optimized DTOs
-- Stores (ITourStore, ICustomerStore): command operations on full aggregates
-- Explicit separation: queries use IQueryService, commands use stores + IUnitOfWork
-
-**Result Pattern**
-- All domain operations return Result/Result<T> instead of throwing exceptions
-- Explicit error handling with ResultStatus categorization
-- No performance overhead for expected validation failures
-
-**Clean Architecture**
-- Domain layer free of infrastructure concerns
-- Application layer coordinates use cases without business logic
-- Infrastructure implements interfaces defined in application
-- API and Web layers depend on abstractions
-
-## External Dependencies
-
-**Database** (SQL Server via EF Core)
-- Tours, Bookings, Payments, Customers tables
-- Migrations managed via dedicated MigrationService
-- Transactional consistency enforced at aggregate boundaries
-
-**Message Broker** (for future integration)
-- Outbox pattern for reliable domain event publication
-- Integration events for cross-context communication
-
-**Reference Data**
-- Country metadata (ISO-3166) served from Admin.Web static JSON
-
-## Interactions
-
-**Downstream**: None currently — Admin is foundation context
-
-**Upstream**: Future contexts will consume:
-- Customer reference data
-- Tour availability information  
-- Booking confirmation events
-
-## Key Endpoints
-
-**Tours**: GET/POST /tours, GET/PUT/DELETE /tours/{id}, PUT /tours/{id}/schedule, PUT /tours/{id}/pricing  
-**Bookings**: GET /bookings, GET /bookings/{id}, GET /tours/{tourId}/bookings, POST /tours/{tourId}/bookings, PUT /bookings/{id}/confirm|cancel|complete  
-**Customers**: GET/POST /customers, GET/PUT/DELETE /customers/{id}
-
-## Testing Strategy
-
-- Behavior tests (SpecFlow/Reqnroll) for domain scenarios
-- Unit tests for value objects and business rules
-- Integration tests for Infrastructure layer (repositories, DbContext)
-- Architecture tests enforce aggregate boundaries and layer dependencies
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Customer*.feature`
+- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/*Validation.feature`
+- ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)

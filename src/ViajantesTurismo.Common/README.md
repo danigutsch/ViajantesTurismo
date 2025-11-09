@@ -23,6 +23,7 @@ if (result.IsFailure) { /* use result.Error */ }
 ```
 
 **Benefits**:
+
 - Explicit error handling
 - No exceptions for business rule violations
 - Compiler-enforced error checking
@@ -39,7 +40,7 @@ if (result.IsFailure) { /* use result.Error */ }
 
 ### Base Types
 
-- **Entity<TId>**: Base class for all domain entities with identity
+- **Entity\<TId\>**: Base class for all domain entities with identity
 - **ValueObject**: Base class for immutable value objects compared by their attributes
 
 #### ValueObject

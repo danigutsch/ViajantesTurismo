@@ -11,18 +11,18 @@ Core business logic for tours, bookings, and customers with business rule enforc
 ### Aggregate Roots
 
 - **Tour**: Tour definitions with dates, pricing, services (**AGGREGATE ROOT**)
-  - Contains: Booking collection
-  - Responsibilities: Manages all booking operations and lifecycle
+    - Contains: Booking collection
+    - Responsibilities: Manages all booking operations and lifecycle
   
 - **Customer**: Customer information (**AGGREGATE ROOT**)
-  - Self-contained entity with no child entities
+    - Self-contained entity with no child entities
 
 ### Entities (Non-Root)
 
 - **Booking**: Customer bookings with state machine (Pending → Confirmed → Completed/Cancelled)
-  - **⚠️ IMPORTANT**: `Booking` has `internal` modifiers and can ONLY be modified through its aggregate root `Tour`
-  - Direct modification of `Booking` entities is prohibited - all operations must go through `Tour` methods
-  - Example: To update booking payment status, use `tour.UpdateBooking()`, not `booking.UpdatePaymentStatus()`
+    - **⚠️ IMPORTANT**: `Booking` has `internal` modifiers and can ONLY be modified through its aggregate root `Tour`
+    - Direct modification of `Booking` entities is prohibited - all operations must go through `Tour` methods
+    - Example: To update booking payment status, use `tour.UpdateBooking()`, not `booking.UpdatePaymentStatus()`
 
 ### Aggregate Design Pattern
 
@@ -34,6 +34,7 @@ This domain follows the **Aggregate Pattern** from Domain-Driven Design:
 - Payments managed through Booking, accessed via Tour
 
 **Correct Usage:**
+
 ```csharp
 // ✅ Modify through aggregate root
 var result = tour.AddBooking(customerId, bikeType, companionId, companionBikeType, roomType, ...);
@@ -90,6 +91,7 @@ All with exhaustive `Enum.IsDefined()` validation:
 - Cannot delete tour with confirmed bookings
 
 ### Booking Rules
+
 - Customer and companion cannot be the same person
 - BikeType.None not allowed (must select Regular or EBike)
 - Base price must be > 0
@@ -127,7 +129,8 @@ All with exhaustive `Enum.IsDefined()` validation:
 - **Calculation**: `(BasePrice + RoomCost + Bike1 + Bike2) - Discount`
 
 ### State Machine
-```
+
+```text
 Pending → Confirmed → Completed
    ↓          ↓
 Cancelled ←───┘

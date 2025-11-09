@@ -3,7 +3,9 @@
 **Status**: Accepted — 2025-11-08
 
 ## Context
+
 Validation constraints like max lengths, minimum durations, and price limits must be shared consistently across:
+
 - Domain validation logic
 - API contract DTOs (for DataAnnotations)
 - Test scenarios (Given/When/Then steps)
@@ -11,7 +13,9 @@ Validation constraints like max lengths, minimum durations, and price limits mus
 Duplicating these constants leads to inconsistencies and maintenance burden.
 
 ## Decision
+
 Define all **external validation constraints** in a `ContractConstants` static class within the **Contracts project**:
+
 ```csharp
 public static class ContractConstants
 {
@@ -20,22 +24,28 @@ public static class ContractConstants
     public const double MaxPrice = 100_000;
 }
 ```
+
 Domain, API, and test projects reference these constants for validation and annotations.
 
 ## Consequences
-**Pros**
+
+### Pros
+
 - Single source of truth for validation constraints.
 - Changes propagate automatically to domain, DTOs, and tests.
 - Clear API contract documentation — consumers know the limits.
 - No duplication across layers.
 
-**Cons**
+### Cons
+
 - Domain layer references Contracts project (acceptable dependency for shared constants).
 - Cannot have different constraints for API vs domain (intentional — enforces consistency).
 
 ## Alternatives considered
+
 - Constants in domain with duplicates in contracts — rejected due to duplication and drift risk.
 - Constants in shared Common project — rejected because constraints are API-contract-specific.
 
 ## Links
+
 - See `ViajantesTurismo.Admin.Contracts/ContractConstants.cs`

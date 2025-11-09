@@ -8,7 +8,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 
 **Purpose**: Manage cycling tour offerings, schedules, pricing, capacity, and all associated bookings.
 
-**Invariants**
+### Invariants
 
 - Tour identifier must be unique and non-empty (max 128 chars)
 - Tour name required (max 128 chars)
@@ -19,7 +19,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 - Bookings can only be created/modified through Tour methods (aggregate boundary)
 - Cannot delete tour with confirmed bookings
 
-**Commands (Tour)**
+### Commands (Tour)
 
 - Create — Initialize tour with identifier, name, schedule, pricing, capacity, included services
 - UpdateDetails — Modify identifier and name
@@ -29,7 +29,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 - UpdateCapacity — Adjust minimum and maximum customer limits
 - UpdateIncludedServices — Modify list of included services
 
-**Commands (Booking Lifecycle via Tour)**
+### Commands (Booking Lifecycle via Tour)
 
 - AddBooking — Create new booking with customer, bike, room, discount details
 - ConfirmBooking — Transition booking from Pending to Confirmed
@@ -41,28 +41,28 @@ Document each aggregate with purpose, invariants, commands, and events.
 - UpdateBookingPaymentStatus — Change payment status (deprecated — use RecordPayment)
 - RemoveBooking — Delete a booking (only if Pending)
 
-**Commands (Payment via Tour → Booking)**
+### Commands (Payment via Tour → Booking)
 
 - RecordPayment — Record payment with amount, date, method, reference, notes
 
-**Events**
+### Events
 
 - TourCreated, TourDetailsUpdated, TourScheduleUpdated, TourPricingUpdated
 - BookingAdded, BookingConfirmed, BookingCancelled, BookingCompleted
 - BookingDiscountUpdated, BookingDetailsUpdated
 - PaymentRecorded, PaymentStatusChanged
 
-**Entities**
+### Entities
 
 - Booking (state machine: Pending → Confirmed → Completed/Cancelled)
 - Payment (immutable financial records)
 - BookingCustomer (embedded entity for principal/companion)
 
-**Value Objects**
+### Value Objects
 
 - DateRange, TourPricing, TourCapacity, Discount
 
-**Related**
+### Related
 
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Tour*.feature`
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Booking*.feature`
@@ -77,7 +77,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 **Purpose**: Represent customer profiles with comprehensive personal, contact, identification, physical, medical, and
 accommodation information.
 
-**Invariants**
+### Invariants
 
 - Email must be unique and valid format
 - Customer must be 18+ years old
@@ -85,7 +85,7 @@ accommodation information.
 - All value objects validated on creation and update
 - Personal information required (name, DOB, nationality)
 
-**Commands**
+### Commands
 
 - Create — Initialize customer with all required value objects
 - UpdatePersonalInfo — Modify name, DOB, gender, nationality, profession
@@ -98,7 +98,7 @@ accommodation information.
 - UpdateAccommodationPreferences — Change room and dietary preferences
 - UpdateProfession — Modify occupation details
 
-**Events**
+### Events
 
 - CustomerCreated
 - CustomerPersonalInfoUpdated, CustomerContactInfoUpdated
@@ -106,17 +106,17 @@ accommodation information.
 - CustomerIdentificationInfoUpdated, CustomerMedicalInfoUpdated
 - CustomerEmergencyContactUpdated, CustomerAccommodationPreferencesUpdated
 
-**Entities**
+### Entities
 
 - None (self-contained aggregate)
 
-**Value Objects**
+### Value Objects
 
 - PersonalInfo, ContactInfo, Address
 - PhysicalInfo, IdentificationInfo, MedicalInfo
 - EmergencyContact, AccommodationPreferences, Profession
 
-**Related**
+### Related
 
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Customer*.feature`
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/*Validation.feature`

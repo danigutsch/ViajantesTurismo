@@ -51,17 +51,17 @@ These architectural decisions establish a robust foundation:
 
 ### Quality Standards
 
-6. **No comments** keeps code clean and self-documenting (use XML docs for public APIs)
-7. **Type-safe testing** handles multiple Result types correctly
-8. **Application layer** separates mapping and query concerns from domain
+1. **No comments** keeps code clean and self-documenting (use XML docs for public APIs)
+2. **Type-safe testing** handles multiple Result types correctly
+3. **Application layer** separates mapping and query concerns from domain
 
 ### Business Rules
 
-9. **Calculated properties** ensure derived values are always consistent
-10. **Correct pricing model** reflects actual business rules (base price = single room)
-11. **Discount value objects** provide flexible pricing with audit trails
-12. **Immutable payments** ensure financial integrity and complete history
-13. **Post-creation updates** improve customer experience without compromising data integrity
+1. **Calculated properties** ensure derived values are always consistent
+2. **Correct pricing model** reflects actual business rules (base price = single room)
+3. **Discount value objects** provide flexible pricing with audit trails
+4. **Immutable payments** ensure financial integrity and complete history
+5. **Post-creation updates** improve customer experience without compromising data integrity
 
 ### Architecture Priorities
 

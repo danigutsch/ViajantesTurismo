@@ -1,1420 +1,379 @@
-# Coding Guidelines
+# Domain Validation & Modeling Guidelines
 
-> **Purpose**: This document establishes coding standards for the ViajantesTurismo .NET project to ensure consistency,
-> maintainability, and adherence to domain-driven design principles.
+Domain entities enforce their own invariants through factory methods and update operations, ensuring entities are never
+in an invalid state. Use these conventions to keep the domain model consistent and testable.
 
-**Related Documents:**
-- **[TEST_GUIDELINES.md](TEST_GUIDELINES.md)** - Comprehensive testing standards and best practices
-- **[ARCHITECTURE_DECISIONS.md](ARCHITECTURE_DECISIONS.md)** - Architectural decision records
+## Ubiquitous Language
 
----
+Maintain consistent terminology across code, API contracts, documentation, and Gherkin feature files. All domain terms
+should have the same meaning everywhere they appear.
 
-## Table of Contents
+**Reference:** See `docs/domain/GLOSSARY.md` for the canonical domain vocabulary.
 
-1. [Project Configuration](#project-configuration)
-2. [Architecture Principles](#architecture-principles)
-3. [Domain-Driven Design](#domain-driven-design)
-4. [Code Style](#code-style)
-5. [Asynchronous Programming](#asynchronous-programming)
-6. [Exception Handling](#exception-handling)
-7. [Logging and Telemetry](#logging-and-telemetry)
+## Aggregates & Invariants
 
----
+For each Aggregate, document:
 
-## Project Configuration
+- **Purpose**: What business capability it protects
+- **Invariants**: Rules that must always hold (enforced atomically within the aggregate boundary)
+- **Commands**: State-changing operations the aggregate handles
+- **Events**: Domain events emitted on state changes
+- **Policies**: Cross-aggregate/domain rules implemented as domain services or process managers
 
-### SDK and Language Version
+**Reference:** See [ADR-001: Domain Validation with Factory Methods](adr/20251108-domain-validation-factory-methods.md)
+and aggregate documentation.
 
-- Pin the .NET SDK version using `global.json` to ensure consistent builds across environments
-- Keep `.editorconfig` as the authoritative source for code style
-- Enable nullable reference types project-wide
-- Treat warnings as errors to maintain code quality
+### Current Aggregates
 
-### Package Management
+#### Tour Aggregate
 
-- Use `Directory.Packages.props` to centralize package version management
-- This prevents version conflicts across projects and simplifies maintenance
+- **Purpose**: Manages tour offerings and their bookings
+- **Root**: `Tour` entity
+- **Invariants**:
+    - Tour dates must span minimum duration
+    - Prices must be non-negative
+    - Bookings cannot exceed maximum capacity
+    - Confirmed bookings count toward capacity
+- **Entities**: `Tour`, `Booking`, `Payment`
 
-### Code Analysis
+#### Customer Aggregate
 
-- Enable Roslyn analyzers with `AnalysisMode=AllEnabledByDefault`
-- Configure analyzer rules via `.editorconfig`
-- Use [dotnet-format](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) to automatically enforce style
-  guidelines
-- Run code analysis as part of CI builds
+- **Purpose**: Manages customer information and profiles
+- **Root**: `Customer` entity
+- **Invariants**:
+    - Email must be unique and valid format
+    - Customer must be 18+ years old
+    - Contact information properly formatted
 
-### Visibility Modifiers
+## Result Pattern
 
-- Prefer `internal` over `public` for types not intended for external consumption
-- Default to `sealed` classes unless extensibility is explicitly required
-- Always specify visibility, even when it's the default (e.g., `private string _field` not `string _field`)
-- Visibility should be the first modifier (e.g., `public abstract` not `abstract public`)
+All domain operations that can fail return `Result` or `Result<T>`.
 
-### Composition Over Inheritance
-
-- Favor composition over inheritance for code reuse
-- Use interfaces and extension methods for shared behavior
-- Reserve inheritance for true "is-a" relationships
-
----
-
-## Architecture Principles
-
-### Clean Architecture Boundaries
-
-This project follows Clean Architecture with clear separation of concerns:
-
-#### Domain Layer
-
-- **Pure business logic only**: Entities, Value Objects, Aggregates, Domain Events, Domain Services
-- **No infrastructure dependencies**: No references to databases, external APIs, or frameworks
-- **Framework-agnostic**: Should be testable without any infrastructure
-
-#### Application Layer
-
-- **Use cases and orchestration**: Commands, queries, handlers
-- **Transaction boundaries**: Defines unit of work scope
-- **May depend on**: Domain layer only
-- **Does not depend on**: Infrastructure layer
-
-#### Infrastructure Layer
-
-- **External concerns**: Persistence (EF Core), message brokers, external APIs
-- **Implements interfaces**: Defined in Application/Domain layers
-- **Depends on**: Domain and Application layers as needed
-- **Referenced by**: API/UI hosts via dependency injection
-
-#### API/UI Layer
-
-- **Thin controllers/endpoints**: Minimal logic, delegate to Application layer
-- **Depends on**: Application layer
-- **Responsibility**: HTTP concerns, serialization, authentication
-
-### Dependency Rules
-
-```
-API/UI → Application → Domain
-         ↓
-    Infrastructure
-```
-
-**Key Principle**: Dependencies point inward. Inner layers never reference outer layers.
-
-### Avoid Cyclic Dependencies
-
-- Keep dependencies acyclic
-- Consider architecture tests to enforce boundaries
-- Keep `ViajantesTurismo.Common` minimal - treat it as Shared Kernel for cross-cutting abstractions only
-
----
-
-## Domain-Driven Design
-
-### Ubiquitous Language in Code
-
-Domain objects should express business operations using **ubiquitous language** from the domain, not generic CRUD terms.
-
-❌ **Don't do this:**
-
-```csharp
-booking.Status = BookingStatus.Confirmed;  // Direct property mutation
-```
-
-✅ **Do this instead:**
-
-```csharp
-booking.Confirm();  // Intention-revealing method
-```
-
-### Why Domain Language Matters
-
-1. **Intent is clear**: `booking.Confirm()` clearly expresses what business operation is happening
-2. **Encapsulation**: Business rules for confirming a booking are encapsulated within the method
-3. **Maintainability**: If confirmation rules change, there's one place to update
-4. **Prevents invalid states**: Generic setters allow invalid state transitions; domain methods enforce invariants
-
-### Use Domain Language in Methods
-
-Domain objects should express business operations using **ubiquitous language** from the domain, not generic CRUD terms.
-
-❌ **Don't do this:**
-```csharp
-booking.Status = BookingStatus.Confirmed;  // Direct property mutation
-```
-
-✅ **Do this instead:**
-```csharp
-booking.Confirm();  // Intention-revealing method
-```
-
-### Why Domain Language Matters
-
-1. **Intent is clear**: `booking.Confirm()` clearly expresses what business operation is happening
-2. **Encapsulation**: Business rules for confirming a booking are encapsulated within the method
-3. **Maintainability**: If confirmation rules change, there's one place to update
-4. **Prevents invalid states**: Generic setters allow invalid state transitions; domain methods enforce invariants
-
-### Behavior-Driven Endpoints
-
-API endpoints should represent **business operations**, not generic CRUD actions.
-
-❌ **Avoid overly generic endpoints:**
-```csharp
-PUT /bookings/{id}  // with status field in body
-```
-
-✅ **Prefer explicit domain operations:**
-```csharp
-PATCH /bookings/{id}/confirm
-PATCH /bookings/{id}/cancel
-PATCH /bookings/{id}/complete
-PATCH /bookings/{id}/notes
-```
-
-### Benefits
-
-- **Self-documenting API**: Endpoint names describe what they do
-- **Type safety**: Each endpoint accepts only the data needed for that specific operation
-- **Clear permissions**: Different operations can have different authorization rules
-- **Easier testing**: Each operation is independently testable
-- **Audit trails**: Business events are explicit in logs and monitoring
-
-### Granular Domain Methods for Events
-
-Domain methods should be **granular** and focused on specific business operations to enable domain events and maintain
-single responsibility.
-
-❌ **Don't do this:**
-```csharp
-public void UpdateDetails(BookingStatus status, PaymentStatus payment, string? notes)
-{
-    Status = status;
-    PaymentStatus = payment;
-    Notes = notes;
-}
-```
-
-✅ **Do this instead:**
-```csharp
-public Result Confirm()
-{
-    // Validation logic for state transition
-    Status = BookingStatus.Confirmed;
-    // Can raise BookingConfirmedEvent here
-}
-
-public void UpdatePaymentStatus(PaymentStatus status)
-{
-    PaymentStatus = status;
-    // Can raise PaymentStatusChangedEvent here
-}
-
-public Result UpdateNotes(string? notes)
-{
-    // Validation logic
-    Notes = notes;
-    // Can raise NotesUpdatedEvent here
-}
-```
-
-Then compose them in the aggregate root:
-```csharp
-public Result UpdateBookingNotes(long bookingId, string? notes)
-{
-    var booking = GetBooking(bookingId);
-    return booking.UpdateNotes(notes);  // Raises NotesUpdatedEvent
-}
-```
-
-**Benefits:**
-- Each method can raise its own domain event
-- Fine-grained auditing (know exactly what changed)
-- Flexible composition for different use cases
-- Better testability
-- Supports eventual consistency patterns
-
-## Strive for Rich Domain Models
-
-A **rich domain model** encapsulates business logic within domain entities using intention-revealing methods. Avoid anemic domain models where entities are mere data containers.
-
-### Granular, Intention-Revealing Methods
-
-Domain methods should be **granular** and clearly express business intent. Each method should update a specific aspect of the entity.
-
-✅ **Good - Granular methods:**
-```csharp
-tour.UpdateBasicInfo("CUBA2025", "Cuba Cycling Adventure");
-tour.UpdateSchedule(startDate, endDate);
-tour.UpdatePricing(2500m, 300m, 100m, 200m, Currency.EUR);
-tour.UpdateIncludedServices(new[] { "Hotel", "Breakfast" });
-```
-
-❌ **Avoid - One coarse Update method:**
-```csharp
-// Don't use a single method that updates everything
-tour.Update(identifier, name, startDate, endDate, price, ...);
-```
-
-### Why Granular Methods?
-
-1. **Single Responsibility**: Each method has one focused purpose
-2. **Domain Events**: Each method can raise specific domain events (e.g., `PriceChanged`, `ScheduleUpdated`)
-3. **Validation**: Focused validation per business rule (e.g., `UpdateSchedule` validates end date > start date)
-4. **Flexibility**: Compose methods for different use cases
-5. **Clarity**: Code reads like business requirements
-
-### State Transitions as Methods
-
-Model entity lifecycle transitions as explicit methods, not property setters.
-
-✅ **Good - Explicit state transitions:**
-```csharp
-booking.Confirm();     // Pending → Confirmed
-booking.Cancel();      // Any → Cancelled  
-booking.Complete();    // Confirmed → Completed
-```
-
-❌ **Avoid - Direct property mutation:**
-```csharp
-booking.Status = BookingStatus.Confirmed;  // Bypasses validation
-```
-
-State transition methods enforce business rules:
-```csharp
-internal void Confirm()
-{
-    if (Status == BookingStatus.Cancelled)
-    {
-        throw new InvalidOperationException("Cannot confirm a cancelled booking.");
-    }
-    Status = BookingStatus.Confirmed;
-}
-```
-
-### Practical Examples
-
-**Tour Updates:**
-```csharp
-// Scenario: Adjust pricing due to market conditions
-var tour = await tourStore.GetById(tourId, ct);
-tour.UpdateBasePrice(newPrice);
-
-// Scenario: Reschedule due to venue change  
-tour.UpdateSchedule(newStartDate, newEndDate);
-
-// Scenario: Currency conversion
-var rate = await currencyService.GetRate(Currency.EUR, Currency.USD);
-tour.UpdatePricing(
-    tour.Price * rate,
-    tour.DoubleRoomSupplementPrice * rate,
-    tour.RegularBikePrice * rate,
-    tour.EBikePrice * rate,
-    Currency.USD
-);
-```
-
-**Customer Updates:**
-```csharp
-// Scenario: Customer changes phone number
-var customer = await customerStore.GetById(customerId, ct);
-customer.UpdateContactInfo(new ContactInfo(newPhone, email, instagram, facebook));
-
-// Scenario: Customer moves
-customer.UpdateAddress(new Address(street, city, state, postalCode, country));
-```
-
-**Booking Lifecycle:**
-```csharp
-// 1. Create booking (pending)
-var result = tour.AddBooking(customerId, BikeType.Regular, companionId, BikeType.EBike, RoomType.DoubleRoom, "Early bird");
-var booking = result.Value;
-
-// 2. Customer confirms and pays deposit
-tour.ConfirmBooking(booking.Id);
-tour.UpdateBookingPaymentStatus(booking.Id, PaymentStatus.PartiallyPaid);
-
-// 3. Customer pays balance
-tour.UpdateBookingPaymentStatus(booking.Id, PaymentStatus.Paid);
-
-// 4. Tour completes
-tour.CompleteBooking(booking.Id);
-```
-
-### API Layer Considerations
-
-The API layer may use **coarse-grained DTOs** for client convenience (fewer HTTP requests, simpler forms), but should delegate to **granular domain methods** internally:
-
-```csharp
-// API accepts UpdateTourDto with all fields
-private static async Task<Results<NoContent, NotFound>> UpdateTour(
-    int id,
-    UpdateTourDto dto,
-    ITourStore tourStore,
-    IUnitOfWork unitOfWork,
-    CancellationToken ct)
-{
-    var tour = await tourStore.GetById(id, ct);
-    if (tour is null) return TypedResults.NotFound();
-
-    // Delegate to granular domain methods
-    tour.UpdateBasicInfo(dto.Identifier, dto.Name);
-    tour.UpdateSchedule(dto.StartDate, dto.EndDate);
-    tour.UpdatePricing(dto.Price, dto.DoubleRoomSupplementPrice, 
-        dto.RegularBikePrice, dto.EBikePrice, (Currency)dto.Currency);
-    tour.UpdateIncludedServices([.. dto.IncludedServices]);
-
-    await unitOfWork.SaveEntities(ct);
-    return TypedResults.NoContent();
-}
-```
-
-This provides:
-- **Domain expressiveness**: Clear business operations in domain layer
-- **Client convenience**: Simple DTOs in API layer
-- **Best of both worlds**: Rich domain model + practical API
-
-### Benefits Summary
-
-- **Ubiquitous Language**: Code uses business terms
-- **Encapsulation**: Business rules live in domain entities
-- **Testability**: Each method is independently testable
-- **Maintainability**: Changes to business rules are localized
-- **Domain Events**: Fine-grained events for each business operation
-- **Type Safety**: Invalid operations prevented at compile time
-
-## Value Objects
-
-**Value Objects** are immutable objects defined by their attributes rather than identity. Two value objects with the
-same attributes are considered equal.
-
-### Characteristics
-
-- **Immutable**: State cannot change after creation
-- **Equality by value**: Compared by attributes, not identity
-- **No identity**: Don't have unique identifiers
-- **Side-effect free**: Operations return new instances
-
-### Implementation Pattern
-
-Inherit from `ValueObject` base class and implement `GetEqualityComponents()`:
-
-```csharp
-public sealed class DateRange : ValueObject
-{
-    public DateTime StartDate { get; }
-    public DateTime EndDate { get; }
-
-    public DateRange(DateTime startDate, DateTime endDate)
-    {
-        StartDate = startDate;
-        EndDate = endDate;
-    }
-
-    protected override IEnumerable<object?> GetEqualityComponents()
-    {
-        yield return StartDate;
-        yield return EndDate;
-    }
-}
-```
-
-### When to Use Value Objects
-
-Use value objects for:
-
-- **Complex domain concepts**: Money, Address, ContactInfo, PhysicalInfo
-- **Related attributes**: DateRange (start/end), TourPricing (multiple prices)
-- **Validation**: Encapsulate validation logic within the value object
-- **Reducing parameter lists**: Group related parameters into value objects
-
-✅ **Good - Value object groups related data:**
-
-```csharp
-public static Result<Tour> Create(
-    string identifier,
-    string name,
-    DateRange schedule,
-    TourPricing pricing,
-    TourCapacity capacity,
-    string[] includedServices)
-{
-    // 6 parameters instead of 12
-}
-```
-
-❌ **Avoid - Primitive obsession:**
-
-```csharp
-public static Result<Tour> Create(
-    string identifier,
-    string name,
-    DateTime startDate,
-    DateTime endDate,
-    decimal price,
-    decimal doubleRoomSupplementPrice,
-    decimal regularBikePrice,
-    decimal eBikePrice,
-    Currency currency,
-    int minCustomers,
-    int maxCustomers,
-    string[] includedServices)
-{
-    // 12 parameters - hard to read and maintain
-}
-```
-
-### Validation in Value Objects
-
-Value objects should validate their own invariants:
-
-```csharp
-public sealed class DateRange : ValueObject
-{
-    public DateTime StartDate { get; }
-    public DateTime EndDate { get; }
-
-    public static Result<DateRange> Create(DateTime startDate, DateTime endDate)
-    {
-        if (endDate <= startDate)
-        {
-            return Result<DateRange>.Invalid(
-                "End date must be after start date.",
-                field: "schedule",
-                message: "End date must be after start date.");
-        }
-
-        return new DateRange(startDate, endDate);
-    }
-
-    private DateRange(DateTime startDate, DateTime endDate)
-    {
-        StartDate = startDate;
-        EndDate = endDate;
-    }
-
-    protected override IEnumerable<object?> GetEqualityComponents()
-    {
-        yield return StartDate;
-        yield return EndDate;
-    }
-}
-```
+**Reference:** See [Result Pattern documentation](../src/ViajantesTurismo.Common/RESULT_PATTERN.md)
+and [ADR-002: Result Pattern Over Exceptions](adr/20251108-result-pattern-over-exceptions.md).
 
 ## Factory Method Pattern
 
-**Use static factory methods instead of public constructors for entities and value objects.**
-
-### Benefits
-
-- **Validation before construction**: Ensures objects are always in valid state
-- **Explicit error handling**: Returns `Result<T>` instead of throwing exceptions
-- **Encapsulation**: Private constructor prevents direct instantiation
-- **EF Core compatibility**: Parameterless constructor for ORM
-
-### Pattern
+Entities use static factory methods instead of public constructors:
 
 ```csharp
 public sealed class Tour : Entity<int>
 {
-    // Public factory method
-    public static Result<Tour> Create(
-        string identifier,
-        string name,
-        DateRange schedule,
-        TourPricing pricing,
-        TourCapacity capacity,
-        string[] includedServices)
+    public static Result<Tour> Create(string identifier, string name, ...)
     {
-        // Validation logic
-        var errors = new ValidationErrors();
-        
         if (string.IsNullOrWhiteSpace(identifier))
-        {
-            errors.Add(TourErrors.EmptyIdentifier());
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult<Tour>();
-        }
-
-        // Construction only after validation
-        return new Tour(identifier, name, schedule, pricing, capacity, includedServices);
+            return TourErrors.EmptyIdentifier();
+        
+        return new Tour(identifier, name, ...);
     }
-
-    // Private constructor for valid construction
-    private Tour(string identifier, string name, ...)
-    {
-        Identifier = identifier;
-        Name = name;
-        // ...
-    }
-
-    // Parameterless constructor for EF Core
+    
+    private Tour(...) { }
+    
     [UsedImplicitly]
     private Tour() { }
 }
 ```
 
-## Aggregate Pattern
+**Principles:**
 
-**Aggregates** are clusters of domain objects treated as a single unit for data changes. One entity is the **aggregate
-root**, and all operations on the aggregate go through the root.
+- Public factory method returns `Result<T>`
+- Private constructor prevents unvalidated instances
+- Validate before construction
+- Parameterless constructor for EF Core
 
-### Principles
+## Validation Rules
 
-- **Aggregate root**: Single entry point for modifications (e.g., `Tour`)
-- **Consistency boundary**: Root enforces invariants for entire aggregate
-- **Internal entities**: Cannot be accessed or modified directly (e.g., `Booking`)
-- **Transactional consistency**: Changes to aggregate are atomic
+### Tour Entity
 
-### Implementation
+Validation rules enforced in `Tour.Create()`:
+
+- Identifier: Not empty, max 128 characters
+- Name: Not empty, max 128 characters
+- Dates: End > start, minimum 5 days duration
+- Prices: 0 to 100,000
+
+All constraints defined in `ContractConstants`.
+
+### Booking Entity
+
+Validation rules enforced in `Booking.Create()` and update operations:
+
+**Creation:**
+
+- Base price: Must be > 0 and <= 100,000
+- Room additional cost: Must be >= 0 and <= 100,000
+- Notes: Max 2000 characters
+- Discount: If absolute, cannot exceed subtotal
+- Final price: Must be > 0 after discount
+- BikeType: Cannot be `BikeType.None` for principal or companion
+- Companion: Cannot be same as principal customer
+
+**State Transitions:**
+
+- Pending → Confirmed: Allowed
+- Pending → Cancelled: Allowed
+- Confirmed → Completed: Allowed
+- Confirmed → Cancelled: Allowed
+- Cancelled → *: Blocked (terminal state)
+- Completed → *: Blocked (terminal state)
+
+**Updates:**
+
+- Cannot modify Cancelled or Completed bookings
+- Discount changes must keep final price > 0
+- Room type changes validated for companion presence
+
+**Payments:**
+
+- Amount: Must be > 0
+- Amount: Cannot exceed remaining balance
+- Payment date: Cannot be in the future
+- Payment method: Must be valid enum value (Other, CreditCard, BankTransfer, Cash, Check, PayPal)
+
+### Customer Entity
+
+Validation rules enforced in `Customer.Create()`:
+
+- Personal info: FirstName, LastName not empty, max lengths
+- Email: Valid format, max 256 characters
+- Phone: Valid format
+- Birth date: Between 18 and 120 years old
+
+### Update Operations
+
+Update methods return `Result`:
 
 ```csharp
-// Tour is the aggregate root
-public sealed class Tour : Entity<int>
+public Result UpdateSchedule(DateTime newStartDate, DateTime newEndDate)
 {
-    private readonly List<Booking> _bookings = [];
+    newStartDate = DateTimeSanitizer.SanitizeDate(newStartDate);
+    newEndDate = DateTimeSanitizer.SanitizeDate(newEndDate);
+
+    if (newEndDate <= newStartDate)
+        return TourErrors.InvalidDateRangeForUpdate();
     
-    // Read-only access to internal entities
-    public IReadOnlyList<Booking> Bookings => _bookings;
-
-    // All modifications go through aggregate root
-    public Result<Booking> AddBooking(...)
-    {
-        // Validation and business rules
-        if (CurrentCustomerCount >= MaxCustomers)
-        {
-            return TourErrors.TourFullyBooked(MaxCustomers, CurrentCustomerCount);
-        }
-
-        var booking = new Booking(...);
-        _bookings.Add(booking);
-        return booking;
-    }
-
-    public Result ConfirmBooking(long bookingId)
-    {
-        var booking = GetBooking(bookingId);
-        return booking.Confirm();
-    }
-}
-
-// Booking is an internal entity
-public sealed class Booking : Entity<long>
-{
-    // Internal modifier prevents external access
-    internal void Confirm() { ... }
+    StartDate = newStartDate;
+    EndDate = newEndDate;
+    return Result.Ok();
 }
 ```
 
-✅ **Good - Through aggregate root:**
+## Error Classes
+
+Each entity has an error class:
 
 ```csharp
-var result = tour.AddBooking(customerId, bikeType, ...);
-tour.ConfirmBooking(bookingId);
-tour.RecordPayment(bookingId, amount, ...);
-```
-
-❌ **Avoid - Direct entity manipulation:**
-
-```csharp
-// Cannot compile - Confirm() is internal
-booking.Confirm();
-
-// Cannot compile - no public constructor
-var booking = new Booking(...);
-tour.Bookings.Add(booking);
-```
-
-## Encapsulation Best Practices
-
-### Private Setters
-
-**Use private setters to prevent external state mutation.**
-
-✅ **Good:**
-
-```csharp
-public sealed class Tour : Entity<int>
+public static class TourErrors
 {
-    public string Name { get; private set; }
-    public decimal Price { get; private set; }
+    public static Result<Tour> EmptyIdentifier() =>
+        Result<Tour>.Failure(ResultStatus.Invalid,
+            new ResultError("Tour identifier cannot be empty", null));
+            
+    public static Result EmptyIdentifierForUpdate() =>
+        Result.Failure(ResultStatus.Invalid,
+            new ResultError("Tour identifier cannot be empty", null));
+}
+```
 
-    public void UpdateName(string name)
-    {
-        // Validation logic
-        Name = name;
-    }
+Provide both `Result<T>` (factory) and `Result` (updates) versions.
 
-    public void UpdatePrice(decimal price)
+## Value Objects
+
+Prefer whole values over primitives when they have domain meaning and business rules:
+
+- **Money**: Encapsulates amount and currency with proper equality
+- **DateRange**: Validates end date > start date
+- **Discount**: Encapsulates discount type, amount, and reason with validation
+- **BookingCustomer**: Groups customer ID, bike type, and bike price
+
+**Principles:**
+
+- Immutable with factory methods returning `Result<T>`
+- Validation encapsulated inside the value object
+- Correct structural equality (override `Equals`/`GetHashCode` or use records)
+
+**Example:**
+
+```csharp
+public sealed record Money(decimal Amount, Currency Currency)
+{
+    public static Result<Money> Create(decimal amount, Currency currency)
     {
-        // Validation and business rules
-        Price = price;
+        if (amount < 0)
+            return Result<Money>.Invalid("Amount cannot be negative");
+        
+        return new Money(amount, currency);
     }
 }
 ```
 
-❌ **Avoid:**
+**Reference:** See [ADR-010: Discount as Value Object](adr/20251108-discount-value-object.md)
+
+## Contract Constants
+
+Validation constants live in `ContractConstants.cs`:
 
 ```csharp
-public sealed class Tour : Entity<int>
+public static class ContractConstants
 {
-    public string Name { get; set; }  // Public setter bypasses validation
-    public decimal Price { get; set; }  // No business rule enforcement
+    public const int MaxNameLength = 128;
+    public const int MinimumTourDurationDays = 5;
+    public const double MaxPrice = 100_000;
 }
 ```
 
-### Expose Collections as Read-Only
+**Reference:**
+See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation-constants-contracts-project.md)
 
-**Never expose mutable collections directly.**
+## API Integration
 
-✅ **Good:**
+**Tour Creation:**
 
 ```csharp
-public sealed class Tour : Entity<int>
-{
-    private readonly List<Booking> _bookings = [];
+var result = Tour.Create(dto.Identifier, dto.Name, ...);
+if (!result.IsSuccess)
+    return result.ToValidationProblem();
+
+var tour = result.Value;
+await unitOfWork.SaveEntities(ct);
+```
+
+**Booking Creation:**
+
+```csharp
+var result = tour.AddBooking(
+    principalCustomerId,
+    principalBikeType,
+## Domain Events
+
+Domain events communicate state changes within and across bounded contexts:
+
+### Domain Events (Synchronous)
+
+In-process events handled synchronously within the same transaction:
+
+**Naming Convention:**
+- Past tense: `BookingConfirmed`, `CustomerUpgraded`, `PaymentRecorded`
+- Suffix: `DomainEvent` (e.g., `BookingConfirmedDomainEvent`)
+
+**Characteristics:**
+- Handled synchronously within the same transaction
+- Used for domain invariants that span aggregates
+- Failures roll back the entire transaction
+- Minimal data needed by domain handlers
+
+**Example:**
+```csharp
+public sealed record BookingConfirmedDomainEvent(long BookingId, int TourId, DateTime ConfirmedAt);
+```
+
+### Integration Events (Asynchronous)
+
+Cross-boundary events published to external systems or bounded contexts:
+
+**Naming Convention:**
+
+- Past tense: `BookingConfirmed`, `CustomerUpgraded`
+- Suffix: `IntegrationEvent` (e.g., `BookingConfirmedIntegrationEvent`)
+
+**Characteristics:**
+
+- Published via outbox pattern for reliability
+- Consumed asynchronously by subscribers
+- Can include denormalized data for consumers
+- No immediate consistency guarantee
+
+**Example:**
+
+```csharp
+public sealed record BookingConfirmedIntegrationEvent(
+    long BookingId, 
+    int TourId, 
+    string TourName,
+    decimal TotalPrice,
+    DateTime ConfirmedAt);
+
+## Gherkin Scenarios as Living Documentation
+
+Business-facing scenarios live under `tests/specs` and serve as executable documentation:
+
+**Principles:**
+- Use `Rule:` blocks to group scenarios by invariant
+- Mirror aggregate terms in Given/When/Then steps
+- Prefer declarative steps over imperative
+- Tag scenarios with aggregate and ADR references
+
+**Example:**
+```gherkin
+@Agg:Tour @ADR:20251108-domain-validation-factory-methods
+Feature: Tour Creation
+
+  Rule: Tour identifier must be unique and non-empty
     
-    // Read-only view
-    public IReadOnlyList<Booking> Bookings => _bookings;
+    Scenario: Create tour with valid identifier
+      Given a tour identifier "CUBA2024"
+      When I create a tour with that identifier
+      Then the tour should be created successfully
+```
 
-    // Controlled modification
-    public Result<Booking> AddBooking(...)
+**Reference:** See [TEST_GUIDELINES.md](TEST_GUIDELINES.md) for BDD conventions.
+
+## Testing
+
+**Reference:** See [ADR-006: Type Safety in Test Step Definitions](adr/20251108-type-safety-test-step-definitions.md)
+
+```csharp
+[Then(@"the operation should fail")]
+public void ThenOperationShouldFail()
+{
+    var (isSuccess, errorDetail) = _result switch
     {
-        var booking = new Booking(...);
-        _bookings.Add(booking);
-        return booking;
-    }
-}
-```
-
-❌ **Avoid:**
-
-```csharp
-public sealed class Tour : Entity<int>
-{
-    // Allows external code to modify collection directly
-    public List<Booking> Bookings { get; set; } = [];
-}
-```
-
-### Immutable Value Objects
-
-**Value objects should be immutable with no setters.**
-
-✅ **Good:**
-
-```csharp
-public sealed class ContactInfo : ValueObject
-{
-    public string Email { get; }  // No setter
-    public string Mobile { get; }
-
-    public ContactInfo(string email, string mobile)
-    {
-        Email = email;
-        Mobile = mobile;
-    }
-
-    // Return new instance for changes
-    public ContactInfo WithEmail(string email) => new(email, Mobile);
-}
-```
-
-❌ **Avoid:**
-
-```csharp
-public sealed class ContactInfo : ValueObject
-{
-    public string Email { get; set; }  // Mutable - breaks value object contract
-    public string Mobile { get; set; }
-}
-```
-
-## Code Comments
-
-**Avoid comments in source code and tests.** Comments should only be added if absolutely necessary.
-
-### Why Avoid Comments?
-
-1. **Self-documenting code**: Well-named methods, variables, and classes should make the code's intent clear without
-   comments
-2. **Comments become outdated**: Code changes, but comments often don't, leading to misleading information
-3. **Noise reduction**: Comments add visual clutter and make code harder to scan
-4. **Better abstraction**: If code needs a comment to explain it, it likely needs refactoring
-
-### When Comments Are Acceptable
-
-- **XML documentation comments** (`///`) on public APIs, interfaces, and classes are valuable for IntelliSense
-- **Suppression pragmas** (`#pragma warning disable`) with explanation when necessary
-- **Complex algorithms** where the "why" is not obvious from the code itself (rare)
-- **Legal notices** or licensing headers
-
-### Placeholder Implementation
-
-**Prefer throwing `NotImplementedException` over TODO comments.**
-
-❌ **Don't do this:**
-```csharp
-private async Task HandleEditBooking(long bookingId)
-{
-    // TODO: Implement edit functionality
-}
-```
-
-✅ **Do this instead:**
-```csharp
-private async Task HandleEditBooking(long bookingId)
-{
-    throw new NotImplementedException();
-}
-```
-
-This makes incomplete features fail fast and clearly, rather than silently doing nothing. The compiler and runtime will help you track down unimplemented features.
-
-### Alternative to Comments: Extract Methods
-
-Instead of adding comments to explain what code does, extract that code into a well-named method.
-
-❌ **Don't do this:**
-
-```csharp
-private async Task<Results<NoContent, NotFound>> UpdateBooking(...)
-{
-    // Load the tour that owns this booking
-    var tour = await tourStore.GetByBookingId(id, ct);
-    if (tour is null)
-    {
-        return TypedResults.NotFound();
-    }
-
-    // Update through the Tour aggregate
-    tour.UpdateBooking(...);
+        Result<Tour> tr => (tr.IsSuccess, tr.ErrorDetails?.Detail),
+        Result r => (r.IsSuccess, r.ErrorDetails?.Detail),
+        _ => throw new InvalidOperationException("Unexpected result type")
+    };
     
-    // Save changes
-    await unitOfWork.SaveEntities(ct);
+    Assert.False(isSuccess);
+    Assert.Contains("expected error", errorDetail!);
+}
+```
+
+## Related Documentation
+
+- [Architectural Decision Records](ARCHITECTURE_DECISIONS.md) — Core architectural patterns and decisions
+- [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
+- [Test Guidelines](TEST_GUIDELINES.md) — Testing patterns and BDD scenarios
+- [Result Pattern](../src/ViajantesTurismo.Common/RESULT_PATTERN.md) — Detailed Result\<T\> usage
+
+```csharp
+var result = booking.RecordPayment(
+    amount,
+    paymentDate,
+    method,
+    TimeProvider.System,
+    referenceNumber,
+    notes);
     
-    return TypedResults.NoContent();
-}
+if (!result.IsSuccess)
+    return result.ToValidationProblem();
+
+await unitOfWork.SaveEntities(ct);
 ```
 
-✅ **Do this instead:**
+## Testing Validation Errors Validation Errors
 
 ```csharp
-private async Task<Results<NoContent, NotFound>> UpdateBooking(...)
+[Then(@"the operation should fail")]
+public void ThenOperationShouldFail()
 {
-    var tour = await tourStore.GetByBookingId(id, ct);
-    if (tour is null)
+    var (isSuccess, errorDetail) = _result switch
     {
-        return TypedResults.NotFound();
-    }
-
-    tour.UpdateBooking(...);
-    await unitOfWork.SaveEntities(ct);
-
-    return TypedResults.NoContent();
-}
-```
-
-The method names, variable names, and code structure should be clear enough that comments are unnecessary.
-
-## CQRS Pattern
-
-This codebase follows the **CQRS (Command Query Responsibility Segregation)** pattern:
-
-### Queries (Read Operations)
-
-- Use **`IQueryService`** only
-- Never use stores (ITourStore, ICustomerStore, etc.)
-- Return DTOs optimized for presentation
-- Endpoints: GET requests
-
-### Commands (Write Operations)
-
-- Use **Stores** (ITourStore, ICustomerStore, etc.) only
-- Never use `IQueryService` except to retrieve DTOs for response bodies after persistence
-- Work with full aggregate roots
-- Endpoints: POST, PUT, DELETE, PATCH requests
-
-### Benefits
-
-- Optimized read and write models
-- Better scalability
-- Clear separation of concerns
-- Easier to maintain and test
-
-## Use Mappers Instead of Casts
-
-**Always use mapper methods to convert between domain enums and DTOs instead of direct casting.**
-
-❌ **Don't do this:**
-
-```csharp
-Currency = (CurrencyDto)tour.Currency,
-Status = (BookingStatusDto)booking.Status,
-BikeType = (BikeTypeDto)customer.PhysicalInfo.BikeType
-```
-
-✅ **Do this instead:**
-
-```csharp
-Currency = TourMapper.MapToCurrencyDto(tour.Currency),
-Status = BookingMapper.MapToBookingStatusDto(booking.Status),
-BikeType = BookingMapper.MapToBikeTypeDto(customer.PhysicalInfo.BikeType)
-```
-
-**Why use mappers?**
-
-1. **Type safety**: Mappers catch enum mismatches at compile time if enum values don't align
-2. **Explicit intent**: Code clearly shows a conversion is happening
-3. **Maintainability**: When enum values change, you only update the mapper
-4. **Consistency**: All conversions go through the same path
-5. **Testability**: Mappers can be unit tested independently
-
-**Pattern:**
-
-- Create static mapper classes in `Application/Mappings/` folder
-- Name methods `MapTo{TargetType}` for clarity
-- Always throw `ArgumentOutOfRangeException` for unknown enum values
-- Provide both directions (domain ↔ DTO) when needed
-
-**Exception:** Direct casts are acceptable in test code where the simplicity outweighs the benefits of mappers.
-
-## Method Complexity
-
-Prefer extracting code into well-named methods rather than using multiple levels of abstraction within a single method.
-
-Each method should do **one thing** at an appropriate level of abstraction. If a method is doing too much or requires
-comments to explain its sections, extract those sections into separate methods.
-
-### Enum Guidelines
-
-**Always assign 0 to Unknown, None, or Other values in enums.**
-
-This ensures that:
-
-1. Default values are meaningful (uninitialized enums default to 0)
-2. Database storage is consistent
-3. Validation logic is simplified (valid values are non-zero)
-
-✅ **Do this:**
-
-```csharp
-public enum PaymentMethod
-{
-    Other = 0,        // Unknown/fallback value is 0
-    CreditCard = 1,
-    BankTransfer = 2,
-    Cash = 3
-}
-
-public enum BookingStatus
-{
-    None = 0,         // Default/uninitialized state
-    Pending = 1,
-    Confirmed = 2,
-    Cancelled = 3
-}
-```
-
-❌ **Don't do this:**
-
-```csharp
-public enum PaymentMethod
-{
-    CreditCard = 0,   // Don't start with specific values
-    BankTransfer = 1,
-    Cash = 2,
-    Other = 3         // Other/Unknown should be 0
-}
-```
-
-### TimeProvider for Testable Time-Dependent Code
-
-**Use `TimeProvider` instead of `DateTime.UtcNow` or `DateTimeOffset.UtcNow` in domain logic.**
-
-This makes code testable by allowing time to be controlled in tests.
-
-✅ **Do this:**
-
-```csharp
-public static Result<Payment> Create(
-    long bookingId,
-    decimal amount,
-    DateTime paymentDate,
-    PaymentMethod method,
-    TimeProvider timeProvider,
-    string? referenceNumber = null,
-    string? notes = null)
-{
-    ArgumentNullException.ThrowIfNull(timeProvider);
-
-    var now = timeProvider.GetUtcNow().UtcDateTime;
-    if (paymentDate > now)
-    {
-        return PaymentErrors.FuturePaymentDate(paymentDate);
-    }
-
-    return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, now);
-}
-```
-
-❌ **Don't do this:**
-
-```csharp
-public static Result<Payment> Create(
-    long bookingId,
-    decimal amount,
-    DateTime paymentDate,
-    PaymentMethod method,
-    string? referenceNumber = null,
-    string? notes = null)
-{
-    // Hard to test - time is fixed to system clock
-    if (paymentDate > DateTime.UtcNow)
-    {
-        return PaymentErrors.FuturePaymentDate(paymentDate);
-    }
-
-    return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, DateTime.UtcNow);
-}
-```
-
-**Benefits:**
-
-- **Testability**: Tests can control time using `FakeTimeProvider`
-- **Deterministic**: Same inputs always produce same outputs in tests
-- **Time Travel**: Can test future/past scenarios easily
-- **Production**: Use `TimeProvider.System` for real applications
-
-**Pattern:**
-
-- Factory methods take `TimeProvider` as parameter
-- Get time once at start: `var now = timeProvider.GetUtcNow().UtcDateTime;`
-- Pass time to constructor for property assignment
-- Tests use `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing` package
-
-### Do Not Use Regions
-
-**Avoid using `#region` directives in code.**
-
-Regions hide code structure and make navigation harder. If code needs regions to be "organized," it's usually a sign
-that:
-
-1. The class is doing too much (violates Single Responsibility Principle)
-2. Methods should be extracted to separate classes
-3. Code needs better logical grouping through proper class design
-
-❌ **Don't do this:**
-
-```csharp
-public class OrderService
-{
-    #region Validation
-    private void ValidateOrder() { }
-    private void ValidateCustomer() { }
-    #endregion
-
-    #region Processing
-    private void ProcessPayment() { }
-    private void SendConfirmation() { }
-    #endregion
-}
-```
-
-✅ **Do this instead:**
-
-```csharp
-public class OrderService
-{
-    private readonly OrderValidator _validator;
-    private readonly OrderProcessor _processor;
+        Result<Tour> tr => (tr.IsSuccess, tr.ErrorDetails?.Detail),
+        Result r => (r.IsSuccess, r.ErrorDetails?.Detail),
+        _ => throw new InvalidOperationException("Unexpected result type")
+    };
     
-    public OrderService(OrderValidator validator, OrderProcessor processor)
-    {
-        _validator = validator;
-        _processor = processor;
-    }
-}
-
-public class OrderValidator
-{
-    public void ValidateOrder() { }
-    public void ValidateCustomer() { }
-}
-
-public class OrderProcessor  
-{
-    public void ProcessPayment() { }
-    public void SendConfirmation() { }
+    Assert.False(isSuccess);
+    Assert.Contains("expected error", errorDetail!);
 }
 ```
-
-**Benefits of avoiding regions:**
-
-- Forces better class design and separation of concerns
-- Code structure is visible without expanding/collapsing
-- Easier to navigate with IDE features (Go to Definition, etc.)
-- Simpler code reviews
-- Encourages proper refactoring
-
-### Collection types by intent
-Choose collection types to clearly express intent (mutability, uniqueness, ordering, and expected operations). Prefer exposing the least-powerful interface that conveys how the collection should be used.
-
-**Prefer arrays for immutable collections and simple iteration scenarios where the collection won't be modified after
-initialization.**
-
-Guidelines:
-
-- Arrays for simple immutable collections:
-    - Use arrays (`T[]`) when the collection size is known at initialization and won't change
-    - Arrays are more efficient for iteration and have lower memory overhead
-    - Expose as arrays or `IReadOnlyList<T>` depending on whether callers need to know it's an array
-    - Example:
-  ```csharp
-  public IReadOnlyList<string> IncludedServices { get; private set; } = [];
-  
-  public void UpdateIncludedServices(string[] services)
-  {
-      IncludedServices = services;
-  }
-  ```
-
-- Mutability intent (aggregates / domain models):
-  - Internally use mutable collections when you need to add/remove items frequently (e.g. `List<T>`).
-  - Expose a read-only view from public APIs and entity properties (e.g. `IReadOnlyCollection<T>` or `IReadOnlyList<T>`).
-  - Example:
-  ```csharp
-  private readonly List<Passenger> _passengers = new();
-  public IReadOnlyList<Passenger> Passengers => _passengers;
-
-  public void AddPassenger(Passenger p)
-  {
-      if (_passengers.Any(x => x.Id == p.Id)) throw new InvalidOperationException("Duplicate passenger");
-      _passengers.Add(p);
-  }
-  ```
-
-- Uniqueness / membership checks:
-  - Use `HashSet<T>` when you require uniqueness or fast membership checks. Expose it as `IReadOnlyCollection<T>` or `IEnumerable<T>`.
-  ```csharp
-  private readonly HashSet<string> _emails = new(StringComparer.OrdinalIgnoreCase);
-  public IReadOnlyCollection<string> Emails => _emails;
-  ```
-
-- Lookups by key:
-  - Use `Dictionary<TKey, TValue>` for keyed lookups; keep it private and provide explicit accessor methods.
-
-- Read-only snapshots and concurrency:
-  - For immutable semantics or when sharing between threads, prefer the `System.Collections.Immutable` types (e.g. `ImmutableList<T>`).
-
-- Query projections / API responses:
-    - For read/query surfaces prefer returning arrays or `IEnumerable<T>`. If consumers need count or index access,
-      prefer arrays or `IReadOnlyCollection<T>`/`IReadOnlyList<T>`.
-
-Practical decision matrix (short):
-
-- Collection size known and won't change: use arrays.
-- You will add/remove items in the aggregate: use `List<T>` internally + expose `IReadOnlyCollection<T>`.
-- You need uniqueness: `HashSet<T>` (internal) + expose read-only.
-- You need keyed lookup: `Dictionary<TKey, TValue>` (internal).
-
-## Asynchronous Programming
-
-### Do Not Use Default Values for CancellationToken
-
-**Never provide default values for `CancellationToken` parameters in public APIs.**
-
-❌ **Don't do this:**
-
-```csharp
-public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken = default)
-{
-    return await httpClient.GetFromJsonAsync<GetTourDto>($"/tours/{id}", cancellationToken);
-}
-```
-
-✅ **Do this instead:**
-
-```csharp
-public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken)
-{
-    return await httpClient.GetFromJsonAsync<GetTourDto>($"/tours/{id}", cancellationToken);
-}
-```
-
-**Why avoid default values?**
-
-1. **Explicit intent**: Callers must consciously decide whether to support cancellation
-2. **Prevents silent bugs**: Missing cancellation tokens become compile errors, not runtime issues
-3. **Better discoverability**: Developers see that the operation supports cancellation
-4. **Consistent patterns**: All async methods clearly show cancellation support
-
-**For callers who don't need cancellation:**
-
-```csharp
-// Explicitly pass CancellationToken.None
-var tour = await toursApi.GetTourById(tourId, CancellationToken.None);
-```
-
-**Exception:** Private helper methods within a class may use `= default` for convenience, but all public APIs should
-require explicit cancellation tokens.
-
----
-
-## Code Style
-
-### General Formatting
-
-- Follow [Allman style](http://en.wikipedia.org/wiki/Indent_style#Allman_style) bracing (each brace on new line)
-- Use four spaces for indentation (no tabs)
-- Avoid more than one empty line at any time
-- One statement per line
-- One declaration per line
-- Add at least one blank line between method and property definitions
-
-### Naming Conventions
-
-#### Fields
-
-- Use `_camelCase` for internal and private instance fields (prefix with underscore)
-- Use `s_camelCase` for static fields (prefix with `s_`)
-- Use `t_camelCase` for thread-static fields (prefix with `t_`)
-- Use `readonly` where possible (comes after `static` for static fields)
-- Public fields should use `PascalCase` with no prefix (use sparingly)
-
-```csharp
-public sealed class Example
-{
-    private readonly string _instanceField;
-    private static readonly string s_staticField;
-    [ThreadStatic]
-    private static string t_threadStaticField;
-}
-```
-
-#### Methods and Properties
-
-- Use `PascalCase` for all method names, including local functions
-- Use `PascalCase` for all constant fields and local variables
-- Use `PascalCase` for properties
-
-#### Type Keywords
-
-- Use language keywords instead of BCL types (e.g., `int`, `string`, `float` instead of `Int32`, `String`, `Single`)
-- Use language keywords for method calls (e.g., `int.Parse` instead of `Int32.Parse`)
-
-#### Nameof and Literals
-
-- Use `nameof(...)` instead of string literals whenever possible
-- When including non-ASCII characters, use Unicode escape sequences (`\uXXXX`) instead of literal characters
-
-### Modifiers and Visibility
-
-- Always specify visibility, even if it's the default
-- Visibility should be the first modifier (e.g., `public abstract` not `abstract public`)
-- Avoid `this.` unless absolutely necessary
-
-### Var Usage
-
-- Only use `var` when the type is explicitly named on the right-hand side
-- Permitted: `var stream = new FileStream(...)` or `var result = (IEnumerable<int>)items`
-- Not permitted: `var stream = OpenStandardInput()`
-- Target-typed `new()` requires explicit type on left: `FileStream stream = new(...);`
-
-### Namespace Imports
-
-- Specify at the top of the file, outside of `namespace` declarations
-- Sort alphabetically
-- `System.*` namespaces placed first, then all others alphabetically
-
-### Type Declarations
-
-- Fields should be specified at the top within type declarations
-- Make all internal and private types `static` or `sealed` unless derivation is required
-
-### Control Flow
-
-#### Single-Statement If
-
-- Never use single-line form
-- Braces may be omitted only if the body of every block in an `if`/`else if`/`else` compound statement is on a single
-  line
-- Braces required if any block spans multiple lines or uses braces
-
-✅ **Acceptable:**
-
-```csharp
-if (condition)
-    DoSomething();
-
-if (condition)
-{
-    DoSomething();
-}
-```
-
-❌ **Not acceptable:**
-
-```csharp
-if (condition) DoSomething();  // Single-line form not allowed
-
-if (condition)
-    DoSomething();
-else
-{
-    DoSomethingElse();  // Inconsistent - this block has braces
-}
-```
-
-#### Labels
-
-- When using labels (for `goto`), indent the label one less than the current indentation
-
-### Primary Constructors
-
-- Parameters should use `camelCase` (not prefixed with `_`)
-- For small types where parameter usage is obvious, use parameters directly
-- For larger types, assign to private fields prefixed with `_`
-
-```csharp
-// Small type - parameters used directly
-public class Point(int x, int y)
-{
-    public int X => x;
-    public int Y => y;
-}
-
-// Larger type - assign to fields
-public class ComplexService(ILogger logger, IOptions options, ICache cache)
-{
-    private readonly ILogger _logger = logger;
-    private readonly IOptions _options = options;
-    private readonly ICache _cache = cache;
-}
-```
-
----
-
-## Exception Handling
-
-### Validation vs Exceptions
-
-- **Validate invariants** in Aggregates and Value Objects using guard clauses
-- **Exceptions are for exceptional control flow**, not expected validation failures
-- For validation errors, return `Result<T>` types instead of throwing
-- Use `ProblemDetails` in API responses for structured error information
-
-### Exception Best Practices
-
-- Only catch exceptions you can properly handle
-- Avoid catching general `System.Exception` without an exception filter
-- Use specific exception types for meaningful error messages
-- Include problem codes and correlation IDs for troubleshooting
-
-✅ **Good:**
-
-```csharp
-public static Result<Tour> Create(string identifier, string name, ...)
-{
-    var errors = new ValidationErrors();
-    
-    if (string.IsNullOrWhiteSpace(identifier))
-    {
-        errors.Add(TourErrors.EmptyIdentifier());
-    }
-    
-    if (errors.HasErrors)
-    {
-        return errors.ToResult<Tour>();
-    }
-    
-    return new Tour(identifier, name, ...);
-}
-```
-
-❌ **Avoid:**
-
-```csharp
-public static Tour Create(string identifier, string name, ...)
-{
-    if (string.IsNullOrWhiteSpace(identifier))
-    {
-        throw new ArgumentException("Identifier cannot be empty");  // Use Result instead
-    }
-    
-    return new Tour(identifier, name, ...);
-}
-```
-
----
-
-## Logging and Telemetry
-
-### Logger Guidelines
-
-- Use `ILogger<T>` dependency injection (no static loggers)
-- Use structured logging with named properties for better searchability
-- Use distributed tracing where applicable (correlation IDs, spans)
-
-### Log Levels
-
-- **INFO**: Business milestones and important state changes
-- **DEBUG**: Detailed diagnostics for development
-- **WARN**: Recoverable issues that don't prevent operation
-- **ERROR**: Failures that prevent normal operation
-
-✅ **Good - Structured logging:**
-
-```csharp
-_logger.LogInformation(
-    "Booking {BookingId} confirmed for tour {TourId} by customer {CustomerId}",
-    booking.Id, tour.Id, customerId);
-```
-
-❌ **Avoid - String interpolation:**
-
-```csharp
-_logger.LogInformation($"Booking {booking.Id} confirmed");  // Not searchable
-```
-
----
-
-## Development Workflow
-
-### Branching and Pull Requests
-
-- Keep PRs small and focused
-- Include links to Architecture Decision Records (ADRs) if architecture changes
-- Update per-project README and domain documentation when touching Domain/Application code
-- Ensure CI builds pass before requesting review
-
-### Code Reviews
-
-- Use automated tools: dotnet-format, analyzers, architecture tests
-- Verify adherence to these guidelines
-- Check for proper test coverage (see [TEST_GUIDELINES.md](TEST_GUIDELINES.md))
-
-### Tools and Automation
-
-- Use `.editorconfig` for automatic style enforcement in Visual Studio
-- Run `dotnet format` before committing
-- Enable code analysis in CI to catch violations early
-- Use architecture tests to enforce layer boundaries
-
----
-
-## Summary
-
-These guidelines prioritize:
-
-1. **Correctness**: Code that works reliably even after modifications
-2. **Teaching**: Clear examples of proper patterns and practices
-3. **Consistency**: Uniform style across the entire codebase
-4. **Maintainability**: Code that's easy to understand and evolve
-5. **Domain focus**: Rich domain models that express business intent
-
-Remember: Guidelines evolve. When in doubt, follow the principle that makes code more readable, maintainable, and
-aligned with business goals. If you find code that doesn't follow these guidelines, consider it an opportunity for
-improvement through refactoring.

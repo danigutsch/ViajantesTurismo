@@ -9,11 +9,13 @@ Fast, isolated tests for domain entities. No database, no HTTP, no file system.
 ## What We Test
 
 ### Tour Rules
+
 - End date must be after start date
 - All prices >= 0
 - Identifier and name not empty
 
 ### Booking Rules
+
 - Valid state transitions only
 - Price must be > 0
 - Cannot update completed/cancelled bookings
@@ -54,5 +56,3 @@ dotnet watch test
 # Specific class
 dotnet test --filter "FullyQualifiedName~TourCreationTests"
 ```
-
-

@@ -8,14 +8,14 @@ Test the full system including database, API, and infrastructure.
 
 ## Running Tests
 
-### Run all integration tests:
+### Run all integration tests
+
 ```powershell
 dotnet test tests/ViajantesTurismo.IntegrationTests
 ```
 
-### Run specific test class:
+### Run specific test class
+
 ```powershell
 dotnet test --filter "FullyQualifiedName~BookingApiTests"
 ```
-
-

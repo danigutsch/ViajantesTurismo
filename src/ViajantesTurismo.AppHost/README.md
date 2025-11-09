@@ -22,7 +22,7 @@ development and deployment.
 
 ## Service Dependencies
 
-```
+```text
 PostgreSQL → Database → MigrationService
                      ↓
                   ApiService → Admin.Web ← Redis
