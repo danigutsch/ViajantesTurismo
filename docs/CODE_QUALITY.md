@@ -1,9 +1,13 @@
-# Markdown Linting
+# Code Quality Tools
 
-This project uses [markdownlint](https://github.com/DavidAnson/markdownlint) to enforce consistent markdown formatting
-across all documentation files.
+This project uses automated tools to enforce consistent formatting and style across both documentation and code files.
 
-## Why Markdown Linting?
+## Tools Overview
+
+- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting
+- **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code formatting
+
+## Why Automated Quality Checks?
 
 Following industry best practices from projects
 like [.NET Docs](https://github.com/dotnet/docs), [GitHub Docs](https://github.com/github/docs),
@@ -13,10 +17,12 @@ and [Electron](https://github.com/electron/electron), we use a **multi-layer app
 2. **Pre-commit Hooks** - Optional safety net before committing
 3. **CI/CD Pipeline** - Enforces standards for all team members
 
-**Note**: We deliberately **do not** run Markdown linting during .NET builds. Documentation quality checks are separate
+**Note**: We deliberately **do not** run these checks during .NET builds. Documentation and code style quality checks are separate
 from code compilation, preventing unnecessary build failures and keeping builds fast.
 
-## Configuration
+## Markdown Linting
+
+### Configuration
 
 Markdown linting rules are defined in `.markdownlint.json` at the solution root.
 
@@ -29,6 +35,58 @@ Markdown linting rules are defined in `.markdownlint.json` at the solution root.
 
 See the actual `.markdownlint.json` file for the current configuration rather than a potentially outdated snapshot in
 documentation.
+
+### Available Scripts
+
+**Check all markdown files:**
+
+```powershell
+npm run lint:md
+```
+
+**Auto-fix markdown issues:**
+
+```powershell
+npm run lint:md:fix
+```
+
+### VS Code Integration
+
+The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) is **already installed** and provides:
+
+- **Real-time linting** as you type (primary quality gate)
+
+## .NET Code Formatting
+
+### Configuration
+
+Code formatting rules are defined in `.editorconfig` at the solution root. This file follows [EditorConfig](https://editorconfig.org/) standards and is automatically recognized by Visual Studio, Rider, and VS Code.
+
+### Available Commands
+
+**Format all .NET code:**
+
+```powershell
+dotnet format
+```
+
+**Check formatting without making changes:**
+
+```powershell
+dotnet format --verify-no-changes
+```
+
+**Format with detailed output:**
+
+```powershell
+dotnet format --verbosity diagnostic
+```
+
+### IDE Integration
+
+- **Visual Studio**: Enable "Format document on save" in Tools → Options → Text Editor → Code Cleanup
+- **Rider**: Enable "Reformat code" in Settings → Tools → Actions on Save
+- **VS Code**: Install [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) extension
 
 ## Local Development
 
@@ -70,13 +128,16 @@ This is your first line of defense - fix issues as you write!
 
 ## CI/CD Integration
 
-Markdown linting runs in your CI/CD pipeline to enforce quality standards across the team.
+Both markdown linting and code formatting run in your CI/CD pipeline to enforce quality standards across the team.
 
 ### GitHub Actions Example
 
 ```yaml
 - name: Lint Markdown
   run: npm run lint:md
+
+- name: Check Code Formatting
+  run: dotnet format --verify-no-changes --verbosity diagnostic
 ```
 
 ### Azure Pipelines Example
@@ -84,12 +145,14 @@ Markdown linting runs in your CI/CD pipeline to enforce quality standards across
 ```yaml
 - script: npm run lint:md
   displayName: 'Lint Markdown Files'
+
+- script: dotnet format --verify-no-changes --verbosity diagnostic
+  displayName: 'Check Code Formatting'
 ```
 
 ## Git Hooks
 
-A universal pre-commit hook (using bash/sh) is provided in the `scripts/` directory. It works on Windows (via Git Bash),
-Linux, and macOS.
+A universal pre-commit hook (using bash/sh) is provided in the `scripts/` directory. It checks both markdown files and .NET code formatting before each commit. The hook works on Windows (via Git Bash), Linux, and macOS.
 
 **Automated Installation (Recommended):**
 
@@ -116,9 +179,9 @@ chmod +x .git/hooks/pre-commit
 
 The hook will:
 
-- Detect staged `.md` files before each commit
-- Run `markdownlint-cli` on only the changed files (fast!)
-- Block the commit if linting fails
+- Detect staged `.md` files and run `markdownlint-cli` (fast - only changed files!)
+- Detect staged `.cs` files and run `dotnet format --verify-no-changes` (fast - checks entire solution)
+- Block the commit if any check fails
 - Allow bypass with `git commit --no-verify` if needed
 
 **Note**: Git hooks are local to your repository and not tracked in version control. Each developer chooses whether to
