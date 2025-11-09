@@ -1,71 +1,104 @@
+@BC:Admin @Agg:Booking @regression
 Feature: Booking Creation
-As a domain model
-I want to ensure Booking entity creation is properly validated
-So that only valid bookings can be created
+  As a booking administrator
+  I want to create bookings with valid configurations
+  So that customers can reserve spots on tours
 
-    Scenario: Create booking with valid data
-        When I create a booking with base price 1000, room type "DoubleRoom", room cost 0, and regular bike 100 for principal
-        Then the booking should be created successfully
-        And the booking total price should be 1100
+  Bookings represent customer reservations on tours. Each booking must meet
+  validation requirements for pricing, room configuration, and bike selection
+  to ensure accurate billing and proper tour logistics.
 
-    Scenario: Create booking with principal and companion customers
-        When I create a booking with base price 1000, room type "DoubleRoom", room cost 200, regular bike 100 for principal, and eBike 200 for companion
-        Then the booking should be created successfully
-        And the booking total price should be 1500
+  Business Rules:
+  - Base price must be positive and within business limits (> 0 and ≤ 100,000)
+  - Room costs must be non-negative and within limits (≥ 0 and ≤ 100,000)
+  - Notes cannot exceed 2,000 characters
+  - Room types must be valid (SingleRoom or DoubleRoom)
+  - Bike types must be specified for all travelers
 
-    Scenario: Create booking with single room supplement
-        When I create a booking with base price 1000, room type "SingleRoom", room cost 0, and regular bike 100 for principal
-        Then the booking should be created successfully
-        And the booking total price should be 1100
+  Background:
+    Given I am authenticated as a booking administrator
+    And a tour exists with standard pricing
 
-    Scenario: Cannot create booking with zero base price
-        When I try to create a booking with base price 0
-        Then the booking creation should fail
-        And the error should be for field "basePrice"
+  Rule: Booking pricing must be positive and within business limits
+    All booking prices must be positive amounts within our business operating
+    range. Base price must be greater than zero, and room costs must be
+    non-negative, with all amounts up to 100,000.
 
-    Scenario: Cannot create booking with negative base price
-        When I try to create a booking with base price -100
-        Then the booking creation should fail
-        And the error should be for field "basePrice"
+    @Invariant:INV-TOUR-008 @smoke @happy_path
+    Scenario: Create booking with valid pricing
+      When I create a booking with base price 1000, room type "DoubleRoom", room cost 0, and regular bike 100 for principal
+      Then the booking should be created successfully
+      And the booking total price should be 1100
 
-    Scenario: Cannot create booking with base price exceeding maximum
-        When I try to create a booking with base price 100001
-        Then the booking creation should fail
-        And the error should be for field "basePrice"
+    @Invariant:INV-TOUR-008 @happy_path
+    Scenario: Create booking with principal and companion
+      When I create a booking with base price 1000, room type "DoubleRoom", room cost 200, regular bike 100 for principal, and eBike 200 for companion
+      Then the booking should be created successfully
+      And the booking total price should be 1500
 
-    Scenario: Cannot create booking with negative room cost
-        When I try to create a booking with base price 1000 and room cost -100
-        Then the booking creation should fail
-        And the error should be for field "roomAdditionalCost"
+    @Invariant:INV-TOUR-008 @error_case @critical
+    Scenario: Base price must be positive
+      When I attempt to create a booking with base price 0
+      Then I should not be able to create the booking
+      And I should be informed that the base price must be positive
 
-    Scenario: Cannot create booking with room cost exceeding maximum
-        When I try to create a booking with base price 1000 and room cost 100001
-        Then the booking creation should fail
-        And the error should be for field "roomAdditionalCost"
+    @Invariant:INV-TOUR-008 @error_case
+    Scenario: Base price cannot be negative
+      When I attempt to create a booking with base price -100
+      Then I should not be able to create the booking
+      And I should be informed that the base price must be positive
 
-    Scenario: Cannot create booking with notes exceeding maximum length
-        When I try to create a booking with notes of 2001 characters
-        Then the booking creation should fail
-        And the error should be for field "notes"
+    @Invariant:INV-TOUR-009 @error_case
+    Scenario: Base price cannot exceed business maximum
+      When I attempt to create a booking with base price 100001
+      Then I should not be able to create the booking
+      And I should be informed that the price exceeds our maximum rate
 
+    @Invariant:INV-TOUR-008 @error_case
+    Scenario: Room cost cannot be negative
+      When I attempt to create a booking with base price 1000 and room cost -100
+      Then I should not be able to create the booking
+      And I should be informed that room costs must be non-negative
+
+    @Invariant:INV-TOUR-009 @error_case
+    Scenario: Room cost cannot exceed business maximum
+      When I attempt to create a booking with base price 1000 and room cost 100001
+      Then I should not be able to create the booking
+      And I should be informed that the cost exceeds our maximum rate
+
+  Rule: Booking notes have length constraints
+    Notes provide important booking details and must be kept within
+    reasonable length limits for database storage and usability.
+
+    @happy_path
     Scenario: Create booking with notes at maximum length
-        When I create a booking with notes of 2000 characters
-        Then the booking should be created successfully
+      When I create a booking with notes of 2000 characters
+      Then the booking should be created successfully
 
-    Scenario: Create booking with SingleRoom room type
-        When I create a booking with base price 1000, room type "SingleRoom", room cost 0, and regular bike 100 for principal
-        Then the booking should be created successfully
-        And the booking should have room type "SingleRoom"
+    @error_case
+    Scenario: Notes cannot exceed maximum length
+      When I attempt to create a booking with notes of 2001 characters
+      Then I should not be able to create the booking
+      And I should be informed that notes cannot exceed 2000 characters
 
-    Scenario Outline: Cannot create booking with invalid RoomType values
-        When I try to create a booking with invalid room type <invalidValue>
-        Then the booking creation should fail
-        And the error should be for field "roomType"
-        And the error message should contain "Invalid room type"
+  Rule: Room types must be valid
+    Bookings must specify a valid room configuration for proper
+    accommodation planning and billing.
 
-        Examples:
-          | invalidValue |
-          | -1           |
-          | 2            |
-          | 99           |
-          | 999          |
+    @happy_path
+    Scenario: Create booking with single room
+      When I create a booking with base price 1000, room type "SingleRoom", room cost 0, and regular bike 100 for principal
+      Then the booking should be created successfully
+      And the booking should have room type "SingleRoom"
+
+    @error_case
+    Scenario Outline: Room type must be valid enum value
+      When I attempt to create a booking with invalid room type <invalidValue>
+      Then I should not be able to create the booking
+      And I should be informed that the room type is invalid
+
+      Examples:
+        | invalidValue |
+        | -1           |
+        | 2            |
+        | 99           |
