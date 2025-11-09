@@ -1,0 +1,90 @@
+{
+  "name": "ViajantesTurismo",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "10.0",
+      "installUsingApt": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
+      "nodeGypDependencies": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // C# and .NET - Choose ONE of the following:
+        // Option 1: ReSharper (uncomment to use)
+        // "JetBrains.rider",
+
+        // Option 2: C# Dev Kit (default, comment out if using ReSharper)
+        "ms-dotnettools.csdevkit",
+
+        // Core .NET extensions (required)
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.dotnet-aspire",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // Code quality
+        "editorconfig.editorconfig",
+
+        // Shell & PowerShell
+        "timonwong.shellcheck",
+        "ms-vscode.powershell",
+
+        // Markdown
+        "davidanson.vscode-markdownlint"
+      ],
+      "settings": {
+        "dotnet.defaultSolution": "ViajantesTurismo.slnx",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit",
+          "source.fixAll": "explicit"
+        },
+        "files.exclude": {
+          "**/bin": true,
+          "**/obj": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/bin": true,
+          "**/obj": true,
+          "**/TestResults": true
+        }
+      }
+    }
+  },
+
+  "containerEnv": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1",
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "1"
+  },
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.nuget/packages,target=/home/vscode/.nuget/packages,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.aspnet,target=/home/vscode/.aspnet,type=bind,consistency=cached"
+  ],
+
+  // Comment out to connect as root instead
+  "remoteUser": "vscode"
+}
