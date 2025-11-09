@@ -94,24 +94,6 @@ ViajantesTurismo.Admin.BehaviorTests/
 - CustomerRegistration.feature - Customer creation
 - CustomerValidation.feature - Contact info validation
 
-## Tagging Conventions
-
-- **`@BC:Admin`** - Bounded Context
-- **`@Agg:Booking|Tour|Customer`** - Domain aggregate
-- **`@ADR:<number>`** - Architecture Decision Record
-- **`@critical`** - Critical scenarios (smoke tests)
-- **`@edge_case`** - Edge cases
-
-### Running by Tag
-
-```powershell
-# All Booking scenarios
-dotnet test --filter "TestCategory=Agg:Booking"
-
-# Critical scenarios
-dotnet test --filter "TestCategory=critical"
-```
-
 ## Writing New Scenarios
 
 ### Best Practices for This Project
@@ -120,12 +102,10 @@ dotnet test --filter "TestCategory=critical"
 2. **Use domain language** - Match ubiquitous language
 3. **Test business rules** - Focus on domain invariants
 4. **Keep scenarios short** - 3-5 steps ideal
-5. **Tag for traceability** - Always include `@BC:Admin` and `@Agg:<name>`
 
 ### Example Pattern
 
 ```gherkin
-@BC:Admin @Agg:Booking @ADR:005
 Feature: [Aggregate] [Capability]
   As a [role]
   I want to [goal]
