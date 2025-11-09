@@ -24,5 +24,5 @@ if (-Not (Test-Path $hooksDir)) {
 Copy-Item -Path $hookSource -Destination $hookDest -Force
 
 Write-Host "✓ Pre-commit hook installed successfully" -ForegroundColor Green
-Write-Host "  The hook will lint markdown files before each commit" -ForegroundColor Gray
+Write-Host "  The hook will lint markdown, shell scripts, PowerShell, and .NET code before each commit" -ForegroundColor Gray
 Write-Host "  Use 'git commit --no-verify' to bypass the hook if needed" -ForegroundColor Gray

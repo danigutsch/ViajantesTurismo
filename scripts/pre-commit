@@ -18,52 +18,57 @@ get_staged_files() {
 echo "Checking markdown files..."
 CHANGED_MD_FILES=$(get_staged_files '\.md$')
 
-if [ -n "$CHANGED_MD_FILES" ]; then
-    echo "${YELLOW}Auto-fixing markdown files...${NC}"
-    for file in $CHANGED_MD_FILES; do
-        npx markdownlint-cli "$file" --config .markdownlint.json --fix
-        git add "$file"
+if [ -n "${CHANGED_MD_FILES}" ]; then
+    printf "%b" "${YELLOW}Auto-fixing markdown files...${NC}\n"
+    for file in ${CHANGED_MD_FILES}; do
+        npx markdownlint-cli "${file}" --config .markdownlint.json --fix
+        git add "${file}"
     done
-    echo "${GREEN}✓ Markdown files auto-fixed and re-staged${NC}"
+    printf "%b" "${GREEN}✓ Markdown files auto-fixed and re-staged${NC}\n"
 fi
 
 # Bash/Shell script linting and auto-fix
 echo "Checking shell scripts..."
 CHANGED_SH_FILES=$(get_staged_files '\.(sh|bash)$|scripts/(pre-commit|post-commit|prepare-commit-msg)$')
 
-if [ -n "$CHANGED_SH_FILES" ]; then
-    echo "${YELLOW}Linting and formatting shell scripts...${NC}"
-    
+if [ -n "${CHANGED_SH_FILES}" ]; then
+    printf "%b" "${YELLOW}Linting and formatting shell scripts...${NC}\n"
+
     # ShellCheck for linting (with .shellcheckrc config)
-    for file in $CHANGED_SH_FILES; do
-        if ! npx shellcheck "$file"; then
-            echo "${RED}✗ ShellCheck errors in $file${NC}"
+    for file in ${CHANGED_SH_FILES}; do
+        if ! npx shellcheck "${file}"; then
+            printf "%b" "${RED}✗ ShellCheck errors in ${file}${NC}\n"
             exit 1
         fi
     done
-    
-    # shfmt for formatting (uses .editorconfig settings)
-    for file in $CHANGED_SH_FILES; do
-        npx shfmt -w -i 4 -ci -bn -sr "$file" && git add "$file"
-    done
-    echo "${GREEN}✓ Shell scripts formatted and re-staged${NC}"
+
+    # shfmt for formatting (optional - requires Go installation)
+    if command -v shfmt > /dev/null 2>&1; then
+        for file in ${CHANGED_SH_FILES}; do
+            shfmt -w -i 4 -ci -bn -sr "${file}" && git add "${file}"
+        done
+        printf "%b" "${GREEN}✓ Shell scripts formatted and re-staged${NC}\n"
+    else
+        printf "%b" "${YELLOW}⚠️  shfmt not found - skipping auto-format${NC}\n"
+        printf "%b" "${GREEN}✓ Shell scripts checked${NC}\n"
+    fi
 fi
 
 # PowerShell script linting
 echo "Checking PowerShell scripts..."
 CHANGED_PS_FILES=$(get_staged_files '\.(ps1|psm1|psd1)$')
 
-if [ -n "$CHANGED_PS_FILES" ]; then
-    if command -v pwsh >/dev/null 2>&1; then
-        echo "${YELLOW}Linting PowerShell scripts...${NC}"
-        for file in $CHANGED_PS_FILES; do
-            if ! pwsh -NoProfile -Command "Invoke-ScriptAnalyzer -Path '$file' -Settings PSGallery" 2>/dev/null; then
-                echo "${YELLOW}⚠️  PSScriptAnalyzer warnings in $file (non-blocking)${NC}"
+if [ -n "${CHANGED_PS_FILES}" ]; then
+    if command -v pwsh > /dev/null 2>&1; then
+        printf "%b" "${YELLOW}Linting PowerShell scripts...${NC}\n"
+        for file in ${CHANGED_PS_FILES}; do
+            if ! pwsh -NoProfile -Command "Invoke-ScriptAnalyzer -Path '${file}' -Settings PSGallery" 2> /dev/null; then
+                printf "%b" "${YELLOW}⚠️  PSScriptAnalyzer warnings in ${file} (non-blocking)${NC}\n"
             fi
         done
-        echo "${GREEN}✓ PowerShell scripts checked${NC}"
+        printf "%b" "${GREEN}✓ PowerShell scripts checked${NC}\n"
     else
-        echo "${YELLOW}⚠️  PowerShell not available, skipping analysis${NC}"
+        printf "%b" "${YELLOW}⚠️  PowerShell not available, skipping analysis${NC}\n"
     fi
 fi
 
@@ -71,19 +76,19 @@ fi
 echo "Checking .NET code formatting..."
 CHANGED_CS_FILES=$(get_staged_files '\.cs$')
 
-if [ -n "$CHANGED_CS_FILES" ]; then
-    echo "${YELLOW}Auto-fixing .NET code formatting...${NC}"
-    
+if [ -n "${CHANGED_CS_FILES}" ]; then
+    printf "%b" "${YELLOW}Auto-fixing .NET code formatting...${NC}\n"
+
     if dotnet format whitespace --verbosity quiet; then
-        for file in $CHANGED_CS_FILES; do
-            git add "$file"
+        for file in ${CHANGED_CS_FILES}; do
+            git add "${file}"
         done
-        echo "${GREEN}✓ .NET code formatted and re-staged${NC}"
+        printf "%b" "${GREEN}✓ .NET code formatted and re-staged${NC}\n"
     else
-        echo "${RED}✗ .NET formatting failed${NC}"
+        printf "%b" "${RED}✗ .NET formatting failed${NC}\n"
         exit 1
     fi
 fi
 
-echo "${GREEN}✓ Pre-commit checks complete${NC}"
+printf "%b" "${GREEN}✓ Pre-commit checks complete${NC}\n"
 exit 0

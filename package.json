@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.json",
-    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.json --fix"
+    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.json --fix",
+    "lint:sh": "shellcheck **/*.sh",
+    "format:sh": "shfmt -w -i 2 **/*.sh",
+    "tools:restore": "npm install ; dotnet tool restore"
   },
   "devDependencies": {
     "markdownlint-cli": "^0.37.0",

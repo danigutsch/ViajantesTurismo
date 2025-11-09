@@ -5,8 +5,8 @@
 hook_source="scripts/pre-commit"
 hook_dest=".git/hooks/pre-commit"
 
-if [ ! -f "$hook_source" ]; then
-    echo "Error: Hook file not found at $hook_source"
+if [ ! -f "${hook_source}" ]; then
+    echo "Error: Hook file not found at ${hook_source}"
     exit 1
 fi
 
@@ -19,9 +19,9 @@ fi
 mkdir -p .git/hooks
 
 # Copy the hook and make it executable
-cp "$hook_source" "$hook_dest"
-chmod +x "$hook_dest"
+cp "${hook_source}" "${hook_dest}"
+chmod +x "${hook_dest}"
 
 echo "✓ Pre-commit hook installed successfully"
-echo "  The hook will lint markdown files before each commit"
+echo "  The hook will lint markdown, shell scripts, PowerShell, and .NET code before each commit"
 echo "  Use 'git commit --no-verify' to bypass the hook if needed"
