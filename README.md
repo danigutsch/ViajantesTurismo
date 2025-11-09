@@ -76,10 +76,14 @@ ViajantesTurismo/
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Preview) - Version specified in `global.json`
 - [Node.js](https://nodejs.org/) (LTS) - For markdown linting and documentation tools
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) (for PostgreSQL)
-- [Visual Studio 2022](https://visualstudio.microsoft.com/)
-  or [Visual Studio 2026 Preview](https://visualstudio.microsoft.com/vs/preview/)
-  or [JetBrains Rider](https://www.jetbrains.com/rider/)
+- Container runtime (for PostgreSQL):
+    - [Podman](https://podman.io/) (recommended, open source) or
+    - [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- IDE:
+    - [Visual Studio Code](https://code.visualstudio.com/) (recommended, open source) or
+    - [Visual Studio 2022](https://visualstudio.microsoft.com/) or
+    - [Visual Studio 2026 Preview](https://visualstudio.microsoft.com/vs/preview/) or
+    - [JetBrains Rider](https://www.jetbrains.com/rider/)
 
 ### Quick Setup
 
