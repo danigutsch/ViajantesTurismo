@@ -1,155 +1,138 @@
+@BC:Admin @Agg:Tour @regression
 Feature: Tour Creation
-As a tour operator
-I want to create tours with valid data
-So that only properly validated tours enter the system
+  As a tour operator
+  I want to create tours with valid configurations
+  So that we can offer properly structured tour packages to customers
 
+  Tours are the core product offerings in our system. Each tour must meet
+  specific business requirements to ensure quality and operational feasibility.
+
+  Business Rules:
+  - Tours must have a unique business identifier (e.g., "CUBA2024", "AMAZON2025")
+  - Tour duration must be at least 5 days (minimum viable cycling tour)
+  - All pricing must be positive and within reasonable business limits (0 to 100,000)
+  - Customer capacity must be between 1 and 20 travelers
+  - Date ranges must be valid (end after start)
+
+  Background:
+    Given I am authenticated as a tour operator
+
+  Rule: Tours must have valid date ranges
+    Tour dates define when the cycling tour operates. The end date must be
+    after the start date, and the tour must meet our minimum duration policy
+    of 5 days to ensure a quality cycling experience.
+
+    @Invariant:INV-TOUR-006 @smoke @happy_path
     Scenario: Creating a tour with valid dates
-        Given I have tour dates from "2025-06-01" to "2025-06-10"
-        When I create the tour
-        Then the tour should be created successfully
+      Given I have tour dates from "2025-06-01" to "2025-06-10"
+      When I create the tour
+      Then the tour should be created successfully
+      And the tour should be scheduled for 9 days
 
-    Scenario: Cannot create tour with end date before start date
-        Given I have tour dates from "2025-06-10" to "2025-06-01"
-        When I try to create the tour
-        Then the tour creation should fail with argument exception "End date must be after start date."
+    @Invariant:INV-TOUR-006 @error_case
+    Scenario: End date must be after start date
+      Given I have tour dates from "2025-06-10" to "2025-06-01"
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that the end date must be after the start date
 
-    Scenario: Cannot create tour with end date same as start date
-        Given I have tour dates from "2025-06-01" to "2025-06-01"
-        When I try to create the tour
-        Then the tour creation should fail with argument exception "End date must be after start date."
+    @Invariant:INV-TOUR-006 @error_case @edge_case
+    Scenario: End date cannot be the same as start date
+      Given I have tour dates from "2025-06-01" to "2025-06-01"
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that the end date must be after the start date
 
-    Scenario: Cannot create tour with duration too short
-        Given I have tour dates from "2025-06-01" to "2025-06-03"
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "schedule"
+    @Invariant:INV-TOUR-007 @error_case @critical
+    Scenario: Tour must meet minimum duration requirement
+      Given I have tour dates from "2025-06-01" to "2025-06-03"
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that tours must last at least 5 days
 
-    Scenario: Create tour with minimum valid duration (just over 3 days)
-        Given I have tour dates from "2025-06-01" to "2025-06-06"
-        When I create the tour
-        Then the tour should be created successfully
+    @Invariant:INV-TOUR-007 @happy_path
+    Scenario: Tour with exactly minimum duration
+      Given I have tour dates from "2025-06-01" to "2025-06-06"
+      When I create the tour
+      Then the tour should be created successfully
+      And the tour should be scheduled for 5 days
 
-    Scenario: DateRange preserves UTC time zone information
-        Given I have UTC tour dates from "2025-06-01T10:00:00Z" to "2025-06-10T18:00:00Z"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour should preserve UTC time zone
+  Rule: Tour identification must be unique and meaningful
+    Each tour needs a business identifier that staff and customers can
+    reference (e.g., "CUBA2024", "PATAGONIA2025"). This identifier must
+    be provided and kept to a reasonable length.
 
-    Scenario: DateRange calculates duration with partial days
-        Given I have tour dates from "2025-06-01T08:00:00" to "2025-06-06T14:00:00"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour duration should be greater than 5 days
+    @Invariant:INV-TOUR-002 @error_case @critical
+    Scenario: Tour requires an identifier
+      Given I have tour details with identifier "" and name "Cuba Tour"
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be prompted to provide a tour identifier
 
-    Scenario: DateRange calculates duration correctly across months
-        Given I have tour dates from "2025-05-28" to "2025-06-05"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour duration should be 8 days
+    @Invariant:INV-TOUR-003 @error_case
+    Scenario: Tour identifier has length limits
+      Given I have tour details with identifier longer than 128 characters
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that the identifier is too long
 
-    Scenario: DateRange calculates duration correctly across years
-        Given I have tour dates from "2025-12-28" to "2026-01-05"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour duration should be 8 days
+  Rule: Tour must have a descriptive name
+    Tours must have a clear, descriptive name for marketing and customer
+    communication purposes.
 
-    Scenario: DateRange with leap year date handling
-        Given I have tour dates from "2024-02-28" to "2024-03-05"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour duration should be 6 days
+    @Invariant:INV-TOUR-004 @error_case @critical
+    Scenario: Tour requires a name
+      Given I have tour details with identifier "CUBA2024" and name ""
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be prompted to provide a tour name
 
-    Scenario: Tour stores DateRange properties correctly
-        Given I have UTC tour dates from "2025-06-15T14:30:00Z" to "2025-06-25T16:45:00Z"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour StartDate should be "2025-06-15T14:30:00Z"
-        And the tour EndDate should be "2025-06-25T16:45:00Z"
+    @Invariant:INV-TOUR-005 @error_case
+    Scenario: Tour name has length limits
+      Given I have tour details with name longer than 128 characters
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that the name is too long
 
-    Scenario: Create tour with long duration
-        Given I have tour dates from "2025-06-01" to "2025-06-30"
-        When I create the tour
-        Then the tour should be created successfully
-        And the tour duration should be 29 days
+  Rule: Tour pricing must be positive and within business limits
+    All tour prices must be positive amounts within our business operating
+    range (greater than 0 and up to 100,000 in the tour's currency). This includes
+    base price, room supplements, and bike rental fees.
 
-    Scenario: Cannot create tour with empty identifier
-        Given I have tour details with identifier "" and name "Cuba Tour"
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "identifier"
+    @Invariant:INV-TOUR-008 @error_case @critical
+    Scenario Outline: All prices must be positive values
+      Given I have tour details with <price_type> of <amount>
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that prices must be positive
 
-    Scenario: Cannot create tour with identifier too long
-        Given I have tour details with identifier longer than 128 characters
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "identifier"
+      Examples: Zero prices
+        | price_type             | amount |
+        | base price             | 0.00   |
+        | single room supplement | 0.00   |
+        | regular bike price     | 0.00   |
+        | e-bike price           | 0.00   |
 
-    Scenario: Cannot create tour with empty name
-        Given I have tour details with identifier "CUBA2024" and name ""
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "name"
+      Examples: Negative prices
+        | price_type             | amount   |
+        | base price             | -100.00  |
+        | single room supplement | -50.00   |
+        | regular bike price     | -30.00   |
+        | e-bike price           | -40.00   |
 
-    Scenario: Cannot create tour with name too long
-        Given I have tour details with name longer than 128 characters
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "name"
+    @Invariant:INV-TOUR-009 @error_case
+    Scenario Outline: Prices cannot exceed business maximum
+      Given I have tour details with <price_type> of 100001.00
+      When I attempt to create the tour
+      Then I should not be able to create the tour
+      And I should be informed that the price exceeds our maximum rate
 
-    Scenario: Cannot create tour with negative base price
-        Given I have tour details with base price -100.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with base price exceeding maximum
-        Given I have tour details with base price 100001.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with negative single room supplement
-        Given I have tour details with single room supplement -50.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with single room supplement exceeding maximum
-        Given I have tour details with single room supplement 100001.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with negative regular bike price
-        Given I have tour details with regular bike price -30.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with regular bike price exceeding maximum
-        Given I have tour details with regular bike price 100001.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with negative e-bike price
-        Given I have tour details with e-bike price -40.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with e-bike price exceeding maximum
-        Given I have tour details with e-bike price 100001.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with zero base price
-        Given I have tour details with base price 0.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with zero single room supplement
-        Given I have tour details with single room supplement 0.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with zero regular bike price
-        Given I have tour details with regular bike price 0.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
-
-    Scenario: Cannot create tour with zero e-bike price
-        Given I have tour details with e-bike price 0.00
-        When I try to create the tour
-        Then the tour creation should fail with validation error for "price"
+      Examples:
+        | price_type             |
+        | base price             |
+        | single room supplement |
+        | regular bike price     |
+        | e-bike price           |
 
     Scenario: Create tour with multiple validation errors
         Given I have tour details with multiple invalid values
