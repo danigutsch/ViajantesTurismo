@@ -1,112 +1,180 @@
-Feature: Contact Info Validation
-As a system administrator
-I want contact information to be validated
-So that we maintain valid customer contact details
+@BC:Admin @Agg:Customer @Entity:ContactInfo @regression
+Feature: Customer Contact Information Validation
+  As a customer service representative
+  I want to validate customer contact information
+  So that we can reliably communicate with customers
 
-    Scenario: Create contact info with valid data
-        When I create contact info with email "customer@example.com", mobile "+1234567890", instagram "@user", facebook "user.name"
-        Then the contact info should be created successfully
+  Contact information is critical for customer communication, booking confirmations,
+  and emergency notifications. All contact details must be validated to ensure we
+  can reach customers when needed.
 
-    Scenario: Create contact info with sanitized email
-        When I create contact info with email "  customer@example.com  "
-        Then the email should be "customer@example.com"
+  Business Rules:
+  - Email is required and must be valid format (max 128 characters)
+  - Mobile phone is required and properly formatted (max 64 characters)
+  - Social media handles (Instagram, Facebook) are optional (max 64 characters each)
+  - Whitespace is trimmed from all fields
+  - Empty or whitespace-only optional fields become null
 
-    Scenario: Create contact info with sanitized mobile
-        When I create contact info with mobile "  +1234567890  "
-        Then the mobile should be "+1234567890"
+  Background:
+    Given I am authenticated as customer service
 
-    Scenario: Create contact info with multiple spaces in instagram handle
-        When I create contact info with instagram "  @user    handle  "
-        Then the instagram should be "@user handle"
+  Rule: Email address is required and must be valid
+    Every customer must have a valid email address for booking confirmations
+    and important notifications. Email must be in valid format and within
+    reasonable length limits.
 
-    Scenario: Create contact info with null instagram
-        When I create contact info with instagram null
-        Then the instagram should be null
+    @Invariant:INV-CUST-002 @smoke @happy_path
+    Scenario: Register customer with valid email
+      When I create contact info with email "customer@example.com", mobile "+1234567890", instagram "@user", facebook "user.name"
+      Then the contact info should be created successfully
 
-    Scenario: Create contact info with null facebook
-        When I create contact info with facebook null
-        Then the facebook should be null
+    @Invariant:INV-CUST-002 @error_case @critical
+    Scenario: Email is required
+      When I attempt to create contact info with null email
+      Then I should not be able to create the contact info
+      And I should be informed that email is required
 
-    Scenario: Create contact info with whitespace-only instagram becomes null
-        When I create contact info with instagram "   "
-        Then the instagram should be null
+    @Invariant:INV-CUST-002 @error_case
+    Scenario: Email cannot be empty
+      When I attempt to create contact info with email ""
+      Then I should not be able to create the contact info
+      And I should be informed that email is required
 
-    Scenario: Create contact info with whitespace-only facebook becomes null
-        When I create contact info with facebook "   "
-        Then the facebook should be null
+    @Invariant:INV-CUST-002 @error_case
+    Scenario: Email cannot be whitespace only
+      When I attempt to create contact info with email "   "
+      Then I should not be able to create the contact info
+      And I should be informed that email is required
 
+    @Invariant:INV-CUST-003 @error_case
+    Scenario: Email cannot exceed maximum length
+      When I attempt to create contact info with email of 129 characters
+      Then I should not be able to create the contact info
+      And I should be informed that email cannot exceed 128 characters
+
+    @Invariant:INV-CUST-003 @happy_path @edge_case
+    Scenario: Email at maximum length is accepted
+      When I create contact info with email of 128 characters
+      Then the contact info should be created successfully
+
+  Rule: Mobile phone is required and properly formatted
+    Mobile phone is required for urgent communications and booking updates.
+    Must be within reasonable length limits.
+
+    @Invariant:INV-CUST-015 @error_case @critical
+    Scenario: Mobile is required
+      When I attempt to create contact info with null mobile
+      Then I should not be able to create the contact info
+      And I should be informed that mobile is required
+
+    @Invariant:INV-CUST-015 @error_case
+    Scenario: Mobile cannot be empty
+      When I attempt to create contact info with mobile ""
+      Then I should not be able to create the contact info
+      And I should be informed that mobile is required
+
+    @Invariant:INV-CUST-015 @error_case
+    Scenario: Mobile cannot be whitespace only
+      When I attempt to create contact info with mobile "   "
+      Then I should not be able to create the contact info
+      And I should be informed that mobile is required
+
+    @Invariant:INV-CUST-016 @error_case
+    Scenario: Mobile cannot exceed maximum length
+      When I attempt to create contact info with mobile of 65 characters
+      Then I should not be able to create the contact info
+      And I should be informed that mobile cannot exceed 64 characters
+
+    @Invariant:INV-CUST-016 @happy_path @edge_case
+    Scenario: Mobile at maximum length is accepted
+      When I create contact info with mobile of 64 characters
+      Then the contact info should be created successfully
+
+  Rule: Social media handles are optional with length limits
+    Instagram and Facebook handles are optional but if provided must be
+    within length limits. Empty values are converted to null.
+
+    @happy_path
+    Scenario: Social media handles can be null
+      When I create contact info with instagram null
+      Then the contact info should be created successfully
+      And the instagram should be null
+
+    @happy_path
+    Scenario: Facebook handle can be null
+      When I create contact info with facebook null
+      Then the contact info should be created successfully
+      And the facebook should be null
+
+    @happy_path
+    Scenario: Whitespace-only Instagram becomes null
+      When I create contact info with instagram "   "
+      Then the contact info should be created successfully
+      And the instagram should be null
+
+    @happy_path
+    Scenario: Whitespace-only Facebook becomes null
+      When I create contact info with facebook "   "
+      Then the contact info should be created successfully
+      And the facebook should be null
+
+    @error_case
+    Scenario: Instagram cannot exceed maximum length
+      When I attempt to create contact info with Instagram of 65 characters
+      Then I should not be able to create the contact info
+      And I should be informed that Instagram cannot exceed 64 characters
+
+    @happy_path @edge_case
+    Scenario: Instagram at maximum length is accepted
+      When I create contact info with Instagram of 64 characters
+      Then the contact info should be created successfully
+
+    @error_case
+    Scenario: Facebook cannot exceed maximum length
+      When I attempt to create contact info with Facebook of 65 characters
+      Then I should not be able to create the contact info
+      And I should be informed that Facebook cannot exceed 64 characters
+
+    @happy_path @edge_case
+    Scenario: Facebook at maximum length is accepted
+      When I create contact info with Facebook of 64 characters
+      Then the contact info should be created successfully
+
+  Rule: Contact information is sanitized and normalized
+    All contact fields have whitespace trimmed and multiple consecutive
+    spaces normalized to maintain data quality.
+
+    @happy_path
+    Scenario: Email with surrounding whitespace is trimmed
+      When I create contact info with email "  customer@example.com  "
+      Then the contact info should be created successfully
+      And the email should be "customer@example.com"
+
+    @happy_path
+    Scenario: Mobile with surrounding whitespace is trimmed
+      When I create contact info with mobile "  +1234567890  "
+      Then the contact info should be created successfully
+      And the mobile should be "+1234567890"
+
+    @happy_path
+    Scenario: Instagram with multiple spaces is normalized
+      When I create contact info with instagram "  @user    handle  "
+      Then the contact info should be created successfully
+      And the instagram should be "@user handle"
+
+    @happy_path
     Scenario: Email with multiple consecutive spaces is normalized
-        When I create contact info with email "customer    @example.com"
-        Then the email should be "customer @example.com"
+      When I create contact info with email "customer    @example.com"
+      Then the contact info should be created successfully
+      And the email should be "customer @example.com"
 
-    Scenario: Cannot create contact info with empty email
-        When I create contact info with email ""
-        Then the contact info creation should fail
-        And the error should be "Email is required."
+  Rule: Multiple validation errors are reported
+    When contact information has multiple issues, all validation
+    errors should be reported to help fix all problems at once.
 
-    Scenario: Cannot create contact info with null email
-        When I create contact info with null email
-        Then the contact info creation should fail
-        And the error should be "Email is required."
-
-    Scenario: Cannot create contact info with whitespace only email
-        When I create contact info with email "   "
-        Then the contact info creation should fail
-        And the error should be "Email is required."
-
-    Scenario: Cannot create contact info with email too long
-        When I create contact info with email of 129 characters
-        Then the contact info creation should fail
-        And the error should be "Email cannot exceed 128 characters."
-
-    Scenario: Create contact info with email at maximum length
-        When I create contact info with email of 128 characters
-        Then the contact info should be created successfully
-
-    Scenario: Cannot create contact info with empty mobile
-        When I create contact info with mobile ""
-        Then the contact info creation should fail
-        And the error should be "Mobile is required."
-
-    Scenario: Cannot create contact info with null mobile
-        When I create contact info with null mobile
-        Then the contact info creation should fail
-        And the error should be "Mobile is required."
-
-    Scenario: Cannot create contact info with whitespace only mobile
-        When I create contact info with mobile "   "
-        Then the contact info creation should fail
-        And the error should be "Mobile is required."
-
-    Scenario: Cannot create contact info with mobile too long
-        When I create contact info with mobile of 65 characters
-        Then the contact info creation should fail
-        And the error should be "Mobile cannot exceed 64 characters."
-
-    Scenario: Create contact info with mobile at maximum length
-        When I create contact info with mobile of 64 characters
-        Then the contact info should be created successfully
-
-    Scenario: Cannot create contact info with Instagram too long
-        When I create contact info with Instagram of 65 characters
-        Then the contact info creation should fail
-        And the error should be "Instagram cannot exceed 64 characters."
-
-    Scenario: Create contact info with Instagram at maximum length
-        When I create contact info with Instagram of 64 characters
-        Then the contact info should be created successfully
-
-    Scenario: Cannot create contact info with Facebook too long
-        When I create contact info with Facebook of 65 characters
-        Then the contact info creation should fail
-        And the error should be "Facebook cannot exceed 64 characters."
-
-    Scenario: Create contact info with Facebook at maximum length
-        When I create contact info with Facebook of 64 characters
-        Then the contact info should be created successfully
-
-    Scenario: Cannot create contact info with multiple validation errors
-        When I create contact info with email "" and mobile ""
-        Then the contact info creation should fail
-        And the error should be "Email is required."
-        And the error should be "Mobile is required."
+    @Invariant:INV-CUST-002 @Invariant:INV-CUST-015 @error_case
+    Scenario: Multiple required fields missing
+      When I attempt to create contact info with email "" and mobile ""
+      Then I should not be able to create the contact info
+      And I should be informed that email is required
+      And I should be informed that mobile is required
