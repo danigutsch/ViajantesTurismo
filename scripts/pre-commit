@@ -1,17 +1,30 @@
 #!/bin/sh
-# Pre-commit hook to lint markdown files
+# Pre-commit hook to lint markdown files and format .NET code
 
 changed_md_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.md$' || true)
 
 if [ -n "$changed_md_files" ]; then
-    echo "Linting markdown files..."
+    echo "Auto-fixing markdown files..."
     
-    if ! npx markdownlint-cli $changed_md_files --config .markdownlint.json; then
-        echo "Markdown linting failed. Fix the errors above or use 'git commit --no-verify' to bypass."
+    # Auto-fix markdown issues
+    npx markdownlint-cli $changed_md_files --config .markdownlint.json --fix
+    
+    git add $changed_md_files
+    
+    echo "✓ Markdown files auto-fixed and re-staged"
+fi
+
+changed_cs_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$' || true)
+
+if [ -n "$changed_cs_files" ]; then
+    echo "Checking .NET code formatting..."
+    
+    if ! dotnet format --verify-no-changes --verbosity quiet; then
+        echo "❌ Code formatting issues detected. Run 'dotnet format' to fix, or use 'git commit --no-verify' to bypass."
         exit 1
     fi
     
-    echo "Markdown linting passed!"
+    echo "✓ Code formatting check passed"
 fi
 
 exit 0

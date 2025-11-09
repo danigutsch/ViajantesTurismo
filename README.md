@@ -14,23 +14,23 @@ powerful tools to create and manage tour packages.
 - **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences, and medical details
 - **Booking Management**:
     - Create bookings with room type selection (Single/Double)
-  - Optional companion for double rooms (supports single occupancy)
-      - Bike type selection (Regular/E-bike) with customer preference pre-population
-  - Discount support (percentage or absolute amount with audit trail)
-  - Automatic total price calculation (base + room + bikes - discount)
-  - Domain-driven operations: Confirm, Cancel, Complete bookings
-  - Update booking notes, discount, and details after creation
-  - Payment tracking with multiple payment methods and automatic status updates
-  - Track booking status and payment status (Unpaid → PartiallyPaid → Paid)
+    - Optional companion for double rooms (supports single occupancy)
+        - Bike type selection (Regular/E-bike) with customer preference pre-population
+    - Discount support (percentage or absolute amount with audit trail)
+    - Automatic total price calculation (base + room + bikes - discount)
+    - Domain-driven operations: Confirm, Cancel, Complete bookings
+    - Update booking notes, discount, and details after creation
+    - Payment tracking with multiple payment methods and automatic status updates
+    - Track booking status and payment status (Unpaid → PartiallyPaid → Paid)
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
     - Base tour pricing for single room (not per person)
     - Double room supplement for larger accommodations
     - Regular bike and E-bike rental pricing
-  - Discount system (percentage 0-100% or absolute amount)
-      - Calculated total price (transparent, consistent)
-  - Payment tracking with configurable payment methods
+    - Discount system (percentage 0-100% or absolute amount)
+        - Calculated total price (transparent, consistent)
+    - Payment tracking with configurable payment methods
 - **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
 - **RESTful API**: Modern API-first architecture with behaviour-driven endpoints
 - **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
@@ -149,7 +149,8 @@ If you prefer manual setup or the script doesn't work:
 
 6. **Install git pre-commit hook (optional)**
 
-   The pre-commit hook uses bash/sh and works universally on Windows (via Git Bash), Linux, and macOS.
+   The pre-commit hook checks both markdown files and .NET code formatting. It uses bash/sh and works universally on
+   Windows (via Git Bash), Linux, and macOS.
 
    **Automatic installation:**
 
@@ -172,7 +173,7 @@ If you prefer manual setup or the script doesn't work:
    chmod +x .git/hooks/pre-commit
    ```
 
-   This automatically lints markdown files before commits.
+   This automatically checks markdown and code formatting before commits.
 
 ### Running the Application
 
@@ -188,6 +189,16 @@ dotnet run --project src/ViajantesTurismo.AppHost
 
 ### Development Workflow
 
+**Code Formatting:**
+
+```powershell
+# Format all .NET code
+dotnet format
+
+# Check formatting without changes
+dotnet format --verify-no-changes
+```
+
 **Markdown Documentation:**
 
 ```powershell
@@ -198,7 +209,7 @@ npm run lint:md
 npm run lint:md:fix
 ```
 
-See [docs/MARKDOWN_LINTING.md](docs/MARKDOWN_LINTING.md) for details on markdown quality standards.
+See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for details on code quality standards.
 
 ### Running Tests
 
