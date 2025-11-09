@@ -74,43 +74,131 @@ ViajantesTurismo/
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Preview)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Preview) - Version specified in `global.json`
+- [Node.js](https://nodejs.org/) (LTS) - For markdown linting and documentation tools
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (for PostgreSQL)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/)
   or [Visual Studio 2026 Preview](https://visualstudio.microsoft.com/vs/preview/)
   or [JetBrains Rider](https://www.jetbrains.com/rider/)
 
-### Running the Application
+### Quick Setup
 
-1. **Clone the repository**
+Run the automated setup script to install all required dependencies:
+
+```powershell
+.\setup-dev.ps1
+```
+
+This script will:
+
+- ✅ Verify .NET SDK version (from `global.json`)
+- ✅ Restore .NET dependencies (`dotnet restore`)
+- ✅ Restore .NET local tools (`dotnet tool restore`)
+- ✅ Install npm packages (`npm install`)
+- ✅ Optionally install git pre-commit hook for markdown linting
+
+**Options:**
+
+```powershell
+# Skip git hook installation
+.\setup-dev.ps1 -SkipGitHook
+
+# Skip npm installation
+.\setup-dev.ps1 -SkipNpm
+```
+
+### Manual Setup (Alternative)
+
+If you prefer manual setup or the script doesn't work:
+
+1. **Verify .NET SDK version**
+
+   Check that your installed SDK matches `global.json`:
+
+   ```powershell
+   dotnet --version
+   # Should output: 10.0.0 or compatible
+   ```
+
+2. **Clone the repository**
 
    ```powershell
    git clone https://github.com/danigutsch/ViajantesTurismo.git
    cd ViajantesTurismo
    ```
 
-2. **Restore dependencies**
+3. **Restore dependencies**
 
    ```powershell
    dotnet restore
    ```
 
-3. **Restore .NET tools**
+4. **Restore .NET tools**
 
    ```powershell
    dotnet tool restore
    ```
 
-4. **Run with Aspire AppHost**
+5. **Install Node.js dependencies (optional but recommended)**
 
    ```powershell
-   dotnet run --project src/ViajantesTurismo.AppHost
+   npm install
    ```
 
-5. **Access the application**
-    - API: `https://localhost:7xxx`
-    - Web: `https://localhost:7xxx`
-    - Aspire Dashboard: `https://localhost:15xxx`
+   This installs markdown linting tools. Skip if you don't need documentation quality checks.
+
+6. **Install git pre-commit hook (optional)**
+
+   The pre-commit hook uses bash/sh and works universally on Windows (via Git Bash), Linux, and macOS.
+
+   **Automatic installation:**
+
+   ```powershell
+   # Windows (PowerShell)
+   .\scripts\install-git-hooks.ps1
+
+   # Unix/Linux/macOS (Bash)
+   bash scripts/install-git-hooks.sh
+   ```
+
+   **Manual installation:**
+
+   ```powershell
+   # Windows (PowerShell)
+   Copy-Item scripts/pre-commit .git/hooks/pre-commit
+
+   # Unix/Linux/macOS (Bash)
+   cp scripts/pre-commit .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit
+   ```
+
+   This automatically lints markdown files before commits.
+
+### Running the Application
+
+```powershell
+dotnet run --project src/ViajantesTurismo.AppHost
+```
+
+**Access the application:**
+
+- API: `https://localhost:7xxx`
+- Web: `https://localhost:7xxx`
+- Aspire Dashboard: `https://localhost:15xxx`
+
+### Development Workflow
+
+**Markdown Documentation:**
+
+```powershell
+# Check all markdown files
+npm run lint:md
+
+# Auto-fix markdown issues
+npm run lint:md:fix
+```
+
+See [docs/MARKDOWN_LINTING.md](docs/MARKDOWN_LINTING.md) for details on markdown quality standards.
 
 ### Running Tests
 
