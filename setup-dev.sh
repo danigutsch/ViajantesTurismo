@@ -65,7 +65,7 @@ fi
 # Restore .NET local tools
 echo -e "\n${YELLOW}🔧 Restoring .NET local tools...${NC}"
 if dotnet tool restore > /dev/null 2>&1; then
-    echo -e "   ${GREEN}✅ .NET tools restored (dotnet-ef, reportgenerator)${NC}"
+    echo -e "   ${GREEN}✅ .NET tools restored (dotnet-ef, reportgenerator, Aspire CLI)${NC}"
 else
     echo -e "   ${YELLOW}⚠️  Failed to restore .NET tools${NC}"
 fi

@@ -44,7 +44,7 @@ if ($LASTEXITCODE -eq 0) {
 Write-Host "`n🔧 Restoring .NET local tools..." -ForegroundColor Yellow
 dotnet tool restore
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "   ✅ .NET tools restored (dotnet-ef, reportgenerator)" -ForegroundColor Green
+    Write-Host "   ✅ .NET tools restored (dotnet-ef, reportgenerator, Aspire CLI)" -ForegroundColor Green
 } else {
     Write-Host "   ⚠️  Failed to restore .NET tools" -ForegroundColor Yellow
 }
