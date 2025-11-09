@@ -29,11 +29,19 @@ are separate from code compilation, preventing unnecessary build failures and ke
 
 Markdown linting rules are defined in `.markdownlint.json` at the solution root.
 
+**Strictness Level:** High - Enhanced for better documentation quality
+
 **Key Rules:**
 
-- **MD013**: Line length limited to 300 characters (excludes tables and code blocks)
-- **MD007**: List indentation uses 4 spaces (matches official Markdown Guide)
+- **MD013**: Line length limited to **120 characters** (excludes tables, code blocks, and headings)
+- **MD007**: List indentation uses **4 spaces** (matches official Markdown Guide)
+- **MD003**: Enforce ATX-style headings (`# Heading` not `Heading\n=======`)
+- **MD004**: Enforce dash-style lists (`-` not `*` or `+`)
 - **MD024**: Duplicate headings allowed in different sections (`siblings_only: true`)
+- **MD033**: Limited HTML elements allowed (details, summary, br, img, kbd, sub, sup)
+- **MD035**: Horizontal rules use `---` style
+- **MD046**: Fenced code blocks required (not indented code blocks)
+- **MD048**: Backtick-style fenced code blocks (not tildes)
 - **All other rules**: Enabled at maximum strictness
 
 See the actual `.markdownlint.json` file for the current configuration rather than a potentially outdated snapshot in
@@ -69,37 +77,40 @@ The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName
 
 ### Tools
 
-- **ShellCheck** - Lints bash/shell scripts for common issues and best practices
-- **shfmt** - Formats shell scripts with consistent indentation (4 spaces, indent case statements)
+- **ShellCheck** - Lints bash/shell scripts for common issues, best practices, and security vulnerabilities
+- **shfmt** - Formats shell scripts with consistent indentation and style
+
+### Configuration
+
+**ShellCheck** configuration is defined in `.shellcheckrc` at the solution root:
+
+- **Strictness**: All optional checks enabled (`enable=all`)
+- **Severity**: Reports all issues down to style level
+- **Error-level checks**: SC2086, SC2115, SC2154, SC2155 (fail build)
+- **Shell dialect**: Bash
+
+**shfmt** formatting rules:
+
+- 4-space indentation (`-i 4`)
+- Indent case statements (`-ci`)
+- Binary operators at beginning of line (`-bn`)
+- Space after redirect operators (`-sr`)
 
 ### Available Scripts
 
 **Lint shell scripts:**
 
 ```powershell
-npx shellcheck scripts/pre-commit
+npx shellcheck setup-dev.sh scripts/*.sh
 ```
 
-**Format shell scripts:**
-
-```powershell
-npx shfmt -w -i 4 -ci scripts/pre-commit
-```
-
-Shell scripts are automatically linted and formatted by the pre-commit hook.
-
-### VS Code Integration
-
-Install the [ShellCheck extension](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck) for
-real-time linting.
-
-## PowerShell Script Linting
+## PowerShell Linting
 
 ### Tool
 
 - **PSScriptAnalyzer** - Lints PowerShell scripts for best practices, security issues, and code quality
 
-### Installation
+### How to Install
 
 ```powershell
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
@@ -107,7 +118,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 This is automatically installed by `setup-dev.ps1`.
 
-### Available Commands
+### Commands
 
 **Lint PowerShell script:**
 
@@ -115,30 +126,75 @@ This is automatically installed by `setup-dev.ps1`.
 Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
 ```
 
-PowerShell scripts are automatically analyzed (non-blocking warnings) by the pre-commit hook.
+## .NET Code Formatting and Analysis
 
-### IDE Integration
+### Configuration Files
 
-- **VS Code**: The [PowerShell extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
-  includes integrated PSScriptAnalyzer
-- **Visual Studio**: Built-in PowerShell Tools include analysis
+Code formatting and style rules are defined in multiple files:
 
-## .NET Code Formatting
+- **`.editorconfig`** - Code formatting, naming conventions, and style preferences
+- **`Directory.Build.props`** - Build-time analysis and warnings as errors
 
-### Configuration
+#### EditorConfig Settings
 
-Code formatting rules are defined in `.editorconfig` at the solution root.
 This file follows [EditorConfig](https://editorconfig.org/) standards and is automatically recognized
 by Visual Studio, Rider, and VS Code.
 
-**Key Settings:**
+**General Settings (C#):**
 
 - `end_of_line = crlf` - Windows-style line endings for C# files
 - `insert_final_newline = true` - Ensures files end with a newline
 - `indent_size = 4` - 4-space indentation
 - `tab_width = 4` - Tab width of 4 spaces
 
-### Available Commands
+**Naming Conventions (severity: warning):**
+
+- Interfaces must start with `I` (e.g., `IRepository`)
+- Types use PascalCase (classes, structs, enums)
+- Methods, properties, events use PascalCase
+
+**Code Style (severity: warning):**
+
+- Prefer null coalescing (`??`) and null propagation (`?.`)
+- Use object and collection initializers
+- Use explicit tuple names
+- Prefer compound assignments (`+=`, `-=`)
+- Prefer simplified boolean expressions and interpolation
+
+**C# Specific (severity: warning):**
+
+- Using directives outside namespace
+- Prefer simple using statements
+- Always use braces for control structures
+- File-scoped namespaces
+- Prefer primary constructors
+- Prefer pattern matching over `is` with cast
+
+**Other File Types:**
+
+- Shell scripts (`.sh`): LF line endings, 4-space indent
+- PowerShell (`.ps1`): CRLF line endings, 4-space indent
+- JSON (`.json`): 2-space indent
+- YAML (`.yml`, `.yaml`): 2-space indent
+- Markdown (`.md`): Trim trailing whitespace, final newline
+
+#### Build Configuration
+
+**`Directory.Build.props`** enforces code analysis at build time:
+
+- `TreatWarningsAsErrors = true` - All warnings become errors
+- `CodeAnalysisTreatWarningsAsErrors = true` - Analysis warnings become errors
+- `EnforceCodeStyleInBuild = true` - Style rules checked during build
+- `AnalysisLevel = latest` - Use latest .NET analyzers
+- `AnalysisMode = All` - Enable all analyzer categories
+
+**Built-in Analyzers:**
+
+- **Microsoft.CodeAnalysis.NetAnalyzers** - Included with .NET SDK 5.0+
+- Automatically enabled for projects targeting .NET 5 or later
+- No separate NuGet package needed
+
+### Commands
 
 **Format all .NET code:**
 
@@ -253,22 +309,24 @@ Both markdown linting and code formatting run in your CI/CD pipeline to enforce 
 
 - name: Check Code Formatting
   run: dotnet format --verify-no-changes --verbosity diagnostic
-```
+**Shell scripts (`.sh`, `.bash`, `scripts/pre-commit`):**
 
-### Azure Pipelines Example
-
-```yaml
-- script: npm run lint:md
+- Lints with ShellCheck using `.shellcheckrc` configuration
+- **Blocks commit on errors** (critical issues like SC2086, SC2115, SC2154, SC2155)
+- Shows warnings for style issues (non-blocking)
+- Auto-formats with shfmt (4-space indent, binary ops on new lines, space redirects)
+- Re-stages formatted files:md
   displayName: 'Lint Markdown Files'
 
 - script: npx shellcheck scripts/**/*.sh scripts/pre-commit
   displayName: 'Lint Shell Scripts'
 
-- script: dotnet format --verify-no-changes --verbosity diagnostic
-  displayName: 'Check Code Formatting'
-```
+**.NET C# files (`.cs`):**
 
-## Git Hooks
+- Auto-fixes whitespace with `dotnet format whitespace` (line endings, indentation, trailing spaces)
+- Re-stages formatted files
+- **Blocks commit if formatting fails**
+- EditorConfig rules enforced with warning-as-error severity
 
 A universal pre-commit hook (using bash/sh) is provided in the `scripts/` directory. It automatically lints and formats
 code before each commit. The hook works on Windows (via Git Bash), Linux, and macOS.
@@ -353,15 +411,22 @@ Documentation placeholders must also be escaped:
 ```markdown
 ❌ Wrong: @ADR:<number>
 ✅ Correct: @ADR:\<number\>
-```
-
 ### Line Length
 
-If a line legitimately exceeds 300 characters (rare), you can disable the rule for that line:
+Lines legitimately exceeding 120 characters should be broken across multiple lines for readability.
+If absolutely necessary, you can disable the rule for that line:
 
 ```markdown
 <!-- markdownlint-disable-next-line MD013 -->
 This is an exceptionally long line that cannot be broken...
+```
+
+**Note:** With the stricter 120-character limit, most prose and documentation should fit comfortably.
+URL-only lines in ADR context sections are acceptable exceptions.- markdownlint-disable-next-line MD013 -->
+This is an exceptionally long line that cannot be broken...
+
+```html
+<!-- markdownlint-disable-next-line MD013 -->
 ```
 
 ## Benefits
