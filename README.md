@@ -93,9 +93,10 @@ This script will:
 
 - ✅ Verify .NET SDK version (from `global.json`)
 - ✅ Restore .NET dependencies (`dotnet restore`)
-- ✅ Restore .NET local tools (`dotnet tool restore`)
-- ✅ Install npm packages (`npm install`)
-- ✅ Optionally install git pre-commit hook for markdown linting
+- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
+- ✅ Install PSScriptAnalyzer for PowerShell linting
+- ✅ Install npm packages (markdownlint-cli, shellcheck, shfmt)
+- ✅ Install git pre-commit hook for automatic code quality checks
 
 **Options:**
 
@@ -145,9 +146,17 @@ If you prefer manual setup or the script doesn't work:
    npm install
    ```
 
-   This installs markdown linting tools. Skip if you don't need documentation quality checks.
+   This installs code quality tools: markdownlint-cli, shellcheck, and shfmt.
 
-6. **Install git pre-commit hook (optional)**
+6. **Install PSScriptAnalyzer (optional but recommended)**
+
+   ```powershell
+   Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
+   ```
+
+   This enables PowerShell script linting in the pre-commit hook.
+
+7. **Install git pre-commit hook (optional)**
 
    The pre-commit hook checks both markdown files and .NET code formatting. It uses bash/sh and works universally on
    Windows (via Git Bash), Linux, and macOS.

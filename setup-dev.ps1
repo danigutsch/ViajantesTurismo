@@ -49,6 +49,21 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "   ⚠️  Failed to restore .NET tools" -ForegroundColor Yellow
 }
 
+# Install PSScriptAnalyzer for PowerShell linting
+Write-Host "`n🔍 Checking PSScriptAnalyzer..." -ForegroundColor Yellow
+$psaInstalled = Get-Module -ListAvailable -Name PSScriptAnalyzer
+if ($psaInstalled) {
+    Write-Host "   ✅ PSScriptAnalyzer already installed" -ForegroundColor Green
+} else {
+    Write-Host "   📦 Installing PSScriptAnalyzer..." -ForegroundColor Yellow
+    try {
+        Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
+        Write-Host "   ✅ PSScriptAnalyzer installed" -ForegroundColor Green
+    } catch {
+        Write-Host "   ⚠️  Failed to install PSScriptAnalyzer: $_" -ForegroundColor Yellow
+    }
+}
+
 # Check Node.js and npm
 if (-not $SkipNpm) {
     Write-Host "`n📦 Checking Node.js and npm..." -ForegroundColor Yellow
@@ -56,10 +71,10 @@ if (-not $SkipNpm) {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "   ✅ Node.js installed: $nodeVersion" -ForegroundColor Green
         
-        Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yellow
+        Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yello
         npm install
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "   ✅ npm dependencies installed (markdownlint-cli)" -ForegroundColor Green
+            Write-Host "   ✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt)" -ForegroundColor Green
         } else {
             Write-Host "   ❌ Failed to install npm dependencies" -ForegroundColor Red
             exit 1

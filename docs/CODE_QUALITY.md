@@ -5,6 +5,9 @@ This project uses automated tools to enforce consistent formatting and style acr
 ## Tools Overview
 
 - **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting
+- **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting
+- **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting
+- **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code formatting
 
 ## Why Automated Quality Checks?
@@ -50,11 +53,74 @@ npm run lint:md
 npm run lint:md:fix
 ```
 
+Markdown files are automatically fixed and re-staged by the pre-commit hook.
+
 ### VS Code Integration
 
 The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) is **already installed** and provides:
 
 - **Real-time linting** as you type (primary quality gate)
+- **Auto-fix on save** (can be enabled in VS Code settings)
+- **Inline error messages** with rule explanations
+- **Quick fixes** available via Ctrl+. or Cmd+.
+
+## Shell Script Linting
+
+### Tools
+
+- **ShellCheck** - Lints bash/shell scripts for common issues and best practices
+- **shfmt** - Formats shell scripts with consistent indentation (4 spaces, indent case statements)
+
+### Available Scripts
+
+**Lint shell scripts:**
+
+```powershell
+npx shellcheck scripts/pre-commit
+```
+
+**Format shell scripts:**
+
+```powershell
+npx shfmt -w -i 4 -ci scripts/pre-commit
+```
+
+Shell scripts are automatically linted and formatted by the pre-commit hook.
+
+### VS Code Integration
+
+Install the [ShellCheck extension](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck) for
+real-time linting.
+
+## PowerShell Script Linting
+
+### Tool
+
+- **PSScriptAnalyzer** - Lints PowerShell scripts for best practices, security issues, and code quality
+
+### Installation
+
+```powershell
+Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
+```
+
+This is automatically installed by `setup-dev.ps1`.
+
+### Available Commands
+
+**Lint PowerShell script:**
+
+```powershell
+Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
+```
+
+PowerShell scripts are automatically analyzed (non-blocking warnings) by the pre-commit hook.
+
+### IDE Integration
+
+- **VS Code**: The [PowerShell extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
+  includes integrated PSScriptAnalyzer
+- **Visual Studio**: Built-in PowerShell Tools include analysis
 
 ## .NET Code Formatting
 
@@ -62,12 +128,25 @@ The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName
 
 Code formatting rules are defined in `.editorconfig` at the solution root. This file follows [EditorConfig](https://editorconfig.org/) standards and is automatically recognized by Visual Studio, Rider, and VS Code.
 
+**Key Settings:**
+
+- `end_of_line = crlf` - Windows-style line endings for C# files
+- `insert_final_newline = true` - Ensures files end with a newline
+- `indent_size = 4` - 4-space indentation
+- `tab_width = 4` - Tab width of 4 spaces
+
 ### Available Commands
 
 **Format all .NET code:**
 
 ```powershell
 dotnet format
+```
+
+**Format only whitespace (line endings, indentation, trailing spaces):**
+
+```powershell
+dotnet format whitespace
 ```
 
 **Check formatting without making changes:**
@@ -82,11 +161,14 @@ dotnet format --verify-no-changes
 dotnet format --verbosity diagnostic
 ```
 
+.NET code is automatically formatted (whitespace only) and re-staged by the pre-commit hook.
+
 ### IDE Integration
 
 - **Visual Studio**: Enable "Format document on save" in Tools → Options → Text Editor → Code Cleanup
 - **Rider**: Enable "Reformat code" in Settings → Tools → Actions on Save
-- **VS Code**: Install [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) extension
+- **VS Code**: Install [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
+  extension and enable format on save
 
 ## Local Development
 
@@ -98,33 +180,60 @@ Install Node.js dependencies:
 npm install
 ```
 
-This installs `markdownlint-cli` as defined in `package.json`.
+This installs:
+
+- `markdownlint-cli` - Markdown linting
+- `shellcheck` - Shell script linting
+- `shfmt` - Shell script formatting
+
+Install PowerShell dependencies:
+
+```powershell
+Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
+```
+
+Or run the automated setup script:
+
+```powershell
+.\setup-dev.ps1
+```
 
 ### Available Scripts
 
-**Check all markdown files:**
+**Markdown:**
 
 ```powershell
-npm run lint:md
+npm run lint:md          # Check all markdown files
+npm run lint:md:fix      # Auto-fix markdown issues
 ```
 
-**Auto-fix markdown issues:**
+**All checks:**
 
 ```powershell
-npm run lint:md:fix
+npm run lint:md          # Markdown only (for now)
 ```
 
 ### VS Code Integration
 
-The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) is *
-*already installed** and provides:
+**Markdown:**
+
+The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+provides:
 
 - **Real-time linting** as you type (primary quality gate)
 - **Inline error messages** with rule explanations
 - **Quick fixes** (Ctrl+. or Cmd+.)
 - Automatic use of `.markdownlint.json` configuration
 
-This is your first line of defense - fix issues as you write!
+**Shell Scripts:**
+
+Install [ShellCheck extension](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck) for real-time
+bash linting.
+
+**PowerShell:**
+
+Install [PowerShell extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell) for integrated
+PSScriptAnalyzer.
 
 ## CI/CD Integration
 
@@ -136,6 +245,9 @@ Both markdown linting and code formatting run in your CI/CD pipeline to enforce 
 - name: Lint Markdown
   run: npm run lint:md
 
+- name: Lint Shell Scripts
+  run: npx shellcheck scripts/**/*.sh scripts/pre-commit
+
 - name: Check Code Formatting
   run: dotnet format --verify-no-changes --verbosity diagnostic
 ```
@@ -146,13 +258,17 @@ Both markdown linting and code formatting run in your CI/CD pipeline to enforce 
 - script: npm run lint:md
   displayName: 'Lint Markdown Files'
 
+- script: npx shellcheck scripts/**/*.sh scripts/pre-commit
+  displayName: 'Lint Shell Scripts'
+
 - script: dotnet format --verify-no-changes --verbosity diagnostic
   displayName: 'Check Code Formatting'
 ```
 
 ## Git Hooks
 
-A universal pre-commit hook (using bash/sh) is provided in the `scripts/` directory. It checks both markdown files and .NET code formatting before each commit. The hook works on Windows (via Git Bash), Linux, and macOS.
+A universal pre-commit hook (using bash/sh) is provided in the `scripts/` directory. It automatically lints and formats
+code before each commit. The hook works on Windows (via Git Bash), Linux, and macOS.
 
 **Automated Installation (Recommended):**
 
@@ -177,12 +293,41 @@ cp scripts/pre-commit .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
-The hook will:
+### What the Hook Does
 
-- Detect staged `.md` files and run `markdownlint-cli` (fast - only changed files!)
-- Detect staged `.cs` files and run `dotnet format --verify-no-changes` (fast - checks entire solution)
-- Block the commit if any check fails
-- Allow bypass with `git commit --no-verify` if needed
+The pre-commit hook automatically processes staged files:
+
+**Markdown files (`.md`):**
+
+- Auto-fixes formatting with `markdownlint-cli --fix`
+- Re-stages fixed files
+- Never blocks commits
+
+**Shell scripts (`.sh`, `.bash`, `scripts/pre-commit`):**
+
+- Lints with ShellCheck (warnings only, non-blocking)
+- Auto-formats with shfmt (4-space indent)
+- Re-stages formatted files
+- Never blocks commits
+
+**PowerShell scripts (`.ps1`, `.psm1`, `.psd1`):**
+
+- Lints with PSScriptAnalyzer if available
+- Shows warnings but never blocks commits
+
+**.NET C# files (`.cs`):**
+
+- Auto-fixes whitespace with `dotnet format whitespace`
+- Re-stages formatted files
+- Blocks commit if formatting fails (rare)
+
+### Bypass Hook
+
+If needed, bypass the hook with:
+
+```powershell
+git commit --no-verify
+```
 
 **Note**: Git hooks are local to your repository and not tracked in version control. Each developer chooses whether to
 install them.
