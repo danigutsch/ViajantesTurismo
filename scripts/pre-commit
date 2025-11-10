@@ -43,6 +43,19 @@ if [ -n "${CHANGED_FEATURE_FILES}" ]; then
     printf "%b" "${GREEN}✓ Feature files checked${NC}\n"
 fi
 
+# JSON file linting and auto-fix
+echo "Checking JSON files..."
+CHANGED_JSON_FILES=$(get_staged_files '\.json$')
+
+if [ -n "${CHANGED_JSON_FILES}" ]; then
+    printf "%b" "${YELLOW}Auto-fixing JSON files...${NC}\n"
+    for file in ${CHANGED_JSON_FILES}; do
+        npx eslint "${file}" --fix
+        git add "${file}"
+    done
+    printf "%b" "${GREEN}✓ JSON files auto-fixed and re-staged${NC}\n"
+fi
+
 # Bash/Shell script linting and auto-fix
 echo "Checking shell scripts..."
 CHANGED_SH_FILES=$(get_staged_files '\.(sh|bash)$|scripts/(pre-commit|post-commit|prepare-commit-msg)$')

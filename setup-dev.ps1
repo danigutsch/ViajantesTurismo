@@ -70,17 +70,32 @@ if (-not $SkipNpm) {
     $nodeVersion = node --version 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "   ✅ Node.js installed: $nodeVersion" -ForegroundColor Green
-        
-        Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yellow
-        npm install
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "   ✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt)" -ForegroundColor Green
+
+        Write-Host ""
+        Write-Host "Code quality linters available (optional):" -ForegroundColor Cyan
+        Write-Host "  • markdownlint-cli - Markdown file linting" -ForegroundColor White
+        Write-Host "  • shellcheck - Shell script linting" -ForegroundColor White
+        Write-Host "  • shfmt - Shell script formatting" -ForegroundColor White
+        Write-Host "  • gherkin-lint - BDD feature file linting" -ForegroundColor White
+        Write-Host "  • ESLint - JSON file linting" -ForegroundColor White
+        Write-Host ""
+        $installLinters = Read-Host "Install code quality linters? (y/N)"
+
+        if ($installLinters -eq 'y' -or $installLinters -eq 'Y') {
+            Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yellow
+            npm install
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "   ✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt, gherkin-lint, ESLint)" -ForegroundColor Green
+            } else {
+                Write-Host "   ❌ Failed to install npm dependencies" -ForegroundColor Red
+                exit 1
+            }
         } else {
-            Write-Host "   ❌ Failed to install npm dependencies" -ForegroundColor Red
-            exit 1
+            Write-Host "   ⏭️  Skipping linter installation" -ForegroundColor Yellow
+            Write-Host "   💡 Install later with: npm install" -ForegroundColor Cyan
         }
     } else {
-        Write-Host "   ⚠️  Node.js not found - markdown linting will not be available" -ForegroundColor Yellow
+        Write-Host "   ⚠️  Node.js not found - code quality linters will not be available" -ForegroundColor Yellow
         Write-Host "   💡 Download from: https://nodejs.org/" -ForegroundColor Cyan
     }
 }

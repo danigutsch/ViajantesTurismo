@@ -151,7 +151,7 @@ If you prefer manual setup or the script doesn't work:
    npm install
    ```
 
-   This installs code quality tools: markdownlint-cli, shellcheck, shfmt, and gherkin-lint.
+   This installs code quality tools: markdownlint-cli, shellcheck, shfmt, gherkin-lint, and ESLint (JSON).
 
 6. **Install PSScriptAnalyzer (optional but recommended)**
 
@@ -230,13 +230,23 @@ npm run lint:md:fix
 npm run lint:gherkin
 ```
 
+**JSON Files:**
+
+```powershell
+# Check all JSON files
+npm run lint:json
+
+# Auto-fix JSON formatting issues
+npm run lint:json:fix
+```
+
 **All Linters:**
 
 ```powershell
-# Run all linters (markdown, shell, Gherkin)
+# Run all linters (markdown, shell, JSON, Gherkin)
 npm run lint:all
 
-# Auto-fix markdown and shell issues (Gherkin must be fixed manually)
+# Auto-fix markdown, shell, and JSON issues (Gherkin must be fixed manually)
 npm run lint:all:fix
 ```
 

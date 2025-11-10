@@ -7,6 +7,9 @@ This project uses automated tools to enforce consistent formatting and style acr
 - **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (npm)
 - **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (npm)
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (npm)
+- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (npm)
+- **[ESLint](https://eslint.org/)** with **[eslint-plugin-jsonc](https://www.npmjs.com/package/eslint-plugin-jsonc)** -
+  JSON file linting (npm)
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code
@@ -126,6 +129,87 @@ npx shfmt -w -i 2 setup-dev.sh scripts/*.sh
 
 ## PowerShell Linting
 
+**PSScriptAnalyzer** is a PowerShell module that analyzes PowerShell scripts for best practices, security issues, and
+code quality.
+
+**Installation** (optional):
+
+```powershell
+Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
+```
+
+The pre-commit hook will use PSScriptAnalyzer if available but will skip it if not installed.
+
+---
+
+## Gherkin/Feature File Linting
+
+### Configuration
+
+Gherkin linting rules are defined in `.gherkin-lintrc` at the solution root.
+
+**Key Rules:**
+
+- **Mandatory tags**: `@BC:<BoundedContext>` and `@Agg:<Aggregate>` required on all features
+- **Tag validation**: Enforces project-specific tag patterns (bounded contexts, aggregates, invariants)
+- **Indentation**: Consistent 2-space indentation (Feature: 0, Background/Rule/Scenario: 2, Steps: 4)
+- **BDD anti-patterns**: Prevents conjunction steps, unnamed features/scenarios
+- **Formatting**: No trailing spaces, newline at EOF, no duplicate scenario names
+
+### Available Scripts
+
+**Check all feature files:**
+
+```powershell
+npm run lint:gherkin
+```
+
+**Note:** gherkin-lint validates but does not support auto-fix. Issues must be corrected manually.
+
+### Pre-commit Integration
+
+Gherkin files are validated during pre-commit and will block commits if validation errors are found.
+
+See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
+
+---
+
+## JSON File Linting
+
+### Configuration
+
+JSON linting rules are defined in `eslint.config.mjs` at the solution root using ESLint with the JSONC plugin.
+
+**Key Rules:**
+
+- **Indentation**: 2 spaces
+- **Spacing**: Proper key-value spacing, object curly spacing
+- **Quotes**: Double quotes for all keys and values
+- **Comments**: Allowed in JSON files (e.g., tsconfig.json, package.json)
+- **Comma**: No trailing commas
+
+### Available Scripts
+
+**Check all JSON files:**
+
+```powershell
+npm run lint:json
+```
+
+**Auto-fix JSON formatting:**
+
+```powershell
+npm run lint:json:fix
+```
+
+### Pre-commit Integration
+
+JSON files are automatically formatted and re-staged during pre-commit.
+
+---
+
+## PowerShell Linting (Optional)
+
 ### Tool
 
 - **PSScriptAnalyzer** - Lints PowerShell scripts for best practices, security issues, and code quality
@@ -236,7 +320,7 @@ dotnet format --verify-no-changes
 
 ### Prerequisites
 
-Install Node.js dependencies (includes markdownlint, shellcheck, and shfmt):
+Install Node.js dependencies (includes markdownlint, shellcheck, shfmt, gherkin-lint, and ESLint):
 
 ```powershell
 npm install
@@ -276,6 +360,26 @@ npm run lint:sh          # Lint shell scripts with ShellCheck
 npm run format:sh        # Format shell scripts with shfmt
 ```
 
+**Gherkin/Feature Files:**
+
+```powershell
+npm run lint:gherkin     # Validate all feature files
+```
+
+**JSON Files:**
+
+```powershell
+npm run lint:json        # Check all JSON files
+npm run lint:json:fix    # Auto-fix JSON formatting
+```
+
+**All Linters:**
+
+```powershell
+npm run lint:all         # Run all linters (markdown, shell, JSON, Gherkin)
+npm run lint:all:fix     # Auto-fix markdown, shell, and JSON (Gherkin manual)
+```
+
 **All Tools:**
 
 ```powershell
@@ -302,6 +406,26 @@ npm run lint:md:fix      # Auto-fix markdown issues
 ```powershell
 npm run lint:sh          # Lint shell scripts with ShellCheck
 npm run format:sh        # Format shell scripts with shfmt
+```
+
+**Gherkin/Feature Files:**
+
+```powershell
+npm run lint:gherkin     # Validate all feature files
+```
+
+**JSON Files:**
+
+```powershell
+npm run lint:json        # Check all JSON files
+npm run lint:json:fix    # Auto-fix JSON formatting
+```
+
+**All Linters:**
+
+```powershell
+npm run lint:all         # Run all linters
+npm run lint:all:fix     # Auto-fix (markdown, shell, JSON)
 ```
 
 **All Tools:**
@@ -350,6 +474,18 @@ The pre-commit hook automatically processes staged files:
 **Markdown files (`.md`):**
 
 - Auto-fixes formatting with `markdownlint-cli --fix`
+- Re-stages fixed files
+- Never blocks commits
+
+**Gherkin/Feature files (`.feature`):**
+
+- Validates with `gherkin-lint`
+- **Blocks commits** if validation errors found (e.g., invalid tags, incorrect indentation)
+- Manual fixes required (no auto-fix support)
+
+**JSON files (`.json`):**
+
+- Auto-fixes formatting with `eslint --fix`
 - Re-stages fixed files
 - Never blocks commits
 

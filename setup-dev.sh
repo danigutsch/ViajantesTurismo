@@ -88,15 +88,30 @@ if [ "${SKIP_NPM}" = false ]; then
     if [ "${NODE_VERSION}" != "not found" ]; then
         printf "%b" "   ${GREEN}✅ Node.js installed: ${NODE_VERSION}${NC}\n"
 
-        printf "\n%b" "${YELLOW}📦 Installing npm dependencies...${NC}\n"
-        if npm install > /dev/null 2>&1; then
-            printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt)${NC}\n"
+        printf "\n%b" "${CYAN}Code quality linters available (optional):${NC}\n"
+        printf "%b" "  • markdownlint-cli - Markdown file linting\n"
+        printf "%b" "  • shellcheck - Shell script linting\n"
+        printf "%b" "  • shfmt - Shell script formatting\n"
+        printf "%b" "  • gherkin-lint - BDD feature file linting\n"
+        printf "%b" "  • ESLint - JSON file linting\n"
+        printf "\n"
+        printf "%b" "Install code quality linters? (y/N): "
+        read -r INSTALL_LINTERS
+
+        if [ "${INSTALL_LINTERS}" = "y" ] || [ "${INSTALL_LINTERS}" = "Y" ]; then
+            printf "\n%b" "${YELLOW}📦 Installing npm dependencies...${NC}\n"
+            if npm install > /dev/null 2>&1; then
+                printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt, gherkin-lint, ESLint)${NC}\n"
+            else
+                printf "%b" "   ${RED}❌ Failed to install npm dependencies${NC}\n"
+                exit 1
+            fi
         else
-            printf "%b" "   ${RED}❌ Failed to install npm dependencies${NC}\n"
-            exit 1
+            printf "%b" "   ${YELLOW}⏭️  Skipping linter installation${NC}\n"
+            printf "%b" "   ${CYAN}💡 Install later with: npm install${NC}\n"
         fi
     else
-        printf "%b" "   ${YELLOW}⚠️  Node.js not found - markdown linting and shell script tools will not be available${NC}\n"
+        printf "%b" "   ${YELLOW}⚠️  Node.js not found - code quality linters will not be available${NC}\n"
         printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
     fi
 fi
