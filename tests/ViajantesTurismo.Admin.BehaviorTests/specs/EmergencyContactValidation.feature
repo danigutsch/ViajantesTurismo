@@ -1,78 +1,65 @@
+@BC:Admin @Agg:Customer @VO:EmergencyContact @regression
 Feature: Emergency Contact Validation
-As a system administrator
-I want emergency contact information to be validated
-So that we maintain valid emergency contact details
 
-    Scenario: Create emergency contact with valid data
-        When I create emergency contact with name "Jane Doe" and mobile "+1234567890"
-        Then the emergency contact should be created successfully
+As a system administrator, I need to validate emergency contact information to ensure
+we can reach the appropriate person in case of an emergency involving the customer.
 
-    Scenario: Create emergency contact with sanitized name
-        When I create emergency contact with name "  Jane Doe  "
-        Then the name should be "Jane Doe"
+**Business Rules:**
+- Emergency contact name is required (maximum 128 characters)
+- Emergency contact mobile phone is required (maximum 64 characters)
+- All fields automatically trimmed and whitespace normalized
 
-    Scenario: Create emergency contact with sanitized mobile
-        When I create emergency contact with mobile "  +1234567890  "
-        Then the mobile should be "+1234567890"
+Rule: Emergency contact name is required and must not exceed maximum length
 
-    Scenario: Name with multiple consecutive spaces is normalized
-        When I create emergency contact with name "Jane    Doe"
-        Then the name should be "Jane Doe"
+    @Invariant:INV-CUST-028 @error_case @smoke
+    Scenario: I cannot create an emergency contact without a name
+        When I attempt to create an emergency contact without a name
+        Then I should be informed that emergency contact name is required
 
-    Scenario: Mobile with multiple consecutive spaces is normalized
-        When I create emergency contact with mobile "+1234    567890"
-        Then the mobile should be "+1234 567890"
+    @Invariant:INV-CUST-028 @error_case @critical
+    Scenario: I cannot create an emergency contact with an excessively long name
+        When I attempt to create an emergency contact with a name of 129 characters
+        Then I should be informed that emergency contact name cannot exceed 128 characters
 
-    Scenario: Cannot create emergency contact with empty name
-        When I create emergency contact with name "" and mobile "+1234567890"
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact name is required."
+    @Invariant:INV-CUST-028 @happy_path
+    Scenario: I can create an emergency contact with name at maximum allowed length
+        When I create an emergency contact with a name of 128 characters
+        Then the emergency contact should be successfully created
 
-    Scenario: Cannot create emergency contact with null name
-        When I create emergency contact with null name and mobile "+1234567890"
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact name is required."
+Rule: Emergency contact mobile is required and must not exceed maximum length
 
-    Scenario: Cannot create emergency contact with whitespace only name
-        When I create emergency contact with name "   " and mobile "+1234567890"
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact name is required."
+    @Invariant:INV-CUST-029 @error_case @smoke
+    Scenario: I cannot create an emergency contact without a mobile number
+        When I attempt to create an emergency contact without a mobile
+        Then I should be informed that emergency contact mobile is required
 
-    Scenario: Cannot create emergency contact with name too long
-        When I create emergency contact with name of 129 characters
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact name cannot exceed 128 characters."
+    @Invariant:INV-CUST-029 @error_case @critical
+    Scenario: I cannot create an emergency contact with an excessively long mobile number
+        When I attempt to create an emergency contact with a mobile of 65 characters
+        Then I should be informed that emergency contact mobile cannot exceed 64 characters
 
-    Scenario: Create emergency contact with name at maximum length
-        When I create emergency contact with name of 128 characters
-        Then the emergency contact should be created successfully
+    @Invariant:INV-CUST-029 @happy_path
+    Scenario: I can create an emergency contact with mobile at maximum allowed length
+        When I create an emergency contact with a mobile of 64 characters
+        Then the emergency contact should be successfully created
 
-    Scenario: Cannot create emergency contact with empty mobile
-        When I create emergency contact with name "Jane Doe" and mobile ""
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact mobile is required."
+Rule: Emergency contact fields are automatically sanitized
 
-    Scenario: Cannot create emergency contact with null mobile
-        When I create emergency contact with name "Jane Doe" and null mobile
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact mobile is required."
+    @happy_path @smoke
+    Scenario: Emergency contact with complete valid information is accepted
+        When I create an emergency contact with name "Jane Doe" and mobile "+1234567890"
+        Then the emergency contact should be successfully created
 
-    Scenario: Cannot create emergency contact with whitespace only mobile
-        When I create emergency contact with name "Jane Doe" and mobile "   "
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact mobile is required."
+    @edge_case
+    Scenario: Whitespace in emergency contact fields is automatically normalized
+        When I create an emergency contact with fields containing extra whitespace
+        Then the emergency contact should be successfully created
+        And all emergency contact fields should have normalized whitespace
 
-    Scenario: Cannot create emergency contact with mobile too long
-        When I create emergency contact with mobile of 65 characters
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact mobile cannot exceed 64 characters."
+Rule: Multiple validation errors are reported together
 
-    Scenario: Create emergency contact with mobile at maximum length
-        When I create emergency contact with mobile of 64 characters
-        Then the emergency contact should be created successfully
-
-    Scenario: Cannot create emergency contact with multiple validation errors
-        When I create emergency contact with name "" and mobile ""
-        Then the emergency contact creation should fail
-        And the error should be "Emergency contact name is required."
-        And the error should be "Emergency contact mobile is required."
+    @Invariant:INV-CUST-028 @Invariant:INV-CUST-029 @error_case
+    Scenario: I am informed of all missing required fields
+        When I attempt to create an emergency contact without any fields
+        Then I should be informed that emergency contact name is required
+        And I should be informed that emergency contact mobile is required
