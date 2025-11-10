@@ -13,7 +13,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private Result<Payment> _paymentResult;
 
-    [Given(@"a tour exists with a pending booking for payment tests")]
+    [Given("a tour exists with a pending booking for payment tests")]
     public void GivenATourExistsWithAPendingBookingForPaymentTests()
     {
         tourContext.Tour = TestHelpers.CreateTestTourForPaymentTests();
@@ -24,7 +24,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
-    [When(@"I record a payment with the following details:")]
+    [When("I record a payment with the following details:")]
     public void WhenIRecordAPaymentWithTheFollowingDetails(Table table)
     {
         string GetFieldValue(string fieldName)
@@ -46,7 +46,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         bookingContext.Result = _paymentResult;
     }
 
-    [When(@"I record a payment of (.*) on (.*) using (.*)")]
+    [When("I record a payment of (.*) on (.*) using (.*)")]
     public void WhenIRecordAPaymentOfOnUsing(decimal amount, string dateString, string methodString)
     {
         var paymentDate = DateTime.Parse(dateString, CultureInfo.InvariantCulture);
@@ -56,7 +56,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         Assert.True(_paymentResult.IsSuccess);
     }
 
-    [When(@"I attempt to record a payment of (.*) on (.*) using (.*)")]
+    [When("I attempt to record a payment of (.*) on (.*) using (.*)")]
     public void WhenIAttemptToRecordAPaymentOfOnUsing(decimal amount, string dateString, string methodString)
     {
         var paymentDate = DateTime.Parse(dateString, CultureInfo.InvariantCulture);
@@ -66,7 +66,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         bookingContext.Result = _paymentResult;
     }
 
-    [When(@"I attempt to record a payment with amount (.*)")]
+    [When("I attempt to record a payment with amount (.*)")]
     public void WhenIAttemptToRecordAPaymentWithAmount(decimal amount)
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
@@ -74,7 +74,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         bookingContext.Result = _paymentResult;
     }
 
-    [When(@"I attempt to record a payment with a date in the future")]
+    [When("I attempt to record a payment with a date in the future")]
     public void WhenIAttemptToRecordAPaymentWithADateInTheFuture()
     {
         var futureDate = DateTime.UtcNow.AddDays(1);
@@ -82,7 +82,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         bookingContext.Result = _paymentResult;
     }
 
-    [When(@"I attempt to record a payment with an invalid payment method")]
+    [When("I attempt to record a payment with an invalid payment method")]
     public void WhenIAttemptToRecordAPaymentWithAnInvalidPaymentMethod()
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
@@ -90,7 +90,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         bookingContext.Result = _paymentResult;
     }
 
-    [When(@"I record payments using each payment method:")]
+    [When("I record payments using each payment method:")]
     public void WhenIRecordPaymentsUsingEachPaymentMethod(Table table)
     {
         var allSuccessful = true;
@@ -111,7 +111,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         bookingContext.Result = allSuccessful;
     }
 
-    [Then(@"the payment should be recorded successfully")]
+    [Then("the payment should be recorded successfully")]
     public void ThenThePaymentShouldBeRecordedSuccessfully()
     {
         Assert.True(_paymentResult.IsSuccess);
@@ -132,40 +132,40 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
             StringComparison.OrdinalIgnoreCase);
     }
 
-    [Then(@"the amount paid should be (.*)")]
+    [Then("the amount paid should be (.*)")]
     public void ThenTheAmountPaidShouldBe(decimal expectedAmount)
     {
         Assert.Equal(expectedAmount, bookingContext.Booking.AmountPaid);
     }
 
-    [Then(@"the remaining balance should be (.*)")]
+    [Then("the remaining balance should be (.*)")]
     public void ThenTheRemainingBalanceShouldBe(decimal expectedBalance)
     {
         Assert.Equal(expectedBalance, bookingContext.Booking.RemainingBalance);
     }
 
-    [Then(@"the payment reference number should be empty")]
+    [Then("the payment reference number should be empty")]
     public void ThenThePaymentReferenceNumberShouldBeEmpty()
     {
         Assert.True(_paymentResult.IsSuccess);
         Assert.Null(_paymentResult.Value.ReferenceNumber);
     }
 
-    [Then(@"the payment notes should be empty")]
+    [Then("the payment notes should be empty")]
     public void ThenThePaymentNotesShouldBeEmpty()
     {
         Assert.True(_paymentResult.IsSuccess);
         Assert.Null(_paymentResult.Value.Notes);
     }
 
-    [Then(@"all payments should be recorded successfully")]
+    [Then("all payments should be recorded successfully")]
     public void ThenAllPaymentsShouldBeRecordedSuccessfully()
     {
         var result = (bool)bookingContext.Result;
         Assert.True(result);
     }
 
-    [Given(@"I record a payment of (.*) on (.*) using (.*)")]
+    [Given("I record a payment of (.*) on (.*) using (.*)")]
     public void GivenIRecordAPaymentOfOnUsing(decimal amount, string dateString, string methodString)
     {
         WhenIRecordAPaymentOfOnUsing(amount, dateString, methodString);

@@ -17,7 +17,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Scope(Feature = "Customer Sanitization")]
 public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
 {
-    [Given(@"I have valid personal information")]
+    [Given("I have valid personal information")]
     public void GivenIHaveValidPersonalInformation()
     {
         context.FirstName = "John";
@@ -28,7 +28,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [When(@"I create the personal info")]
+    [When("I create the personal info")]
     public void WhenICreateThePersonalInfo()
     {
         context.Result = PersonalInfo.Create(
@@ -41,13 +41,13 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
             TimeProvider.System);
     }
 
-    [Then(@"the creation should succeed")]
+    [Then("the creation should succeed")]
     public void ThenTheCreationShouldSucceed()
     {
         Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
     }
 
-    [Then(@"the personal info should be successfully created")]
+    [Then("the personal info should be successfully created")]
     public void ThenThePersonalInfoShouldBeSuccessfullyCreated()
     {
         Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
@@ -65,7 +65,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreateThePersonalInfo();
     }
 
-    [When(@"I attempt to create personal info with null first name")]
+    [When("I attempt to create personal info with null first name")]
     public void WhenIAttemptToCreatePersonalInfoWithNullFirstName()
     {
         context.FirstName = null!;
@@ -107,13 +107,13 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreatePersonalInfoWithFirstName(new string('A', characterCount));
     }
 
-    [Then(@"I should not be able to create the personal info")]
+    [Then("I should not be able to create the personal info")]
     public void ThenIShouldNotBeAbleToCreateThePersonalInfo()
     {
         Assert.True(context.Result.IsFailure, "Expected personal info creation to fail, but it succeeded.");
     }
 
-    [Then(@"I should be informed that first name is required")]
+    [Then("I should be informed that first name is required")]
     public void ThenIShouldBeInformedThatFirstNameIsRequired()
     {
         Assert.True(context.Result.IsFailure);
@@ -129,7 +129,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
             "Expected validation error for FirstName");
     }
 
-    [Then(@"the personal info should contain the provided data")]
+    [Then("the personal info should contain the provided data")]
     public void ThenThePersonalInfoShouldContainTheProvidedData()
     {
         Assert.True(context.Result.IsSuccess);
@@ -142,7 +142,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Equal(context.Profession, info.Profession, StringComparer.Ordinal);
     }
 
-    [Then(@"the creation should fail")]
+    [Then("the creation should fail")]
     public void ThenTheCreationShouldFail()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -170,7 +170,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with null first name")]
+    [Given("I have personal information with null first name")]
     public void GivenIHavePersonalInformationWithNullFirstName()
     {
         context.FirstName = null!;
@@ -192,7 +192,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with null last name")]
+    [Given("I have personal information with null last name")]
     public void GivenIHavePersonalInformationWithNullLastName()
     {
         context.FirstName = "John";
@@ -203,7 +203,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [When(@"I attempt to create personal info with null last name")]
+    [When("I attempt to create personal info with null last name")]
     public void WhenIAttemptToCreatePersonalInfoWithNullLastName()
     {
         context.FirstName = "John";
@@ -257,7 +257,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreatePersonalInfoWithLastName(new string('B', characterCount));
     }
 
-    [Then(@"I should be informed that last name is required")]
+    [Then("I should be informed that last name is required")]
     public void ThenIShouldBeInformedThatLastNameIsRequired()
     {
         Assert.True(context.Result.IsFailure);
@@ -284,7 +284,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with null gender")]
+    [Given("I have personal information with null gender")]
     public void GivenIHavePersonalInformationWithNullGender()
     {
         context.FirstName = "John";
@@ -306,7 +306,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with null nationality")]
+    [Given("I have personal information with null nationality")]
     public void GivenIHavePersonalInformationWithNullNationality()
     {
         context.FirstName = "John";
@@ -328,7 +328,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = profession;
     }
 
-    [Given(@"I have personal information with null profession")]
+    [Given("I have personal information with null profession")]
     public void GivenIHavePersonalInformationWithNullProfession()
     {
         context.FirstName = "John";
@@ -339,7 +339,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = null!;
     }
 
-    [Given(@"I have personal information with birth date in the future")]
+    [Given("I have personal information with birth date in the future")]
     public void GivenIHavePersonalInformationWithBirthDateInTheFuture()
     {
         context.FirstName = "John";
@@ -350,7 +350,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with birth date today")]
+    [Given("I have personal information with birth date today")]
     public void GivenIHavePersonalInformationWithBirthDateToday()
     {
         context.FirstName = "John";
@@ -361,7 +361,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with birth date one day in the future")]
+    [Given("I have personal information with birth date one day in the future")]
     public void GivenIHavePersonalInformationWithBirthDateOneDayInTheFuture()
     {
         context.FirstName = "John";
@@ -372,7 +372,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [Given(@"I have personal information with birth date one day in the past")]
+    [Given("I have personal information with birth date one day in the past")]
     public void GivenIHavePersonalInformationWithBirthDateOneDayInThePast()
     {
         context.FirstName = "John";
@@ -394,7 +394,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
-    [When(@"I attempt to create personal info with birth date in the future")]
+    [When("I attempt to create personal info with birth date in the future")]
     public void WhenIAttemptToCreatePersonalInfoWithBirthDateInTheFuture()
     {
         context.FirstName = "John";
@@ -406,7 +406,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreateThePersonalInfo();
     }
 
-    [When(@"I attempt to create personal info with birth date one day in the future")]
+    [When("I attempt to create personal info with birth date one day in the future")]
     public void WhenIAttemptToCreatePersonalInfoWithBirthDateOneDayInTheFuture()
     {
         context.FirstName = "John";
@@ -418,7 +418,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreateThePersonalInfo();
     }
 
-    [When(@"I create personal info with birth date today")]
+    [When("I create personal info with birth date today")]
     public void WhenICreatePersonalInfoWithBirthDateToday()
     {
         context.FirstName = "John";
@@ -430,7 +430,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreateThePersonalInfo();
     }
 
-    [When(@"I create personal info with birth date one day in the past")]
+    [When("I create personal info with birth date one day in the past")]
     public void WhenICreatePersonalInfoWithBirthDateOneDayInThePast()
     {
         context.FirstName = "John";
@@ -454,7 +454,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         WhenICreateThePersonalInfo();
     }
 
-    [Then(@"I should be informed that birth date cannot be in the future")]
+    [Then("I should be informed that birth date cannot be in the future")]
     public void ThenIShouldBeInformedThatBirthDateCannotBeInTheFuture()
     {
         Assert.True(context.Result.IsFailure);
@@ -517,7 +517,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = new string('A', length);
     }
 
-    [When(@"I attempt to create personal info without gender")]
+    [When("I attempt to create personal info without gender")]
     public void WhenIAttemptToCreatePersonalInfoWithoutGender()
     {
         context.Result = PersonalInfo.Create(
@@ -531,7 +531,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         );
     }
 
-    [When(@"I attempt to create personal info with whitespace-only gender")]
+    [When("I attempt to create personal info with whitespace-only gender")]
     public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyGender()
     {
         context.Result = PersonalInfo.Create(
@@ -595,7 +595,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         }
     }
 
-    [Then(@"I should be informed that gender is required")]
+    [Then("I should be informed that gender is required")]
     public void ThenIShouldBeInformedThatGenderIsRequired()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -604,7 +604,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Contains("Gender is required.", allErrors);
     }
 
-    [Then(@"I should be informed that gender cannot exceed 64 characters")]
+    [Then("I should be informed that gender cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatGenderCannotExceed64Characters()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -619,7 +619,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Equal(expectedGender, context.PersonalInfo.Gender);
     }
 
-    [When(@"I attempt to create personal info without nationality")]
+    [When("I attempt to create personal info without nationality")]
     public void WhenIAttemptToCreatePersonalInfoWithoutNationality()
     {
         context.Result = PersonalInfo.Create(
@@ -633,7 +633,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         );
     }
 
-    [When(@"I attempt to create personal info with whitespace-only nationality")]
+    [When("I attempt to create personal info with whitespace-only nationality")]
     public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyNationality()
     {
         context.Result = PersonalInfo.Create(
@@ -697,7 +697,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         }
     }
 
-    [Then(@"I should be informed that nationality is required")]
+    [Then("I should be informed that nationality is required")]
     public void ThenIShouldBeInformedThatNationalityIsRequired()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -706,7 +706,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Contains("Nationality is required.", allErrors);
     }
 
-    [Then(@"I should be informed that nationality cannot exceed 128 characters")]
+    [Then("I should be informed that nationality cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatNationalityCannotExceed128Characters()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -721,7 +721,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Equal(expectedNationality, context.PersonalInfo.Nationality);
     }
 
-    [When(@"I attempt to create personal info without profession")]
+    [When("I attempt to create personal info without profession")]
     public void WhenIAttemptToCreatePersonalInfoWithoutProfession()
     {
         context.Result = PersonalInfo.Create(
@@ -735,7 +735,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         );
     }
 
-    [When(@"I attempt to create personal info with whitespace-only profession")]
+    [When("I attempt to create personal info with whitespace-only profession")]
     public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyProfession()
     {
         context.Result = PersonalInfo.Create(
@@ -799,7 +799,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         }
     }
 
-    [Then(@"I should be informed that profession is required")]
+    [Then("I should be informed that profession is required")]
     public void ThenIShouldBeInformedThatProfessionIsRequired()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -808,7 +808,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Contains("Profession is required.", allErrors);
     }
 
-    [Then(@"I should be informed that profession cannot exceed 128 characters")]
+    [Then("I should be informed that profession cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatProfessionCannotExceed128Characters()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");

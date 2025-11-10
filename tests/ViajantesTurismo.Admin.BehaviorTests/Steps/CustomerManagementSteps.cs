@@ -7,19 +7,20 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class CustomerManagementSteps(CustomerContext context)
 {
-    [Given(@"I have valid identification information")]
+    [Given("I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
     {
         context.IdentificationInfoResult = IdentificationInfo.Create("123456789", "American");
     }
 
-    [Given(@"I have valid contact information")]
+    [Given("I have valid contact information")]
     public void GivenIHaveValidContactInformation()
     {
-        context.ContactInfoResult = ContactInfo.Create("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith");
+        context.ContactInfoResult =
+            ContactInfo.Create("john.smith@example.com", "+1234567890", "@johnsmith", "john.smith");
     }
 
-    [Given(@"I have valid address information")]
+    [Given("I have valid address information")]
     public void GivenIHaveValidAddressInformation()
     {
         context.AddressResult = Address.Create(
@@ -32,31 +33,32 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             "USA");
     }
 
-    [Given(@"I have valid physical information")]
+    [Given("I have valid physical information")]
     public void GivenIHaveValidPhysicalInformation()
     {
         context.PhysicalInfo = PhysicalInfo.Create(75.5m, 180, BikeType.Regular).Value;
     }
 
-    [Given(@"I have valid accommodation preferences")]
+    [Given("I have valid accommodation preferences")]
     public void GivenIHaveValidAccommodationPreferences()
     {
-        context.AccommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, 999).Value;
+        context.AccommodationPreferences =
+            AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, 999).Value;
     }
 
-    [Given(@"I have valid emergency contact")]
+    [Given("I have valid emergency contact")]
     public void GivenIHaveValidEmergencyContact()
     {
         context.EmergencyContactResult = EmergencyContact.Create("Jane Smith", "+1987654321");
     }
 
-    [Given(@"I have valid medical information")]
+    [Given("I have valid medical information")]
     public void GivenIHaveValidMedicalInformation()
     {
         context.MedicalInfo = MedicalInfo.Create("Peanuts", "None").Value;
     }
 
-    [When(@"I create a customer")]
+    [When("I create a customer")]
     public void WhenICreateACustomer()
     {
         context.PersonalInfoResult = PersonalInfo.Create(
@@ -79,13 +81,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             context.MedicalInfo);
     }
 
-    [Then(@"the customer should be created successfully")]
+    [Then("the customer should be created successfully")]
     public void ThenTheCustomerShouldBeCreatedSuccessfully()
     {
         Assert.NotNull(context.Customer);
     }
 
-    [Then(@"the customer should contain all the provided information")]
+    [Then("the customer should contain all the provided information")]
     public void ThenTheCustomerShouldContainAllTheProvidedInformation()
     {
         Assert.NotNull(context.Customer);
@@ -112,7 +114,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             TimeProvider.System);
     }
 
-    [When(@"I create personal information from sanitization inputs")]
+    [When("I create personal information from sanitization inputs")]
     public void WhenICreatePersonalInformationFromSanitizationInputs()
     {
         if (context.PersonalInfoResult.IsSuccess)
@@ -121,7 +123,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         }
     }
 
-    [Then(@"the personal information should be created successfully from sanitization")]
+    [Then("the personal information should be created successfully from sanitization")]
     public void ThenThePersonalInformationShouldBeCreatedSuccessfullyFromSanitization()
     {
         Assert.True(context.PersonalInfoResult.IsSuccess);
@@ -153,7 +155,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             country);
     }
 
-    [When(@"I create address information from sanitization inputs")]
+    [When("I create address information from sanitization inputs")]
 #pragma warning disable CA1822
     public void WhenICreateAddressInformationFromSanitizationInputs()
 #pragma warning restore CA1822
@@ -178,7 +180,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.ContactInfoResult = ContactInfo.Create(email, mobile, null, null);
     }
 
-    [When(@"I create contact information")]
+    [When("I create contact information")]
 #pragma warning disable CA1822
     public void WhenICreateContactInformation()
 #pragma warning restore CA1822
@@ -203,7 +205,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.ContactInfoResult = ContactInfo.Create("john@example.com", "+1234567890", instagram, facebook);
     }
 
-    [When(@"I create contact information with social media")]
+    [When("I create contact information with social media")]
 #pragma warning disable CA1822
     public void WhenICreateContactInformationWithSocialMedia()
 #pragma warning restore CA1822
@@ -228,7 +230,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.IdentificationInfoResult = IdentificationInfo.Create(nationalId, nationality);
     }
 
-    [When(@"I create identification information")]
+    [When("I create identification information")]
 #pragma warning disable CA1822
     public void WhenICreateIdentificationInformation()
 #pragma warning restore CA1822
@@ -253,7 +255,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.EmergencyContactResult = EmergencyContact.Create(name, mobile);
     }
 
-    [When(@"I create emergency contact information")]
+    [When("I create emergency contact information")]
 #pragma warning disable CA1822
     public void WhenICreateEmergencyContactInformation()
 #pragma warning restore CA1822
@@ -278,7 +280,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         context.MedicalInfo = MedicalInfo.Create(allergies, additionalInfo).Value;
     }
 
-    [When(@"I create medical information")]
+    [When("I create medical information")]
 #pragma warning disable CA1822
     public void WhenICreateMedicalInformation()
 #pragma warning restore CA1822

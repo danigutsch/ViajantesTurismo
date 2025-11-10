@@ -21,7 +21,7 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
         }
     }
 
-    [When(@"I create accommodation preferences with single room, single bed, and no companion")]
+    [When("I create accommodation preferences with single room, single bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomSingleBedAndNoCompanion()
     {
         context.RoomType = RoomType.SingleRoom;
@@ -34,7 +34,7 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
         }
     }
 
-    [When(@"I create accommodation preferences with single room, double bed, and no companion")]
+    [When("I create accommodation preferences with single room, double bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomDoubleBedAndNoCompanion()
     {
         context.RoomType = RoomType.SingleRoom;
@@ -47,7 +47,7 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
         }
     }
 
-    [When(@"I create accommodation preferences with double room, double bed, and no companion")]
+    [When("I create accommodation preferences with double room, double bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithDoubleRoomDoubleBedAndNoCompanion()
     {
         context.RoomType = RoomType.DoubleRoom;
@@ -73,7 +73,7 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
         }
     }
 
-    [Then(@"the accommodation preferences should be created successfully")]
+    [Then("the accommodation preferences should be created successfully")]
     public void ThenTheAccommodationPreferencesShouldBeCreatedSuccessfully()
     {
         Assert.True(context.Result.IsSuccess);
@@ -87,7 +87,7 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
         Assert.Equal(expectedCompanionId, context.AccommodationPreferences.CompanionId);
     }
 
-    [Then(@"the companion ID should be null")]
+    [Then("the companion ID should be null")]
     public void ThenTheCompanionIdShouldBeNull()
     {
         Assert.NotNull(context.AccommodationPreferences);

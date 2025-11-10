@@ -203,19 +203,19 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
         WhenICreateABookingWithInvalidAbsoluteDiscount(1, discountAmount);
     }
 
-    [Then(@"I should be informed that the final price must be greater than zero")]
+    [Then("I should be informed that the final price must be greater than zero")]
     public void ThenIShouldBeInformedThatTheFinalPriceMustBeGreaterThanZero()
     {
         ThenTheBookingShouldFailWithErrorContaining("final price");
     }
 
-    [Then(@"I should be informed that discounts cannot be negative")]
+    [Then("I should be informed that discounts cannot be negative")]
     public void ThenIShouldBeInformedThatDiscountsCannotBeNegative()
     {
         ThenTheBookingShouldFailWithErrorContaining("negative");
     }
 
-    [Then(@"I should be informed that the discount cannot exceed the subtotal")]
+    [Then("I should be informed that the discount cannot exceed the subtotal")]
     public void ThenIShouldBeInformedThatTheDiscountCannotExceedTheSubtotal()
     {
         ThenTheBookingShouldFailWithErrorContaining("exceed");

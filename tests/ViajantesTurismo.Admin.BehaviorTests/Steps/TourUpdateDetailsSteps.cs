@@ -33,14 +33,14 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
         tourContext.Result = tourContext.Tour.UpdateDetails(identifier, longName);
     }
 
-    [Then(@"the tour details update should succeed")]
+    [Then("the tour details update should succeed")]
     public void ThenTheTourDetailsUpdateShouldSucceed()
     {
         var result = (Result)tourContext.Result;
         Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails}");
     }
 
-    [Then(@"the tour details update should fail")]
+    [Then("the tour details update should fail")]
     public void ThenTheTourDetailsUpdateShouldFail()
     {
         var result = (Result)tourContext.Result;

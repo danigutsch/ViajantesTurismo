@@ -13,13 +13,13 @@ public sealed class TourCapacityManagementSteps(
     CustomerContext customerContext,
     BookingContext bookingContext)
 {
-    [Given(@"I have valid tour details")]
+    [Given("I have valid tour details")]
     public void GivenIHaveValidTourDetails()
     {
         ContextHelpers.SetupValidTour(tourContext);
     }
 
-    [Given(@"a tour exists with minimum (.*) and maximum (.*) customers")]
+    [Given("a tour exists with minimum (.*) and maximum (.*) customers")]
     public void GivenATourExistsWithMinimumAndMaximumCustomers(int minCustomers, int maxCustomers)
     {
         tourContext.Tour = Tour.Create(
@@ -37,8 +37,8 @@ public sealed class TourCapacityManagementSteps(
             includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
-    [Given(@"the tour has (.*) confirmed bookings? with (.*) customers? each")]
-    [Given(@"the tour has (.*) confirmed booking with (.*) customers?")]
+    [Given("the tour has (.*) confirmed bookings? with (.*) customers? each")]
+    [Given("the tour has (.*) confirmed booking with (.*) customers?")]
     public void GivenTheTourHasConfirmedBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
         for (var i = 0; i < bookingCount; i++)
@@ -87,8 +87,8 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Given(@"the tour has (.*) pending bookings? with (.*) customers? each")]
-    [Given(@"the tour has (.*) pending booking with (.*) customer")]
+    [Given("the tour has (.*) pending bookings? with (.*) customers? each")]
+    [Given("the tour has (.*) pending booking with (.*) customer")]
     public void GivenTheTourHasPendingBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
         for (var i = 0; i < bookingCount; i++)
@@ -112,8 +112,8 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Given(@"the tour has (.*) cancelled bookings? with (.*) customers? each")]
-    [Given(@"the tour has (.*) cancelled booking with (.*) customer")]
+    [Given("the tour has (.*) cancelled bookings? with (.*) customers? each")]
+    [Given("the tour has (.*) cancelled booking with (.*) customer")]
     public void GivenTheTourHasCancelledBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
         for (var i = 0; i < bookingCount; i++)
@@ -138,8 +138,8 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Given(@"a third customer exists")]
-    [Given(@"a fourth customer exists")]
+    [Given("a third customer exists")]
+    [Given("a fourth customer exists")]
     public void GivenAFourthCustomerExists()
     {
         var customer =
@@ -147,8 +147,8 @@ public sealed class TourCapacityManagementSteps(
         customerContext.Customers.Add(customer);
     }
 
-    [When(@"I create a tour with minimum (.*) and maximum (.*) customers")]
-    [When(@"I try to create a tour with minimum (.*) and maximum (.*) customers")]
+    [When("I create a tour with minimum (.*) and maximum (.*) customers")]
+    [When("I try to create a tour with minimum (.*) and maximum (.*) customers")]
     public void WhenICreateATourWithMinimumAndMaximumCustomers(int minCustomers, int maxCustomers)
     {
         tourContext.Result = Tour.Create(
@@ -171,13 +171,13 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [When(@"I update the capacity to minimum (.*) and maximum (.*)")]
+    [When("I update the capacity to minimum (.*) and maximum (.*)")]
     public void WhenIUpdateTheCapacityToMinimumAndMaximum(int minCustomers, int maxCustomers)
     {
         tourContext.Result = tourContext.Tour.UpdateCapacity(minCustomers, maxCustomers);
     }
 
-    [When(@"I try to add a booking for the third customer")]
+    [When("I try to add a booking for the third customer")]
     public void WhenITryToAddABookingForTheThirdCustomer()
     {
         var customer = customerContext.Customers.ElementAt(2);
@@ -199,7 +199,7 @@ public sealed class TourCapacityManagementSteps(
         bookingContext.Result = result;
     }
 
-    [When(@"I try to add a booking for a fourth customer")]
+    [When("I try to add a booking for a fourth customer")]
     public void WhenITryToAddABookingForAFourthCustomer()
     {
         if (customerContext.Customers.Count < 4)
@@ -223,25 +223,25 @@ public sealed class TourCapacityManagementSteps(
             null);
     }
 
-    [Then(@"the minimum capacity should be (.*)")]
+    [Then("the minimum capacity should be (.*)")]
     public void ThenTheMinimumCapacityShouldBe(int expected)
     {
         Assert.Equal(expected, tourContext.Tour.Capacity.MinCustomers);
     }
 
-    [Then(@"the maximum capacity should be (.*)")]
+    [Then("the maximum capacity should be (.*)")]
     public void ThenTheMaximumCapacityShouldBe(int expected)
     {
         Assert.Equal(expected, tourContext.Tour.Capacity.MaxCustomers);
     }
 
-    [Then(@"the capacity update should succeed")]
+    [Then("the capacity update should succeed")]
     public void ThenTheCapacityUpdateShouldSucceed()
     {
         Assert.True(((Result)tourContext.Result).IsSuccess);
     }
 
-    [Then(@"the tour creation should fail")]
+    [Then("the tour creation should fail")]
     public void ThenTheTourCreationShouldFail()
     {
         if (tourContext.Result is Result<Tour> resultOfTour)
@@ -259,7 +259,7 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Then(@"the error should indicate max must be at least min")]
+    [Then("the error should indicate max must be at least min")]
     public void ThenTheErrorShouldIndicateMaxMustBeAtLeastMin()
     {
         if (tourContext.Result is Result<Tour> resultOfTour)
@@ -292,7 +292,7 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Then(@"the error should indicate minimum must be at least 1")]
+    [Then("the error should indicate minimum must be at least 1")]
     public void ThenTheErrorShouldIndicateMinimumMustBeAtLeast()
     {
         if (tourContext.Result is Result<Tour> resultOfTour)
@@ -325,7 +325,7 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Then(@"the error should indicate maximum cannot exceed 20")]
+    [Then("the error should indicate maximum cannot exceed 20")]
     public void ThenTheErrorShouldIndicateMaximumCannotExceed()
     {
         if (tourContext.Result is Result<Tour> resultOfTour)
@@ -358,7 +358,7 @@ public sealed class TourCapacityManagementSteps(
         }
     }
 
-    [Then(@"the error should indicate the tour is fully booked")]
+    [Then("the error should indicate the tour is fully booked")]
     public void ThenTheErrorShouldIndicateTheTourIsFullyBooked()
     {
         var result = (Result<Booking>)bookingContext.Result;
@@ -368,25 +368,25 @@ public sealed class TourCapacityManagementSteps(
         Assert.Contains("fully booked", error.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Then(@"the current customer count should be (.*)")]
+    [Then("the current customer count should be (.*)")]
     public void ThenTheCurrentCustomerCountShouldBe(int expected)
     {
         Assert.Equal(expected, tourContext.Tour.CurrentCustomerCount);
     }
 
-    [Then(@"the available spots should be (.*)")]
+    [Then("the available spots should be (.*)")]
     public void ThenTheAvailableSpotsShouldBe(int expected)
     {
         Assert.Equal(expected, tourContext.Tour.AvailableSpots);
     }
 
-    [Then(@"the tour should not be at minimum capacity")]
+    [Then("the tour should not be at minimum capacity")]
     public void ThenTheTourShouldNotBeAtMinimumCapacity()
     {
         Assert.False(tourContext.Tour.IsAtMinimumCapacity);
     }
 
-    [Then(@"the tour should not be fully booked")]
+    [Then("the tour should not be fully booked")]
     public void ThenTheTourShouldNotBeFullyBooked()
     {
         Assert.False(tourContext.Tour.IsFullyBooked);

@@ -64,14 +64,14 @@ public sealed class PhysicalInfoValidationSteps(PhysicalInfoContext context)
         }
     }
 
-    [Then(@"the physical info should be created successfully")]
+    [Then("the physical info should be created successfully")]
     public void ThenThePhysicalInfoShouldBeCreatedSuccessfully()
     {
         Assert.True(context.Result.IsSuccess);
         Assert.NotNull(context.PhysicalInfo);
     }
 
-    [Then(@"the physical info creation should fail")]
+    [Then("the physical info creation should fail")]
     public void ThenThePhysicalInfoCreationShouldFail()
     {
         Assert.False(context.Result.IsSuccess);

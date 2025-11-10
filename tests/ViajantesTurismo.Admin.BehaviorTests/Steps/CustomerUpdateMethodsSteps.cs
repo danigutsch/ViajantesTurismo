@@ -31,7 +31,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
         customerContext.Customer = TestHelpers.CreateTestCustomerWithCity(city);
     }
 
-    [Given(@"a customer exists with height (.*)")]
+    [Given("a customer exists with height (.*)")]
     public void GivenACustomerExistsWithHeight(int height)
     {
         customerContext.Customer = TestHelpers.CreateTestCustomerWithHeight(height);
@@ -91,7 +91,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
         customerContext.Customer.UpdateAddress(address);
     }
 
-    [When(@"I update the physical info to height (.*)")]
+    [When("I update the physical info to height (.*)")]
     public void WhenIUpdateThePhysicalInfoToHeight(int height)
     {
         var physicalInfo = PhysicalInfo.Create(70, height, BikeType.Regular).Value;
@@ -120,55 +120,55 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
         customerContext.Customer.UpdateMedicalInfo(medicalInfo);
     }
 
-    [Then(@"the customer personal info update should succeed")]
+    [Then("the customer personal info update should succeed")]
     public void ThenTheCustomerPersonalInfoUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer identification info update should succeed")]
+    [Then("the customer identification info update should succeed")]
     public void ThenTheCustomerIdentificationInfoUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer contact info update should succeed")]
+    [Then("the customer contact info update should succeed")]
     public void ThenTheCustomerContactInfoUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer address update should succeed")]
+    [Then("the customer address update should succeed")]
     public void ThenTheCustomerAddressUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer physical info update should succeed")]
+    [Then("the customer physical info update should succeed")]
     public void ThenTheCustomerPhysicalInfoUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer accommodation preferences update should succeed")]
+    [Then("the customer accommodation preferences update should succeed")]
     public void ThenTheCustomerAccommodationPreferencesUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer emergency contact update should succeed")]
+    [Then("the customer emergency contact update should succeed")]
     public void ThenTheCustomerEmergencyContactUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"the customer medical info update should succeed")]
+    [Then("the customer medical info update should succeed")]
     public void ThenTheCustomerMedicalInfoUpdateShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
     }
 
-    [Then(@"all customer updates should succeed")]
+    [Then("all customer updates should succeed")]
     public void ThenAllCustomerUpdatesShouldSucceed()
     {
         Assert.NotNull(customerContext.Customer);
@@ -204,7 +204,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
         Assert.Equal(expectedCity, customerContext.Customer.Address.City);
     }
 
-    [Then(@"the customer should have height (.*)")]
+    [Then("the customer should have height (.*)")]
     public void ThenTheCustomerShouldHaveHeight(int expectedHeight)
     {
         Assert.Equal(expectedHeight, customerContext.Customer.PhysicalInfo.HeightCentimeters);

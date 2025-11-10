@@ -24,14 +24,14 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
         tourContext.Result = tourContext.Tour.UpdateSchedule(startDate, endDate);
     }
 
-    [Then(@"the tour schedule update should succeed")]
+    [Then("the tour schedule update should succeed")]
     public void ThenTheTourScheduleUpdateShouldSucceed()
     {
         var result = (Result)tourContext.Result;
         Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails?.Detail}");
     }
 
-    [Then(@"the tour schedule update should fail")]
+    [Then("the tour schedule update should fail")]
     public void ThenTheTourScheduleUpdateShouldFail()
     {
         var result = (Result)tourContext.Result;

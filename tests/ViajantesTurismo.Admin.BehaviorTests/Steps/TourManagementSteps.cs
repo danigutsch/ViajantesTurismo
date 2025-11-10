@@ -56,7 +56,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Name = name;
     }
 
-    [Given(@"I have tour details with identifier longer than 128 characters")]
+    [Given("I have tour details with identifier longer than 128 characters")]
     public void GivenIHaveTourDetailsWithIdentifierLongerThan128Characters()
     {
         ContextHelpers.SetupValidTour(tourContext);
@@ -64,7 +64,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Name = "Valid Tour Name";
     }
 
-    [Given(@"I have tour details with name longer than 128 characters")]
+    [Given("I have tour details with name longer than 128 characters")]
     public void GivenIHaveTourDetailsWithNameLongerThan128Characters()
     {
         ContextHelpers.SetupValidTour(tourContext);
@@ -72,7 +72,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Name = new string('A', 129);
     }
 
-    [Given(@"I have tour details with multiple invalid values")]
+    [Given("I have tour details with multiple invalid values")]
     public void GivenIHaveTourDetailsWithMultipleInvalidValues()
     {
         tourContext.Identifier = "TEST2024";
@@ -85,7 +85,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.EBikePrice = 0m;
     }
 
-    [Given(@"I have tour details with (base price|single room supplement|regular bike price|e-bike price) (.*)")]
+    [Given("I have tour details with (base price|single room supplement|regular bike price|e-bike price) (.*)")]
     public void GivenIHaveTourDetailsWithPriceType(string priceType, decimal amount)
     {
         tourContext.Identifier = "TEST2024";
@@ -135,7 +135,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         }
     }
 
-    [Given(@"I have tour details with base price (.*), single room (.*), regular bike (.*), e-bike (.*)")]
+    [Given("I have tour details with base price (.*), single room (.*), regular bike (.*), e-bike (.*)")]
     public void GivenIHaveTourDetailsWithAllPrices(decimal basePrice, decimal singleRoom, decimal regularBike,
         decimal eBike)
     {
@@ -149,14 +149,14 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.EBikePrice = eBike;
     }
 
-    [When(@"I create the tour")]
+    [When("I create the tour")]
     public void WhenICreateTheTour()
     {
         tourContext.Tour = TestHelpers.CreateTestTourWithDates(tourContext.StartDate, tourContext.EndDate);
     }
 
-    [When(@"I try to create the tour")]
-    [When(@"I attempt to create the tour")]
+    [When("I try to create the tour")]
+    [When("I attempt to create the tour")]
     public void WhenITryToCreateTheTour()
     {
         var services = tourContext.IncludedServices.Count > 0
@@ -190,13 +190,13 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Tour.UpdateIncludedServices(services);
     }
 
-    [Then(@"the tour should be created successfully")]
+    [Then("the tour should be created successfully")]
     public void ThenTheTourShouldBeCreatedSuccessfully()
     {
         Assert.NotNull(tourContext.Tour);
     }
 
-    [Then(@"I should not be able to create the tour")]
+    [Then("I should not be able to create the tour")]
     public void ThenIShouldNotBeAbleToCreateTheTour()
     {
         Assert.NotNull(tourContext.Result);
@@ -255,7 +255,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.Equal(expectedName, tourContext.Tour.Name);
     }
 
-    [Then(@"the tour base price should be (.*)")]
+    [Then("the tour base price should be (.*)")]
     public void ThenTheTourBasePriceShouldBe(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
@@ -293,7 +293,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", validationErrors.Keys)}");
     }
 
-    [Then(@"the tour creation should fail with multiple validation errors")]
+    [Then("the tour creation should fail with multiple validation errors")]
     public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
     {
         Assert.NotNull(tourContext.Result);
@@ -315,25 +315,25 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.True(totalErrors > 1, $"Expected multiple validation errors but found {totalErrors}");
     }
 
-    [Then(@"the tour single room supplement should be (.*)")]
+    [Then("the tour single room supplement should be (.*)")]
     public void ThenTheTourSingleRoomSupplementShouldBe(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.Pricing.DoubleRoomSupplementPrice);
     }
 
-    [Then(@"the tour regular bike price should be (.*)")]
+    [Then("the tour regular bike price should be (.*)")]
     public void ThenTheTourRegularBikePriceShouldBe(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
     }
 
-    [Then(@"the tour e-bike price should be (.*)")]
+    [Then("the tour e-bike price should be (.*)")]
     public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
     }
 
-    [Then(@"the tour should preserve UTC time zone")]
+    [Then("the tour should preserve UTC time zone")]
     public void ThenTheTourShouldPreserveUtcTimeZone()
     {
         Assert.NotNull(tourContext.Tour);
@@ -341,7 +341,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.EndDate.Kind);
     }
 
-    [Then(@"the tour duration should be greater than (.*) days")]
+    [Then("the tour duration should be greater than (.*) days")]
     public void ThenTheTourDurationShouldBeGreaterThanDays(int days)
     {
         Assert.NotNull(tourContext.Tour);
@@ -349,7 +349,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.True(duration > days, $"Expected duration greater than {days} days but got {duration:F1}");
     }
 
-    [Then(@"the tour duration should be (.*) days")]
+    [Then("the tour duration should be (.*) days")]
     public void ThenTheTourDurationShouldBeDays(int expectedDays)
     {
         Assert.NotNull(tourContext.Tour);
@@ -375,49 +375,49 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
     }
 
-    [Then(@"I should be informed that the end date must be after the start date")]
+    [Then("I should be informed that the end date must be after the start date")]
     public void ThenIShouldBeInformedThatTheEndDateMustBeAfterTheStartDate()
     {
         ThenTheTourCreationShouldFailWithArgumentException("End date must be after start date.");
     }
 
-    [Then(@"I should be informed that tours must last at least 5 days")]
+    [Then("I should be informed that tours must last at least 5 days")]
     public void ThenIShouldBeInformedThatToursMustLastAtLeast5Days()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("schedule");
     }
 
-    [Then(@"I should be prompted to provide a tour identifier")]
+    [Then("I should be prompted to provide a tour identifier")]
     public void ThenIShouldBePromptedToProvideATourIdentifier()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("identifier");
     }
 
-    [Then(@"I should be informed that the identifier is too long")]
+    [Then("I should be informed that the identifier is too long")]
     public void ThenIShouldBeInformedThatTheIdentifierIsTooLong()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("identifier");
     }
 
-    [Then(@"I should be prompted to provide a tour name")]
+    [Then("I should be prompted to provide a tour name")]
     public void ThenIShouldBePromptedToProvideATourName()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("name");
     }
 
-    [Then(@"I should be informed that the name is too long")]
+    [Then("I should be informed that the name is too long")]
     public void ThenIShouldBeInformedThatTheNameIsTooLong()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("name");
     }
 
-    [Then(@"I should be informed that prices must be positive")]
+    [Then("I should be informed that prices must be positive")]
     public void ThenIShouldBeInformedThatPricesMustBePositive()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("price");
     }
 
-    [Then(@"I should be informed that the price exceeds our maximum rate")]
+    [Then("I should be informed that the price exceeds our maximum rate")]
     public void ThenIShouldBeInformedThatThePriceExceedsOurMaximumRate()
     {
         ThenTheTourCreationShouldFailWithValidationErrorFor("price");

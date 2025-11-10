@@ -34,7 +34,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         }
     }
 
-    [When(@"I create contact info with null email")]
+    [When("I create contact info with null email")]
     public void WhenICreateContactInfoWithNullEmail()
     {
         context.Email = null!;
@@ -64,7 +64,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         }
     }
 
-    [When(@"I create contact info with null mobile")]
+    [When("I create contact info with null mobile")]
     public void WhenICreateContactInfoWithNullMobile()
     {
         context.Mobile = null!;
@@ -94,7 +94,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         }
     }
 
-    [When(@"I create contact info with instagram null")]
+    [When("I create contact info with instagram null")]
     public void WhenICreateContactInfoWithInstagramNull()
     {
         context.Instagram = null!;
@@ -128,7 +128,7 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         }
     }
 
-    [When(@"I create contact info with facebook null")]
+    [When("I create contact info with facebook null")]
     public void WhenICreateContactInfoWithFacebookNull()
     {
         context.Facebook = null!;
@@ -159,14 +159,14 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         context.Result = ContactInfo.Create(email, mobile, null, null);
     }
 
-    [Then(@"the contact info should be created successfully")]
+    [Then("the contact info should be created successfully")]
     public void ThenTheContactInfoShouldBeCreatedSuccessfully()
     {
         Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
         Assert.NotNull(context.ContactInfo);
     }
 
-    [Then(@"the contact info creation should fail")]
+    [Then("the contact info creation should fail")]
     public void ThenTheContactInfoCreationShouldFail()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -190,13 +190,13 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         Assert.Equal(expectedInstagram, context.ContactInfo.Instagram);
     }
 
-    [Then(@"the instagram should be null")]
+    [Then("the instagram should be null")]
     public void ThenTheInstagramShouldBeNull()
     {
         Assert.Null(context.ContactInfo.Instagram);
     }
 
-    [Then(@"the facebook should be null")]
+    [Then("the facebook should be null")]
     public void ThenTheFacebookShouldBeNull()
     {
         Assert.Null(context.ContactInfo.Facebook);
@@ -213,13 +213,13 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         Assert.Contains(expectedError, allErrors);
     }
 
-    [When(@"I attempt to create contact info with null email")]
+    [When("I attempt to create contact info with null email")]
     public void WhenIAttemptToCreateContactInfoWithNullEmail()
     {
         WhenICreateContactInfoWithNullEmail();
     }
 
-    [When(@"I attempt to create contact info with null mobile")]
+    [When("I attempt to create contact info with null mobile")]
     public void WhenIAttemptToCreateContactInfoWithNullMobile()
     {
         context.Email = "test@example.com";
@@ -284,13 +284,13 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         context.Result = ContactInfo.Create(email, mobile, null, null);
     }
 
-    [Then(@"I should not be able to create the contact info")]
+    [Then("I should not be able to create the contact info")]
     public void ThenIShouldNotBeAbleToCreateTheContactInfo()
     {
         Assert.True(context.Result.IsFailure, "Expected contact info creation to fail, but it succeeded.");
     }
 
-    [Then(@"I should be informed that (.+) is required")]
+    [Then("I should be informed that (.+) is required")]
     public void ThenIShouldBeInformedThatFieldIsRequired(string fieldName)
     {
         Assert.True(context.Result.IsFailure);

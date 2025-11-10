@@ -14,7 +14,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     private static readonly string[] DefaultService = ["Default Service"];
     private List<string> _servicesToUpdate = new();
 
-    [Given(@"a valid tour exists with the following details:")]
+    [Given("a valid tour exists with the following details:")]
     public void GivenAValidTourExistsWithTheFollowingDetails(Table table)
     {
         var data = table.Rows.ToDictionary(row => row["Field"], row => row["Value"]);
@@ -42,7 +42,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
             includedServices: DefaultService).Value;
     }
 
-    [When(@"I update the tour's included services with:")]
+    [When("I update the tour's included services with:")]
     public void WhenIUpdateTheToursIncludedServicesWith(Table table)
     {
         _servicesToUpdate = [.. table.Rows.Select(row => row["Service"])];
@@ -50,7 +50,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         tourContext.UpdateResult = Result.Ok();
     }
 
-    [When(@"I update the tour's included services with an empty list")]
+    [When("I update the tour's included services with an empty list")]
     public void WhenIUpdateTheToursIncludedServicesWithAnEmptyList()
     {
         _servicesToUpdate = [];
@@ -58,7 +58,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         tourContext.UpdateResult = Result.Ok();
     }
 
-    [When(@"I update the tour's included services with services containing extra whitespace")]
+    [When("I update the tour's included services with services containing extra whitespace")]
     public void WhenIUpdateTheToursIncludedServicesWithServicesContainingExtraWhitespace()
     {
         _servicesToUpdate =
@@ -71,7 +71,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         tourContext.UpdateResult = Result.Ok();
     }
 
-    [Then(@"the tour update should succeed")]
+    [Then("the tour update should succeed")]
     public void ThenTheTourUpdateShouldSucceed()
     {
         Assert.NotNull(tourContext.UpdateResult);
@@ -86,7 +86,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         Assert.Equal(expectedCount, tourContext.Tour.IncludedServices.Count);
     }
 
-    [Then(@"the services should be properly sanitized")]
+    [Then("the services should be properly sanitized")]
     public void ThenTheServicesShouldBeProperlySanitized()
     {
         var services = tourContext.Tour.IncludedServices;

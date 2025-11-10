@@ -38,7 +38,7 @@ public sealed class MedicalInfoValidationSteps(MedicalInfoContext context)
         }
     }
 
-    [When(@"I create medical info without any information")]
+    [When("I create medical info without any information")]
     public void WhenICreateMedicalInfoWithoutAnyInformation()
     {
         context.Result = MedicalInfo.Create(null, null);
@@ -80,7 +80,7 @@ public sealed class MedicalInfoValidationSteps(MedicalInfoContext context)
         }
     }
 
-    [When(@"I create medical info with fields containing extra whitespace")]
+    [When("I create medical info with fields containing extra whitespace")]
     public void WhenICreateMedicalInfoWithFieldsContainingExtraWhitespace()
     {
         context.Result = MedicalInfo.Create("Peanuts,    Shellfish,    Dairy", "Requires    medication    daily");
@@ -90,32 +90,32 @@ public sealed class MedicalInfoValidationSteps(MedicalInfoContext context)
         }
     }
 
-    [When(@"I attempt to create medical info with both fields exceeding maximum length")]
+    [When("I attempt to create medical info with both fields exceeding maximum length")]
     public void WhenIAttemptToCreateMedicalInfoWithBothFieldsExceedingMaximumLength()
     {
         context.Result = MedicalInfo.Create(new string('A', 501), new string('B', 501));
     }
 
-    [Then(@"the medical info should be successfully created")]
+    [Then("the medical info should be successfully created")]
     public void ThenTheMedicalInfoShouldBeSuccessfullyCreated()
     {
         Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Creation failed");
         Assert.NotNull(context.MedicalInfo);
     }
 
-    [Then(@"the allergies should be empty")]
+    [Then("the allergies should be empty")]
     public void ThenTheAllergiesShouldBeEmpty()
     {
         Assert.Null(context.MedicalInfo.Allergies);
     }
 
-    [Then(@"the additional info should be empty")]
+    [Then("the additional info should be empty")]
     public void ThenTheAdditionalInfoShouldBeEmpty()
     {
         Assert.Null(context.MedicalInfo.AdditionalInfo);
     }
 
-    [Then(@"I should be informed that allergies cannot exceed 500 characters")]
+    [Then("I should be informed that allergies cannot exceed 500 characters")]
     public void ThenIShouldBeInformedThatAllergiesCannotExceed500Characters()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -124,7 +124,7 @@ public sealed class MedicalInfoValidationSteps(MedicalInfoContext context)
         Assert.Contains("Allergies cannot exceed 500 characters.", allErrors);
     }
 
-    [Then(@"I should be informed that additional information cannot exceed 500 characters")]
+    [Then("I should be informed that additional information cannot exceed 500 characters")]
     public void ThenIShouldBeInformedThatAdditionalInformationCannotExceed500Characters()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
@@ -133,7 +133,7 @@ public sealed class MedicalInfoValidationSteps(MedicalInfoContext context)
         Assert.Contains("Additional information cannot exceed 500 characters.", allErrors);
     }
 
-    [Then(@"all medical info fields should have normalized whitespace")]
+    [Then("all medical info fields should have normalized whitespace")]
     public void ThenAllMedicalInfoFieldsShouldHaveNormalizedWhitespace()
     {
         Assert.Equal("Peanuts, Shellfish, Dairy", context.MedicalInfo.Allergies);

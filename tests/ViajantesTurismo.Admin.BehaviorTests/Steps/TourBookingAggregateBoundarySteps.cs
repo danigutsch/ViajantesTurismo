@@ -7,19 +7,19 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingContext, TourContext tourContext)
 {
-    [When(@"I try to access booking methods directly")]
+    [When("I try to access booking methods directly")]
     public void WhenITryToAccessBookingMethodsDirectly()
     {
         bookingContext.Action = () => { };
     }
 
-    [Then(@"the methods should not be accessible")]
+    [Then("the methods should not be accessible")]
     public void ThenTheMethodsShouldNotBeAccessible()
     {
         Assert.NotNull(bookingContext.Action);
     }
 
-    [Then(@"only tour methods should be available")]
+    [Then("only tour methods should be available")]
     public void ThenOnlyTourMethodsShouldBeAvailable()
     {
         var tourType = tourContext.Tour.GetType();
@@ -31,7 +31,7 @@ public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingCont
         Assert.NotNull(tourType.GetMethod("RemoveBooking"));
     }
 
-    [Then(@"the operation should fail with not found error")]
+    [Then("the operation should fail with not found error")]
     public void ThenTheOperationShouldFailWithNotFoundError()
     {
         var result = (Result)bookingContext.Result;

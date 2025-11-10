@@ -12,14 +12,14 @@ public sealed class BookingValidationSteps(
     TourContext tourContext,
     BookingCustomerContext bookingCustomerContext)
 {
-    [When(@"I try to add a booking to tour with invalid room type (.*)")]
+    [When("I try to add a booking to tour with invalid room type (.*)")]
     public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
     {
         bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType,
             DiscountType.None, 0m, null, null);
     }
 
-    [When(@"I try to update the booking payment status with invalid value (.*) through the tour")]
+    [When("I try to update the booking payment status with invalid value (.*) through the tour")]
     public void WhenITryToUpdateTheBookingPaymentStatusWithInvalidValueThroughTheTour(int invalidValue)
     {
         bookingContext.Result =
@@ -33,25 +33,25 @@ public sealed class BookingValidationSteps(
         bookingContext.Result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
     }
 
-    [When(@"I try to confirm the booking through the tour")]
+    [When("I try to confirm the booking through the tour")]
     public void WhenITryToConfirmTheBookingThroughTheTour()
     {
         bookingContext.Result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
     }
 
-    [When(@"I try to cancel the booking through the tour")]
+    [When("I try to cancel the booking through the tour")]
     public void WhenITryToCancelTheBookingThroughTheTour()
     {
         bookingContext.Result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
     }
 
-    [When(@"I try to complete the booking through the tour")]
+    [When("I try to complete the booking through the tour")]
     public void WhenITryToCompleteTheBookingThroughTheTour()
     {
         bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
-    [Then(@"the booking should be created successfully")]
+    [Then("the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {
         switch (bookingContext.Result)
@@ -102,14 +102,14 @@ public sealed class BookingValidationSteps(
         Assert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details.");
     }
 
-    [Then(@"the booking notes should be updated successfully")]
+    [Then("the booking notes should be updated successfully")]
     public void ThenTheBookingNotesShouldBeUpdatedSuccessfully()
     {
         var result = (Result)bookingContext.Result;
         Assert.True(result.IsSuccess);
     }
 
-    [Then(@"the booking notes should be null or empty")]
+    [Then("the booking notes should be null or empty")]
     public void ThenTheBookingNotesShouldBeNullOrEmpty()
     {
         Assert.True(string.IsNullOrWhiteSpace(bookingContext.Booking.Notes));
@@ -170,7 +170,7 @@ public sealed class BookingValidationSteps(
             Discount.Create(DiscountType.None, 0m, null).Value, notes);
     }
 
-    [Then(@"I should be informed that the room type is invalid")]
+    [Then("I should be informed that the room type is invalid")]
     public void ThenIShouldBeInformedThatTheRoomTypeIsInvalid()
     {
         switch (bookingContext.Result)
@@ -188,7 +188,7 @@ public sealed class BookingValidationSteps(
         }
     }
 
-    [Then(@"I should be informed that the cost exceeds our maximum rate")]
+    [Then("I should be informed that the cost exceeds our maximum rate")]
     public void ThenIShouldBeInformedThatTheCostExceedsOurMaximumRate()
     {
         switch (bookingContext.Result)
@@ -202,7 +202,7 @@ public sealed class BookingValidationSteps(
         }
     }
 
-    [Then(@"I should be informed that the base price must be positive")]
+    [Then("I should be informed that the base price must be positive")]
     public void ThenIShouldBeInformedThatTheBasePriceMustBePositive()
     {
         switch (bookingContext.Result)
@@ -216,7 +216,7 @@ public sealed class BookingValidationSteps(
         }
     }
 
-    [Then(@"I should be informed that room costs must be non-negative")]
+    [Then("I should be informed that room costs must be non-negative")]
     public void ThenIShouldBeInformedThatRoomCostsMustBeNonNegative()
     {
         switch (bookingContext.Result)
@@ -230,7 +230,7 @@ public sealed class BookingValidationSteps(
         }
     }
 
-    [Then(@"I should not be able to create the booking")]
+    [Then("I should not be able to create the booking")]
     public void ThenIShouldNotBeAbleToCreateTheBooking()
     {
         switch (bookingContext.Result)

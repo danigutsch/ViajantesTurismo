@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class BookingAssertionSteps(BookingContext context, TourContext tourContext)
 {
-    [Then(@"the booking update should fail with conflict error")]
+    [Then("the booking update should fail with conflict error")]
     public void ThenTheBookingUpdateShouldFailWithConflictError()
     {
         var result = (Result)context.Result;
@@ -28,7 +28,7 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
         Assert.Equal(expectedNotes, context.Booking.Notes);
     }
 
-    [Then(@"the booking notes should be null")]
+    [Then("the booking notes should be null")]
     public void ThenTheBookingNotesShouldBeNull()
     {
         Assert.True(string.IsNullOrEmpty(context.Booking.Notes));
@@ -57,25 +57,25 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
         Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 
-    [Then(@"the booking room additional cost should be (.*)")]
+    [Then("the booking room additional cost should be (.*)")]
     public void ThenTheBookingRoomAdditionalCostShouldBe(decimal expectedCost)
     {
         Assert.Equal(expectedCost, context.Booking.RoomAdditionalCost);
     }
 
-    [Then(@"the booking room additional cost should be the tour double room supplement")]
+    [Then("the booking room additional cost should be the tour double room supplement")]
     public void ThenTheBookingRoomAdditionalCostShouldBeTheTourDoubleRoomSupplement()
     {
         Assert.Equal(tourContext.Tour.Pricing.DoubleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
     }
 
-    [Then(@"the booking principal customer bike price should be the tour regular bike price")]
+    [Then("the booking principal customer bike price should be the tour regular bike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourRegularBikePrice()
     {
         Assert.Equal(tourContext.Tour.Pricing.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
     }
 
-    [Then(@"the booking principal customer bike price should be the tour ebike price")]
+    [Then("the booking principal customer bike price should be the tour ebike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourEbikePrice()
     {
         Assert.Equal(tourContext.Tour.Pricing.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);

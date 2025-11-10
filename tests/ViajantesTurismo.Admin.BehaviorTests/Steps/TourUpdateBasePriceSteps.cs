@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
 {
-    [Given(@"a tour exists with base price (.*)")]
+    [Given("a tour exists with base price (.*)")]
     public void GivenATourExistsWithBasePrice(decimal basePrice)
     {
         tourContext.Tour = Tour.Create(
@@ -27,27 +27,27 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
             includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
-    [When(@"I update the base price to (.*)")]
+    [When("I update the base price to (.*)")]
     public void WhenIUpdateTheBasePriceTo(decimal newPrice)
     {
         tourContext.Result = tourContext.Tour.UpdateBasePrice(newPrice);
     }
 
-    [Then(@"the tour base price update should succeed")]
+    [Then("the tour base price update should succeed")]
     public void ThenTheTourBasePriceUpdateShouldSucceed()
     {
         var result = (Result)tourContext.Result;
         Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails?.Detail}");
     }
 
-    [Then(@"the tour base price update should fail")]
+    [Then("the tour base price update should fail")]
     public void ThenTheTourBasePriceUpdateShouldFail()
     {
         var result = (Result)tourContext.Result;
         Assert.False(result.IsSuccess);
     }
 
-    [Then(@"the tour should have base price (.*)")]
+    [Then("the tour should have base price (.*)")]
     public void ThenTheTourShouldHaveBasePrice(decimal expectedPrice)
     {
         Assert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);

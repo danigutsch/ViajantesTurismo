@@ -8,32 +8,41 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourContext tourContext)
 {
-    [Given(@"a pending booking exists")]
+    [Given("I am authenticated as a tour operator")]
+    public void GivenIAmAuthenticatedAsATourOperator()
+    {
+        // Authentication context setup (no-op for behavior tests)
+    }
+
+    [Given("a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+            DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
-    [Given(@"a confirmed booking exists")]
+    [Given("a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+            DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
         Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
     }
 
-    [Given(@"a cancelled booking exists")]
+    [Given("a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+            DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
@@ -41,11 +50,12 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         Assert.Equal(BookingStatus.Cancelled, bookingContext.Booking.Status);
     }
 
-    [Given(@"a completed booking exists")]
+    [Given("a completed booking exists")]
     public void GivenACompletedBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+            DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -55,40 +65,40 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
     }
 
-    [When(@"the operator confirms the booking")]
+    [When("the operator confirms the booking")]
     public void WhenTheOperatorConfirmsTheBooking()
     {
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"the operator cancels the booking")]
+    [When("the operator cancels the booking")]
     public void WhenTheOperatorCancelsTheBooking()
     {
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"the operator completes the booking")]
+    [When("the operator completes the booking")]
     public void WhenTheOperatorCompletesTheBooking()
     {
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"the operator tries to confirm the booking")]
+    [When("the operator tries to confirm the booking")]
     public void WhenTheOperatorTriesToConfirmTheBooking()
     {
         bookingContext.Result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
     }
 
-    [When(@"the operator tries to cancel the booking")]
+    [When("the operator tries to cancel the booking")]
     public void WhenTheOperatorTriesToCancelTheBooking()
     {
         bookingContext.Result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
     }
 
-    [When(@"the operator tries to complete the booking")]
+    [When("the operator tries to complete the booking")]
     public void WhenTheOperatorTriesToCompleteTheBooking()
     {
         bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
@@ -101,14 +111,14 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"the operator updates the notes to null")]
+    [When("the operator updates the notes to null")]
     public void WhenTheOperatorUpdatesTheNotesToNull()
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"the operator tries to update the notes to a string longer than (.*) characters")]
+    [When("the operator tries to update the notes to a string longer than (.*) characters")]
     public void WhenTheOperatorTriesToUpdateTheNotesToAStringLongerThanCharacters(int maxLength)
     {
         var longNotes = new string('A', maxLength + 1);
