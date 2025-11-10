@@ -89,7 +89,7 @@ accommodation information.
 ### Invariants
 
 - Email must be unique and valid format (max 128 chars)
-- Customer must be 18+ years old (birth date cannot be in the future)
+- Birth date cannot be in the future
 - Contact information properly formatted and valid
 - All value objects validated on creation and update
 - Personal information required (name, DOB, nationality, profession)
