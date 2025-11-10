@@ -197,6 +197,76 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Profession = "Software Engineer";
     }
 
+    [When(@"I attempt to create personal info with null last name")]
+    public void WhenIAttemptToCreatePersonalInfoWithNullLastName()
+    {
+        context.FirstName = "John";
+        context.LastName = null!;
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I attempt to create personal info with last name ""(.*)""")]
+    public void WhenIAttemptToCreatePersonalInfoWithLastName(string lastName)
+    {
+        context.FirstName = "John";
+        context.LastName = lastName;
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I attempt to create personal info with last name of (\d+) characters")]
+    public void WhenIAttemptToCreatePersonalInfoWithLastNameOfCharacters(int characterCount)
+    {
+        context.FirstName = "John";
+        context.LastName = new string('B', characterCount);
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with last name ""(.*)""")]
+    public void WhenICreatePersonalInfoWithLastName(string lastName)
+    {
+        context.FirstName = "John";
+        context.LastName = lastName;
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with last name of (\d+) characters")]
+    public void WhenICreatePersonalInfoWithLastNameOfCharacters(int characterCount)
+    {
+        WhenICreatePersonalInfoWithLastName(new string('B', characterCount));
+    }
+
+    [Then(@"I should be informed that last name is required")]
+    public void ThenIShouldBeInformedThatLastNameIsRequired()
+    {
+        Assert.True(context.Result.IsFailure);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
+            "Expected validation error for LastName");
+    }
+
+    [Then(@"I should be informed that last name cannot exceed (\d+) characters")]
+    public void ThenIShouldBeInformedThatLastNameCannotExceedCharacters(int maxLength)
+    {
+        Assert.True(context.Result.IsFailure);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
+            "Expected validation error for LastName");
+    }
+
     [Given(@"I have personal information with gender ""(.*)""")]
     public void GivenIHavePersonalInformationWithGender(string gender)
     {
@@ -316,6 +386,74 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.BirthDate = DateTime.UtcNow.Date.AddYears(-years);
         context.Nationality = "American";
         context.Profession = "Software Engineer";
+    }
+
+    [When(@"I attempt to create personal info with birth date in the future")]
+    public void WhenIAttemptToCreatePersonalInfoWithBirthDateInTheFuture()
+    {
+        context.FirstName = "John";
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I attempt to create personal info with birth date one day in the future")]
+    public void WhenIAttemptToCreatePersonalInfoWithBirthDateOneDayInTheFuture()
+    {
+        context.FirstName = "John";
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with birth date today")]
+    public void WhenICreatePersonalInfoWithBirthDateToday()
+    {
+        context.FirstName = "John";
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = DateTime.UtcNow.Date;
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with birth date one day in the past")]
+    public void WhenICreatePersonalInfoWithBirthDateOneDayInThePast()
+    {
+        context.FirstName = "John";
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = DateTime.UtcNow.Date.AddDays(-1);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with birth date (\d+) years ago")]
+    public void WhenICreatePersonalInfoWithBirthDateYearsAgo(int years)
+    {
+        context.FirstName = "John";
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = DateTime.UtcNow.Date.AddYears(-years);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [Then(@"I should be informed that birth date cannot be in the future")]
+    public void ThenIShouldBeInformedThatBirthDateCannotBeInTheFuture()
+    {
+        Assert.True(context.Result.IsFailure);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.ContainsKey("BirthDate") ?? false,
+            "Expected validation error for BirthDate");
     }
 
     [Given(@"I have personal information with first name of (\d+) characters")]
