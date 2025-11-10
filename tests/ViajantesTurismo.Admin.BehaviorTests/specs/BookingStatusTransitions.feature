@@ -60,3 +60,32 @@ Rule: Cancelled bookings track refund status
     And the operator updates the payment status to "Refunded"
     Then the booking status should be "Cancelled"
     And the booking payment status should be "Refunded"
+
+Rule: Only pending bookings can be removed
+
+  @Invariant:INV-TOUR-019 @error_case @ignore
+  Scenario: Reject removal of confirmed booking
+    Given a confirmed booking exists
+    When the operator attempts to remove the booking
+    Then the removal should fail
+    And the error message should contain "Only pending bookings can be removed"
+
+  @Invariant:INV-TOUR-019 @error_case @ignore
+  Scenario: Reject removal of cancelled booking
+    Given a cancelled booking exists
+    When the operator attempts to remove the booking
+    Then the removal should fail
+    And the error message should contain "Only pending bookings can be removed"
+
+  @Invariant:INV-TOUR-019 @error_case @ignore
+  Scenario: Reject removal of completed booking
+    Given a completed booking exists
+    When the operator attempts to remove the booking
+    Then the removal should fail
+    And the error message should contain "Only pending bookings can be removed"
+
+  @Invariant:INV-TOUR-019 @happy_path @ignore
+  Scenario: Allow removal of pending booking
+    Given a pending booking exists
+    When the operator removes the booking
+    Then the booking should be removed successfully

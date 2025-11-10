@@ -34,6 +34,8 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null);
 
+        bookingContext.Result = result;
+
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;

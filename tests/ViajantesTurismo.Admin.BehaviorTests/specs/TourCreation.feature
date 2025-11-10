@@ -55,7 +55,15 @@ Feature: Tour Creation
   Rule: Tour identification must be unique and meaningful
     Each tour needs a business identifier that staff and customers can
     reference (e.g., "CUBA2024", "PATAGONIA2025"). This identifier must
-    be provided and kept to a reasonable length.
+    be provided and kept to a reasonable length. Tour identifiers must
+    be unique across all tours to avoid confusion.
+
+    @Invariant:INV-TOUR-001 @error_case @critical @ignore
+    Scenario: Reject duplicate tour identifier
+      Given a tour exists with identifier "CUBA2024"
+      When I attempt to create another tour with identifier "CUBA2024"
+      Then I should not be able to create the tour
+      And I should be informed that the tour identifier must be unique
 
     @Invariant:INV-TOUR-002 @error_case @critical
     Scenario: Tour requires an identifier
