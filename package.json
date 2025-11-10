@@ -7,9 +7,14 @@
     "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.json --fix",
     "lint:sh": "shellcheck **/*.sh",
     "format:sh": "shfmt -w -i 2 **/*.sh",
+    "lint:gherkin": "gherkin-lint tests/**/*.feature",
+    "lint:gherkin:fix": "gherkin-lint tests/**/*.feature",
+    "lint:all": "npm run lint:md && npm run lint:sh && npm run lint:gherkin",
+    "lint:all:fix": "npm run lint:md:fix ; npm run format:sh",
     "tools:restore": "npm install ; dotnet tool restore"
   },
   "devDependencies": {
+    "gherkin-lint": "^4.2.4",
     "markdownlint-cli": "^0.37.0",
     "shellcheck": "^4.1.0",
     "shfmt": "^0.0.1"

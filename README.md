@@ -151,7 +151,7 @@ If you prefer manual setup or the script doesn't work:
    npm install
    ```
 
-   This installs code quality tools: markdownlint-cli, shellcheck, and shfmt.
+   This installs code quality tools: markdownlint-cli, shellcheck, shfmt, and gherkin-lint.
 
 6. **Install PSScriptAnalyzer (optional but recommended)**
 
@@ -221,6 +221,23 @@ npm run lint:md
 
 # Auto-fix markdown issues
 npm run lint:md:fix
+```
+
+**Gherkin/Feature Files (BDD Tests):**
+
+```powershell
+# Check all feature files (validation only, no auto-fix)
+npm run lint:gherkin
+```
+
+**All Linters:**
+
+```powershell
+# Run all linters (markdown, shell, Gherkin)
+npm run lint:all
+
+# Auto-fix markdown and shell issues (Gherkin must be fixed manually)
+npm run lint:all:fix
 ```
 
 See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for details on code quality standards.

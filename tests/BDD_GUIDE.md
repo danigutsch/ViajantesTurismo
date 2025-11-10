@@ -51,7 +51,7 @@ Use the `Rule` keyword to organize scenarios by business rules within a feature:
 
 ```gherkin
 Feature: Booking Management
-  
+
   Rule: Only pending bookings can be confirmed
     Scenario: Successfully confirm a pending booking
       Given a pending booking exists
@@ -189,15 +189,15 @@ Tags applied at Feature/Rule level are inherited by all scenarios within that sc
 @BC:Admin @Agg:Booking @regression
 Feature: Booking Payment Status Management
   Scenarios for managing payment status independently from booking status
-  
+
   Rule: Payment status can be updated at any time
-    
+
     @happy_path @critical
     Scenario: Mark confirmed booking as paid
       Given a confirmed booking exists
       When the operator updates the payment status to "Paid"
       Then the booking payment status should be "Paid"
-      
+
     @edge_case @ADR:011
     Scenario: Record partial payment
       Given a confirmed booking with unpaid status exists
@@ -293,7 +293,7 @@ dotnet test --filter "TestCategory=Agg:Customer" --list-tests
 # Critical tests must pass before deployment
 - script: dotnet test --filter "TestCategory=critical"
   displayName: 'Critical Tests'
-  
+
 # Integration tests in staging
 - script: dotnet test --filter "TestCategory=integration"
   displayName: 'Integration Tests'
@@ -307,7 +307,7 @@ dotnet test --filter "TestCategory=Agg:Customer" --list-tests
 @BC:Admin @Agg:Tour @regression
 Feature: Tour Creation
   # All Tour aggregate scenarios inherit @BC:Admin @Agg:Tour
-  
+
   @smoke @critical @happy_path
   Scenario: Create tour with valid data
     # Tags: BC:Admin, Agg:Tour, regression, smoke, critical, happy_path
@@ -319,7 +319,7 @@ Feature: Tour Creation
 @BC:Admin @Agg:Booking @ADR:011
 Feature: Payment Immutability
   Verify that payment records are immutable per ADR-011
-  
+
   @error_case @critical
   Scenario: Cannot modify existing payment
     # Links scenario to architectural decision
@@ -331,7 +331,7 @@ Feature: Payment Immutability
 @BC:Admin @Agg:Customer @WI:TOUR-234
 Feature: Customer Profile Management
   Implement customer update capabilities
-  
+
   @WI:TOUR-235 @happy_path
   Scenario: Update customer contact information
     # Links to specific work items for reporting
@@ -458,9 +458,9 @@ $aggregates = @("Tour", "Booking", "Customer")
 $missingCoverage = @()
 
 foreach ($agg in $aggregates) {
-    $count = (dotnet test --filter "TestCategory=Agg:$agg" --list-tests 2>&1 | 
+    $count = (dotnet test --filter "TestCategory=Agg:$agg" --list-tests 2>&1 |
               Select-String "Test Cases").ToString() -replace '\D+'
-    
+
     if ([int]$count -lt 5) {
         $missingCoverage += "$agg has only $count scenarios (minimum: 5)"
     }
@@ -482,7 +482,7 @@ Generate markdown coverage badges for `README.md`:
 ```powershell
 # Count scenarios by category
 $totalTests = (dotnet test --list-tests 2>&1 | Select-String "Test Cases").ToString() -replace '\D+'
-$smokeTests = (dotnet test --filter "TestCategory=smoke" --list-tests 2>&1 | 
+$smokeTests = (dotnet test --filter "TestCategory=smoke" --list-tests 2>&1 |
                Select-String "Test Cases").ToString() -replace '\D+'
 
 # Output badge markdown
@@ -508,21 +508,21 @@ $matrix = @()
 
 foreach ($feature in $features) {
     $content = Get-Content $feature.FullName -Raw
-    
+
     # Extract tags (simple regex - enhance as needed)
     if ($content -match '@BC:(\w+)') { $bc = $matches[1] } else { $bc = "" }
     if ($content -match '@Agg:(\w+)') { $agg = $matches[1] } else { $agg = "" }
     if ($content -match '@ADR:(\d+)') { $adr = $matches[1] } else { $adr = "" }
     if ($content -match '@WI:([\w\-]+)') { $wi = $matches[1] } else { $wi = "" }
-    
+
     # Extract feature name
-    if ($content -match 'Feature:\s*(.+)') { 
-        $featureName = $matches[1].Trim() 
+    if ($content -match 'Feature:\s*(.+)') {
+        $featureName = $matches[1].Trim()
     }
-    
+
     # Count scenarios
     $scenarioCount = ($content | Select-String "Scenario:" -AllMatches).Matches.Count
-    
+
     $matrix += [PSCustomObject]@{
         Feature = $featureName
         BoundedContext = $bc
@@ -591,7 +591,7 @@ Run in CI/CD:
     pwsh -File tests/scripts/ValidateCoverage.ps1
     pwsh -File tests/scripts/GenerateTraceability.ps1
   displayName: 'Validate and Generate Coverage Reports'
-  
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: 'docs/TRACEABILITY.md'
@@ -640,12 +640,12 @@ using Reqnroll;
 public class TagValidationHooks
 {
     private readonly ScenarioContext _scenarioContext;
-    
+
     public TagValidationHooks(ScenarioContext scenarioContext)
     {
         _scenarioContext = scenarioContext;
     }
-    
+
     [BeforeScenario(Order = -100)]
     public void ValidateTags()
     {
@@ -653,7 +653,7 @@ public class TagValidationHooks
             .Concat(_scenarioContext.ScenarioInfo.FeatureInfo.Tags ?? Array.Empty<string>())
             .Distinct()
             .ToArray();
-        
+
         // Validate bounded context tag exists
         var bcTag = allTags.FirstOrDefault(t => t.StartsWith("BC:"));
         if (bcTag == null)
@@ -661,7 +661,7 @@ public class TagValidationHooks
             Console.WriteLine($"[WARNING] Scenario '{_scenarioContext.ScenarioInfo.Title}' " +
                             "is missing @BC:<context> tag");
         }
-        
+
         // Validate aggregate tag exists
         var aggTag = allTags.FirstOrDefault(t => t.StartsWith("Agg:"));
         if (aggTag == null)
@@ -669,7 +669,7 @@ public class TagValidationHooks
             Console.WriteLine($"[WARNING] Scenario '{_scenarioContext.ScenarioInfo.Title}' " +
                             "is missing @Agg:<aggregate> tag");
         }
-        
+
         // Log all tags for traceability
         Console.WriteLine($"[TRACE] Tags: {string.Join(", ", allTags)} | " +
                          $"Scenario: {_scenarioContext.ScenarioInfo.Title}");
@@ -748,6 +748,97 @@ When I enter "user@example.com" in the email field
 8. **Use Rules** - Group scenarios by business rules within features
 9. **Short Backgrounds** - Keep to 3-4 steps, domain-focused
 10. **Atomic Steps** - Avoid conjunction steps, use `And`/`But` instead
+
+---
+
+## Gherkin Linting Enforcement
+
+All `.feature` files are automatically linted using `gherkin-lint` to ensure consistent formatting and adherence
+to BDD best practices.
+
+### Running the Linter
+
+```powershell
+# Check all feature files (validation only, no auto-fix)
+npm run lint:gherkin
+
+# Run all linters (markdown, shell, Gherkin)
+npm run lint:all
+```
+
+**Note:** gherkin-lint validates feature files but does not support auto-fix. Formatting issues must be corrected
+manually.
+
+### Enforced Rules
+
+**Mandatory Tags (Feature-level):**
+
+- `@BC:<BoundedContext>` - Every feature MUST specify its bounded context (e.g., `@BC:Admin`)
+- `@Agg:<Aggregate>` - Every feature MUST specify its primary aggregate
+  (e.g., `@Agg:Tour`, `@Agg:Booking`, `@Agg:Customer`)
+
+**Optional Tags:**
+
+- `@Invariant:INV-<ID>` - Applied to scenarios testing specific domain invariants (not required for all scenarios)
+- `@happy_path`, `@error_case`, `@edge_case` - Scenario type classification (recommended but not enforced)
+- `@ADR:<number>`, `@WI:<id>` - Traceability tags (use when applicable)
+
+**Formatting Rules:**
+
+- Consistent indentation (Feature: 0, Background/Rule/Scenario: 2, Steps: 4)
+- No trailing spaces
+- Newline at end of file
+- No multiple consecutive empty lines
+- Unique scenario names within each feature
+- No duplicate feature names
+
+**BDD Anti-Patterns:**
+
+- `use-and` - Prevents conjunction steps (e.g., "When I do X and Y" → split into separate steps)
+- `no-unnamed-features` - Every feature must have a descriptive name
+- `no-unnamed-scenarios` - Every scenario must have a descriptive name
+- `no-restricted-tags` - Prevents use of `@skip` (use `@ignore` or `@wip` instead)
+
+### Git Pre-Commit Hook
+
+The Gherkin linter runs automatically on staged `.feature` files before each commit:
+
+- **Validates** formatting and BDD best practices
+- **Blocks commits** if errors are detected (e.g., invalid tags, incorrect indentation, unnamed scenarios)
+- Feature files must be corrected manually before committing
+
+To install the hook:
+
+```powershell
+# Windows (PowerShell)
+.\scripts\install-git-hooks.ps1
+
+# Unix/Linux/macOS (Bash)
+bash scripts/install-git-hooks.sh
+```
+
+### CI/CD Integration
+
+**For future CI/CD pipeline implementation:**
+
+Add the following command to your pipeline configuration:
+
+```yaml
+- run: npm run lint:gherkin
+```
+
+Configuration file: `.gherkin-lintrc` (repository root)
+
+### Configuration
+
+The linting rules are defined in `.gherkin-lintrc` at the repository root. This configuration:
+
+- Enforces project-specific tag patterns for bounded contexts, aggregates, and invariants
+- Maintains consistent indentation and formatting
+- Prevents common BDD anti-patterns
+- Allows project-approved tags while rejecting invalid ones
+
+To modify rules, update `.gherkin-lintrc` and document changes in this guide.
 
 ---
 

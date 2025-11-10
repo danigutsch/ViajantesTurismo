@@ -27,6 +27,22 @@ if [ -n "${CHANGED_MD_FILES}" ]; then
     printf "%b" "${GREEN}✓ Markdown files auto-fixed and re-staged${NC}\n"
 fi
 
+# Gherkin/Feature file linting
+echo "Checking feature files..."
+CHANGED_FEATURE_FILES=$(get_staged_files '\.feature$')
+
+if [ -n "${CHANGED_FEATURE_FILES}" ]; then
+    printf "%b" "${YELLOW}Linting Gherkin feature files...${NC}\n"
+    for file in ${CHANGED_FEATURE_FILES}; do
+        if ! npx gherkin-lint "${file}"; then
+            printf "%b" "${RED}✗ Gherkin lint errors in ${file}${NC}\n"
+            printf "%b" "${YELLOW}Fix errors manually and re-stage the file${NC}\n"
+            exit 1
+        fi
+    done
+    printf "%b" "${GREEN}✓ Feature files checked${NC}\n"
+fi
+
 # Bash/Shell script linting and auto-fix
 echo "Checking shell scripts..."
 CHANGED_SH_FILES=$(get_staged_files '\.(sh|bash)$|scripts/(pre-commit|post-commit|prepare-commit-msg)$')
