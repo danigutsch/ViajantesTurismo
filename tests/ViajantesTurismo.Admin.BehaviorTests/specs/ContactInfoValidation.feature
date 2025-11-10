@@ -1,5 +1,5 @@
 @BC:Admin @Agg:Customer @Entity:ContactInfo @regression
-Feature: Customer Contact Information Validation
+Feature: Contact Info Validation
   As a customer service representative
   I want to validate customer contact information
   So that we can reliably communicate with customers
@@ -14,9 +14,6 @@ Feature: Customer Contact Information Validation
   - Social media handles (Instagram, Facebook) are optional (max 64 characters each)
   - Whitespace is trimmed from all fields
   - Empty or whitespace-only optional fields become null
-
-  Background:
-    Given I am authenticated as customer service
 
   Rule: Email address is required and must be valid
     Every customer must have a valid email address for booking confirmations

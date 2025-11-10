@@ -1,5 +1,5 @@
 @BC:Admin @Agg:Customer @Entity:PersonalInfo @regression
-Feature: Customer First Name Validation
+Feature: First Name Validation
   As a customer service representative
   I want to validate customer first names
   So that we maintain accurate and complete customer records
@@ -13,9 +13,6 @@ Feature: Customer First Name Validation
   - Maximum length is 128 characters
   - Names can contain letters, hyphens, apostrophes, spaces, and accented characters
   - Names are automatically trimmed and normalized
-
-  Background:
-    Given I am authenticated as customer service
 
   Rule: First name is required and cannot be empty
     Every customer must have a first name for identification.

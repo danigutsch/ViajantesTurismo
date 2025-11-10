@@ -2,7 +2,7 @@ using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
-#pragma warning disable CA1508 // Avoid dead code (intentional for test coverage)
+#pragma warning disable CA1508
 
 public sealed class ValueObjectTests
 {

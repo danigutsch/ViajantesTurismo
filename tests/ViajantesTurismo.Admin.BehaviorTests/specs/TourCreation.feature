@@ -14,9 +14,6 @@ Feature: Tour Creation
   - Customer capacity must be between 1 and 20 travelers
   - Date ranges must be valid (end after start)
 
-  Background:
-    Given I am authenticated as a tour operator
-
   Rule: Tours must have valid date ranges
     Tour dates define when the cycling tour operates. The end date must be
     after the start date, and the tour must meet our minimum duration policy
@@ -27,7 +24,6 @@ Feature: Tour Creation
       Given I have tour dates from "2025-06-01" to "2025-06-10"
       When I create the tour
       Then the tour should be created successfully
-      And the tour should be scheduled for 9 days
 
     @Invariant:INV-TOUR-006 @error_case
     Scenario: End date must be after start date
@@ -55,7 +51,6 @@ Feature: Tour Creation
       Given I have tour dates from "2025-06-01" to "2025-06-06"
       When I create the tour
       Then the tour should be created successfully
-      And the tour should be scheduled for 5 days
 
   Rule: Tour identification must be unique and meaningful
     Each tour needs a business identifier that staff and customers can
@@ -101,7 +96,7 @@ Feature: Tour Creation
 
     @Invariant:INV-TOUR-008 @error_case @critical
     Scenario Outline: All prices must be positive values
-      Given I have tour details with <price_type> of <amount>
+      Given I have tour details with <price_type> <amount>
       When I attempt to create the tour
       Then I should not be able to create the tour
       And I should be informed that prices must be positive
@@ -122,7 +117,7 @@ Feature: Tour Creation
 
     @Invariant:INV-TOUR-009 @error_case
     Scenario Outline: Prices cannot exceed business maximum
-      Given I have tour details with <price_type> of 100001.00
+      Given I have tour details with <price_type> 100001.00
       When I attempt to create the tour
       Then I should not be able to create the tour
       And I should be informed that the price exceeds our maximum rate

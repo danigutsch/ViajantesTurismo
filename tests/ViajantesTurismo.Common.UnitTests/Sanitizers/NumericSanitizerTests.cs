@@ -151,7 +151,8 @@ public sealed class NumericSanitizerTests
     [Fact]
     public void Sanitize_Price_Handles_Banker_Rounding_Case_Positive_Even()
     {
-        // 2.225 with AwayFromZero should round to 2.23
+        // Arrange
+        // Act
         var result = NumericSanitizer.SanitizePrice(2.225m);
 
         Assert.Equal(2.23m, result);
@@ -160,7 +161,8 @@ public sealed class NumericSanitizerTests
     [Fact]
     public void Sanitize_Price_Handles_Banker_Rounding_Case_Positive_Odd()
     {
-        // 2.215 with AwayFromZero should round to 2.22
+        // Arrange
+        // Act
         var result = NumericSanitizer.SanitizePrice(2.215m);
 
         Assert.Equal(2.22m, result);
@@ -169,7 +171,8 @@ public sealed class NumericSanitizerTests
     [Fact]
     public void Sanitize_Price_Handles_Floating_Point_Precision_Issue()
     {
-        // Common floating point issue: 0.1 + 0.2 = 0.30000000000000004
+        // Arrange
+        // Act
         var result = NumericSanitizer.SanitizePrice(0.1m + 0.2m);
 
         Assert.Equal(0.30m, result);

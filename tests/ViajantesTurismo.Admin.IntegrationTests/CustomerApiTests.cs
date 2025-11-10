@@ -37,12 +37,14 @@ public sealed class CustomerApiTests : IDisposable
     public async Task Can_Get_Customers()
     {
         // Act
-        var response = await _client.GetAsync(new Uri("/customers", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync(new Uri("/customers", UriKind.Relative),
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var customers = await response.Content.ReadFromJsonAsync<GetCustomerDto[]>(TestContext.Current.CancellationToken);
+        var customers =
+            await response.Content.ReadFromJsonAsync<GetCustomerDto[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(customers);
         Assert.NotEmpty(customers);
     }
@@ -109,12 +111,15 @@ public sealed class CustomerApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var customer = _dbContext.Customers.FirstOrDefault(c => c.PersonalInfo.FirstName == request.PersonalInfo.FirstName && c.PersonalInfo.LastName == request.PersonalInfo.LastName);
+        var customer = _dbContext.Customers.FirstOrDefault(c =>
+            c.PersonalInfo.FirstName == request.PersonalInfo.FirstName &&
+            c.PersonalInfo.LastName == request.PersonalInfo.LastName);
         Assert.NotNull(customer);
     }
 
@@ -178,7 +183,8 @@ public sealed class CustomerApiTests : IDisposable
                 AdditionalInfo = null
             }
         };
-        var createResponse = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var createResponse = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var location = createResponse.Headers.Location;
         Assert.NotNull(location);
@@ -188,7 +194,9 @@ public sealed class CustomerApiTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var customerDto = await response.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
+        var customerDto =
+            await response.Content.ReadFromJsonAsync<CustomerDetailsDto>(
+                cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(customerDto);
         Assert.Equal(request.PersonalInfo.FirstName, customerDto.PersonalInfo.FirstName);
         Assert.Equal(request.PersonalInfo.LastName, customerDto.PersonalInfo.LastName);
@@ -204,7 +212,8 @@ public sealed class CustomerApiTests : IDisposable
         const int invalidId = -1;
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/customers/{invalidId}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync(new Uri($"/customers/{invalidId}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -270,7 +279,8 @@ public sealed class CustomerApiTests : IDisposable
                 AdditionalInfo = null
             }
         };
-        var createResponse = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), createRequest, TestContext.Current.CancellationToken);
+        var createResponse = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), createRequest,
+            TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var location = createResponse.Headers.Location;
         Assert.NotNull(location);
@@ -282,11 +292,11 @@ public sealed class CustomerApiTests : IDisposable
             PersonalInfo = new PersonalInfoDto
             {
                 FirstName = "Alice",
-                LastName = "Johnson-Smith", // Updated last name
+                LastName = "Johnson-Smith",
                 BirthDate = new DateTime(1992, 3, 10).ToUniversalTime(),
                 Gender = "Female",
                 Nationality = "British",
-                Profession = "Senior Designer" // Updated profession
+                Profession = "Senior Designer"
             },
             IdentificationInfo = new IdentificationInfoDto
             {
@@ -295,14 +305,14 @@ public sealed class CustomerApiTests : IDisposable
             },
             ContactInfo = new ContactInfoDto
             {
-                Email = "alice.smith@example.com", // Updated email
+                Email = "alice.smith@example.com",
                 Mobile = "+447123456789",
-                Instagram = "@alicesmith", // Updated Instagram
-                Facebook = "alice.smith" // Updated Facebook
+                Instagram = "@alicesmith",
+                Facebook = "alice.smith"
             },
             Address = new AddressDto
             {
-                Street = "456 Baker St", // Updated address
+                Street = "456 Baker St",
                 Complement = "Flat 3B",
                 Neighborhood = "Marylebone",
                 PostalCode = "NW1 6XE",
@@ -312,37 +322,40 @@ public sealed class CustomerApiTests : IDisposable
             },
             PhysicalInfo = new PhysicalInfoDto
             {
-                WeightKg = 62.0m, // Updated weight
+                WeightKg = 62.0m,
                 HeightCentimeters = 170,
-                BikeType = BikeTypeDto.EBike // Updated bike type
+                BikeType = BikeTypeDto.EBike
             },
             AccommodationPreferences = new AccommodationPreferencesDto
             {
-                RoomType = RoomTypeDto.DoubleRoom, // Updated room type
-                BedType = BedTypeDto.DoubleBed, // Updated bed type
+                RoomType = RoomTypeDto.DoubleRoom,
+                BedType = BedTypeDto.DoubleBed,
                 CompanionId = null
             },
             EmergencyContact = new EmergencyContactDto
             {
-                Name = "Robert Johnson", // Updated emergency contact name
+                Name = "Robert Johnson",
                 Mobile = "+447987654321"
             },
             MedicalInfo = new MedicalInfoDto
             {
-                Allergies = "Lactose", // Added allergy
+                Allergies = "Lactose",
                 AdditionalInfo = "Prefers vegetarian meals"
             }
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync(new Uri($"/customers/{customerId}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+        var response = await _client.PutAsJsonAsync(new Uri($"/customers/{customerId}", UriKind.Relative),
+            updateRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         var getResponse = await _client.GetAsync(location, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
-        var updatedCustomer = await getResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
+        var updatedCustomer =
+            await getResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(
+                cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedCustomer);
         Assert.Equal(updateRequest.PersonalInfo.LastName, updatedCustomer.PersonalInfo.LastName);
         Assert.Equal(updateRequest.PersonalInfo.Profession, updatedCustomer.PersonalInfo.Profession);
@@ -352,7 +365,8 @@ public sealed class CustomerApiTests : IDisposable
         Assert.Equal(updateRequest.Address.Complement, updatedCustomer.Address.Complement);
         Assert.Equal(updateRequest.PhysicalInfo.WeightKg, updatedCustomer.PhysicalInfo.WeightKg);
         Assert.Equal(updateRequest.PhysicalInfo.BikeType, updatedCustomer.PhysicalInfo.BikeType);
-        Assert.Equal(updateRequest.AccommodationPreferences.RoomType, updatedCustomer.AccommodationPreferences.RoomType);
+        Assert.Equal(updateRequest.AccommodationPreferences.RoomType,
+            updatedCustomer.AccommodationPreferences.RoomType);
         Assert.Equal(updateRequest.MedicalInfo.Allergies, updatedCustomer.MedicalInfo.Allergies);
         Assert.Equal(updateRequest.MedicalInfo.AdditionalInfo, updatedCustomer.MedicalInfo.AdditionalInfo);
     }
@@ -420,7 +434,8 @@ public sealed class CustomerApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync(new Uri($"/customers/{invalidId}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+        var response = await _client.PutAsJsonAsync(new Uri($"/customers/{invalidId}", UriKind.Relative), updateRequest,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

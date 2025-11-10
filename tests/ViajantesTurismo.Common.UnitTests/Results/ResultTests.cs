@@ -82,7 +82,8 @@ public sealed class ResultTests
         // Arrange
         var emptyDictionary = new Dictionary<string, string[]>();
 
-        // Act & Assert
+        // Act
+        // Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => Result.Invalid("Some detail", emptyDictionary));
     }
 

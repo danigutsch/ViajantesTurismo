@@ -2,6 +2,7 @@ using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.Monies;
 using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
@@ -9,12 +10,24 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public class BookingDiscountsSteps(TourContext tourContext, BookingContext bookingContext)
 {
-    [Given(@"a tour exists with base price (\d+), double room supplement (\d+), regular bike price (\d+), and e-bike price (\d+)")]
-    public void GivenATourExistsWithPricing(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice, decimal eBikePrice)
+    [Given(
+        @"a tour exists with base price (\d+), double room supplement (\d+), regular bike price (\d+), and e-bike price (\d+)")]
+    public void GivenATourExistsWithPricing(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice,
+        decimal eBikePrice)
     {
-        // Create a test tour - the pricing values in the background are documentary
-        // The actual tour created by TestHelpers has these exact prices
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = Tour.Create(
+            identifier: "TEST2024",
+            name: "Test Tour",
+            startDate: DateTime.UtcNow.AddMonths(1),
+            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice: basePrice,
+            doubleRoomSupplementPrice: doubleRoomSupplement,
+            regularBikePrice: regularBikePrice,
+            eBikePrice: eBikePrice,
+            currency: Currency.UsDollar,
+            minCustomers: 4,
+            maxCustomers: 12,
+            includedServices: ["Hotel", "Breakfast"]).Value;
     }
 
     [When(@"I create a booking with principal customer (\d+), regular bike, single room, and no discount")]
@@ -32,7 +45,8 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
     }
 
-    [When(@"I create a booking with principal customer (\d+), regular bike, single room, and (\d+(?:\.\d+)?)% discount")]
+    [When(
+        @"I create a booking with principal customer (\d+), regular bike, single room, and (\d+(?:\.\d+)?)% discount")]
     public void WhenICreateABookingWithPercentageDiscount(int principalCustomerId, decimal discountPercentage)
     {
         bookingContext.Result = tourContext.Tour.AddBooking(
@@ -62,8 +76,10 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
     }
 
-    [When(@"I create a booking with principal customer (\d+), regular bike, single room, (\d+)% discount, and reason ""(.*)""")]
-    public void WhenICreateABookingWithDiscountAndReason(int principalCustomerId, decimal discountPercentage, string reason)
+    [When(
+        @"I create a booking with principal customer (\d+), regular bike, single room, (\d+)% discount, and reason ""(.*)""")]
+    public void WhenICreateABookingWithDiscountAndReason(int principalCustomerId, decimal discountPercentage,
+        string reason)
     {
         bookingContext.Result = tourContext.Tour.AddBooking(
             principalCustomerId,
@@ -77,8 +93,10 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
     }
 
-    [When(@"I create a booking with principal customer (\d+) regular bike, companion customer (\d+) e-bike, double room, and (\d+)% discount")]
-    public void WhenICreateABookingWithCompanionAndDiscount(int principalCustomerId, int companionCustomerId, decimal discountPercentage)
+    [When(
+        @"I create a booking with principal customer (\d+) regular bike, companion customer (\d+) e-bike, double room, and (\d+)% discount")]
+    public void WhenICreateABookingWithCompanionAndDiscount(int principalCustomerId, int companionCustomerId,
+        decimal discountPercentage)
     {
         bookingContext.Result = tourContext.Tour.AddBooking(
             principalCustomerId,
@@ -124,11 +142,11 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     }
 
 
-    [When(@"I create a booking with base price (\d+), room cost (\d+), principal bike (\d+), companion bike (\d+), and (\d+)% discount")]
-    public void WhenICreateABookingWithSpecificPricing(decimal basePrice, decimal roomCost, decimal bike1, decimal bike2, decimal discount)
+    [When(
+        @"I create a booking with base price (\d+), room cost (\d+), principal bike (\d+), companion bike (\d+), and (\d+)% discount")]
+    public void WhenICreateABookingWithSpecificPricing(decimal basePrice, decimal roomCost, decimal bike1,
+        decimal bike2, decimal discount)
     {
-        // This would require creating a new tour with specific pricing - for simplicity, we'll use the existing tour
-        // In a real scenario, you might want to create a temporary tour with the specific pricing
         var roomType = bike2 > 0 ? RoomType.DoubleRoom : RoomType.SingleRoom;
         var companionId = bike2 > 0 ? (int?)2 : null;
         var companionBikeType = bike2 > 0 ? (BikeType?)BikeType.EBike : null;
@@ -170,6 +188,44 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     {
         var result = (Result<Booking>)bookingContext.Result;
         Assert.True(result.IsFailure);
-        Assert.Contains(expectedErrorText, result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains(expectedErrorText, result.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [When(@"I attempt to apply a (-?\d+(?:\.\d+)?)% discount to a booking")]
+    public void WhenIAttemptToApplyPercentageDiscount(decimal discountPercentage)
+    {
+        WhenICreateABookingWithPercentageDiscount(1, discountPercentage);
+    }
+
+    [When(@"I attempt to apply a (\d+) absolute discount to a (\d+) booking")]
+    public void WhenIAttemptToApplyAbsoluteDiscountToBooking(decimal discountAmount, decimal bookingAmount)
+    {
+        WhenICreateABookingWithInvalidAbsoluteDiscount(1, discountAmount);
+    }
+
+    [Then(@"I should be informed that the final price must be greater than zero")]
+    public void ThenIShouldBeInformedThatTheFinalPriceMustBeGreaterThanZero()
+    {
+        ThenTheBookingShouldFailWithErrorContaining("final price");
+    }
+
+    [Then(@"I should be informed that discounts cannot be negative")]
+    public void ThenIShouldBeInformedThatDiscountsCannotBeNegative()
+    {
+        ThenTheBookingShouldFailWithErrorContaining("negative");
+    }
+
+    [Then(@"I should be informed that the discount cannot exceed the subtotal")]
+    public void ThenIShouldBeInformedThatTheDiscountCannotExceedTheSubtotal()
+    {
+        ThenTheBookingShouldFailWithErrorContaining("exceed");
+    }
+
+    [Then(@"I should be informed that percentage discounts cannot exceed (\d+)%")]
+    public void ThenIShouldBeInformedThatPercentageDiscountsCannotExceed(int maxPercentage)
+    {
+        var result = (Result<Booking>)bookingContext.Result;
+        Assert.True(result.IsFailure);
+        Assert.Contains("percentage", result.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 }

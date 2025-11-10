@@ -3,7 +3,7 @@ using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
-#pragma warning disable CA1508 // Avoid dead code (intentional for test coverage)
+#pragma warning disable CA1508
 // ReSharper disable EqualExpressionComparison
 // ReSharper disable SuspiciousTypeConversion.Global
 public sealed class EntityTests

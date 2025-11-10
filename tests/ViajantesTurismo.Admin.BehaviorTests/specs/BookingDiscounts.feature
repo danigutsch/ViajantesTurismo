@@ -16,8 +16,7 @@ Feature: Booking Discounts
   - Negative discounts are not allowed
 
   Background:
-    Given I am authenticated as a booking administrator
-    And a tour exists with base price 2000, double room supplement 500, regular bike price 100, and e-bike price 200
+    Given a tour exists with base price 2000, double room supplement 500, regular bike price 100, and e-bike price 200
 
   Rule: Percentage discounts must be valid and within limits
     Percentage discounts provide a proportional reduction in price.

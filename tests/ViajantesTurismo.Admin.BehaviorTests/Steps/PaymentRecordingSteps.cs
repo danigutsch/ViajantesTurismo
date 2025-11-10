@@ -16,9 +16,9 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [Given(@"a tour exists with a pending booking for payment tests")]
     public void GivenATourExistsWithAPendingBookingForPaymentTests()
     {
-        // Use payment test tour with price=900 so booking TotalPrice = 900 + 0 (single room) + 100 (regular bike) = 1000
         tourContext.Tour = TestHelpers.CreateTestTourForPaymentTests();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+            DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
@@ -27,7 +27,6 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [When(@"I record a payment with the following details:")]
     public void WhenIRecordAPaymentWithTheFollowingDetails(Table table)
     {
-        // Parse Field/Value table structure
         string GetFieldValue(string fieldName)
         {
             var row = table.Rows.FirstOrDefault(r => r["Field"] == fieldName);
@@ -37,10 +36,13 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var amount = decimal.Parse(GetFieldValue("Amount"), CultureInfo.InvariantCulture);
         var paymentDate = DateTime.Parse(GetFieldValue("PaymentDate"), CultureInfo.InvariantCulture);
         var method = Enum.Parse<PaymentMethod>(GetFieldValue("Method"));
-        var referenceNumber = string.IsNullOrEmpty(GetFieldValue("ReferenceNumber")) ? null : GetFieldValue("ReferenceNumber");
+        var referenceNumber = string.IsNullOrEmpty(GetFieldValue("ReferenceNumber"))
+            ? null
+            : GetFieldValue("ReferenceNumber");
         var notes = string.IsNullOrEmpty(GetFieldValue("Notes")) ? null : GetFieldValue("Notes");
 
-        _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, referenceNumber, notes);
+        _paymentResult =
+            bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, referenceNumber, notes);
         bookingContext.Result = _paymentResult;
     }
 
@@ -126,7 +128,8 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void ThenThePaymentShouldBeRejectedWithErrorContaining(string expectedErrorFragment)
     {
         Assert.False(_paymentResult.IsSuccess);
-        Assert.Contains(expectedErrorFragment, _paymentResult.ErrorDetails?.Detail ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedErrorFragment, _paymentResult.ErrorDetails?.Detail ?? string.Empty,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Then(@"the amount paid should be (.*)")]

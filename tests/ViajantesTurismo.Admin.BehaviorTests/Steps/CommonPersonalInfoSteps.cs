@@ -47,6 +47,82 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
     }
 
+    [When(@"I attempt to create personal info with first name ""(.*)""")]
+    public void WhenIAttemptToCreatePersonalInfoWithFirstName(string firstName)
+    {
+        context.FirstName = firstName;
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I attempt to create personal info with null first name")]
+    public void WhenIAttemptToCreatePersonalInfoWithNullFirstName()
+    {
+        context.FirstName = null!;
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I attempt to create personal info with first name of (\d+) characters")]
+    public void WhenIAttemptToCreatePersonalInfoWithFirstNameOfCharacters(int characterCount)
+    {
+        context.FirstName = new string('A', characterCount);
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with first name ""(.*)""")]
+    public void WhenICreatePersonalInfoWithFirstName(string firstName)
+    {
+        context.FirstName = firstName;
+        context.LastName = "Smith";
+        context.Gender = "Male";
+        context.BirthDate = new DateTime(1990, 5, 15);
+        context.Nationality = "American";
+        context.Profession = "Software Engineer";
+        WhenICreateThePersonalInfo();
+    }
+
+    [When(@"I create personal info with first name of (\d+) characters")]
+    public void WhenICreatePersonalInfoWithFirstNameOfCharacters(int characterCount)
+    {
+        WhenICreatePersonalInfoWithFirstName(new string('A', characterCount));
+    }
+
+    [Then(@"I should not be able to create the personal info")]
+    public void ThenIShouldNotBeAbleToCreateThePersonalInfo()
+    {
+        Assert.True(context.Result.IsFailure, "Expected personal info creation to fail, but it succeeded.");
+    }
+
+    [Then(@"I should be informed that first name is required")]
+    public void ThenIShouldBeInformedThatFirstNameIsRequired()
+    {
+        Assert.True(context.Result.IsFailure);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
+            "Expected validation error for FirstName");
+    }
+
+    [Then(@"I should be informed that first name cannot exceed (\d+) characters")]
+    public void ThenIShouldBeInformedThatFirstNameCannotExceedCharacters(int maxLength)
+    {
+        Assert.True(context.Result.IsFailure);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
+            "Expected validation error for FirstName");
+    }
+
     [Then(@"the personal info should contain the provided data")]
     public void ThenThePersonalInfoShouldContainTheProvidedData()
     {

@@ -15,9 +15,7 @@ Feature: Booking Creation
   - Room types must be valid (SingleRoom or DoubleRoom)
   - Bike types must be specified for all travelers
 
-  Background:
-    Given I am authenticated as a booking administrator
-    And a tour exists with standard pricing
+  Background:    Given a tour exists with base price 2000, double room supplement 500, regular bike price 100, and e-bike price 200
 
   Rule: Booking pricing must be positive and within business limits
     All booking prices must be positive amounts within our business operating
@@ -52,7 +50,7 @@ Feature: Booking Creation
     Scenario: Base price cannot exceed business maximum
       When I attempt to create a booking with base price 100001
       Then I should not be able to create the booking
-      And I should be informed that the price exceeds our maximum rate
+      And I should be informed that the cost exceeds our maximum rate
 
     @Invariant:INV-TOUR-008 @error_case
     Scenario: Room cost cannot be negative

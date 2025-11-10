@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace ViajantesTurismo.Admin.BehaviorTests;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests;
 public class InvariantCoverageValidator
 {
     private readonly HashSet<string> _allInvariants = new();
-    private readonly Dictionary<string, List<string>> _invariantToScenarios = new();
+    private readonly ConcurrentDictionary<string, List<string>> _invariantToScenarios = new();
 
     public InvariantCoverageValidator()
     {

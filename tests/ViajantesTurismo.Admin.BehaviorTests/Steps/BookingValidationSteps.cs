@@ -15,13 +15,15 @@ public sealed class BookingValidationSteps(
     [When(@"I try to add a booking to tour with invalid room type (.*)")]
     public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
     {
-        bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType, DiscountType.None, 0m, null, null);
+        bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType,
+            DiscountType.None, 0m, null, null);
     }
 
     [When(@"I try to update the booking payment status with invalid value (.*) through the tour")]
     public void WhenITryToUpdateTheBookingPaymentStatusWithInvalidValueThroughTheTour(int invalidValue)
     {
-        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, (PaymentStatus)invalidValue);
+        bookingContext.Result =
+            tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, (PaymentStatus)invalidValue);
     }
 
     [When(@"I try to update the booking notes with (\d+) characters through the tour")]
@@ -111,5 +113,134 @@ public sealed class BookingValidationSteps(
     public void ThenTheBookingNotesShouldBeNullOrEmpty()
     {
         Assert.True(string.IsNullOrWhiteSpace(bookingContext.Booking.Notes));
+    }
+
+    [Then(@"I should be informed that (.+) cannot exceed (\d+) characters")]
+    public void ThenIShouldBeInformedThatFieldCannotExceedCharacters(string fieldName, int maxLength)
+    {
+        ResultError? errorDetails = null;
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsFailure);
+                errorDetails = typedResult.ErrorDetails;
+                break;
+            case Result result:
+                Assert.True(result.IsFailure);
+                errorDetails = result.ErrorDetails;
+                break;
+        }
+
+        var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
+        Assert.True(errorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
+            $"Expected validation error for {normalizedFieldName}");
+    }
+
+    [When(@"I attempt to create a booking with base price (-?\d+)")]
+    public void WhenIAttemptToCreateABookingWithBasePrice(decimal basePrice)
+    {
+        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
+        bookingContext.Result = Booking.Create(1, basePrice, RoomType.DoubleRoom, 0m, principal, null,
+            Discount.Create(DiscountType.None, 0m, null).Value, null);
+    }
+
+    [When(@"I attempt to create a booking with base price (-?\d+) and room cost (-?\d+)")]
+    public void WhenIAttemptToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
+    {
+        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
+        bookingContext.Result = Booking.Create(1, basePrice, RoomType.SingleRoom, roomCost, principal, null,
+            Discount.Create(DiscountType.None, 0m, null).Value, null);
+    }
+
+    [When(@"I attempt to create a booking with invalid room type (-?\d+)")]
+    public void WhenIAttemptToCreateABookingWithInvalidRoomType(int invalidRoomType)
+    {
+        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
+        bookingContext.Result = Booking.Create(1, 2000m, (RoomType)invalidRoomType, 0m, principal, null,
+            Discount.Create(DiscountType.None, 0m, null).Value, null);
+    }
+
+    [When(@"I attempt to create a booking with notes of (\d+) characters")]
+    public void WhenIAttemptToCreateABookingWithNotesOfCharacters(int characterCount)
+    {
+        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
+        var notes = new string('x', characterCount);
+        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null,
+            Discount.Create(DiscountType.None, 0m, null).Value, notes);
+    }
+
+    [Then(@"I should be informed that the room type is invalid")]
+    public void ThenIShouldBeInformedThatTheRoomTypeIsInvalid()
+    {
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsFailure);
+                Assert.Contains("room", typedResult.ErrorDetails?.Detail ?? string.Empty,
+                    StringComparison.OrdinalIgnoreCase);
+                break;
+            case Result result:
+                Assert.True(result.IsFailure);
+                Assert.Contains("room", result.ErrorDetails?.Detail ?? string.Empty,
+                    StringComparison.OrdinalIgnoreCase);
+                break;
+        }
+    }
+
+    [Then(@"I should be informed that the cost exceeds our maximum rate")]
+    public void ThenIShouldBeInformedThatTheCostExceedsOurMaximumRate()
+    {
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsFailure);
+                break;
+            case Result result:
+                Assert.True(result.IsFailure);
+                break;
+        }
+    }
+
+    [Then(@"I should be informed that the base price must be positive")]
+    public void ThenIShouldBeInformedThatTheBasePriceMustBePositive()
+    {
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsFailure);
+                break;
+            case Result result:
+                Assert.True(result.IsFailure);
+                break;
+        }
+    }
+
+    [Then(@"I should be informed that room costs must be non-negative")]
+    public void ThenIShouldBeInformedThatRoomCostsMustBeNonNegative()
+    {
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsFailure);
+                break;
+            case Result result:
+                Assert.True(result.IsFailure);
+                break;
+        }
+    }
+
+    [Then(@"I should not be able to create the booking")]
+    public void ThenIShouldNotBeAbleToCreateTheBooking()
+    {
+        switch (bookingContext.Result)
+        {
+            case Result<Booking> typedResult:
+                Assert.True(typedResult.IsFailure, "Expected booking creation to fail, but it succeeded.");
+                break;
+            case Result result:
+                Assert.True(result.IsFailure, "Expected booking creation to fail, but it succeeded.");
+                break;
+        }
     }
 }

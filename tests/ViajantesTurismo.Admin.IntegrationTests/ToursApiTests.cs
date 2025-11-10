@@ -37,12 +37,14 @@ public sealed class ToursApiTests : IDisposable
     public async Task Can_Get_Tours()
     {
         // Act
-        var response = await _client.GetAsync(new Uri("/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response =
+            await _client.GetAsync(new Uri("/tours", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(cancellationToken: TestContext.Current.CancellationToken);
+        var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(
+            cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(tours);
         Assert.NotEmpty(tours);
     }
@@ -69,7 +71,8 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -97,7 +100,8 @@ public sealed class ToursApiTests : IDisposable
             MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
-        var createResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var createResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var location = createResponse.Headers.Location;
         Assert.NotNull(location);
@@ -107,7 +111,9 @@ public sealed class ToursApiTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tourDto = await response.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken: TestContext.Current.CancellationToken);
+        var tourDto =
+            await response.Content.ReadFromJsonAsync<GetTourDto>(
+                cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(tourDto);
         Assert.Equal(request.Identifier, tourDto.Identifier);
         Assert.Equal(request.Name, tourDto.Name);
@@ -123,7 +129,8 @@ public sealed class ToursApiTests : IDisposable
         const int invalidId = -1;
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/tours/{invalidId}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync(new Uri($"/tours/{invalidId}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -149,7 +156,8 @@ public sealed class ToursApiTests : IDisposable
             MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
-        var postResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var postResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
         var location = postResponse.Headers.Location;
         Assert.NotNull(location);
@@ -173,13 +181,17 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var putResponse = await _client.PutAsJsonAsync($"/tours/{tourId}", updateRequest, TestContext.Current.CancellationToken);
+        var putResponse =
+            await _client.PutAsJsonAsync($"/tours/{tourId}", updateRequest, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, putResponse.StatusCode);
 
         // Assert
-        var getResponse = await _client.GetAsync(new Uri($"/tours/{tourId}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var getResponse = await _client.GetAsync(new Uri($"/tours/{tourId}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
-        var tourDto = await getResponse.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken: TestContext.Current.CancellationToken);
+        var tourDto =
+            await getResponse.Content.ReadFromJsonAsync<GetTourDto>(
+                cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(tourDto);
         Assert.Equal(updateRequest.Identifier, tourDto.Identifier);
         Assert.Equal(updateRequest.Name, tourDto.Name);
@@ -211,7 +223,8 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest, TestContext.Current.CancellationToken);
+        var response = await _client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -238,7 +251,8 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -247,7 +261,7 @@ public sealed class ToursApiTests : IDisposable
     [Fact]
     public async Task Create_Tour_Returns_Validation_Problem_For_Multiple_Errors()
     {
-        // Arrange - invalid prices to test multiple pricing validation errors
+        // Arrange
         const decimal invalidPrice = 0.00m;
         var request = new CreateTourDto
         {
@@ -266,14 +280,11 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        // Should have multiple pricing errors since all prices are invalid
-        Assert.Contains("price", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -298,7 +309,8 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

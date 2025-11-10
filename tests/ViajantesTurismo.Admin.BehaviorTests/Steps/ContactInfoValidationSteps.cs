@@ -8,7 +8,8 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Scope(Feature = "Contact Info Validation")]
 public sealed class ContactInfoValidationSteps(ContactInfoContext context)
 {
-    [When(@"I create contact info with email ""([^""]*)"", mobile ""([^""]*)"", instagram ""([^""]*)"", facebook ""([^""]*)""")]
+    [When(
+        @"I create contact info with email ""([^""]*)"", mobile ""([^""]*)"", instagram ""([^""]*)"", facebook ""([^""]*)""")]
     public void WhenICreateContactInfoWithEmailInstagram(string email, string mobile, string instagram, string facebook)
     {
         context.Email = email;
@@ -210,5 +211,102 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
 
         Assert.Contains(expectedError, allErrors);
+    }
+
+    [When(@"I attempt to create contact info with null email")]
+    public void WhenIAttemptToCreateContactInfoWithNullEmail()
+    {
+        WhenICreateContactInfoWithNullEmail();
+    }
+
+    [When(@"I attempt to create contact info with null mobile")]
+    public void WhenIAttemptToCreateContactInfoWithNullMobile()
+    {
+        context.Email = "test@example.com";
+        context.Mobile = null!;
+        context.Result = ContactInfo.Create("test@example.com", null!, null, null);
+    }
+
+    [When(@"I attempt to create contact info with email ""([^""]*)""$")]
+    public void WhenIAttemptToCreateContactInfoWithEmail(string email)
+    {
+        WhenICreateContactInfoWithEmail(email);
+    }
+
+    [When(@"I attempt to create contact info with mobile ""(.*)""")]
+    public void WhenIAttemptToCreateContactInfoWithMobile(string mobile)
+    {
+        context.Email = "test@example.com";
+        context.Mobile = mobile;
+        context.Result = ContactInfo.Create("test@example.com", mobile, null, null);
+    }
+
+    [When(@"I attempt to create contact info with email of (\d+) characters")]
+    public void WhenIAttemptToCreateContactInfoWithEmailOfCharacters(int length)
+    {
+        WhenICreateContactInfoWithEmailOfDCharacters(length);
+    }
+
+    [When(@"I attempt to create contact info with mobile of (\d+) characters")]
+    public void WhenIAttemptToCreateContactInfoWithMobileOfCharacters(int length)
+    {
+        context.Email = "test@example.com";
+        var mobile = new string('1', length);
+        context.Mobile = mobile;
+        context.Result = ContactInfo.Create("test@example.com", mobile, null, null);
+    }
+
+    [When(@"I attempt to create contact info with Instagram of (\d+) characters")]
+    public void WhenIAttemptToCreateContactInfoWithInstagramOfCharacters(int length)
+    {
+        context.Email = "test@example.com";
+        context.Mobile = "+1234567890";
+        var instagram = new string('a', length);
+        context.Instagram = instagram;
+        context.Result = ContactInfo.Create("test@example.com", "+1234567890", instagram, null);
+    }
+
+    [When(@"I attempt to create contact info with Facebook of (\d+) characters")]
+    public void WhenIAttemptToCreateContactInfoWithFacebookOfCharacters(int length)
+    {
+        context.Email = "test@example.com";
+        context.Mobile = "+1234567890";
+        var facebook = new string('a', length);
+        context.Facebook = facebook;
+        context.Result = ContactInfo.Create("test@example.com", "+1234567890", null, facebook);
+    }
+
+    [When(@"I attempt to create contact info with email ""(.*)"" and mobile ""(.*)""")]
+    public void WhenIAttemptToCreateContactInfoWithEmailAndMobile(string email, string mobile)
+    {
+        context.Email = email;
+        context.Mobile = mobile;
+        context.Result = ContactInfo.Create(email, mobile, null, null);
+    }
+
+    [Then(@"I should not be able to create the contact info")]
+    public void ThenIShouldNotBeAbleToCreateTheContactInfo()
+    {
+        Assert.True(context.Result.IsFailure, "Expected contact info creation to fail, but it succeeded.");
+    }
+
+    [Then(@"I should be informed that (.+) is required")]
+    public void ThenIShouldBeInformedThatFieldIsRequired(string fieldName)
+    {
+        Assert.True(context.Result.IsFailure);
+        var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
+            $"Expected validation error for {normalizedFieldName}");
+    }
+
+    [Then(@"I should be informed that (.+) cannot exceed (\d+) characters")]
+    public void ThenIShouldBeInformedThatFieldCannotExceedCharacters(string fieldName, int maxLength)
+    {
+        Assert.True(context.Result.IsFailure);
+        var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
+            $"Expected validation error for {normalizedFieldName}");
     }
 }
