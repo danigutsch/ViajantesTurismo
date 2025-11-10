@@ -8,7 +8,10 @@ using ViajantesTurismo.Common.Results;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class TourCapacityManagementSteps(TourContext tourContext, CustomerContext customerContext, BookingContext bookingContext)
+public sealed class TourCapacityManagementSteps(
+    TourContext tourContext,
+    CustomerContext customerContext,
+    BookingContext bookingContext)
 {
     [Given(@"I have valid tour details")]
     public void GivenIHaveValidTourDetails()
@@ -78,7 +81,8 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
                     throw new ArgumentException($"Unsupported customer count: {customersPerBooking}");
             }
 
-            Assert.True(bookingResult.IsSuccess, $"Failed to create confirmed booking during test setup: {bookingResult.ErrorDetails?.Detail}");
+            Assert.True(bookingResult.IsSuccess,
+                $"Failed to create confirmed booking during test setup: {bookingResult.ErrorDetails?.Detail}");
             bookingResult.Value.Confirm();
         }
     }
@@ -103,7 +107,8 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
                 null,
                 null);
 
-            Assert.True(bookingResult.IsSuccess, $"Failed to create pending booking during test setup: {bookingResult.ErrorDetails?.Detail}");
+            Assert.True(bookingResult.IsSuccess,
+                $"Failed to create pending booking during test setup: {bookingResult.ErrorDetails?.Detail}");
         }
     }
 
@@ -127,7 +132,8 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
                 null,
                 null);
 
-            Assert.True(bookingResult.IsSuccess, $"Failed to create cancelled booking during test setup: {bookingResult.ErrorDetails?.Detail}");
+            Assert.True(bookingResult.IsSuccess,
+                $"Failed to create cancelled booking during test setup: {bookingResult.ErrorDetails?.Detail}");
             bookingResult.Value.Cancel();
         }
     }
@@ -136,7 +142,8 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     [Given(@"a fourth customer exists")]
     public void GivenAFourthCustomerExists()
     {
-        var customer = TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
+        var customer =
+            TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
         customerContext.Customers.Add(customer);
     }
 
@@ -173,7 +180,7 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     [When(@"I try to add a booking for the third customer")]
     public void WhenITryToAddABookingForTheThirdCustomer()
     {
-        var customer = customerContext.Customers[2];
+        var customer = customerContext.Customers.ElementAt(2);
 
         var result = tourContext.Tour.AddBooking(
             customer.Id,
@@ -197,11 +204,12 @@ public sealed class TourCapacityManagementSteps(TourContext tourContext, Custome
     {
         if (customerContext.Customers.Count < 4)
         {
-            var newCustomer = TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
+            var newCustomer =
+                TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
             customerContext.Customers.Add(newCustomer);
         }
 
-        var customer = customerContext.Customers[3];
+        var customer = customerContext.Customers.ElementAt(3);
 
         bookingContext.Result = tourContext.Tour.AddBooking(
             customer.Id,

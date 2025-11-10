@@ -27,7 +27,5 @@ public sealed class CustomerContext
     public required MedicalInfo MedicalInfo { get; set; }
     public required Customer Customer { get; set; }
 
-#pragma warning disable CA1002 // Do not expose generic lists - acceptable for test context
-    public List<Customer> Customers { get; init; } = [];
-#pragma warning restore CA1002
+    public ICollection<Customer> Customers { get; } = [];
 }

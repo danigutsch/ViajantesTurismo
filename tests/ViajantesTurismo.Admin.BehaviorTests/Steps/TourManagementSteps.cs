@@ -23,8 +23,10 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void GivenIHaveUtcTourDatesFromTo(string startDateString, string endDateString)
     {
         ContextHelpers.SetupValidTour(tourContext);
-        tourContext.StartDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
-        tourContext.EndDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+        tourContext.StartDate =
+            DateTime.Parse(startDateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+        tourContext.EndDate =
+            DateTime.Parse(endDateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
     }
 
     [Given(@"an existing tour with services ""(.*)""")]
@@ -70,49 +72,6 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.Name = new string('A', 129);
     }
 
-    [Given(@"I have tour details with base price (.*)")]
-    public void GivenIHaveTourDetailsWithBasePrice(decimal price)
-    {
-        tourContext.Identifier = "TEST2024";
-        tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
-        tourContext.BasePrice = price;
-        tourContext.DoubleRoomSupplementPrice = 500.00m;
-        tourContext.RegularBikePrice = 100.00m;
-        tourContext.EBikePrice = 200.00m;
-    }
-
-    [Given(@"I have tour details with single room supplement (.*)")]
-    public void GivenIHaveTourDetailsWithSingleRoomSupplement(decimal price)
-    {
-        tourContext.Identifier = "TEST2024";
-        tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
-        tourContext.DoubleRoomSupplementPrice = price;
-    }
-
-    [Given(@"I have tour details with regular bike price (.*)")]
-    public void GivenIHaveTourDetailsWithRegularBikePrice(decimal price)
-    {
-        tourContext.Identifier = "TEST2024";
-        tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
-        tourContext.RegularBikePrice = price;
-    }
-
-    [Given(@"I have tour details with e-bike price (.*)")]
-    public void GivenIHaveTourDetailsWithEBikePrice(decimal price)
-    {
-        tourContext.Identifier = "TEST2024";
-        tourContext.Name = "Test Tour";
-        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
-        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
-        tourContext.EBikePrice = price;
-    }
-
     [Given(@"I have tour details with multiple invalid values")]
     public void GivenIHaveTourDetailsWithMultipleInvalidValues()
     {
@@ -126,16 +85,59 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.EBikePrice = 0m;
     }
 
+    [Given(@"I have tour details with (base price|single room supplement|regular bike price|e-bike price) (.*)")]
+    public void GivenIHaveTourDetailsWithPriceType(string priceType, decimal amount)
+    {
+        tourContext.Identifier = "TEST2024";
+        tourContext.Name = "Test Tour";
+        tourContext.StartDate = DateTime.UtcNow.AddMonths(1);
+        tourContext.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
+
+        switch (priceType)
+        {
+            case "base price":
+                tourContext.BasePrice = amount;
+                tourContext.DoubleRoomSupplementPrice = 500.00m;
+                tourContext.RegularBikePrice = 100.00m;
+                tourContext.EBikePrice = 200.00m;
+                break;
+            case "single room supplement":
+                tourContext.DoubleRoomSupplementPrice = amount;
+                tourContext.BasePrice = 2000.00m;
+                tourContext.RegularBikePrice = 100.00m;
+                tourContext.EBikePrice = 200.00m;
+                break;
+            case "regular bike price":
+                tourContext.RegularBikePrice = amount;
+                tourContext.BasePrice = 2000.00m;
+                tourContext.DoubleRoomSupplementPrice = 500.00m;
+                tourContext.EBikePrice = 200.00m;
+                break;
+            case "e-bike price":
+                tourContext.EBikePrice = amount;
+                tourContext.BasePrice = 2000.00m;
+                tourContext.DoubleRoomSupplementPrice = 500.00m;
+                tourContext.RegularBikePrice = 100.00m;
+                break;
+            default:
+                throw new ArgumentException($"Unknown price type: {priceType}");
+        }
+    }
+
     [Given(@"I have tour details with services ""(.*)""")]
     public void GivenIHaveTourDetailsWithServices(string servicesString)
     {
         ContextHelpers.SetupValidTour(tourContext);
         tourContext.IncludedServices.Clear();
-        tourContext.IncludedServices.AddRange(servicesString.Split(", "));
+        foreach (var service in servicesString.Split(", "))
+        {
+            tourContext.IncludedServices.Add(service);
+        }
     }
 
     [Given(@"I have tour details with base price (.*), single room (.*), regular bike (.*), e-bike (.*)")]
-    public void GivenIHaveTourDetailsWithAllPrices(decimal basePrice, decimal singleRoom, decimal regularBike, decimal eBike)
+    public void GivenIHaveTourDetailsWithAllPrices(decimal basePrice, decimal singleRoom, decimal regularBike,
+        decimal eBike)
     {
         tourContext.Identifier = "TEST2024";
         tourContext.Name = "Test Tour";
@@ -154,6 +156,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     }
 
     [When(@"I try to create the tour")]
+    [When(@"I attempt to create the tour")]
     public void WhenITryToCreateTheTour()
     {
         var services = tourContext.IncludedServices.Count > 0
@@ -193,6 +196,24 @@ public sealed class TourManagementSteps(TourContext tourContext)
         Assert.NotNull(tourContext.Tour);
     }
 
+    [Then(@"I should not be able to create the tour")]
+    public void ThenIShouldNotBeAbleToCreateTheTour()
+    {
+        Assert.NotNull(tourContext.Result);
+
+        var isSuccess = tourContext.Result switch
+        {
+            Result<Tour> r => r.IsSuccess,
+            Result<TourPricing> r => r.IsSuccess,
+            Result<DateRange> r => r.IsSuccess,
+            Result<TourCapacity> r => r.IsSuccess,
+            Result r => r.IsSuccess,
+            _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
+        };
+
+        Assert.False(isSuccess, "Expected the tour creation to fail, but it succeeded.");
+    }
+
     [Then(@"the tour creation should fail with argument exception ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithArgumentException(string expectedMessage)
     {
@@ -218,7 +239,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
 
-        Assert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details or validation errors.");
+        Assert.True(messageFound,
+            $"Expected message '{expectedMessage}' not found in error details or validation errors.");
     }
 
     [Then(@"the tour identifier should be ""(.*)""")]
@@ -267,7 +289,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
         };
 
         Assert.False(isSuccess);
-        Assert.True(validationErrors?.ContainsKey(fieldName) ?? false, $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", validationErrors.Keys)}");
+        Assert.True(validationErrors?.ContainsKey(fieldName) ?? false,
+            $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", validationErrors.Keys)}");
     }
 
     [Then(@"the tour creation should fail with multiple validation errors")]
@@ -338,7 +361,8 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
         Assert.NotNull(tourContext.Tour);
-        var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        var expectedDate =
+            DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         Assert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
     }
 
@@ -346,7 +370,56 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
         Assert.NotNull(tourContext.Tour);
-        var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        var expectedDate =
+            DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         Assert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
+    }
+
+    [Then(@"I should be informed that the end date must be after the start date")]
+    public void ThenIShouldBeInformedThatTheEndDateMustBeAfterTheStartDate()
+    {
+        ThenTheTourCreationShouldFailWithArgumentException("End date must be after start date.");
+    }
+
+    [Then(@"I should be informed that tours must last at least 5 days")]
+    public void ThenIShouldBeInformedThatToursMustLastAtLeast5Days()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("schedule");
+    }
+
+    [Then(@"I should be prompted to provide a tour identifier")]
+    public void ThenIShouldBePromptedToProvideATourIdentifier()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("identifier");
+    }
+
+    [Then(@"I should be informed that the identifier is too long")]
+    public void ThenIShouldBeInformedThatTheIdentifierIsTooLong()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("identifier");
+    }
+
+    [Then(@"I should be prompted to provide a tour name")]
+    public void ThenIShouldBePromptedToProvideATourName()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("name");
+    }
+
+    [Then(@"I should be informed that the name is too long")]
+    public void ThenIShouldBeInformedThatTheNameIsTooLong()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("name");
+    }
+
+    [Then(@"I should be informed that prices must be positive")]
+    public void ThenIShouldBeInformedThatPricesMustBePositive()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("price");
+    }
+
+    [Then(@"I should be informed that the price exceeds our maximum rate")]
+    public void ThenIShouldBeInformedThatThePriceExceedsOurMaximumRate()
+    {
+        ThenTheTourCreationShouldFailWithValidationErrorFor("price");
     }
 }
