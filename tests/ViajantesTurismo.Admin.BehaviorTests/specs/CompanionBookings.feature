@@ -66,7 +66,7 @@ Rule: Room supplements depend on occupancy
 
 Rule: Principal and companion must be different people
 
-  @Invariant:INV-TOUR-016 @error_case @ignore
+  @Invariant:INV-TOUR-016 @error_case
   Scenario: Reject companion booking when principal and companion are the same customer
     Given a principal customer exists
     When I add a booking with principal customer 1 on regular bike and companion customer 1 on regular bike in double room
