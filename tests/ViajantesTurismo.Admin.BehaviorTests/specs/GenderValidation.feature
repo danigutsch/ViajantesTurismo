@@ -1,70 +1,54 @@
+@BC:Admin @Agg:Customer @VO:PersonalInfo @regression
 Feature: Gender Validation
-As a tourism system
-I want to validate customer gender
-So that only valid genders are accepted
 
-    Scenario: Creating personal info with valid gender
-        Given I have valid personal information
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+Gender is a required field that allows customers to specify their gender identity.
+The system supports various gender options and custom values to respect diversity and inclusion.
+Gender must be provided but can accommodate different expressions of gender identity.
 
-    Scenario: Creating personal info with empty gender
-        Given I have personal information with gender ""
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Gender is required."
+    Rule: Gender is required for personal information
+        @Invariant:INV-CUST-009
+        Scenario: I attempt to create personal info without specifying gender
+            When I attempt to create personal info without gender
+            Then I should be informed that gender is required
 
-    Scenario: Creating personal info with whitespace-only gender
-        Given I have personal information with gender "   "
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Gender is required."
+        @Invariant:INV-CUST-009
+        Scenario: I attempt to create personal info with only whitespace as gender
+            When I attempt to create personal info with whitespace-only gender
+            Then I should be informed that gender is required
 
-    Scenario: Creating personal info with null gender
-        Given I have personal information with null gender
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Gender is required."
+    Rule: Gender must not exceed maximum length
+        @Invariant:INV-CUST-010
+        Scenario: I create personal info with gender at maximum allowed length
+            When I create personal info with gender of 64 characters
+            Then the personal info should be successfully created
 
-    Scenario: Creating personal info with Male gender
-        Given I have personal information with gender "Male"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        @Invariant:INV-CUST-010
+        Scenario: I attempt to create personal info with gender exceeding maximum length
+            When I attempt to create personal info with gender of 65 characters
+            Then I should be informed that gender cannot exceed 64 characters
 
-    Scenario: Creating personal info with Female gender
-        Given I have personal information with gender "Female"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+    Rule: System supports diverse gender identities
+        Scenario: I create personal info with standard gender identity - Male
+            When I create personal info with gender "Male"
+            Then the personal info should be successfully created
+            And the gender should be "Male"
 
-    Scenario: Creating personal info with Other gender
-        Given I have personal information with gender "Other"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        Scenario: I create personal info with standard gender identity - Female
+            When I create personal info with gender "Female"
+            Then the personal info should be successfully created
+            And the gender should be "Female"
 
-    Scenario: Creating personal info with non-binary gender
-        Given I have personal information with gender "Non-binary"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        Scenario: I create personal info with gender identity - Other
+            When I create personal info with gender "Other"
+            Then the personal info should be successfully created
+            And the gender should be "Other"
 
-    Scenario: Creating personal info with custom gender value
-        Given I have personal information with gender "Prefer not to say"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        Scenario: I create personal info with gender identity - Non-binary
+            When I create personal info with gender "Non-binary"
+            Then the personal info should be successfully created
+            And the gender should be "Non-binary"
 
-    Scenario: Creating personal info with gender at maximum length
-        Given I have personal information with gender of 64 characters
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
-
-    Scenario: Creating personal info with gender exceeding maximum length
-        Given I have personal information with gender of 65 characters
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Gender cannot exceed 64 characters."
+        Scenario: I create personal info with custom gender expression
+            When I create personal info with gender "Prefer not to say"
+            Then the personal info should be successfully created
+            And the gender should be "Prefer not to say"

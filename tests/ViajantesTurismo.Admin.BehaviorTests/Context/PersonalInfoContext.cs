@@ -14,4 +14,5 @@ public sealed class PersonalInfoContext
     public required string Nationality { get; set; }
     public required string Profession { get; set; }
     public required Result<PersonalInfo> Result { get; set; }
+    public PersonalInfo PersonalInfo { get; set; } = null!;
 }

@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace ViajantesTurismo.Admin.BehaviorTests;
 
 /// <summary>
@@ -9,24 +11,36 @@ public static class InvariantRegistry
     /// <summary>
     /// Get all invariant IDs for an aggregate.
     /// </summary>
-    public static string[] GetInvariantsForAggregate(Type aggregateType)
-    {
-        if (aggregateType == typeof(Tour))
+    public static string[] GetInvariantsForAggregate(Type aggregateType) =>
+        aggregateType.Name switch
         {
-            return [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)];
-        }
+            "Tour" => [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)],
+            "Customer" => [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)],
+            _ => []
+        };
 
-        if (aggregateType == typeof(Customer))
-        {
-            return [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)];
-        }
+    /// <summary>
+    /// Get all Tour invariants.
+    /// </summary>
+    public static string[] GetTourInvariants() =>
+        [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)];
 
-        return [];
-    }
+    /// <summary>
+    /// Get all Customer invariants.
+    /// </summary>
+    public static string[] GetCustomerInvariants() =>
+        [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)];
+
+    /// <summary>
+    /// Get all invariants across all aggregates.
+    /// </summary>
+    public static string[] GetAllInvariants() =>
+        [.. GetTourInvariants().Concat(GetCustomerInvariants())];
 
     /// <summary>
     /// All Tour aggregate invariants from docs/bounded-contexts/Admin.md
     /// </summary>
+    [UsedImplicitly]
     internal static class Tour
     {
         public const string UniqueIdentifier = "INV-TOUR-001";
@@ -58,6 +72,7 @@ public static class InvariantRegistry
     /// <summary>
     /// All Customer aggregate invariants from docs/bounded-contexts/Admin.md
     /// </summary>
+    [UsedImplicitly]
     internal static class Customer
     {
         public const string EmailUnique = "INV-CUST-001";

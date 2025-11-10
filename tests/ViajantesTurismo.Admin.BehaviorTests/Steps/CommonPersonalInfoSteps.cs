@@ -47,6 +47,12 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
     }
 
+    [Then(@"the personal info should be successfully created")]
+    public void ThenThePersonalInfoShouldBeSuccessfullyCreated()
+    {
+        Assert.True(context.Result.IsSuccess, context.Result.ErrorDetails?.Detail ?? "Result failed");
+    }
+
     [When(@"I attempt to create personal info with first name ""(.*)""")]
     public void WhenIAttemptToCreatePersonalInfoWithFirstName(string firstName)
     {
@@ -509,5 +515,311 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
         context.Profession = new string('A', length);
+    }
+
+    [When(@"I attempt to create personal info without gender")]
+    public void WhenIAttemptToCreatePersonalInfoWithoutGender()
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            null!,
+            new DateTime(1990, 5, 15),
+            "American",
+            "Software Engineer",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I attempt to create personal info with whitespace-only gender")]
+    public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyGender()
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "   ",
+            new DateTime(1990, 5, 15),
+            "American",
+            "Software Engineer",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I create personal info with gender of (\d+) characters")]
+    public void WhenICreatePersonalInfoWithGenderOfCharacters(int length)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            new string('A', length),
+            new DateTime(1990, 5, 15),
+            "American",
+            "Software Engineer",
+            TimeProvider.System
+        );
+        if (context.Result.IsSuccess)
+        {
+            context.PersonalInfo = context.Result.Value;
+        }
+    }
+
+    [When(@"I attempt to create personal info with gender of (\d+) characters")]
+    public void WhenIAttemptToCreatePersonalInfoWithGenderOfCharacters(int length)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            new string('A', length),
+            new DateTime(1990, 5, 15),
+            "American",
+            "Software Engineer",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I create personal info with gender ""([^""]*)""")]
+    public void WhenICreatePersonalInfoWithGender(string gender)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            gender,
+            new DateTime(1990, 5, 15),
+            "American",
+            "Software Engineer",
+            TimeProvider.System
+        );
+        if (context.Result.IsSuccess)
+        {
+            context.PersonalInfo = context.Result.Value;
+        }
+    }
+
+    [Then(@"I should be informed that gender is required")]
+    public void ThenIShouldBeInformedThatGenderIsRequired()
+    {
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        Assert.Contains("Gender is required.", allErrors);
+    }
+
+    [Then(@"I should be informed that gender cannot exceed 64 characters")]
+    public void ThenIShouldBeInformedThatGenderCannotExceed64Characters()
+    {
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        Assert.Contains("Gender cannot exceed 64 characters.", allErrors);
+    }
+
+    [Then(@"the gender should be ""([^""]*)""")]
+    public void ThenTheGenderShouldBe(string expectedGender)
+    {
+        Assert.Equal(expectedGender, context.PersonalInfo.Gender);
+    }
+
+    [When(@"I attempt to create personal info without nationality")]
+    public void WhenIAttemptToCreatePersonalInfoWithoutNationality()
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            null!,
+            "Software Engineer",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I attempt to create personal info with whitespace-only nationality")]
+    public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyNationality()
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            "   ",
+            "Software Engineer",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I create personal info with nationality of (\d+) characters")]
+    public void WhenICreatePersonalInfoWithNationalityOfCharacters(int length)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            new string('A', length),
+            "Software Engineer",
+            TimeProvider.System
+        );
+        if (context.Result.IsSuccess)
+        {
+            context.PersonalInfo = context.Result.Value;
+        }
+    }
+
+    [When(@"I attempt to create personal info with nationality of (\d+) characters")]
+    public void WhenIAttemptToCreatePersonalInfoWithNationalityOfCharacters(int length)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            new string('A', length),
+            "Software Engineer",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I create personal info with nationality ""([^""]*)""")]
+    public void WhenICreatePersonalInfoWithNationality(string nationality)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            nationality,
+            "Software Engineer",
+            TimeProvider.System
+        );
+        if (context.Result.IsSuccess)
+        {
+            context.PersonalInfo = context.Result.Value;
+        }
+    }
+
+    [Then(@"I should be informed that nationality is required")]
+    public void ThenIShouldBeInformedThatNationalityIsRequired()
+    {
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        Assert.Contains("Nationality is required.", allErrors);
+    }
+
+    [Then(@"I should be informed that nationality cannot exceed 128 characters")]
+    public void ThenIShouldBeInformedThatNationalityCannotExceed128Characters()
+    {
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        Assert.Contains("Nationality cannot exceed 128 characters.", allErrors);
+    }
+
+    [Then(@"the nationality should be ""([^""]*)""")]
+    public void ThenTheNationalityShouldBe(string expectedNationality)
+    {
+        Assert.Equal(expectedNationality, context.PersonalInfo.Nationality);
+    }
+
+    [When(@"I attempt to create personal info without profession")]
+    public void WhenIAttemptToCreatePersonalInfoWithoutProfession()
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            "American",
+            null!,
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I attempt to create personal info with whitespace-only profession")]
+    public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyProfession()
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            "American",
+            "   ",
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I create personal info with profession of (\d+) characters")]
+    public void WhenICreatePersonalInfoWithProfessionOfCharacters(int length)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            "American",
+            new string('A', length),
+            TimeProvider.System
+        );
+        if (context.Result.IsSuccess)
+        {
+            context.PersonalInfo = context.Result.Value;
+        }
+    }
+
+    [When(@"I attempt to create personal info with profession of (\d+) characters")]
+    public void WhenIAttemptToCreatePersonalInfoWithProfessionOfCharacters(int length)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            "American",
+            new string('A', length),
+            TimeProvider.System
+        );
+    }
+
+    [When(@"I create personal info with profession ""([^""]*)""")]
+    public void WhenICreatePersonalInfoWithProfession(string profession)
+    {
+        context.Result = PersonalInfo.Create(
+            "John",
+            "Smith",
+            "Male",
+            new DateTime(1990, 5, 15),
+            "American",
+            profession,
+            TimeProvider.System
+        );
+        if (context.Result.IsSuccess)
+        {
+            context.PersonalInfo = context.Result.Value;
+        }
+    }
+
+    [Then(@"I should be informed that profession is required")]
+    public void ThenIShouldBeInformedThatProfessionIsRequired()
+    {
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        Assert.Contains("Profession is required.", allErrors);
+    }
+
+    [Then(@"I should be informed that profession cannot exceed 128 characters")]
+    public void ThenIShouldBeInformedThatProfessionCannotExceed128Characters()
+    {
+        Assert.True(context.Result.IsFailure, "Expected failure but got success");
+        var errors = context.Result.ErrorDetails?.ValidationErrors;
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        Assert.Contains("Profession cannot exceed 128 characters.", allErrors);
+    }
+
+    [Then(@"the profession should be ""([^""]*)""")]
+    public void ThenTheProfessionShouldBe(string expectedProfession)
+    {
+        Assert.Equal(expectedProfession, context.PersonalInfo.Profession);
     }
 }

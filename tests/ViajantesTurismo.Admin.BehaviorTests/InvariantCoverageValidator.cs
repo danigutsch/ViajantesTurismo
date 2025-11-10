@@ -12,8 +12,7 @@ public class InvariantCoverageValidator
 
     public InvariantCoverageValidator()
     {
-        _allInvariants.UnionWith(InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour)));
-        _allInvariants.UnionWith(InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer)));
+        _allInvariants.UnionWith(InvariantRegistry.GetAllInvariants());
     }
 
     /// <summary>

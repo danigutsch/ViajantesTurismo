@@ -1,70 +1,53 @@
+@BC:Admin @Agg:Customer @VO:PersonalInfo @regression
 Feature: Nationality Validation
-As a tourism system
-I want to validate customer nationality
-So that only valid nationalities are accepted
 
-    Scenario: Creating personal info with valid nationality
-        Given I have valid personal information
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+Nationality identifies the customer's citizenship and is required for travel documentation and legal compliance.
+The system accommodates various nationality formats including single nationalities, dual citizenship, and complex forms.
 
-    Scenario: Creating personal info with empty nationality
-        Given I have personal information with nationality ""
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Nationality is required."
+    Rule: Nationality is required for personal information
+        @Invariant:INV-CUST-011
+        Scenario: I attempt to create personal info without specifying nationality
+            When I attempt to create personal info without nationality
+            Then I should be informed that nationality is required
 
-    Scenario: Creating personal info with whitespace-only nationality
-        Given I have personal information with nationality "   "
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Nationality is required."
+        @Invariant:INV-CUST-011
+        Scenario: I attempt to create personal info with only whitespace as nationality
+            When I attempt to create personal info with whitespace-only nationality
+            Then I should be informed that nationality is required
 
-    Scenario: Creating personal info with null nationality
-        Given I have personal information with null nationality
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Nationality is required."
+    Rule: Nationality must not exceed maximum length
+        @Invariant:INV-CUST-012
+        Scenario: I create personal info with nationality at maximum allowed length
+            When I create personal info with nationality of 128 characters
+            Then the personal info should be successfully created
 
-    Scenario: Creating personal info with single-word nationality
-        Given I have personal information with nationality "Brazilian"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        @Invariant:INV-CUST-012
+        Scenario: I attempt to create personal info with nationality exceeding maximum length
+            When I attempt to create personal info with nationality of 129 characters
+            Then I should be informed that nationality cannot exceed 128 characters
 
-    Scenario: Creating personal info with hyphenated nationality
-        Given I have personal information with nationality "British-American"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+    Rule: System supports various nationality formats
+        Scenario: I create personal info with single-word nationality
+            When I create personal info with nationality "Brazilian"
+            Then the personal info should be successfully created
+            And the nationality should be "Brazilian"
 
-    Scenario: Creating personal info with nationality containing spaces
-        Given I have personal information with nationality "South African"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        Scenario: I create personal info with hyphenated nationality
+            When I create personal info with nationality "British-American"
+            Then the personal info should be successfully created
+            And the nationality should be "British-American"
 
-    Scenario: Creating personal info with nationality containing accents
-        Given I have personal information with nationality "Française"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        Scenario: I create personal info with multi-word nationality
+            When I create personal info with nationality "South African"
+            Then the personal info should be successfully created
+            And the nationality should be "South African"
 
-    Scenario: Creating personal info with dual nationality
-        Given I have personal information with nationality "Canadian/American"
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
+        Scenario: I create personal info with nationality containing accents
+            When I create personal info with nationality "Française"
+            Then the personal info should be successfully created
+            And the nationality should be "Française"
 
-    Scenario: Creating personal info with nationality at maximum length
-        Given I have personal information with nationality of 128 characters
-        When I create the personal info
-        Then the creation should succeed
-        And the personal info should contain the provided data
-
-    Scenario: Creating personal info with nationality exceeding maximum length
-        Given I have personal information with nationality of 129 characters
-        When I create the personal info
-        Then the creation should fail
-        And the error should be "Nationality cannot exceed 128 characters."
+        Scenario: I create personal info representing dual citizenship
+            When I create personal info with nationality "Canadian/American"
+            Then the personal info should be successfully created
+            And the nationality should be "Canadian/American"

@@ -11,7 +11,8 @@ public class InvariantCoverageTests
     public void Registry_ShouldContain_Exactly24TourInvariants()
     {
         // Arrange
-        var tourInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour));
+        // Act
+        var tourInvariants = InvariantRegistry.GetTourInvariants();
 
         // Assert
         Assert.Equal(24, tourInvariants.Length);
@@ -22,7 +23,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var customerInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer));
+        var customerInvariants = InvariantRegistry.GetCustomerInvariants();
 
         // Assert
         Assert.Equal(30, customerInvariants.Length);
@@ -33,11 +34,10 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var tourInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour));
-        var customerInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer));
+        var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Assert
-        Assert.Equal(54, tourInvariants.Length + customerInvariants.Length);
+        Assert.Equal(54, allInvariants.Length);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var tourInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour));
+        var tourInvariants = InvariantRegistry.GetTourInvariants();
 
         // Assert
         foreach (var invariant in tourInvariants)
@@ -59,7 +59,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var customerInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer));
+        var customerInvariants = InvariantRegistry.GetCustomerInvariants();
 
         // Assert
         foreach (var invariant in customerInvariants)
@@ -73,7 +73,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var tourInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour));
+        var tourInvariants = InvariantRegistry.GetTourInvariants();
         var numbers = tourInvariants
             .Select(i => int.Parse(i.Split('-')[2], CultureInfo.InvariantCulture))
             .OrderBy(n => n)
@@ -91,7 +91,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var customerInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer));
+        var customerInvariants = InvariantRegistry.GetCustomerInvariants();
         var numbers = customerInvariants
             .Select(i => int.Parse(i.Split('-')[2], CultureInfo.InvariantCulture))
             .OrderBy(n => n)
@@ -109,9 +109,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         // Act
-        var tourInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour));
-        var customerInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer));
-        var allInvariants = tourInvariants.Concat(customerInvariants).ToArray();
+        var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Assert
         Assert.Equal(allInvariants.Length, allInvariants.Distinct().Count());
@@ -131,17 +129,15 @@ public class InvariantCoverageTests
     }
 
     [Theory]
-    [InlineData("INV-TOUR-001")]
-    [InlineData("INV-TOUR-024")]
-    [InlineData("INV-CUST-001")]
-    [InlineData("INV-CUST-030")]
+    [InlineData(InvariantRegistry.Tour.UniqueIdentifier)]
+    [InlineData(InvariantRegistry.Tour.PercentageDiscountMax100)]
+    [InlineData(InvariantRegistry.Customer.EmailUnique)]
+    [InlineData(InvariantRegistry.Customer.MedicalInfoMaxLength)]
     public void Registry_ShouldContain_BoundaryInvariants(string invariantId)
     {
         // Arrange
         // Act
-        var tourInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour));
-        var customerInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer));
-        var allInvariants = tourInvariants.Concat(customerInvariants).ToArray();
+        var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Assert
         Assert.Contains(invariantId, allInvariants);
@@ -169,9 +165,9 @@ public class InvariantCoverageTests
         var validator = new InvariantCoverageValidator();
 
         // Act
-        validator.RecordScenarioCoverage("INV-TOUR-001", "Test Scenario 1");
-        validator.RecordScenarioCoverage("INV-TOUR-001", "Test Scenario 2");
-        validator.RecordScenarioCoverage("INV-CUST-001", "Test Scenario 3");
+        validator.RecordScenarioCoverage(InvariantRegistry.Tour.UniqueIdentifier, "Test Scenario 1");
+        validator.RecordScenarioCoverage(InvariantRegistry.Tour.UniqueIdentifier, "Test Scenario 2");
+        validator.RecordScenarioCoverage(InvariantRegistry.Customer.EmailUnique, "Test Scenario 3");
 
         var report = validator.GenerateReport();
 
@@ -183,10 +179,10 @@ public class InvariantCoverageTests
         const double tolerance = 0.2;
         Assert.InRange(report.CoveragePercentage, expectedCoveragePercentage - tolerance,
             expectedCoveragePercentage + tolerance);
-        Assert.Contains("INV-TOUR-001", report.InvariantToScenarios.Keys);
-        Assert.Contains("INV-CUST-001", report.InvariantToScenarios.Keys);
-        Assert.Equal(2, report.InvariantToScenarios["INV-TOUR-001"].Count);
-        Assert.Single(report.InvariantToScenarios["INV-CUST-001"]);
+        Assert.Contains(InvariantRegistry.Tour.UniqueIdentifier, report.InvariantToScenarios.Keys);
+        Assert.Contains(InvariantRegistry.Customer.EmailUnique, report.InvariantToScenarios.Keys);
+        Assert.Equal(2, report.InvariantToScenarios[InvariantRegistry.Tour.UniqueIdentifier].Count);
+        Assert.Single(report.InvariantToScenarios[InvariantRegistry.Customer.EmailUnique]);
     }
 
     [Fact]
@@ -194,8 +190,7 @@ public class InvariantCoverageTests
     {
         // Arrange
         var validator = new InvariantCoverageValidator();
-        var allInvariants = InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Tour))
-            .Concat(InvariantRegistry.GetInvariantsForAggregate(typeof(InvariantRegistry.Customer)));
+        var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Act
         foreach (var invariant in allInvariants)
