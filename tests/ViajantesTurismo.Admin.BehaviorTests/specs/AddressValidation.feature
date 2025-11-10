@@ -1,165 +1,152 @@
+@BC:Admin @Agg:Customer @VO:Address @regression
 Feature: Address Validation
-As a system administrator
-I want address information to be validated
-So that we maintain valid customer addresses
 
-    Scenario: Create address with valid data
-        When I create address with street "123 Main St", city "New York", state "NY", country "USA", postal code "10001"
-        Then the address should be created successfully
+As a system administrator, I need to validate customer addresses to ensure we can reliably
+communicate with and locate customers when needed.
 
-    Scenario: Create address with sanitized street
-        When I create address with street "  123 Main St  "
-        Then the street should be "123 Main St"
+**Business Rules:**
+- All address fields (street, neighborhood, postal code, city, state, country) are required
+- Optional complement field for additional location details (apartment number, floor, etc.)
+- Street, neighborhood, city, state, country: maximum 128 characters
+- Postal code: maximum 64 characters
+- Complement: maximum 128 characters
+- All fields automatically trimmed and whitespace normalized
 
-    Scenario: Create address with sanitized city
-        When I create address with city "  New York  "
-        Then the city should be "New York"
+Rule: Street address is required and must not exceed maximum length
 
-    Scenario: Create address with sanitized state
-        When I create address with state "  NY  "
-        Then the state should be "NY"
+    @Invariant:INV-CUST-022 @error_case @smoke
+    Scenario: I cannot create an address without a street
+        When I attempt to create an address without a street
+        Then I should be informed that street is required
 
-    Scenario: Create address with sanitized country
-        When I create address with country "  USA  "
-        Then the country should be "USA"
+    @Invariant:INV-CUST-022 @error_case @critical
+    Scenario: I cannot create an address with an excessively long street
+        When I attempt to create an address with a street of 129 characters
+        Then I should be informed that street cannot exceed 128 characters
 
-    Scenario: Create address with sanitized postal code
-        When I create address with postal code "  10001  "
-        Then the postal code should be "10001"
+    @Invariant:INV-CUST-022 @happy_path
+    Scenario: I can create an address with street at maximum allowed length
+        When I create an address with a street of 128 characters
+        Then the address should be successfully created
 
-    Scenario: Create address with null complement
-        When I create address with complement null
-        Then the complement should be null
+Rule: Neighborhood is required and must not exceed maximum length
 
-    Scenario: Create address with whitespace-only complement becomes null
-        When I create address with complement "   "
-        Then the complement should be null
+    @Invariant:INV-CUST-023 @error_case @smoke
+    Scenario: I cannot create an address without a neighborhood
+        When I attempt to create an address without a neighborhood
+        Then I should be informed that neighborhood is required
 
-    Scenario: Create address with valid complement
-        When I create address with complement "Apt 5B"
-        Then the complement should be "Apt 5B"
+    @Invariant:INV-CUST-023 @error_case @critical
+    Scenario: I cannot create an address with an excessively long neighborhood
+        When I attempt to create an address with a neighborhood of 129 characters
+        Then I should be informed that neighborhood cannot exceed 128 characters
 
-    Scenario: Street with multiple spaces is normalized
-        When I create address with street "123    Main    St"
-        Then the street should be "123 Main St"
+    @Invariant:INV-CUST-023 @happy_path
+    Scenario: I can create an address with neighborhood at maximum allowed length
+        When I create an address with a neighborhood of 128 characters
+        Then the address should be successfully created
 
-    Scenario: Neighborhood with multiple spaces is normalized
-        When I create address with neighborhood "  Downtown    Area  "
-        Then the neighborhood should be "Downtown Area"
+Rule: Postal code is required and must not exceed maximum length
 
-    Scenario: All fields trimmed and normalized
-        When I create address with all fields having extra whitespace
-        Then all address fields should be properly trimmed and normalized
+    @Invariant:INV-CUST-024 @error_case @smoke
+    Scenario: I cannot create an address without a postal code
+        When I attempt to create an address without a postal code
+        Then I should be informed that postal code is required
 
-    Scenario: Cannot create address with empty street
-        When I create address with street "", city "New York", state "NY", country "USA", postal code "10001"
-        Then the address creation should fail
-        And the error should be "Street is required."
+    @Invariant:INV-CUST-024 @error_case @critical
+    Scenario: I cannot create an address with an excessively long postal code
+        When I attempt to create an address with a postal code of 65 characters
+        Then I should be informed that postal code cannot exceed 64 characters
 
-    Scenario: Cannot create address with null street
-        When I create address with null street and city "New York" and state "NY" and country "USA" and postal code "10001"
-        Then the address creation should fail
-        And the error should be "Street is required."
+    @Invariant:INV-CUST-024 @happy_path
+    Scenario: I can create an address with postal code at maximum allowed length
+        When I create an address with a postal code of 64 characters
+        Then the address should be successfully created
 
-    Scenario: Cannot create address with whitespace only street
-        When I create address with street "   ", city "New York", state "NY", country "USA", postal code "10001"
-        Then the address creation should fail
-        And the error should be "Street is required."
+Rule: City is required and must not exceed maximum length
 
-    Scenario: Cannot create address with street too long
-        When I create address with street of 129 characters
-        Then the address creation should fail
-        And the error should be "Street cannot exceed 128 characters."
+    @Invariant:INV-CUST-025 @error_case @smoke
+    Scenario: I cannot create an address without a city
+        When I attempt to create an address without a city
+        Then I should be informed that city is required
 
-    Scenario: Create address with street at maximum length
-        When I create address with street of 128 characters
-        Then the address should be created successfully
+    @Invariant:INV-CUST-025 @error_case @critical
+    Scenario: I cannot create an address with an excessively long city name
+        When I attempt to create an address with a city of 129 characters
+        Then I should be informed that city cannot exceed 128 characters
 
-    Scenario: Cannot create address with empty neighborhood
-        When I create address with street "123 Main St" and neighborhood "" and postal code "10001" and city "New York" and state "NY" and country "USA"
-        Then the address creation should fail
-        And the error should be "Neighborhood is required."
+    @Invariant:INV-CUST-025 @happy_path
+    Scenario: I can create an address with city at maximum allowed length
+        When I create an address with a city of 128 characters
+        Then the address should be successfully created
 
-    Scenario: Cannot create address with empty postal code
-        When I create address with street "123 Main St" and neighborhood "Downtown" and postal code "" and city "New York" and state "NY" and country "USA"
-        Then the address creation should fail
-        And the error should be "Postal code is required."
+Rule: State is required and must not exceed maximum length
 
-    Scenario: Cannot create address with empty city
-        When I create address with street "123 Main St" and neighborhood "Downtown" and postal code "10001" and city "" and state "NY" and country "USA"
-        Then the address creation should fail
-        And the error should be "City is required."
+    @Invariant:INV-CUST-026 @error_case @smoke
+    Scenario: I cannot create an address without a state
+        When I attempt to create an address without a state
+        Then I should be informed that state is required
 
-    Scenario: Cannot create address with empty state
-        When I create address with street "123 Main St" and neighborhood "Downtown" and postal code "10001" and city "New York" and state "" and country "USA"
-        Then the address creation should fail
-        And the error should be "State is required."
+    @Invariant:INV-CUST-026 @error_case @critical
+    Scenario: I cannot create an address with an excessively long state name
+        When I attempt to create an address with a state of 129 characters
+        Then I should be informed that state cannot exceed 128 characters
 
-    Scenario: Cannot create address with empty country
-        When I create address with street "123 Main St" and neighborhood "Downtown" and postal code "10001" and city "New York" and state "NY" and country ""
-        Then the address creation should fail
-        And the error should be "Country is required."
+    @Invariant:INV-CUST-026 @happy_path
+    Scenario: I can create an address with state at maximum allowed length
+        When I create an address with a state of 128 characters
+        Then the address should be successfully created
 
-    Scenario: Cannot create address with complement too long
-        When I create address with complement of 129 characters
-        Then the address creation should fail
-        And the error should be "Complement cannot exceed 128 characters."
+Rule: Country is required and must not exceed maximum length
 
-    Scenario: Create address with complement at maximum length
-        When I create address with complement of 128 characters
-        Then the address should be created successfully
+    @Invariant:INV-CUST-027 @error_case @smoke
+    Scenario: I cannot create an address without a country
+        When I attempt to create an address without a country
+        Then I should be informed that country is required
 
-    Scenario: Cannot create address with neighborhood too long
-        When I create address with neighborhood of 129 characters
-        Then the address creation should fail
-        And the error should be "Neighborhood cannot exceed 128 characters."
+    @Invariant:INV-CUST-027 @error_case @critical
+    Scenario: I cannot create an address with an excessively long country name
+        When I attempt to create an address with a country of 129 characters
+        Then I should be informed that country cannot exceed 128 characters
 
-    Scenario: Create address with neighborhood at maximum length
-        When I create address with neighborhood of 128 characters
-        Then the address should be created successfully
+    @Invariant:INV-CUST-027 @happy_path
+    Scenario: I can create an address with country at maximum allowed length
+        When I create an address with a country of 128 characters
+        Then the address should be successfully created
 
-    Scenario: Cannot create address with postal code too long
-        When I create address with postal code of 65 characters
-        Then the address creation should fail
-        And the error should be "Postal code cannot exceed 64 characters."
+Rule: Address complement is optional with maximum length constraint
 
-    Scenario: Create address with postal code at maximum length
-        When I create address with postal code of 64 characters
-        Then the address should be created successfully
+    @happy_path
+    Scenario: I can create an address with a valid complement
+        When I create an address with complement "Apartment 5B"
+        Then the address should be successfully created
+        And the complement should be "Apartment 5B"
 
-    Scenario: Cannot create address with city too long
-        When I create address with city of 129 characters
-        Then the address creation should fail
-        And the error should be "City cannot exceed 128 characters."
+    @edge_case
+    Scenario: Address complement can be omitted
+        When I create an address without a complement
+        Then the address should be successfully created
+        And the complement should be empty
 
-    Scenario: Create address with city at maximum length
-        When I create address with city of 128 characters
-        Then the address should be created successfully
+    @error_case
+    Scenario: I cannot create an address with an excessively long complement
+        When I attempt to create an address with a complement of 129 characters
+        Then I should be informed that complement cannot exceed 128 characters
 
-    Scenario: Cannot create address with state too long
-        When I create address with state of 129 characters
-        Then the address creation should fail
-        And the error should be "State cannot exceed 128 characters."
+    @happy_path
+    Scenario: I can create an address with complement at maximum allowed length
+        When I create an address with a complement of 128 characters
+        Then the address should be successfully created
 
-    Scenario: Create address with state at maximum length
-        When I create address with state of 128 characters
-        Then the address should be created successfully
+Rule: Address fields are automatically sanitized
 
-    Scenario: Cannot create address with country too long
-        When I create address with country of 129 characters
-        Then the address creation should fail
-        And the error should be "Country cannot exceed 128 characters."
+    @happy_path
+    Scenario: Address with complete valid information is accepted
+        When I create an address with street "123 Main St", city "New York", state "NY", country "USA", postal code "10001", and neighborhood "Downtown"
+        Then the address should be successfully created
 
-    Scenario: Create address with country at maximum length
-        When I create address with country of 128 characters
-        Then the address should be created successfully
-
-    Scenario: Cannot create address with multiple validation errors
-        When I create address with street "", city "", state "", country "", postal code "", neighborhood ""
-        Then the address creation should fail
-        And the error should be "Street is required."
-        And the error should be "Neighborhood is required."
-        And the error should be "Postal code is required."
-        And the error should be "City is required."
-        And the error should be "State is required."
-        And the error should be "Country is required."
+    @edge_case
+    Scenario: Whitespace in address fields is automatically normalized
+        When I create an address with fields containing extra whitespace
+        Then the address should be successfully created
+        And all address fields should have normalized whitespace

@@ -1,81 +1,73 @@
+@BC:Admin @Agg:Customer @Entity:IdentificationInfo @regression
 Feature: Identification Info Validation
-As a system administrator
-I want identification information to be validated
-So that we maintain valid customer identification records
 
-    Scenario: Create identification info with valid data
+As a system administrator, I need to validate customer identification information to ensure
+we can verify customer identity and comply with regulatory requirements.
+
+**Business Rules:**
+- National ID is required (government-issued identification number)
+- ID issuing nationality is required (country that issued the ID)
+- National ID: maximum 64 characters
+- ID nationality: maximum 64 characters
+- All fields automatically trimmed and whitespace normalized
+
+Rule: National ID is required and must not exceed maximum length
+
+    @Invariant:INV-CUST-019 @error_case @smoke
+    Scenario: I cannot create identification info without a national ID
+        When I attempt to create identification info without a national ID
+        Then I should be informed that national ID is required
+
+    @Invariant:INV-CUST-020 @error_case @critical
+    Scenario: I cannot create identification info with an excessively long national ID
+        When I attempt to create identification info with a national ID of 65 characters
+        Then I should be informed that national ID cannot exceed 64 characters
+
+    @Invariant:INV-CUST-019 @Invariant:INV-CUST-020 @happy_path
+    Scenario: I can create identification info with national ID at maximum allowed length
+        When I create identification info with a national ID of 64 characters
+        Then the identification info should be successfully created
+
+Rule: ID nationality is required and must not exceed maximum length
+
+    @Invariant:INV-CUST-021 @error_case @smoke
+    Scenario: I cannot create identification info without an ID nationality
+        When I attempt to create identification info without an ID nationality
+        Then I should be informed that ID nationality is required
+
+    @Invariant:INV-CUST-021 @error_case @critical
+    Scenario: I cannot create identification info with an excessively long ID nationality
+        When I attempt to create identification info with an ID nationality of 65 characters
+        Then I should be informed that ID nationality cannot exceed 64 characters
+
+    @Invariant:INV-CUST-021 @happy_path
+    Scenario: I can create identification info with ID nationality at maximum allowed length
+        When I create identification info with an ID nationality of 64 characters
+        Then the identification info should be successfully created
+
+Rule: Identification fields are automatically sanitized
+
+    @happy_path @smoke
+    Scenario: Identification info with complete valid information is accepted
         When I create identification info with national ID "12345678" and ID nationality "Brazilian"
-        Then the identification info should be created successfully
+        Then the identification info should be successfully created
 
-    Scenario: National ID with multiple spaces is normalized
-        When I create identification info with national ID "123   456   78" and ID nationality "Brazilian"
-        Then the national ID should be "123 456 78"
+    @edge_case
+    Scenario: Whitespace in identification fields is automatically normalized
+        When I create identification info with fields containing extra whitespace
+        Then the identification info should be successfully created
+        And all identification fields should have normalized whitespace
 
-    Scenario: ID nationality with multiple spaces is normalized
-        When I create identification info with national ID "12345678" and ID nationality "United    States"
-        Then the ID nationality should be "United States"
+Rule: Multiple validation errors are reported together
 
-    Scenario: All fields with extra whitespace are sanitized
-        When I create identification info with national ID "  12345678  " and ID nationality "  Brazilian  "
-        Then the national ID should be "12345678"
-        And the ID nationality should be "Brazilian"
+    @Invariant:INV-CUST-019 @Invariant:INV-CUST-021 @error_case
+    Scenario: I am informed of all missing required fields
+        When I attempt to create identification info without any fields
+        Then I should be informed that national ID is required
+        And I should be informed that ID nationality is required
 
-    Scenario: Cannot create identification info with empty national ID
-        When I create identification info with national ID "" and ID nationality "Brazilian"
-        Then the identification info creation should fail
-        And the error should be "National ID is required."
-
-    Scenario: Cannot create identification info with null national ID
-        When I create identification info with null national ID and ID nationality "Brazilian"
-        Then the identification info creation should fail
-        And the error should be "National ID is required."
-
-    Scenario: Cannot create identification info with whitespace only national ID
-        When I create identification info with national ID "   " and ID nationality "Brazilian"
-        Then the identification info creation should fail
-        And the error should be "National ID is required."
-
-    Scenario: Cannot create identification info with national ID too long
-        When I create identification info with national ID of 65 characters
-        Then the identification info creation should fail
-        And the error should be "National ID cannot exceed 64 characters."
-
-    Scenario: Create identification info with national ID at maximum length
-        When I create identification info with national ID of 64 characters
-        Then the identification info should be created successfully
-
-    Scenario: Cannot create identification info with empty ID nationality
-        When I create identification info with national ID "12345678" and ID nationality ""
-        Then the identification info creation should fail
-        And the error should be "ID nationality is required."
-
-    Scenario: Cannot create identification info with null ID nationality
-        When I create identification info with national ID "12345678" and null ID nationality
-        Then the identification info creation should fail
-        And the error should be "ID nationality is required."
-
-    Scenario: Cannot create identification info with whitespace only ID nationality
-        When I create identification info with national ID "12345678" and ID nationality "   "
-        Then the identification info creation should fail
-        And the error should be "ID nationality is required."
-
-    Scenario: Cannot create identification info with ID nationality too long
-        When I create identification info with ID nationality of 65 characters
-        Then the identification info creation should fail
-        And the error should be "ID nationality cannot exceed 64 characters."
-
-    Scenario: Create identification info with ID nationality at maximum length
-        When I create identification info with ID nationality of 64 characters
-        Then the identification info should be created successfully
-
-    Scenario: Cannot create identification info with multiple validation errors
-        When I create identification info with national ID "" and ID nationality ""
-        Then the identification info creation should fail
-        And the error should be "National ID is required."
-        And the error should be "ID nationality is required."
-
-    Scenario: Cannot create identification info with both fields too long
-        When I create identification info with national ID of 65 characters and ID nationality of 65 characters
-        Then the identification info creation should fail
-        And the error should be "National ID cannot exceed 64 characters."
-        And the error should be "ID nationality cannot exceed 64 characters."
+    @Invariant:INV-CUST-020 @Invariant:INV-CUST-021 @error_case
+    Scenario: I am informed when multiple fields exceed maximum length
+        When I attempt to create identification info with both fields exceeding maximum length
+        Then I should be informed that national ID cannot exceed 64 characters
+        And I should be informed that ID nationality cannot exceed 64 characters
