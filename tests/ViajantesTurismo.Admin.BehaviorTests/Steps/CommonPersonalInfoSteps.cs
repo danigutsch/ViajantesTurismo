@@ -154,7 +154,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
 
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
 
         Assert.Contains(expectedError, allErrors);
     }
@@ -600,7 +600,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         Assert.Contains("Gender is required.", allErrors);
     }
 
@@ -609,7 +609,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         Assert.Contains("Gender cannot exceed 64 characters.", allErrors);
     }
 
@@ -702,7 +702,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         Assert.Contains("Nationality is required.", allErrors);
     }
 
@@ -711,7 +711,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         Assert.Contains("Nationality cannot exceed 128 characters.", allErrors);
     }
 
@@ -804,7 +804,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         Assert.Contains("Profession is required.", allErrors);
     }
 
@@ -813,7 +813,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
+        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         Assert.Contains("Profession cannot exceed 128 characters.", allErrors);
     }
 
