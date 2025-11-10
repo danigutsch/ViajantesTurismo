@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "gherkin-lint": "^4.2.4",
-    "markdownlint-cli": "^0.37.0",
+    "markdownlint-cli": "^0.45.0",
     "shellcheck": "^4.1.0",
     "shfmt": "^0.0.1"
   }
