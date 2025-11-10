@@ -9,9 +9,8 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourContext tourContext)
 {
     [Given("I am authenticated as a tour operator")]
-    public void GivenIAmAuthenticatedAsATourOperator()
+    public static void GivenIAmAuthenticatedAsATourOperator()
     {
-        // Authentication context setup (no-op for behavior tests)
     }
 
     [Given("a pending booking exists")]
