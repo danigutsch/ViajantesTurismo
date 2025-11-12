@@ -20,7 +20,7 @@ internal static class ArchitectureProvider
     [
         typeof(Tour).Assembly,
         typeof(IUnitOfWork).Assembly,
-        typeof(InfrastructureCompositionRoot).Assembly,
+        typeof(InfrastructureDependencyInjection).Assembly,
         typeof(ApiMarker).Assembly,
         typeof(Result).Assembly,
         typeof(UpdateTourDto).Assembly

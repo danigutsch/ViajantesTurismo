@@ -72,17 +72,16 @@ public sealed class BookingValidationSteps(
     {
         ResultError? errorDetails = null;
 
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (bookingContext.Result != null)
         {
             errorDetails = bookingContext.Result switch
             {
                 Result<Booking> typedResult => typedResult.ErrorDetails,
+                Result<Guid> guidResult => guidResult.ErrorDetails,
                 Result result => result.ErrorDetails,
                 _ => null
             };
         }
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         else if (bookingCustomerContext.Result != null)
         {
             var result = (Result<BookingCustomer>)bookingCustomerContext.Result;

@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;
 
@@ -12,7 +13,9 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddOpenApi();
 
-builder.AddInfrastructure();
+builder
+    .AddApplication()
+    .AddInfrastructure();
 
 var app = builder.Build();
 

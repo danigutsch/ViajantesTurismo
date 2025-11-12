@@ -1,7 +1,8 @@
 using Reqnroll;
+using ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -301,48 +302,150 @@ public sealed class CustomerManagementSteps(CustomerContext context, BookingCont
     }
 
     [When(@"I attempt to create another customer with email ""(.*)""")]
-    public void WhenIAttemptToCreateAnotherCustomerWithEmail(string email)
+    public async Task WhenIAttemptToCreateAnotherCustomerWithEmail(string email)
     {
-        var emailExists = context.Customers.Any(c => c.ContactInfo.Email == email);
-        if (emailExists)
+        var command = new CreateCustomerCommand(
+            PersonalInfo: new PersonalInfoDto
+            {
+                FirstName = "Jane",
+                LastName = "Doe",
+                Gender = "Female",
+                BirthDate = DateTime.UtcNow.AddYears(-30),
+                Nationality = "American",
+                Profession = "Designer"
+            },
+            IdentificationInfo: new IdentificationInfoDto
+            {
+                NationalId = "987654321",
+                IdNationality = "American"
+            },
+            ContactInfo: new ContactInfoDto
+            {
+                Email = email,
+                Mobile = "+1987654321",
+                Instagram = null,
+                Facebook = null
+            },
+            Address: new AddressDto
+            {
+                Street = "456 Oak St",
+                Complement = null,
+                Neighborhood = "Uptown",
+                PostalCode = "54321",
+                City = "City",
+                State = "State",
+                Country = "Country"
+            },
+            PhysicalInfo: new PhysicalInfoDto
+            {
+                WeightKg = 60m,
+                HeightCentimeters = 165,
+                BikeType = BikeTypeDto.Regular
+            },
+            AccommodationPreferences: new AccommodationPreferencesDto
+            {
+                RoomType = RoomTypeDto.SingleRoom,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
+            EmergencyContact: new EmergencyContactDto
+            {
+                Name = "John Doe",
+                Mobile = "+1234567890"
+            },
+            MedicalInfo: new MedicalInfoDto
+            {
+                Allergies = null,
+                AdditionalInfo = null
+            });
+
+        var result = await context.CommandHandler.Handle(command, CancellationToken.None);
+        context.CommandResult = result;
+
+        if (result.IsSuccess)
+        {
+            context.Customer = (await context.CustomerStore.GetById(result.Value, CancellationToken.None))!;
+        }
+        else
         {
             context.Customer = null!;
-            bookingContext.Result = Result.Invalid(
-                detail: $"A customer with email '{email}' already exists.",
-                field: "email",
-                message: "Email address already exists.");
-            return;
+            bookingContext.Result = result;
         }
-
-        var personalInfo = PersonalInfo.Create("Jane", "Doe", "Female", new DateTime(1992, 3, 20), "American", "Designer", TimeProvider.System).Value;
-        var identificationInfo = IdentificationInfo.Create("987654321", "American").Value;
-        var contactInfo = ContactInfo.Create(email, "+1987654321", null, null).Value;
-        var address = Address.Create("456 Oak St", null, "Uptown", "54321", "City", "State", "Country").Value;
-        var physicalInfo = PhysicalInfo.Create(60m, 165, BikeType.Regular).Value;
-        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
-        var emergencyContact = EmergencyContact.Create("John Doe", "+1234567890").Value;
-        var medicalInfo = MedicalInfo.Create("None", "None").Value;
-
-        var customer = new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
-        context.Customer = customer;
-        bookingContext.Result = Result.Ok();
     }
 
     [When(@"I create a customer with email ""(.*)""")]
-    public void WhenICreateACustomerWithEmail(string email)
+    public async Task WhenICreateACustomerWithEmail(string email)
     {
-        var personalInfo = PersonalInfo.Create("Jane", "Doe", "Female", new DateTime(1992, 3, 20), "American", "Designer", TimeProvider.System).Value;
-        var identificationInfo = IdentificationInfo.Create("987654321", "American").Value;
-        var contactInfo = ContactInfo.Create(email, "+1987654321", null, null).Value;
-        var address = Address.Create("456 Oak St", null, "Uptown", "54321", "City", "State", "Country").Value;
-        var physicalInfo = PhysicalInfo.Create(60m, 165, BikeType.Regular).Value;
-        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
-        var emergencyContact = EmergencyContact.Create("John Doe", "+1234567890").Value;
-        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+        var command = new CreateCustomerCommand(
+            PersonalInfo: new PersonalInfoDto
+            {
+                FirstName = "Jane",
+                LastName = "Doe",
+                Gender = "Female",
+                BirthDate = DateTime.UtcNow.AddYears(-30),
+                Nationality = "American",
+                Profession = "Designer"
+            },
+            IdentificationInfo: new IdentificationInfoDto
+            {
+                NationalId = "987654321",
+                IdNationality = "American"
+            },
+            ContactInfo: new ContactInfoDto
+            {
+                Email = email,
+                Mobile = "+1987654321",
+                Instagram = null,
+                Facebook = null
+            },
+            Address: new AddressDto
+            {
+                Street = "456 Oak St",
+                Complement = null,
+                Neighborhood = "Uptown",
+                PostalCode = "54321",
+                City = "City",
+                State = "State",
+                Country = "Country"
+            },
+            PhysicalInfo: new PhysicalInfoDto
+            {
+                WeightKg = 60m,
+                HeightCentimeters = 165,
+                BikeType = BikeTypeDto.Regular
+            },
+            AccommodationPreferences: new AccommodationPreferencesDto
+            {
+                RoomType = RoomTypeDto.SingleRoom,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null
+            },
+            EmergencyContact: new EmergencyContactDto
+            {
+                Name = "John Doe",
+                Mobile = "+1234567890"
+            },
+            MedicalInfo: new MedicalInfoDto
+            {
+                Allergies = null,
+                AdditionalInfo = null
+            });
 
-        var customer = new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
-        context.Customer = customer;
-        context.Customers.Add(customer);
+        var result = await context.CommandHandler.Handle(command, CancellationToken.None);
+        context.CommandResult = result;
+
+        if (result.IsSuccess)
+        {
+            context.Customer = (await context.CustomerStore.GetById(result.Value, CancellationToken.None))!;
+            if (context.Customer is not null)
+            {
+                context.Customers.Add(context.Customer);
+            }
+        }
+        else
+        {
+            context.Customer = null!;
+        }
     }
 
     [Then("the customer creation should fail")]

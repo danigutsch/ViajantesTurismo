@@ -24,6 +24,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     {
         customerContext.Customer = TestHelpers.CreateTestCustomerWithEmail(email);
         customerContext.Customers.Add(customerContext.Customer);
+        customerContext.CustomerStore.AddExistingCustomer(customerContext.Customer);
     }
 
     [Given(@"a customer exists with city ""(.*)""")]

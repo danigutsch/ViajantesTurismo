@@ -1,4 +1,6 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
+using ViajantesTurismo.Admin.BehaviorTests.Fakes;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
@@ -28,4 +30,10 @@ public sealed class CustomerContext
     public required Customer Customer { get; set; }
 
     public ICollection<Customer> Customers { get; } = [];
+
+    public FakeCustomerStore CustomerStore { get; } = new();
+    public FakeUnitOfWork UnitOfWork { get; } = new();
+    public CreateCustomerCommandHandler CommandHandler => new(CustomerStore, UnitOfWork, TimeProvider.System);
+
+    public Result<Guid>? CommandResult { get; set; }
 }

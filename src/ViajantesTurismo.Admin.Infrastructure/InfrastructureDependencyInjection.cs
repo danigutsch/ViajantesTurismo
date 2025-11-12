@@ -8,12 +8,12 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.Admin.Infrastructure;
 
 /// <summary>
-/// Provides extension methods for setting up the infrastructure services in the application.
+/// Provides extension methods for setting up the Infrastructure layer services in the application.
 /// </summary>
-public static class InfrastructureCompositionRoot
+public static class InfrastructureDependencyInjection
 {
     /// <summary>
-    /// Adds the infrastructure services to the application builder, including the PostgreSQL database context.
+    /// Adds the Infrastructure layer services to the application builder.
     /// </summary>
     /// <param name="builder">The application builder to configure.</param>
     /// <typeparam name="TApplicationBuilder">The type of the application builder, constrained to <see cref="IHostApplicationBuilder"/>.</typeparam>
