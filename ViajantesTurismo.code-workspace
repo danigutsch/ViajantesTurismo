@@ -5,7 +5,6 @@
 		}
 	],
 	"settings": {
-		// Hide build artifacts and generated files from Explorer
 		"files.exclude": {
 			"**/bin": true,
 			"**/obj": true,
@@ -15,7 +14,6 @@
 			"**/node_modules": true
 		},
 
-		// Search exclusions (performance)
 		"search.exclude": {
 			"**/bin": true,
 			"**/obj": true,
@@ -24,23 +22,19 @@
 			"**/.git": true
 		},
 
-		// C# formatter (use EditorConfig settings)
 		"dotnet.preferCSharpExtension": true,
 		"dotnet.defaultSolution": "ViajantesTurismo.slnx",
 		"omnisharp.enableEditorConfigSupport": true,
 		"omnisharp.enableRoslynAnalyzers": true,
 
-		// Files
 		"files.trimTrailingWhitespace": true,
 		"files.insertFinalNewline": true,
 		"files.eol": "\r\n",
 
-		// Markdown
 		"markdownlint.config": {
 			"extends": "${workspaceFolder}/.markdownlint.json"
 		},
 
-		// Format on save - disabled by default, developers can opt-in
 		"editor.formatOnSave": false,
 		"editor.codeActionsOnSave": {
 			"source.fixAll.markdownlint": "explicit",
@@ -49,12 +43,13 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"ms-dotnettools.csdevkit",
+        	"ms-dotnettools.csharp",
 			"ms-dotnettools.aspire",
 			"editorconfig.editorconfig",
 			"davidanson.vscode-markdownlint",
 			"alexkrechik.cucumberautocomplete",
-			"ms-vscode.powershell"
+			"ms-vscode.powershell",
+        	"timonwong.shellcheck"
 		]
 	},
 	"tasks": {

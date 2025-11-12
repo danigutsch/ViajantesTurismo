@@ -86,6 +86,9 @@ ViajantesTurismo/
     - [Visual Studio 2026 Preview](https://visualstudio.microsoft.com/vs/preview/) or
     - [JetBrains Rider](https://www.jetbrains.com/rider/)
 
+**Note for VS Code users:** Open the workspace using `ViajantesTurismo.code-workspace`
+ for the best developmentexperience.
+
 ### Quick Setup
 
 Run the automated setup script to install all required dependencies:

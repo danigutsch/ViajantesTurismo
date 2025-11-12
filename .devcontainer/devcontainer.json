@@ -24,28 +24,13 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        // C# and .NET - Choose ONE of the following:
-        // Option 1: ReSharper (uncomment to use)
-        // "JetBrains.rider",
-
-        // Option 2: C# Dev Kit (default, comment out if using ReSharper)
-        "ms-dotnettools.csdevkit",
-
-        // Core .NET extensions (required)
         "ms-dotnettools.csharp",
         "ms-dotnettools.dotnet-aspire",
-
-        // Docker
         "ms-azuretools.vscode-docker",
-
-        // Code quality
         "editorconfig.editorconfig",
-
-        // Shell & PowerShell
         "timonwong.shellcheck",
         "ms-vscode.powershell",
-
-        // Markdown
+			  "alexkrechik.cucumberautocomplete",
         "davidanson.vscode-markdownlint"
       ],
       "settings": {
