@@ -2,6 +2,7 @@ using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -129,6 +130,34 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     {
         var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
         var result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, paymentStatus);
+        Assert.True(result.IsSuccess);
+    }
+
+    [When("the operator attempts to remove the booking")]
+    public void WhenTheOperatorAttemptsToRemoveTheBooking()
+    {
+        bookingContext.Result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
+    }
+
+    [When("the operator removes the booking")]
+    public void WhenTheOperatorRemovesTheBooking()
+    {
+        var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
+        Assert.True(result.IsSuccess);
+        bookingContext.Result = result;
+    }
+
+    [Then("the removal should fail")]
+    public void ThenTheRemovalShouldFail()
+    {
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+    }
+
+    [Then("the booking should be removed successfully")]
+    public void ThenTheBookingShouldBeRemovedSuccessfully()
+    {
+        var result = (Result)bookingContext.Result;
         Assert.True(result.IsSuccess);
     }
 }

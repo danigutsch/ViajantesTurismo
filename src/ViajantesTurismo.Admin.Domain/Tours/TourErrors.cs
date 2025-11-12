@@ -208,4 +208,15 @@ public static class TourErrors
         $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
         field: "maxCustomers",
         message: $"Maximum must be >= minimum ({minCustomers}).");
+
+    /// <summary>
+    /// Indicates that only pending bookings can be removed.
+    /// </summary>
+    /// <param name="bookingId">The booking ID.</param>
+    /// <param name="currentStatus">The current booking status.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CannotRemoveNonPendingBooking(Guid bookingId, BookingStatus currentStatus) => Result.Invalid(
+        detail: $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.",
+        field: "bookingId",
+        message: "Only pending bookings can be removed.");
 }

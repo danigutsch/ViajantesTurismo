@@ -63,28 +63,28 @@ Rule: Cancelled bookings track refund status
 
 Rule: Only pending bookings can be removed
 
-  @Invariant:INV-TOUR-019 @error_case @ignore
+  @Invariant:INV-TOUR-019 @error_case
   Scenario: Reject removal of confirmed booking
     Given a confirmed booking exists
     When the operator attempts to remove the booking
     Then the removal should fail
     And the error message should contain "Only pending bookings can be removed"
 
-  @Invariant:INV-TOUR-019 @error_case @ignore
+  @Invariant:INV-TOUR-019 @error_case
   Scenario: Reject removal of cancelled booking
     Given a cancelled booking exists
     When the operator attempts to remove the booking
     Then the removal should fail
     And the error message should contain "Only pending bookings can be removed"
 
-  @Invariant:INV-TOUR-019 @error_case @ignore
+  @Invariant:INV-TOUR-019 @error_case
   Scenario: Reject removal of completed booking
     Given a completed booking exists
     When the operator attempts to remove the booking
     Then the removal should fail
     And the error message should contain "Only pending bookings can be removed"
 
-  @Invariant:INV-TOUR-019 @happy_path @ignore
+  @Invariant:INV-TOUR-019 @happy_path
   Scenario: Allow removal of pending booking
     Given a pending booking exists
     When the operator removes the booking

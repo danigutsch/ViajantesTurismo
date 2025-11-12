@@ -733,6 +733,7 @@ public sealed class Tour : Entity<Guid>
 
     /// <summary>
     /// Removes a booking from this tour.
+    /// Only pending bookings can be removed (INV-TOUR-019).
     /// </summary>
     /// <param name="bookingId">The ID of the booking to remove.</param>
     /// <returns>A result indicating success or failure.</returns>
@@ -742,6 +743,11 @@ public sealed class Tour : Entity<Guid>
         if (booking is null)
         {
             return TourErrors.BookingNotFound(bookingId);
+        }
+
+        if (booking.Status != BookingStatus.Pending)
+        {
+            return TourErrors.CannotRemoveNonPendingBooking(bookingId, booking.Status);
         }
 
         _bookings.Remove(booking);

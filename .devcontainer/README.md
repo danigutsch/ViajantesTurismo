@@ -87,18 +87,6 @@ Aspire assigns all ports dynamically. VS Code will automatically detect and forw
 
 ## Customization
 
-### Using ReSharper Instead of C# Dev Kit
-
-Edit `.devcontainer/devcontainer.json`:
-
-```json
-// Comment out C# Dev Kit
-// "ms-dotnettools.csdevkit",
-
-// Uncomment ReSharper
-"JetBrains.rider",
-```
-
 ### Adding Extensions
 
 Edit `.devcontainer/devcontainer.json` and add extension IDs to the `extensions` array:
@@ -141,17 +129,17 @@ On first container creation, the `post-create.sh` script automatically:
 
 ### Container Build Fails
 
-1. Ensure Docker Desktop is running
+1. Ensure your container runtime is running
 2. Try rebuilding without cache: `F1` → "Dev Containers: Rebuild Container Without Cache"
 
 ### Aspire Services Won't Start
 
 - Ensure Docker-in-Docker is working: Run `docker ps` in the dev container terminal
-- Check Docker Desktop has enough resources allocated (Settings → Resources)
+- Check your container runtime has enough resources allocated
 
 ### Performance Issues on Windows
 
-- Allocate more resources to Docker Desktop (Settings → Resources)
+- Allocate more resources to your container runtime
 - The NuGet package mount significantly improves restore performance
 
 ## Working Outside the Container
@@ -160,7 +148,7 @@ The dev container is optional. You can develop on your host machine if you have:
 
 - .NET 10 SDK installed
 - Node.js 22 installed
-- Docker Desktop running (for Aspire)
+- A container runtime running (for Aspire)
 
 Aspire will work the same way whether inside or outside the container.
 
