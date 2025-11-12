@@ -216,6 +216,11 @@ public sealed class Booking : Entity<Guid>
             errors.Add(BookingErrors.InvalidNotesLength(ContractConstants.MaxBookingNotesLength, notes.Length));
         }
 
+        if (companionCustomer is not null && principalCustomer.CustomerId == companionCustomer.CustomerId)
+        {
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(principalCustomer.CustomerId));
+        }
+
         if (errors.HasErrors)
         {
             return errors.ToResult<Booking>();
@@ -407,6 +412,11 @@ public sealed class Booking : Entity<Guid>
         if (roomAdditionalCost > ContractConstants.MaxPrice)
         {
             errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
+        }
+
+        if (companionCustomer is not null && principalCustomer.CustomerId == companionCustomer.CustomerId)
+        {
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(principalCustomer.CustomerId));
         }
 
         if (errors.HasErrors)

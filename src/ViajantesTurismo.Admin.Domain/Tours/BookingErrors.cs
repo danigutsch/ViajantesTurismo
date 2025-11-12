@@ -160,4 +160,15 @@ public static class BookingErrors
             detail: $"Booking {bookingId} is {status} and cannot be modified.",
             field: "status",
             message: $"Cannot modify {status.ToString().ToLowerInvariant()} bookings.");
+
+    /// <summary>
+    /// Indicates that the principal and companion customers cannot be the same person.
+    /// </summary>
+    /// <param name="customerId">The customer ID that was used for both principal and companion.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result PrincipalAndCompanionCannotBeSame(Guid customerId) =>
+        Result.Invalid(
+            detail: $"Principal and companion customers cannot be the same person. Customer ID: {customerId}.",
+            field: "companionCustomerId",
+            message: "Principal and companion customers cannot be the same person.");
 }
