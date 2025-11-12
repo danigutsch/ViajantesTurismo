@@ -1,4 +1,4 @@
-@page "/bookings/{id:long}/edit"
+@page "/bookings/{id:guid}/edit"
 @using ViajantesTurismo.Admin.Contracts
 @inject BookingsApiClient BookingsApi
 @inject NavigationManager Navigation
@@ -202,7 +202,7 @@ else
     /// The ID of the booking to edit.
     /// </summary>
     [Parameter]
-    public long Id { get; set; }
+    public Guid Id { get; set; }
 
     private GetBookingDto? _booking;
     private BookingFormModel _model = new();

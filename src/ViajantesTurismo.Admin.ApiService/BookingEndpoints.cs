@@ -29,17 +29,17 @@ internal static class BookingEndpoints
             .WithDescription("Retrieves all bookings.")
             .WithSummary("Retrieves all bookings.");
 
-        bookingsGroup.MapGet("/{id:long}", GetBookingById)
+        bookingsGroup.MapGet("/{id:guid}", GetBookingById)
             .WithName("GetBookingById")
             .WithDescription("Retrieves a booking by its ID.")
             .WithSummary("Retrieves a booking by its ID.");
 
-        bookingsGroup.MapGet("/tour/{tourId:int}", GetBookingsByTourId)
+        bookingsGroup.MapGet("/tour/{tourId:guid}", GetBookingsByTourId)
             .WithName("GetBookingsByTourId")
             .WithDescription("Retrieves all bookings for a specific tour.")
             .WithSummary("Retrieves all bookings for a specific tour.");
 
-        bookingsGroup.MapGet("/customer/{customerId:int}", GetBookingsByCustomerId)
+        bookingsGroup.MapGet("/customer/{customerId:guid}", GetBookingsByCustomerId)
             .WithName("GetBookingsByCustomerId")
             .WithDescription("Retrieves all bookings for a specific customer (as primary or companion).")
             .WithSummary("Retrieves all bookings for a specific customer.");
@@ -49,42 +49,42 @@ internal static class BookingEndpoints
             .WithDescription("Creates a new booking for a tour.")
             .WithSummary("Creates a new booking.");
 
-        bookingsGroup.MapPut("/{id:long}/discount", UpdateBookingDiscount)
+        bookingsGroup.MapPut("/{id:guid}/discount", UpdateBookingDiscount)
             .WithName("UpdateBookingDiscount")
             .WithDescription("Updates the discount for a booking.")
             .WithSummary("Updates booking discount.");
 
-        bookingsGroup.MapPut("/{id:long}/details", UpdateBookingDetails)
+        bookingsGroup.MapPut("/{id:guid}/details", UpdateBookingDetails)
             .WithName("UpdateBookingDetails")
             .WithDescription("Updates booking details (room type, bikes, companion).")
             .WithSummary("Updates booking details.");
 
-        bookingsGroup.MapDelete("/{id:long}", DeleteBooking)
+        bookingsGroup.MapDelete("/{id:guid}", DeleteBooking)
             .WithName("DeleteBooking")
             .WithDescription("Deletes a booking.")
             .WithSummary("Deletes a booking.");
 
-        bookingsGroup.MapPost("/{id:long}/cancel", CancelBooking)
+        bookingsGroup.MapPost("/{id:guid}/cancel", CancelBooking)
             .WithName("CancelBooking")
             .WithDescription("Cancels a booking by transitioning its status to Cancelled.")
             .WithSummary("Cancels a booking.");
 
-        bookingsGroup.MapPost("/{id:long}/confirm", ConfirmBooking)
+        bookingsGroup.MapPost("/{id:guid}/confirm", ConfirmBooking)
             .WithName("ConfirmBooking")
             .WithDescription("Confirms a booking by transitioning its status to Confirmed.")
             .WithSummary("Confirms a booking.");
 
-        bookingsGroup.MapPatch("/{id:long}/notes", UpdateBookingNotes)
+        bookingsGroup.MapPatch("/{id:guid}/notes", UpdateBookingNotes)
             .WithName("UpdateBookingNotes")
             .WithDescription("Updates the notes of a booking.")
             .WithSummary("Updates booking notes.");
 
-        bookingsGroup.MapPost("/{id:long}/complete", CompleteBooking)
+        bookingsGroup.MapPost("/{id:guid}/complete", CompleteBooking)
             .WithName("CompleteBooking")
             .WithDescription("Completes a booking by transitioning its status to Completed.")
             .WithSummary("Completes a booking.");
 
-        bookingsGroup.MapPost("/{id:long}/payments", RecordPayment)
+        bookingsGroup.MapPost("/{id:guid}/payments", RecordPayment)
             .WithName("RecordPayment")
             .WithDescription("Records a payment for a booking.")
             .WithSummary("Records a payment.");
@@ -99,7 +99,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>>> GetBookingById(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -113,7 +113,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookingsByTourId(
-        [FromRoute] int tourId,
+        [FromRoute] Guid tourId,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -122,7 +122,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookingsByCustomerId(
-        [FromRoute] int customerId,
+        [FromRoute] Guid customerId,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -173,7 +173,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDiscount(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromBody] UpdateBookingDiscountDto dto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -202,7 +202,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>>> DeleteBooking(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -225,7 +225,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>>> CancelBooking(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -248,7 +248,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>>> ConfirmBooking(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -271,7 +271,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>>> UpdateBookingNotes(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromBody] UpdateBookingNotesDto dto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -291,7 +291,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>>> CompleteBooking(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -313,14 +313,15 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<Created<GetPaymentDto>, NotFound<ProblemDetails>, ValidationProblem>> RecordPayment(
-        [FromRoute] long id,
-        [FromBody] CreatePaymentDto dto,
-        [FromServices] ITourStore tourStore,
-        [FromServices] IQueryService queryService,
-        [FromServices] IUnitOfWork unitOfWork,
-        [FromServices] TimeProvider timeProvider,
-        CancellationToken ct)
+    private static async Task<Results<Created<GetPaymentDto>, NotFound<ProblemDetails>, ValidationProblem>>
+        RecordPayment(
+            [FromRoute] Guid id,
+            [FromBody] CreatePaymentDto dto,
+            [FromServices] ITourStore tourStore,
+            [FromServices] IQueryService queryService,
+            [FromServices] IUnitOfWork unitOfWork,
+            [FromServices] TimeProvider timeProvider,
+            CancellationToken ct)
     {
         var tour = await tourStore.GetByBookingId(id, ct);
         if (tour is null)
@@ -363,7 +364,7 @@ internal static class BookingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDetails(
-        [FromRoute] long id,
+        [FromRoute] Guid id,
         [FromBody] UpdateBookingDetailsDto dto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -379,7 +380,7 @@ internal static class BookingEndpoints
             id,
             BookingMapper.MapToRoomType(dto.RoomType),
             BookingMapper.MapToBikeType(dto.PrincipalBikeType),
-            dto.CompanionCustomerId.HasValue ? (int)dto.CompanionCustomerId.Value : null,
+            dto.CompanionCustomerId,
             dto.CompanionBikeType.HasValue ? BookingMapper.MapToBikeType(dto.CompanionBikeType.Value) : null);
 
         if (result.IsFailure)

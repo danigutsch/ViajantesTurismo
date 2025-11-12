@@ -10,6 +10,6 @@ public sealed class AccommodationPreferencesContext
     public AccommodationPreferences? AccommodationPreferences { get; set; }
     public RoomType RoomType { get; set; }
     public BedType BedType { get; set; }
-    public int? CompanionId { get; set; }
+    public Guid? CompanionId { get; set; }
     public required Result<AccommodationPreferences> Result { get; set; }
 }

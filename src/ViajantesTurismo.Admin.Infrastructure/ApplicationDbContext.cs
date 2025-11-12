@@ -6,7 +6,8 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IUnitOfWork
+internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : DbContext(options), IUnitOfWork
 {
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<Customer> Customers => Set<Customer>();
@@ -23,7 +24,7 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
         modelBuilder.Entity<Tour>(entity =>
         {
             entity.HasKey(tour => tour.Id);
-            entity.Property(tour => tour.Id).ValueGeneratedOnAdd();
+            entity.Property(tour => tour.Id).ValueGeneratedNever();
 
             entity.HasIndex(tour => tour.Identifier).IsUnique();
             entity.HasIndex(tour => tour.Name).IsUnique();
@@ -40,7 +41,8 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.OwnsOne(tour => tour.Pricing, pricing =>
             {
                 pricing.Property(p => p.BasePrice).HasColumnName("Price").IsRequired();
-                pricing.Property(p => p.DoubleRoomSupplementPrice).HasColumnName("DoubleRoomSupplementPrice").IsRequired();
+                pricing.Property(p => p.DoubleRoomSupplementPrice).HasColumnName("DoubleRoomSupplementPrice")
+                    .IsRequired();
                 pricing.Property(p => p.RegularBikePrice).HasColumnName("RegularBikePrice").IsRequired();
                 pricing.Property(p => p.EBikePrice).HasColumnName("EBikePrice").IsRequired();
                 pricing.Property(p => p.Currency).HasColumnName("Currency").HasConversion<string>().IsRequired();
@@ -66,22 +68,25 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.HasKey(customer => customer.Id);
-            entity.Property(customer => customer.Id).ValueGeneratedOnAdd();
+            entity.Property(customer => customer.Id).ValueGeneratedNever();
 
             entity.OwnsOne(customer => customer.PersonalInfo, builder => builder.ToTable("CustomerPersonalInfo"));
-            entity.OwnsOne(customer => customer.IdentificationInfo, builder => builder.ToTable("CustomerIdentificationInfo"));
+            entity.OwnsOne(customer => customer.IdentificationInfo,
+                builder => builder.ToTable("CustomerIdentificationInfo"));
             entity.OwnsOne(customer => customer.ContactInfo, builder => builder.ToTable("CustomerContactInfo"));
             entity.OwnsOne(customer => customer.Address, builder => builder.ToTable("CustomerAddress"));
             entity.OwnsOne(customer => customer.PhysicalInfo, builder => builder.ToTable("CustomerPhysicalInfo"));
-            entity.OwnsOne(customer => customer.AccommodationPreferences, builder => builder.ToTable("CustomerAccommodationPreferences"));
-            entity.OwnsOne(customer => customer.EmergencyContact, builder => builder.ToTable("CustomerEmergencyContact"));
+            entity.OwnsOne(customer => customer.AccommodationPreferences,
+                builder => builder.ToTable("CustomerAccommodationPreferences"));
+            entity.OwnsOne(customer => customer.EmergencyContact,
+                builder => builder.ToTable("CustomerEmergencyContact"));
             entity.OwnsOne(customer => customer.MedicalInfo, builder => builder.ToTable("CustomerMedicalInfo"));
         });
 
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.HasKey(booking => booking.Id);
-            entity.Property(booking => booking.Id).ValueGeneratedOnAdd();
+            entity.Property(booking => booking.Id).ValueGeneratedNever();
 
             entity.Property(booking => booking.TourId).IsRequired();
             entity.Property(booking => booking.BasePrice).IsRequired();
@@ -134,13 +139,14 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
         modelBuilder.Entity<Payment>(entity =>
         {
             entity.HasKey(payment => payment.Id);
-            entity.Property(payment => payment.Id).ValueGeneratedOnAdd();
+            entity.Property(payment => payment.Id).ValueGeneratedNever();
 
             entity.Property(payment => payment.BookingId).IsRequired();
             entity.Property(payment => payment.Amount).IsRequired();
             entity.Property(payment => payment.PaymentDate).IsRequired();
             entity.Property(payment => payment.Method).HasConversion<string>().IsRequired();
-            entity.Property(payment => payment.ReferenceNumber).HasMaxLength(ContractConstants.MaxReferenceNumberLength);
+            entity.Property(payment => payment.ReferenceNumber)
+                .HasMaxLength(ContractConstants.MaxReferenceNumberLength);
             entity.Property(payment => payment.Notes).HasMaxLength(ContractConstants.MaxPaymentNotesLength);
             entity.Property(payment => payment.RecordedAt).IsRequired();
 

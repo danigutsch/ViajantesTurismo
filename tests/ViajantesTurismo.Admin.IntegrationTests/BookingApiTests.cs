@@ -112,7 +112,7 @@ public sealed class BookingApiTests : IDisposable
 
         var bookingRequest = new CreateBookingDto
         {
-            TourId = 99999,
+            TourId = Guid.CreateVersion7(),
             PrincipalCustomerId = customerDto.Id,
             PrincipalBikeType = BikeTypeDto.Regular,
             CompanionCustomerId = null,
@@ -512,7 +512,7 @@ public sealed class BookingApiTests : IDisposable
             cancellationToken: TestContext.Current.CancellationToken))!;
     }
 
-    private async Task<GetBookingDto> CreateTestBooking(int tourId, int customerId, int? companionId)
+    private async Task<GetBookingDto> CreateTestBooking(Guid tourId, Guid customerId, Guid? companionId)
     {
         var bookingRequest = new CreateBookingDto
         {

@@ -17,7 +17,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenAPendingBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -28,7 +28,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenAConfirmedBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -40,7 +40,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenACancelledBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
@@ -53,7 +53,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenACompletedBookingExists()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;

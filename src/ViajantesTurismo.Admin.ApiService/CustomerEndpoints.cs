@@ -30,7 +30,7 @@ internal static class CustomerEndpoints
             .WithDescription("Retrieves all customers.")
             .WithSummary("Retrieves all customers.");
 
-        customersGroup.MapGet("/{id:int}", GetCustomerById)
+        customersGroup.MapGet("/{id:guid}", GetCustomerById)
             .WithName("GetCustomerById")
             .WithDescription("Retrieves a customer by their ID.")
             .WithSummary("Retrieves a customer by their ID.");
@@ -40,7 +40,7 @@ internal static class CustomerEndpoints
             .WithDescription("Creates a new customer with all required information.")
             .WithSummary("Creates a new customer.");
 
-        customersGroup.MapPut("/{id:int}", UpdateCustomer)
+        customersGroup.MapPut("/{id:guid}", UpdateCustomer)
             .WithName("UpdateCustomer")
             .WithDescription("Updates an existing customer.")
             .WithSummary("Updates an existing customer.");
@@ -55,7 +55,7 @@ internal static class CustomerEndpoints
     }
 
     private static async Task<Results<Ok<CustomerDetailsDto>, NotFound<ProblemDetails>>> GetCustomerById(
-        [FromRoute] int id,
+        [FromRoute] Guid id,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -150,7 +150,7 @@ internal static class CustomerEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateCustomer(
-        [FromRoute] int id,
+        [FromRoute] Guid id,
         [FromBody] UpdateCustomerDto dto,
         [FromServices] ICustomerStore customerStore,
         [FromServices] IUnitOfWork unitOfWork,

@@ -67,34 +67,34 @@ Rule: Operations on non-existent bookings fail gracefully
   Scenario: Cannot confirm non-existent booking
     When I try to confirm a non-existent booking
     Then the operation should fail with not found error
-    And the error message should contain "Booking with ID 99999 not found"
+    And the error message should contain "not found"
 
   @error_case
   Scenario: Cannot update notes for non-existent booking
     When I try to update notes for a non-existent booking
     Then the operation should fail with not found error
-    And the error message should contain "Booking with ID 99999 not found"
+    And the error message should contain "not found"
 
   @error_case
   Scenario: Cannot update payment status for non-existent booking
     When I try to update payment status for a non-existent booking
     Then the operation should fail with not found error
-    And the error message should contain "Booking with ID 99999 not found"
+    And the error message should contain "not found"
 
   @error_case
   Scenario: Cannot cancel non-existent booking
     When I try to cancel a non-existent booking
     Then the operation should fail with not found error
-    And the error message should contain "Booking with ID 99999 not found"
+    And the error message should contain "not found"
 
   @error_case
   Scenario: Cannot complete non-existent booking
     When I try to complete a non-existent booking
     Then the operation should fail with not found error
-    And the error message should contain "Booking with ID 99999 not found"
+    And the error message should contain "not found"
 
   @error_case
   Scenario: Cannot remove non-existent booking
     When I try to remove a non-existent booking
     Then the operation should fail with not found error
-    And the error message should contain "Booking with ID 99999 not found"
+    And the error message should contain "not found"

@@ -57,7 +57,7 @@ public static class BookingErrors
     /// </summary>
     /// <param name="id">The ID of the booking that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result BookingNotFound(long id) => Result.NotFound(detail: $"Booking with ID {id} was not found.");
+    public static Result BookingNotFound(Guid id) => Result.NotFound(detail: $"Booking with ID {id} was not found.");
 
     /// <summary>
     /// Indicates that the bike price is negative.
@@ -144,7 +144,8 @@ public static class BookingErrors
     /// <returns>A Result representing the error.</returns>
     public static Result InvalidPaymentStatus(PaymentStatus paymentStatus) =>
         Result.Invalid(
-            detail: $"Invalid payment status: {paymentStatus}. Valid values are: {string.Join(", ", Enum.GetNames<PaymentStatus>())}.",
+            detail:
+            $"Invalid payment status: {paymentStatus}. Valid values are: {string.Join(", ", Enum.GetNames<PaymentStatus>())}.",
             field: "paymentStatus",
             message: $"Invalid payment status: {paymentStatus}.");
 
@@ -154,7 +155,7 @@ public static class BookingErrors
     /// <param name="bookingId">The booking ID.</param>
     /// <param name="status">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CannotModifyCancelledOrCompletedBooking(long bookingId, BookingStatus status) =>
+    public static Result CannotModifyCancelledOrCompletedBooking(Guid bookingId, BookingStatus status) =>
         Result.Invalid(
             detail: $"Booking {bookingId} is {status} and cannot be modified.",
             field: "status",

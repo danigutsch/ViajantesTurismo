@@ -166,7 +166,7 @@ Feature: Contact Info Validation
       And the email should be "customer @example.com"
 
   Rule: Multiple validation errors are reported
-    When contact information has multiple issues, all validation
+    If contact information has multiple issues, all validation
     errors should be reported to help fix all problems at once.
 
     @Invariant:INV-CUST-002 @Invariant:INV-CUST-015 @error_case

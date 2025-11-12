@@ -17,7 +17,7 @@ public sealed class BookingCustomer
     /// <param name="customerId">The ID of the customer.</param>
     /// <param name="bikeType">The type of bike selected.</param>
     /// <param name="bikePrice">The price of the bike rental.</param>
-    private BookingCustomer(int customerId, BikeType bikeType, decimal bikePrice)
+    private BookingCustomer(Guid customerId, BikeType bikeType, decimal bikePrice)
     {
         CustomerId = customerId;
         BikeType = bikeType;
@@ -35,7 +35,7 @@ public sealed class BookingCustomer
     /// <summary>
     /// The ID of the customer.
     /// </summary>
-    public int CustomerId { get; private init; }
+    public Guid CustomerId { get; private init; }
 
     /// <summary>
     /// The type of bike selected by the customer.
@@ -54,7 +54,7 @@ public sealed class BookingCustomer
     /// <param name="bikeType">The type of bike selected.</param>
     /// <param name="bikePrice">The price of the bike rental.</param>
     /// <returns>A Result containing the BookingCustomer if successful, or validation errors.</returns>
-    public static Result<BookingCustomer> Create(int customerId, BikeType bikeType, decimal bikePrice)
+    public static Result<BookingCustomer> Create(Guid customerId, BikeType bikeType, decimal bikePrice)
     {
         bikePrice = NumericSanitizer.SanitizePrice(bikePrice);
 

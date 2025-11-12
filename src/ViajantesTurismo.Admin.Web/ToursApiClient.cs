@@ -28,7 +28,7 @@ internal sealed class ToursApiClient(HttpClient httpClient)
         return tours?.ToArray() ?? [];
     }
 
-    public async Task<GetTourDto?> GetTourById(int id, CancellationToken cancellationToken)
+    public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken cancellationToken)
     {
         return await httpClient.GetFromJsonAsync<GetTourDto>($"/tours/{id}", cancellationToken);
     }
@@ -38,10 +38,11 @@ internal sealed class ToursApiClient(HttpClient httpClient)
         var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
-        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+        return response.Headers.Location ??
+               throw new InvalidOperationException("The Location header is missing in the response.");
     }
 
-    public async Task UpdateTour(int id, UpdateTourDto dto, CancellationToken cancellationToken)
+    public async Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);

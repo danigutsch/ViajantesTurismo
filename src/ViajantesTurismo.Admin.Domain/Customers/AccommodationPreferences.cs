@@ -14,7 +14,7 @@ public sealed class AccommodationPreferences
     /// <param name="roomType">The room type.</param>
     /// <param name="bedType">The bed type.</param>
     /// <param name="companionId">The companion's ID.</param>
-    private AccommodationPreferences(RoomType roomType, BedType bedType, int? companionId)
+    private AccommodationPreferences(RoomType roomType, BedType bedType, Guid? companionId)
     {
         RoomType = roomType;
         BedType = bedType;
@@ -28,7 +28,7 @@ public sealed class AccommodationPreferences
     public BedType BedType { get; private set; }
 
     /// <summary>Companion's ID.</summary>
-    public int? CompanionId { get; private set; }
+    public Guid? CompanionId { get; private set; }
 
     /// <summary>
     /// Creates a new instance of <see cref="AccommodationPreferences"/>.
@@ -37,7 +37,7 @@ public sealed class AccommodationPreferences
     /// <param name="bedType">The bed type.</param>
     /// <param name="companionId">The companion's ID.</param>
     /// <returns>A <see cref="Result{AccommodationPreferences}"/> containing the accommodation preferences.</returns>
-    public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, int? companionId)
+    public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, Guid? companionId)
     {
         return new AccommodationPreferences(roomType, bedType, companionId);
     }

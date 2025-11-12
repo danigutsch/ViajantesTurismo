@@ -162,7 +162,7 @@ public sealed class ToursApiTests : IDisposable
         var location = postResponse.Headers.Location;
         Assert.NotNull(location);
         var idStr = location.OriginalString.Split('/').Last();
-        Assert.True(int.TryParse(idStr, out var tourId));
+        Assert.True(Guid.TryParse(idStr, out var tourId));
 
         var updateRequest = new UpdateTourDto
         {

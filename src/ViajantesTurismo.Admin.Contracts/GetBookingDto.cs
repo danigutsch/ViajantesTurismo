@@ -6,10 +6,10 @@ namespace ViajantesTurismo.Admin.Contracts;
 public sealed class GetBookingDto
 {
     /// <summary>The booking ID.</summary>
-    public required long Id { get; init; }
+    public required Guid Id { get; init; }
 
     /// <summary>The tour ID.</summary>
-    public required int TourId { get; init; }
+    public required Guid TourId { get; init; }
 
     /// <summary>The tour identifier (e.g., "CUBA2024").</summary>
     public required string TourIdentifier { get; init; }
@@ -18,13 +18,13 @@ public sealed class GetBookingDto
     public required string TourName { get; init; }
 
     /// <summary>The customer ID.</summary>
-    public required int CustomerId { get; init; }
+    public required Guid CustomerId { get; init; }
 
     /// <summary>The customer's full name.</summary>
     public required string CustomerName { get; init; }
 
     /// <summary>The companion ID, if any.</summary>
-    public int? CompanionId { get; init; }
+    public Guid? CompanionId { get; init; }
 
     /// <summary>The companion's full name, if any.</summary>
     public string? CompanionName { get; init; }

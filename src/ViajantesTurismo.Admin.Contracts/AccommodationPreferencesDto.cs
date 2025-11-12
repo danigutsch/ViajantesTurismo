@@ -23,5 +23,5 @@ public sealed record AccommodationPreferencesDto
     /// The ID of the companion.
     /// </summary>
     [Required]
-    public required int? CompanionId { get; init; }
+    public required Guid? CompanionId { get; init; }
 }

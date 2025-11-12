@@ -1,5 +1,5 @@
 @using ViajantesTurismo.Admin.Contracts
-@inherits InputBase<int?>
+@inherits InputBase<Guid?>
 
 <div class="position-relative">
     <input type="text"
@@ -81,7 +81,7 @@
         }
     }
 
-    protected override bool TryParseValueFromString(string? value, out int? result, out string validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, out Guid? result, out string validationErrorMessage)
     {
         if (string.IsNullOrEmpty(value))
         {
@@ -90,7 +90,7 @@
             return true;
         }
 
-        if (int.TryParse(value, out var parsed))
+        if (Guid.TryParse(value, out var parsed))
         {
             result = parsed;
             validationErrorMessage = string.Empty;
@@ -102,7 +102,7 @@
         return false;
     }
 
-    private void SelectCustomer(int? customerId)
+    private void SelectCustomer(Guid? customerId)
     {
         CurrentValue = customerId;
         SearchTerm = string.Empty;

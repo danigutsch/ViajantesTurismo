@@ -15,7 +15,7 @@ public sealed class BookingValidationSteps(
     [When("I try to add a booking to tour with invalid room type (.*)")]
     public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
     {
-        bookingContext.Result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, (RoomType)invalidRoomType,
+        bookingContext.Result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, (RoomType)invalidRoomType,
             DiscountType.None, 0m, null, null);
     }
 
@@ -140,33 +140,33 @@ public sealed class BookingValidationSteps(
     [When(@"I attempt to create a booking with base price (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithBasePrice(decimal basePrice)
     {
-        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
-        bookingContext.Result = Booking.Create(1, basePrice, RoomType.DoubleRoom, 0m, principal, null,
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        bookingContext.Result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.DoubleRoom, 0m, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, null);
     }
 
     [When(@"I attempt to create a booking with base price (-?\d+) and room cost (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
-        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
-        bookingContext.Result = Booking.Create(1, basePrice, RoomType.SingleRoom, roomCost, principal, null,
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        bookingContext.Result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.SingleRoom, roomCost, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, null);
     }
 
     [When(@"I attempt to create a booking with invalid room type (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithInvalidRoomType(int invalidRoomType)
     {
-        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
-        bookingContext.Result = Booking.Create(1, 2000m, (RoomType)invalidRoomType, 0m, principal, null,
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        bookingContext.Result = Booking.Create(Guid.CreateVersion7(), 2000m, (RoomType)invalidRoomType, 0m, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, null);
     }
 
     [When(@"I attempt to create a booking with notes of (\d+) characters")]
     public void WhenIAttemptToCreateABookingWithNotesOfCharacters(int characterCount)
     {
-        var principal = BookingCustomer.Create(1, BikeType.Regular, 100m).Value;
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
         var notes = new string('x', characterCount);
-        bookingContext.Result = Booking.Create(1, 1000m, RoomType.DoubleRoom, 0m, principal, null,
+        bookingContext.Result = Booking.Create(Guid.CreateVersion7(), 1000m, RoomType.DoubleRoom, 0m, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, notes);
     }
 

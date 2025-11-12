@@ -29,7 +29,7 @@ public interface ITourStore
     /// <param name="id">The ID of the tour.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour if found; otherwise, null.</returns>
-    Task<Tour?> GetById(int id, CancellationToken ct);
+    Task<Tour?> GetById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Gets a tour that contains a specific booking.
@@ -37,5 +37,5 @@ public interface ITourStore
     /// <param name="bookingId">The ID of the booking.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour that owns the booking if found; otherwise, null.</returns>
-    Task<Tour?> GetByBookingId(long bookingId, CancellationToken ct);
+    Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct);
 }

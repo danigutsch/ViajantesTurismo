@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,8 +15,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "Customers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -28,8 +26,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "Tours",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Identifier = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -52,10 +49,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerAccommodationPreferences",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     RoomType = table.Column<int>(type: "integer", nullable: false),
                     BedType = table.Column<int>(type: "integer", nullable: false),
-                    CompanionId = table.Column<int>(type: "integer", nullable: true)
+                    CompanionId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -72,7 +69,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerAddress",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Street = table.Column<string>(type: "text", nullable: false),
                     Complement = table.Column<string>(type: "text", nullable: true),
                     Neighborhood = table.Column<string>(type: "text", nullable: false),
@@ -96,7 +93,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerContactInfo",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Mobile = table.Column<string>(type: "text", nullable: false),
                     Instagram = table.Column<string>(type: "text", nullable: true),
@@ -117,7 +114,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerEmergencyContact",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Mobile = table.Column<string>(type: "text", nullable: false)
                 },
@@ -136,7 +133,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerIdentificationInfo",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     NationalId = table.Column<string>(type: "text", nullable: false),
                     IdNationality = table.Column<string>(type: "text", nullable: false)
                 },
@@ -155,7 +152,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerMedicalInfo",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Allergies = table.Column<string>(type: "text", nullable: true),
                     AdditionalInfo = table.Column<string>(type: "text", nullable: true)
                 },
@@ -174,7 +171,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerPersonalInfo",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     Gender = table.Column<string>(type: "text", nullable: false),
@@ -197,7 +194,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerPhysicalInfo",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     WeightKg = table.Column<decimal>(type: "numeric", nullable: false),
                     HeightCentimeters = table.Column<int>(type: "integer", nullable: false),
                     BikeType = table.Column<int>(type: "integer", nullable: false)
@@ -217,16 +214,15 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "Booking",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TourId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TourId = table.Column<Guid>(type: "uuid", nullable: false),
                     BasePrice = table.Column<decimal>(type: "numeric", nullable: false),
                     RoomType = table.Column<string>(type: "text", nullable: false),
                     RoomAdditionalCost = table.Column<decimal>(type: "numeric", nullable: false),
-                    PrincipalCustomer_CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    PrincipalCustomer_CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     PrincipalCustomer_BikeType = table.Column<string>(type: "text", nullable: false),
                     PrincipalCustomer_BikePrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    CompanionCustomer_CustomerId = table.Column<int>(type: "integer", nullable: true),
+                    CompanionCustomer_CustomerId = table.Column<Guid>(type: "uuid", nullable: true),
                     CompanionCustomer_BikeType = table.Column<string>(type: "text", nullable: true),
                     CompanionCustomer_BikePrice = table.Column<decimal>(type: "numeric", nullable: true),
                     Discount_Type = table.Column<string>(type: "text", nullable: false),
@@ -264,9 +260,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "Payment",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    BookingId = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Method = table.Column<string>(type: "text", nullable: false),

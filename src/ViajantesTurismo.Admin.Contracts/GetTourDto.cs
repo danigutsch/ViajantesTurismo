@@ -9,7 +9,7 @@ public sealed record GetTourDto
     /// <summary>
     /// Unique identifier of the tour.
     /// </summary>
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     /// <summary>
     /// External or business identifier for the tour.

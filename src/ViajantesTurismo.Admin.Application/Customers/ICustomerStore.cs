@@ -19,7 +19,7 @@ public interface ICustomerStore
     /// <param name="id">The customer identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The customer, or null if not found.</returns>
-    Task<Customer?> GetById(int id, CancellationToken ct);
+    Task<Customer?> GetById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Deletes a customer from the store.

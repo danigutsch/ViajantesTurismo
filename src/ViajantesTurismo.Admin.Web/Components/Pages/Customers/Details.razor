@@ -1,4 +1,4 @@
-@page "/customers/{id:int}"
+@page "/customers/{id:guid}"
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Exceptions
 @using ViajantesTurismo.Admin.Web.Models
@@ -366,13 +366,13 @@ else
     /// The ID of the customer to display details for.
     /// </summary>
     [Parameter]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     private CustomerDetailsDto? _customer;
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
     private bool _showBookingForm;
-    private long? _editingBookingId;
+    private Guid? _editingBookingId;
     private GetBookingDto? _currentBooking;
 
     private GetTourDto[] _tours = [];
@@ -438,7 +438,7 @@ else
         _showBookingForm = true;
     }
 
-    private void ShowEditBookingForm(long bookingId)
+    private void ShowEditBookingForm(Guid bookingId)
     {
         var booking = _bookings?.FirstOrDefault(b => b.Id == bookingId);
         if (booking == null) return;
@@ -539,13 +539,13 @@ else
         }
     }
 
-    private async Task HandleEditBooking(long bookingId)
+    private async Task HandleEditBooking(Guid bookingId)
     {
         ShowEditBookingForm(bookingId);
         await Task.CompletedTask;
     }
 
-    private async Task HandleConfirmBooking(long bookingId)
+    private async Task HandleConfirmBooking(Guid bookingId)
     {
         try
         {
@@ -559,7 +559,7 @@ else
         }
     }
 
-    private async Task HandleCancelBooking(long bookingId)
+    private async Task HandleCancelBooking(Guid bookingId)
     {
         if (await _confirmDialog.ShowAsync("Are you sure you want to cancel this booking?", "Cancel Booking", "Yes, Cancel", "No", "btn-warning"))
         {
@@ -576,7 +576,7 @@ else
         }
     }
 
-    private async Task HandleCompleteBooking(long bookingId)
+    private async Task HandleCompleteBooking(Guid bookingId)
     {
         try
         {
@@ -590,7 +590,7 @@ else
         }
     }
 
-    private async Task HandleDeleteBooking(long bookingId)
+    private async Task HandleDeleteBooking(Guid bookingId)
     {
         if (await _confirmDialog.ShowAsync("Are you sure you want to delete this booking? This action cannot be undone.", "Delete Booking", "Yes, Delete", "No", "btn-danger"))
         {

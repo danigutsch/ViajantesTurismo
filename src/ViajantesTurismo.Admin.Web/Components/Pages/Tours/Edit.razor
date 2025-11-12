@@ -1,4 +1,4 @@
-@page "/edittour/{id:int}"
+@page "/edittour/{id:guid}"
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Admin.Contracts
 @inject ToursApiClient ToursApi
@@ -157,7 +157,7 @@ else
     /// The ID of the tour to edit.
     /// </summary>
     [Parameter]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     private TourFormModel _model = new();
     private bool _loading = true;

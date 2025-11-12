@@ -9,7 +9,8 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
     {
         List<GetBookingDto>? bookings = null;
 
-        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>("/bookings", cancellationToken))
+        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>("/bookings",
+                           cancellationToken))
         {
             if (booking is null)
             {
@@ -23,16 +24,17 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
         return bookings?.ToArray() ?? [];
     }
 
-    public async Task<GetBookingDto?> GetBookingById(long id, CancellationToken cancellationToken)
+    public async Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken cancellationToken)
     {
         return await httpClient.GetFromJsonAsync<GetBookingDto>($"/bookings/{id}", cancellationToken);
     }
 
-    public async Task<GetBookingDto[]> GetBookingsByTourId(int tourId, CancellationToken cancellationToken)
+    public async Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken cancellationToken)
     {
         List<GetBookingDto>? bookings = null;
 
-        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>($"/bookings/tour/{tourId}", cancellationToken))
+        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>($"/bookings/tour/{tourId}",
+                           cancellationToken))
         {
             if (booking is null)
             {
@@ -46,11 +48,12 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
         return bookings?.ToArray() ?? [];
     }
 
-    public async Task<GetBookingDto[]> GetBookingsByCustomerId(int customerId, CancellationToken cancellationToken)
+    public async Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken cancellationToken)
     {
         List<GetBookingDto>? bookings = null;
 
-        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>($"/bookings/customer/{customerId}", cancellationToken))
+        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>(
+                           $"/bookings/customer/{customerId}", cancellationToken))
         {
             if (booking is null)
             {
@@ -69,56 +72,61 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
         var response = await httpClient.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
-        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+        return response.Headers.Location ??
+               throw new InvalidOperationException("The Location header is missing in the response.");
     }
 
-    public async Task UpdateBookingDiscount(long id, UpdateBookingDiscountDto dto, CancellationToken cancellationToken)
+    public async Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/discount", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task UpdateBookingDetails(long id, UpdateBookingDetailsDto dto, CancellationToken cancellationToken)
+    public async Task UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/details", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task UpdateBookingNotes(long id, UpdateBookingNotesDto dto, CancellationToken cancellationToken)
+    public async Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PatchAsJsonAsync($"/bookings/{id}/notes", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task CancelBooking(long id, CancellationToken cancellationToken)
+    public async Task CancelBooking(Guid id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null, cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null,
+            cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task ConfirmBooking(long id, CancellationToken cancellationToken)
+    public async Task ConfirmBooking(Guid id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/confirm", UriKind.Relative), null, cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/confirm", UriKind.Relative), null,
+            cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task CompleteBooking(long id, CancellationToken cancellationToken)
+    public async Task CompleteBooking(Guid id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/complete", UriKind.Relative), null, cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/complete", UriKind.Relative), null,
+            cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task DeleteBooking(long id, CancellationToken cancellationToken)
+    public async Task DeleteBooking(Guid id, CancellationToken cancellationToken)
     {
         var response = await httpClient.DeleteAsync(new Uri($"/bookings/{id}", UriKind.Relative), cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
-    public async Task<Uri> RecordPayment(long bookingId, CreatePaymentDto dto, CancellationToken cancellationToken)
+    public async Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync($"/bookings/{bookingId}/payments", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
-        return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
+        return response.Headers.Location ??
+               throw new InvalidOperationException("The Location header is missing in the response.");
     }
 }

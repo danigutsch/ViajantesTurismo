@@ -396,7 +396,7 @@ public class BookingMapperTests
     public void Map_To_Payment_Dto_Should_Map_All_Properties()
     {
         // Arrange
-        var bookingId = 1L;
+        var bookingId = Guid.CreateVersion7();
         var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
         var timeProvider = TimeProvider.System;
 
@@ -442,7 +442,7 @@ public class BookingMapperTests
     public void Map_To_Payment_Dto_With_Null_Optional_Fields_Should_Map_Correctly()
     {
         // Arrange
-        const long bookingId = 1L;
+        var bookingId = Guid.CreateVersion7();
         var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
         var timeProvider = TimeProvider.System;
 
@@ -487,7 +487,7 @@ public class BookingMapperTests
         var timeProvider = TimeProvider.System;
 
         var paymentResult = Payment.Create(
-            1L,
+            Guid.CreateVersion7(),
             100.00m,
             paymentDate,
             domainMethod,

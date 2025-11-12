@@ -390,5 +390,5 @@ public static class CustomerErrors
     /// </summary>
     /// <param name="id">The ID of the customer that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CustomerNotFound(int id) => Result.NotFound(detail: $"Customer with ID {id} was not found.");
+    public static Result CustomerNotFound(Guid id) => Result.NotFound(detail: $"Customer with ID {id} was not found.");
 }

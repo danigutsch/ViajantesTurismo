@@ -12,7 +12,7 @@ public static class TourErrors
     /// </summary>
     /// <param name="bookingId">The ID of the booking that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result BookingNotFound(long bookingId) => Result.NotFound(
+    public static Result BookingNotFound(Guid bookingId) => Result.NotFound(
         detail: $"Booking with ID {bookingId} not found in this tour.");
 
     /// <summary>
@@ -123,7 +123,8 @@ public static class TourErrors
     /// </summary>
     /// <param name="id">The ID of the tour that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> TourNotFound(int id) => Result<Tour>.NotFound(detail: $"Tour with ID {id} was not found.");
+    public static Result<Tour> TourNotFound(Guid id) =>
+        Result<Tour>.NotFound(detail: $"Tour with ID {id} was not found.");
 
     /// <summary>
     /// Indicates that the principal customer and companion cannot be the same person.
@@ -161,7 +162,8 @@ public static class TourErrors
     /// <param name="maxCustomers">The maximum customers value.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result<Tour> MaxCustomersLessThanMin(int minCustomers, int maxCustomers) => Result<Tour>.Invalid(
-        detail: $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
+        detail:
+        $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
         field: "maxCustomers",
         message: $"Maximum must be >= minimum ({minCustomers}).");
 
@@ -172,7 +174,8 @@ public static class TourErrors
     /// <param name="currentCount">The current number of customers.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result TourFullyBooked(int maxCustomers, int currentCount) => Result.Conflict(
-        detail: $"Tour is fully booked. Maximum capacity: {maxCustomers}, Current bookings: {currentCount}. Cannot accept more bookings.");
+        detail:
+        $"Tour is fully booked. Maximum capacity: {maxCustomers}, Current bookings: {currentCount}. Cannot accept more bookings.");
 
     /// <summary>
     /// Indicates that MinCustomers must be a positive integer (update operation).
@@ -201,7 +204,8 @@ public static class TourErrors
     /// <param name="maxCustomers">The maximum customers value.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result MaxCustomersLessThanMinUpdate(int minCustomers, int maxCustomers) => Result.Invalid(
-        detail: $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
+        detail:
+        $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
         field: "maxCustomers",
         message: $"Maximum must be >= minimum ({minCustomers}).");
 }

@@ -43,7 +43,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void GivenIHaveValidAccommodationPreferences()
     {
         context.AccommodationPreferences =
-            AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, 999).Value;
+            AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, Guid.CreateVersion7()).Value;
     }
 
     [Given("I have valid emergency contact")]

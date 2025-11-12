@@ -16,7 +16,7 @@ public sealed class UpdateBookingDetailsDto : IValidatableObject
     public required BikeTypeDto PrincipalBikeType { get; init; }
 
     /// <summary>The companion customer ID (null to remove companion).</summary>
-    public long? CompanionCustomerId { get; init; }
+    public Guid? CompanionCustomerId { get; init; }
 
     /// <summary>The bike type for the companion (required if companion present).</summary>
     public BikeTypeDto? CompanionBikeType { get; init; }
@@ -58,5 +58,7 @@ public sealed class UpdateBookingDetailsDto : IValidatableObject
     private bool CompanionBikeTypeIsNone() => CompanionBikeType is BikeTypeDto.None;
     private bool BikeTypeIsNone() => PrincipalBikeType == BikeTypeDto.None;
     private bool CompanionHasNoBikeTypeSelected() => CompanionCustomerId.HasValue && !CompanionBikeType.HasValue;
-    private bool IsSingleRoomAndHasCompanionSelected() => RoomType == RoomTypeDto.SingleRoom && CompanionCustomerId.HasValue;
+
+    private bool IsSingleRoomAndHasCompanionSelected() =>
+        RoomType == RoomTypeDto.SingleRoom && CompanionCustomerId.HasValue;
 }

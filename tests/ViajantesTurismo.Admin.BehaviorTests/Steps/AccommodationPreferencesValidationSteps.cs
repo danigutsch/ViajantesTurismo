@@ -13,8 +13,8 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
     {
         context.RoomType = RoomType.DoubleRoom;
         context.BedType = BedType.DoubleBed;
-        context.CompanionId = companionId;
-        context.Result = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, companionId);
+        context.CompanionId = Guid.CreateVersion7();
+        context.Result = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, context.CompanionId);
         if (context.Result.IsSuccess)
         {
             context.AccommodationPreferences = context.Result.Value;
@@ -65,8 +65,8 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
     {
         context.RoomType = RoomType.SingleRoom;
         context.BedType = BedType.SingleBed;
-        context.CompanionId = companionId;
-        context.Result = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, companionId);
+        context.CompanionId = Guid.CreateVersion7();
+        context.Result = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, context.CompanionId);
         if (context.Result.IsSuccess)
         {
             context.AccommodationPreferences = context.Result.Value;
@@ -84,7 +84,7 @@ public sealed class AccommodationPreferencesValidationSteps(AccommodationPrefere
     public void ThenTheCompanionIdShouldBe(int expectedCompanionId)
     {
         Assert.NotNull(context.AccommodationPreferences);
-        Assert.Equal(expectedCompanionId, context.AccommodationPreferences.CompanionId);
+        Assert.Equal(context.CompanionId, context.AccommodationPreferences.CompanionId);
     }
 
     [Then("the companion ID should be null")]

@@ -285,7 +285,7 @@ public sealed class CustomerApiTests : IDisposable
         var location = createResponse.Headers.Location;
         Assert.NotNull(location);
 
-        var customerId = int.Parse(location.ToString().Split('/').Last());
+        var customerId = Guid.Parse(location.ToString().Split('/').Last());
 
         var updateRequest = new UpdateCustomerDto
         {

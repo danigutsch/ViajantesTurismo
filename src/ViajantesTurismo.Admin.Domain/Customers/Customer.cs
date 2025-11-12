@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// <summary>
 /// Represents a customer entity.
 /// </summary>
-public sealed class Customer : Entity<int>
+public sealed class Customer : Entity<Guid>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class.
@@ -27,6 +27,7 @@ public sealed class Customer : Entity<int>
         AccommodationPreferences accommodationPreferences,
         EmergencyContact emergencyContact,
         MedicalInfo medicalInfo)
+        : base(Guid.CreateVersion7())
     {
         PersonalInfo = personalInfo;
         IdentificationInfo = identificationInfo;

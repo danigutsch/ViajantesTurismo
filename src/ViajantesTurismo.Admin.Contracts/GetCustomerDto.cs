@@ -9,7 +9,7 @@ public sealed record GetCustomerDto
     /// <summary>
     /// The unique identifier of the customer.
     /// </summary>
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     /// <summary>
     /// The first name of the customer.

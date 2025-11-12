@@ -31,7 +31,7 @@ public interface IQueryService
     /// <param name="id">The tour ID.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour DTO or null if not found.</returns>
-    Task<GetTourDto?> GetTourById(int id, CancellationToken ct);
+    Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Retrieves all customers.
@@ -46,7 +46,7 @@ public interface IQueryService
     /// <param name="id">The customer ID.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The customer details DTO or null if not found.</returns>
-    Task<CustomerDetailsDto?> GetCustomerDetailsById(int id, CancellationToken ct);
+    Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Retrieves all bookings.
@@ -61,7 +61,7 @@ public interface IQueryService
     /// <param name="id">The booking ID.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The booking DTO or null if not found.</returns>
-    Task<GetBookingDto?> GetBookingById(long id, CancellationToken ct);
+    Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Retrieves all bookings for a specific tour.
@@ -69,7 +69,7 @@ public interface IQueryService
     /// <param name="tourId">The tour ID.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>A read-only list of booking DTOs for the tour.</returns>
-    Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(int tourId, CancellationToken ct);
+    Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct);
 
     /// <summary>
     /// Retrieves all bookings for a specific customer.
@@ -77,5 +77,5 @@ public interface IQueryService
     /// <param name="customerId">The customer ID.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>A read-only list of booking DTOs for the customer.</returns>
-    Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(int customerId, CancellationToken ct);
+    Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct);
 }

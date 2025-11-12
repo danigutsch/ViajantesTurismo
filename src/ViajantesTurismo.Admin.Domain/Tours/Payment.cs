@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// Represents a payment recorded for a booking.
 /// Payments are immutable once created.
 /// </summary>
-public sealed class Payment : Entity<long>
+public sealed class Payment : Entity<Guid>
 {
     /// <summary>
     /// Initialises a new instance of the <see cref="Payment"/> class.
@@ -22,13 +22,14 @@ public sealed class Payment : Entity<long>
     /// <param name="notes">Optional notes about the payment.</param>
     /// <param name="recordedAt">The timestamp when this payment was recorded (UTC).</param>
     private Payment(
-        long bookingId,
+        Guid bookingId,
         decimal amount,
         DateTime paymentDate,
         PaymentMethod method,
         string? referenceNumber,
         string? notes,
         DateTime recordedAt)
+        : base(Guid.CreateVersion7())
     {
         BookingId = bookingId;
         Amount = amount;
@@ -50,7 +51,7 @@ public sealed class Payment : Entity<long>
     /// <summary>
     /// The ID of the booking this payment is for.
     /// </summary>
-    public long BookingId { get; private init; }
+    public Guid BookingId { get; private init; }
 
     /// <summary>
     /// The payment amount.
@@ -94,7 +95,7 @@ public sealed class Payment : Entity<long>
     /// <param name="notes">Optional notes about the payment.</param>
     /// <returns>A Result containing the Payment if successful, or validation errors.</returns>
     public static Result<Payment> Create(
-        long bookingId,
+        Guid bookingId,
         decimal amount,
         DateTime paymentDate,
         PaymentMethod method,

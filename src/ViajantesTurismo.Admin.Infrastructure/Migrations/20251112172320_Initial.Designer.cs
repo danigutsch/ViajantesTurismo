@@ -12,26 +12,23 @@ using ViajantesTurismo.Admin.Infrastructure;
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251104212725_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251112172320_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Customers.Customer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -40,11 +37,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Booking", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("BasePrice")
                         .HasColumnType("numeric");
@@ -71,8 +65,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("TourId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -83,17 +77,14 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Payment", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<long>("BookingId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Method")
                         .IsRequired()
@@ -122,49 +113,18 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Tour", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("DoubleRoomSupplementPrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("EBikePrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Identifier")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<int>("MaxCustomers")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MinCustomers")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("RegularBikePrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.PrimitiveCollection<string[]>("_includedServices")
                         .IsRequired()
@@ -186,14 +146,14 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 {
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.AccommodationPreferences", "AccommodationPreferences", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<int>("BedType")
                                 .HasColumnType("integer");
 
-                            b1.Property<int?>("CompanionId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid?>("CompanionId")
+                                .HasColumnType("uuid");
 
                             b1.Property<int>("RoomType")
                                 .HasColumnType("integer");
@@ -208,8 +168,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.Address", "Address", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("City")
                                 .IsRequired()
@@ -248,8 +208,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.ContactInfo", "ContactInfo", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Email")
                                 .IsRequired()
@@ -275,8 +235,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.EmergencyContact", "EmergencyContact", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
@@ -296,8 +256,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.IdentificationInfo", "IdentificationInfo", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("IdNationality")
                                 .IsRequired()
@@ -317,8 +277,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.MedicalInfo", "MedicalInfo", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("AdditionalInfo")
                                 .HasColumnType("text");
@@ -336,8 +296,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.PersonalInfo", "PersonalInfo", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<DateTime>("BirthDate")
                                 .HasColumnType("timestamp with time zone");
@@ -372,8 +332,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Customers.PhysicalInfo", "PhysicalInfo", b1 =>
                         {
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.Property<int>("BikeType")
                                 .HasColumnType("integer");
@@ -427,8 +387,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.BookingCustomer", "CompanionCustomer", b1 =>
                         {
-                            b1.Property<long>("BookingId")
-                                .HasColumnType("bigint");
+                            b1.Property<Guid>("BookingId")
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("BikePrice")
                                 .HasColumnType("numeric");
@@ -437,8 +397,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.HasKey("BookingId");
 
@@ -458,8 +418,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.BookingCustomer", "PrincipalCustomer", b1 =>
                         {
-                            b1.Property<long>("BookingId")
-                                .HasColumnType("bigint");
+                            b1.Property<Guid>("BookingId")
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("BikePrice")
                                 .HasColumnType("numeric");
@@ -468,8 +428,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<int>("CustomerId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
 
                             b1.HasKey("BookingId");
 
@@ -489,8 +449,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.Discount", "Discount", b1 =>
                         {
-                            b1.Property<long>("BookingId")
-                                .HasColumnType("bigint");
+                            b1.Property<Guid>("BookingId")
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasColumnType("numeric");
@@ -526,6 +486,94 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .WithMany("Payments")
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Tour", b =>
+                {
+                    b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.TourCapacity", "Capacity", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("MaxCustomers")
+                                .HasColumnType("integer")
+                                .HasColumnName("MaxCustomers");
+
+                            b1.Property<int>("MinCustomers")
+                                .HasColumnType("integer")
+                                .HasColumnName("MinCustomers");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
+                    b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.TourPricing", "Pricing", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("BasePrice")
+                                .HasColumnType("numeric")
+                                .HasColumnName("Price");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("Currency");
+
+                            b1.Property<decimal>("DoubleRoomSupplementPrice")
+                                .HasColumnType("numeric")
+                                .HasColumnName("DoubleRoomSupplementPrice");
+
+                            b1.Property<decimal>("EBikePrice")
+                                .HasColumnType("numeric")
+                                .HasColumnName("EBikePrice");
+
+                            b1.Property<decimal>("RegularBikePrice")
+                                .HasColumnType("numeric")
+                                .HasColumnName("RegularBikePrice");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
+                    b.OwnsOne("ViajantesTurismo.Common.BuildingBlocks.DateRange", "Schedule", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateTime>("EndDate")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("EndDate");
+
+                            b1.Property<DateTime>("StartDate")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("StartDate");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
+                    b.Navigation("Capacity")
+                        .IsRequired();
+
+                    b.Navigation("Pricing")
+                        .IsRequired();
+
+                    b.Navigation("Schedule")
                         .IsRequired();
                 });
 

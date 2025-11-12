@@ -13,7 +13,7 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// <remarks>
 /// Part of the Tour aggregate. In production code, modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingNotes()</c>).
 /// </remarks>
-public sealed class Booking : Entity<long>
+public sealed class Booking : Entity<Guid>
 {
     private readonly List<Payment> _payments = [];
 
@@ -29,7 +29,7 @@ public sealed class Booking : Entity<long>
     /// <param name="discount">The discount applied to this booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     private Booking(
-        int tourId,
+        Guid tourId,
         decimal basePrice,
         RoomType roomType,
         decimal roomAdditionalCost,
@@ -37,6 +37,7 @@ public sealed class Booking : Entity<long>
         BookingCustomer? companionCustomer,
         Discount discount,
         string? notes)
+        : base(Guid.CreateVersion7())
     {
         TourId = tourId;
         BasePrice = basePrice;
@@ -61,7 +62,7 @@ public sealed class Booking : Entity<long>
     /// <summary>
     /// The ID of the tour that was booked.
     /// </summary>
-    public int TourId { get; private init; }
+    public Guid TourId { get; private init; }
 
     /// <summary>
     /// The base price per person at the time of booking.
@@ -167,7 +168,7 @@ public sealed class Booking : Entity<long>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
     public static Result<Booking> Create(
-        int tourId,
+        Guid tourId,
         decimal basePrice,
         RoomType roomType,
         decimal roomAdditionalCost,
@@ -233,7 +234,8 @@ public sealed class Booking : Entity<long>
             return DiscountErrors.FinalPriceNotPositive(finalPrice).ConvertError<Booking>();
         }
 
-        return new Booking(tourId, basePrice, roomType, roomAdditionalCost, principalCustomer, companionCustomer, discount, notes);
+        return new Booking(tourId, basePrice, roomType, roomAdditionalCost, principalCustomer, companionCustomer,
+            discount, notes);
     }
 
     /// <summary>
@@ -261,7 +263,8 @@ public sealed class Booking : Entity<long>
         return Status switch
         {
             BookingStatus.Confirmed => Result.Ok(),
-            BookingStatus.Cancelled or BookingStatus.Completed => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Confirmed),
+            BookingStatus.Cancelled or BookingStatus.Completed => BookingErrors.InvalidStatusTransition(Status,
+                BookingStatus.Confirmed),
             BookingStatus.Pending => ConfirmInternal(),
             _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
         };

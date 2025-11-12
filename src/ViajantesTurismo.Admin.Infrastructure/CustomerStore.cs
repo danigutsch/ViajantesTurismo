@@ -7,7 +7,7 @@ internal sealed class CustomerStore(ApplicationDbContext dbContext) : ICustomerS
 {
     public void Add(Customer customer) => dbContext.Customers.Add(customer);
 
-    public async Task<Customer?> GetById(int id, CancellationToken ct) =>
+    public async Task<Customer?> GetById(Guid id, CancellationToken ct) =>
         await dbContext.Customers.FindAsync([id], ct);
 
     public void Delete(Customer customer) => dbContext.Customers.Remove(customer);

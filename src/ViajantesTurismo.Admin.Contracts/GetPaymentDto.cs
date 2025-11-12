@@ -6,10 +6,10 @@ namespace ViajantesTurismo.Admin.Contracts;
 public sealed class GetPaymentDto
 {
     /// <summary>The payment ID.</summary>
-    public required long Id { get; init; }
+    public required Guid Id { get; init; }
 
     /// <summary>The booking ID this payment is for.</summary>
-    public required long BookingId { get; init; }
+    public required Guid BookingId { get; init; }
 
     /// <summary>The payment amount.</summary>
     public required decimal Amount { get; init; }

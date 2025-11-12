@@ -1,4 +1,4 @@
-@page "/customers/{id:int}/edit"
+@page "/customers/{id:guid}/edit"
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Models
 @inject CustomersApiClient CustomersApi
@@ -331,7 +331,7 @@ else
     /// The ID of the customer to edit.
     /// </summary>
     [Parameter]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     private CustomerFormModel _model = new();
     private bool _loading = true;

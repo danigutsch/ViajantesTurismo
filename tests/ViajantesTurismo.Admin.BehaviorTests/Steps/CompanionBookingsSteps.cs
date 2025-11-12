@@ -23,10 +23,13 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnRegularBikeInDoubleRoom(
         int principalId, int companionId)
     {
+        var principalGuid = Guid.CreateVersion7();
+        var companionGuid = principalId == companionId ? principalGuid : Guid.CreateVersion7();
+
         var result = tourContext.Tour.AddBooking(
-            principalId,
+            principalGuid,
             BikeType.Regular,
-            companionId,
+            companionGuid,
             BikeType.Regular,
             RoomType.DoubleRoom,
             DiscountType.None,
@@ -48,9 +51,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         int principalId, int companionId)
     {
         var result = tourContext.Tour.AddBooking(
-            principalId,
+            Guid.CreateVersion7(),
             BikeType.Regular,
-            companionId,
+            Guid.CreateVersion7(),
             BikeType.EBike,
             RoomType.DoubleRoom,
             DiscountType.None,
@@ -70,9 +73,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         int companionId)
     {
         var result = tourContext.Tour.AddBooking(
-            principalId,
+            Guid.CreateVersion7(),
             BikeType.EBike,
-            companionId,
+            Guid.CreateVersion7(),
             BikeType.EBike,
             RoomType.DoubleRoom,
             DiscountType.None,
@@ -90,7 +93,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeWithoutCompanionInSingleRoom(int principalId)
     {
         var result = tourContext.Tour.AddBooking(
-            principalId,
+            Guid.CreateVersion7(),
             BikeType.Regular,
             null,
             null,
@@ -112,9 +115,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         int principalId, int companionId)
     {
         var result = tourContext.Tour.AddBooking(
-            principalId,
+            Guid.CreateVersion7(),
             BikeType.Regular,
-            companionId,
+            Guid.CreateVersion7(),
             null,
             RoomType.DoubleRoom,
             DiscountType.None,
@@ -133,7 +136,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDWithNoBikeTypeWithoutCompanionInSingleRoom(int principalId)
     {
         var result = tourContext.Tour.AddBooking(
-            principalId,
+            Guid.CreateVersion7(),
             BikeType.None,
             null,
             null,

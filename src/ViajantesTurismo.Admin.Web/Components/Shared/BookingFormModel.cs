@@ -5,11 +5,11 @@ namespace ViajantesTurismo.Admin.Web.Components.Shared;
 
 public class BookingFormModel : IValidatableObject
 {
-    public int? TourId { get; set; }
+    public Guid? TourId { get; set; }
 
-    public int? CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
 
-    public int? CompanionId { get; set; }
+    public Guid? CompanionId { get; set; }
 
     [Required(ErrorMessage = "Room type is required")]
     public RoomTypeDto RoomType { get; set; } = RoomTypeDto.SingleRoom;
@@ -31,7 +31,8 @@ public class BookingFormModel : IValidatableObject
     [Range(0, double.MaxValue, ErrorMessage = "Discount amount must be positive")]
     public decimal DiscountAmount { get; set; }
 
-    [StringLength(ContractConstants.MaxDiscountReasonLength, MinimumLength = ContractConstants.MinDiscountReasonLength, ErrorMessage = "Discount reason must be between {2} and {1} characters")]
+    [StringLength(ContractConstants.MaxDiscountReasonLength, MinimumLength = ContractConstants.MinDiscountReasonLength,
+        ErrorMessage = "Discount reason must be between {2} and {1} characters")]
     public string DiscountReason { get; set; } = string.Empty;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -59,7 +60,8 @@ public class BookingFormModel : IValidatableObject
         }
     }
 
-    public decimal CalculateSubtotal(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice, decimal eBikePrice)
+    public decimal CalculateSubtotal(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice,
+        decimal eBikePrice)
     {
         var roomCost = RoomType == RoomTypeDto.DoubleRoom ? doubleRoomSupplement : 0m;
 

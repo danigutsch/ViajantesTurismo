@@ -11,7 +11,7 @@ internal sealed class AccommodationPreferencesFormModel
     [Required(ErrorMessage = "Bed type is required")]
     public BedTypeDto? BedType { get; set; }
 
-    public int? CompanionId { get; set; }
+    public Guid? CompanionId { get; set; }
 
     public AccommodationPreferencesDto ToDto() => new()
     {

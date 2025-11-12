@@ -12,7 +12,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [When(@"I add a booking with notes ""(.*)""")]
     public void WhenIAddABookingWithNotes(string notes)
     {
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, notes);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -22,7 +22,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     public void WhenIAddABookingWithNotesExceedingCharacters()
     {
         var longNotes = new string('A', 2001);
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, longNotes);
         if (result.IsSuccess)
         {
@@ -37,7 +37,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [When("I add a booking with null notes")]
     public void WhenIAddABookingWithNullNotes()
     {
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;

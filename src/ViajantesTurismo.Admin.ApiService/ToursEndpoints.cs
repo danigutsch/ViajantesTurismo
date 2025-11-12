@@ -34,12 +34,12 @@ internal static class ToursEndpoints
             .WithDescription("Retrieves all available tours.")
             .WithSummary("Retrieves all available tours.");
 
-        toursGroup.MapGet("/{id:int}", GetTourById)
+        toursGroup.MapGet("/{id:guid}", GetTourById)
             .WithName("GetTourById")
             .WithDescription("Retrieves a tour by its ID.")
             .WithSummary("Retrieves a tour by its ID.");
 
-        toursGroup.MapPut("/{id:int}", UpdateTour)
+        toursGroup.MapPut("/{id:guid}", UpdateTour)
             .WithName("UpdateTour")
             .WithDescription("Updates an existing tour.")
             .WithSummary("Updates an existing tour.");
@@ -89,7 +89,7 @@ internal static class ToursEndpoints
     }
 
     private static async Task<Results<Ok<GetTourDto>, NotFound<ProblemDetails>>> GetTourById(
-        [FromRoute] int id,
+        [FromRoute] Guid id,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -103,7 +103,7 @@ internal static class ToursEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateTour(
-        int id,
+        Guid id,
         [FromBody] UpdateTourDto tourDto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,

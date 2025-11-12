@@ -24,7 +24,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAPendingBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -35,7 +35,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithAConfirmedBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
@@ -48,7 +48,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithACancelledBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
@@ -61,7 +61,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithACompletedBooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var addResult = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
@@ -74,7 +74,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithABooking()
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -84,7 +84,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void GivenATourExistsWithABookingPricedAtAndNotes(decimal price, string notes)
     {
         tourContext.Tour = TestHelpers.CreateTestTour();
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, notes);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -93,7 +93,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [When("I add a booking for the customer to the tour with price (.*)")]
     public void WhenIAddABookingForTheCustomerToTheTourWithPrice(decimal price)
     {
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -103,7 +103,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void WhenIAddABookingToTourWithBikeTypeAndNoCompanion(string bikeTypeString)
     {
         var bikeType = Enum.Parse<BikeType>(bikeTypeString);
-        var result = tourContext.Tour.AddBooking(1, bikeType, null, null, RoomType.SingleRoom, DiscountType.None, 0m,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), bikeType, null, null, RoomType.SingleRoom, DiscountType.None, 0m,
             null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -113,7 +113,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void WhenIAddABookingToTourWithRoomType(string roomTypeString)
     {
         var roomType = Enum.Parse<RoomType>(roomTypeString);
-        var result = tourContext.Tour.AddBooking(1, BikeType.Regular, null, null, roomType, DiscountType.None, 0m, null,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, roomType, DiscountType.None, 0m, null,
             null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
@@ -166,37 +166,37 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [When("I try to confirm a non-existent booking")]
     public void WhenITryToConfirmANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.ConfirmBooking(99999);
+        bookingContext.Result = tourContext.Tour.ConfirmBooking(Guid.CreateVersion7());
     }
 
     [When("I try to remove a non-existent booking")]
     public void WhenITryToRemoveANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.RemoveBooking(99999);
+        bookingContext.Result = tourContext.Tour.RemoveBooking(Guid.CreateVersion7());
     }
 
     [When("I try to cancel a non-existent booking")]
     public void WhenITryToCancelANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.CancelBooking(99999);
+        bookingContext.Result = tourContext.Tour.CancelBooking(Guid.CreateVersion7());
     }
 
     [When("I try to complete a non-existent booking")]
     public void WhenITryToCompleteANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.CompleteBooking(99999);
+        bookingContext.Result = tourContext.Tour.CompleteBooking(Guid.CreateVersion7());
     }
 
     [When("I try to update notes for a non-existent booking")]
     public void WhenITryToUpdateNotesForANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.UpdateBookingNotes(99999, "Some notes");
+        bookingContext.Result = tourContext.Tour.UpdateBookingNotes(Guid.CreateVersion7(), "Some notes");
     }
 
     [When("I try to update payment status for a non-existent booking")]
     public void WhenITryToUpdatePaymentStatusForANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(99999, PaymentStatus.Paid);
+        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(Guid.CreateVersion7(), PaymentStatus.Paid);
     }
 
     [Then("the tour should have the booking")]

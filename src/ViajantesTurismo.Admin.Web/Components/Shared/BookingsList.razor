@@ -115,42 +115,37 @@ else
     [Parameter]
     public bool ShowCustomerInfo { get; set; } = true;
 
-    [Parameter]
-    public EventCallback<long> OnEdit { get; set; }
+    [Parameter] public EventCallback<Guid> OnEdit { get; set; }
 
-    [Parameter]
-    public EventCallback<long> OnConfirm { get; set; }
+    [Parameter] public EventCallback<Guid> OnConfirm { get; set; }
 
-    [Parameter]
-    public EventCallback<long> OnCancel { get; set; }
+    [Parameter] public EventCallback<Guid> OnCancel { get; set; }
 
-    [Parameter]
-    public EventCallback<long> OnComplete { get; set; }
+    [Parameter] public EventCallback<Guid> OnComplete { get; set; }
 
-    [Parameter]
-    public EventCallback<long> OnDelete { get; set; }
+    [Parameter] public EventCallback<Guid> OnDelete { get; set; }
 
-    private async Task OnEditClicked(long bookingId)
+    private async Task OnEditClicked(Guid bookingId)
     {
         await OnEdit.InvokeAsync(bookingId);
     }
 
-    private async Task OnConfirmClicked(long bookingId)
+    private async Task OnConfirmClicked(Guid bookingId)
     {
         await OnConfirm.InvokeAsync(bookingId);
     }
 
-    private async Task OnCancelClicked(long bookingId)
+    private async Task OnCancelClicked(Guid bookingId)
     {
         await OnCancel.InvokeAsync(bookingId);
     }
 
-    private async Task OnCompleteClicked(long bookingId)
+    private async Task OnCompleteClicked(Guid bookingId)
     {
         await OnComplete.InvokeAsync(bookingId);
     }
 
-    private async Task OnDeleteClicked(long bookingId)
+    private async Task OnDeleteClicked(Guid bookingId)
     {
         await OnDelete.InvokeAsync(bookingId);
     }

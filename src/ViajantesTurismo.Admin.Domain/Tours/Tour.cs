@@ -16,7 +16,7 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// <para>All Booking entities must be created and modified through Tour methods to maintain consistency.</para>
 /// <para>Tour enforces business rules and invariants for all bookings within its aggregate boundary.</para>
 /// </remarks>
-public sealed class Tour : Entity<int>
+public sealed class Tour : Entity<Guid>
 {
     private readonly List<Booking> _bookings = [];
     private string[] _includedServices = [];
@@ -28,6 +28,7 @@ public sealed class Tour : Entity<int>
         TourPricing pricing,
         TourCapacity capacity,
         IEnumerable<string> includedServices)
+        : base(Guid.CreateVersion7())
     {
         Identifier = identifier;
         Name = name;
@@ -156,10 +157,12 @@ public sealed class Tour : Entity<int>
         }
         else if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
         {
-            errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays, scheduleResult.Value.DurationDays));
+            errors.Add(TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays,
+                scheduleResult.Value.DurationDays));
         }
 
-        var pricingResult = TourPricing.Create(basePrice, doubleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
+        var pricingResult =
+            TourPricing.Create(basePrice, doubleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
         if (pricingResult.IsFailure)
         {
             errors.Add(pricingResult);
@@ -242,7 +245,8 @@ public sealed class Tour : Entity<int>
 
         if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
         {
-            return TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays, scheduleResult.Value.DurationDays);
+            return TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays,
+                scheduleResult.Value.DurationDays);
         }
 
         Schedule = scheduleResult.Value;
@@ -365,9 +369,9 @@ public sealed class Tour : Entity<int>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
     public Result<Booking> AddBooking(
-        int principalCustomerId,
+        Guid principalCustomerId,
         BikeType principalBikeType,
-        int? companionCustomerId,
+        Guid? companionCustomerId,
         BikeType? companionBikeType,
         RoomType roomType,
         DiscountType discountType,
@@ -398,7 +402,8 @@ public sealed class Tour : Entity<int>
         }
 
         var principalBikePrice = GetBikePrice(principalBikeType);
-        var principalCustomerResult = BookingCustomer.Create(principalCustomerId, principalBikeType, principalBikePrice);
+        var principalCustomerResult =
+            BookingCustomer.Create(principalCustomerId, principalBikeType, principalBikePrice);
         if (principalCustomerResult.IsFailure)
         {
             return principalCustomerResult.ConvertError<BookingCustomer, Booking>();
@@ -461,7 +466,7 @@ public sealed class Tour : Entity<int>
         return Result.Ok();
     }
 
-    private static Result ValidateCompanionBikeType(int? companionCustomerId, BikeType? companionBikeType)
+    private static Result ValidateCompanionBikeType(Guid? companionCustomerId, BikeType? companionBikeType)
     {
         if (!companionCustomerId.HasValue)
         {
@@ -494,7 +499,7 @@ public sealed class Tour : Entity<int>
         _ => throw new ArgumentOutOfRangeException(nameof(bikeType), bikeType, $"Invalid bike type: {bikeType}")
     };
 
-    private Result<BookingCustomer>? CreateCompanionCustomer(int? companionCustomerId, BikeType? companionBikeType)
+    private Result<BookingCustomer>? CreateCompanionCustomer(Guid? companionCustomerId, BikeType? companionBikeType)
     {
         if (companionCustomerId is null)
         {
@@ -519,7 +524,7 @@ public sealed class Tour : Entity<int>
     /// <param name="bookingId">The ID of the booking to update.</param>
     /// <param name="paymentStatus">The payment status.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateBookingPaymentStatus(long bookingId, PaymentStatus paymentStatus)
+    public Result UpdateBookingPaymentStatus(Guid bookingId, PaymentStatus paymentStatus)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
         if (booking is null)
@@ -535,7 +540,7 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="bookingId">The ID of the booking to cancel.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result CancelBooking(long bookingId)
+    public Result CancelBooking(Guid bookingId)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
         if (booking is null)
@@ -551,7 +556,7 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="bookingId">The ID of the booking to confirm.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result ConfirmBooking(long bookingId)
+    public Result ConfirmBooking(Guid bookingId)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
         if (booking is null)
@@ -567,7 +572,7 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="bookingId">The ID of the booking to complete.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result CompleteBooking(long bookingId)
+    public Result CompleteBooking(Guid bookingId)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
         if (booking is null)
@@ -584,7 +589,7 @@ public sealed class Tour : Entity<int>
     /// <param name="bookingId">The ID of the booking to update.</param>
     /// <param name="notes">The updated notes.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateBookingNotes(long bookingId, string? notes)
+    public Result UpdateBookingNotes(Guid bookingId, string? notes)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
         if (booking is null)
@@ -604,7 +609,7 @@ public sealed class Tour : Entity<int>
     /// <param name="discountReason">The discount reason.</param>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateBookingDiscount(
-        long bookingId,
+        Guid bookingId,
         DiscountType discountType,
         decimal discountAmount,
         string? discountReason)
@@ -634,10 +639,10 @@ public sealed class Tour : Entity<int>
     /// <param name="companionBikeType">The bike type for the companion (required if a companion present).</param>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateBookingDetails(
-        long bookingId,
+        Guid bookingId,
         RoomType roomType,
         BikeType principalBikeType,
-        int? companionCustomerId,
+        Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
@@ -693,8 +698,8 @@ public sealed class Tour : Entity<int>
     }
 
     private Result<BookingCustomer?> CreateCompanionCustomerForUpdate(
-        int principalCustomerId,
-        int? companionCustomerId,
+        Guid principalCustomerId,
+        Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
         if (!companionCustomerId.HasValue)
@@ -731,7 +736,7 @@ public sealed class Tour : Entity<int>
     /// </summary>
     /// <param name="bookingId">The ID of the booking to remove.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result RemoveBooking(long bookingId)
+    public Result RemoveBooking(Guid bookingId)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
         if (booking is null)
