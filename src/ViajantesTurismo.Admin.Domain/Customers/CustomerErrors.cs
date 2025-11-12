@@ -391,4 +391,14 @@ public static class CustomerErrors
     /// <param name="id">The ID of the customer that was not found.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result CustomerNotFound(Guid id) => Result.NotFound(detail: $"Customer with ID {id} was not found.");
+
+    /// <summary>
+    /// Indicates that a customer with the specified email already exists.
+    /// </summary>
+    /// <param name="email">The email address that already exists.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result EmailAlreadyExists(string email) => Result.Invalid(
+        detail: $"A customer with email '{email}' already exists.",
+        field: "email",
+        message: "Email address already exists.");
 }

@@ -112,10 +112,7 @@ internal static class CustomerEndpoints
 
         if (await customerStore.EmailExists(dto.ContactInfo.Email, ct))
         {
-            errors.Add(Result.Invalid(
-                detail: $"A customer with email '{dto.ContactInfo.Email}' already exists.",
-                field: "email",
-                message: "Email address already exists."));
+            errors.Add(CustomerErrors.EmailAlreadyExists(dto.ContactInfo.Email));
         }
 
         if (errors.HasErrors)
