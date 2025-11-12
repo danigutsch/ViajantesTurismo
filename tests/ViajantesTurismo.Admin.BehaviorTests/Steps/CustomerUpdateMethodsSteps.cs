@@ -23,6 +23,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     public void GivenACustomerExistsWithEmail(string email)
     {
         customerContext.Customer = TestHelpers.CreateTestCustomerWithEmail(email);
+        customerContext.Customers.Add(customerContext.Customer);
     }
 
     [Given(@"a customer exists with city ""(.*)""")]

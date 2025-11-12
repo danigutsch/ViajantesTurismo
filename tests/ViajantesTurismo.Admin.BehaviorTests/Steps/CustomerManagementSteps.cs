@@ -1,11 +1,12 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class CustomerManagementSteps(CustomerContext context)
+public sealed class CustomerManagementSteps(CustomerContext context, BookingContext bookingContext)
 {
     [Given("I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
@@ -297,5 +298,56 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void ThenTheSanitizedAdditionalInfoShouldBe(string expectedAdditionalInfo)
     {
         Assert.Equal(expectedAdditionalInfo, context.MedicalInfo.AdditionalInfo);
+    }
+
+    [When(@"I attempt to create another customer with email ""(.*)""")]
+    public void WhenIAttemptToCreateAnotherCustomerWithEmail(string email)
+    {
+        var emailExists = context.Customers.Any(c => c.ContactInfo.Email == email);
+        if (emailExists)
+        {
+            context.Customer = null!;
+            bookingContext.Result = Result.Invalid(
+                detail: $"A customer with email '{email}' already exists.",
+                field: "email",
+                message: "Email address already exists.");
+            return;
+        }
+
+        var personalInfo = PersonalInfo.Create("Jane", "Doe", "Female", new DateTime(1992, 3, 20), "American", "Designer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("987654321", "American").Value;
+        var contactInfo = ContactInfo.Create(email, "+1987654321", null, null).Value;
+        var address = Address.Create("456 Oak St", null, "Uptown", "54321", "City", "State", "Country").Value;
+        var physicalInfo = PhysicalInfo.Create(60m, 165, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("John Doe", "+1234567890").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        var customer = new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+        context.Customer = customer;
+        bookingContext.Result = Result.Ok();
+    }
+
+    [When(@"I create a customer with email ""(.*)""")]
+    public void WhenICreateACustomerWithEmail(string email)
+    {
+        var personalInfo = PersonalInfo.Create("Jane", "Doe", "Female", new DateTime(1992, 3, 20), "American", "Designer", TimeProvider.System).Value;
+        var identificationInfo = IdentificationInfo.Create("987654321", "American").Value;
+        var contactInfo = ContactInfo.Create(email, "+1987654321", null, null).Value;
+        var address = Address.Create("456 Oak St", null, "Uptown", "54321", "City", "State", "Country").Value;
+        var physicalInfo = PhysicalInfo.Create(60m, 165, BikeType.Regular).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var emergencyContact = EmergencyContact.Create("John Doe", "+1234567890").Value;
+        var medicalInfo = MedicalInfo.Create("None", "None").Value;
+
+        var customer = new Customer(personalInfo, identificationInfo, contactInfo, address, physicalInfo, accommodationPreferences, emergencyContact, medicalInfo);
+        context.Customer = customer;
+        context.Customers.Add(customer);
+    }
+
+    [Then("the customer creation should fail")]
+    public void ThenTheCustomerCreationShouldFail()
+    {
+        Assert.Null(context.Customer);
     }
 }

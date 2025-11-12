@@ -26,4 +26,12 @@ public interface ICustomerStore
     /// </summary>
     /// <param name="customer">The customer to delete.</param>
     void Delete(Customer customer);
+
+    /// <summary>
+    /// Checks if a customer with the specified email address already exists.
+    /// </summary>
+    /// <param name="email">The email address to check.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>True if a customer with the email exists, otherwise false.</returns>
+    Task<bool> EmailExists(string email, CancellationToken ct);
 }

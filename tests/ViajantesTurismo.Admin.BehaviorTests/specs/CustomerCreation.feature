@@ -21,14 +21,14 @@ Background:
 
 Rule: Customer email addresses must be unique
 
-  @Invariant:INV-CUST-001 @error_case @critical @ignore
+  @Invariant:INV-CUST-001 @error_case @critical
   Scenario: Reject duplicate customer email
     Given a customer exists with email "john@example.com"
     When I attempt to create another customer with email "john@example.com"
     Then the customer creation should fail
     And the error message should contain "Email address already exists"
 
-  @Invariant:INV-CUST-001 @happy_path @ignore
+  @Invariant:INV-CUST-001 @happy_path
   Scenario: Create customer with unique email
     Given a customer exists with email "john@example.com"
     When I create a customer with email "jane@example.com"
