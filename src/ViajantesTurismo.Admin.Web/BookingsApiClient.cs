@@ -9,8 +9,7 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
     {
         List<GetBookingDto>? bookings = null;
 
-        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>("/bookings",
-                           cancellationToken))
+        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>("/bookings", cancellationToken))
         {
             if (booking is null)
             {
@@ -33,8 +32,7 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
     {
         List<GetBookingDto>? bookings = null;
 
-        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>($"/bookings/tour/{tourId}",
-                           cancellationToken))
+        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>($"/bookings/tour/{tourId}", cancellationToken))
         {
             if (booking is null)
             {
@@ -52,8 +50,7 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
     {
         List<GetBookingDto>? bookings = null;
 
-        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>(
-                           $"/bookings/customer/{customerId}", cancellationToken))
+        await foreach (var booking in httpClient.GetFromJsonAsAsyncEnumerable<GetBookingDto>($"/bookings/customer/{customerId}", cancellationToken))
         {
             if (booking is null)
             {
@@ -96,15 +93,13 @@ internal sealed class BookingsApiClient(HttpClient httpClient)
 
     public async Task CancelBooking(Guid id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null,
-            cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/cancel", UriKind.Relative), null, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
     public async Task ConfirmBooking(Guid id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/confirm", UriKind.Relative), null,
-            cancellationToken);
+        var response = await httpClient.PostAsync(new Uri($"/bookings/{id}/confirm", UriKind.Relative), null, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
