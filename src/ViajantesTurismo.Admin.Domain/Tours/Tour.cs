@@ -755,6 +755,39 @@ public sealed class Tour : Entity<Guid>
     }
 
     /// <summary>
+    /// Checks if the tour can be deleted.
+    /// Tours with confirmed bookings cannot be deleted (INV-TOUR-015).
+    /// </summary>
+    /// <returns>A result indicating whether the tour can be deleted.</returns>
+    public Result CanBeDeleted()
+    {
+        var confirmedBookings = _bookings.Count(b => b.Status == BookingStatus.Confirmed);
+        if (confirmedBookings > 0)
+        {
+            return TourErrors.CannotDeleteTourWithConfirmedBookings(confirmedBookings);
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Marks the tour for deletion after validating business rules.
+    /// Tours with confirmed bookings cannot be deleted (INV-TOUR-015).
+    /// This method can raise domain events for later processing.
+    /// </summary>
+    /// <returns>A result indicating success or validation errors.</returns>
+    public Result Delete()
+    {
+        var canDeleteResult = CanBeDeleted();
+        if (canDeleteResult.IsFailure)
+        {
+            return canDeleteResult;
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
     [UsedImplicitly]

@@ -230,4 +230,14 @@ public static class TourErrors
         $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.",
         field: "bookingId",
         message: "Only pending bookings can be removed.");
+
+    /// <summary>
+    /// Indicates that a tour cannot be deleted because it has confirmed bookings.
+    /// </summary>
+    /// <param name="confirmedBookingsCount">The number of confirmed bookings.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CannotDeleteTourWithConfirmedBookings(int confirmedBookingsCount) => Result.Invalid(
+        detail: $"Cannot delete tour with confirmed bookings. Tour has {confirmedBookingsCount} confirmed booking(s).",
+        field: "tourId",
+        message: "Cannot delete tour with confirmed bookings.");
 }

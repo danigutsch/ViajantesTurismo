@@ -1,0 +1,134 @@
+using Reqnroll;
+using ViajantesTurismo.Admin.Application.Tours.Commands.DeleteTour;
+using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Tours;
+
+namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
+
+[Binding]
+public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bookingContext)
+{
+    [Given("a tour exists with no bookings")]
+    public void GivenATourExistsWithNoBookings()
+    {
+        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.TourStore.AddExistingTour(tourContext.Tour);
+    }
+
+    [Given("the tour has a pending booking")]
+    public void GivenTheTourHasAPendingBooking()
+    {
+        tourContext.TourStore.AddExistingTour(tourContext.Tour);
+        var result = tourContext.Tour.AddBooking(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            null,
+            null,
+            RoomType.SingleRoom,
+            DiscountType.None,
+            0m,
+            null,
+            null);
+        Assert.True(result.IsSuccess);
+    }
+
+    [Given("the tour has a confirmed booking")]
+    public void GivenTheTourHasAConfirmedBooking()
+    {
+        if (tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None).Result is null)
+        {
+            tourContext.TourStore.AddExistingTour(tourContext.Tour);
+        }
+        var addResult = tourContext.Tour.AddBooking(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            null,
+            null,
+            RoomType.SingleRoom,
+            DiscountType.None,
+            0m,
+            null,
+            null);
+        Assert.True(addResult.IsSuccess);
+        var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
+        Assert.True(confirmResult.IsSuccess);
+    }
+
+    [Given(@"the tour has (\d+) confirmed bookings")]
+    public void GivenTheTourHasConfirmedBookings(int count)
+    {
+        if (tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None).Result is null)
+        {
+            tourContext.TourStore.AddExistingTour(tourContext.Tour);
+        }
+        for (var i = 0; i < count; i++)
+        {
+            var addResult = tourContext.Tour.AddBooking(
+                Guid.CreateVersion7(),
+                BikeType.Regular,
+                null,
+                null,
+                RoomType.SingleRoom,
+                DiscountType.None,
+                0m,
+                null,
+                null);
+            Assert.True(addResult.IsSuccess);
+            var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
+            Assert.True(confirmResult.IsSuccess);
+        }
+    }
+
+    [Given("the tour has a cancelled booking")]
+    public void GivenTheTourHasACancelledBooking()
+    {
+        if (tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None).Result is null)
+        {
+            tourContext.TourStore.AddExistingTour(tourContext.Tour);
+        }
+        var addResult = tourContext.Tour.AddBooking(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            null,
+            null,
+            RoomType.SingleRoom,
+            DiscountType.None,
+            0m,
+            null,
+            null);
+        Assert.True(addResult.IsSuccess);
+        var cancelResult = tourContext.Tour.CancelBooking(addResult.Value.Id);
+        Assert.True(cancelResult.IsSuccess);
+    }
+
+    [When("I delete the tour")]
+    public async Task WhenIDeleteTheTour()
+    {
+        var command = new DeleteTourCommand(tourContext.Tour.Id);
+        var result = await tourContext.DeleteTourCommandHandler.Handle(command, CancellationToken.None);
+        tourContext.DeleteResult = result;
+        bookingContext.Result = result;
+    }
+
+    [When("I attempt to delete the tour")]
+    public async Task WhenIAttemptToDeleteTheTour()
+    {
+        var command = new DeleteTourCommand(tourContext.Tour.Id);
+        var result = await tourContext.DeleteTourCommandHandler.Handle(command, CancellationToken.None);
+        tourContext.DeleteResult = result;
+        bookingContext.Result = result;
+    }
+
+    [Then("the tour should be deleted successfully")]
+    public void ThenTheTourShouldBeDeletedSuccessfully()
+    {
+        Assert.True(tourContext.DeleteResult?.IsSuccess);
+    }
+
+    [Then("the deletion should fail")]
+    public void ThenTheDeletionShouldFail()
+    {
+        Assert.False(tourContext.DeleteResult?.IsSuccess);
+    }
+}

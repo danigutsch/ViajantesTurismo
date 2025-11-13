@@ -19,5 +19,7 @@ public sealed class FakeTourStore : ITourStore
         Task.FromResult(_tours.Any(t =>
             string.Equals(t.Identifier, identifier, StringComparison.OrdinalIgnoreCase)));
 
+    public void Delete(Tour tour) => _tours.Remove(tour);
+
     public void AddExistingTour(Tour tour) => _tours.Add(tour);
 }

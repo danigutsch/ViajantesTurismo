@@ -46,4 +46,10 @@ public interface ITourStore
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>True if a tour with the identifier exists; otherwise, false.</returns>
     Task<bool> IdentifierExists(string identifier, CancellationToken ct);
+
+    /// <summary>
+    /// Deletes a tour from the store.
+    /// </summary>
+    /// <param name="tour">The tour to delete.</param>
+    void Delete(Tour tour);
 }

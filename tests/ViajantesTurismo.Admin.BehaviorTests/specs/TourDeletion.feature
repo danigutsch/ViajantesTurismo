@@ -22,20 +22,20 @@ Background:
 
 Rule: Tours can only be deleted if they have no confirmed bookings
 
-  @happy_path @ignore
+  @happy_path
   Scenario: Delete tour with no bookings
     Given a tour exists with no bookings
     When I delete the tour
     Then the tour should be deleted successfully
 
-  @happy_path @ignore
+  @happy_path
   Scenario: Delete tour with only pending bookings
     Given a tour exists
     And the tour has a pending booking
     When I delete the tour
     Then the tour should be deleted successfully
 
-  @Invariant:INV-TOUR-015 @error_case @critical @ignore
+  @Invariant:INV-TOUR-015 @error_case @critical
   Scenario: Reject deletion of tour with confirmed booking
     Given a tour exists
     And the tour has a confirmed booking
@@ -43,7 +43,7 @@ Rule: Tours can only be deleted if they have no confirmed bookings
     Then the deletion should fail
     And the error message should contain "Cannot delete tour with confirmed bookings"
 
-  @Invariant:INV-TOUR-015 @error_case @ignore
+  @Invariant:INV-TOUR-015 @error_case
   Scenario: Reject deletion of tour with multiple confirmed bookings
     Given a tour exists
     And the tour has 3 confirmed bookings
@@ -51,7 +51,7 @@ Rule: Tours can only be deleted if they have no confirmed bookings
     Then the deletion should fail
     And the error message should contain "Cannot delete tour with confirmed bookings"
 
-  @Invariant:INV-TOUR-015 @error_case @ignore
+  @Invariant:INV-TOUR-015 @error_case
   Scenario: Reject deletion of tour with mixed booking statuses including confirmed
     Given a tour exists
     And the tour has a pending booking
