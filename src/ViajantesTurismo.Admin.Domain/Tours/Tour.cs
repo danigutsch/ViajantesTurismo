@@ -350,6 +350,11 @@ public sealed class Tour : Entity<Guid>
             return capacityResult.ConvertError();
         }
 
+        if (maxCustomers < CurrentCustomerCount)
+        {
+            return TourErrors.CannotReduceCapacityBelowCurrentBookings(maxCustomers, CurrentCustomerCount);
+        }
+
         Capacity = capacityResult.Value;
         return Result.Ok();
     }

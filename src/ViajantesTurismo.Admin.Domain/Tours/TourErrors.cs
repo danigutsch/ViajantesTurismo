@@ -240,4 +240,17 @@ public static class TourErrors
         detail: $"Cannot delete tour with confirmed bookings. Tour has {confirmedBookingsCount} confirmed booking(s).",
         field: "tourId",
         message: "Cannot delete tour with confirmed bookings.");
+
+    /// <summary>
+    /// Indicates that maximum capacity cannot be reduced below the current number of confirmed bookings.
+    /// </summary>
+    /// <param name="newMaxCustomers">The new maximum capacity requested.</param>
+    /// <param name="currentCustomerCount">The current number of confirmed customers.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CannotReduceCapacityBelowCurrentBookings(int newMaxCustomers, int currentCustomerCount) =>
+        Result.Invalid(
+            detail:
+            $"Cannot reduce maximum capacity to {newMaxCustomers}. Tour currently has {currentCustomerCount} confirmed booking(s).",
+            field: "maxCustomers",
+            message: $"Maximum capacity cannot be less than current bookings ({currentCustomerCount}).");
 }

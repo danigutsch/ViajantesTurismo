@@ -177,6 +177,12 @@ public sealed class TourCapacityManagementSteps(
         tourContext.Result = tourContext.Tour.UpdateCapacity(minCustomers, maxCustomers);
     }
 
+    [When("I try to update the capacity to minimum (.*) and maximum (.*)")]
+    public void WhenITryToUpdateTheCapacityToMinimumAndMaximum(int minCustomers, int maxCustomers)
+    {
+        tourContext.Result = tourContext.Tour.UpdateCapacity(minCustomers, maxCustomers);
+    }
+
     [When("I try to add a booking for the third customer")]
     public void WhenITryToAddABookingForTheThirdCustomer()
     {
@@ -239,6 +245,24 @@ public sealed class TourCapacityManagementSteps(
     public void ThenTheCapacityUpdateShouldSucceed()
     {
         Assert.True(((Result)tourContext.Result).IsSuccess);
+    }
+
+    [Then("the capacity update should fail")]
+    public void ThenTheCapacityUpdateShouldFail()
+    {
+        Assert.True(((Result)tourContext.Result).IsFailure);
+    }
+
+    [Then("the error should indicate cannot reduce capacity below current bookings")]
+    public void ThenTheErrorShouldIndicateCannotReduceCapacityBelowCurrentBookings()
+    {
+        var result = (Result)tourContext.Result;
+        Assert.True(result.IsFailure);
+        var error = result.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Contains("capacity", error.Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("current", error.Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("booking", error.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the tour creation should fail")]

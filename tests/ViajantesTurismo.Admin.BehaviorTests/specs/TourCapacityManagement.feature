@@ -38,6 +38,14 @@ Rule: Tour capacity must be within valid ranges
     And the minimum capacity should be 6
     And the maximum capacity should be 15
 
+  @Invariant:INV-TOUR-014 @error_case
+  Scenario: Reject capacity reduction below current confirmed bookings
+    Given a tour exists with minimum 4 and maximum 12 customers
+    And the tour has 2 confirmed bookings with 2 customers each
+    When I try to update the capacity to minimum 2 and maximum 3
+    Then the capacity update should fail
+    And the error should indicate cannot reduce capacity below current bookings
+
 Rule: Minimum capacity must be less than or equal to maximum
 
   @Invariant:INV-TOUR-012 @error_case

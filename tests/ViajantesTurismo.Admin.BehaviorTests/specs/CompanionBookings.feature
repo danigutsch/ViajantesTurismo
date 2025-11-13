@@ -82,7 +82,7 @@ Rule: Both principal and companion must select valid bike type
     And a companion customer exists
     When I add a booking with principal customer 1 on regular bike and companion customer 2 with no bike type in double room
     Then the booking creation should fail
-    And the error should be for field "companionBikeType"
+    And the error should be for field "bikeType"
     And the error message should contain "Bike type must be selected"
 
   @Invariant:INV-TOUR-017 @error_case
@@ -90,5 +90,5 @@ Rule: Both principal and companion must select valid bike type
     Given a principal customer exists
     When I add a booking with principal customer 1 with no bike type without companion in single room
     Then the booking creation should fail
-    And the error should be for field "principalBikeType"
+    And the error should be for field "bikeType"
     And the error message should contain "Bike type must be selected"
