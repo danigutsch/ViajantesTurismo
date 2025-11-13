@@ -449,18 +449,12 @@ public sealed class Tour : Entity<Guid>
     {
         if (!Enum.IsDefined(principalBikeType))
         {
-            return Result.Invalid(
-                $"Invalid bike type: {principalBikeType}. Valid values are: {string.Join(", ", Enum.GetNames<BikeType>())}.",
-                "principalBikeType",
-                $"Invalid bike type: {principalBikeType}.");
+            return BookingErrors.InvalidBikeType(principalBikeType);
         }
 
         if (principalBikeType == BikeType.None)
         {
-            return Result.Invalid(
-                "Bike type must be selected for principal customer. Please choose Regular or EBike.",
-                "principalBikeType",
-                "Bike type must be selected");
+            return BookingErrors.BikeTypeNotSelected();
         }
 
         return Result.Ok();
@@ -475,18 +469,12 @@ public sealed class Tour : Entity<Guid>
 
         if (companionBikeType is null or BikeType.None)
         {
-            return Result.Invalid(
-                "Bike type must be selected for companion. Please choose Regular or EBike.",
-                "companionBikeType",
-                "Bike type must be selected");
+            return BookingErrors.BikeTypeNotSelected();
         }
 
         if (!Enum.IsDefined(companionBikeType.Value))
         {
-            return Result.Invalid(
-                $"Invalid bike type: {companionBikeType.Value}. Valid values are: {string.Join(", ", Enum.GetNames<BikeType>())}.",
-                "companionBikeType",
-                $"Invalid bike type: {companionBikeType.Value}.");
+            return BookingErrors.InvalidBikeType(companionBikeType.Value);
         }
 
         return Result.Ok();
