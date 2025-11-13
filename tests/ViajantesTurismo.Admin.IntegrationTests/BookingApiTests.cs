@@ -66,7 +66,6 @@ public sealed class BookingApiTests : IDisposable
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(booking);
         Assert.Equal(tourDto.Id, booking.TourId);
         Assert.Equal(customerDto.Id, booking.CustomerId);

@@ -517,23 +517,6 @@ public sealed class Tour : Entity<Guid>
     };
 
     /// <summary>
-    /// Updates the payment status of a specific booking.
-    /// </summary>
-    /// <param name="bookingId">The ID of the booking to update.</param>
-    /// <param name="paymentStatus">The payment status.</param>
-    /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateBookingPaymentStatus(Guid bookingId, PaymentStatus paymentStatus)
-    {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
-        {
-            return TourErrors.BookingNotFound(bookingId);
-        }
-
-        return booking.UpdatePaymentStatus(paymentStatus);
-    }
-
-    /// <summary>
     /// Cancels a booking.
     /// </summary>
     /// <param name="bookingId">The ID of the booking to cancel.</param>
@@ -579,6 +562,35 @@ public sealed class Tour : Entity<Guid>
         }
 
         return booking.Complete();
+    }
+
+    /// <summary>
+    /// Records a payment for a booking.
+    /// </summary>
+    /// <param name="bookingId">The ID of the booking to record payment for.</param>
+    /// <param name="amount">The payment amount.</param>
+    /// <param name="paymentDate">The date the payment was made.</param>
+    /// <param name="method">The payment method used.</param>
+    /// <param name="timeProvider">The time provider for getting current time.</param>
+    /// <param name="referenceNumber">Optional reference number for the payment.</param>
+    /// <param name="notes">Optional notes about the payment.</param>
+    /// <returns>A result containing the recorded Payment if successful, or validation errors.</returns>
+    public Result<Payment> RecordBookingPayment(
+        Guid bookingId,
+        decimal amount,
+        DateTime paymentDate,
+        PaymentMethod method,
+        TimeProvider timeProvider,
+        string? referenceNumber = null,
+        string? notes = null)
+    {
+        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId).ConvertError<Payment>();
+        }
+
+        return booking.RecordPayment(amount, paymentDate, method, timeProvider, referenceNumber, notes);
     }
 
     /// <summary>

@@ -94,7 +94,7 @@ internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext
             entity.Property(booking => booking.RoomAdditionalCost).IsRequired();
             entity.Property(booking => booking.BookingDate).IsRequired();
             entity.Property(booking => booking.Status).HasConversion<string>().IsRequired();
-            entity.Property(booking => booking.PaymentStatus).HasConversion<string>().IsRequired();
+            entity.Ignore(booking => booking.PaymentStatus);
             entity.Ignore(booking => booking.TotalPrice);
             entity.Property(booking => booking.Notes).HasMaxLength(ContractConstants.MaxBookingNotesLength);
 

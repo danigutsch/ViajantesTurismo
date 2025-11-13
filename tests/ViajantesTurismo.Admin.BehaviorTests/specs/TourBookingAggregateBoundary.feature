@@ -76,12 +76,6 @@ Rule: Operations on non-existent bookings fail gracefully
     And the error message should contain "not found"
 
   @error_case
-  Scenario: Cannot update payment status for non-existent booking
-    When I try to update payment status for a non-existent booking
-    Then the operation should fail with not found error
-    And the error message should contain "not found"
-
-  @error_case
   Scenario: Cannot cancel non-existent booking
     When I try to cancel a non-existent booking
     Then the operation should fail with not found error

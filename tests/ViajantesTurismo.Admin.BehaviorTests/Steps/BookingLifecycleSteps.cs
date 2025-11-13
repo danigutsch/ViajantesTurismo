@@ -125,11 +125,28 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         bookingContext.Result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, longNotes);
     }
 
-    [When(@"the operator updates the payment status to ""(.*)""")]
-    public void WhenTheOperatorUpdatesThePaymentStatusTo(string paymentStatusString)
+    [When("the operator records a payment for the full amount")]
+    public void WhenTheOperatorRecordsAPaymentForTheFullAmount()
     {
-        var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
-        var result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, paymentStatus);
+        var result = tourContext.Tour.RecordBookingPayment(
+            bookingContext.Booking.Id,
+            bookingContext.Booking.TotalPrice,
+            DateTime.UtcNow,
+            PaymentMethod.CreditCard,
+            TimeProvider.System);
+        Assert.True(result.IsSuccess);
+    }
+
+    [When("the operator records a payment for {int} percent of the total")]
+    public void WhenTheOperatorRecordsAPaymentForPercentOfTheTotal(int percentage)
+    {
+        var amount = bookingContext.Booking.TotalPrice * (percentage / 100m);
+        var result = tourContext.Tour.RecordBookingPayment(
+            bookingContext.Booking.Id,
+            amount,
+            DateTime.UtcNow,
+            PaymentMethod.CreditCard,
+            TimeProvider.System);
         Assert.True(result.IsSuccess);
     }
 

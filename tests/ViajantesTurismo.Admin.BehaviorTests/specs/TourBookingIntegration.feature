@@ -60,36 +60,6 @@ So that tour bookings are properly tracked
         When I try to update notes for a non-existent booking
         Then the result should fail with message "not found in this tour"
 
-    Scenario: Cannot update payment status for booking that doesn't exist in tour
-        Given a tour exists
-        When I try to update payment status for a non-existent booking
-        Then the result should fail with message "not found in this tour"
-
-    Scenario Outline: Valid PaymentStatus values can be updated through tour
-        Given a tour exists with a booking
-        When I update the payment status to "<status>" through the tour
-        Then the booking payment status should be "<status>"
-
-        Examples:
-          | status        |
-          | Unpaid        |
-          | PartiallyPaid |
-          | Paid          |
-          | Refunded      |
-
-    Scenario Outline: Invalid PaymentStatus values are rejected when updating through tour
-        Given a tour exists with a booking
-        When I try to update the booking payment status with invalid value <invalidValue> through the tour
-        Then the booking update should fail with validation error for "paymentStatus"
-        And the error message should contain "Invalid payment status"
-
-        Examples:
-          | invalidValue |
-          | -1           |
-          | 4            |
-          | 99           |
-          | 999          |
-
     Scenario: Tour AddBooking handles BikeType Regular correctly
         Given a tour exists
         When I add a booking to tour with bike type "Regular" and no companion

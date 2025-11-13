@@ -304,28 +304,30 @@ internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
 
         dbContext.SaveChanges();
 
+        var timeProvider = TimeProvider.System;
+
         _ = tours[0].UpdateBookingNotes(booking1.Id, "Early bird discount applied");
         _ = tours[0].ConfirmBooking(booking1.Id);
-        _ = tours[0].UpdateBookingPaymentStatus(booking1.Id, PaymentStatus.Paid);
+        _ = tours[0].RecordBookingPayment(booking1.Id, booking1.TotalPrice, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-001");
 
         _ = tours[1].UpdateBookingNotes(booking2.Id, "Traveling together as a couple");
         _ = tours[1].ConfirmBooking(booking2.Id);
-        _ = tours[1].UpdateBookingPaymentStatus(booking2.Id, PaymentStatus.PartiallyPaid);
+        _ = tours[1].RecordBookingPayment(booking2.Id, booking2.TotalPrice * 0.5m, DateTime.UtcNow, PaymentMethod.BankTransfer, timeProvider, "BT-2024-002", "50% deposit paid");
 
         _ = tours[3].UpdateBookingNotes(booking4.Id, "Upgraded to premium accommodation");
         _ = tours[3].ConfirmBooking(booking4.Id);
-        _ = tours[3].UpdateBookingPaymentStatus(booking4.Id, PaymentStatus.Paid);
+        _ = tours[3].RecordBookingPayment(booking4.Id, booking4.TotalPrice, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-003");
 
         _ = tours[4].CompleteBooking(booking5.Id);
         _ = tours[0].CancelBooking(booking6.Id);
 
         _ = tours[1].UpdateBookingNotes(booking7.Id, "Special dietary requirements noted");
         _ = tours[1].ConfirmBooking(booking7.Id);
-        _ = tours[1].UpdateBookingPaymentStatus(booking7.Id, PaymentStatus.PartiallyPaid);
+        _ = tours[1].RecordBookingPayment(booking7.Id, booking7.TotalPrice * 0.75m, DateTime.UtcNow, PaymentMethod.BankTransfer, timeProvider, "BT-2024-004", "75% deposit paid");
 
         _ = tours[0].UpdateBookingNotes(booking9.Id, "Solo traveler, single room supplement included");
         _ = tours[0].ConfirmBooking(booking9.Id);
-        _ = tours[0].UpdateBookingPaymentStatus(booking9.Id, PaymentStatus.Paid);
+        _ = tours[0].RecordBookingPayment(booking9.Id, booking9.TotalPrice, DateTime.UtcNow, PaymentMethod.Cash, timeProvider);
 
         _ = tours[4].ConfirmBooking(booking10.Id);
     }

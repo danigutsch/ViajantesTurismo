@@ -138,18 +138,6 @@ public static class BookingErrors
             message: $"Invalid room type: {roomType}.");
 
     /// <summary>
-    /// Indicates that an invalid payment status value was provided.
-    /// </summary>
-    /// <param name="paymentStatus">The invalid payment status value.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result InvalidPaymentStatus(PaymentStatus paymentStatus) =>
-        Result.Invalid(
-            detail:
-            $"Invalid payment status: {paymentStatus}. Valid values are: {string.Join(", ", Enum.GetNames<PaymentStatus>())}.",
-            field: "paymentStatus",
-            message: $"Invalid payment status: {paymentStatus}.");
-
-    /// <summary>
     /// Indicates that a cancelled or completed booking cannot be modified.
     /// </summary>
     /// <param name="bookingId">The booking ID.</param>

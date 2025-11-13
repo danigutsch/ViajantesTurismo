@@ -19,13 +19,6 @@ public sealed class BookingValidationSteps(
             DiscountType.None, 0m, null, null);
     }
 
-    [When("I try to update the booking payment status with invalid value (.*) through the tour")]
-    public void WhenITryToUpdateTheBookingPaymentStatusWithInvalidValueThroughTheTour(int invalidValue)
-    {
-        bookingContext.Result =
-            tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, (PaymentStatus)invalidValue);
-    }
-
     [When(@"I try to update the booking notes with (\d+) characters through the tour")]
     public void WhenITryToUpdateTheBookingNotesWithDCharactersThroughTheTour(int characterCount)
     {

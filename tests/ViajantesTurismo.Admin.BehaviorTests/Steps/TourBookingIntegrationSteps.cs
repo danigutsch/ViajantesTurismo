@@ -147,15 +147,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         Assert.True(result.IsSuccess);
     }
 
-    [When(@"I update the payment status to ""(.*)"" through the tour")]
-    public void WhenIUpdateThePaymentStatusToThroughTheTour(string paymentStatusString)
-    {
-        var paymentStatus = TestHelpers.ParsePaymentStatus(paymentStatusString);
-        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(bookingContext.Booking.Id, paymentStatus);
-        var result = (Result)bookingContext.Result;
-        Assert.True(result.IsSuccess);
-    }
-
     [When("I remove the booking from the tour")]
     public void WhenIRemoveTheBookingFromTheTour()
     {
@@ -191,12 +182,6 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void WhenITryToUpdateNotesForANonExistentBooking()
     {
         bookingContext.Result = tourContext.Tour.UpdateBookingNotes(Guid.CreateVersion7(), "Some notes");
-    }
-
-    [When("I try to update payment status for a non-existent booking")]
-    public void WhenITryToUpdatePaymentStatusForANonExistentBooking()
-    {
-        bookingContext.Result = tourContext.Tour.UpdateBookingPaymentStatus(Guid.CreateVersion7(), PaymentStatus.Paid);
     }
 
     [Then("the tour should have the booking")]

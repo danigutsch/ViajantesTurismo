@@ -12,12 +12,6 @@ So that only valid bookings are created and updated
         And the error should be for field "roomType"
         And the error message should contain "Invalid room type"
 
-    Scenario: Cannot update payment status with invalid value
-        Given a tour exists with a booking
-        When I try to update the booking payment status with invalid value 99 through the tour
-        Then the booking update should fail with validation error for "paymentStatus"
-        And the error message should contain "Invalid payment status"
-
     Scenario: Cannot update booking notes exceeding maximum length
         Given a tour exists with a booking
         When I try to update the booking notes with 2001 characters through the tour
@@ -107,23 +101,3 @@ So that only valid bookings are created and updated
         Given a tour exists with a confirmed booking
         When I complete the booking through the tour
         Then the booking status should be "Completed"
-
-    Scenario: Update payment status on pending booking
-        Given a tour exists with a pending booking
-        When I update the payment status to "Paid" through the tour
-        Then the booking payment status should be "Paid"
-
-    Scenario: Update payment status on confirmed booking
-        Given a tour exists with a confirmed booking
-        When I update the payment status to "PartiallyPaid" through the tour
-        Then the booking payment status should be "PartiallyPaid"
-
-    Scenario: Update payment status on cancelled booking
-        Given a tour exists with a cancelled booking
-        When I update the payment status to "Refunded" through the tour
-        Then the booking payment status should be "Refunded"
-
-    Scenario: Update payment status on completed booking
-        Given a tour exists with a completed booking
-        When I update the payment status to "Paid" through the tour
-        Then the booking payment status should be "Paid"

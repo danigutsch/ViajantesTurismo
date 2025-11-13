@@ -105,9 +105,23 @@ public sealed class Booking : Entity<Guid>
     public BookingStatus Status { get; private set; } = BookingStatus.Pending;
 
     /// <summary>
-    /// The payment status of the booking.
+    /// The payment status of the booking (calculated from payments).
     /// </summary>
-    public PaymentStatus PaymentStatus { get; private set; } = PaymentStatus.Unpaid;
+    public PaymentStatus PaymentStatus
+    {
+        get
+        {
+            var amountPaid = AmountPaid;
+            var totalPrice = TotalPrice;
+
+            return amountPaid switch
+            {
+                0 => PaymentStatus.Unpaid,
+                _ when amountPaid >= totalPrice => PaymentStatus.Paid,
+                _ => PaymentStatus.PartiallyPaid
+            };
+        }
+    }
 
     /// <summary>
     /// The subtotal before discount (base price + room cost + bike prices).
@@ -243,21 +257,6 @@ public sealed class Booking : Entity<Guid>
             discount, notes);
     }
 
-    /// <summary>
-    /// Updates the payment status of the booking.
-    /// </summary>
-    /// <param name="paymentStatus">The new payment status.</param>
-    /// <returns>A result indicating success or failure.</returns>
-    public Result UpdatePaymentStatus(PaymentStatus paymentStatus)
-    {
-        if (!Enum.IsDefined(paymentStatus))
-        {
-            return BookingErrors.InvalidPaymentStatus(paymentStatus);
-        }
-
-        PaymentStatus = paymentStatus;
-        return Result.Ok();
-    }
 
     /// <summary>
     /// Confirms the booking, setting its status to Confirmed. Is idempotent.
@@ -484,24 +483,6 @@ public sealed class Booking : Entity<Guid>
         var payment = paymentResult.Value;
         _payments.Add(payment);
 
-        UpdatePaymentStatusFromPayments();
-
         return payment;
-    }
-
-    /// <summary>
-    /// Updates the payment status based on the total amount paid.
-    /// </summary>
-    private void UpdatePaymentStatusFromPayments()
-    {
-        var amountPaid = AmountPaid;
-        var totalPrice = TotalPrice;
-
-        PaymentStatus = amountPaid switch
-        {
-            0 => PaymentStatus.Unpaid,
-            _ when amountPaid >= totalPrice => PaymentStatus.Paid,
-            _ => PaymentStatus.PartiallyPaid
-        };
     }
 }

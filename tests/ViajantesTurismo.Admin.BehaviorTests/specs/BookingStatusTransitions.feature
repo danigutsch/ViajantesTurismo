@@ -23,14 +23,14 @@ Rule: Booking status and payment status are independent
   Scenario: Confirm booking before payment is received
     Given a pending booking exists
     When the operator confirms the booking
-    And the operator updates the payment status to "Paid"
+    And the operator records a payment for the full amount
     Then the booking status should be "Confirmed"
     And the booking payment status should be "Paid"
 
   @Invariant:INV-TOUR-018 @happy_path
   Scenario: Receive payment before confirming booking
     Given a pending booking exists
-    When the operator updates the payment status to "Paid"
+    When the operator records a payment for the full amount
     And the operator confirms the booking
     Then the booking status should be "Confirmed"
     And the booking payment status should be "Paid"
@@ -38,7 +38,7 @@ Rule: Booking status and payment status are independent
   @happy_path
   Scenario: Track partial payment on confirmed booking
     Given a confirmed booking exists
-    When the operator updates the payment status to "PartiallyPaid"
+    When the operator records a payment for 50 percent of the total
     Then the booking status should be "Confirmed"
     And the booking payment status should be "PartiallyPaid"
 
@@ -54,12 +54,11 @@ Rule: Completed tours may have unpaid bookings
 Rule: Cancelled bookings track refund status
 
   @happy_path
-  Scenario: Cancel booking and process refund
+  Scenario: Cancel booking remains unpaid
     Given a confirmed booking exists
     When the operator cancels the booking
-    And the operator updates the payment status to "Refunded"
     Then the booking status should be "Cancelled"
-    And the booking payment status should be "Refunded"
+    And the booking payment status should be "Unpaid"
 
 Rule: Only pending bookings can be removed
 
