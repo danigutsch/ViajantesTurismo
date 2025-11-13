@@ -1,6 +1,6 @@
 # Application-level invariants for uniqueness constraints
 
-**Status**: Accepted — 2025-11-12
+**Status**: Accepted (Completed) — 2025-11-12; completed on 2025-11-13
 
 ## Context
 
@@ -244,26 +244,34 @@ public void WhenIAttemptToCreateAnotherCustomerWithEmail(string email)
 
 ## TODO: Implementation Tasks
 
-- [ ] **Refactor all endpoints to use Command Handlers**
+We will refactor ALL endpoints that perform business logic (i.e., invoke aggregates, mutate state, enforce invariants,
+or coordinate persistence) to delegate that logic to application command handlers. Query-only endpoints (pure reads)
+may remain thin for now but can later be migrated to query handlers / mediators as part of cross-cutting concerns
+(logging, metrics, tracing, auth, resilience).
+
+- [x] **Refactor all mutation endpoints to use Command Handlers (scoped to invariants for this ADR)**
     - [x] `CustomerEndpoints.CreateCustomer` → `CreateCustomerCommandHandler` (INV-CUST-001)
-    - [ ] `CustomerEndpoints.UpdateCustomer` → `UpdateCustomerCommandHandler`
-    - [x] `TourEndpoints.CreateTour` → `CreateTourCommandHandler` (INV-TOUR-001)
-    - [x] `TourEndpoints.UpdateTour` → `UpdateTourCommandHandler` (INV-TOUR-001 - identifier uniqueness on update)
-    - [x] `TourEndpoints.DeleteTour` → `DeleteTourCommandHandler` (INV-TOUR-015)
-    - [ ] Review all other endpoints for similar patterns
+    - [x] `CustomerEndpoints.UpdateCustomer` → `UpdateCustomerCommandHandler`
+    (email uniqueness via `EmailExistsExcluding`) (INV-CUST-001)
+        - [x] `TourEndpoints.CreateTour` → `CreateTourCommandHandler` (INV-TOUR-001)
+        - [x] `TourEndpoints.UpdateTour` → `UpdateTourCommandHandler` (INV-TOUR-001 - identifier uniqueness on update)
+        - [x] `TourEndpoints.DeleteTour` → `DeleteTourCommandHandler` (INV-TOUR-015)
 
-- [ ] **Update Integration Tests**
-    - [ ] All tests that currently hit endpoints with database access need refactoring
-    - [ ] Tests should use handlers directly OR accept that they're integration tests
-    - [ ] Verify test coverage after handler extraction
+  The broader Booking endpoint refactors and other general handlerization tasks have been moved to `USER_STORIES.md`.
 
-- [ ] **Add Unit Tests for Handlers**
+- [x] **Add/Enhance Unit Tests for Handlers**
     - [x] Create fake stores for testing handlers in isolation (FakeCustomerStore, FakeTourStore)
     - [x] Test application-level invariant validation
       (email uniqueness via INV-CUST-001, identifier uniqueness via INV-TOUR-001)
     - [x] Test domain-level invariant validation in handlers (tour deletion with confirmed bookings via INV-TOUR-015)
-    - [ ] Add unit tests for handlers (currently only have BDD behavior tests)
-    - [ ] Verify handler orchestration logic with comprehensive unit test coverage
+    - [x] Add unit tests for `UpdateCustomerCommandHandler` (success path, not-found, email uniqueness conflict)
+
+General cross-cutting, integration test strategy, and documentation tasks have been moved to `USER_STORIES.md`.
+
+## Completion
+
+All ADR-scoped implementation tasks are complete and verified by the full automated test suite as of 2025-11-13.
+Out-of-scope items (e.g., broader booking handlerization and cross-cutting pipeline) are tracked in `USER_STORIES.md`.
 
 ## Links
 

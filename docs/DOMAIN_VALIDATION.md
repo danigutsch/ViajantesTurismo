@@ -23,6 +23,23 @@ For each Aggregate, document:
 **Reference:** See [ADR-001: Domain Validation with Factory Methods](adr/20251108-domain-validation-factory-methods.md)
 and aggregate documentation.
 
+## Application vs Domain Validation
+
+Not all business rules belong inside aggregates. Use the right layer for the right rule:
+
+- Domain invariants:
+    - Pure rules that depend only on the aggregate’s own state
+    - Enforced in factory methods and update operations
+    - Examples: value ranges, state transitions, composition validity
+
+- Application-level invariants:
+    - Rules requiring persistence or cross-aggregate checks (e.g., uniqueness)
+    - Enforced in application command handlers/services using repositories
+    - Return Result/Result\<T> and are mapped to HTTP ProblemDetails in the API
+
+See ADR [2025-11-12 Application-level uniqueness invariants](adr/20251112-application-level-invariants.md)
+for the rationale and patterns.
+
 ### Current Aggregates
 
 #### Tour Aggregate
@@ -41,7 +58,8 @@ and aggregate documentation.
 - **Purpose**: Manages customer information and profiles
 - **Root**: `Customer` entity
 - **Invariants**:
-    - Email must be unique and valid format
+    - Email must have a valid format (domain-level)
+    - Email uniqueness is an application-level invariant enforced in handlers via repository checks
     - Customer must be 18+ years old
     - Contact information properly formatted
 
@@ -63,12 +81,12 @@ public sealed class Tour : Entity<int>
     {
         if (string.IsNullOrWhiteSpace(identifier))
             return TourErrors.EmptyIdentifier();
-        
+
         return new Tour(identifier, name, ...);
     }
-    
+
     private Tour(...) { }
-    
+
     [UsedImplicitly]
     private Tour() { }
 }
@@ -151,7 +169,7 @@ public Result UpdateSchedule(DateTime newStartDate, DateTime newEndDate)
 
     if (newEndDate <= newStartDate)
         return TourErrors.InvalidDateRangeForUpdate();
-    
+
     StartDate = newStartDate;
     EndDate = newEndDate;
     return Result.Ok();
@@ -168,7 +186,7 @@ public static class TourErrors
     public static Result<Tour> EmptyIdentifier() =>
         Result<Tour>.Failure(ResultStatus.Invalid,
             new ResultError("Tour identifier cannot be empty", null));
-            
+
     public static Result EmptyIdentifierForUpdate() =>
         Result.Failure(ResultStatus.Invalid,
             new ResultError("Tour identifier cannot be empty", null));
@@ -201,13 +219,64 @@ public sealed record Money(decimal Amount, Currency Currency)
     {
         if (amount < 0)
             return Result<Money>.Invalid("Amount cannot be negative");
-        
+
         return new Money(amount, currency);
     }
 }
 ```
 
 **Reference:** See [ADR-010: Discount as Value Object](adr/20251108-discount-value-object.md)
+
+## Application-level Uniqueness Patterns
+
+Enforce uniqueness constraints in the application layer using repositories. Typical cases:
+
+- INV-CUST-001: Customer email must be unique
+- INV-TOUR-001: Tour identifier must be unique
+
+Repository methods:
+
+```csharp
+public interface ICustomerStore
+{
+    Task<bool> EmailExists(string email, CancellationToken ct);
+    Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct);
+}
+
+public interface ITourStore
+{
+    Task<bool> IdentifierExists(string identifier, CancellationToken ct);
+}
+```
+
+Handler example (Update Customer):
+
+```csharp
+public async Task<Result> Handle(UpdateCustomerCommand command, CancellationToken ct)
+{
+    var customer = await _store.FindByIdAsync(command.CustomerId, ct);
+    if (customer is null) return Result.NotFound($"Customer {command.CustomerId} not found");
+
+    if (await _store.EmailExistsExcluding(command.ContactInfo.Email, command.CustomerId, ct))
+        return Result.Invalid(
+            detail: $"A customer with email '{command.ContactInfo.Email}' already exists.",
+            field: nameof(command.ContactInfo.Email),
+            message: "Email must be unique");
+
+    var update = customer.Update(
+        /* map DTOs to value objects here */);
+    if (!update.IsSuccess) return update;
+
+    await _unitOfWork.SaveEntities(ct);
+    return Result.Ok();
+}
+```
+
+Testing strategy:
+
+- Unit tests for handlers using fake repositories (in-memory collections)
+- Behavior tests cover specification scenarios with fakes
+- Integration tests ensure API returns RFC 7807 ValidationProblem responses
 
 ## Contract Constants
 
@@ -227,10 +296,10 @@ See [ADR-003: Validation Constants in Contracts Project](adr/20251108-validation
 
 ## API Integration
 
-**Tour Creation:**
+### Tour Creation
 
 ```csharp
-var result = Tour.Create(dto.Identifier, dto.Name, ...);
+var result = Tour.Create(dto.Identifier, dto.Name, /* value objects */);
 if (!result.IsSuccess)
     return result.ToValidationProblem();
 
@@ -238,12 +307,23 @@ var tour = result.Value;
 await unitOfWork.SaveEntities(ct);
 ```
 
-**Booking Creation:**
+### Recording a Payment
 
 ```csharp
-var result = tour.AddBooking(
-    principalCustomerId,
-    principalBikeType,
+var result = booking.RecordPayment(
+    amount,
+    paymentDate,
+    method,
+    TimeProvider.System,
+    referenceNumber,
+    notes);
+
+if (!result.IsSuccess)
+    return result.ToValidationProblem();
+
+await unitOfWork.SaveEntities(ct);
+```
+
 ## Domain Events
 
 Domain events communicate state changes within and across bounded contexts:
@@ -253,16 +333,19 @@ Domain events communicate state changes within and across bounded contexts:
 In-process events handled synchronously within the same transaction:
 
 **Naming Convention:**
+
 - Past tense: `BookingConfirmed`, `CustomerUpgraded`, `PaymentRecorded`
 - Suffix: `DomainEvent` (e.g., `BookingConfirmedDomainEvent`)
 
 **Characteristics:**
+
 - Handled synchronously within the same transaction
 - Used for domain invariants that span aggregates
 - Failures roll back the entire transaction
 - Minimal data needed by domain handlers
 
 **Example:**
+
 ```csharp
 public sealed record BookingConfirmedDomainEvent(long BookingId, int TourId, DateTime ConfirmedAt);
 ```
@@ -287,29 +370,32 @@ Cross-boundary events published to external systems or bounded contexts:
 
 ```csharp
 public sealed record BookingConfirmedIntegrationEvent(
-    long BookingId, 
-    int TourId, 
+    long BookingId,
+    int TourId,
     string TourName,
     decimal TotalPrice,
     DateTime ConfirmedAt);
+```
 
 ## Gherkin Scenarios as Living Documentation
 
 Business-facing scenarios live under `tests/specs` and serve as executable documentation:
 
 **Principles:**
+
 - Use `Rule:` blocks to group scenarios by invariant
 - Mirror aggregate terms in Given/When/Then steps
 - Prefer declarative steps over imperative
 - Tag scenarios with aggregate and ADR references
 
 **Example:**
+
 ```gherkin
 @Agg:Tour @ADR:20251108-domain-validation-factory-methods
 Feature: Tour Creation
 
   Rule: Tour identifier must be unique and non-empty
-    
+
     Scenario: Create tour with valid identifier
       Given a tour identifier "CUBA2024"
       When I create a tour with that identifier
@@ -332,7 +418,7 @@ public void ThenOperationShouldFail()
         Result r => (r.IsSuccess, r.ErrorDetails?.Detail),
         _ => throw new InvalidOperationException("Unexpected result type")
     };
-    
+
     Assert.False(isSuccess);
     Assert.Contains("expected error", errorDetail!);
 }
@@ -344,36 +430,3 @@ public void ThenOperationShouldFail()
 - [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
 - [Test Guidelines](TEST_GUIDELINES.md) — Testing patterns and BDD scenarios
 - [Result Pattern](../src/ViajantesTurismo.Common/RESULT_PATTERN.md) — Detailed Result\<T\> usage
-
-```csharp
-var result = booking.RecordPayment(
-    amount,
-    paymentDate,
-    method,
-    TimeProvider.System,
-    referenceNumber,
-    notes);
-    
-if (!result.IsSuccess)
-    return result.ToValidationProblem();
-
-await unitOfWork.SaveEntities(ct);
-```
-
-## Testing Validation Errors Validation Errors Validation Errors
-
-```csharp
-[Then(@"the operation should fail")]
-public void ThenOperationShouldFail()
-{
-    var (isSuccess, errorDetail) = _result switch
-    {
-        Result<Tour> tr => (tr.IsSuccess, tr.ErrorDetails?.Detail),
-        Result r => (r.IsSuccess, r.ErrorDetails?.Detail),
-        _ => throw new InvalidOperationException("Unexpected result type")
-    };
-    
-    Assert.False(isSuccess);
-    Assert.Contains("expected error", errorDetail!);
-}
-```
