@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Tours.Commands.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.Commands.DeleteTour;
+using ViajantesTurismo.Admin.Application.Tours.Commands.UpdateTour;
 
 namespace ViajantesTurismo.Admin.Application;
 
@@ -25,6 +26,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CreateCustomerCommandHandler>();
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
+        builder.Services.AddScoped<UpdateTourCommandHandler>();
 
         return builder;
     }

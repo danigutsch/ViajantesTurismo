@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
+using ViajantesTurismo.Admin.Application.Tours.Commands.UpdateTour;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -105,50 +106,28 @@ internal static class ToursEndpoints
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateTour(
         Guid id,
         [FromBody] UpdateTourDto tourDto,
-        [FromServices] ITourStore tourStore,
-        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] UpdateTourCommandHandler handler,
         CancellationToken ct)
     {
-        var tour = await tourStore.GetById(id, ct);
-        if (tour is null)
-        {
-            return TourErrors.TourNotFound(id).ToNotFound();
-        }
-
-        var currency = TourMapper.MapToCurrency(tourDto.Currency);
-
-        var basicInfoResult = tour.UpdateDetails(tourDto.Identifier, tourDto.Name);
-        if (basicInfoResult.IsFailure)
-        {
-            return basicInfoResult.ToValidationProblem();
-        }
-
-        var scheduleResult = tour.UpdateSchedule(tourDto.StartDate, tourDto.EndDate);
-        if (scheduleResult.IsFailure)
-        {
-            return basicInfoResult.ToValidationProblem();
-        }
-
-        var pricingResult = tour.UpdatePricing(
+        var command = new UpdateTourCommand(
+            id,
+            tourDto.Identifier,
+            tourDto.Name,
+            tourDto.StartDate,
+            tourDto.EndDate,
+            tourDto.Price,
             tourDto.DoubleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
-            currency);
-        if (pricingResult.IsFailure)
-        {
-            return basicInfoResult.ToValidationProblem();
-        }
+            TourMapper.MapToCurrency(tourDto.Currency),
+            tourDto.IncludedServices.ToList(),
+            tourDto.MinCustomers,
+            tourDto.MaxCustomers);
 
-        var basePriceResult = tour.UpdateBasePrice(tourDto.Price);
-        if (basePriceResult.IsFailure)
-        {
-            return basicInfoResult.ToValidationProblem();
-        }
+        var result = await handler.Handle(command, ct);
 
-        tour.UpdateIncludedServices([.. tourDto.IncludedServices]);
-
-        await unitOfWork.SaveEntities(ct);
-
-        return TypedResults.NoContent();
+        return result.IsSuccess
+            ? TypedResults.NoContent()
+            : result.ToValidationProblem();
     }
 }

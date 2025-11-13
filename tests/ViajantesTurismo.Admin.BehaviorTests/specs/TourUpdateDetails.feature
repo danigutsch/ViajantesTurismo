@@ -10,6 +10,15 @@ So that I can keep tour information current and accurate
         And the tour should have identifier "CUBA2025"
         And the tour should have name "Cuba Cycling Experience"
 
+    @Invariant:INV-TOUR-001
+    Scenario: Cannot update tour to use another tour's identifier
+        Given a tour exists with identifier "CUBA2024" and name "Cuba Bike Adventure"
+        And another tour exists with identifier "CUBA2025"
+        When I update the tour details to identifier "CUBA2025" and name "Cuba Bike Adventure"
+        Then the tour details update should fail
+        And the error should contain "identifier"
+        And the error should contain "already exists"
+
     Scenario: Cannot update tour with empty identifier
         Given a tour exists with identifier "CUBA2024" and name "Cuba Bike Adventure"
         When I update the tour details to identifier "" and name "Valid Name"

@@ -48,6 +48,15 @@ public interface ITourStore
     Task<bool> IdentifierExists(string identifier, CancellationToken ct);
 
     /// <summary>
+    /// Checks if a tour with the specified identifier exists, excluding a specific tour.
+    /// </summary>
+    /// <param name="identifier">The tour identifier to check.</param>
+    /// <param name="excludeTourId">The ID of the tour to exclude from the check.</param>
+    /// <param name="ct">Cancellation token to cancel the operation.</param>
+    /// <returns>True if another tour with the identifier exists; otherwise, false.</returns>
+    Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct);
+
+    /// <summary>
     /// Deletes a tour from the store.
     /// </summary>
     /// <param name="tour">The tour to delete.</param>

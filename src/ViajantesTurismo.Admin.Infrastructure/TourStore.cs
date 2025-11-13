@@ -19,5 +19,8 @@ internal sealed class TourStore(ApplicationDbContext dbContext) : ITourStore
     public async Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
         await dbContext.Tours.AnyAsync(t => t.Identifier == identifier, ct);
 
+    public async Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct) =>
+        await dbContext.Tours.AnyAsync(t => t.Identifier == identifier && t.Id != excludeTourId, ct);
+
     public void Delete(Tour tour) => dbContext.Tours.Remove(tour);
 }
