@@ -12,7 +12,7 @@ public static class ResultExtensions
     /// <param name="source">The source result to convert.</param>
     /// <returns>A Result&lt;TTarget&gt; with the same error information.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the source result is successful.</exception>
-    public static Result<TTarget> ConvertError<TTarget>(this Result source)
+    public static Result<TTarget> ConvertError<TTarget>(this Result source) where TTarget : notnull
     {
         if (source.IsSuccess)
         {
@@ -45,7 +45,7 @@ public static class ResultExtensions
     /// <param name="source">The source result to convert.</param>
     /// <returns>A Result with the same error information.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the source result is successful.</exception>
-    public static Result ConvertError<TSource>(this Result<TSource> source)
+    public static Result ConvertError<TSource>(this Result<TSource> source) where TSource : notnull
     {
         if (source.IsSuccess)
         {
@@ -80,6 +80,8 @@ public static class ResultExtensions
     /// <returns>A Result&lt;TTarget&gt; with the same error information.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the source result is successful.</exception>
     public static Result<TTarget> ConvertError<TSource, TTarget>(this Result<TSource> source)
+        where TSource : notnull
+        where TTarget : notnull
     {
         if (source.IsSuccess)
         {

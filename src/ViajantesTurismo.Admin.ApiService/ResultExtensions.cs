@@ -53,7 +53,7 @@ internal static class ResultExtensions
         return TypedResults.NotFound(problemDetails);
     }
 
-    public static ValidationProblem ToValidationProblem<T>(this Result<T> result)
+    public static ValidationProblem ToValidationProblem<T>(this Result<T> result) where T : notnull
     {
         if (result.IsSuccess)
         {
@@ -78,7 +78,7 @@ internal static class ResultExtensions
         return TypedResults.ValidationProblem(result.ErrorDetails.ValidationErrors, result.ErrorDetails.Detail);
     }
 
-    public static NotFound<ProblemDetails> ToNotFound<T>(this Result<T> result)
+    public static NotFound<ProblemDetails> ToNotFound<T>(this Result<T> result) where T : notnull
     {
         if (result.IsSuccess)
         {

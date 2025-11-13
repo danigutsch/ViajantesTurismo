@@ -41,7 +41,7 @@ public sealed class ValidationErrors
     /// <typeparam name="T">The type of value being validated.</typeparam>
     /// <returns>A combined error result with all validation errors.</returns>
     /// <exception cref="InvalidOperationException">Thrown if no errors have been collected.</exception>
-    public Result<T> ToResult<T>()
+    public Result<T> ToResult<T>() where T : notnull
     {
         if (_errors.Count == 0)
         {
@@ -111,7 +111,7 @@ public sealed class ValidationErrors
     /// <typeparam name="T">The type of the result value.</typeparam>
     /// <param name="error">The validation error result to add.</param>
     /// <exception cref="InvalidOperationException">Thrown if the result status is not Invalid.</exception>
-    public void Add<T>(Result<T> error)
+    public void Add<T>(Result<T> error) where T : notnull
     {
         if (error.Status != ResultStatus.Invalid)
         {
