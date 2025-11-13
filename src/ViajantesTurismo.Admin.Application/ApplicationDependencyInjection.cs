@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Customers.Commands.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Tours.Commands.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.Commands.DeleteTour;
 using ViajantesTurismo.Admin.Application.Tours.Commands.UpdateTour;
@@ -24,6 +25,7 @@ public static class ApplicationDependencyInjection
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddScoped<CreateCustomerCommandHandler>();
+        builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();

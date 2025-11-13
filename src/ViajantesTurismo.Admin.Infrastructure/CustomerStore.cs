@@ -15,4 +15,7 @@ internal sealed class CustomerStore(ApplicationDbContext dbContext) : ICustomerS
 
     public async Task<bool> EmailExists(string email, CancellationToken ct) =>
         await dbContext.Customers.AnyAsync(c => c.ContactInfo.Email == email, ct);
+
+    public async Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct) =>
+        await dbContext.Customers.AnyAsync(c => c.ContactInfo.Email == email && c.Id != excludeCustomerId, ct);
 }

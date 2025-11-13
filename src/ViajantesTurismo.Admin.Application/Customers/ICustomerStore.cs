@@ -34,4 +34,13 @@ public interface ICustomerStore
     /// <param name="ct">Cancellation token.</param>
     /// <returns>True if a customer with the email exists, otherwise false.</returns>
     Task<bool> EmailExists(string email, CancellationToken ct);
+
+    /// <summary>
+    /// Checks if a customer with the specified email address exists, excluding the specified customer.
+    /// </summary>
+    /// <param name="email">The email address to check.</param>
+    /// <param name="excludeCustomerId">The customer ID to exclude from the check.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>True if another customer with the email exists, otherwise false.</returns>
+    Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct);
 }

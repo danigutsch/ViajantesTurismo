@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
-using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Customers.Commands.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
@@ -69,11 +68,12 @@ internal static class CustomerEndpoints
         return TypedResults.Ok(customerDto);
     }
 
-    private static async Task<Results<Created<GetCustomerDto>, ValidationProblem, NotFound<ProblemDetails>>> CreateCustomer(
-        [FromBody] CreateCustomerDto dto,
-        [FromServices] CreateCustomerCommandHandler handler,
-        [FromServices] IQueryService queryService,
-        CancellationToken ct)
+    private static async Task<Results<Created<GetCustomerDto>, ValidationProblem, NotFound<ProblemDetails>>>
+        CreateCustomer(
+            [FromBody] CreateCustomerDto dto,
+            [FromServices] CreateCustomerCommandHandler handler,
+            [FromServices] IQueryService queryService,
+            CancellationToken ct)
     {
         var command = new CreateCustomerCommand(
             dto.PersonalInfo,
@@ -115,73 +115,30 @@ internal static class CustomerEndpoints
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateCustomer(
         [FromRoute] Guid id,
         [FromBody] UpdateCustomerDto dto,
-        [FromServices] ICustomerStore customerStore,
-        [FromServices] IUnitOfWork unitOfWork,
-        [FromServices] TimeProvider timeProvider,
+        [FromServices] UpdateCustomerCommandHandler handler,
         CancellationToken ct)
     {
-        var customer = await customerStore.GetById(id, ct);
-        if (customer is null)
+        var command = new UpdateCustomerCommand(
+            id,
+            dto.PersonalInfo,
+            dto.IdentificationInfo,
+            dto.ContactInfo,
+            dto.Address,
+            dto.PhysicalInfo,
+            dto.AccommodationPreferences,
+            dto.EmergencyContact,
+            dto.MedicalInfo);
+
+        var result = await handler.Handle(command, ct);
+
+        if (result.IsFailure)
         {
-            return CustomerErrors.CustomerNotFound(id).ToNotFound();
+            return result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                _ => result.ToValidationProblem()
+            };
         }
-
-        var personalInfoResult = PersonalInfo.Create(
-            dto.PersonalInfo.FirstName,
-            dto.PersonalInfo.LastName,
-            dto.PersonalInfo.Gender,
-            dto.PersonalInfo.BirthDate.ToUniversalTime(),
-            dto.PersonalInfo.Nationality,
-            dto.PersonalInfo.Profession,
-            timeProvider);
-
-        var identificationInfoResult = IdentificationInfo.Create(
-            dto.IdentificationInfo.NationalId,
-            dto.IdentificationInfo.IdNationality);
-
-        var contactInfoResult = ContactInfo.Create(
-            dto.ContactInfo.Email,
-            dto.ContactInfo.Mobile,
-            dto.ContactInfo.Instagram,
-            dto.ContactInfo.Facebook);
-
-        var errors = new ValidationErrors();
-        if (!personalInfoResult.IsSuccess)
-        {
-            errors.Add(personalInfoResult);
-        }
-
-        if (!identificationInfoResult.IsSuccess)
-        {
-            errors.Add(identificationInfoResult);
-        }
-
-        if (!contactInfoResult.IsSuccess)
-        {
-            errors.Add(contactInfoResult);
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult().ToValidationProblem();
-        }
-
-        var address = CustomerMapper.MapToAddress(dto.Address);
-        var physicalInfo = CustomerMapper.MapToPhysicalInfo(dto.PhysicalInfo);
-        var accommodationPreferences = CustomerMapper.MapToAccommodationPreferences(dto.AccommodationPreferences);
-        var emergencyContact = CustomerMapper.MapToEmergencyContact(dto.EmergencyContact);
-        var medicalInfo = CustomerMapper.MapToMedicalInfo(dto.MedicalInfo);
-
-        customer.UpdatePersonalInfo(personalInfoResult.Value);
-        customer.UpdateIdentificationInfo(identificationInfoResult.Value);
-        customer.UpdateContactInfo(contactInfoResult.Value);
-        customer.UpdateAddress(address);
-        customer.UpdatePhysicalInfo(physicalInfo);
-        customer.UpdateAccommodationPreferences(accommodationPreferences);
-        customer.UpdateEmergencyContact(emergencyContact);
-        customer.UpdateMedicalInfo(medicalInfo);
-
-        await unitOfWork.SaveEntities(ct);
 
         return TypedResults.NoContent();
     }
