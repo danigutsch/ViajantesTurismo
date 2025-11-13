@@ -88,9 +88,15 @@
     </div>
 
     <div class="mb-3">
-        <label for="services" class="form-label">Included Services (comma-separated)</label>
-        <InputText id="services" class="form-control" @bind-Value="_model.ServicesInput"
-                   placeholder="e.g., Hotel, Breakfast, City Tour"/>
+        <label for="services" class="form-label">Included Services</label>
+        <InputTextArea id="services" class="form-control" @bind-Value="_model.ServicesInput" rows="5"
+                       placeholder="Enter one service per line, e.g.:
+Hotel
+Breakfast
+Lunch
+City Tour
+Bike rental"/>
+        <div class="form-text">Enter one service per line. Empty lines will be ignored.</div>
     </div>
 
     <div class="row">
@@ -146,7 +152,7 @@
                     RegularBikePrice = _model.RegularBikePrice,
                     EBikePrice = _model.EBikePrice,
                     IncludedServices = _model.ServicesInput
-                            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                             .ToList(),
                     MinCustomers = _model.MinCustomers,
                     MaxCustomers = _model.MaxCustomers
