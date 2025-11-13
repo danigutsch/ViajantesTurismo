@@ -32,6 +32,8 @@ Implement a two-layer validation approach for uniqueness constraints:
 
 #### Application-level Invariants (Uniqueness)
 
+**For Creation (new entities):**
+
 ```csharp
 // Infrastructure Layer - Repository Interface
 public interface ICustomerStore
@@ -68,6 +70,51 @@ public async Task<Result<Customer>> Handle(CreateCustomerCommand cmd, Cancellati
     // Persist
     await customerStore.Add(result.Value, ct);
     return result;
+}
+```
+
+**For Updates (existing entities):**
+
+```csharp
+// Infrastructure Layer - Repository Interface
+public interface ITourStore
+{
+    Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct);
+}
+
+// Infrastructure Layer - EF Core Implementation
+public async Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct)
+{
+    return await dbContext.Tours
+        .AnyAsync(t => t.Identifier == identifier && t.Id != excludeTourId, ct);
+}
+
+// Application Layer - Update Command Handler
+public async Task<Result> Handle(UpdateTourCommand cmd, CancellationToken ct)
+{
+    var tour = await tourStore.GetById(cmd.TourId, ct);
+    if (tour is null)
+    {
+        return TourErrors.TourNotFound(cmd.TourId).ConvertError();
+    }
+
+    // Application-level invariant validation (excluding current entity)
+    if (await tourStore.IdentifierExistsExcluding(cmd.Identifier, cmd.TourId, ct))
+    {
+        return TourErrors.IdentifierAlreadyExists(cmd.Identifier);
+    }
+
+    // Domain-level validations
+    var detailsResult = tour.UpdateDetails(cmd.Identifier, cmd.Name);
+    if (detailsResult.IsFailure)
+    {
+        return detailsResult;
+    }
+
+    // ... other domain updates ...
+
+    await unitOfWork.SaveEntities(ct);
+    return Result.Ok();
 }
 ```
 
@@ -201,7 +248,7 @@ public void WhenIAttemptToCreateAnotherCustomerWithEmail(string email)
     - [x] `CustomerEndpoints.CreateCustomer` → `CreateCustomerCommandHandler` (INV-CUST-001)
     - [ ] `CustomerEndpoints.UpdateCustomer` → `UpdateCustomerCommandHandler`
     - [x] `TourEndpoints.CreateTour` → `CreateTourCommandHandler` (INV-TOUR-001)
-    - [ ] `TourEndpoints.UpdateTour` → `UpdateTourCommandHandler` (if identifier can be changed)
+    - [x] `TourEndpoints.UpdateTour` → `UpdateTourCommandHandler` (INV-TOUR-001 - identifier uniqueness on update)
     - [x] `TourEndpoints.DeleteTour` → `DeleteTourCommandHandler` (INV-TOUR-015)
     - [ ] Review all other endpoints for similar patterns
 
