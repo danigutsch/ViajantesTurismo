@@ -41,6 +41,32 @@ else
 
         <PropertyColumn Property="@(t => t.Currency)" Title="Currency" />
 
+        <TemplateColumn Title="Capacity" Sortable="true"
+                        SortBy="GridSort<GetTourDto>.ByAscending(t => t.CurrentCustomerCount)">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-nowrap">@context.CurrentCustomerCount / @context.MaxCustomers</span>
+                @if (IsFullyBooked(context))
+                {
+                    <span class="badge bg-danger" title="Tour is fully booked">
+                        <i class="bi bi-exclamation-circle"></i> Full
+                    </span>
+                }
+                else if (IsBelowMinimum(context))
+                {
+                    <span class="badge bg-warning text-dark"
+                          title="Below minimum capacity (@context.MinCustomers customers)">
+                        <i class="bi bi-exclamation-triangle"></i> Below Min
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-success" title="@GetAvailableSpots(context) spots available">
+                        <i class="bi bi-check-circle"></i> @GetAvailableSpots(context) spots
+                    </span>
+                }
+            </div>
+        </TemplateColumn>
+
         <TemplateColumn Title="Actions">
             <div class="btn-group" role="group">
                 <NavLink href="@($"/tours/{context.Id.ToString()}")" class="btn btn-sm btn-info">
@@ -84,5 +110,11 @@ else
         };
         return $"{symbol}{price:N2}";
     }
+
+    private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
+
+    private static bool IsBelowMinimum(GetTourDto tour) => tour.CurrentCustomerCount < tour.MinCustomers;
+
+    private static int GetAvailableSpots(GetTourDto tour) => tour.MaxCustomers - tour.CurrentCustomerCount;
 
 }
