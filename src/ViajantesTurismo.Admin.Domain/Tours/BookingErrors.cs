@@ -171,4 +171,24 @@ public static class BookingErrors
             detail: $"Principal and companion customers cannot be the same person. Customer ID: {customerId}.",
             field: "companionCustomerId",
             message: "Principal and companion customers cannot be the same person.");
+
+    /// <summary>
+    /// Indicates that a single room cannot have a companion.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result SingleRoomCannotHaveCompanion() =>
+        Result.Invalid(
+            detail: "Single room bookings cannot have a companion. Please select double room for companion bookings.",
+            field: "companionCustomerId",
+            message: "Single room cannot have a companion.");
+
+    /// <summary>
+    /// Indicates that companion bike type is required when a companion is present.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CompanionBikeTypeRequired() =>
+        Result.Invalid(
+            detail: "Companion bike type is required when companion is present.",
+            field: "companionBikeType",
+            message: "Companion bike type is required.");
 }

@@ -406,6 +406,11 @@ public sealed class Tour : Entity<Guid>
             return BookingErrors.InvalidRoomType(roomType).ConvertError<Booking>();
         }
 
+        if (roomType == RoomType.SingleRoom && companionCustomerId.HasValue)
+        {
+            return BookingErrors.SingleRoomCannotHaveCompanion().ConvertError<Booking>();
+        }
+
         var principalBikePrice = GetBikePrice(principalBikeType);
         var principalCustomerResult =
             BookingCustomer.Create(principalCustomerId, principalBikeType, principalBikePrice);
@@ -670,7 +675,7 @@ public sealed class Tour : Entity<Guid>
             return principalCustomerResult.ConvertError();
         }
 
-        var companionCustomerResult = CreateCompanionCustomerForUpdate(
+        var companionCustomerResult = ValidateAndCreateCompanionForUpdate(
             booking.PrincipalCustomer.CustomerId,
             companionCustomerId,
             companionBikeType);
@@ -686,31 +691,28 @@ public sealed class Tour : Entity<Guid>
             roomType,
             roomAdditionalCost,
             principalCustomerResult.Value,
-            companionCustomerResult.Value,
+            companionCustomerResult.Value.Value,
             booking.Discount);
     }
 
-    private Result<BookingCustomer?> CreateCompanionCustomerForUpdate(
+    private Result<Optional<BookingCustomer>> ValidateAndCreateCompanionForUpdate(
         Guid principalCustomerId,
         Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
         if (!companionCustomerId.HasValue)
         {
-            return Result<BookingCustomer?>.Ok(null);
+            return Optional<BookingCustomer>.Empty();
         }
 
         if (!companionBikeType.HasValue)
         {
-            return Result<BookingCustomer?>.Invalid(
-                detail: "Companion bike type is required when companion is present.",
-                field: "companionBikeType",
-                message: "Companion bike type is required.");
+            return BookingErrors.CompanionBikeTypeRequired().ConvertError<Optional<BookingCustomer>>();
         }
 
         if (principalCustomerId == companionCustomerId.Value)
         {
-            return TourErrors.PrincipalAndCompanionCannotBeSame().ConvertError<BookingCustomer?>();
+            return TourErrors.PrincipalAndCompanionCannotBeSame().ConvertError<Optional<BookingCustomer>>();
         }
 
         var companionBikePrice = GetBikePrice(companionBikeType.Value);
@@ -719,9 +721,12 @@ public sealed class Tour : Entity<Guid>
             companionBikeType.Value,
             companionBikePrice);
 
-        return companionCustomerResult.IsSuccess
-            ? Result<BookingCustomer?>.Ok(companionCustomerResult.Value)
-            : companionCustomerResult.ConvertError<BookingCustomer, BookingCustomer?>();
+        if (companionCustomerResult.IsFailure)
+        {
+            return companionCustomerResult.ConvertError<BookingCustomer, Optional<BookingCustomer>>();
+        }
+
+        return Optional<BookingCustomer>.Of(companionCustomerResult.Value);
     }
 
     /// <summary>

@@ -9,11 +9,15 @@ internal sealed class TourStore(ApplicationDbContext dbContext) : ITourStore
     public void Add(Tour tour) => dbContext.Tours.Add(tour);
 
     public async Task<Tour?> GetById(Guid id, CancellationToken ct) =>
-        await dbContext.Tours.FindAsync([id], ct);
+        await dbContext.Tours
+            .Include(t => t.Bookings)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
 
     public async Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct) =>
         await dbContext.Tours
             .Include(t => t.Bookings)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(t => t.Bookings.Any(b => b.Id == bookingId), ct);
 
     public async Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>

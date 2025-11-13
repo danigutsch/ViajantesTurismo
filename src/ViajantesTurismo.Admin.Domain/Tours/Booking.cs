@@ -419,6 +419,11 @@ public sealed class Booking : Entity<Guid>
             errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(principalCustomer.CustomerId));
         }
 
+        if (roomType == RoomType.SingleRoom && companionCustomer is not null)
+        {
+            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
+        }
+
         if (errors.HasErrors)
         {
             return errors.ToResult();
