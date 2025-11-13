@@ -51,6 +51,7 @@ for the rationale and patterns.
     - Prices must be non-negative
     - Bookings cannot exceed maximum capacity
     - Confirmed bookings count toward capacity
+    - Cannot reduce maximum capacity below current confirmed bookings
 - **Entities**: `Tour`, `Booking`, `Payment`
 
 #### Customer Aggregate

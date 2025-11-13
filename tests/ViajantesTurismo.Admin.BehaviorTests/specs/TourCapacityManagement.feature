@@ -16,6 +16,7 @@ Feature: Tour Capacity Management
   - INV-TOUR-011: Maximum customers must be between 1 and 20
   - INV-TOUR-012: Minimum customers must be less than or equal to maximum
   - INV-TOUR-013: Cannot exceed maximum customer capacity (confirmed bookings only)
+  - INV-TOUR-014: Cannot reduce maximum capacity below current confirmed bookings
 
 Background:
   Given I am authenticated as a tour operator
