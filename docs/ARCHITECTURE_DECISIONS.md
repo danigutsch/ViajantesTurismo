@@ -18,6 +18,7 @@ This is the index of architecture decisions for **ViajantesTurismo**. We use sho
 - **[ADR-002](adr/20251108-result-pattern-over-exceptions.md)** — Result Pattern Over Exceptions
 - **[ADR-003](adr/20251108-validation-constants-contracts-project.md)** — Validation Constants in Contracts Project
 - **[ADR-004](adr/20251108-dedicated-error-classes.md)** — Dedicated Error Classes per Entity
+- **[ADR-014](adr/20251112-application-level-invariants.md)** — Application-level invariants for uniqueness constraints
 
 ### Code Quality & Testing
 

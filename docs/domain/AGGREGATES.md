@@ -28,6 +28,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 - UpdateBasePrice — Change base price only
 - UpdateCapacity — Adjust minimum and maximum customer limits
 - UpdateIncludedServices — Modify list of included services
+- Delete — Remove tour from system (only if no confirmed bookings exist)
 
 ### Commands (Booking Lifecycle via Tour)
 
