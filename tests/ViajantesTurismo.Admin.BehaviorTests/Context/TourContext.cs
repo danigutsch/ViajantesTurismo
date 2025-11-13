@@ -1,4 +1,6 @@
 using JetBrains.Annotations;
+using ViajantesTurismo.Admin.Application.Tours.Commands.CreateTour;
+using ViajantesTurismo.Admin.BehaviorTests.Fakes;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
@@ -20,4 +22,9 @@ public sealed class TourContext
     public required object Result { get; set; }
     public Result? UpdateResult { get; set; }
     public Result<Booking>? BookingResult { get; set; }
+
+    public FakeTourStore TourStore { get; } = new();
+    public FakeUnitOfWork UnitOfWork { get; } = new();
+    public CreateTourCommandHandler CreateTourCommandHandler => new(TourStore, UnitOfWork);
+    public Result<Guid>? CommandResult { get; set; }
 }

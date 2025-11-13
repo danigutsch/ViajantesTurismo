@@ -1,6 +1,8 @@
 using System.Globalization;
 using Reqnroll;
+using ViajantesTurismo.Admin.Application.Tours.Commands.CreateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
@@ -9,8 +11,60 @@ using ViajantesTurismo.Common.Results;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class TourManagementSteps(TourContext tourContext)
+public sealed class TourManagementSteps(TourContext tourContext, BookingContext bookingContext)
 {
+    [Given(@"^a tour exists with identifier ""([^""]+)""$")]
+    public void GivenATourExistsWithIdentifier(string identifier)
+    {
+        var tour = Tour.Create(
+            identifier,
+            "Existing Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            2000.00m,
+            500.00m,
+            100.00m,
+            200.00m,
+            Currency.UsDollar,
+            4,
+            12,
+            ["Accommodation", "Meals"]).Value;
+
+        tourContext.TourStore.AddExistingTour(tour);
+    }
+
+    [When(@"I attempt to create another tour with identifier ""(.*)""")]
+    public async Task WhenIAttemptToCreateAnotherTourWithIdentifier(string identifier)
+    {
+        var command = new CreateTourCommand(
+            identifier,
+            "Another Tour",
+            DateTime.UtcNow.AddMonths(2),
+            DateTime.UtcNow.AddMonths(2).AddDays(7),
+            2500.00m,
+            600.00m,
+            120.00m,
+            220.00m,
+            CurrencyDto.UsDollar,
+            ["Accommodation", "Meals"],
+            4,
+            12);
+
+        var result = await tourContext.CreateTourCommandHandler.Handle(command, CancellationToken.None);
+        tourContext.CommandResult = result;
+        tourContext.Result = result;
+        bookingContext.Result = result;
+    }
+
+    [Then(@"I should be informed that the tour identifier must be unique")]
+    public void ThenIShouldBeInformedThatTheTourIdentifierMustBeUnique()
+    {
+        var result = (Result<Guid>)tourContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("already exists", result.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
     public void GivenIHaveTourDatesFromTo(string startDateString, string endDateString)
     {
@@ -207,6 +261,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             Result<TourPricing> r => r.IsSuccess,
             Result<DateRange> r => r.IsSuccess,
             Result<TourCapacity> r => r.IsSuccess,
+            Result<Guid> r => r.IsSuccess,
             Result r => r.IsSuccess,
             _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
         };
@@ -225,6 +280,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             Result<DateRange> dr => (dr.IsSuccess, dr.ErrorDetails?.Detail, dr.ErrorDetails?.ValidationErrors),
             Result<TourPricing> pr => (pr.IsSuccess, pr.ErrorDetails?.Detail, pr.ErrorDetails?.ValidationErrors),
             Result<TourCapacity> cr => (cr.IsSuccess, cr.ErrorDetails?.Detail, cr.ErrorDetails?.ValidationErrors),
+            Result<Guid> gr => (gr.IsSuccess, gr.ErrorDetails?.Detail, gr.ErrorDetails?.ValidationErrors),
             Result r => (r.IsSuccess, r.ErrorDetails?.Detail, r.ErrorDetails?.ValidationErrors),
             _ => throw new InvalidOperationException("Unexpected result type")
         };

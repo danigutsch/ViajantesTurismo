@@ -38,4 +38,12 @@ public interface ITourStore
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour that owns the booking if found; otherwise, null.</returns>
     Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct);
+
+    /// <summary>
+    /// Checks if a tour with the specified identifier already exists.
+    /// </summary>
+    /// <param name="identifier">The tour identifier to check.</param>
+    /// <param name="ct">Cancellation token to cancel the operation.</param>
+    /// <returns>True if a tour with the identifier exists; otherwise, false.</returns>
+    Task<bool> IdentifierExists(string identifier, CancellationToken ct);
 }

@@ -16,6 +16,16 @@ public static class TourErrors
         detail: $"Booking with ID {bookingId} not found in this tour.");
 
     /// <summary>
+    /// Indicates that a tour with the specified identifier already exists.
+    /// </summary>
+    /// <param name="identifier">The identifier that already exists.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result IdentifierAlreadyExists(string identifier) => Result.Invalid(
+        detail: $"A tour with identifier '{identifier}' already exists.",
+        field: "identifier",
+        message: "Tour identifier must be unique.");
+
+    /// <summary>
     /// Indicates that the tour identifier is empty or whitespace.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
@@ -216,7 +226,8 @@ public static class TourErrors
     /// <param name="currentStatus">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result CannotRemoveNonPendingBooking(Guid bookingId, BookingStatus currentStatus) => Result.Invalid(
-        detail: $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.",
+        detail:
+        $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.",
         field: "bookingId",
         message: "Only pending bookings can be removed.");
 }

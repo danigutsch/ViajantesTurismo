@@ -15,4 +15,7 @@ internal sealed class TourStore(ApplicationDbContext dbContext) : ITourStore
         await dbContext.Tours
             .Include(t => t.Bookings)
             .FirstOrDefaultAsync(t => t.Bookings.Any(b => b.Id == bookingId), ct);
+
+    public async Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
+        await dbContext.Tours.AnyAsync(t => t.Identifier == identifier, ct);
 }

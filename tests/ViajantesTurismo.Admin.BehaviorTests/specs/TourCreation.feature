@@ -58,7 +58,7 @@ Feature: Tour Creation
     be provided and kept to a reasonable length. Tour identifiers must
     be unique across all tours to avoid confusion.
 
-    @Invariant:INV-TOUR-001 @error_case @critical @ignore
+    @Invariant:INV-TOUR-001 @error_case @critical
     Scenario: Reject duplicate tour identifier
       Given a tour exists with identifier "CUBA2024"
       When I attempt to create another tour with identifier "CUBA2024"
