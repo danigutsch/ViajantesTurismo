@@ -44,6 +44,14 @@ public sealed class BookingValidationSteps(
         bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
     }
 
+    [Then("the booking update should fail with validation error")]
+    public void ThenTheBookingUpdateShouldFailWithValidationError()
+    {
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+    }
+
     [Then("the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {

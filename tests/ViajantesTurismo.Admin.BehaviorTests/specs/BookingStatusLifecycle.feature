@@ -48,10 +48,11 @@ So that bookings follow valid business rules
         When the operator completes the booking
         Then the booking status should be "Completed"
 
-    Scenario: Completing a pending booking
-        Given a pending booking exists
-        When the operator completes the booking
-        Then the booking status should be "Completed"
+    Scenario: Completing a pending booking requires confirmation first
+    Given a pending booking exists
+    When the operator tries to complete the booking
+    Then the operation should fail
+    And the error message should contain "Booking must be confirmed before it can be completed"
 
     Scenario: Completing an already completed booking is idempotent
         Given a completed booking exists

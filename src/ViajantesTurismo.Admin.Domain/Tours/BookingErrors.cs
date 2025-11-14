@@ -18,6 +18,16 @@ public static class BookingErrors
         Result.Conflict(detail: $"Cannot transition from {currentStatus} to {targetStatus}.");
 
     /// <summary>
+    /// Indicates that a booking cannot be completed without first being confirmed.
+    /// </summary>
+    /// <returns>A Result representing the validation error.</returns>
+    public static Result CannotCompleteWithoutConfirmation() =>
+        Result.Invalid(
+            detail: "Booking must be confirmed before it can be completed.",
+            field: "status",
+            message: "Booking must be confirmed first.");
+
+    /// <summary>
     /// Indicates that the base price is zero or negative.
     /// </summary>
     /// <param name="price">The invalid base price value.</param>

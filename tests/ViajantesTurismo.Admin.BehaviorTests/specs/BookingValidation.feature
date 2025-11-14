@@ -87,10 +87,11 @@ So that only valid bookings are created and updated
         When I cancel the booking through the tour
         Then the booking status should be "Cancelled"
 
-    Scenario: Valid booking status transition from pending to completed
+    Scenario: Cannot complete pending booking without confirmation
         Given a tour exists with a pending booking
-        When I complete the booking through the tour
-        Then the booking status should be "Completed"
+    When I try to complete the booking through the tour
+    Then the booking update should fail with validation error
+    And the error message should contain "Booking must be confirmed before it can be completed"
 
     Scenario: Valid booking status transition from confirmed to cancelled
         Given a tour exists with a confirmed booking

@@ -50,13 +50,12 @@ public sealed class GlossaryCoverageTests
     }
 
     private static string[] GetDomainTypes(Func<Type, bool> predicate) =>
-        typeof(Tour).Assembly
+        [.. typeof(Tour).Assembly
             .GetExportedTypes()
             .Where(type => type.Namespace is not null && type.Namespace.StartsWith(ArchitectureProvider.Namespaces.Domain, StringComparison.Ordinal))
             .Where(predicate)
             .Select(type => type.Name)
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
+            .Distinct(StringComparer.Ordinal)];
 
     private static bool InheritsFromEntity(Type type)
     {

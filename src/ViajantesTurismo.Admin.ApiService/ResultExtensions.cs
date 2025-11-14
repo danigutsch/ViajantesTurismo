@@ -53,6 +53,28 @@ internal static class ResultExtensions
         return TypedResults.NotFound(problemDetails);
     }
 
+    public static Conflict<ProblemDetails> ToConflict(this Result result)
+    {
+        if (result.IsSuccess)
+        {
+            throw new InvalidOperationException("Cannot convert a successful result to Conflict.");
+        }
+
+        if (result.Status != ResultStatus.Conflict)
+        {
+            throw new InvalidOperationException("Only results with status 'Conflict' can be converted to Conflict.");
+        }
+
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Conflict",
+            Detail = result.ErrorDetails?.Detail,
+            Status = StatusCodes.Status409Conflict
+        };
+
+        return TypedResults.Conflict(problemDetails);
+    }
+
     public static ValidationProblem ToValidationProblem<T>(this Result<T> result) where T : notnull
     {
         if (result.IsSuccess)
@@ -98,5 +120,27 @@ internal static class ResultExtensions
         };
 
         return TypedResults.NotFound(problemDetails);
+    }
+
+    public static Conflict<ProblemDetails> ToConflict<T>(this Result<T> result) where T : notnull
+    {
+        if (result.IsSuccess)
+        {
+            throw new InvalidOperationException("Cannot convert a successful result to Conflict.");
+        }
+
+        if (result.Status != ResultStatus.Conflict)
+        {
+            throw new InvalidOperationException("Only results with status 'Conflict' can be converted to Conflict.");
+        }
+
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Conflict",
+            Detail = result.ErrorDetails?.Detail,
+            Status = StatusCodes.Status409Conflict
+        };
+
+        return TypedResults.Conflict(problemDetails);
     }
 }

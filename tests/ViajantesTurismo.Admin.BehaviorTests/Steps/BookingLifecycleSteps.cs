@@ -171,6 +171,13 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         Assert.False(result.IsSuccess);
     }
 
+    [Then("the operation should fail")]
+    public void ThenTheOperationShouldFail()
+    {
+        var result = (Result)bookingContext.Result;
+        Assert.False(result.IsSuccess);
+    }
+
     [Then("the booking should be removed successfully")]
     public void ThenTheBookingShouldBeRemovedSuccessfully()
     {

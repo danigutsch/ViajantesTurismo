@@ -97,14 +97,11 @@ public sealed class BookingApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest,
-            TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var booking =
-            await response.Content.ReadFromJsonAsync<GetBookingDto>(
-                TestContext.Current.CancellationToken);
+        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(booking);
         Assert.Equal(companionDto.Id, booking.CompanionId);
         Assert.Contains("Bob Smith", booking.CompanionName);
@@ -127,8 +124,7 @@ public sealed class BookingApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest,
-            TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -187,6 +183,7 @@ public sealed class BookingApiTests : IDisposable
     [Fact]
     public async Task Get_Booking_By_Id_Returns_Not_Found_For_Invalid_Id()
     {
+        // Arrange
         // Act
         var response = await _client.GetAsync(new Uri("/bookings/99999", UriKind.Relative),
             TestContext.Current.CancellationToken);
@@ -335,6 +332,7 @@ public sealed class BookingApiTests : IDisposable
     [Fact]
     public async Task Delete_Booking_Returns_Not_Found_For_Invalid_Id()
     {
+        // Arrange
         // Act
         var response = await _client.DeleteAsync(new Uri("/bookings/99999", UriKind.Relative),
             TestContext.Current.CancellationToken);
@@ -372,6 +370,7 @@ public sealed class BookingApiTests : IDisposable
     [Fact]
     public async Task Cancel_Booking_Returns_Not_Found_For_Invalid_Id()
     {
+        // Arrange
         // Act
         var response = await _client.PostAsync(new Uri("/bookings/99999/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
 
@@ -687,6 +686,7 @@ public sealed class BookingApiTests : IDisposable
     [Fact]
     public async Task Complete_Booking_Returns_NotFound_For_Invalid_Id()
     {
+        // Arrange
         // Act
         var response = await _client.PostAsync(new Uri($"/bookings/{Guid.CreateVersion7()}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
 
@@ -720,6 +720,271 @@ public sealed class BookingApiTests : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Get_Bookings_By_Tour_Id_Returns_Empty_For_Invalid_Tour()
+    {
+        // Arrange
+        // Act
+        var response = await _client.GetAsync(new Uri($"/bookings/tour/{Guid.CreateVersion7()}", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(bookings);
+        Assert.Empty(bookings);
+    }
+
+    [Fact]
+    public async Task Get_Bookings_By_Customer_Id_Returns_Empty_For_Invalid_Customer()
+    {
+        // Arrange
+        // Act
+        var response = await _client.GetAsync(new Uri($"/bookings/customer/{Guid.CreateVersion7()}", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(bookings);
+        Assert.Empty(bookings);
+    }
+
+    [Fact]
+    public async Task Create_Booking_Returns_Not_Found_For_Invalid_Customer_Id()
+    {
+        // Arrange
+        var tourDto = await CreateTestTour();
+
+        var bookingRequest = new CreateBookingDto
+        {
+            TourId = tourDto.Id,
+            PrincipalCustomerId = Guid.CreateVersion7(),
+            PrincipalBikeType = BikeTypeDto.Regular,
+            CompanionCustomerId = null,
+            CompanionBikeType = null,
+            RoomType = RoomTypeDto.SingleRoom
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Record_Payment_With_Negative_Amount_ReturnsValidationProblem()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Neg", "Payment");
+        var booking = await CreateTestBooking(tour.Id, customer.Id);
+        var paymentDto = new CreatePaymentDto
+        {
+            Amount = -100m,
+            PaymentDate = DateTime.UtcNow.Date,
+            Method = PaymentMethodDto.Cash,
+            Notes = "Invalid negative"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Record_Payment_With_Zero_Amount_ReturnsValidationProblem()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Zero", "Payment");
+        var booking = await CreateTestBooking(tour.Id, customer.Id);
+        var paymentDto = new CreatePaymentDto
+        {
+            Amount = 0m,
+            PaymentDate = DateTime.UtcNow.Date,
+            Method = PaymentMethodDto.Cash
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Confirm_Booking_Returns_NotFound_For_Invalid_Id()
+    {
+        // Arrange
+        // Act
+        var response = await _client.PostAsync(new Uri($"/bookings/{Guid.CreateVersion7()}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Confirm_Cancelled_Booking_ReturnsValidationProblem()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Cancel", "Then Confirm");
+        var booking = await CreateTestBooking(tour.Id, customer.Id);
+
+        var cancelResponse = await _client.PostAsync(new Uri($"/bookings/{booking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, cancelResponse.StatusCode);
+
+        // Act
+        var confirmResponse = await _client.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, confirmResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cancel_Completed_Booking_ReturnsValidationProblem()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Complete", "Then Cancel");
+        var booking = await CreateTestBooking(tour.Id, customer.Id);
+
+        var confirmResponse = await _client.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, confirmResponse.StatusCode);
+
+        var completeResponse = await _client.PostAsync(new Uri($"/bookings/{booking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
+
+        // Act
+        var cancelResponse = await _client.PostAsync(new Uri($"/bookings/{booking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, cancelResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Complete_Pending_Booking_Without_Confirm_ReturnsValidationProblem()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Skip", "Confirm");
+        var booking = await CreateTestBooking(tour.Id, customer.Id);
+
+        // Act
+        var completeResponse = await _client.PostAsync(new Uri($"/bookings/{booking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, completeResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Can_Create_Booking_With_Percentage_Discount()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Disc", "Percent");
+
+        var bookingRequest = new CreateBookingDto
+        {
+            TourId = tour.Id,
+            PrincipalCustomerId = customer.Id,
+            PrincipalBikeType = BikeTypeDto.Regular,
+            RoomType = RoomTypeDto.SingleRoom,
+            DiscountType = DiscountTypeDto.Percentage,
+            DiscountAmount = 15m,
+            DiscountReason = "Early bird"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(booking);
+        Assert.Equal(DiscountTypeDto.Percentage, booking.DiscountType);
+        Assert.Equal(15m, booking.DiscountAmount);
+        var expectedPrice = CalculateExpectedPrice(BaseTourPrice, 0m, RegularBikePrice, null, 15m);
+        Assert.Equal(expectedPrice, booking.TotalPrice);
+    }
+
+    [Fact]
+    public async Task Can_Create_Booking_With_Absolute_Discount()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+        var customer = await CreateTestCustomer("Disc", "Absolute");
+
+        var bookingRequest = new CreateBookingDto
+        {
+            TourId = tour.Id,
+            PrincipalCustomerId = customer.Id,
+            PrincipalBikeType = BikeTypeDto.Regular,
+            RoomType = RoomTypeDto.SingleRoom,
+            DiscountType = DiscountTypeDto.Absolute,
+            DiscountAmount = 200m,
+            DiscountReason = "VIP discount"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(booking);
+        Assert.Equal(DiscountTypeDto.Absolute, booking.DiscountType);
+        Assert.Equal(200m, booking.DiscountAmount);
+        var expectedPrice = CalculateExpectedPrice(BaseTourPrice, 0m, RegularBikePrice, null, null, 200m);
+        Assert.Equal(expectedPrice, booking.TotalPrice);
+    }
+
+    [Fact]
+    public async Task Record_Payment_All_Methods_Updates_Status()
+    {
+        // Arrange
+        var paymentMethods = new[]
+        {
+            PaymentMethodDto.CreditCard,
+            PaymentMethodDto.BankTransfer,
+            PaymentMethodDto.Cash,
+            PaymentMethodDto.Check,
+            PaymentMethodDto.PayPal,
+            PaymentMethodDto.Other
+        };
+
+        foreach (var method in paymentMethods)
+        {
+            // Arrange
+            var tour = await CreateTestTour($"CUBA2024-{method}", $"Cuba Adventure 2024 - {method}");
+            var customer = await CreateTestCustomer($"Pay{method}", "Test");
+            var booking = await CreateTestBooking(tour.Id, customer.Id);
+
+            var paymentDto = new CreatePaymentDto
+            {
+                Amount = 500m,
+                PaymentDate = DateTime.UtcNow.Date,
+                Method = method,
+                ReferenceNumber = $"REF-{method}",
+                Notes = $"Payment via {method}"
+            };
+
+            // Act
+            var response = await _client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            var getBooking = await _client.GetAsync(new Uri($"/bookings/{booking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+            var updated = await getBooking.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+            Assert.NotNull(updated);
+            Assert.Equal(PaymentStatusDto.PartiallyPaid, updated.PaymentStatus);
+            Assert.Single(updated.Payments);
+            Assert.Equal(method, updated.Payments.First().Method);
+        }
+    }
+
     private async Task<GetTourDto> CreateTestTour(string identifier = "CUBA2024", string name = "Cuba Adventure 2024")
     {
         var tourRequest = new CreateTourDto
@@ -738,14 +1003,12 @@ public sealed class BookingApiTests : IDisposable
             IncludedServices = ["Hotel", "Breakfast", "Bike"]
         };
 
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), tourRequest,
-            TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), tourRequest, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
 
         var location = response.Headers.Location;
         var getResponse = await _client.GetAsync(location, TestContext.Current.CancellationToken);
-        return (await getResponse.Content.ReadFromJsonAsync<GetTourDto>(
-            TestContext.Current.CancellationToken))!;
+        return (await getResponse.Content.ReadFromJsonAsync<GetTourDto>(TestContext.Current.CancellationToken))!;
     }
 
     private static decimal CalculateExpectedPrice(
@@ -835,11 +1098,9 @@ public sealed class BookingApiTests : IDisposable
             }
         };
 
-        var response = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), customerRequest,
-            TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), customerRequest, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(
-            TestContext.Current.CancellationToken))!;
+        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(TestContext.Current.CancellationToken))!;
     }
 
     private async Task<GetBookingDto> CreateTestBooking(Guid tourId, Guid customerId, Guid? companionId = null)
@@ -855,10 +1116,8 @@ public sealed class BookingApiTests : IDisposable
             Notes = "Test booking"
         };
 
-        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest,
-            TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto>(
-            TestContext.Current.CancellationToken))!;
+        return (await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken))!;
     }
 }

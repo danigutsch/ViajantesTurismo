@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
-using ViajantesTurismo.Admin.Application.Tours;
+using ViajantesTurismo.Admin.Application.Tours.Commands.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.Commands.UpdateTour;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -46,15 +46,13 @@ internal static class ToursEndpoints
             .WithSummary("Updates an existing tour.");
     }
 
-    private static async Task<Results<Created<Tour>, ValidationProblem>> CreateTour(
+    private static async Task<Results<Created<GetTourDto>, ValidationProblem>> CreateTour(
         [FromBody] CreateTourDto tourDto,
-        [FromServices] ITourStore tourStore,
-        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] CreateTourCommandHandler handler,
+        [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
-        var currency = TourMapper.MapToCurrency(tourDto.Currency);
-
-        var result = Tour.Create(
+        var command = new CreateTourCommand(
             tourDto.Identifier,
             tourDto.Name,
             tourDto.StartDate,
@@ -63,22 +61,22 @@ internal static class ToursEndpoints
             tourDto.DoubleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
-            currency,
+            tourDto.Currency,
+            [.. tourDto.IncludedServices],
             tourDto.MinCustomers,
-            tourDto.MaxCustomers,
-            tourDto.IncludedServices);
+            tourDto.MaxCustomers);
+
+        var result = await handler.Handle(command, ct);
 
         if (result.IsFailure)
         {
             return result.ToValidationProblem();
         }
 
-        var tour = result.Value;
-        tourStore.Add(tour);
+        var tourId = result.Value;
+        var createdTour = await queryService.GetTourById(tourId, ct);
 
-        await unitOfWork.SaveEntities(ct);
-
-        return TypedResults.Created($"/tours/{tour.Id}", tour);
+        return TypedResults.Created($"/tours/{tourId}", createdTour!);
     }
 
     private static async Task<Ok<IReadOnlyList<GetTourDto>>> GetAllTours(
@@ -120,7 +118,7 @@ internal static class ToursEndpoints
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
             TourMapper.MapToCurrency(tourDto.Currency),
-            tourDto.IncludedServices.ToList(),
+            [.. tourDto.IncludedServices],
             tourDto.MinCustomers,
             tourDto.MaxCustomers);
 

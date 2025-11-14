@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService;
@@ -130,9 +132,10 @@ internal static class BookingEndpoints
         return TypedResults.Ok(bookings);
     }
 
-    private static async Task<Results<Created<GetBookingDto>, NotFound, ValidationProblem>> CreateBooking(
+    private static async Task<Results<Created<GetBookingDto>, NotFound, NotFound<ProblemDetails>, ValidationProblem>> CreateBooking(
         [FromBody] CreateBookingDto dto,
         [FromServices] ITourStore tourStore,
+        [FromServices] ICustomerStore customerStore,
         [FromServices] IQueryService queryService,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
@@ -141,6 +144,21 @@ internal static class BookingEndpoints
         if (tour is null)
         {
             return TypedResults.NotFound();
+        }
+
+        var principalCustomer = await customerStore.GetById(dto.PrincipalCustomerId, ct);
+        if (principalCustomer is null)
+        {
+            return CustomerErrors.CustomerNotFound(dto.PrincipalCustomerId).ToNotFound();
+        }
+
+        if (dto.CompanionCustomerId.HasValue)
+        {
+            var companionCustomer = await customerStore.GetById(dto.CompanionCustomerId.Value, ct);
+            if (companionCustomer is null)
+            {
+                return CustomerErrors.CustomerNotFound(dto.CompanionCustomerId.Value).ToNotFound();
+            }
         }
 
         var result = tour.AddBooking(
@@ -224,7 +242,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> CancelBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>>> CancelBooking(
         [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -239,7 +257,7 @@ internal static class BookingEndpoints
         var result = tour.CancelBooking(id);
         if (result.IsFailure)
         {
-            return result.ToNotFound();
+            return result.ToConflict();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -247,7 +265,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> ConfirmBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>>> ConfirmBooking(
         [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -262,7 +280,7 @@ internal static class BookingEndpoints
         var result = tour.ConfirmBooking(id);
         if (result.IsFailure)
         {
-            return result.ToNotFound();
+            return result.ToConflict();
         }
 
         await unitOfWork.SaveEntities(ct);
@@ -290,7 +308,7 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> CompleteBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> CompleteBooking(
         [FromRoute] Guid id,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
@@ -305,7 +323,9 @@ internal static class BookingEndpoints
         var result = tour.CompleteBooking(id);
         if (result.IsFailure)
         {
-            return result.ToNotFound();
+            return result.IsConflict
+                ? result.ToConflict()
+                : result.ToValidationProblem();
         }
 
         await unitOfWork.SaveEntities(ct);

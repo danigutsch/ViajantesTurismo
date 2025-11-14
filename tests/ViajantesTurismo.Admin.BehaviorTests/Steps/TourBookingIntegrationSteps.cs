@@ -65,6 +65,11 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
+
+        var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        Assert.True(confirmResult.IsSuccess);
+        Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
+
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
         Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);

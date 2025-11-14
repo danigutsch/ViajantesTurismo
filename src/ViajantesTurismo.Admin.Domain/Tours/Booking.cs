@@ -311,7 +311,8 @@ public sealed class Booking : Entity<Guid>
         {
             BookingStatus.Completed => Result.Ok(),
             BookingStatus.Cancelled => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Completed),
-            BookingStatus.Pending or BookingStatus.Confirmed => CompleteInternal(),
+            BookingStatus.Pending => BookingErrors.CannotCompleteWithoutConfirmation(),
+            BookingStatus.Confirmed => CompleteInternal(),
             _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
         };
 
