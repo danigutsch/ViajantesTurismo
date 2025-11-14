@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-namespace ViajantesTurismo.Admin.IntegrationTests;
+namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
 public sealed class BookingApiTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
