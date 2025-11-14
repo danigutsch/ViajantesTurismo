@@ -19,7 +19,7 @@ public sealed class BookingApiTests : IDisposable
     private const decimal FirstPaymentAmount = 1000m;
     private const decimal PaymentAmountExceedingRemainingBalance = 3000m;
     private readonly HttpClient _client;
-    private readonly ApplicationDbContext _dbContext;
+    private readonly AdminWriteDbContext _dbContext;
     private readonly IServiceScope _scope;
 
     public BookingApiTests(ApiFixture fixture)
@@ -27,12 +27,12 @@ public sealed class BookingApiTests : IDisposable
         _client = fixture.CreateClient();
 
         using var scope = fixture.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
         var seeder = new Seeder(dbContext);
         seeder.Seed();
 
         _scope = fixture.Services.CreateScope();
-        _dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        _dbContext = _scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
     }
 
     public void Dispose()

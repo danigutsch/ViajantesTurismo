@@ -11,7 +11,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(AdminWriteDbContext))]
     [Migration("20251112172320_Initial")]
     partial class Initial
     {

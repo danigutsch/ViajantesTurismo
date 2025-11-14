@@ -10,7 +10,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(AdminWriteDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

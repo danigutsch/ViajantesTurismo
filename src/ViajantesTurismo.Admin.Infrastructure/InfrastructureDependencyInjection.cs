@@ -21,7 +21,7 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDbContext<ApplicationDbContext>(
+        builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
             configureDbContextOptions: options =>
             {
@@ -31,7 +31,7 @@ public static class InfrastructureDependencyInjection
                     options.EnableSensitiveDataLogging();
                 }
             });
-        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+        builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
@@ -48,7 +48,7 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.AddNpgsqlDbContext<ApplicationDbContext>(
+        builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
             configureDbContextOptions: options =>
             {

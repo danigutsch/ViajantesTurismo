@@ -4,7 +4,7 @@ using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class Seeder(ApplicationDbContext dbContext) : ISeeder
+internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
 {
     private static readonly Tour[] Tours =
     [

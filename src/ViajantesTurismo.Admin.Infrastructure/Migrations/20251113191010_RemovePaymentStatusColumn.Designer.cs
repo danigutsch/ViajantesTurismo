@@ -11,7 +11,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(AdminWriteDbContext))]
     [Migration("20251113191010_RemovePaymentStatusColumn")]
     partial class RemovePaymentStatusColumn
     {

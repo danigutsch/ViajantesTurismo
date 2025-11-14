@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests;
 public sealed class ToursApiTests : IDisposable
 {
     private readonly HttpClient _client;
-    private readonly ApplicationDbContext _dbContext;
+    private readonly AdminWriteDbContext _dbContext;
     private readonly IServiceScope _scope;
 
     public ToursApiTests(ApiFixture fixture)
@@ -18,12 +18,12 @@ public sealed class ToursApiTests : IDisposable
         _client = fixture.CreateClient();
 
         using var scope = fixture.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
         var seeder = new Seeder(dbContext);
         seeder.Seed();
 
         _scope = fixture.Services.CreateScope();
-        _dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        _dbContext = _scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
     }
 
     public void Dispose()

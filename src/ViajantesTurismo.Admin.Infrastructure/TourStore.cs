@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class TourStore(ApplicationDbContext dbContext) : ITourStore
+internal sealed class TourStore(AdminWriteDbContext dbContext) : ITourStore
 {
     public void Add(Tour tour) => dbContext.Tours.Add(tour);
 

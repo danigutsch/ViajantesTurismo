@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class CustomerStore(ApplicationDbContext dbContext) : ICustomerStore
+internal sealed class CustomerStore(AdminWriteDbContext dbContext) : ICustomerStore
 {
     public void Add(Customer customer) => dbContext.Customers.Add(customer);
 

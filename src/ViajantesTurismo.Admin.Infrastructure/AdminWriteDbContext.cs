@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+internal sealed class AdminWriteDbContext(DbContextOptions<AdminWriteDbContext> options)
     : DbContext(options), IUnitOfWork
 {
     public DbSet<Tour> Tours => Set<Tour>();
