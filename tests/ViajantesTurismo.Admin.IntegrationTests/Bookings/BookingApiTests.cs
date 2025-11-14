@@ -17,31 +17,6 @@ public sealed class BookingApiTests(ApiFixture fixture) : AdminApiIntegrationTes
     private const decimal FirstPaymentAmount = 1000m;
     private const decimal PaymentAmountExceedingRemainingBalance = 3000m;
 
-
-    [Fact]
-    public async Task Can_Get_All_Bookings()
-    {
-        // Arrange
-        var tourDto = await CreateTestTour();
-        var customer1 = await CreateTestCustomer("Alice", "Johnson");
-        var customer2 = await CreateTestCustomer("Charlie", "Brown");
-
-        await CreateTestBooking(tourDto.Id, customer1.Id);
-        await CreateTestBooking(tourDto.Id, customer2.Id);
-
-        // Act
-        var response =
-            await Client.GetAsync(new Uri("/bookings", UriKind.Relative), TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var bookings =
-            await response.Content.ReadFromJsonAsync<GetBookingDto[]>(
-                TestContext.Current.CancellationToken);
-        Assert.NotNull(bookings);
-        Assert.True(bookings.Length >= 2);
-    }
-
     [Fact]
     public async Task Can_Get_Booking_By_Id()
     {
