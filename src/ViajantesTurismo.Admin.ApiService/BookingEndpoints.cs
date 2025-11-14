@@ -295,11 +295,12 @@ internal static class BookingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> UpdateBookingNotes(
+    private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>>> UpdateBookingNotes(
         [FromRoute] Guid id,
         [FromBody] UpdateBookingNotesDto dto,
         [FromServices] ITourStore tourStore,
         [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
         var tour = await tourStore.GetByBookingId(id, ct);
@@ -312,7 +313,13 @@ internal static class BookingEndpoints
 
         await unitOfWork.SaveEntities(ct);
 
-        return TypedResults.NoContent();
+        var updatedBooking = await queryService.GetBookingById(id, ct);
+        if (updatedBooking is null)
+        {
+            return BookingErrors.BookingNotFound(id).ToNotFound();
+        }
+
+        return TypedResults.Ok(updatedBooking);
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> CompleteBooking(

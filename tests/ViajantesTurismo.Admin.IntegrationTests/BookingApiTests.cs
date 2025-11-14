@@ -253,8 +253,7 @@ public sealed class BookingApiTests : IDisposable
         await CreateTestBooking(tourDto.Id, primaryCustomer.Id, companionCustomer.Id);
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/bookings/customer/{companionCustomer.Id}", UriKind.Relative),
-            TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync(new Uri($"/bookings/customer/{companionCustomer.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -272,12 +271,16 @@ public sealed class BookingApiTests : IDisposable
         var customerDto = await CreateTestCustomer("Jack", "Martin");
         var createdBooking = await CreateTestBooking(tourDto.Id, customerDto.Id);
 
+        // Act
         var notesRequest = new UpdateBookingNotesDto { Notes = "Updated notes" };
         var notesResponse = await _client.PatchAsJsonAsync(
             new Uri($"/bookings/{createdBooking.Id}/notes", UriKind.Relative),
             notesRequest,
             TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.NoContent, notesResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, notesResponse.StatusCode);
+        var updatedBooking = await notesResponse.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(updatedBooking);
+        Assert.Equal("Updated notes", updatedBooking.Notes);
 
         var confirmResponse = await _client.PostAsync(
             new Uri($"/bookings/{createdBooking.Id}/confirm", UriKind.Relative),
@@ -288,10 +291,10 @@ public sealed class BookingApiTests : IDisposable
         Assert.Equal(HttpStatusCode.NoContent, confirmResponse.StatusCode);
 
         var getResponse = await _client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
-        var updatedBooking = await getResponse.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(updatedBooking);
-        Assert.Equal("Updated notes", updatedBooking.Notes);
-        Assert.Equal(BookingStatusDto.Confirmed, updatedBooking.Status);
+        var finalBooking = await getResponse.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(finalBooking);
+        Assert.Equal("Updated notes", finalBooking.Notes);
+        Assert.Equal(BookingStatusDto.Confirmed, finalBooking.Status);
     }
 
     [Fact]
