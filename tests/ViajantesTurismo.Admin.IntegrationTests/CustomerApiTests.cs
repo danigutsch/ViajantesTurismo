@@ -1,44 +1,17 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests;
 
-[Collection("Api collection")]
-public sealed class CustomerApiTests : IDisposable
+public sealed class CustomerApiTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
-    private readonly HttpClient _client;
-    private readonly AdminWriteDbContext _dbContext;
-    private readonly IServiceScope _scope;
-
-    public CustomerApiTests(ApiFixture fixture)
-    {
-        _client = fixture.CreateClient();
-
-        using var scope = fixture.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
-        var seeder = new Seeder(dbContext);
-        seeder.Seed();
-
-        _scope = fixture.Services.CreateScope();
-        _dbContext = _scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
-    }
-
-    public void Dispose()
-    {
-        _client.Dispose();
-        _dbContext.Dispose();
-        _scope.Dispose();
-    }
-
     [Fact]
     public async Task Can_Get_Customers()
     {
         // Act
-        var response = await _client.GetAsync(new Uri("/customers", UriKind.Relative),
+        var response = await Client.GetAsync(new Uri("/customers", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -112,16 +85,15 @@ public sealed class CustomerApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request,
+        var response = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-
-        var customer = _dbContext.Customers.FirstOrDefault(c =>
-            c.PersonalInfo.FirstName == request.PersonalInfo.FirstName &&
-            c.PersonalInfo.LastName == request.PersonalInfo.LastName);
+        var customer = await response.Content.ReadFromJsonAsync<GetCustomerDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(customer);
+        Assert.Equal(request.PersonalInfo.FirstName, customer.FirstName);
+        Assert.Equal(request.PersonalInfo.LastName, customer.LastName);
     }
 
     [Fact]
@@ -184,14 +156,14 @@ public sealed class CustomerApiTests : IDisposable
                 AdditionalInfo = null
             }
         };
-        var createResponse = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request,
+        var createResponse = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var location = createResponse.Headers.Location;
         Assert.NotNull(location);
 
         // Act
-        var response = await _client.GetAsync(location, TestContext.Current.CancellationToken);
+        var response = await Client.GetAsync(location, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -213,7 +185,7 @@ public sealed class CustomerApiTests : IDisposable
         const int invalidId = -1;
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/customers/{invalidId}", UriKind.Relative),
+        var response = await Client.GetAsync(new Uri($"/customers/{invalidId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -280,7 +252,7 @@ public sealed class CustomerApiTests : IDisposable
                 AdditionalInfo = null
             }
         };
-        var createResponse = await _client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), createRequest,
+        var createResponse = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), createRequest,
             TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var location = createResponse.Headers.Location;
@@ -346,13 +318,13 @@ public sealed class CustomerApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync(new Uri($"/customers/{customerId}", UriKind.Relative),
+        var response = await Client.PutAsJsonAsync(new Uri($"/customers/{customerId}", UriKind.Relative),
             updateRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        var getResponse = await _client.GetAsync(location, TestContext.Current.CancellationToken);
+        var getResponse = await Client.GetAsync(location, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var updatedCustomer =
             await getResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(
@@ -435,7 +407,7 @@ public sealed class CustomerApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync(new Uri($"/customers/{invalidId}", UriKind.Relative), updateRequest,
+        var response = await Client.PutAsJsonAsync(new Uri($"/customers/{invalidId}", UriKind.Relative), updateRequest,
             TestContext.Current.CancellationToken);
 
         // Assert

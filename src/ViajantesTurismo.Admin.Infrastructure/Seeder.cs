@@ -184,50 +184,6 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         )
     ];
 
-    public void Seed()
-    {
-        dbContext.Database.EnsureDeleted();
-        dbContext.Database.EnsureCreated();
-
-        var toursToAdd = Tours.Select(t => Tour.Create(
-            t.Identifier,
-            t.Name,
-            t.Schedule.StartDate,
-            t.Schedule.EndDate,
-            t.Pricing.BasePrice,
-            t.Pricing.DoubleRoomSupplementPrice,
-            t.Pricing.RegularBikePrice,
-            t.Pricing.EBikePrice,
-            t.Pricing.Currency,
-            t.Capacity.MinCustomers,
-            t.Capacity.MaxCustomers,
-            t.IncludedServices
-        ).Value);
-
-        dbContext.Tours.AddRange(toursToAdd);
-
-        dbContext.SaveChanges();
-
-        var customersToAdd = Customers.Select(c => new Customer(
-            c.PersonalInfo,
-            c.IdentificationInfo,
-            c.ContactInfo,
-            c.Address,
-            c.PhysicalInfo,
-            c.AccommodationPreferences,
-            c.EmergencyContact,
-            c.MedicalInfo
-        ));
-
-        dbContext.Customers.AddRange(customersToAdd);
-
-        dbContext.SaveChanges();
-
-        SeedBookings();
-
-        dbContext.SaveChanges();
-    }
-
     public async Task Seed(CancellationToken ct)
     {
         await dbContext.Database.EnsureDeletedAsync(ct);

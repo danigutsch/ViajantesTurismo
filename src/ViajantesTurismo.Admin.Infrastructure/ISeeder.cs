@@ -2,6 +2,5 @@
 
 internal interface ISeeder
 {
-    void Seed();
     Task Seed(CancellationToken ct);
 }

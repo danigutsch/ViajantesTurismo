@@ -1,51 +1,23 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests;
 
-[Collection("Api collection")]
-public sealed class ToursApiTests : IDisposable
+public sealed class ToursApiTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
-    private readonly HttpClient _client;
-    private readonly AdminWriteDbContext _dbContext;
-    private readonly IServiceScope _scope;
-
-    public ToursApiTests(ApiFixture fixture)
-    {
-        _client = fixture.CreateClient();
-
-        using var scope = fixture.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
-        var seeder = new Seeder(dbContext);
-        seeder.Seed();
-
-        _scope = fixture.Services.CreateScope();
-        _dbContext = _scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
-    }
-
-    public void Dispose()
-    {
-        _client.Dispose();
-        _dbContext.Dispose();
-        _scope.Dispose();
-    }
-
     [Fact]
     public async Task Can_Get_Tours()
     {
+        // Arrange
         // Act
-        var response =
-            await _client.GetAsync(new Uri("/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.GetAsync(new Uri("/tours", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(
-            cancellationToken: TestContext.Current.CancellationToken);
+        var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(tours);
         Assert.NotEmpty(tours);
     }
@@ -72,14 +44,14 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-
-        var tour = _dbContext.Tours.FirstOrDefault(t => t.Identifier == request.Identifier);
+        var tour = await response.Content.ReadFromJsonAsync<GetTourDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(tour);
+        Assert.Equal(request.Identifier, tour.Identifier);
     }
 
     [Fact]
@@ -101,14 +73,14 @@ public sealed class ToursApiTests : IDisposable
             MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
-        var createResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+        var createResponse = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var location = createResponse.Headers.Location;
         Assert.NotNull(location);
 
         // Act
-        var response = await _client.GetAsync(location, TestContext.Current.CancellationToken);
+        var response = await Client.GetAsync(location, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -130,7 +102,7 @@ public sealed class ToursApiTests : IDisposable
         const int invalidId = -1;
 
         // Act
-        var response = await _client.GetAsync(new Uri($"/tours/{invalidId}", UriKind.Relative),
+        var response = await Client.GetAsync(new Uri($"/tours/{invalidId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -157,7 +129,7 @@ public sealed class ToursApiTests : IDisposable
             MaxCustomers = 12,
             IncludedServices = ["Hotel", "Breakfast", "City Tour"]
         };
-        var postResponse = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+        var postResponse = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
         var location = postResponse.Headers.Location;
@@ -183,11 +155,11 @@ public sealed class ToursApiTests : IDisposable
 
         // Act
         var putResponse =
-            await _client.PutAsJsonAsync($"/tours/{tourId}", updateRequest, TestContext.Current.CancellationToken);
+            await Client.PutAsJsonAsync($"/tours/{tourId}", updateRequest, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, putResponse.StatusCode);
 
         // Assert
-        var getResponse = await _client.GetAsync(new Uri($"/tours/{tourId}", UriKind.Relative),
+        var getResponse = await Client.GetAsync(new Uri($"/tours/{tourId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var tourDto =
@@ -224,7 +196,7 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest,
+        var response = await Client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -252,7 +224,7 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -281,7 +253,7 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -310,7 +282,7 @@ public sealed class ToursApiTests : IDisposable
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
             TestContext.Current.CancellationToken);
 
         // Assert
