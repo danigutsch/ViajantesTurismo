@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers;
@@ -31,6 +32,20 @@ public static class InfrastructureDependencyInjection
                     options.EnableSensitiveDataLogging();
                 }
             });
+
+        builder.AddNpgsqlDbContext<AdminReadDbContext>(
+            ResourceNames.Database,
+            configureDbContextOptions: options =>
+            {
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
+            });
+
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
