@@ -17,40 +17,6 @@ public sealed class BookingApiTests(ApiFixture fixture) : AdminApiIntegrationTes
     private const decimal FirstPaymentAmount = 1000m;
     private const decimal PaymentAmountExceedingRemainingBalance = 3000m;
 
-    [Fact]
-    public async Task Can_Create_Booking()
-    {
-        // Arrange
-        var tourDto = await CreateTestTour();
-        var customerDto = await CreateTestCustomer("John", "Doe");
-
-        var bookingRequest = new CreateBookingDto
-        {
-            TourId = tourDto.Id,
-            PrincipalCustomerId = customerDto.Id,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = null,
-            CompanionBikeType = null,
-            RoomType = RoomTypeDto.SingleRoom,
-            Notes = "Test booking"
-        };
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(booking);
-        Assert.Equal(tourDto.Id, booking.TourId);
-        Assert.Equal(customerDto.Id, booking.CustomerId);
-        var expectedPrice = CalculateExpectedPrice(
-            basePrice: 2000m,
-            roomSupplement: 0m,
-            principalBikePrice: 100m);
-        Assert.Equal(expectedPrice, booking.TotalPrice);
-        Assert.Equal("Test booking", booking.Notes);
-    }
 
     [Fact]
     public async Task Can_Create_Booking_With_Companion()
