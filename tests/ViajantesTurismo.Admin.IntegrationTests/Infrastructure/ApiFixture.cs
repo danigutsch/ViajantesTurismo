@@ -5,7 +5,7 @@ using Npgsql;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.IntegrationTests;
+namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 /// <summary>
 /// Fixture for API integration tests.

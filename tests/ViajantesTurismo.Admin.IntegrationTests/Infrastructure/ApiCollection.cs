@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.IntegrationTests;
+﻿namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 [CollectionDefinition("Api collection")]
 #pragma warning disable CA1711

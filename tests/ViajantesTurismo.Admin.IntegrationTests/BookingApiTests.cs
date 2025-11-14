@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests;
 
@@ -19,8 +20,6 @@ public sealed class BookingApiTests : IDisposable
     private const decimal FirstPaymentAmount = 1000m;
     private const decimal PaymentAmountExceedingRemainingBalance = 3000m;
     private readonly HttpClient _client;
-    private readonly AdminWriteDbContext _dbContext;
-    private readonly IServiceScope _scope;
 
     public BookingApiTests(ApiFixture fixture)
     {
@@ -30,16 +29,11 @@ public sealed class BookingApiTests : IDisposable
         var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
         var seeder = new Seeder(dbContext);
         seeder.Seed();
-
-        _scope = fixture.Services.CreateScope();
-        _dbContext = _scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
     }
 
     public void Dispose()
     {
         _client.Dispose();
-        _dbContext.Dispose();
-        _scope.Dispose();
     }
 
     [Fact]
