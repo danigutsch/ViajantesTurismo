@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
@@ -28,11 +27,6 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             customer.Property(c => c.CustomerId).IsRequired();
             customer.Property(c => c.BikeType).HasConversion<string>().IsRequired();
             customer.Property(c => c.BikePrice).IsRequired();
-
-            customer.HasOne<Customer>()
-                .WithMany()
-                .HasForeignKey(c => c.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         entity.OwnsOne(booking => booking.CompanionCustomer, customer =>
@@ -40,11 +34,6 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             customer.Property(c => c.CustomerId).IsRequired();
             customer.Property(c => c.BikeType).HasConversion<string>().IsRequired();
             customer.Property(c => c.BikePrice).IsRequired();
-
-            customer.HasOne<Customer>()
-                .WithMany()
-                .HasForeignKey(c => c.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         entity.OwnsOne(booking => booking.Discount, discount =>

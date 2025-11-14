@@ -230,24 +230,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     Discount_Reason = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
                     BookingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
-                    PaymentStatus = table.Column<string>(type: "text", nullable: false),
                     Notes = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Booking", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Booking_Customers_CompanionCustomer_CustomerId",
-                        column: x => x.CompanionCustomer_CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Booking_Customers_PrincipalCustomer_CustomerId",
-                        column: x => x.PrincipalCustomer_CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Booking_Tours_TourId",
                         column: x => x.TourId,
@@ -279,16 +266,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Booking_CompanionCustomer_CustomerId",
-                table: "Booking",
-                column: "CompanionCustomer_CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Booking_PrincipalCustomer_CustomerId",
-                table: "Booking",
-                column: "PrincipalCustomer_CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Booking_TourId",
@@ -344,10 +321,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "Payment");
 
             migrationBuilder.DropTable(
-                name: "Booking");
+                name: "Customers");
 
             migrationBuilder.DropTable(
-                name: "Customers");
+                name: "Booking");
 
             migrationBuilder.DropTable(
                 name: "Tours");

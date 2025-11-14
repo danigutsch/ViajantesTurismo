@@ -12,8 +12,8 @@ using ViajantesTurismo.Admin.Infrastructure;
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(AdminWriteDbContext))]
-    [Migration("20251113191010_RemovePaymentStatusColumn")]
-    partial class RemovePaymentStatusColumn
+    [Migration("20251114124325_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -398,18 +398,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.HasIndex("CustomerId");
-
                             b1.ToTable("Booking");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId");
-
-                            b1.HasOne("ViajantesTurismo.Admin.Domain.Customers.Customer", null)
-                                .WithMany()
-                                .HasForeignKey("CustomerId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
                         });
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.BookingCustomer", "PrincipalCustomer", b1 =>
@@ -429,18 +421,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.HasIndex("CustomerId");
-
                             b1.ToTable("Booking");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId");
-
-                            b1.HasOne("ViajantesTurismo.Admin.Domain.Customers.Customer", null)
-                                .WithMany()
-                                .HasForeignKey("CustomerId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
                         });
 
                     b.OwnsOne("ViajantesTurismo.Admin.Domain.Tours.Discount", "Discount", b1 =>
