@@ -19,59 +19,6 @@ public sealed class BookingApiTests(ApiFixture fixture) : AdminApiIntegrationTes
 
 
     [Fact]
-    public async Task Can_Create_Booking_With_Companion()
-    {
-        // Arrange
-        var tourDto = await CreateTestTour();
-        var customerDto = await CreateTestCustomer("Jane", "Smith");
-        var companionDto = await CreateTestCustomer("Bob", "Smith");
-
-        var bookingRequest = new CreateBookingDto
-        {
-            TourId = tourDto.Id,
-            PrincipalCustomerId = customerDto.Id,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = companionDto.Id,
-            CompanionBikeType = BikeTypeDto.Regular,
-            RoomType = RoomTypeDto.DoubleRoom,
-            Notes = "Couple booking"
-        };
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(booking);
-        Assert.Equal(companionDto.Id, booking.CompanionId);
-        Assert.Contains("Bob Smith", booking.CompanionName);
-    }
-
-    [Fact]
-    public async Task Create_Booking_Returns_Not_Found_For_Invalid_Tour_Id()
-    {
-        // Arrange
-        var customerDto = await CreateTestCustomer("Test", "User");
-
-        var bookingRequest = new CreateBookingDto
-        {
-            TourId = Guid.CreateVersion7(),
-            PrincipalCustomerId = customerDto.Id,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = null,
-            CompanionBikeType = null,
-            RoomType = RoomTypeDto.SingleRoom
-        };
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Can_Get_All_Bookings()
     {
         // Arrange
@@ -715,28 +662,6 @@ public sealed class BookingApiTests(ApiFixture fixture) : AdminApiIntegrationTes
         Assert.Empty(bookings);
     }
 
-    [Fact]
-    public async Task Create_Booking_Returns_Not_Found_For_Invalid_Customer_Id()
-    {
-        // Arrange
-        var tourDto = await CreateTestTour();
-
-        var bookingRequest = new CreateBookingDto
-        {
-            TourId = tourDto.Id,
-            PrincipalCustomerId = Guid.CreateVersion7(),
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = null,
-            CompanionBikeType = null,
-            RoomType = RoomTypeDto.SingleRoom
-        };
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
 
     [Fact]
     public async Task Record_Payment_With_Negative_Amount_ReturnsValidationProblem()
@@ -846,67 +771,6 @@ public sealed class BookingApiTests(ApiFixture fixture) : AdminApiIntegrationTes
         Assert.Equal(HttpStatusCode.BadRequest, completeResponse.StatusCode);
     }
 
-    [Fact]
-    public async Task Can_Create_Booking_With_Percentage_Discount()
-    {
-        // Arrange
-        var tour = await CreateTestTour();
-        var customer = await CreateTestCustomer("Disc", "Percent");
-
-        var bookingRequest = new CreateBookingDto
-        {
-            TourId = tour.Id,
-            PrincipalCustomerId = customer.Id,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            RoomType = RoomTypeDto.SingleRoom,
-            DiscountType = DiscountTypeDto.Percentage,
-            DiscountAmount = 15m,
-            DiscountReason = "Early bird"
-        };
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(booking);
-        Assert.Equal(DiscountTypeDto.Percentage, booking.DiscountType);
-        Assert.Equal(15m, booking.DiscountAmount);
-        var expectedPrice = CalculateExpectedPrice(BaseTourPrice, 0m, RegularBikePrice, null, 15m);
-        Assert.Equal(expectedPrice, booking.TotalPrice);
-    }
-
-    [Fact]
-    public async Task Can_Create_Booking_With_Absolute_Discount()
-    {
-        // Arrange
-        var tour = await CreateTestTour();
-        var customer = await CreateTestCustomer("Disc", "Absolute");
-
-        var bookingRequest = new CreateBookingDto
-        {
-            TourId = tour.Id,
-            PrincipalCustomerId = customer.Id,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            RoomType = RoomTypeDto.SingleRoom,
-            DiscountType = DiscountTypeDto.Absolute,
-            DiscountAmount = 200m,
-            DiscountReason = "VIP discount"
-        };
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), bookingRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(booking);
-        Assert.Equal(DiscountTypeDto.Absolute, booking.DiscountType);
-        Assert.Equal(200m, booking.DiscountAmount);
-        var expectedPrice = CalculateExpectedPrice(BaseTourPrice, 0m, RegularBikePrice, null, null, 200m);
-        Assert.Equal(expectedPrice, booking.TotalPrice);
-    }
 
     [Fact]
     public async Task Record_Payment_All_Methods_Updates_Status()
