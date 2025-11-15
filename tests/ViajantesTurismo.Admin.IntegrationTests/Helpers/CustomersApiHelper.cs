@@ -9,9 +9,9 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
 internal static class CustomersApiHelper
 {
     public static async Task<HttpResponseMessage> CreateCustomerAsync(
-        HttpClient client,
+        this HttpClient client,
         CreateCustomerDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await client.PostAsJsonAsync(
             new Uri("/customers", UriKind.Relative),
@@ -20,9 +20,9 @@ internal static class CustomersApiHelper
     }
 
     public static async Task<GetCustomerDto> CreateCustomerAndReadAsync(
-        HttpClient client,
+        this HttpClient client,
         CreateCustomerDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var response = await CreateCustomerAsync(client, request, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -30,9 +30,9 @@ internal static class CustomersApiHelper
     }
 
     public static async Task<HttpResponseMessage> GetCustomerAsync(
-        HttpClient client,
+        this HttpClient client,
         Guid customerId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await client.GetAsync(
             new Uri($"/customers/{customerId}", UriKind.Relative),
@@ -40,9 +40,9 @@ internal static class CustomersApiHelper
     }
 
     public static async Task<CustomerDetailsDto> GetCustomerAndReadAsync(
-        HttpClient client,
+        this HttpClient client,
         Guid customerId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var response = await GetCustomerAsync(client, customerId, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -50,8 +50,8 @@ internal static class CustomersApiHelper
     }
 
     public static async Task<HttpResponseMessage> GetAllCustomersAsync(
-        HttpClient client,
-        CancellationToken cancellationToken = default)
+        this HttpClient client,
+        CancellationToken cancellationToken)
     {
         return await client.GetAsync(
             new Uri("/customers", UriKind.Relative),
@@ -59,8 +59,8 @@ internal static class CustomersApiHelper
     }
 
     public static async Task<GetCustomerDto[]> GetAllCustomersAndReadAsync(
-        HttpClient client,
-        CancellationToken cancellationToken = default)
+        this HttpClient client,
+        CancellationToken cancellationToken)
     {
         var response = await GetAllCustomersAsync(client, cancellationToken);
         response.EnsureSuccessStatusCode();

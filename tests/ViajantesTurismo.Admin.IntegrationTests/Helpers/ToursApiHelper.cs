@@ -9,9 +9,9 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
 internal static class ToursApiHelper
 {
     public static async Task<HttpResponseMessage> CreateTourAsync(
-        HttpClient client,
+        this HttpClient client,
         CreateTourDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await client.PostAsJsonAsync(
             new Uri("/tours", UriKind.Relative),
@@ -20,9 +20,9 @@ internal static class ToursApiHelper
     }
 
     public static async Task<GetTourDto> CreateTourAndReadAsync(
-        HttpClient client,
+        this HttpClient client,
         CreateTourDto request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var response = await CreateTourAsync(client, request, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -33,9 +33,9 @@ internal static class ToursApiHelper
     }
 
     public static async Task<HttpResponseMessage> GetTourAsync(
-        HttpClient client,
+        this HttpClient client,
         Guid tourId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await client.GetAsync(
             new Uri($"/tours/{tourId}", UriKind.Relative),
@@ -43,9 +43,9 @@ internal static class ToursApiHelper
     }
 
     public static async Task<GetTourDto> GetTourAndReadAsync(
-        HttpClient client,
+        this HttpClient client,
         Guid tourId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var response = await GetTourAsync(client, tourId, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -53,8 +53,8 @@ internal static class ToursApiHelper
     }
 
     public static async Task<HttpResponseMessage> GetAllToursAsync(
-        HttpClient client,
-        CancellationToken cancellationToken = default)
+        this HttpClient client,
+        CancellationToken cancellationToken)
     {
         return await client.GetAsync(
             new Uri("/tours", UriKind.Relative),
@@ -62,8 +62,8 @@ internal static class ToursApiHelper
     }
 
     public static async Task<GetTourDto[]> GetAllToursAndReadAsync(
-        HttpClient client,
-        CancellationToken cancellationToken = default)
+        this HttpClient client,
+        CancellationToken cancellationToken)
     {
         var response = await GetAllToursAsync(client, cancellationToken);
         response.EnsureSuccessStatusCode();
