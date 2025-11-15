@@ -77,4 +77,11 @@ public static class InfrastructureDependencyInjection
 
         return builder;
     }
+
+    /// <summary>
+    /// Adds the seeding services to the service collection, including the database context and seeder implementation.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddSeeding(this IServiceCollection services) => services.AddScoped<ISeeder, Seeder>();
 }

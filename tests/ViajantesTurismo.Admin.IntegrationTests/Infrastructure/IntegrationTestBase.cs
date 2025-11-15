@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Application;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
@@ -12,8 +12,7 @@ public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEn
     public async ValueTask InitializeAsync()
     {
         using var scope = fixture.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
-        var seeder = new Seeder(dbContext);
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
         await seeder.Seed(CancellationToken.None);
     }
 

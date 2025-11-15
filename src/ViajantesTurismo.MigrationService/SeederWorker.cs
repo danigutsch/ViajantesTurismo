@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Application;
 
 namespace ViajantesTurismo.MigrationService;
 

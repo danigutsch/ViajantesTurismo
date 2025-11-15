@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -55,6 +56,8 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
                 new KeyValuePair<string, string?>($"ConnectionStrings:{Database.Resource.Name}", _databaseConnectionString)
             ]);
         });
+
+        builder.ConfigureServices(services => { services.AddSeeding(); });
 
         return base.CreateHost(builder);
     }
