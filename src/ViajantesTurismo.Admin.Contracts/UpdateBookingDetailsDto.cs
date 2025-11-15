@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// DTO for updating booking details (room type, bikes, companion) after creation.
 /// </summary>
-public sealed class UpdateBookingDetailsDto : IValidatableObject
+public sealed record UpdateBookingDetailsDto : IValidatableObject
 {
     /// <summary>The room type for the booking.</summary>
     [Required]

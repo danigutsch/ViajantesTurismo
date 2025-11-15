@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// DTO for creating a new booking.
 /// </summary>
-public sealed class CreateBookingDto : IValidatableObject
+public sealed record CreateBookingDto : IValidatableObject
 {
     /// <summary>The ID of the tour being booked.</summary>
     [Required]

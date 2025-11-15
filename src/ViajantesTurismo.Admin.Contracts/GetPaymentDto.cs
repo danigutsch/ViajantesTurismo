@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// DTO for retrieving payment information.
 /// </summary>
-public sealed class GetPaymentDto
+public sealed record GetPaymentDto
 {
     /// <summary>The payment ID.</summary>
     public required Guid Id { get; init; }

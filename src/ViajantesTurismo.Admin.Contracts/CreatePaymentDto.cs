@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// DTO for creating a payment record.
 /// </summary>
-public sealed class CreatePaymentDto
+public sealed record CreatePaymentDto
 {
     /// <summary>The payment amount.</summary>
     [Required]

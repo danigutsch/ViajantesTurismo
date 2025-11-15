@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// DTO for updating booking discount after creation.
 /// </summary>
-public sealed class UpdateBookingDiscountDto : IValidatableObject
+public sealed record UpdateBookingDiscountDto : IValidatableObject
 {
     /// <summary>The discount type (None, Percentage, or Absolute).</summary>
     public DiscountTypeDto DiscountType { get; init; } = DiscountTypeDto.None;
