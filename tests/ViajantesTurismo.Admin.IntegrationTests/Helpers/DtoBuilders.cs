@@ -46,6 +46,44 @@ internal static class DtoBuilders
     }
 
     /// <summary>
+    /// Builds an UpdateTourDto with default or custom values.
+    /// </summary>
+    public static UpdateTourDto BuildUpdateTourDto(
+        string? identifier = null,
+        string? name = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        decimal? basePrice = null,
+        decimal? doubleRoomSupplement = null,
+        decimal? regularBikePrice = null,
+        decimal? eBikePrice = null,
+        int? minCustomers = null,
+        int? maxCustomers = null,
+        CurrencyDto? currency = null,
+        string[]? includedServices = null)
+    {
+        var tourIdentifier = identifier ?? TestDataGenerator.UniqueTourIdentifier();
+        var start = startDate ?? DateTime.UtcNow.AddMonths(2);
+        var end = endDate ?? start.AddDays(10);
+
+        return new UpdateTourDto
+        {
+            Identifier = tourIdentifier,
+            Name = name ?? $"Test Tour {tourIdentifier}",
+            StartDate = start,
+            EndDate = end,
+            Price = basePrice ?? TestDefaults.BaseTourPrice,
+            DoubleRoomSupplementPrice = doubleRoomSupplement ?? TestDefaults.DoubleRoomSupplement,
+            RegularBikePrice = regularBikePrice ?? TestDefaults.RegularBikePrice,
+            EBikePrice = eBikePrice ?? TestDefaults.EBikePrice,
+            MinCustomers = minCustomers ?? TestDefaults.MinCustomers,
+            MaxCustomers = maxCustomers ?? TestDefaults.MaxCustomers,
+            Currency = currency ?? CurrencyDto.UsDollar,
+            IncludedServices = includedServices ?? ["Hotel", "Breakfast", "Bike"]
+        };
+    }
+
+    /// <summary>
     /// Builds a CreateCustomerDto with default or custom values.
     /// </summary>
     public static CreateCustomerDto BuildCreateCustomerDto(
@@ -213,6 +251,95 @@ internal static class DtoBuilders
             PrincipalBikeType = principalBikeType ?? BikeTypeDto.Regular,
             CompanionCustomerId = companionCustomerId,
             CompanionBikeType = companionBikeType
+        };
+    }
+
+    /// <summary>
+    /// Builds an UpdateCustomerDto with default or custom values.
+    /// </summary>
+    public static UpdateCustomerDto BuildUpdateCustomerDto(
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        string? mobile = null,
+        string? nationalId = null,
+        BikeTypeDto? bikeType = null,
+        RoomTypeDto? roomType = null,
+        BedTypeDto? bedType = null,
+        string? profession = null,
+        string? street = null,
+        string? complement = null,
+        string? city = null,
+        string? state = null,
+        string? country = null,
+        string? postalCode = null,
+        decimal? weightKg = null,
+        int? heightCentimeters = null,
+        string? emergencyContactName = null,
+        string? emergencyContactMobile = null,
+        string? allergies = null,
+        string? medicalAdditionalInfo = null,
+        string? instagram = null,
+        string? facebook = null)
+    {
+        var first = firstName ?? "Test";
+        var last = lastName ?? "User";
+
+        return new UpdateCustomerDto
+        {
+            PersonalInfo = new PersonalInfoDto
+            {
+                FirstName = first,
+                LastName = last,
+                BirthDate = new DateTime(1990, 1, 1).ToUniversalTime(),
+                Gender = "Male",
+                Nationality = "American",
+                Profession = profession ?? "Engineer"
+            },
+            IdentificationInfo = new IdentificationInfoDto
+            {
+                NationalId = nationalId ?? TestDataGenerator.UniqueNationalId(),
+                IdNationality = "American"
+            },
+            ContactInfo = new ContactInfoDto
+            {
+                Email = email ?? TestDataGenerator.UniqueEmail($"{first.ToLower()}.{last.ToLower()}"),
+                Mobile = mobile ?? TestDataGenerator.UniquePhone(),
+                Instagram = instagram,
+                Facebook = facebook
+            },
+            Address = new AddressDto
+            {
+                Street = street ?? "123 Main St",
+                Complement = complement,
+                Neighborhood = "Downtown",
+                PostalCode = postalCode ?? "12345",
+                City = city ?? "New York",
+                State = state ?? "NY",
+                Country = country ?? "USA"
+            },
+            PhysicalInfo = new PhysicalInfoDto
+            {
+                WeightKg = weightKg ?? 75.0m,
+                HeightCentimeters = heightCentimeters ?? 180,
+                BikeType = bikeType ?? BikeTypeDto.Regular
+            },
+            AccommodationPreferences = new AccommodationPreferencesDto
+            {
+                RoomType = roomType ?? RoomTypeDto.SingleRoom,
+                BedType = bedType ?? BedTypeDto.SingleBed,
+                CompanionId = null
+            },
+            EmergencyContact = new EmergencyContactDto
+            {
+                Name = emergencyContactName ?? "Emergency Contact",
+                Mobile = emergencyContactMobile ?? "+15559876543"
+            },
+            MedicalInfo = new MedicalInfoDto
+            {
+                Allergies = allergies,
+                AdditionalInfo = medicalAdditionalInfo
+            }
         };
     }
 }
