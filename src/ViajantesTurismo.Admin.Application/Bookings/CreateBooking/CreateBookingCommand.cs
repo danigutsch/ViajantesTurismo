@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.Application.Features.Bookings.CreateBooking;
+namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 
 /// <summary>
 /// Command to create a new booking.

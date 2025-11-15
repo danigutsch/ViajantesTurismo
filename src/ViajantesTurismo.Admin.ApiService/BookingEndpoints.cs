@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Features.Bookings.ConfirmBooking;
-using ViajantesTurismo.Admin.Application.Features.Bookings.CreateBooking;
-using ViajantesTurismo.Admin.Application.Features.Bookings.DeleteBooking;
+using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
+using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
+using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;

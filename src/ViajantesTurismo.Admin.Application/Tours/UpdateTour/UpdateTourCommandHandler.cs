@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Features.Tours.UpdateTour;
+namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 
 /// <summary>
 /// Handles the update of an existing tour with validation for uniqueness and business rules.

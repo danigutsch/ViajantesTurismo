@@ -1,6 +1,6 @@
 using System.Globalization;
 using Reqnroll;
-using ViajantesTurismo.Admin.Application.Features.Tours.CreateTour;
+using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;

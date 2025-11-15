@@ -1,5 +1,5 @@
 using Reqnroll;
-using ViajantesTurismo.Admin.Application.Features.Tours.UpdateTour;
+using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Common.Results;
 

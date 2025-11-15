@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.BehaviorTests.Fakes;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;

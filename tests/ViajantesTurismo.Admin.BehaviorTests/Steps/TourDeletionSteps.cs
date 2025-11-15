@@ -1,5 +1,5 @@
 using Reqnroll;
-using ViajantesTurismo.Admin.Application.Features.Tours.DeleteTour;
+using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;

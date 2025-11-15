@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ViajantesTurismo.Admin.Application.Features.Bookings.ConfirmBooking;
-using ViajantesTurismo.Admin.Application.Features.Bookings.CreateBooking;
-using ViajantesTurismo.Admin.Application.Features.Bookings.DeleteBooking;
-using ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
-using ViajantesTurismo.Admin.Application.Features.Customers.UpdateCustomer;
-using ViajantesTurismo.Admin.Application.Features.Tours.CreateTour;
-using ViajantesTurismo.Admin.Application.Features.Tours.DeleteTour;
-using ViajantesTurismo.Admin.Application.Features.Tours.UpdateTour;
+using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
+using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
+using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
+using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
+using ViajantesTurismo.Admin.Application.Tours.CreateTour;
+using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
+using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 
 namespace ViajantesTurismo.Admin.Application;
 

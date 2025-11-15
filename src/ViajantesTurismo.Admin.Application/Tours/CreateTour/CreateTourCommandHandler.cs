@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Features.Tours.CreateTour;
+namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 
 /// <summary>
 /// Handles the creation of a new tour with application-level validation.

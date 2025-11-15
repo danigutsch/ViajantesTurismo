@@ -2,29 +2,35 @@ using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
+namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 
 /// <summary>
-/// Handles the creation of a new customer with application-level validation.
+/// Handles updating an existing customer with validation.
 /// </summary>
-public sealed class CreateCustomerCommandHandler(
+public sealed class UpdateCustomerCommandHandler(
     ICustomerStore customerStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
 {
     /// <summary>
-    /// Handles the CreateCustomerCommand and returns the ID of the created customer.
+    /// Handles the UpdateCustomerCommand and updates the customer if validation passes.
     /// </summary>
-    /// <param name="command">The command containing customer data.</param>
+    /// <param name="command">The command containing the customer ID and updated values.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>Result containing the customer ID if successful, or validation errors.</returns>
-    public async Task<Result<Guid>> Handle(CreateCustomerCommand command, CancellationToken ct)
+    /// <returns>Result indicating success or validation errors.</returns>
+    public async Task<Result> Handle(UpdateCustomerCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 
+        var customer = await customerStore.GetById(command.CustomerId, ct);
+        if (customer is null)
+        {
+            return CustomerErrors.CustomerNotFound(command.CustomerId);
+        }
+
         var errors = new ValidationErrors();
 
-        if (await customerStore.EmailExists(command.ContactInfo.Email, ct))
+        if (await customerStore.EmailExistsExcluding(command.ContactInfo.Email, command.CustomerId, ct))
         {
             errors.Add(CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email));
         }
@@ -65,7 +71,7 @@ public sealed class CreateCustomerCommandHandler(
 
         if (errors.HasErrors)
         {
-            return errors.ToResult<Guid>();
+            return errors.ToResult();
         }
 
         var address = CustomerMapper.MapToAddress(command.Address);
@@ -74,19 +80,17 @@ public sealed class CreateCustomerCommandHandler(
         var emergencyContact = CustomerMapper.MapToEmergencyContact(command.EmergencyContact);
         var medicalInfo = CustomerMapper.MapToMedicalInfo(command.MedicalInfo);
 
-        var customer = new Customer(
-            personalInfoResult.Value,
-            identificationInfoResult.Value,
-            contactInfoResult.Value,
-            address,
-            physicalInfo,
-            accommodationPreferences,
-            emergencyContact,
-            medicalInfo);
+        customer.UpdatePersonalInfo(personalInfoResult.Value);
+        customer.UpdateIdentificationInfo(identificationInfoResult.Value);
+        customer.UpdateContactInfo(contactInfoResult.Value);
+        customer.UpdateAddress(address);
+        customer.UpdatePhysicalInfo(physicalInfo);
+        customer.UpdateAccommodationPreferences(accommodationPreferences);
+        customer.UpdateEmergencyContact(emergencyContact);
+        customer.UpdateMedicalInfo(medicalInfo);
 
-        customerStore.Add(customer);
         await unitOfWork.SaveEntities(ct);
 
-        return Result<Guid>.Ok(customer.Id);
+        return Result.Ok();
     }
 }

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Application.Features.Bookings.ConfirmBooking;
+namespace ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 
 /// <summary>
 /// Command to confirm a booking.

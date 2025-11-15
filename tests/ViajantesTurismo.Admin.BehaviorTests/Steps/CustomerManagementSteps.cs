@@ -1,5 +1,5 @@
 using Reqnroll;
-using ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Features.Tours.CreateTour;
-using ViajantesTurismo.Admin.Application.Features.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Tours.CreateTour;
+using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 

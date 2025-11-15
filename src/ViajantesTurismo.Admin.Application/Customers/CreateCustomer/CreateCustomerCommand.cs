@@ -1,12 +1,11 @@
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.Application.Features.Customers.UpdateCustomer;
+namespace ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 
 /// <summary>
-/// Command to update an existing customer's information.
+/// Command to create a new customer with all required information.
 /// </summary>
-public sealed record UpdateCustomerCommand(
-    Guid CustomerId,
+public sealed record CreateCustomerCommand(
     PersonalInfoDto PersonalInfo,
     IdentificationInfoDto IdentificationInfo,
     ContactInfoDto ContactInfo,
