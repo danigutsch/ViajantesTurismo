@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Customers;
+using ViajantesTurismo.Admin.Application.Bookings.Commands.CreateBooking;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -132,62 +132,36 @@ internal static class BookingEndpoints
         return TypedResults.Ok(bookings);
     }
 
-    private static async Task<Results<Created<GetBookingDto>, NotFound, NotFound<ProblemDetails>, ValidationProblem>> CreateBooking(
+    private static async Task<Results<Created<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>> CreateBooking(
         [FromBody] CreateBookingDto dto,
-        [FromServices] ITourStore tourStore,
-        [FromServices] ICustomerStore customerStore,
+        [FromServices] CreateBookingCommandHandler handler,
         [FromServices] IQueryService queryService,
-        [FromServices] IUnitOfWork unitOfWork,
         CancellationToken ct)
     {
-        var tour = await tourStore.GetById(dto.TourId, ct);
-        if (tour is null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        var principalCustomer = await customerStore.GetById(dto.PrincipalCustomerId, ct);
-        if (principalCustomer is null)
-        {
-            return CustomerErrors.CustomerNotFound(dto.PrincipalCustomerId).ToNotFound();
-        }
-
-        if (dto.CompanionCustomerId.HasValue)
-        {
-            var companionCustomer = await customerStore.GetById(dto.CompanionCustomerId.Value, ct);
-            if (companionCustomer is null)
-            {
-                return CustomerErrors.CustomerNotFound(dto.CompanionCustomerId.Value).ToNotFound();
-            }
-        }
-
-        var result = tour.AddBooking(
+        var command = new CreateBookingCommand(
+            dto.TourId,
             dto.PrincipalCustomerId,
-            BookingMapper.MapToBikeType(dto.PrincipalBikeType),
+            dto.PrincipalBikeType,
             dto.CompanionCustomerId,
-            dto.CompanionBikeType.HasValue ? BookingMapper.MapToBikeType(dto.CompanionBikeType.Value) : null,
-            BookingMapper.MapToRoomType(dto.RoomType),
-            BookingMapper.MapToDiscountType(dto.DiscountType),
+            dto.CompanionBikeType,
+            dto.RoomType,
+            dto.DiscountType,
             dto.DiscountAmount,
             dto.DiscountReason,
             dto.Notes);
 
+        var result = await handler.Handle(command, ct);
+
         if (result.IsFailure)
         {
-            return result.ToValidationProblem();
+            return result.Status == ResultStatus.NotFound
+                ? result.ToNotFound()
+                : result.ToValidationProblem();
         }
 
-        var booking = result.Value;
+        var bookingDto = await queryService.GetBookingById(result.Value, ct);
 
-        await unitOfWork.SaveEntities(ct);
-
-        var bookingDto = await queryService.GetBookingById(booking.Id, ct);
-        if (bookingDto is null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        return TypedResults.Created($"/bookings/{booking.Id}", bookingDto);
+        return TypedResults.Created($"/bookings/{result.Value}", bookingDto!);
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDiscount(
