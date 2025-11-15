@@ -3,6 +3,10 @@ using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.Web.Components.Shared;
 
+/// <summary>
+/// Form model for creating bookings. Provides mutable properties for Blazor binding
+/// and converts to immutable CreateBookingDto for API submission.
+/// </summary>
 public class BookingFormModel : IValidatableObject
 {
     public Guid? TourId { get; set; }
@@ -35,6 +39,9 @@ public class BookingFormModel : IValidatableObject
         ErrorMessage = "Discount reason must be between {2} and {1} characters")]
     public string DiscountReason { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Validates discount fields using the same rules as CreateBookingDto.
+    /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (DiscountType != DiscountTypeDto.None)
@@ -60,46 +67,20 @@ public class BookingFormModel : IValidatableObject
         }
     }
 
-    public decimal CalculateSubtotal(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice,
-        decimal eBikePrice)
+    /// <summary>
+    /// Converts this form model to a CreateBookingDto for API submission.
+    /// </summary>
+    public CreateBookingDto ToDto() => new()
     {
-        var roomCost = RoomType == RoomTypeDto.DoubleRoom ? doubleRoomSupplement : 0m;
-
-        var principalBikeCost = PrincipalBikeType switch
-        {
-            BikeTypeDto.Regular => regularBikePrice,
-            BikeTypeDto.EBike => eBikePrice,
-            _ => 0m
-        };
-
-        var companionBikeCost = CompanionBikeType switch
-        {
-            BikeTypeDto.Regular => regularBikePrice,
-            BikeTypeDto.EBike => eBikePrice,
-            _ => 0m
-        };
-
-        return basePrice + roomCost + principalBikeCost + companionBikeCost;
-    }
-
-    public decimal CalculateDiscountAmount(decimal subtotal)
-    {
-        if (DiscountType == DiscountTypeDto.None || DiscountAmount <= 0)
-        {
-            return 0m;
-        }
-
-        return DiscountType switch
-        {
-            DiscountTypeDto.Percentage => subtotal * (DiscountAmount / 100m),
-            DiscountTypeDto.Absolute => DiscountAmount,
-            _ => 0m
-        };
-    }
-
-    public decimal CalculateFinalTotal(decimal subtotal)
-    {
-        var discountAmount = CalculateDiscountAmount(subtotal);
-        return Math.Max(0, subtotal - discountAmount);
-    }
+        TourId = TourId!.Value,
+        PrincipalCustomerId = CustomerId!.Value,
+        PrincipalBikeType = PrincipalBikeType,
+        CompanionCustomerId = CompanionId,
+        CompanionBikeType = CompanionBikeType,
+        RoomType = RoomType,
+        Notes = Notes,
+        DiscountType = DiscountType,
+        DiscountAmount = DiscountAmount,
+        DiscountReason = DiscountReason
+    };
 }

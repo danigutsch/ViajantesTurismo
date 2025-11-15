@@ -3,6 +3,11 @@ using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.Web.Models;
 
+/// <summary>
+/// Form model for creating payments. Provides mutable properties for Blazor binding
+/// and converts to immutable CreatePaymentDto for API submission.
+/// Uses nullable properties to support uninitialized form state.
+/// </summary>
 public sealed class PaymentFormModel
 {
     [Required(ErrorMessage = "Payment amount is required")]
@@ -21,6 +26,9 @@ public sealed class PaymentFormModel
     [MaxLength(ContractConstants.MaxPaymentNotesLength)]
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// Converts this form model to a CreatePaymentDto for API submission.
+    /// </summary>
     public CreatePaymentDto ToDto() => new()
     {
         Amount = Amount!.Value,

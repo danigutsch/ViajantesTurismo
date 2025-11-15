@@ -399,20 +399,7 @@ else if (_tour != null)
             }
             else
             {
-                var createDto = new CreateBookingDto
-                {
-                    TourId = Id,
-                    PrincipalCustomerId = model.CustomerId!.Value,
-                    PrincipalBikeType = model.PrincipalBikeType,
-                    CompanionCustomerId = model.CompanionId,
-                    CompanionBikeType = model.CompanionBikeType,
-                    RoomType = model.RoomType,
-                    Notes = model.Notes,
-                    DiscountType = model.DiscountType,
-                    DiscountAmount = model.DiscountAmount,
-                    DiscountReason = model.DiscountReason
-                };
-
+                var createDto = model.ToDto() with { TourId = Id };
                 await BookingsApi.CreateBooking(createDto, CancellationToken.None);
                 _toast.ShowSuccess("Booking created successfully.");
             }
