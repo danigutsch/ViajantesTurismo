@@ -95,13 +95,14 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
     public async Task Record_Payment_Returns_NotFound_For_Invalid_Booking_Id()
     {
         // Arrange
+        var nonExistingBookingId = Guid.CreateVersion7();
         var paymentDto = DtoBuilders.BuildCreatePaymentDto(
             method: PaymentMethodDto.Cash,
             referenceNumber: "REF-123",
             notes: "Test payment");
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{Guid.CreateVersion7()}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{nonExistingBookingId}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

@@ -31,8 +31,11 @@ public sealed class CompleteBookingTests(ApiFixture fixture) : AdminApiIntegrati
     [Fact]
     public async Task Complete_Booking_Returns_NotFound_For_Invalid_Id()
     {
+        // Arrange
+        var nonExistingId = Guid.CreateVersion7();
+
         // Act
-        var response = await Client.CompleteBooking(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var response = await Client.CompleteBooking(nonExistingId, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

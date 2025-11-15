@@ -44,10 +44,11 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
     public async Task Update_Booking_Notes_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
+        var nonExistingId = Guid.CreateVersion7();
         var updateRequest = DtoBuilders.BuildUpdateBookingNotesDto("Test");
 
         // Act
-        var response = await Client.PatchAsJsonAsync(new Uri("/bookings/99999/notes", UriKind.Relative), updateRequest,
+        var response = await Client.PatchAsJsonAsync(new Uri($"/bookings/{nonExistingId}/notes", UriKind.Relative), updateRequest,
             TestContext.Current.CancellationToken);
 
         // Assert

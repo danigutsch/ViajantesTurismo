@@ -36,8 +36,11 @@ public sealed class GetBookingByIdTests(ApiFixture fixture) : AdminApiIntegratio
     [Fact]
     public async Task Get_Booking_By_Id_Returns_Not_Found_For_Invalid_Id()
     {
+        // Arrange
+        var nonExistingId = Guid.CreateVersion7();
+
         // Act
-        var response = await Client.GetAsync(new Uri("/bookings/99999", UriKind.Relative),
+        var response = await Client.GetAsync(new Uri($"/bookings/{nonExistingId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert

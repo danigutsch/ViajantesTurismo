@@ -68,10 +68,11 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
     public async Task Create_Booking_Returns_Not_Found_For_Invalid_Tour_Id()
     {
         // Arrange
+        var nonExistingTourId = Guid.CreateVersion7();
         var customerDto = await Client.CreateTestCustomer("Test", "User", cancellationToken: TestContext.Current.CancellationToken);
 
         var bookingRequest = DtoBuilders.BuildCreateBookingDto(
-            tourId: Guid.CreateVersion7(),
+            tourId: nonExistingTourId,
             principalCustomerId: customerDto.Id);
 
         // Act
@@ -85,11 +86,12 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
     public async Task Create_Booking_Returns_Not_Found_For_Invalid_Customer_Id()
     {
         // Arrange
+        var nonExistingCustomerId = Guid.CreateVersion7();
         var tourDto = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
 
         var bookingRequest = DtoBuilders.BuildCreateBookingDto(
             tourId: tourDto.Id,
-            principalCustomerId: Guid.CreateVersion7());
+            principalCustomerId: nonExistingCustomerId);
 
         // Act
         var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);

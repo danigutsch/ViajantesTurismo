@@ -33,8 +33,11 @@ public sealed class CancelBookingTests(ApiFixture fixture) : AdminApiIntegration
     [Fact]
     public async Task Cancel_Booking_Returns_Not_Found_For_Invalid_Id()
     {
+        // Arrange
+        var nonExistingId = Guid.CreateVersion7();
+
         // Act
-        var response = await Client.CancelBooking(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
+        var response = await Client.CancelBooking(nonExistingId, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

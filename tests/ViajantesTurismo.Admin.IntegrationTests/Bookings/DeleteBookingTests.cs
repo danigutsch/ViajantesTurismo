@@ -27,8 +27,11 @@ public sealed class DeleteBookingTests(ApiFixture fixture) : AdminApiIntegration
     [Fact]
     public async Task Delete_Booking_Returns_Not_Found_For_Invalid_Id()
     {
+        // Arrange
+        var nonExistingId = Guid.CreateVersion7();
+
         // Act
-        var response = await Client.DeleteAsync(new Uri("/bookings/99999", UriKind.Relative),
+        var response = await Client.DeleteAsync(new Uri($"/bookings/{nonExistingId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
