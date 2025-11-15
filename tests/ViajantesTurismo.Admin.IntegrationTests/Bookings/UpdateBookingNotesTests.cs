@@ -48,7 +48,7 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
         var updateRequest = DtoBuilders.BuildUpdateBookingNotesDto("Test");
 
         // Act
-        var response = await Client.PatchAsJsonAsync(new Uri($"/bookings/{nonExistingId}/notes", UriKind.Relative), updateRequest,
+        var response = await Client.UpdateBookingNotes(nonExistingId, updateRequest,
             TestContext.Current.CancellationToken);
 
         // Assert

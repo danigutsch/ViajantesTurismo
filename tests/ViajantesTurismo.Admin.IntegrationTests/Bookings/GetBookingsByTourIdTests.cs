@@ -20,7 +20,7 @@ public sealed class GetBookingsByTourIdTests(ApiFixture fixture) : AdminApiInteg
         await Client.CreateTestBooking(tourDto.Id, customer2.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/tour/{tourDto.Id}", UriKind.Relative),
+        var response = await Client.GetBookingsByTour(tourDto.Id,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -37,7 +37,10 @@ public sealed class GetBookingsByTourIdTests(ApiFixture fixture) : AdminApiInteg
     public async Task Get_Bookings_By_Tour_Id_Returns_Empty_For_Invalid_Tour()
     {
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/tour/{Guid.CreateVersion7()}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var nonExistingTourId = Guid.CreateVersion7();
+
+        // Act
+        var response = await Client.GetBookingsByTour(nonExistingTourId, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

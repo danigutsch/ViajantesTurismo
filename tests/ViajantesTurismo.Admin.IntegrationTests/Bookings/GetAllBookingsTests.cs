@@ -20,7 +20,7 @@ public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiIntegratio
         await Client.CreateTestBooking(tourDto.Id, customer2.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.GetAsync(new Uri("/bookings", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.GetAllBookings(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

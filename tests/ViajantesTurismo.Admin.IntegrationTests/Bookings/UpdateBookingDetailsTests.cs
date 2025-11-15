@@ -20,7 +20,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.DoubleRoom, BikeTypeDto.Regular, companion.Id, BikeTypeDto.Regular);
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -43,7 +43,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular);
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -66,7 +66,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular, companion.Id, BikeTypeDto.Regular);
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -80,7 +80,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular);
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{nonExistingId}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDetails(nonExistingId, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

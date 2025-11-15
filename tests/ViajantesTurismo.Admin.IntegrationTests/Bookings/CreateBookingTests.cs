@@ -21,7 +21,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             notes: "Test booking");
 
         // Act
-        var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);
+        var response = await Client.CreateBooking(bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -54,7 +54,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             notes: "Couple booking");
 
         // Act
-        var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);
+        var response = await Client.CreateBooking(bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -76,7 +76,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             principalCustomerId: customerDto.Id);
 
         // Act
-        var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);
+        var response = await Client.CreateBooking(bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -94,7 +94,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             principalCustomerId: nonExistingCustomerId);
 
         // Act
-        var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);
+        var response = await Client.CreateBooking(bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -115,7 +115,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             discountReason: "Early bird");
 
         // Act
-        var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);
+        var response = await Client.CreateBooking(bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -143,7 +143,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             discountReason: "VIP discount");
 
         // Act
-        var response = await Client.CreateBookingAsync(bookingRequest, TestContext.Current.CancellationToken);
+        var response = await Client.CreateBooking(bookingRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

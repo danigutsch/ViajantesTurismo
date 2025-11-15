@@ -17,7 +17,7 @@ public sealed class GetBookingByIdTests(ApiFixture fixture) : AdminApiIntegratio
         var createdBooking = await Client.CreateTestBooking(tourDto.Id, customerDto.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.GetBooking(createdBooking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -40,7 +40,7 @@ public sealed class GetBookingByIdTests(ApiFixture fixture) : AdminApiIntegratio
         var nonExistingId = Guid.CreateVersion7();
 
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/{nonExistingId}", UriKind.Relative),
+        var response = await Client.GetBooking(nonExistingId,
             TestContext.Current.CancellationToken);
 
         // Assert

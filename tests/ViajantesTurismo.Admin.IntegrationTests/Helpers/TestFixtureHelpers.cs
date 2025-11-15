@@ -64,7 +64,7 @@ internal static class TestFixtureHelpers
             companionBikeType: companionId.HasValue ? BikeTypeDto.Regular : null,
             roomType: companionId.HasValue ? RoomTypeDto.DoubleRoom : RoomTypeDto.SingleRoom);
 
-        var response = await client.CreateBookingAsync(bookingRequest, cancellationToken);
+        var response = await client.CreateBooking(bookingRequest, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken))!;
     }

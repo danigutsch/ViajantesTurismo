@@ -24,7 +24,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, ValidPercentageDiscount, "Seasonal offer");
 
         // Act
-        var updateResponse = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var updateResponse = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
@@ -47,7 +47,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, ValidAbsoluteDiscount, "VIP customer");
 
         // Act
-        var updateResponse = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var updateResponse = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
@@ -70,7 +70,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, OverAllowedPercentageDiscount, "Too big");
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -87,7 +87,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, AbsoluteDiscountExceedingSubtotal, "Impossible");
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -108,7 +108,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, 50m, "Late attempt");
 
         // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
+        var response = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

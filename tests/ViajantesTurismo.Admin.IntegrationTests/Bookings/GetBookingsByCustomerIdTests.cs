@@ -20,7 +20,7 @@ public sealed class GetBookingsByCustomerIdTests(ApiFixture fixture) : AdminApiI
         await Client.CreateTestBooking(tour2.Id, customerDto.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/customer/{customerDto.Id}", UriKind.Relative),
+        var response = await Client.GetBookingsByCustomer(customerDto.Id,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -44,7 +44,7 @@ public sealed class GetBookingsByCustomerIdTests(ApiFixture fixture) : AdminApiI
         await Client.CreateTestBooking(tourDto.Id, primaryCustomer.Id, companionCustomer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/customer/{companionCustomer.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.GetBookingsByCustomer(companionCustomer.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -58,7 +58,10 @@ public sealed class GetBookingsByCustomerIdTests(ApiFixture fixture) : AdminApiI
     public async Task Get_Bookings_By_Customer_Id_Returns_Empty_For_Invalid_Customer()
     {
         // Act
-        var response = await Client.GetAsync(new Uri($"/bookings/customer/{Guid.CreateVersion7()}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var nonExistingCustomerId = Guid.CreateVersion7();
+
+        // Act
+        var response = await Client.GetBookingsByCustomer(nonExistingCustomerId, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

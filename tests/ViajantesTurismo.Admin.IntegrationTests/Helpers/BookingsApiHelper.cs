@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
 /// </summary>
 internal static class BookingsApiHelper
 {
-    public static async Task<HttpResponseMessage> CreateBookingAsync(
+    public static async Task<HttpResponseMessage> CreateBooking(
         this HttpClient client,
         CreateBookingDto request,
         CancellationToken cancellationToken)
@@ -19,17 +19,17 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<GetBookingDto> CreateBookingAndReadAsync(
+    public static async Task<GetBookingDto> CreateBookingAndRead(
         this HttpClient client,
         CreateBookingDto request,
         CancellationToken cancellationToken)
     {
-        var response = await CreateBookingAsync(client, request, cancellationToken);
+        var response = await CreateBooking(client, request, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> GetBookingAsync(
+    public static async Task<HttpResponseMessage> GetBooking(
         this HttpClient client,
         Guid bookingId,
         CancellationToken cancellationToken)
@@ -39,17 +39,17 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<GetBookingDto> GetBookingAndReadAsync(
+    public static async Task<GetBookingDto> GetBookingAndRead(
         this HttpClient client,
         Guid bookingId,
         CancellationToken cancellationToken)
     {
-        var response = await GetBookingAsync(client, bookingId, cancellationToken);
+        var response = await GetBooking(client, bookingId, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> GetAllBookingsAsync(
+    public static async Task<HttpResponseMessage> GetAllBookings(
         this HttpClient client,
         CancellationToken cancellationToken)
     {
@@ -58,16 +58,16 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<GetBookingDto[]> GetAllBookingsAndReadAsync(
+    public static async Task<GetBookingDto[]> GetAllBookingsAndRead(
         this HttpClient client,
         CancellationToken cancellationToken)
     {
-        var response = await GetAllBookingsAsync(client, cancellationToken);
+        var response = await GetAllBookings(client, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> GetBookingsByTourAsync(
+    public static async Task<HttpResponseMessage> GetBookingsByTour(
         this HttpClient client,
         Guid tourId,
         CancellationToken cancellationToken)
@@ -77,17 +77,17 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<GetBookingDto[]> GetBookingsByTourAndReadAsync(
+    public static async Task<GetBookingDto[]> GetBookingsByTourAndRead(
         this HttpClient client,
         Guid tourId,
         CancellationToken cancellationToken)
     {
-        var response = await GetBookingsByTourAsync(client, tourId, cancellationToken);
+        var response = await GetBookingsByTour(client, tourId, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> GetBookingsByCustomerAsync(
+    public static async Task<HttpResponseMessage> GetBookingsByCustomer(
         this HttpClient client,
         Guid customerId,
         CancellationToken cancellationToken)
@@ -97,17 +97,17 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<GetBookingDto[]> GetBookingsByCustomerAndReadAsync(
+    public static async Task<GetBookingDto[]> GetBookingsByCustomerAndRead(
         this HttpClient client,
         Guid customerId,
         CancellationToken cancellationToken)
     {
-        var response = await GetBookingsByCustomerAsync(client, customerId, cancellationToken);
+        var response = await GetBookingsByCustomer(client, customerId, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> RecordPaymentAsync(
+    public static async Task<HttpResponseMessage> RecordPayment(
         this HttpClient client,
         Guid bookingId,
         CreatePaymentDto payment,
@@ -164,7 +164,7 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> UpdateBookingDiscountAsync(
+    public static async Task<HttpResponseMessage> UpdateBookingDiscount(
         this HttpClient client,
         Guid bookingId,
         UpdateBookingDiscountDto request,
@@ -176,15 +176,25 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> UpdateBookingDetailsAsync(
+    public static async Task<HttpResponseMessage> UpdateBookingDetails(
         this HttpClient client,
         Guid bookingId,
         UpdateBookingDetailsDto request,
         CancellationToken cancellationToken)
     {
         return await client.PutAsJsonAsync(
-            new Uri($"/bookings/{bookingId}", UriKind.Relative),
+            new Uri($"/bookings/{bookingId}/details", UriKind.Relative),
             request,
+            cancellationToken);
+    }
+
+    public static async Task<HttpResponseMessage> DeleteBooking(
+        this HttpClient client,
+        Guid bookingId,
+        CancellationToken cancellationToken)
+    {
+        return await client.DeleteAsync(
+            new Uri($"/bookings/{bookingId}", UriKind.Relative),
             cancellationToken);
     }
 }

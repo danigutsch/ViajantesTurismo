@@ -15,12 +15,12 @@ public sealed class DeleteBookingTests(ApiFixture fixture) : AdminApiIntegration
         var createdBooking = await Client.CreateTestBooking(tourDto.Id, customerDto.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.DeleteAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.DeleteBooking(createdBooking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        var getResponse = await Client.GetAsync(new Uri($"/bookings/{createdBooking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var getResponse = await Client.GetBooking(createdBooking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
 
@@ -31,7 +31,7 @@ public sealed class DeleteBookingTests(ApiFixture fixture) : AdminApiIntegration
         var nonExistingId = Guid.CreateVersion7();
 
         // Act
-        var response = await Client.DeleteAsync(new Uri($"/bookings/{nonExistingId}", UriKind.Relative),
+        var response = await Client.DeleteBooking(nonExistingId,
             TestContext.Current.CancellationToken);
 
         // Assert

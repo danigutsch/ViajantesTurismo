@@ -24,11 +24,11 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             notes: "Down payment");
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+        var response = await Client.RecordPayment(booking.Id, paymentDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var getBooking = await Client.GetAsync(new Uri($"/bookings/{booking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var getBooking = await Client.GetBooking(booking.Id, TestContext.Current.CancellationToken);
         getBooking.EnsureSuccessStatusCode();
         var updated = await getBooking.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(updated);
@@ -52,18 +52,18 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             amount: FirstPaymentAmount,
             method: PaymentMethodDto.CreditCard,
             referenceNumber: "REF-1");
-        var response1 = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), payment1, TestContext.Current.CancellationToken);
+        var response1 = await Client.RecordPayment(booking.Id, payment1, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, response1.StatusCode);
 
         var payment2 = DtoBuilders.BuildCreatePaymentDto(
             amount: secondPaymentAmount,
             method: PaymentMethodDto.CreditCard,
             referenceNumber: "REF-2");
-        var response2 = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), payment2, TestContext.Current.CancellationToken);
+        var response2 = await Client.RecordPayment(booking.Id, payment2, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response2.StatusCode);
-        var getBooking = await Client.GetAsync(new Uri($"/bookings/{booking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var getBooking = await Client.GetBooking(booking.Id, TestContext.Current.CancellationToken);
         getBooking.EnsureSuccessStatusCode();
         var updated = await getBooking.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(updated);
@@ -85,7 +85,7 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             method: PaymentMethodDto.Cash);
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+        var response = await Client.RecordPayment(booking.Id, paymentDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -102,7 +102,7 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             notes: "Test payment");
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{nonExistingBookingId}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+        var response = await Client.RecordPayment(nonExistingBookingId, paymentDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -121,7 +121,7 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             notes: "Invalid negative");
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+        var response = await Client.RecordPayment(booking.Id, paymentDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -139,7 +139,7 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             method: PaymentMethodDto.Cash);
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+        var response = await Client.RecordPayment(booking.Id, paymentDto, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -171,11 +171,11 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
                 notes: $"Payment via {method}");
 
             // Act
-            var response = await Client.PostAsJsonAsync(new Uri($"/bookings/{booking.Id}/payments", UriKind.Relative), paymentDto, TestContext.Current.CancellationToken);
+            var response = await Client.RecordPayment(booking.Id, paymentDto, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            var getBooking = await Client.GetAsync(new Uri($"/bookings/{booking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+            var getBooking = await Client.GetBooking(booking.Id, TestContext.Current.CancellationToken);
             var updated = await getBooking.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
             Assert.NotNull(updated);
             Assert.Equal(PaymentStatusDto.PartiallyPaid, updated.PaymentStatus);
