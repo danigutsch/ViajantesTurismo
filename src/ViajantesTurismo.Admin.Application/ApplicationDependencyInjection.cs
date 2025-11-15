@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
+using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
@@ -27,6 +29,8 @@ public static class ApplicationDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.Services.AddScoped<CancelBookingCommandHandler>();
+        builder.Services.AddScoped<CompleteBookingCommandHandler>();
         builder.Services.AddScoped<ConfirmBookingCommandHandler>();
         builder.Services.AddScoped<CreateBookingCommandHandler>();
         builder.Services.AddScoped<DeleteBookingCommandHandler>();

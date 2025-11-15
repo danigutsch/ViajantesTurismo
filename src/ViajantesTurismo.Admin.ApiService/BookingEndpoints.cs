@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
+using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
@@ -222,32 +224,24 @@ internal static class BookingEndpoints
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>> CancelBooking(
         [FromRoute] Guid id,
-        [FromServices] ITourStore tourStore,
-        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] CancelBookingCommandHandler handler,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
-        var tour = await tourStore.GetByBookingId(id, ct);
-        if (tour is null)
-        {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
-        }
+        var command = new CancelBookingCommand(id);
 
-        var result = tour.CancelBooking(id);
+        var result = await handler.Handle(command, ct);
+
         if (result.IsFailure)
         {
-            return result.ToConflict();
+            return result.Status == ResultStatus.NotFound
+                ? result.ToNotFound()
+                : result.ToConflict();
         }
-
-        await unitOfWork.SaveEntities(ct);
 
         var updatedBooking = await queryService.GetBookingById(id, ct);
-        if (updatedBooking is null)
-        {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
-        }
 
-        return TypedResults.Ok(updatedBooking);
+        return TypedResults.Ok(updatedBooking!);
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>> ConfirmBooking(
@@ -301,34 +295,26 @@ internal static class BookingEndpoints
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> CompleteBooking(
         [FromRoute] Guid id,
-        [FromServices] ITourStore tourStore,
-        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] CompleteBookingCommandHandler handler,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
-        var tour = await tourStore.GetByBookingId(id, ct);
-        if (tour is null)
-        {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
-        }
+        var command = new CompleteBookingCommand(id);
 
-        var result = tour.CompleteBooking(id);
+        var result = await handler.Handle(command, ct);
+
         if (result.IsFailure)
         {
-            return result.IsConflict
-                ? result.ToConflict()
-                : result.ToValidationProblem();
+            return result.Status == ResultStatus.NotFound
+                ? result.ToNotFound()
+                : result.IsConflict
+                    ? result.ToConflict()
+                    : result.ToValidationProblem();
         }
-
-        await unitOfWork.SaveEntities(ct);
 
         var updatedBooking = await queryService.GetBookingById(id, ct);
-        if (updatedBooking is null)
-        {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
-        }
 
-        return TypedResults.Ok(updatedBooking);
+        return TypedResults.Ok(updatedBooking!);
     }
 
     private static async Task<Results<Created<GetPaymentDto>, NotFound<ProblemDetails>, ValidationProblem>>
