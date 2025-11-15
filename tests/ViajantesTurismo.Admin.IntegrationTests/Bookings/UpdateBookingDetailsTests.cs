@@ -17,13 +17,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var companion = await Client.CreateTestCustomer("Comp", "Anion", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDetailsDto
-        {
-            RoomType = RoomTypeDto.DoubleRoom,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = companion.Id,
-            CompanionBikeType = BikeTypeDto.Regular
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.DoubleRoom, BikeTypeDto.Regular, companion.Id, BikeTypeDto.Regular);
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -46,13 +40,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var companion = await Client.CreateTestCustomer("To", "Single", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, principal.Id, companion.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDetailsDto
-        {
-            RoomType = RoomTypeDto.SingleRoom,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = null,
-            CompanionBikeType = null
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular);
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -75,13 +63,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         var companion = await Client.CreateTestCustomer("Wrong", "Room", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDetailsDto
-        {
-            RoomType = RoomTypeDto.SingleRoom,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = companion.Id,
-            CompanionBikeType = BikeTypeDto.Regular
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular, companion.Id, BikeTypeDto.Regular);
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -94,13 +76,7 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
     public async Task Update_Booking_Details_Returns_NotFound_For_Invalid_Id()
     {
         // Arrange
-        var updateDto = new UpdateBookingDetailsDto
-        {
-            RoomType = RoomTypeDto.SingleRoom,
-            PrincipalBikeType = BikeTypeDto.Regular,
-            CompanionCustomerId = null,
-            CompanionBikeType = null
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular);
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{Guid.CreateVersion7()}/details", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);

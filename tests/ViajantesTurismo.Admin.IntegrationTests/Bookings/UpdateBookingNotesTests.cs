@@ -17,7 +17,7 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
         var createdBooking = await Client.CreateTestBooking(tourDto.Id, customerDto.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var notesRequest = new UpdateBookingNotesDto { Notes = "Updated notes" };
+        var notesRequest = DtoBuilders.BuildUpdateBookingNotesDto("Updated notes");
         var notesResponse = await Client.PatchAsJsonAsync(
             new Uri($"/bookings/{createdBooking.Id}/notes", UriKind.Relative),
             notesRequest,
@@ -44,10 +44,7 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
     public async Task Update_Booking_Notes_Returns_Not_Found_For_Invalid_Id()
     {
         // Arrange
-        var updateRequest = new UpdateBookingNotesDto
-        {
-            Notes = "Test"
-        };
+        var updateRequest = DtoBuilders.BuildUpdateBookingNotesDto("Test");
 
         // Act
         var response = await Client.PatchAsJsonAsync(new Uri("/bookings/99999/notes", UriKind.Relative), updateRequest,

@@ -13,7 +13,7 @@ public sealed class ConfirmBookingTests(ApiFixture fixture) : AdminApiIntegratio
         var nonExistingId = Guid.CreateVersion7();
 
         // Act
-        var response = await Client.PostAsync(new Uri($"/bookings/{nonExistingId}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var response = await Client.ConfirmBooking(nonExistingId, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -27,11 +27,11 @@ public sealed class ConfirmBookingTests(ApiFixture fixture) : AdminApiIntegratio
         var customer = await Client.CreateTestCustomer("Cancel", "Then Confirm", TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var cancelResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var cancelResponse = await Client.CancelBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, cancelResponse.StatusCode);
 
         // Act
-        var confirmResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var confirmResponse = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, confirmResponse.StatusCode);

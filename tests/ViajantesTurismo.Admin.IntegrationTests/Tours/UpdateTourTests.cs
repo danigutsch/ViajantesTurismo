@@ -14,21 +14,9 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         // Arrange
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateRequest = new UpdateTourDto
-        {
-            Identifier = $"{tour.Identifier}-UPDATED",
-            Name = "Cuba Updated",
-            StartDate = new DateTime(2026, 11, 10).ToUniversalTime(),
-            EndDate = new DateTime(2026, 11, 20).ToUniversalTime(),
-            Currency = CurrencyDto.Real,
-            Price = 2800.00m,
-            DoubleRoomSupplementPrice = 370.00m,
-            RegularBikePrice = 180.00m,
-            EBikePrice = 280.00m,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["Hotel", "Breakfast", "City Tour", "Dinner"]
-        };
+        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: $"{tour.Identifier}-UPDATED", name: "Cuba Updated", startDate: new DateTime(2026, 11, 10).ToUniversalTime(),
+            endDate: new DateTime(2026, 11, 20).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 2800.00m, doubleRoomSupplement: 370.00m, regularBikePrice: 180.00m, eBikePrice: 280.00m,
+            includedServices: ["Hotel", "Breakfast", "City Tour", "Dinner"]);
 
         // Act
         var putResponse = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
@@ -52,21 +40,9 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         // Arrange
         const int invalidId = -1;
 
-        var updateRequest = new UpdateTourDto
-        {
-            Identifier = "INVALID",
-            Name = "Invalid Tour",
-            StartDate = new DateTime(2027, 1, 1).ToUniversalTime(),
-            EndDate = new DateTime(2027, 1, 10).ToUniversalTime(),
-            Currency = CurrencyDto.Real,
-            Price = 1000.00m,
-            DoubleRoomSupplementPrice = 100.00m,
-            RegularBikePrice = 50.00m,
-            EBikePrice = 80.00m,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["None"]
-        };
+        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: "INVALID", name: "Invalid Tour", startDate: new DateTime(2027, 1, 1).ToUniversalTime(),
+            endDate: new DateTime(2027, 1, 10).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 1000.00m, doubleRoomSupplement: 100.00m, regularBikePrice: 50.00m, eBikePrice: 80.00m,
+            includedServices: ["None"]);
 
         // Act
         var response = await Client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest, TestContext.Current.CancellationToken);

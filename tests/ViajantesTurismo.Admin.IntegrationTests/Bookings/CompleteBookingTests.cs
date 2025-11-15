@@ -15,11 +15,11 @@ public sealed class CompleteBookingTests(ApiFixture fixture) : AdminApiIntegrati
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var customer = await Client.CreateTestCustomer("Finish", "Me", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
-        var confirmResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var confirmResponse = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
 
         // Act
-        var completeResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var completeResponse = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, completeResponse.StatusCode);
@@ -32,7 +32,7 @@ public sealed class CompleteBookingTests(ApiFixture fixture) : AdminApiIntegrati
     public async Task Complete_Booking_Returns_NotFound_For_Invalid_Id()
     {
         // Act
-        var response = await Client.PostAsync(new Uri($"/bookings/{Guid.CreateVersion7()}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var response = await Client.CompleteBooking(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -47,7 +47,7 @@ public sealed class CompleteBookingTests(ApiFixture fixture) : AdminApiIntegrati
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var completeResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var completeResponse = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, completeResponse.StatusCode);

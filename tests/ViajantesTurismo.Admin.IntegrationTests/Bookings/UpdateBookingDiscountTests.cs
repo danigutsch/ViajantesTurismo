@@ -21,12 +21,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var customer = await Client.CreateTestCustomer("Perc", "Entage", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDiscountDto
-        {
-            DiscountType = DiscountTypeDto.Percentage,
-            DiscountAmount = ValidPercentageDiscount,
-            DiscountReason = "Seasonal offer"
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, ValidPercentageDiscount, "Seasonal offer");
 
         // Act
         var updateResponse = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -49,12 +44,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var customer = await Client.CreateTestCustomer("Abs", "Olute", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDiscountDto
-        {
-            DiscountType = DiscountTypeDto.Absolute,
-            DiscountAmount = ValidAbsoluteDiscount,
-            DiscountReason = "VIP customer"
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, ValidAbsoluteDiscount, "VIP customer");
 
         // Act
         var updateResponse = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -77,12 +67,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var customer = await Client.CreateTestCustomer("Inval", "Percent", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDiscountDto
-        {
-            DiscountType = DiscountTypeDto.Percentage,
-            DiscountAmount = OverAllowedPercentageDiscount,
-            DiscountReason = "Too big"
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, OverAllowedPercentageDiscount, "Too big");
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -99,12 +84,7 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var customer = await Client.CreateTestCustomer("Exceed", "Subtotal", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateDto = new UpdateBookingDiscountDto
-        {
-            DiscountType = DiscountTypeDto.Absolute,
-            DiscountAmount = AbsoluteDiscountExceedingSubtotal,
-            DiscountReason = "Impossible"
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, AbsoluteDiscountExceedingSubtotal, "Impossible");
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);
@@ -120,17 +100,12 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var customer = await Client.CreateTestCustomer("Lock", "Discount", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
-        var confirmResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var confirmResponse = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
-        var completeResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var completeResponse = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, completeResponse.StatusCode);
 
-        var updateDto = new UpdateBookingDiscountDto
-        {
-            DiscountType = DiscountTypeDto.Absolute,
-            DiscountAmount = 50m,
-            DiscountReason = "Late attempt"
-        };
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, 50m, "Late attempt");
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/bookings/{booking.Id}/discount", UriKind.Relative), updateDto, TestContext.Current.CancellationToken);

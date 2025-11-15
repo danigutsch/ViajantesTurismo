@@ -119,7 +119,7 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> ConfirmBookingAsync(
+    public static async Task<HttpResponseMessage> ConfirmBooking(
         this HttpClient client,
         Guid bookingId,
         CancellationToken cancellationToken)
@@ -130,7 +130,7 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> CancelBookingAsync(
+    public static async Task<HttpResponseMessage> CancelBooking(
         this HttpClient client,
         Guid bookingId,
         CancellationToken cancellationToken)
@@ -141,7 +141,7 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> CompleteBookingAsync(
+    public static async Task<HttpResponseMessage> CompleteBooking(
         this HttpClient client,
         Guid bookingId,
         CancellationToken cancellationToken)
@@ -152,7 +152,7 @@ internal static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> UpdateBookingNotesAsync(
+    public static async Task<HttpResponseMessage> UpdateBookingNotes(
         this HttpClient client,
         Guid bookingId,
         UpdateBookingNotesDto request,

@@ -19,7 +19,7 @@ public sealed class CancelBookingTests(ApiFixture fixture) : AdminApiIntegration
         Assert.Equal(BookingStatusDto.Pending, createdBooking.Status);
 
         // Act
-        var response = await Client.PostAsync(new Uri($"/bookings/{createdBooking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var response = await Client.CancelBooking(createdBooking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -34,7 +34,7 @@ public sealed class CancelBookingTests(ApiFixture fixture) : AdminApiIntegration
     public async Task Cancel_Booking_Returns_Not_Found_For_Invalid_Id()
     {
         // Act
-        var response = await Client.PostAsync(new Uri("/bookings/99999/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var response = await Client.CancelBooking(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -48,14 +48,14 @@ public sealed class CancelBookingTests(ApiFixture fixture) : AdminApiIntegration
         var customer = await Client.CreateTestCustomer("Complete", "Then Cancel", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
-        var confirmResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var confirmResponse = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
 
-        var completeResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var completeResponse = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, completeResponse.StatusCode);
 
         // Act
-        var cancelResponse = await Client.PostAsync(new Uri($"/bookings/{booking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        var cancelResponse = await Client.CancelBooking(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, cancelResponse.StatusCode);
