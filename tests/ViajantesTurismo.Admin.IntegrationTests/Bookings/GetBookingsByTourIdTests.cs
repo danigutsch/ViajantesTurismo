@@ -5,31 +5,47 @@ using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-public sealed class CanGetAllBookingsTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
+public sealed class GetBookingsByTourIdTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     private const decimal BaseTourPrice = 2000m;
-    private const decimal DoubleRoomSupplement = 500m;
     private const decimal RegularBikePrice = 100m;
 
     [Fact]
-    public async Task Can_Get_All_Bookings()
+    public async Task Can_Get_Bookings_By_Tour_Id()
     {
         // Arrange
         var tourDto = await CreateTestTour();
-        var customer1 = await CreateTestCustomer("Alice", "Johnson");
-        var customer2 = await CreateTestCustomer("Charlie", "Brown");
+        var customer1 = await CreateTestCustomer("Emma", "Davis");
+        var customer2 = await CreateTestCustomer("Frank", "Miller");
 
         await CreateTestBooking(tourDto.Id, customer1.Id);
         await CreateTestBooking(tourDto.Id, customer2.Id);
 
         // Act
-        var response = await Client.GetAsync(new Uri("/bookings", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.GetAsync(new Uri($"/bookings/tour/{tourDto.Id}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var bookings =
+            await response.Content.ReadFromJsonAsync<GetBookingDto[]>(
+                TestContext.Current.CancellationToken);
+        Assert.NotNull(bookings);
+        Assert.Equal(2, bookings.Length);
+        Assert.All(bookings, b => Assert.Equal(tourDto.Id, b.TourId));
+    }
+
+    [Fact]
+    public async Task Get_Bookings_By_Tour_Id_Returns_Empty_For_Invalid_Tour()
+    {
+        // Act
+        var response = await Client.GetAsync(new Uri($"/bookings/tour/{Guid.CreateVersion7()}", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(bookings);
-        Assert.True(bookings.Length >= 2);
+        Assert.Empty(bookings);
     }
 
     private async Task<GetTourDto> CreateTestTour(string identifier = "CUBA2024", string name = "Cuba Adventure 2024")
@@ -41,7 +57,7 @@ public sealed class CanGetAllBookingsTests(ApiFixture fixture) : AdminApiIntegra
             StartDate = DateTime.UtcNow.AddMonths(2),
             EndDate = DateTime.UtcNow.AddMonths(2).AddDays(10),
             Price = BaseTourPrice,
-            DoubleRoomSupplementPrice = DoubleRoomSupplement,
+            DoubleRoomSupplementPrice = 500m,
             RegularBikePrice = RegularBikePrice,
             EBikePrice = 200.00m,
             MinCustomers = 4,

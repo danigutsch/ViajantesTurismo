@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-public sealed class CanCreateBookingTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
+public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     private const decimal BaseTourPrice = 2000m;
     private const decimal RegularBikePrice = 100m;
