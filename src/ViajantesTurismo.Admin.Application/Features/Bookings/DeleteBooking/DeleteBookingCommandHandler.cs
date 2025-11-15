@@ -1,8 +1,7 @@
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Bookings.Commands.DeleteBooking;
+namespace ViajantesTurismo.Admin.Application.Features.Bookings.DeleteBooking;
 
 /// <summary>
 /// Handles the deletion of a booking.

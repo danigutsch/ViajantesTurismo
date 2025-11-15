@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
+namespace ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
 
 /// <summary>
 /// Command to create a new customer with all required information.

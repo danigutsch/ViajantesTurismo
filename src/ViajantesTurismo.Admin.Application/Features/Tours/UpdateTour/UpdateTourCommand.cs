@@ -1,6 +1,6 @@
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.Admin.Application.Tours.Commands.UpdateTour;
+namespace ViajantesTurismo.Admin.Application.Features.Tours.UpdateTour;
 
 /// <summary>
 /// Command to update an existing tour's details, schedule, pricing, and included services.

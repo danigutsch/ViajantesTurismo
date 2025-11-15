@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Bookings.Commands.ConfirmBooking;
-using ViajantesTurismo.Admin.Application.Bookings.Commands.CreateBooking;
-using ViajantesTurismo.Admin.Application.Bookings.Commands.DeleteBooking;
+using ViajantesTurismo.Admin.Application.Features.Bookings.ConfirmBooking;
+using ViajantesTurismo.Admin.Application.Features.Bookings.CreateBooking;
+using ViajantesTurismo.Admin.Application.Features.Bookings.DeleteBooking;
 using ViajantesTurismo.Admin.Application.Mappings;
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;

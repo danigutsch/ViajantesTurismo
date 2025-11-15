@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.Infrastructure;

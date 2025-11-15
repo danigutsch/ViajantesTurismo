@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Commands.UpdateCustomer;
+namespace ViajantesTurismo.Admin.Application.Features.Customers.UpdateCustomer;
 
 /// <summary>
 /// Command to update an existing customer's information.

@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.Application.Tours.Commands.CreateTour;
+namespace ViajantesTurismo.Admin.Application.Features.Tours.CreateTour;
 
 /// <summary>
 /// Command to create a new tour.

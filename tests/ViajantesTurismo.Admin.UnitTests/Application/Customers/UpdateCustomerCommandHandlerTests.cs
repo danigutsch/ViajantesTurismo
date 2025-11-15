@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Customers;
-using ViajantesTurismo.Admin.Application.Customers.Commands.UpdateCustomer;
+using ViajantesTurismo.Admin.Application.Features.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;

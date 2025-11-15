@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Application.Bookings.Commands.DeleteBooking;
+namespace ViajantesTurismo.Admin.Application.Features.Bookings.DeleteBooking;
 
 /// <summary>
 /// Command to delete a booking.

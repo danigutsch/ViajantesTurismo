@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
+namespace ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
 
 /// <summary>
 /// Handles the creation of a new customer with application-level validation.

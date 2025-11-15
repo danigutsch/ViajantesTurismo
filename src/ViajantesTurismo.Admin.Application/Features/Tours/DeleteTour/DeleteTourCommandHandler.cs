@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Tours.Commands.DeleteTour;
+namespace ViajantesTurismo.Admin.Application.Features.Tours.DeleteTour;
 
 /// <summary>
 /// Handles the deletion of a tour with business rule validation.

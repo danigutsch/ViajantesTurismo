@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Application.Tours.Commands.DeleteTour;
+namespace ViajantesTurismo.Admin.Application.Features.Tours.DeleteTour;
 
 /// <summary>
 /// Command to delete a tour.

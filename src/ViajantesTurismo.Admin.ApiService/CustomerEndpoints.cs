@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Customers.Commands.CreateCustomer;
-using ViajantesTurismo.Admin.Application.Customers.Commands.UpdateCustomer;
+using ViajantesTurismo.Admin.Application.Features.Customers.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Features.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;

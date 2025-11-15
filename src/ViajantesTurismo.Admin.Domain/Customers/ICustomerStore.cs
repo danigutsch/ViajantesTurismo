@@ -1,6 +1,4 @@
-using ViajantesTurismo.Admin.Domain.Customers;
-
-namespace ViajantesTurismo.Admin.Application.Customers;
+namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
 /// Repository interface for managing customers.

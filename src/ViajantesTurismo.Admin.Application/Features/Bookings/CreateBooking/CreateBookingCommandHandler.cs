@@ -1,11 +1,9 @@
-using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Mappings;
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Bookings.Commands.CreateBooking;
+namespace ViajantesTurismo.Admin.Application.Features.Bookings.CreateBooking;
 
 /// <summary>
 /// Handles the creation of a new booking with application-level validation.

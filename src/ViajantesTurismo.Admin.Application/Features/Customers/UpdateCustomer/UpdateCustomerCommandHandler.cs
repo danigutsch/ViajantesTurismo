@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Commands.UpdateCustomer;
+namespace ViajantesTurismo.Admin.Application.Features.Customers.UpdateCustomer;
 
 /// <summary>
 /// Handles updating an existing customer with validation.

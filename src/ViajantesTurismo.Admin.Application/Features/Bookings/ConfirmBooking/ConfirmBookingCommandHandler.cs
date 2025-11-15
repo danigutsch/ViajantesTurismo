@@ -1,8 +1,7 @@
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Bookings.Commands.ConfirmBooking;
+namespace ViajantesTurismo.Admin.Application.Features.Bookings.ConfirmBooking;
 
 /// <summary>
 /// Handles the confirmation of a booking.

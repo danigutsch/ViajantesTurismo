@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Customers;
-using ViajantesTurismo.Admin.Application.Tours;
+using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
