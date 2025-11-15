@@ -27,8 +27,11 @@ This is the index of architecture decisions for **ViajantesTurismo**. We use sho
 
 ### Architecture & Layers
 
-- **[ADR-007](adr/20251108-application-layer-mappers-queries.md)** — Application Layer for Mappers and Query Interfaces
+- **[ADR-007](adr/20251108-application-layer-mappers-queries.md)** — Application Layer for Mappers and
+  Query Interfaces
 - **[ADR-013](adr/20251105-value-objects-tour-creation.md)** — Value Objects for Tour Creation Parameters
+- **[ADR-015](adr/20251115-iqueryable-query-service-frontend-optimization.md)** — IQueryable in Query
+  Service for Frontend Optimization
 
 ### Business Logic & Pricing
 
@@ -55,6 +58,7 @@ These architectural decisions establish a robust foundation:
 1. **No comments** keeps code clean and self-documenting (use XML docs for public APIs)
 2. **Type-safe testing** handles multiple Result types correctly
 3. **Application layer** separates mapping and query concerns from domain
+4. **IQueryable queries** enable efficient server-side operations for frontend grids
 
 ### Business Rules
 
@@ -72,3 +76,4 @@ These architectural decisions establish a robust foundation:
 - Clean Architecture layering
 - Data consistency and correctness
 - Testability and maintainability
+- Frontend performance optimization through deferred query execution
