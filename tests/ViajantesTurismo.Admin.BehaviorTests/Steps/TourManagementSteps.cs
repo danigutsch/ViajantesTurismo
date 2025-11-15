@@ -206,7 +206,7 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
     [When("I create the tour")]
     public void WhenICreateTheTour()
     {
-        tourContext.Tour = TestHelpers.CreateTestTourWithDates(tourContext.StartDate, tourContext.EndDate);
+        tourContext.Tour = EntityBuilders.BuildTour(startDate: tourContext.StartDate, endDate: tourContext.EndDate);
     }
 
     [When("I try to create the tour")]

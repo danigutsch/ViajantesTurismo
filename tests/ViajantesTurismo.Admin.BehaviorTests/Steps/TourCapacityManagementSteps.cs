@@ -43,7 +43,7 @@ public sealed class TourCapacityManagementSteps(
     {
         for (var i = 0; i < bookingCount; i++)
         {
-            var customer = TestHelpers.CreateTestCustomerWithNames($"Customer{i}", $"Test{i}");
+            var customer = EntityBuilders.BuildCustomer(firstName: $"Customer{i}", lastName: $"Test{i}");
             customerContext.Customers.Add(customer);
 
             Result<Booking> bookingResult;
@@ -63,7 +63,7 @@ public sealed class TourCapacityManagementSteps(
                         null);
                     break;
                 case 2:
-                    var companion = TestHelpers.CreateTestCustomerWithNames($"Companion{i}", $"Test{i}");
+                    var companion = EntityBuilders.BuildCustomer(firstName: $"Companion{i}", lastName: $"Test{i}");
                     customerContext.Customers.Add(companion);
 
                     bookingResult = tourContext.Tour.AddBooking(
@@ -93,7 +93,7 @@ public sealed class TourCapacityManagementSteps(
     {
         for (var i = 0; i < bookingCount; i++)
         {
-            var customer = TestHelpers.CreateTestCustomerWithNames($"PendingCustomer{i}", $"Test{i}");
+            var customer = EntityBuilders.BuildCustomer(firstName: $"PendingCustomer{i}", lastName: $"Test{i}");
             customerContext.Customers.Add(customer);
 
             var bookingResult = tourContext.Tour.AddBooking(
@@ -118,7 +118,7 @@ public sealed class TourCapacityManagementSteps(
     {
         for (var i = 0; i < bookingCount; i++)
         {
-            var customer = TestHelpers.CreateTestCustomerWithNames($"CancelledCustomer{i}", $"Test{i}");
+            var customer = EntityBuilders.BuildCustomer(firstName: $"CancelledCustomer{i}", lastName: $"Test{i}");
             customerContext.Customers.Add(customer);
 
             var bookingResult = tourContext.Tour.AddBooking(
@@ -143,7 +143,7 @@ public sealed class TourCapacityManagementSteps(
     public void GivenAFourthCustomerExists()
     {
         var customer =
-            TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
+            EntityBuilders.BuildCustomer(firstName: $"AdditionalCustomer{customerContext.Customers.Count}", "Test");
         customerContext.Customers.Add(customer);
     }
 
@@ -211,7 +211,7 @@ public sealed class TourCapacityManagementSteps(
         if (customerContext.Customers.Count < 4)
         {
             var newCustomer =
-                TestHelpers.CreateTestCustomerWithNames($"AdditionalCustomer{customerContext.Customers.Count}", "Test");
+                EntityBuilders.BuildCustomer(firstName: $"AdditionalCustomer{customerContext.Customers.Count}", lastName: "Test");
             customerContext.Customers.Add(newCustomer);
         }
 

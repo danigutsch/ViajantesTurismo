@@ -11,14 +11,14 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [Given(@"a tour exists with identifier ""(.*)"" and name ""(.*)""")]
     public void GivenATourExistsWithIdentifierAndName(string identifier, string name)
     {
-        tourContext.Tour = TestHelpers.CreateTestTourWithIdentifierAndName(identifier, name);
+        tourContext.Tour = EntityBuilders.BuildTour(identifier: identifier, name: name);
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
     }
 
     [Given(@"another tour exists with identifier ""(.*)""")]
     public void GivenAnotherTourExistsWithIdentifier(string identifier)
     {
-        var anotherTour = TestHelpers.CreateTestTourWithIdentifierAndName(identifier, "Another Tour");
+        var anotherTour = EntityBuilders.BuildTour(identifier: identifier, name: "Another Tour");
         tourContext.TourStore.AddExistingTour(anotherTour);
     }
 

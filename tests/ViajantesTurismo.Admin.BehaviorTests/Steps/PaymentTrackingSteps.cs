@@ -198,7 +198,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [Given("another tour exists with a pending booking for payment tests")]
     public void GivenAnotherTourExistsWithAPendingBookingForPaymentTests()
     {
-        tourContext.Tour = TestHelpers.CreateTestTourForPaymentTests();
+        tourContext.Tour = EntityBuilders.BuildTour(basePrice: 900.00m);
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
@@ -223,7 +223,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [Given("the booking has a (.*)% discount applied")]
     public void GivenTheBookingHasADiscountApplied(decimal discountPercentage)
     {
-        tourContext.Tour = TestHelpers.CreateTestTourForPaymentTests();
+        tourContext.Tour = EntityBuilders.BuildTour(basePrice: 900.00m);
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.Percentage, discountPercentage, "Test discount", null);
         Assert.True(result.IsSuccess);

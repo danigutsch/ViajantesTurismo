@@ -10,7 +10,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     [Given(@"a tour exists with currency ""(.*)""")]
     public void GivenATourExistsWithCurrency(string currencyCode)
     {
-        var currency = TestHelpers.ParseCurrency(currencyCode);
+        var currency = EntityBuilders.ParseCurrency(currencyCode);
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
             name: "Test Tour",
@@ -29,14 +29,14 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     [When(@"I update the currency to ""(.*)""")]
     public void WhenIUpdateTheCurrencyTo(string currencyCode)
     {
-        var currency = TestHelpers.ParseCurrency(currencyCode);
+        var currency = EntityBuilders.ParseCurrency(currencyCode);
         tourContext.Tour.UpdateCurrency(currency);
     }
 
     [Then(@"the tour should have currency ""(.*)""")]
     public void ThenTheTourShouldHaveCurrency(string expectedCurrencyCode)
     {
-        var expectedCurrency = TestHelpers.ParseCurrency(expectedCurrencyCode);
+        var expectedCurrency = EntityBuilders.ParseCurrency(expectedCurrencyCode);
         Assert.Equal(expectedCurrency, tourContext.Tour.Pricing.Currency);
     }
 }

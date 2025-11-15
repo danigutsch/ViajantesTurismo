@@ -12,7 +12,7 @@ public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bo
     [Given("a tour exists with no bookings")]
     public void GivenATourExistsWithNoBookings()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
     }
 
@@ -40,6 +40,7 @@ public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bo
         {
             tourContext.TourStore.AddExistingTour(tourContext.Tour);
         }
+
         var addResult = tourContext.Tour.AddBooking(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -62,6 +63,7 @@ public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bo
         {
             tourContext.TourStore.AddExistingTour(tourContext.Tour);
         }
+
         for (var i = 0; i < count; i++)
         {
             var addResult = tourContext.Tour.AddBooking(
@@ -87,6 +89,7 @@ public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bo
         {
             tourContext.TourStore.AddExistingTour(tourContext.Tour);
         }
+
         var addResult = tourContext.Tour.AddBooking(
             Guid.CreateVersion7(),
             BikeType.Regular,

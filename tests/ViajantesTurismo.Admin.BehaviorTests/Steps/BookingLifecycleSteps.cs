@@ -17,7 +17,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
@@ -28,7 +28,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
@@ -40,7 +40,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
@@ -53,7 +53,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a completed booking exists")]
     public void GivenACompletedBookingExists()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);

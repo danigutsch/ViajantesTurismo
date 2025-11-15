@@ -11,7 +11,7 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     [Given("a tour exists with pricing setup")]
     public void GivenATourExistsWithPricingSetup()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
     }
 
     [When(

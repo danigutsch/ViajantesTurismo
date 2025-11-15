@@ -16,7 +16,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [Given("a tour exists with a pending booking for payment tests")]
     public void GivenATourExistsWithAPendingBookingForPaymentTests()
     {
-        tourContext.Tour = TestHelpers.CreateTestTourForPaymentTests();
+        tourContext.Tour = EntityBuilders.BuildTour(basePrice: 900.00m);
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
@@ -174,7 +174,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [Given(@"the booking payment status is ""(.*)""")]
     public void GivenTheBookingPaymentStatusIs(string expectedStatus)
     {
-        var status = TestHelpers.ParsePaymentStatus(expectedStatus);
+        var status = EntityBuilders.ParsePaymentStatus(expectedStatus);
         Assert.Equal(status, bookingContext.Booking.PaymentStatus);
     }
 }

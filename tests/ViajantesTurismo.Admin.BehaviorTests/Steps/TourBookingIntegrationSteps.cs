@@ -11,7 +11,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a tour exists")]
     public void GivenATourExists()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
     }
 
     [Given("a customer exists")]
@@ -22,7 +22,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a tour exists with a pending booking")]
     public void GivenATourExistsWithAPendingBooking()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
@@ -33,7 +33,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a tour exists with a confirmed booking")]
     public void GivenATourExistsWithAConfirmedBooking()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
@@ -46,7 +46,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a tour exists with a cancelled booking")]
     public void GivenATourExistsWithACancelledBooking()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
@@ -59,7 +59,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a tour exists with a completed booking")]
     public void GivenATourExistsWithACompletedBooking()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(addResult.IsSuccess);
@@ -77,7 +77,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a tour exists with a booking")]
     public void GivenATourExistsWithABooking()
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
@@ -87,7 +87,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given(@"a tour exists with a booking priced at (.*) and notes ""(.*)""")]
     public void GivenATourExistsWithABookingPricedAtAndNotes(decimal price, string notes)
     {
-        tourContext.Tour = TestHelpers.CreateTestTour();
+        tourContext.Tour = EntityBuilders.BuildTour();
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
             DiscountType.None, 0m, null, notes);
         Assert.True(result.IsSuccess);

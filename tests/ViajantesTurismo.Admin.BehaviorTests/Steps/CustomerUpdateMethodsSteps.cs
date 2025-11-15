@@ -10,19 +10,19 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Given(@"a customer exists with personal info ""(.*)"" ""(.*)""")]
     public void GivenACustomerExistsWithPersonalInfo(string firstName, string lastName)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithNames(firstName, lastName);
+        customerContext.Customer = EntityBuilders.BuildCustomer(firstName: firstName, lastName: lastName);
     }
 
     [Given(@"a customer exists with passport ""(.*)""")]
     public void GivenACustomerExistsWithPassport(string passport)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithPassport(passport);
+        customerContext.Customer = EntityBuilders.BuildCustomer(passportNumber: passport);
     }
 
     [Given(@"a customer exists with email ""(.*)""")]
     public void GivenACustomerExistsWithEmail(string email)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithEmail(email);
+        customerContext.Customer = EntityBuilders.BuildCustomer(email: email);
         customerContext.Customers.Add(customerContext.Customer);
         customerContext.CustomerStore.AddExistingCustomer(customerContext.Customer);
     }
@@ -30,32 +30,32 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Given(@"a customer exists with city ""(.*)""")]
     public void GivenACustomerExistsWithCity(string city)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithCity(city);
+        customerContext.Customer = EntityBuilders.BuildCustomer(city: city);
     }
 
     [Given("a customer exists with height (.*)")]
     public void GivenACustomerExistsWithHeight(int height)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithHeight(height);
+        customerContext.Customer = EntityBuilders.BuildCustomer(heightCentimeters: height);
     }
 
     [Given(@"a customer exists with bed type ""(.*)""")]
     public void GivenACustomerExistsWithBedType(string bedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(bedType + "Bed");
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithBedType(bedTypeEnum);
+        customerContext.Customer = EntityBuilders.BuildCustomer(preferredBed: bedTypeEnum);
     }
 
     [Given(@"a customer exists with emergency contact ""(.*)""")]
     public void GivenACustomerExistsWithEmergencyContact(string name)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithEmergencyContact(name);
+        customerContext.Customer = EntityBuilders.BuildCustomer(emergencyContactName: name);
     }
 
     [Given(@"a customer exists with allergies ""(.*)""")]
     public void GivenACustomerExistsWithAllergies(string allergies)
     {
-        customerContext.Customer = TestHelpers.CreateTestCustomerWithAllergies(allergies);
+        customerContext.Customer = EntityBuilders.BuildCustomer(allergies: allergies);
     }
 
     [When(@"I update the personal info to ""(.*)"" ""(.*)""")]

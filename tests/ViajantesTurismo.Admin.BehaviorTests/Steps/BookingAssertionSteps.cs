@@ -18,7 +18,7 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then(@"the booking status should be ""(.*)""")]
     public void ThenTheBookingStatusShouldBe(string expectedStatus)
     {
-        var expected = TestHelpers.ParseBookingStatus(expectedStatus);
+        var expected = EntityBuilders.ParseBookingStatus(expectedStatus);
         Assert.Equal(expected, context.Booking.Status);
     }
 
@@ -37,7 +37,7 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then(@"the booking payment status should be ""(.*)""")]
     public void ThenTheBookingPaymentStatusShouldBe(string expectedStatusString)
     {
-        var expected = TestHelpers.ParsePaymentStatus(expectedStatusString);
+        var expected = EntityBuilders.ParsePaymentStatus(expectedStatusString);
         Assert.Equal(expected, context.Booking.PaymentStatus);
     }
 

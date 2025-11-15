@@ -13,7 +13,7 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     {
         var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.Tour = TestHelpers.CreateTestTourWithDates(startDate, endDate);
+        tourContext.Tour = EntityBuilders.BuildTour(startDate: startDate, endDate: endDate);
     }
 
     [When(@"I update the tour schedule to start ""(.*)"" and end ""(.*)""")]
