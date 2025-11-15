@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.IntegrationTests.Helpers;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Tours;
@@ -11,33 +12,11 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     public async Task Can_Update_Tour()
     {
         // Arrange
-        var uniqueId = Guid.NewGuid().ToString("N");
-        var request = new CreateTourDto
-        {
-            Identifier = $"CUBA-{uniqueId}",
-            Name = "Isla de Cuba",
-            StartDate = new DateTime(2026, 10, 10).ToUniversalTime(),
-            EndDate = new DateTime(2026, 10, 20).ToUniversalTime(),
-            Currency = CurrencyDto.Real,
-            Price = 2700.00m,
-            DoubleRoomSupplementPrice = 360.00m,
-            RegularBikePrice = 170.00m,
-            EBikePrice = 270.00m,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["Hotel", "Breakfast", "City Tour"]
-        };
-        var postResponse = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
-            TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
-        var location = postResponse.Headers.Location;
-        Assert.NotNull(location);
-        var idStr = location.OriginalString.Split('/').Last();
-        Assert.True(Guid.TryParse(idStr, out var tourId));
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
 
         var updateRequest = new UpdateTourDto
         {
-            Identifier = $"CUBA-{uniqueId}-UPDATED",
+            Identifier = $"{tour.Identifier}-UPDATED",
             Name = "Cuba Updated",
             StartDate = new DateTime(2026, 11, 10).ToUniversalTime(),
             EndDate = new DateTime(2026, 11, 20).ToUniversalTime(),
@@ -52,17 +31,13 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         };
 
         // Act
-        var putResponse =
-            await Client.PutAsJsonAsync($"/tours/{tourId}", updateRequest, TestContext.Current.CancellationToken);
+        var putResponse = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, putResponse.StatusCode);
 
         // Assert
-        var getResponse = await Client.GetAsync(new Uri($"/tours/{tourId}", UriKind.Relative),
-            TestContext.Current.CancellationToken);
+        var getResponse = await Client.GetAsync(new Uri($"/tours/{tour.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
-        var tourDto =
-            await getResponse.Content.ReadFromJsonAsync<GetTourDto>(
-                cancellationToken: TestContext.Current.CancellationToken);
+        var tourDto = await getResponse.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(tourDto);
         Assert.Equal(updateRequest.Identifier, tourDto.Identifier);
         Assert.Equal(updateRequest.Name, tourDto.Name);
@@ -94,8 +69,7 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest,
-            TestContext.Current.CancellationToken);
+        var response = await Client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

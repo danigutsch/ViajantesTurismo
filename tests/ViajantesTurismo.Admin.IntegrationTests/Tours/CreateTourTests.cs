@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.IntegrationTests.Helpers;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Tours;
@@ -11,26 +12,16 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     public async Task Can_Create_Tour()
     {
         // Arrange
-        var uniqueId = Guid.NewGuid().ToString("N");
-        var request = new CreateTourDto
-        {
-            Identifier = $"CUBA-{uniqueId}",
-            Name = "Isla de Cuba",
-            StartDate = new DateTime(2024, 10, 10).ToUniversalTime(),
-            EndDate = new DateTime(2024, 10, 20).ToUniversalTime(),
-            Currency = CurrencyDto.Real,
-            Price = 2500.00m,
-            DoubleRoomSupplementPrice = 300.00m,
-            RegularBikePrice = 150.00m,
-            EBikePrice = 250.00m,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["Hotel", "Breakfast", "City Tour"]
-        };
+        var request = DtoBuilders.BuildCreateTourDto(
+            basePrice: 2500.00m,
+            doubleRoomSupplement: 300.00m,
+            regularBikePrice: 150.00m,
+            eBikePrice: 250.00m,
+            currency: CurrencyDto.Real,
+            includedServices: ["Hotel", "Breakfast", "City Tour"]);
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
-            TestContext.Current.CancellationToken);
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -43,26 +34,12 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     public async Task Create_Tour_Returns_Bad_Request_For_Invalid_Data()
     {
         // Arrange
-        const string invalidIdentifier = "";
-        var request = new CreateTourDto
-        {
-            Identifier = invalidIdentifier,
-            Name = "Test Tour",
-            StartDate = DateTime.UtcNow.AddMonths(1),
-            EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
-            Currency = CurrencyDto.Real,
-            Price = 2000.00m,
-            DoubleRoomSupplementPrice = 500.00m,
-            RegularBikePrice = 100.00m,
-            EBikePrice = 200.00m,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["Hotel", "Breakfast"]
-        };
+        var request = DtoBuilders.BuildCreateTourDto(
+            identifier: "",
+            name: "Test Tour");
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
-            TestContext.Current.CancellationToken);
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -73,25 +50,17 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     {
         // Arrange
         const decimal invalidPrice = 0.00m;
-        var request = new CreateTourDto
-        {
-            Identifier = "TEST2024",
-            Name = "Test Tour",
-            StartDate = DateTime.UtcNow.AddMonths(1),
-            EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
-            Currency = CurrencyDto.Real,
-            Price = invalidPrice,
-            DoubleRoomSupplementPrice = invalidPrice,
-            RegularBikePrice = invalidPrice,
-            EBikePrice = invalidPrice,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["Hotel"]
-        };
+        var request = DtoBuilders.BuildCreateTourDto(
+            identifier: "TEST2024",
+            name: "Test Tour",
+            basePrice: invalidPrice,
+            doubleRoomSupplement: invalidPrice,
+            regularBikePrice: invalidPrice,
+            eBikePrice: invalidPrice,
+            includedServices: ["Hotel"]);
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
-            TestContext.Current.CancellationToken);
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -102,25 +71,13 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     {
         // Arrange
         const decimal negativeBasePrice = -100.00m;
-        var request = new CreateTourDto
-        {
-            Identifier = "TEST2024",
-            Name = "Test Tour",
-            StartDate = DateTime.UtcNow.AddMonths(1),
-            EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7),
-            Currency = CurrencyDto.Real,
-            Price = negativeBasePrice,
-            DoubleRoomSupplementPrice = 500.00m,
-            RegularBikePrice = 100.00m,
-            EBikePrice = 200.00m,
-            MinCustomers = 4,
-            MaxCustomers = 12,
-            IncludedServices = ["Hotel", "Breakfast"]
-        };
+        var request = DtoBuilders.BuildCreateTourDto(
+            identifier: "TEST2024",
+            name: "Test Tour",
+            basePrice: negativeBasePrice);
 
         // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request,
-            TestContext.Current.CancellationToken);
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
