@@ -361,7 +361,7 @@ dotnet tool restore
 
 ### Coverage Goals
 
-See [Test Guidelines](TEST_GUIDELINES.md#test-coverage--ci) for coverage goals and testing strategy.
+See [Test Guidelines](TEST_GUIDELINES.md#bdd-coverage--ci) for coverage goals and testing strategy.
 
 ## Related Documentation
 

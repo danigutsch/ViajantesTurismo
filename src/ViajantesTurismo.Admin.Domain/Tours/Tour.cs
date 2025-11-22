@@ -707,29 +707,29 @@ public sealed class Tour : Entity<Guid>
             booking.Discount);
     }
 
-    private Result<Optional<BookingCustomer>> ValidateAndCreateCompanionForUpdate(
+    private Result<Option<BookingCustomer>> ValidateAndCreateCompanionForUpdate(
         Guid principalCustomerId,
         Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
         if (!companionCustomerId.HasValue && companionBikeType.HasValue)
         {
-            return BookingErrors.CompanionBikeWithoutCompanion().ConvertError<Optional<BookingCustomer>>();
+            return BookingErrors.CompanionBikeWithoutCompanion().ConvertError<Option<BookingCustomer>>();
         }
 
         if (!companionCustomerId.HasValue)
         {
-            return Optional<BookingCustomer>.Empty();
+            return Option<BookingCustomer>.Empty();
         }
 
         if (!companionBikeType.HasValue)
         {
-            return BookingErrors.CompanionBikeTypeRequired().ConvertError<Optional<BookingCustomer>>();
+            return BookingErrors.CompanionBikeTypeRequired().ConvertError<Option<BookingCustomer>>();
         }
 
         if (principalCustomerId == companionCustomerId.Value)
         {
-            return TourErrors.PrincipalAndCompanionCannotBeSame().ConvertError<Optional<BookingCustomer>>();
+            return TourErrors.PrincipalAndCompanionCannotBeSame().ConvertError<Option<BookingCustomer>>();
         }
 
         var companionBikePrice = GetBikePrice(companionBikeType.Value);
@@ -740,10 +740,10 @@ public sealed class Tour : Entity<Guid>
 
         if (companionCustomerResult.IsFailure)
         {
-            return companionCustomerResult.ConvertError<BookingCustomer, Optional<BookingCustomer>>();
+            return companionCustomerResult.ConvertError<BookingCustomer, Option<BookingCustomer>>();
         }
 
-        return Optional<BookingCustomer>.Of(companionCustomerResult.Value);
+        return Option<BookingCustomer>.Of(companionCustomerResult.Value);
     }
 
     /// <summary>

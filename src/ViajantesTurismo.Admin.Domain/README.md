@@ -203,4 +203,4 @@ public static class BookingErrors
 
 - [Architecture Decisions](../../docs/ARCHITECTURE_DECISIONS.md)
 - [Domain Validation](../../docs/DOMAIN_VALIDATION.md)
-- [Result Pattern](../ViajantesTurismo.Common/RESULT_PATTERN.md)
+- [Functional Programming Patterns](../ViajantesTurismo.Common/FUNCTIONAL_PATTERNS.md)
