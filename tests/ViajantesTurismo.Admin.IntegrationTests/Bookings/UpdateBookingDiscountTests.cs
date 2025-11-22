@@ -113,4 +113,73 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Update_Booking_Discount_With_Negative_Amount_ReturnsValidationProblem()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var customer = await Client.CreateTestCustomer("Neg", "Discount", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Absolute, -100m, "Negative discount");
+
+        // Act
+        var response = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Can_Remove_Discount_By_Setting_To_None()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var customer = await Client.CreateTestCustomer("Remove", "Discount", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+
+        var applyDiscountDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, 10m, "Early bird");
+        await Client.UpdateBookingDiscount(booking.Id, applyDiscountDto, TestContext.Current.CancellationToken);
+
+        var removeDiscountDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.None, 0m, "Discount removed");
+
+        // Act
+        var response = await Client.UpdateBookingDiscount(booking.Id, removeDiscountDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(updated);
+        Assert.Equal(DiscountTypeDto.None, updated.DiscountType);
+        Assert.Equal(0m, updated.DiscountAmount);
+        var expectedPrice = PricingHelper.CalculateExpectedBookingPrice(TestDefaults.BaseTourPrice, 0m, TestDefaults.RegularBikePrice);
+        Assert.Equal(expectedPrice, updated.TotalPrice);
+    }
+
+    [Fact]
+    public async Task Can_Set_Zero_Percentage_Discount_Which_Effectively_Removes_It()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var customer = await Client.CreateTestCustomer("Zero", "Percentage", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+
+        var applyDiscountDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, 15m, "Early bird");
+        await Client.UpdateBookingDiscount(booking.Id, applyDiscountDto, TestContext.Current.CancellationToken);
+
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, 0m, "Zero percent");
+
+        // Act
+        var response = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(updated);
+        Assert.Equal(DiscountTypeDto.Percentage, updated.DiscountType);
+        Assert.Equal(0m, updated.DiscountAmount);
+        var expectedPrice = PricingHelper.CalculateExpectedBookingPrice(TestDefaults.BaseTourPrice, 0m, TestDefaults.RegularBikePrice, null, 0m);
+        Assert.Equal(expectedPrice, updated.TotalPrice);
+    }
 }
