@@ -100,4 +100,36 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Can_Update_Tour_Multiple_Times_With_Same_Data()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var updateRequest = DtoBuilders.BuildUpdateTourDto(
+            identifier: "UPDATED001",
+            name: "Updated Tour Name",
+            startDate: new DateTime(2026, 6, 1).ToUniversalTime(),
+            endDate: new DateTime(2026, 6, 15).ToUniversalTime(),
+            currency: CurrencyDto.Euro,
+            basePrice: 3000.00m,
+            doubleRoomSupplement: 400.00m,
+            regularBikePrice: 200.00m,
+            eBikePrice: 300.00m,
+            includedServices: ["Hotel", "Breakfast"]);
+
+        // Act
+        var firstResponse = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
+        var secondResponse = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, secondResponse.StatusCode);
+
+        var getResponse = await Client.GetAsync(new Uri($"/tours/{tour.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var tourDto = await getResponse.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(tourDto);
+        Assert.Equal(updateRequest.Name, tourDto.Name);
+        Assert.Equal(updateRequest.Price, tourDto.Price);
+    }
 }

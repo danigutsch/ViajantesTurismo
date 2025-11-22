@@ -131,4 +131,70 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Can_Update_Customer_Email()
+    {
+        // Arrange
+        var customer = await Client.CreateTestCustomer("Bob", "Wilson", TestContext.Current.CancellationToken);
+        var originalEmail = customer.Email;
+        var newEmail = "bob.wilson.new@example.com";
+
+        var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
+            firstName: customer.FirstName,
+            lastName: customer.LastName,
+            email: newEmail);
+
+        // Act
+        var response = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var getResponse = await Client.GetAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedCustomer = await getResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(updatedCustomer);
+        Assert.NotEqual(originalEmail, updatedCustomer.ContactInfo.Email);
+        Assert.Equal(newEmail, updatedCustomer.ContactInfo.Email);
+    }
+
+    [Fact]
+    public async Task Cannot_Update_Customer_With_Invalid_Email_Format()
+    {
+        // Arrange
+        var customer = await Client.CreateTestCustomer("Charlie", "Brown", TestContext.Current.CancellationToken);
+        var updateRequest = DtoBuilders.BuildUpdateCustomerDto(firstName: "Charlie", lastName: "Brown", email: "not-a-valid-email");
+
+        // Act
+        var response = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Can_Update_Customer_Multiple_Times_With_Same_Data()
+    {
+        // Arrange
+        var customer = await Client.CreateTestCustomer("Diana", "Smith", TestContext.Current.CancellationToken);
+        var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
+            firstName: "Diana",
+            lastName: "Smith-Jones",
+            profession: "Architect",
+            email: "diana.smithjones@example.com");
+
+        // Act
+        var firstResponse = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+        var secondResponse = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, secondResponse.StatusCode);
+
+        var getResponse = await Client.GetAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedCustomer = await getResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(updatedCustomer);
+        Assert.Equal(updateRequest.PersonalInfo.LastName, updatedCustomer.PersonalInfo.LastName);
+        Assert.Equal(updateRequest.ContactInfo.Email, updatedCustomer.ContactInfo.Email);
+    }
 }
