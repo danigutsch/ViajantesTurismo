@@ -104,7 +104,11 @@ var icon = cut.Find("i.bi-check");
 
 ```csharp
 var button = cut.Find("button");
-button.Click();  // Triggers onclick handler
+button.Click();  // Synchronous click
+await button.ClickAsync();  // Async click - waits for event handler but NOT for re-render
+
+// Note: ClickAsync() awaits the event handler callback, not the render cycle.
+// Use WaitForState() after clicking if you need to wait for DOM changes.
 ```
 
 #### 4. **Mocking Services**
@@ -141,6 +145,60 @@ foreach (var status in allStatuses)
     Assert.NotNull(cut.Find(".badge"));
 }
 ```
+
+#### 7. **Testing Async Components with TaskCompletionSource**
+
+When testing components that use `TaskCompletionSource` (like confirmation dialogs),
+follow the pattern from
+[bUnit's async state documentation](https://bunit.dev/docs/interaction/awaiting-async-state.html):
+
+```csharp
+[Fact]
+public async Task Dialog_Should_Return_True_When_Confirmed()
+{
+    // Arrange - Start ShowAsync (returns Task<bool>) but don't await yet
+    var cut = Render<ConfirmDialog>();
+    var resultTask = cut.InvokeAsync(() => cut.Instance.ShowAsync("Confirm action?"));
+
+    // Wait for modal to appear in DOM
+    cut.WaitForState(() => cut.FindAll(".modal").Count > 0);
+
+    // Act - Click button (completes the TaskCompletionSource)
+    var confirmButton = cut.Find(".modal-footer .btn-primary");
+    await confirmButton.ClickAsync();
+
+    // Assert - Now await the result
+    var result = await resultTask;
+    Assert.True(result);
+}
+```
+
+**Key Points:**
+
+- Use `InvokeAsync()` to call methods that trigger `StateHasChanged()`
+- Call `WaitForState()` to wait for DOM changes after async operations
+- For TaskCompletionSource patterns: start task → wait for render → trigger completion → await result
+
+#### 8. **Waiting for Async State Changes**
+
+Use `WaitForState()` when component state changes asynchronously:
+
+```csharp
+// Wait for element to appear
+cut.WaitForState(() => cut.Find(".loading-spinner") != null);
+
+// Wait for element to disappear
+cut.WaitForState(() => cut.FindAll(".modal").Count == 0);
+
+// Wait with custom timeout (default is 1 second)
+cut.WaitForState(() => cut.Find(".result") != null, TimeSpan.FromSeconds(5));
+```
+
+**When to use:**
+
+- After calling async component methods (`ShowAsync()`, `LoadDataAsync()`, etc.)
+- When testing visibility changes triggered by button clicks
+- Any time the component re-renders based on async operations
 
 ## Running Tests
 
@@ -260,20 +318,78 @@ public void Delete_Button_Should_Trigger_Confirmation_Dialog()
 }
 ```
 
+### Testing Modal Dialogs with TaskCompletionSource
+
+```csharp
+public async Task Confirmation_Dialog_Should_Return_True_When_User_Confirms()
+{
+    // Arrange
+    var cut = Render<ConfirmDialog>();
+
+    // Start the async operation (don't await yet - it waits for user interaction)
+    var resultTask = cut.InvokeAsync(() => cut.Instance.ShowAsync(
+        "Are you sure you want to delete this customer?",
+        title: "Confirm Delete",
+        confirmText: "Yes, Delete",
+        cancelText: "Cancel"
+    ));
+
+    // Wait for modal to render
+    cut.WaitForState(() => cut.FindAll(".modal").Count > 0);
+
+    // Act - User confirms
+    var confirmButton = cut.Find(".modal-footer .btn-primary");
+    await confirmButton.ClickAsync();
+
+    // Assert - Check the result
+    var result = await resultTask;
+    Assert.True(result);
+
+    // Verify modal is hidden
+    cut.WaitForState(() => cut.FindAll(".modal").Count == 0);
+}
+```
+
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"Cannot find element"** - Check CSS selector, component may not have rendered the element yet
+1. **"Cannot find element"** - Check CSS selector, component may not have rendered the
+   element yet. Use `WaitForState()` to wait for async rendering.
 2. **"Ambiguous match"** - Use more specific selector (e.g., `button.btn-primary` instead of `button`)
 3. **"Service not registered"** - Add mock service with `Services.AddSingleton<T>()`
 4. **"Parameter required"** - All required `[Parameter]` properties must be set with `.Add()`
+5. **"The current thread is not associated with the Dispatcher"** - Wrap component method
+   calls in `InvokeAsync()`:
+
+   ```csharp
+   // ❌ Wrong - calls StateHasChanged() outside dispatcher
+   cut.Instance.ShowAsync("Message");
+
+   // ✅ Correct - executes on component's dispatcher
+   cut.InvokeAsync(() => cut.Instance.ShowAsync("Message"));
+   ```
+
+6. **Tests hang indefinitely** - Don't await `ShowAsync()` or similar methods that use
+   `TaskCompletionSource` until AFTER triggering the completion action:
+
+   ```csharp
+   // ❌ Wrong - hangs waiting for user interaction that never comes
+   await cut.Instance.ShowAsync("Confirm?");
+
+   // ✅ Correct - start task, interact with UI, then await
+   var resultTask = cut.InvokeAsync(() => cut.Instance.ShowAsync("Confirm?"));
+   cut.WaitForState(() => cut.Find(".modal") != null);
+   await cut.Find("button.confirm").ClickAsync();
+   var result = await resultTask;  // Now it completes
+   ```
 
 ### Tips
 
 - Use `cut.Markup` to inspect rendered HTML during debugging
 - Use `cut.SaveSnapshot()` to save HTML to file for inspection
 - Check bUnit's [troubleshooting guide](https://bunit.dev/docs/misc-test-tips.html)
+- **Debugger attached?** bUnit automatically disables timeouts when `Debugger.IsAttached` is true
 
 ## Contributing
 

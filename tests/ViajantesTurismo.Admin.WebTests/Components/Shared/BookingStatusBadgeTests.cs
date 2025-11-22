@@ -3,9 +3,6 @@ using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
-/// <summary>
-/// Tests for the BookingStatusBadge component.
-/// </summary>
 public sealed class BookingStatusBadgeTests : BunitContext
 {
     [Theory]

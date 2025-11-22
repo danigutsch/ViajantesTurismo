@@ -3,9 +3,6 @@ using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
-/// <summary>
-/// Tests for the PaymentStatusBadge component.
-/// </summary>
 public sealed class PaymentStatusBadgeTests : BunitContext
 {
     [Theory]
