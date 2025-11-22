@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.IntegrationTests.Helpers;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
@@ -8,16 +9,24 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 public sealed class GetAllCustomersTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     [Fact]
-    public async Task Can_Get_Customers()
+    public async Task Can_Get_Multiple_Customers()
     {
+        // Arrange
+        var customer1 = await Client.CreateTestCustomer("Alice", "Johnson", cancellationToken: TestContext.Current.CancellationToken);
+        var customer2 = await Client.CreateTestCustomer("Bob", "Smith", cancellationToken: TestContext.Current.CancellationToken);
+        var customer3 = await Client.CreateTestCustomer("Charlie", "Brown", cancellationToken: TestContext.Current.CancellationToken);
+
         // Act
-        var response = await Client.GetAsync(new Uri("/customers", UriKind.Relative), TestContext.Current.CancellationToken);
+        var response = await Client.GetAllCustomersAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var customers = await response.Content.ReadFromJsonAsync<GetCustomerDto[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(customers);
-        Assert.NotEmpty(customers);
+        Assert.True(customers.Length >= 3);
+        Assert.Contains(customers, c => c.Id == customer1.Id);
+        Assert.Contains(customers, c => c.Id == customer2.Id);
+        Assert.Contains(customers, c => c.Id == customer3.Id);
     }
 }
