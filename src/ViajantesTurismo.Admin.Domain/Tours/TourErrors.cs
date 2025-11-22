@@ -225,11 +225,8 @@ public static class TourErrors
     /// <param name="bookingId">The booking ID.</param>
     /// <param name="currentStatus">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CannotRemoveNonPendingBooking(Guid bookingId, BookingStatus currentStatus) => Result.Invalid(
-        detail:
-        $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.",
-        field: "bookingId",
-        message: "Only pending bookings can be removed.");
+    public static Result CannotRemoveNonPendingBooking(Guid bookingId, BookingStatus currentStatus) => Result.Conflict(
+        $"Booking {bookingId} has status {currentStatus} and cannot be removed. Only pending bookings can be removed.");
 
     /// <summary>
     /// Indicates that a tour cannot be deleted because it has confirmed bookings.

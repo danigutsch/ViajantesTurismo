@@ -197,7 +197,7 @@ internal static class BookingEndpoints
         return TypedResults.Ok(updatedBooking!);
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> DeleteBooking(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> DeleteBooking(
         [FromRoute] Guid id,
         [FromServices] DeleteBookingCommandHandler handler,
         CancellationToken ct)
@@ -208,9 +208,12 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
-                : result.ToValidationProblem();
+            return result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                ResultStatus.Conflict => result.ToConflict(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         return TypedResults.NoContent();
