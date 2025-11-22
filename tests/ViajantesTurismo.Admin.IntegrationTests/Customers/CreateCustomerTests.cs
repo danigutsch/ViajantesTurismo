@@ -26,4 +26,72 @@ public sealed class CreateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         Assert.Equal(request.PersonalInfo.FirstName, customer.FirstName);
         Assert.Equal(request.PersonalInfo.LastName, customer.LastName);
     }
+
+    [Fact]
+    public async Task Cannot_Create_Customer_With_Empty_FirstName()
+    {
+        // Arrange
+        var request = DtoBuilders.BuildCreateCustomerDto(firstName: "John", lastName: "Doe");
+        request = request with
+        {
+            PersonalInfo = request.PersonalInfo with { FirstName = "" }
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Create_Customer_With_Empty_LastName()
+    {
+        // Arrange
+        var request = DtoBuilders.BuildCreateCustomerDto(firstName: "John", lastName: "Doe");
+        request = request with
+        {
+            PersonalInfo = request.PersonalInfo with { LastName = "" }
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Create_Customer_With_Empty_Email()
+    {
+        // Arrange
+        var request = DtoBuilders.BuildCreateCustomerDto(firstName: "John", lastName: "Doe");
+        request = request with
+        {
+            ContactInfo = request.ContactInfo with { Email = "" }
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Create_Customer_With_Future_BirthDate()
+    {
+        // Arrange
+        var request = DtoBuilders.BuildCreateCustomerDto(firstName: "John", lastName: "Doe");
+        request = request with
+        {
+            PersonalInfo = request.PersonalInfo with { BirthDate = DateTime.UtcNow.AddDays(1) }
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
