@@ -7,11 +7,13 @@ internal static class TestDataGenerator
 {
     /// <summary>
     /// Generates a unique email address for testing.
+    /// Removes spaces and invalid characters from the prefix to ensure valid email format.
     /// </summary>
     public static string UniqueEmail(string prefix = "test")
     {
+        var cleanPrefix = prefix.Replace(" ", "").Replace("\t", "");
         var suffix = Guid.NewGuid().ToString("N")[..8];
-        return $"{prefix}.{suffix}@example.com";
+        return $"{cleanPrefix}.{suffix}@example.com";
     }
 
     /// <summary>

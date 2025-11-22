@@ -712,6 +712,11 @@ public sealed class Tour : Entity<Guid>
         Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
+        if (!companionCustomerId.HasValue && companionBikeType.HasValue)
+        {
+            return BookingErrors.CompanionBikeWithoutCompanion().ConvertError<Optional<BookingCustomer>>();
+        }
+
         if (!companionCustomerId.HasValue)
         {
             return Optional<BookingCustomer>.Empty();

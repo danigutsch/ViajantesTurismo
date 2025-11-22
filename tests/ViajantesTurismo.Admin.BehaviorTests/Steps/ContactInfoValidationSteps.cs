@@ -309,4 +309,13 @@ public sealed class ContactInfoValidationSteps(ContactInfoContext context)
                 kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
             $"Expected validation error for {normalizedFieldName}");
     }
+
+    [Then("I should be informed that email must be in a valid format")]
+    public void ThenIShouldBeInformedThatEmailMustBeInAValidFormat()
+    {
+        Assert.True(context.Result.IsFailure);
+        Assert.True(context.Result.ErrorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals("Email", StringComparison.OrdinalIgnoreCase)) ?? false,
+            "Expected validation error for Email");
+    }
 }

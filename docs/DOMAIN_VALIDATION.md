@@ -59,9 +59,10 @@ for the rationale and patterns.
 - **Purpose**: Manages customer information and profiles
 - **Root**: `Customer` entity
 - **Invariants**:
-    - Email must have a valid format (domain-level)
+    - Email must have a valid format: `^[^@\s]+@[^@\s]+\.[^@\s]+$` (no spaces allowed)
+    - Phone must have a valid format: `^[\d\s\-\(\)\+]+$` (digits, spaces, hyphens, parentheses, plus)
+    - Customer must be at least 10 years old
     - Email uniqueness is an application-level invariant enforced in handlers via repository checks
-    - Customer must be 18+ years old
     - Contact information properly formatted
 
 ## Result Pattern
@@ -126,6 +127,7 @@ Validation rules enforced in `Booking.Create()` and update operations:
 - Final price: Must be > 0 after discount
 - BikeType: Cannot be `BikeType.None` for principal or companion
 - Companion: Cannot be same as principal customer
+- Companion bike: Cannot specify companion bike type without a companion customer
 
 **State Transitions:**
 
@@ -138,9 +140,10 @@ Validation rules enforced in `Booking.Create()` and update operations:
 
 **Updates:**
 
-- Cannot modify Cancelled or Completed bookings
+- Cannot modify Cancelled or Completed bookings (returns Conflict status)
 - Discount changes must keep final price > 0
 - Room type changes validated for companion presence
+- Detail updates (room type, bike types, companion) allowed for Pending and Confirmed bookings
 
 **Payments:**
 
@@ -153,10 +156,20 @@ Validation rules enforced in `Booking.Create()` and update operations:
 
 Validation rules enforced in `Customer.Create()`:
 
-- Personal info: FirstName, LastName not empty, max lengths
-- Email: Valid format, max 256 characters
-- Phone: Valid format
-- Birth date: Between 18 and 120 years old
+**Personal Information:**
+
+- FirstName, LastName: Not empty, max 128 characters
+- Age: Must be at least 10 years old (calculated from birth date)
+- Birth date: Cannot be in the future
+
+**Contact Information:**
+
+- Email: Must match format `^[^@\s]+@[^@\s]+\.[^@\s]+$` (no spaces allowed), max 256 characters
+- Phone: Must match format `^[\d\s\-\(\)\+]+$` (digits, spaces, hyphens, parentheses, plus sign)
+
+**Application-level:**
+
+- Email uniqueness enforced in command handlers via repository checks
 
 ### Update Operations
 

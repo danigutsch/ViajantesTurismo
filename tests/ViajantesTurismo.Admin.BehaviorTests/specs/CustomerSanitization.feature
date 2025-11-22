@@ -29,9 +29,9 @@ So that data is consistent and normalized across the system
         And the sanitized Facebook should be "johndoe123"
 
     Scenario: Customer contact info normalizes multiple spaces
-        Given I have contact info with email "john  @  example.com" and mobile "+123  456  7890"
+        Given I have contact info with email "john@example.com" and mobile "+123  456  7890"
         When I create contact information
-        Then the sanitized email should be "john @ example.com"
+        Then the sanitized email should be "john@example.com"
         And the sanitized mobile should be "+123 456 7890"
 
     Scenario: Customer identification info with whitespace is trimmed

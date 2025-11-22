@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Common.Results;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// <summary>
 /// Represents contact information of a customer.
 /// </summary>
-public sealed class ContactInfo
+public sealed partial class ContactInfo
 {
     private ContactInfo(string email, string mobile, string? instagram, string? facebook)
     {
@@ -30,6 +31,12 @@ public sealed class ContactInfo
 
     /// <summary>Facebook profile.</summary>
     public string? Facebook { get; private set; }
+
+    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex EmailFormatRegex();
+
+    [GeneratedRegex(@"^[\d\s\-\(\)\+]+$", RegexOptions.Compiled)]
+    private static partial Regex PhoneFormatRegex();
 
     /// <summary>
     /// Creates a new instance of the <see cref="ContactInfo"/> class.
@@ -58,6 +65,10 @@ public sealed class ContactInfo
         {
             errors.Add(EmailTooLong());
         }
+        else if (!EmailFormatRegex().IsMatch(email))
+        {
+            errors.Add(InvalidEmailFormat());
+        }
 
         if (string.IsNullOrWhiteSpace(mobile))
         {
@@ -66,6 +77,10 @@ public sealed class ContactInfo
         else if (mobile.Length > ContractConstants.MaxDefaultLength)
         {
             errors.Add(MobileTooLong());
+        }
+        else if (!PhoneFormatRegex().IsMatch(mobile))
+        {
+            errors.Add(InvalidPhoneFormat());
         }
 
         if (instagram?.Length > ContractConstants.MaxDefaultLength)

@@ -43,7 +43,15 @@ internal static class TestFixtureHelpers
             nationalId: TestDataGenerator.UniqueNationalId($"{firstName}{lastName}"));
 
         var response = await client.CreateCustomerAsync(customerRequest, cancellationToken);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException(
+                $"Failed to create test customer {firstName} {lastName}. " +
+                $"Status: {response.StatusCode}, Error: {errorContent}");
+        }
+
         return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(cancellationToken))!;
     }
 

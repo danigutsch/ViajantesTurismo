@@ -170,7 +170,7 @@ internal static class BookingEndpoints
         return TypedResults.Created($"/bookings/{result.Value}", bookingDto!);
     }
 
-    private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDiscount(
+    private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> UpdateBookingDiscount(
         [FromRoute] Guid id,
         [FromBody] UpdateBookingDiscountDto dto,
         [FromServices] UpdateBookingDiscountCommandHandler handler,
@@ -187,8 +187,13 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
+            if (result.Status == ResultStatus.NotFound)
+            {
+                return result.ToNotFound();
+            }
+
+            return result.Status == ResultStatus.Conflict
+                ? result.ToConflict()
                 : result.ToValidationProblem();
         }
 
@@ -341,7 +346,7 @@ internal static class BookingEndpoints
         return TypedResults.Created($"/bookings/{id}/payments/{paymentId}", paymentDto!);
     }
 
-    private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingDetails(
+    private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> UpdateBookingDetails(
         [FromRoute] Guid id,
         [FromBody] UpdateBookingDetailsDto dto,
         [FromServices] UpdateBookingDetailsCommandHandler handler,
@@ -359,8 +364,13 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
+            if (result.Status == ResultStatus.NotFound)
+            {
+                return result.ToNotFound();
+            }
+
+            return result.Status == ResultStatus.Conflict
+                ? result.ToConflict()
                 : result.ToValidationProblem();
         }
 

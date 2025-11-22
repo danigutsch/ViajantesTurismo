@@ -154,10 +154,8 @@ public static class BookingErrors
     /// <param name="status">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
     public static Result CannotModifyCancelledOrCompletedBooking(Guid bookingId, BookingStatus status) =>
-        Result.Invalid(
-            detail: $"Booking {bookingId} is {status} and cannot be modified.",
-            field: "status",
-            message: $"Cannot modify {status.ToString().ToLowerInvariant()} bookings.");
+        Result.Conflict(
+            detail: $"Booking {bookingId} is {status} and cannot be modified.");
 
     /// <summary>
     /// Indicates that the principal and companion customers cannot be the same person.
@@ -189,4 +187,14 @@ public static class BookingErrors
             detail: "Companion bike type is required when companion is present.",
             field: "companionBikeType",
             message: "Companion bike type is required.");
+
+    /// <summary>
+    /// Indicates that companion bike type cannot be specified without a companion.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result CompanionBikeWithoutCompanion() =>
+        Result.Invalid(
+            detail: "Companion bike type cannot be specified without a companion customer.",
+            field: "companionBikeType",
+            message: "Companion bike requires a companion customer.");
 }

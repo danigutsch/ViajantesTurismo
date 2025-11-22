@@ -122,6 +122,14 @@ public sealed class PersonalInfo
         {
             errors.Add(FutureBirthDate());
         }
+        else
+        {
+            var age = CalculateAge(birthDateOnly, currentDate);
+            if (age < 10)
+            {
+                errors.Add(AgeTooYoung(age));
+            }
+        }
 
         if (errors.HasErrors)
         {
@@ -129,6 +137,17 @@ public sealed class PersonalInfo
         }
 
         return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
+    }
+
+    private static int CalculateAge(DateTime birthDate, DateTime currentDate)
+    {
+        var age = currentDate.Year - birthDate.Year;
+        if (currentDate.Month < birthDate.Month || (currentDate.Month == birthDate.Month && currentDate.Day < birthDate.Day))
+        {
+            age--;
+        }
+
+        return age;
     }
 
     /// <summary>

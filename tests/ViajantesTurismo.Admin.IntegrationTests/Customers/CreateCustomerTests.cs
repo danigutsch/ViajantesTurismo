@@ -161,7 +161,7 @@ public sealed class CreateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         var request = DtoBuilders.BuildCreateCustomerDto("Young", "Child");
         request = request with
         {
-            PersonalInfo = request.PersonalInfo with { BirthDate = DateTime.UtcNow.AddYears(-10) }
+            PersonalInfo = request.PersonalInfo with { BirthDate = DateTime.UtcNow.AddYears(-9) }
         };
 
         // Act

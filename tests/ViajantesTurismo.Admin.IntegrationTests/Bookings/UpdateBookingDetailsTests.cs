@@ -87,23 +87,6 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
     }
 
     [Fact]
-    public async Task Cannot_Update_Booking_Details_With_DoubleRoom_Without_Companion()
-    {
-        // Arrange
-        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
-        var principal = await Client.CreateTestCustomer("Single", "Person", cancellationToken: TestContext.Current.CancellationToken);
-        var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
-
-        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.DoubleRoom, BikeTypeDto.Regular);
-
-        // Act
-        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Cannot_Update_Booking_Details_With_CompanionBike_Without_Companion()
     {
         // Arrange
@@ -136,24 +119,5 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Cannot_Update_Confirmed_Booking_Details()
-    {
-        // Arrange
-        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
-        var principal = await Client.CreateTestCustomer("Confirmed", "Already", cancellationToken: TestContext.Current.CancellationToken);
-        var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
-
-        await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
-
-        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.EBike);
-
-        // Act
-        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 }

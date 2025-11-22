@@ -111,6 +111,6 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var response = await Client.UpdateBookingDiscount(booking.Id, updateDto, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 }

@@ -393,6 +393,34 @@ public static class CustomerErrors
     public static Result CustomerNotFound(Guid id) => Result.NotFound(detail: $"Customer with ID {id} was not found.");
 
     /// <summary>
+    /// Indicates that the email format is invalid.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> InvalidEmailFormat() => Result<ContactInfo>.Invalid(
+        detail: "Email must be in a valid format (e.g., user@example.com).",
+        field: "Email",
+        message: "Email must be in a valid format (e.g., user@example.com).");
+
+    /// <summary>
+    /// Indicates that the mobile phone format is invalid.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<ContactInfo> InvalidPhoneFormat() => Result<ContactInfo>.Invalid(
+        detail: "Mobile phone must contain only digits, spaces, hyphens, parentheses, or plus sign.",
+        field: "Mobile",
+        message: "Mobile phone must contain only digits, spaces, hyphens, parentheses, or plus sign.");
+
+    /// <summary>
+    /// Indicates that the customer is too young (minimum age is 10 years).
+    /// </summary>
+    /// <param name="age">The calculated age of the customer.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result<PersonalInfo> AgeTooYoung(int age) => Result<PersonalInfo>.Invalid(
+        detail: $"Customer must be at least 10 years old. Current age: {age}.",
+        field: "BirthDate",
+        message: $"Customer must be at least 10 years old. Current age: {age}.");
+
+    /// <summary>
     /// Indicates that a customer with the specified email already exists.
     /// </summary>
     /// <param name="email">The email address that already exists.</param>
