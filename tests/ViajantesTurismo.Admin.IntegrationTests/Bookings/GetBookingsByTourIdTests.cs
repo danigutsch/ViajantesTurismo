@@ -48,4 +48,31 @@ public sealed class GetBookingsByTourIdTests(ApiFixture fixture) : AdminApiInteg
         Assert.NotNull(bookings);
         Assert.Empty(bookings);
     }
+
+    [Fact]
+    public async Task Can_Get_Multiple_Bookings_With_Different_Statuses()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var customer1 = await Client.CreateTestCustomer("Multi", "Pending", cancellationToken: TestContext.Current.CancellationToken);
+        var customer2 = await Client.CreateTestCustomer("Multi", "Confirmed", cancellationToken: TestContext.Current.CancellationToken);
+        var customer3 = await Client.CreateTestCustomer("Multi", "Cancelled", cancellationToken: TestContext.Current.CancellationToken);
+        var booking1 = await Client.CreateTestBooking(tour.Id, customer1.Id, cancellationToken: TestContext.Current.CancellationToken);
+        var booking2 = await Client.CreateTestBooking(tour.Id, customer2.Id, cancellationToken: TestContext.Current.CancellationToken);
+        await Client.ConfirmBooking(booking2.Id, TestContext.Current.CancellationToken);
+        var booking3 = await Client.CreateTestBooking(tour.Id, customer3.Id, cancellationToken: TestContext.Current.CancellationToken);
+        await Client.CancelBooking(booking3.Id, TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await Client.GetBookingsByTour(tour.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(bookings);
+        Assert.Equal(3, bookings.Length);
+        Assert.Contains(bookings, b => b.Id == booking1.Id && b.Status == BookingStatusDto.Pending);
+        Assert.Contains(bookings, b => b.Id == booking2.Id && b.Status == BookingStatusDto.Confirmed);
+        Assert.Contains(bookings, b => b.Id == booking3.Id && b.Status == BookingStatusDto.Cancelled);
+    }
 }
