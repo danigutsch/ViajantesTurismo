@@ -1,14 +1,70 @@
 # Aggregates & Invariants
 
-Document each aggregate with purpose, invariants, commands, and events.
+This document catalogs all aggregates across ViajantesTurismo bounded contexts. Each aggregate is documented with its
+purpose, invariants, commands, events, and related artifacts.
+
+## Documentation Template
+
+When documenting a new aggregate, follow this structure:
+
+```markdown
+## AggregateName (BoundedContext)
+
+**Purpose**: Brief description of business capability protected by this aggregate
+
+### Invariants
+
+Business rules that must always hold true, organized by entity:
+
+- Rule 1 (describe the constraint)
+- Rule 2 (include valid ranges, formats, relationships)
+- State transition rules (if applicable)
+
+### Commands
+
+List all state-changing operations:
+
+- Create — Description
+- Update* — Description
+- Delete — Description (conditions)
+
+### Events
+
+Domain events emitted on state changes:
+
+- EventName1, EventName2, EventName3
+
+### Entities
+
+Child entities within the aggregate boundary:
+
+- EntityName (description or state machine)
+
+### Value Objects
+
+Immutable value objects used by the aggregate:
+
+- ValueObjectName1, ValueObjectName2
+
+### Related
+
+Links to feature files, ADRs, and other documentation:
+
+- Features: `path/to/*.feature`
+- ADRs: [ADR Title](../adr/filename.md)
+```
 
 ---
 
-## Tour (Admin)
+## Admin Bounded Context
+
+The Admin context manages tour operations, customer information, and booking lifecycle.
+
+### Tour
 
 **Purpose**: Manage cycling tour offerings, schedules, pricing, capacity, and all associated bookings.
 
-### Invariants
+#### Invariants
 
 **Tour Entity:**
 
@@ -51,7 +107,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 - Payment date: Cannot be in the future
 - Payment method: Must be valid enum value (Other, CreditCard, BankTransfer, Cash, Check, PayPal)
 
-### Commands (Tour)
+#### Commands (Tour)
 
 - Create — Initialize tour with identifier, name, schedule, pricing, capacity, included services
 - UpdateDetails — Modify identifier and name
@@ -62,7 +118,7 @@ Document each aggregate with purpose, invariants, commands, and events.
 - UpdateIncludedServices — Modify list of included services
 - Delete — Remove tour from system (only if no confirmed bookings exist)
 
-### Commands (Booking Lifecycle via Tour)
+#### Commands (Booking Lifecycle via Tour)
 
 - AddBooking — Create new booking with customer, bike, room, discount details
 - ConfirmBooking — Transition booking from Pending to Confirmed
@@ -74,28 +130,28 @@ Document each aggregate with purpose, invariants, commands, and events.
 - UpdateBookingPaymentStatus — Change payment status (deprecated — use RecordPayment)
 - RemoveBooking — Delete a booking (only if Pending)
 
-### Commands (Payment via Tour → Booking)
+#### Commands (Payment via Tour → Booking)
 
 - RecordPayment — Record payment with amount, date, method, reference, notes
 
-### Events
+#### Events
 
 - TourCreated, TourDetailsUpdated, TourScheduleUpdated, TourPricingUpdated
 - BookingAdded, BookingConfirmed, BookingCancelled, BookingCompleted
 - BookingDiscountUpdated, BookingDetailsUpdated
 - PaymentRecorded, PaymentStatusChanged
 
-### Entities
+#### Entities
 
 - Booking (state machine: Pending → Confirmed → Completed/Cancelled)
 - Payment (immutable financial records)
 - BookingCustomer (embedded entity for principal/companion)
 
-### Value Objects
+#### Value Objects
 
 - DateRange, TourPricing, TourCapacity, Discount
 
-### Related
+#### Related
 
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Tour*.feature`
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Booking*.feature`
@@ -103,14 +159,12 @@ Document each aggregate with purpose, invariants, commands, and events.
 - ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
 - ADRs: [Result Pattern Over Exceptions](../adr/20251108-result-pattern-over-exceptions.md)
 
----
-
-## Customer (Admin)
+### Customer
 
 **Purpose**: Represent customer profiles with comprehensive personal, contact, identification, physical, medical, and
 accommodation information.
 
-### Invariants
+#### Invariants
 
 **Personal Information:**
 
@@ -151,11 +205,11 @@ accommodation information.
 - Emergency contact name and mobile: Required (max 128 and 64 chars respectively)
 - Allergies and additional medical info: Optional (max 500 chars each)
 
-### Validation
+#### Validation
 
 All value objects validated on creation and update.
 
-### Commands
+#### Commands
 
 - Create — Initialize customer with all required value objects
 - UpdatePersonalInfo — Modify name, DOB, gender, nationality, occupation
@@ -168,7 +222,7 @@ All value objects validated on creation and update.
 - UpdateAccommodationPreferences — Change room and dietary preferences
 - UpdateOccupation — Modify occupation details
 
-### Events
+#### Events
 
 - CustomerCreated
 - CustomerPersonalInfoUpdated, CustomerContactInfoUpdated
@@ -176,18 +230,31 @@ All value objects validated on creation and update.
 - CustomerIdentificationInfoUpdated, CustomerMedicalInfoUpdated
 - CustomerEmergencyContactUpdated, CustomerAccommodationPreferencesUpdated
 
-### Entities
+#### Entities
 
 - None (self-contained aggregate)
 
-### Value Objects
+#### Value Objects
 
 - PersonalInfo, ContactInfo, Address
 - PhysicalInfo, IdentificationInfo, MedicalInfo
 - EmergencyContact, AccommodationPreferences, Occupation
 
-### Related
+#### Related
 
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Customer*.feature`
 - Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/*Validation.feature`
 - ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
+
+---
+
+## Future Bounded Contexts
+
+As new bounded contexts are added to the system, document their aggregates here following the template above.
+
+**Potential contexts to add:**
+
+- **Sales/Marketing** — Public tour catalog, promotional campaigns, customer inquiries
+- **Operations** — Guide scheduling, equipment management, logistics
+- **Accounting** — Financial reporting, invoicing, expense tracking
+- **Analytics** — Business intelligence, customer insights, tour performance

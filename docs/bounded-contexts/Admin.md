@@ -1,146 +1,143 @@
-# Aggregates & Invariants
+# Admin Bounded Context
 
-Document each aggregate with purpose, invariants, commands, and events.
+The Admin bounded context manages the core tour operations business for ViajantesTurismo, including tour catalog
+management, customer relationship management, and booking lifecycle.
 
----
+## Context Overview
 
-## Tour (Admin)
+**Domain:** Tour Operations & Customer Management
+**Teams:** Operations, Sales, Customer Service
+**Primary Users:** Tour operators, booking agents, customer service representatives
 
-**Purpose**: Manage cycling tour offerings, schedules, pricing, capacity, and all associated bookings.
+## Responsibilities
 
-### Invariants
+- **Tour Catalog Management** — Define and maintain cycling tour offerings with schedules, pricing, and capacity
+- **Customer Relationship Management** — Maintain comprehensive customer profiles and preferences
+- **Booking Lifecycle** — Handle reservations from creation through confirmation, payment, and completion
+- **Payment Tracking** — Record and track payments against bookings
 
-- Tour identifier must be unique and non-empty (max 128 chars)
-- Tour name required (max 128 chars)
-- End date must be after start date with minimum 5 days duration
-- All prices must be > 0 and <= 100,000 (strictly positive)
-- Capacity: 1 <= minCustomers <= maxCustomers <= 20
-- Cannot exceed maximum customer capacity (confirmed bookings only count)
-- Bookings can only be created/modified through Tour methods (aggregate boundary)
-- Cannot delete tour with confirmed bookings
-- Principal and companion customers cannot be the same person
-- BikeType.None cannot be used for bookings (must select Regular or EBike)
-- Bookings cannot be modified if status is Cancelled or Completed
-- Bookings can only be removed if status is Pending
-- Payment amount cannot exceed remaining balance
-- Payment date cannot be in the future
-- Absolute discount cannot exceed booking subtotal
-- Final price after discount must be positive
-- Percentage discount cannot exceed 100%
+## Bounded Context Map
 
-### Commands (Tour)
+### Upstream Dependencies
 
-- Create — Initialize tour with identifier, name, schedule, pricing, capacity, included services
-- UpdateDetails — Modify identifier and name
-- UpdateSchedule — Change start and end dates
-- UpdatePricing — Modify base price, room supplements, bike prices, currency
-- UpdateBasePrice — Change base price only
-- UpdateCapacity — Adjust minimum and maximum customer limits
-- UpdateIncludedServices — Modify list of included services
+None (Admin is a core context)
 
-### Commands (Booking Lifecycle via Tour)
+### Downstream Consumers
 
-- AddBooking — Create new booking with customer, bike, room, discount details
-- ConfirmBooking — Transition booking from Pending to Confirmed
-- CancelBooking — Transition booking to Cancelled status
-- CompleteBooking — Transition booking from Confirmed to Completed
-- UpdateBookingNotes — Modify booking administrative notes
-- UpdateBookingDiscount — Change discount type, amount, and reason
-- UpdateBookingDetails — Modify room type, bike selections, companion
-- UpdateBookingPaymentStatus — Change payment status (deprecated — use RecordPayment)
-- RemoveBooking — Delete a booking (only if Pending)
+- **Sales/Marketing** (future) — Consumes tour catalog for public website
+- **Operations** (future) — Consumes confirmed bookings for logistics planning
+- **Accounting** (future) — Consumes payment records for financial reporting
 
-### Commands (Payment via Tour → Booking)
+### Integration Events Published
 
-- RecordPayment — Record payment with amount, date, method, reference, notes
+- `TourCreated`, `TourUpdated` — Tour catalog changes
+- `BookingConfirmed`, `BookingCancelled`, `BookingCompleted` — Booking lifecycle events
+- `PaymentRecorded` — Payment transactions
+- `CustomerCreated`, `CustomerUpdated` — Customer profile changes
 
-### Events
+## Aggregates
 
-- TourCreated, TourDetailsUpdated, TourScheduleUpdated, TourPricingUpdated
-- BookingAdded, BookingConfirmed, BookingCancelled, BookingCompleted
-- BookingDiscountUpdated, BookingDetailsUpdated
-- PaymentRecorded, PaymentStatusChanged
+For detailed aggregate documentation (invariants, commands, events), see
+[domain/AGGREGATES.md](../domain/AGGREGATES.md#admin-bounded-context).
 
-### Entities
+**Tour Aggregate:**
 
-- Booking (state machine: Pending → Confirmed → Completed/Cancelled)
-- Payment (immutable financial records)
-- BookingCustomer (embedded entity for principal/companion)
+- Root: `Tour`
+- Entities: `Booking`, `Payment`, `BookingCustomer`
+- Value Objects: `DateRange`, `TourPricing`, `TourCapacity`, `Discount`
 
-### Value Objects
+**Customer Aggregate:**
 
-- DateRange, TourPricing, TourCapacity, Discount
+- Root: `Customer`
+- Entities: None (self-contained)
+- Value Objects: `PersonalInfo`, `ContactInfo`, `Address`, `PhysicalInfo`, `IdentificationInfo`, `MedicalInfo`,
+  `EmergencyContact`, `AccommodationPreferences`, `Occupation`
 
-### Related
+## Application Services
 
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Tour*.feature`
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Booking*.feature`
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Payment*.feature`
-- ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
-- ADRs: [Result Pattern Over Exceptions](../adr/20251108-result-pattern-over-exceptions.md)
+### Commands (CQRS Write Side)
 
----
+**Tour Commands:**
 
-## Customer (Admin)
+- `CreateTourCommand`, `UpdateTourDetailsCommand`, `UpdateTourScheduleCommand`
+- `UpdateTourPricingCommand`, `UpdateTourCapacityCommand`
+- `DeleteTourCommand`
 
-**Purpose**: Represent customer profiles with comprehensive personal, contact, identification, physical, medical, and
-accommodation information.
+**Booking Commands:**
 
-### Invariants
+- `AddBookingCommand`, `ConfirmBookingCommand`, `CancelBookingCommand`, `CompleteBookingCommand`
+- `UpdateBookingNotesCommand`, `UpdateBookingDiscountCommand`, `UpdateBookingDetailsCommand`
+- `RemoveBookingCommand`
 
-- Email must be unique and valid format (max 128 chars)
-- Birth date cannot be in the future
-- Contact information properly formatted and valid
-- All value objects validated on creation and update
-- Personal information required (name, DOB, nationality, occupation)
-- First name and last name required (max 128 chars each)
-- Gender required (max 64 chars)
-- Nationality required (max 128 chars)
-- Occupation required (max 128 chars)
-- Email and mobile phone required
-- Mobile phone max 64 chars
-- Instagram and Facebook handles max 64 chars (optional)
-- Physical characteristics: weight 1-500 kg, height 50-300 cm
-- National ID and issuing nationality required (max 64 chars each)
-- Address fields required: street, neighborhood, postal code, city, state, country (max 128 chars)
-- Address complement optional (max 128 chars)
-- Postal code max 64 chars
-- Emergency contact name and mobile required (max 128 and 64 chars respectively)
-- Medical info fields optional (allergies and additional info max 500 chars each)
+**Payment Commands:**
 
-### Commands
+- `RecordPaymentCommand`
 
-- Create — Initialize customer with all required value objects
-- UpdatePersonalInfo — Modify name, DOB, gender, nationality, occupation
-- UpdateContactInfo — Change email, mobile, social media contacts
-- UpdateAddress — Update street, city, state, postal code, country
-- UpdatePhysicalInfo — Modify height, weight, bike preference, shoe size
-- UpdateIdentificationInfo — Change passport number, issue/expiry dates, country
-- UpdateMedicalInfo — Update conditions, allergies, medications, dietary restrictions
-- UpdateEmergencyContact — Modify emergency contact person and phone numbers
-- UpdateAccommodationPreferences — Change room and dietary preferences
-- UpdateOccupation — Modify occupation details
+**Customer Commands:**
 
-### Events
+- `CreateCustomerCommand`
+- `UpdateCustomerPersonalInfoCommand`, `UpdateCustomerContactInfoCommand`
+- `UpdateCustomerAddressCommand`, `UpdateCustomerPhysicalInfoCommand`
+- `UpdateCustomerIdentificationInfoCommand`, `UpdateCustomerMedicalInfoCommand`
+- `UpdateCustomerEmergencyContactCommand`, `UpdateCustomerAccommodationPreferencesCommand`
 
-- CustomerCreated
-- CustomerPersonalInfoUpdated, CustomerContactInfoUpdated
-- CustomerAddressUpdated, CustomerPhysicalInfoUpdated
-- CustomerIdentificationInfoUpdated, CustomerMedicalInfoUpdated
-- CustomerEmergencyContactUpdated, CustomerAccommodationPreferencesUpdated
+### Queries (CQRS Read Side)
 
-### Entities
+**Tour Queries:**
 
-- None (self-contained aggregate)
+- `GetTourByIdQuery`, `GetAllToursQuery`, `GetToursByDateRangeQuery`
 
-### Value Objects
+**Customer Queries:**
 
-- PersonalInfo, ContactInfo, Address
-- PhysicalInfo, IdentificationInfo, MedicalInfo
-- EmergencyContact, AccommodationPreferences, Occupation
+- `GetCustomerByIdQuery`, `GetAllCustomersQuery`, `GetCustomerByEmailQuery`
 
-### Related
+**Booking Queries:**
 
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/Customer*.feature`
-- Features: `tests/ViajantesTurismo.Admin.BehaviorTests/specs/*Validation.feature`
-- ADRs: [Domain Validation with Factory Methods](../adr/20251108-domain-validation-factory-methods.md)
+- `GetBookingByIdQuery`, `GetBookingsByTourQuery`, `GetBookingsByCustomerQuery`
+
+## Domain Validation
+
+See [DOMAIN_VALIDATION.md](../DOMAIN_VALIDATION.md) for patterns and [domain/AGGREGATES.md](../domain/AGGREGATES.md)
+for specific invariants.
+
+**Key Patterns:**
+
+- Factory methods with `Result<T>` return types
+- Application-level uniqueness checks (Tour identifier, Customer email)
+- Aggregate boundary enforcement (Bookings only via Tour)
+- State machine validation (Booking status transitions)
+
+## Infrastructure
+
+### Persistence
+
+- **Database:** SQL Server (Entity Framework Core)
+- **Repositories:** `ITourRepository`, `ICustomerRepository`
+- **Unit of Work:** `IUnitOfWork` for transactional consistency
+
+### API
+
+- **Style:** Minimal APIs (ASP.NET Core)
+- **Endpoints:** `/tours`, `/customers`, `/bookings`
+- **Contracts:** Shared via `ViajantesTurismo.Admin.Contracts` project
+
+## Testing
+
+**Behavior Tests:** `tests/ViajantesTurismo.Admin.BehaviorTests/specs/`
+
+- `Tour*.feature` — Tour aggregate scenarios
+- `Booking*.feature` — Booking lifecycle scenarios
+- `Payment*.feature` — Payment recording scenarios
+- `Customer*.feature` — Customer aggregate scenarios
+- `*Validation.feature` — Cross-cutting validation scenarios
+
+**Unit Tests:** `tests/ViajantesTurismo.Admin.UnitTests/`
+
+**Integration Tests:** `tests/ViajantesTurismo.Admin.IntegrationTests/`
+
+## Related Documentation
+
+- **[Aggregates Documentation](../domain/AGGREGATES.md#admin-bounded-context)** — Detailed invariants and business rules
+- **[Domain Validation](../DOMAIN_VALIDATION.md)** — Factory methods, Result pattern, validation patterns
+- **[Architecture Decisions](../ARCHITECTURE_DECISIONS.md)** — ADRs affecting this context
+- **[Test Guidelines](../TEST_GUIDELINES.md)** — Testing strategy and BDD patterns
