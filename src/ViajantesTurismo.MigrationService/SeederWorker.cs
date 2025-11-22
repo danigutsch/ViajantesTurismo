@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using ViajantesTurismo.Admin.Application;
 
 namespace ViajantesTurismo.MigrationService;
@@ -7,7 +8,7 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
 {
     private const string ActivityOperationName = "DatabaseSeeding";
     public static readonly string ActivitySourceName = typeof(SeederWorker).FullName!;
-    private static readonly ActivitySource ActivitySource = new(ActivitySourceName, "1.0.0");
+    private static readonly ActivitySource ActivitySource = new(ActivitySourceName, Assembly.GetAssembly(typeof(SeederWorker))!.GetName().Version?.ToString());
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
