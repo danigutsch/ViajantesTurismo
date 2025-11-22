@@ -1,120 +1,194 @@
-# ADR-015: IQueryable in Query Service for Frontend Optimization
+# ADR-015: Query Service Return Types - IQueryable vs IReadOnlyList
 
 **Date:** 2025-11-15
-**Status:** Accepted
-**Context:** API design for frontend consumption
+**Status:** Rejected (Both IQueryable and Server-Side Pagination)
+**Context:** API design for frontend data presentation
 **Decision Makers:** Architecture Team
 
 ---
 
 ## Context
 
-The Admin.Web frontend uses QuickGrid components to display tabular data. The current `IQueryService`
-returns materialized collections (`IReadOnlyList<TDto>`), loading all records into memory before sending
-to the client.
+The Admin.Web frontend uses QuickGrid components to display tabular data. We need to decide what type
+the `IQueryService` should return for collection queries.
 
-**Problems:**
+## Options Considered
 
-- All records loaded regardless of pagination/filtering
-- Sorting and filtering execute in-memory instead of database-side
-- Performance degrades as datasets grow
-- QuickGrid can leverage `IQueryable` for server-side operations but receives materialized data
+1. **IQueryable\<TDto>** - Deferred execution, client controls filtering/sorting
+2. **Server-side pagination with PagedRequest/PagedResult** - Explicit pagination DTOs
+3. **Simple IReadOnlyList\<TDto>** - Materialized collections (current approach)
 
-**QuickGrid with IQueryable:**
+### Initial Consideration: IQueryable
 
-```csharp
-<QuickGrid Items="@queryService.GetAllBookings()">
-    <PropertyColumn Property="b => b.Status" Sortable="true" />
-</QuickGrid>
-```
+Considered returning `IQueryable<TDto>` for deferred execution with QuickGrid. However, this approach has significant
+drawbacks:
 
-Generates optimized SQL: `SELECT * FROM Bookings ORDER BY Status LIMIT 10 OFFSET 0`
+- **Leaky abstraction** - Exposes EF Core implementation details to API consumers
+- **Limited extensibility** - Doesn't support other presentation frameworks well
+- **Testing complexity** - Requires in-memory database or complex mocking
+- **Security risks** - Difficult to control what queries clients can build
+- **Tight coupling** - Ties API to specific ORM behavior
 
-With `IReadOnlyList`, all rows are retrieved and sorted in-memory.
+### Second Consideration: Server-Side Pagination
+
+Also considered explicit pagination DTOs with `PagedRequest` and `PagedResult<T>`. While this approach
+has benefits for large datasets, it was deemed unnecessary complexity for the current scale:
+
+- Current datasets are small (tens to hundreds of records, not thousands)
+- Client-side pagination with QuickGrid works well for this scale
+- Additional complexity not justified by current requirements
+- Can be added later if/when dataset sizes require it
 
 ## Decision
 
-Change `IQueryService` collection methods to return `IQueryable<TDto>` for deferred execution.
+**Keep the current simple approach: return `IReadOnlyList<TDto>` from query services.**
 
-**New Interface:**
+### Service Interface (Current Approach)
 
 ```csharp
-public interface IQueryService
+public interface IBookingQueryService
 {
-    // Collections - IQueryable for deferred execution
-    IQueryable<GetTourDto> GetAllTours();
-    IQueryable<GetCustomerDto> GetAllCustomers();
-    IQueryable<GetBookingDto> GetAllBookings();
-
-    // Single entities - async with materialization
-    Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct);
+    Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct);
     Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct);
 }
 ```
 
-**Implementation:**
+### Implementation Example
 
 ```csharp
-public IQueryable<GetBookingDto> GetAllBookings()
+public async Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct)
 {
-    return context.Bookings
+    return await context.Bookings
         .AsNoTracking()
+        .OrderByDescending(b => b.CreatedAt)
         .Select(b => new GetBookingDto
         {
             Id = b.Id,
+            TourId = b.TourId,
             TourName = b.Tour.Name,
-            Status = (BookingStatusDto)b.Status
-        });
-    // No .ToListAsync() - deferred execution
+            CustomerId = b.PrincipalCustomerId,
+            CustomerName = $"{b.PrincipalCustomer.FirstName} {b.PrincipalCustomer.LastName}",
+            Status = (BookingStatusDto)b.Status,
+            TotalPrice = b.TotalPrice,
+            CreatedAt = b.CreatedAt
+        })
+        .ToListAsync(ct);
+}
+```
+
+### QuickGrid Integration
+
+```razor
+@page "/bookings"
+@inject IBookingQueryService BookingService
+
+<QuickGrid Items="@bookings" Pagination="pagination">
+    <PropertyColumn Property="b => b.CustomerName" Sortable="true" />
+    <PropertyColumn Property="b => b.TourName" Sortable="true" />
+    <PropertyColumn Property="b => b.Status" Sortable="true" />
+    <PropertyColumn Property="b => b.TotalPrice" Sortable="true" Format="C" />
+    <PropertyColumn Property="b => b.CreatedAt" Sortable="true" Format="yyyy-MM-dd" />
+</QuickGrid>
+
+<Paginator State="pagination" />
+
+@code {
+    private IQueryable<GetBookingDto>? bookings;
+    private PaginatorState pagination = new() { ItemsPerPage = 25 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var allBookings = await BookingService.GetAllBookings(CancellationToken.None);
+        bookings = allBookings.AsQueryable();
+    }
 }
 ```
 
 ## Consequences
 
-**Benefits:**
+### Benefits
 
-- Database-side sorting, filtering, pagination
-- Constant memory usage regardless of dataset size
-- Optimized SQL query generation by EF Core
-- QuickGrid automatically leverages deferred execution
-- Industry-standard pattern for grid/table APIs
+✅ **Simplicity** - Straightforward API with minimal complexity
+✅ **Easy to understand** - Clear, simple contracts
+✅ **Easy to test** - Simple unit tests with no mocking complexity
+✅ **QuickGrid native binding** - Direct `Items` binding with client-side sorting/filtering
+✅ **Sufficient for current scale** - Works well for current dataset sizes (tens to hundreds of records)
+✅ **No over-engineering** - Avoids unnecessary complexity
 
-**Drawbacks:**
+### Drawbacks
 
-- Breaking change for existing consumers
-- Query executes during enumeration, not method call
-- Database errors surface during enumeration
-- Different testing patterns required
+❌ **Loads all records** - Not suitable for large datasets (thousands of records)
+❌ **Client-side operations** - Sorting/filtering happen in browser memory
+❌ **Network overhead** - All data transferred even if not displayed
+❌ **Future refactoring** - May need server-side pagination later if datasets grow
 
-**Mitigation:**
+### When to Revisit
 
-- Admin.Web is sole consumer—update in lockstep
-- ASP.NET Core handles enumeration errors automatically
-- Use in-memory database for integration tests
+Consider implementing server-side pagination if:
+
+- Any single collection exceeds ~1000 records
+- Page load times become noticeable (>2 seconds)
+- Network transfer sizes become problematic
+- Users request advanced filtering capabilities
 
 ## Alternatives Considered
 
-### 1. Pagination Parameters
+### 1. IQueryable\<TDto> (Rejected)
 
-Add `page`, `pageSize`, `sortBy` to all collection methods.
+Return `IQueryable<TDto>` from query services for deferred execution.
 
-*Rejected:* Complex API surface, QuickGrid can't auto-build queries, manual pagination logic required.
+**Rejected because:**
 
-### 2. ItemsProvider Pattern
+- Leaky abstraction exposing EF Core details
+- Poor testability without in-memory database
+- Security concerns with uncontrolled query building
+- Tight coupling to specific ORM
+- Not suitable for API boundaries (only works in-process)
 
-Use Blazor's `GridItemsProvider` with custom pagination endpoints.
+### 2. Server-Side Pagination with PagedRequest/PagedResult (Rejected)
 
-*Rejected:* More complex frontend code, doesn't leverage EF Core's IQueryable, less efficient.
+Use explicit pagination DTOs with query parameters.
 
-### 3. GraphQL
+**Rejected because:**
 
-*Rejected:* Over-engineering for single consumer, adds significant complexity.
+- Over-engineering for current dataset sizes
+- Current datasets are small (tens to hundreds, not thousands)
+- Client-side pagination with QuickGrid works well at this scale
+- Additional complexity not justified by current requirements
+- Can be added later if needed (YAGNI principle)
+
+### 3. OData Protocol (Rejected)
+
+Use OData conventions for querying (`$filter`, `$orderby`, `$top`, `$skip`).
+
+**Rejected because:**
+
+- Massive over-engineering for single internal consumer
+- Parsing complexity for filter expressions
+- Security risks with unvalidated filter strings
+- Additional dependencies
+
+### 4. GraphQL (Rejected)
+
+Client-controlled query schema.
+
+**Rejected because:**
+
+- Significant complexity for single consumer
+- Additional dependencies and learning curve
+- Over-engineering for internal admin panel
 
 ## Implementation Notes
 
-- Use `.AsNoTracking()` for all collection queries (read-only data)
-- Continue projecting to DTOs to avoid exposing domain entities
-- Single-entity queries remain async: `Task<TDto?> GetById(Guid id, CancellationToken ct)`
+1. **Query services** return `IReadOnlyList<TDto>` for all collection queries
+
+2. **Use AsNoTracking()** for all read-only queries
+
+3. **QuickGrid binding** uses direct `Items` binding with `.AsQueryable()` for client-side operations
+
+4. **Default sorting** applied in query services (typically by CreatedAt descending)
+
+5. **Keep datasets small** - monitor collection sizes and revisit if growth exceeds reasonable limits
 
 ## Related
 
@@ -127,3 +201,4 @@ Use Blazor's `GridItemsProvider` with custom pagination endpoints.
 
 - [ASP.NET Core Blazor QuickGrid](https://learn.microsoft.com/en-us/aspnet/core/blazor/components/quickgrid)
 - [EF Core Query Performance](https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying)
+- [REST API Pagination Best Practices](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#filter-and-paginate-data)
