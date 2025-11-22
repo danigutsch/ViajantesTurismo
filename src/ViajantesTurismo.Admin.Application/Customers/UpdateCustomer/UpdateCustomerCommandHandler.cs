@@ -28,12 +28,12 @@ public sealed class UpdateCustomerCommandHandler(
             return CustomerErrors.CustomerNotFound(command.CustomerId);
         }
 
-        var errors = new ValidationErrors();
-
         if (await customerStore.EmailExistsExcluding(command.ContactInfo.Email, command.CustomerId, ct))
         {
-            errors.Add(CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email));
+            return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email);
         }
+
+        var errors = new ValidationErrors();
 
         var personalInfoResult = PersonalInfo.Create(
             command.PersonalInfo.FirstName,

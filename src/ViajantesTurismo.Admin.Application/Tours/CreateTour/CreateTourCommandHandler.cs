@@ -21,16 +21,9 @@ public sealed class CreateTourCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var errors = new ValidationErrors();
-
         if (await tourStore.IdentifierExists(command.Identifier, ct))
         {
-            errors.Add(TourErrors.IdentifierAlreadyExists(command.Identifier));
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult<Guid>();
+            return TourErrors.IdentifierAlreadyExists(command.Identifier).ConvertError<Guid>();
         }
 
         var currency = TourMapper.MapToCurrency(command.Currency);

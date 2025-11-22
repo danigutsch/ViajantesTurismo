@@ -397,8 +397,6 @@ public static class CustomerErrors
     /// </summary>
     /// <param name="email">The email address that already exists.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result EmailAlreadyExists(string email) => Result.Invalid(
-        detail: $"A customer with email '{email}' already exists.",
-        field: "email",
-        message: "Email address already exists.");
+    public static Result EmailAlreadyExists(string email) => Result.Conflict(
+        detail: $"A customer with email '{email}' already exists.");
 }

@@ -20,10 +20,8 @@ public static class TourErrors
     /// </summary>
     /// <param name="identifier">The identifier that already exists.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result IdentifierAlreadyExists(string identifier) => Result.Invalid(
-        detail: $"A tour with identifier '{identifier}' already exists.",
-        field: "identifier",
-        message: "Tour identifier must be unique.");
+    public static Result IdentifierAlreadyExists(string identifier) => Result.Conflict(
+        detail: $"A tour with identifier '{identifier}' already exists.");
 
     /// <summary>
     /// Indicates that the tour identifier is empty or whitespace.

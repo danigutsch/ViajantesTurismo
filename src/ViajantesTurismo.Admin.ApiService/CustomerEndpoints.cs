@@ -68,7 +68,7 @@ internal static class CustomerEndpoints
         return TypedResults.Ok(customerDto);
     }
 
-    private static async Task<Results<Created<GetCustomerDto>, ValidationProblem, NotFound<ProblemDetails>>>
+    private static async Task<Results<Created<GetCustomerDto>, ValidationProblem, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>
         CreateCustomer(
             [FromBody] CreateCustomerDto dto,
             [FromServices] CreateCustomerCommandHandler handler,
@@ -89,7 +89,9 @@ internal static class CustomerEndpoints
 
         if (result.IsFailure)
         {
-            return result.ToValidationProblem();
+            return result.Status == ResultStatus.Conflict
+                ? result.ToConflict()
+                : result.ToValidationProblem();
         }
 
         var customerDto = await queryService.GetCustomerDetailsById(result.Value, ct);

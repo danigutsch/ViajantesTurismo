@@ -183,7 +183,7 @@ public sealed class UpdateCustomerCommandHandlerTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Equal(ResultStatus.Conflict, result.Status);
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork

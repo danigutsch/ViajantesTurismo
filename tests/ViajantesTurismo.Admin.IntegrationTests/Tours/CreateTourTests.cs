@@ -85,4 +85,63 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Contains("price", content, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task Cannot_Create_Tour_With_Duplicate_Identifier()
+    {
+        // Arrange
+        const string duplicateIdentifier = "DUP2024";
+        var firstRequest = DtoBuilders.BuildCreateTourDto(identifier: duplicateIdentifier, name: "First Tour");
+        var secondRequest = DtoBuilders.BuildCreateTourDto(identifier: duplicateIdentifier, name: "Second Tour");
+
+        await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), firstRequest, TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), secondRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("already exists", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Create_Tour_Accepts_Maximum_Valid_Price()
+    {
+        // Arrange
+        const decimal maxPrice = 100_000.00m;
+        var request = DtoBuilders.BuildCreateTourDto(
+            identifier: "MAXPRICE",
+            name: "Max Price Tour",
+            basePrice: maxPrice,
+            doubleRoomSupplement: maxPrice,
+            regularBikePrice: maxPrice,
+            eBikePrice: maxPrice);
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Tour_Accepts_Minimum_Valid_Price()
+    {
+        // Arrange
+        const decimal minPrice = 0.01m;
+        var request = DtoBuilders.BuildCreateTourDto(
+            identifier: "MINPRICE",
+            name: "Min Price Tour",
+            basePrice: minPrice,
+            doubleRoomSupplement: minPrice,
+            regularBikePrice: minPrice,
+            eBikePrice: minPrice);
+
+        // Act
+        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
 }

@@ -22,12 +22,12 @@ public sealed class CreateCustomerCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var errors = new ValidationErrors();
-
         if (await customerStore.EmailExists(command.ContactInfo.Email, ct))
         {
-            errors.Add(CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email));
+            return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email).ConvertError<Guid>();
         }
+
+        var errors = new ValidationErrors();
 
         var personalInfoResult = PersonalInfo.Create(
             command.PersonalInfo.FirstName,

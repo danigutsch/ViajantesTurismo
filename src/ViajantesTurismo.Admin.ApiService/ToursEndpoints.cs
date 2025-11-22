@@ -6,6 +6,7 @@ using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -46,7 +47,7 @@ internal static class ToursEndpoints
             .WithSummary("Updates an existing tour.");
     }
 
-    private static async Task<Results<Created<GetTourDto>, ValidationProblem>> CreateTour(
+    private static async Task<Results<Created<GetTourDto>, ValidationProblem, Conflict<ProblemDetails>>> CreateTour(
         [FromBody] CreateTourDto tourDto,
         [FromServices] CreateTourCommandHandler handler,
         [FromServices] IQueryService queryService,
@@ -70,7 +71,9 @@ internal static class ToursEndpoints
 
         if (result.IsFailure)
         {
-            return result.ToValidationProblem();
+            return result.Status == ResultStatus.Conflict
+                ? result.ToConflict()
+                : result.ToValidationProblem();
         }
 
         var tourId = result.Value;
