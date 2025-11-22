@@ -197,4 +197,37 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         Assert.Equal(updateRequest.PersonalInfo.LastName, updatedCustomer.PersonalInfo.LastName);
         Assert.Equal(updateRequest.ContactInfo.Email, updatedCustomer.ContactInfo.Email);
     }
+
+    [Fact]
+    public async Task Can_Update_Customer_That_Has_Bookings()
+    {
+        // Arrange
+        var customer = await Client.CreateTestCustomer("Emily", "Johnson", TestContext.Current.CancellationToken);
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+
+        var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
+            firstName: "Emily",
+            lastName: "Johnson-Williams",
+            occupation: "Senior Manager",
+            email: "emily.williams@example.com",
+            mobile: "+447123999888");
+
+        // Act
+        var updateResponse = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
+
+        var getCustomerResponse = await Client.GetAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedCustomer = await getCustomerResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(updatedCustomer);
+        Assert.Equal(updateRequest.PersonalInfo.LastName, updatedCustomer.PersonalInfo.LastName);
+        Assert.Equal(updateRequest.ContactInfo.Email, updatedCustomer.ContactInfo.Email);
+
+        var getBookingResponse = await Client.GetAsync(new Uri($"/bookings/{booking.Id}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var updatedBooking = await getBookingResponse.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(updatedBooking);
+        Assert.Equal(customer.Id, updatedBooking.CustomerId);
+    }
 }
