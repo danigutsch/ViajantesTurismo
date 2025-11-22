@@ -182,4 +182,18 @@ public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiInt
         var expectedPrice = PricingHelper.CalculateExpectedBookingPrice(TestDefaults.BaseTourPrice, 0m, TestDefaults.RegularBikePrice, null, 0m);
         Assert.Equal(expectedPrice, updated.TotalPrice);
     }
+
+    [Fact]
+    public async Task Update_Booking_Discount_Returns_NotFound_For_Invalid_Id()
+    {
+        // Arrange
+        var invalidBookingId = Guid.NewGuid();
+        var updateDto = DtoBuilders.BuildUpdateBookingDiscountDto(DiscountTypeDto.Percentage, ValidPercentageDiscount, "Invalid ID");
+
+        // Act
+        var response = await Client.UpdateBookingDiscount(invalidBookingId, updateDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }
