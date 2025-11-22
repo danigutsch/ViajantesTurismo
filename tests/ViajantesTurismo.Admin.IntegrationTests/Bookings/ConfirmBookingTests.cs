@@ -15,8 +15,6 @@ public sealed class ConfirmBookingTests(ApiFixture fixture) : AdminApiIntegratio
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var customer = await Client.CreateTestCustomer("John", "Confirm", TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Verify booking is initially Pending
         Assert.Equal(BookingStatusDto.Pending, booking.Status);
 
         // Act
@@ -72,10 +70,10 @@ public sealed class ConfirmBookingTests(ApiFixture fixture) : AdminApiIntegratio
         var firstConfirm = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, firstConfirm.StatusCode);
 
-        // Act - Confirm again (idempotent operation)
+        // Act
         var secondConfirm = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
 
-        // Assert - Should succeed and still be Confirmed
+        // Assert
         Assert.Equal(HttpStatusCode.OK, secondConfirm.StatusCode);
         var confirmed = await secondConfirm.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(confirmed);
@@ -96,7 +94,7 @@ public sealed class ConfirmBookingTests(ApiFixture fixture) : AdminApiIntegratio
         var completeResponse = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, completeResponse.StatusCode);
 
-        // Act - Try to confirm completed booking
+        // Act
         var secondConfirm = await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert

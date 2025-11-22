@@ -70,7 +70,7 @@ public sealed class CompleteBookingTests(ApiFixture fixture) : AdminApiIntegrati
         var firstComplete = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, firstComplete.StatusCode);
 
-        // Act - Complete again (idempotent operation)
+        // Act
         var secondComplete = await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
 
         // Assert

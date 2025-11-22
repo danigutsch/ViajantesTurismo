@@ -84,15 +84,13 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var customer = await Client.CreateTestCustomer("Clear", "Notes", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
-
-        // First set some notes
         var setRequest = DtoBuilders.BuildUpdateBookingNotesDto("Initial notes");
         var setResponse = await Client.UpdateBookingNotes(booking.Id, setRequest, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, setResponse.StatusCode);
         var withNotes = await setResponse.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
         Assert.Equal("Initial notes", withNotes!.Notes);
 
-        // Act - Clear notes by setting to null (create DTO directly to avoid default value)
+        // Act
         var clearRequest = new UpdateBookingNotesDto { Notes = null };
         var response = await Client.UpdateBookingNotes(booking.Id, clearRequest, TestContext.Current.CancellationToken);
 
@@ -110,8 +108,6 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var customer = await Client.CreateTestCustomer("Empty", "Notes", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
-
-        // First set some notes
         var setRequest = DtoBuilders.BuildUpdateBookingNotesDto("Some notes");
         var setResponse = await Client.UpdateBookingNotes(booking.Id, setRequest, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, setResponse.StatusCode);
@@ -134,8 +130,7 @@ public sealed class UpdateBookingNotesTests(ApiFixture fixture) : AdminApiIntegr
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var customer = await Client.CreateTestCustomer("Long", "Notes", cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
-
-        var longNotes = new string('A', 2000); // 2000 characters
+        var longNotes = new string('A', 2000);
 
         // Act
         var request = DtoBuilders.BuildUpdateBookingNotesDto(longNotes);
