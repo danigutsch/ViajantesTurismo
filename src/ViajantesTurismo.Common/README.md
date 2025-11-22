@@ -4,29 +4,51 @@ Shared types and patterns used across all projects.
 
 ## Contents
 
-### Result Pattern
+### Functional Programming Patterns
 
-**`Result`** and **`Result<T>`**: Railway-oriented error handling.
+**`Result`** and **`Result<T>`**: Railway-oriented error handling for operations that can fail.
 
 ```csharp
 // Success/Failure without value
 Result result = Result.Success();
-Result error = Result.Failure("Error message");
+Result error = Result.Failure(ResultStatus.Invalid, new ResultError("Error message", null));
 
 // Success/Failure with value
 Result<Tour> success = Result<Tour>.Success(tour);
-Result<Tour> failure = Result<Tour>.Failure("Tour not found");
+Result<Tour> failure = Result<Tour>.Failure(ResultStatus.NotFound, new ResultError("Tour not found", null));
 
 // Pattern matching
 if (result.IsSuccess) { /* ... */ }
-if (result.IsFailure) { /* use result.Error */ }
+if (result.IsFailure) { /* use result.ErrorDetails */ }
+```
+
+**`Option<T>`**: Type-safe handling of optional values (may or may not be present).
+
+```csharp
+// Create with value
+Option<Customer> some = Option<Customer>.Of(customer);
+
+// Create empty
+Option<Customer> none = Option<Customer>.Empty();
+
+// From nullable
+Option<Customer> maybe = Option<Customer>.FromNullable(nullableCustomer);
+
+// Check and use
+if (option.HasValue)
+{
+    var customer = option.Value;
+}
 ```
 
 **Benefits**:
 
-- Explicit error handling
+- Explicit error handling (Result)
+- Type-safe optional values (Option)
 - No exceptions for business rule violations
-- Compiler-enforced error checking
+- Compiler-enforced checking
+
+**Documentation**: See [FUNCTIONAL_PATTERNS.md](FUNCTIONAL_PATTERNS.md) for comprehensive usage guide.
 
 ### Enumerations
 

@@ -273,6 +273,44 @@ private readonly List<Booking> _bookings = new List<Booking>();
 private string[] _services = new[] { "Hotel", "Breakfast" };
 ```
 
+### Line Breaking & Method Arguments
+
+**Single-line vs Multi-line:**
+
+- Keep arguments on one line if they fit within the 200-character limit
+- If breaking to multiple lines, put **one argument per line** with proper alignment
+
+```csharp
+// ✅ CORRECT - Fits on one line
+var result = Tour.Create(identifier, name, startDate, endDate);
+
+// ✅ CORRECT - Multi-line: one argument per line, aligned
+Result<Tour> failure = Result<Tour>.Failure(
+    ResultStatus.NotFound,
+    new ResultError("Tour not found", null));
+
+// ✅ CORRECT - Complex arguments
+var booking = tour.AddBooking(
+    customerId,
+    bikeType,
+    companionId,
+    companionBikeType,
+    roomType,
+    discount,
+    notes);
+
+// ❌ WRONG - Partial line break (inconsistent)
+Result<Tour> failure = Result<Tour>.Failure(ResultStatus.NotFound,
+    new ResultError("Tour not found", null));
+
+// ❌ WRONG - Multiple arguments per line when breaking
+var booking = tour.AddBooking(customerId, bikeType,
+    companionId, companionBikeType, roomType);
+```
+
+**Note:** `.editorconfig` doesn't control argument alignment. Use Visual Studio's **Format Document**
+(Ctrl+K, Ctrl+D) to apply consistent formatting.
+
 ### Method Braces
 
 Always use braces for control flow statements (EditorConfig enforces):
