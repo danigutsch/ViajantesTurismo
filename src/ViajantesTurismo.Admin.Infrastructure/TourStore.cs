@@ -10,12 +10,14 @@ internal sealed class TourStore(AdminWriteDbContext dbContext) : ITourStore
     public async Task<Tour?> GetById(Guid id, CancellationToken ct) =>
         await dbContext.Tours
             .Include(t => t.Bookings)
+            .ThenInclude(b => b.Payments)
             .AsSplitQuery()
             .FirstOrDefaultAsync(t => t.Id == id, ct);
 
     public async Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct) =>
         await dbContext.Tours
             .Include(t => t.Bookings)
+            .ThenInclude(b => b.Payments)
             .AsSplitQuery()
             .FirstOrDefaultAsync(t => t.Bookings.Any(b => b.Id == bookingId), ct);
 
