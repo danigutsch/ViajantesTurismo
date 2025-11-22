@@ -10,14 +10,46 @@ Document each aggregate with purpose, invariants, commands, and events.
 
 ### Invariants
 
-- Tour identifier must be unique and non-empty (max 128 chars)
+**Tour Entity:**
+
+- Tour identifier must be unique (application-level) and non-empty (max 128 chars)
 - Tour name required (max 128 chars)
 - End date must be after start date with minimum 5 days duration
-- All prices must be >= 0 and <= 100,000
-- Capacity: 1 <= minCustomers <= maxCustomers <= 100
-- Cannot exceed maximum customer capacity (confirmed bookings only count)
+- All prices must be > 0 and <= 100,000 (strictly positive)
+- Capacity: 1 <= minCustomers <= maxCustomers <= 20
+- Cannot reduce maximum capacity below current confirmed bookings
 - Bookings can only be created/modified through Tour methods (aggregate boundary)
 - Cannot delete tour with confirmed bookings
+
+**Booking Entity:**
+
+- Base price: Must be > 0 and <= 100,000
+- Room additional cost: Must be >= 0 and <= 100,000
+- Notes: Max 2000 characters
+- BikeType: Cannot be `BikeType.None` for principal or companion
+- Companion: Cannot be same as principal customer
+- Companion bike: Cannot specify companion bike type without a companion customer
+- Discount: If absolute, cannot exceed subtotal
+- Final price: Must be > 0 after discount
+- Percentage discount: Cannot exceed 100%
+- Cannot modify Cancelled or Completed bookings (returns Conflict status)
+- Bookings can only be removed if status is Pending
+
+**State Transitions:**
+
+- Pending → Confirmed: Allowed
+- Pending → Cancelled: Allowed
+- Confirmed → Completed: Allowed
+- Confirmed → Cancelled: Allowed
+- Cancelled → *: Blocked (terminal state)
+- Completed → *: Blocked (terminal state)
+
+**Payment Entity:**
+
+- Amount: Must be > 0
+- Amount: Cannot exceed remaining balance
+- Payment date: Cannot be in the future
+- Payment method: Must be valid enum value (Other, CreditCard, BankTransfer, Cash, Check, PayPal)
 
 ### Commands (Tour)
 
@@ -80,11 +112,48 @@ accommodation information.
 
 ### Invariants
 
-- Email must be unique and valid format
-- Customer must be 18+ years old
-- Contact information properly formatted and valid
-- All value objects validated on creation and update
-- Personal information required (name, DOB, nationality)
+**Personal Information:**
+
+- FirstName, LastName: Not empty, max 128 characters
+- Age: Must be at least 10 years old (calculated from birth date)
+- Birth date: Cannot be in the future
+- Gender: Required (max 64 chars)
+- Nationality: Required (max 128 chars)
+- Occupation: Required (max 128 chars)
+
+**Contact Information:**
+
+- Email: Must match format `^[^@\s]+@[^@\s]+\.[^@\s]+$` (no spaces allowed), max 256 characters
+- Email: Must be unique (application-level invariant enforced in handlers via repository checks)
+- Mobile phone: Required (max 64 chars)
+- Phone: Must match format `^[\d\s\-\(\)\+]+$` (digits, spaces, hyphens, parentheses, plus sign)
+- Instagram and Facebook handles: Optional (max 64 chars each)
+
+**Address Information:**
+
+- Street, neighborhood, postal code, city, state, country: Required (max 128 chars each)
+- Address complement: Optional (max 128 chars)
+- Postal code: Max 64 chars
+
+**Physical Information:**
+
+- Weight: 1-500 kg
+- Height: 50-300 cm
+- Bike preference and shoe size tracked
+
+**Identification:**
+
+- National ID and issuing nationality: Required (max 64 chars each)
+- Passport information validated
+
+**Medical & Emergency:**
+
+- Emergency contact name and mobile: Required (max 128 and 64 chars respectively)
+- Allergies and additional medical info: Optional (max 500 chars each)
+
+### Validation
+
+All value objects validated on creation and update.
 
 ### Commands
 

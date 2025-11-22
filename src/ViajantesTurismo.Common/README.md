@@ -30,13 +30,9 @@ if (result.IsFailure) { /* use result.Error */ }
 
 ### Enumerations
 
-- **BedType**: Single, Double, Twin, Queen, King
-- **BikeType**: Regular, Electric
-- **BookingStatus**: Pending, Confirmed, Cancelled, Completed
-- **Currency**: UsDollar, Euro, BritishPound, CanadianDollar, AustralianDollar, SwissFranc
-- **Gender**: Male, Female, Other, PreferNotToSay
-- **PaymentStatus**: Pending, PartiallyPaid, FullyPaid, Refunded
-- **RoomType**: Single, Double, Twin, Triple, Suite
+See [Domain Glossary](../../docs/domain/GLOSSARY.md) for complete enum definitions and values.
+
+Common enums include: BedType, BikeType, BookingStatus, Currency, Gender, PaymentStatus, RoomType.
 
 ### Base Types
 

@@ -14,24 +14,22 @@ powerful tools to create and manage tour packages.
 - **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences,
   and medical details
 - **Booking Management**:
-    - Create bookings with room type selection (Single/Double)
-    - Optional companion for double rooms (supports single occupancy)
-        - Bike type selection (Regular/E-bike) with customer preference pre-population
-    - Discount support (percentage or absolute amount with audit trail)
-    - Automatic total price calculation (base + room + bikes - discount)
+    - Create bookings with room type selection and optional companion
+    - Bike type selection with customer preference pre-population
+    - Discount support with audit trail
+    - Automatic total price calculation
     - Domain-driven operations: Confirm, Cancel, Complete bookings
     - Update booking notes, discount, and details after creation
     - Payment tracking with multiple payment methods and automatic status updates
-    - Track booking status and payment status (Unpaid → PartiallyPaid → Paid)
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
     - Base tour pricing for single room (not per person)
     - Double room supplement for larger accommodations
-    - Regular bike and E-bike rental pricing
-    - Discount system (percentage 0-100% or absolute amount)
-        - Calculated total price (transparent, consistent)
-    - Payment tracking with configurable payment methods
+    - Bike rental pricing options
+    - Discount system with percentage or absolute amount support
+    - Calculated total price (transparent, consistent)
+        - Payment tracking with configurable payment methods
 - **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
 - **RESTful API**: Modern API-first architecture with behaviour-driven endpoints
 - **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
@@ -94,7 +92,11 @@ ViajantesTurismo/
 Run the automated setup script to install all required dependencies:
 
 ```powershell
+# Windows (PowerShell)
 .\setup-dev.ps1
+
+# Unix/Linux/macOS (Bash)
+bash setup-dev.sh
 ```
 
 This script will:
@@ -102,11 +104,11 @@ This script will:
 - ✅ Verify .NET SDK version (from `global.json`)
 - ✅ Restore .NET dependencies (`dotnet restore`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
-- ✅ Install PSScriptAnalyzer for PowerShell linting
+- ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
 - ✅ Install npm packages (markdownlint-cli, shellcheck, shfmt)
 - ✅ Install git pre-commit hook for automatic code quality checks
 
-**Options:**
+**Options (PowerShell only):**
 
 ```powershell
 # Skip git hook installation
@@ -118,79 +120,32 @@ This script will:
 
 ### Manual Setup (Alternative)
 
-If you prefer manual setup or the script doesn't work:
+If you prefer manual setup or the automated script doesn't work:
 
-1. **Verify .NET SDK version**
+```bash
+# 1. Verify .NET SDK version matches global.json
+dotnet --version
 
-   Check that your installed SDK matches `global.json`:
+# 2. Clone and navigate to repository
+git clone https://github.com/danigutsch/ViajantesTurismo.git
+cd ViajantesTurismo
 
-   ```powershell
-   dotnet --version
-   # Should output: 10.0.0 or compatible
-   ```
+# 3. Restore .NET dependencies and tools
+dotnet restore
+dotnet tool restore
 
-2. **Clone the repository**
+# 4. Install Node.js dependencies (optional)
+npm install
 
-   ```powershell
-   git clone https://github.com/danigutsch/ViajantesTurismo.git
-   cd ViajantesTurismo
-   ```
+# 5. Install PowerShell linting (optional, Windows only)
+Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
-3. **Restore dependencies**
+# 6. Install git hooks (optional)
+.\scripts\install-git-hooks.ps1   # Windows (PowerShell)
+bash scripts/install-git-hooks.sh # Unix/Linux/macOS (Bash)
+```
 
-   ```powershell
-   dotnet restore
-   ```
-
-4. **Restore .NET tools**
-
-   ```powershell
-   dotnet tool restore
-   ```
-
-5. **Install Node.js dependencies (optional but recommended)**
-
-   ```powershell
-   npm install
-   ```
-
-   This installs code quality tools: markdownlint-cli, shellcheck, shfmt, gherkin-lint, and ESLint (JSON).
-
-6. **Install PSScriptAnalyzer (optional but recommended)**
-
-   ```powershell
-   Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
-   ```
-
-   This enables PowerShell script linting in the pre-commit hook.
-
-7. **Install git pre-commit hook (optional)**
-
-   The pre-commit hook checks both markdown files and .NET code formatting. It uses bash/sh and works universally on
-   Windows (via Git Bash), Linux, and macOS.
-
-   **Automatic installation:**
-
-   ```powershell
-   # Windows (PowerShell)
-   .\scripts\install-git-hooks.ps1
-
-   # Unix/Linux/macOS (Bash)
-   bash scripts/install-git-hooks.sh
-   ```
-
-   **Manual installation:**
-
-   ```powershell
-   # Windows (PowerShell)
-   Copy-Item scripts/pre-commit .git/hooks/pre-commit
-
-   # Unix/Linux/macOS (Bash)
-   cp scripts/pre-commit .git/hooks/pre-commit
-   chmod +x .git/hooks/pre-commit
-   ```
-
-   This automatically checks markdown and code formatting before commits.
+See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
 
 ### Running the Application
 
@@ -209,142 +164,48 @@ dotnet run --project src/ViajantesTurismo.AppHost
 **Code Formatting:**
 
 ```powershell
-# Format all .NET code
 dotnet format
-
-# Check formatting without changes
-dotnet format --verify-no-changes
 ```
 
-**Markdown Documentation:**
-
-```powershell
-# Check all markdown files
-npm run lint:md
-
-# Auto-fix markdown issues
-npm run lint:md:fix
-```
-
-**Gherkin/Feature Files (BDD Tests):**
-
-```powershell
-# Check all feature files (validation only, no auto-fix)
-npm run lint:gherkin
-```
-
-**JSON Files:**
-
-```powershell
-# Check all JSON files
-npm run lint:json
-
-# Auto-fix JSON formatting issues
-npm run lint:json:fix
-```
-
-**All Linters:**
-
-```powershell
-# Run all linters (markdown, shell, JSON, Gherkin)
-npm run lint:all
-
-# Auto-fix markdown, shell, and JSON issues (Gherkin must be fixed manually)
-npm run lint:all:fix
-```
-
-See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for details on code quality standards.
-
-### Running Tests
+**Run Tests:**
 
 ```powershell
 dotnet test
 ```
 
-### Using the coverage runsettings
+**With Code Coverage:**
 
-A solution-level Coverlet runsettings file is provided at `coverlet.runsettings` (repository root). It excludes EF Core
-Migrations and the MigrationService project from coverage.
+```powershell
+dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+```
 
-- Command line (recommended):
-    - Collect coverage with the runsettings applied
+**Run All Quality Checks:**
 
-      ```powershell
-      dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory:TestResults
-      ```
+```powershell
+npm run lint:all
+```
 
-    - Generate an HTML report (after running tests above)
-
-      ```powershell
-      dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
-      # Open report (Windows)
-      Invoke-Item TestResults\CoverageReport\index.html
-      ```
-
-- Visual Studio (Windows):
-    1) Test → Configure Run Settings → Select Solution Wide runsettings File… → choose `coverlet.runsettings` at the
-       solution root.
-    2) Run tests with coverage (Test Explorer → Run → Analyze Code Coverage).
-
-- JetBrains Rider:
-    - File → Settings → Tools → Unit Testing → Check "Use .runsettings file" and select `coverlet.runsettings`.
-    - Or per Run Configuration: Edit Configuration → Tests → Advanced → Settings file.
-
-- VS Code:
-    - Update your test task/command to include the settings file:
-
-      ```powershell
-      dotnet test --collect:"XPlat Code Coverage" --settings ${workspaceFolder}/coverlet.runsettings
-      ```
-
-Notes:
-
-- Keep forward slashes in the globs inside runsettings (e.g., `**/Migrations/**/*.cs`) even on Windows.
-- If you change exclusions, commit `coverlet.runsettings` so all environments stay in sync.
+See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration and usage, and
+[docs/TEST_GUIDELINES.md](docs/TEST_GUIDELINES.md) for testing strategy and patterns.
 
 ## API Endpoints
 
-### Tours API
+The API provides RESTful endpoints for managing tours, customers, and bookings.
 
-- `GET /tours` - Retrieve all available tours
-- `GET /tours/{id}` - Get tour by ID
-- `POST /tours` - Create a new tour package
-- `PUT /tours/{id}` - Update a tour
+**Key endpoints:**
 
-### Customers API
+- **Tours**: CRUD operations for tour packages
+- **Customers**: Customer profile management
+- **Bookings**: Domain-driven booking lifecycle (create, confirm, cancel, complete)
+- **Payments**: Payment recording and tracking
 
-- `GET /customers` - Retrieve all customers
-- `GET /customers/{id}` - Get customer by ID
-- `POST /customers` - Create a new customer
-- `PUT /customers/{id}` - Update customer information
+See the API documentation (Swagger/OpenAPI) at `https://localhost:7xxx/swagger` when running the application.
 
-### Bookings API (Domain-Driven)
+For detailed business rules and domain operations, see:
 
-- `GET /bookings` - Retrieve all bookings
-- `GET /bookings/{id}` - Get booking by ID
-- `GET /bookings/tour/{tourId}` - Get bookings for a specific tour
-- `GET /bookings/customer/{customerId}` - Get bookings for a specific customer
-- `POST /bookings` - Create a new booking with optional discount
-- `PUT /bookings/{id}/discount` - Update booking discount
-- `PUT /bookings/{id}/details` - Update room type, bikes, and companion
-- `POST /bookings/{id}/confirm` - Confirm a pending booking
-- `POST /bookings/{id}/cancel` - Cancel a booking
-- `POST /bookings/{id}/complete` - Complete a confirmed booking
-- `PATCH /bookings/{id}/notes` - Update booking notes
-- `POST /bookings/{id}/payments` - Record a payment for the booking
-- `DELETE /bookings/{id}` - Delete a booking
-
-## Tour Package Information
-
-Each tour includes:
-
-- **Unique Identifier** - Tour code (e.g., "CUBA2024")
-- **Name** - Descriptive tour name
-- **Dates** - Start and end dates
-- **Pricing** - Base price (single room), double room supplement, bike rentals (all prices displayed and entered with
-  correct currency formatting)
-- **Currency** - Real, Euro, or US Dollar
-- **Included Services** - Hotels, meals, activities, etc.
+- [Domain Validation](docs/DOMAIN_VALIDATION.md) - Validation patterns and rules
+- [Aggregates](docs/domain/AGGREGATES.md) - Business invariants and operations
+- [Glossary](docs/domain/GLOSSARY.md) - Domain terminology and concepts
 
 ## Architecture
 
@@ -366,42 +227,6 @@ Key patterns:
 See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for detailed architectural decisions.
 
 ## Development
-
-### .NET Local Tools
-
-This project uses a .NET tool manifest (`.config/dotnet-tools.json`) to manage local tools. The following tools are
-included:
-
-- **dotnet-ef** - Entity Framework Core command-line tools for migrations and database management
-- **dotnet-reportgenerator-globaltool** - Code coverage report generator for analyzing test coverage
-
-After cloning the repository, restore the tools with:
-
-```powershell
-dotnet tool restore
-```
-
-### Running Tests with Coverage
-
-To run tests and generate a code coverage report:
-
-```powershell
-# Run tests with coverage collection
-dotnet test --collect:"XPlat Code Coverage" --results-directory:TestResults
-
-# Generate HTML coverage report
-dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
-
-# Open the report (Windows)
-Invoke-Item TestResults\CoverageReport\index.html
-```
-
-The coverage report provides detailed insights into:
-
-- Line and branch coverage percentages
-- Uncovered code sections
-- Coverage by project and class
-- Historical coverage trends
 
 ### Building the Solution
 

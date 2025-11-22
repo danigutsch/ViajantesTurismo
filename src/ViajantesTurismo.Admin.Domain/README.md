@@ -71,15 +71,9 @@ var booking = result.Value;
 
 ### Enumerations
 
-All with exhaustive `Enum.IsDefined()` validation:
+See [Domain Glossary](../../docs/domain/GLOSSARY.md) for enum definitions and values.
 
-- BikeType: None (0), Regular, EBike
-- RoomType: SingleRoom (0), DoubleRoom
-- BookingStatus: Pending (0), Confirmed, Cancelled, Completed
-- PaymentStatus: Unpaid (0), PartiallyPaid, Paid
-- PaymentMethod: Other (0), CreditCard, BankTransfer, Cash, Check, PayPal
-- DiscountType: None (0), Percentage, Absolute
-- Currency: Euro (0), UsDollar, Real
+All enums are validated using `Enum.IsDefined()` to ensure only valid values are accepted.
 
 ## Business Rules
 

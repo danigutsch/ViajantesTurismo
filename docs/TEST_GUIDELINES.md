@@ -137,7 +137,7 @@ Always test error conditions:
 public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
 {
     const Currency invalidValue = (Currency)999;
-    var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
+    var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
         TourMapper.MapToCurrencyDto(invalidValue));
     Assert.Contains("Invalid currency value", exception.Message);
 }
@@ -222,11 +222,11 @@ public sealed class ToursApiTests : IDisposable
 {
     // Assert status codes
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    
+
     // Assert response content
     var tour = await response.Content.ReadFromJsonAsync<GetTourDto>();
     Assert.NotNull(tour);
-    
+
     // Assert database state
     var dbTour = _dbContext.Tours.FirstOrDefault(t => t.Id == tourId);
     Assert.NotNull(dbTour);
@@ -255,13 +255,13 @@ public sealed class ToursApiTests : IDisposable
 Feature: Tour Capacity Management
 
   Rule: Tour cannot accept bookings beyond maximum capacity
-    
+
     Scenario Outline: Booking when at capacity
       Given a tour exists with minimum <min> and maximum <max> customers
       And the tour has <current> confirmed bookings
       When I attempt to add a new booking
       Then the booking should <result>
-    
+
     Examples:
       | min | max | current | result                    |
       | 4   | 10  | 9       | succeed                   |
@@ -272,7 +272,7 @@ Feature: Tour Capacity Management
 
 Use tags to link scenarios to architectural concepts:
 
-## Test Coverage & CI
+## BDD Coverage & CI
 
 ### Coverage Goals
 
@@ -322,9 +322,43 @@ public void Then_The_Booking_Should_Fail_With_Error(string expectedError)
 - Step definitions call domain/application layer directly (no UI)
 - Use context objects to share state between steps
 
+## Unit & Integration Test Coverage
+
+### Coverage Goals
+
+- **Unit Tests:** 80%+ code coverage
+- **Integration Tests:** All API endpoints
+- **Behavior Tests:** Business-critical scenarios
+
+Focus on happy paths, error paths, and boundary conditions. Don't obsess over 100% coverage or testing simple
+getters/setters.
+
+### Running Tests with Coverage
+
+```powershell
+dotnet test                                                                    # All tests
+dotnet test tests/ViajantesTurismo.Admin.UnitTests                             # Specific project
+dotnet test --filter "FullyQualifiedName~Mapper"                               # Filtered
+dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings    # With coverage
+```
+
+See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for coverage tool configuration and report generation.
+
+### CI/CD Integration (Future)
+
+When CI is added:
+
+- Fail the build on test failures
+- Publish coverage reports to dashboard
+- Run unit tests on every PR
+- Run integration tests on merge to main
+- Run full test suite on release branches
+
 ## Related Documentation
 
+- [BDD Guide](../tests/BDD_GUIDE.md) — Gherkin/BDD-specific guidelines and best practices
 - [Domain Validation](DOMAIN_VALIDATION.md) — Factory methods, Result pattern, validation rules
+- [Code Quality](CODE_QUALITY.md) — Tool configuration, linters, formatters, coverage reporting
 - [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
 - [Architecture Decisions](ARCHITECTURE_DECISIONS.md) — ADRs referenced in test tags
 
@@ -340,21 +374,6 @@ guidelines to maintain a high-quality test suite that gives confidence when maki
 - Prefer object mothers/builders over complex test data
 - Tag scenarios to link business requirements with technical implementation
 - Keep tests fast, independent, and focused on behavior
-- **Unit Tests:** 80%+ code coverage
-- **Integration Tests:** All API endpoints
-- **Behavior Tests:** Business-critical scenarios
-
-Focus on happy paths, error paths, and boundary conditions. Don't obsess over 100% coverage or testing simple
-getters/setters.
-
-## Running Tests
-
-```powershell
-dotnet test                                         # All tests
-dotnet test tests/ViajantesTurismo.Admin.UnitTests  # Specific project
-dotnet test --filter "FullyQualifiedName~Mapper"    # Filtered
-dotnet test --collect:"XPlat Code Coverage"         # With coverage
-```
 
 ## Common Anti-Patterns to Avoid
 

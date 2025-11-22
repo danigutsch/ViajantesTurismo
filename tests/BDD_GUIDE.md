@@ -1,388 +1,185 @@
 # BDD Guide for ViajantesTurismo
 
-Comprehensive guide to Behavior-Driven Development (BDD) practices using Reqnroll.
+Project-specific BDD practices and conventions using Reqnroll.
+
+## Overview
+
+This guide covers **ViajantesTurismo-specific** BDD patterns, tagging conventions, and workflows.
+
+**For general BDD/Gherkin concepts, see:**
+
+- **[Reqnroll Documentation](https://docs.reqnroll.net/latest/)** - Complete Reqnroll guide
+- **[Gherkin Reference](https://docs.reqnroll.net/latest/gherkin/gherkin-reference.html)** - Syntax and best practices
+- **[Cucumber BDD Guide](https://cucumber.io/docs/bdd/)** - BDD philosophy
+- **[Anti-Patterns](https://cucumber.io/docs/guides/anti-patterns/)** - Common pitfalls
 
 ## Table of Contents
 
-- [BDD Philosophy](#bdd-philosophy)
-- [Writing Gherkin Features](#writing-gherkin-features)
+- [Quick Start](#quick-start)
+- [Project Tagging Conventions](#project-tagging-conventions)
 - [Feature Organization](#feature-organization)
-- [Step Definitions](#step-definitions)
+- [Step Organization](#step-organization)
 - [Living Documentation](#living-documentation)
-- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-- [Best Practices Summary](#best-practices-summary)
+- [Gherkin Linting](#gherkin-linting)
 
 ---
 
-## BDD Philosophy
+## Quick Start
 
-### What is BDD?
+**Writing Features:**
 
-Behavior-Driven Development (BDD) is a collaborative approach that:
+1. Organize by domain aggregate
+2. Tag with `@BC:<context>` and `@Agg:<aggregate>` (mandatory)
+3. Write declarative scenarios (**what**, not **how**)
+4. Keep scenarios short (3-5 steps)
 
-- **Bridges the gap** between business stakeholders and technical teams
-- **Uses concrete examples** to illustrate how the system should behave
-- **Produces executable specifications** that serve as both documentation and automated tests
-- **Enables rapid iterations** with continuous feedback
+**Running Tests:**
 
-**Three Core Practices:**
+```powershell
 
-1. **Discovery** - Collaborative workshops to explore requirements through real-world examples
-2. **Formulation** - Document examples in Gherkin (human + machine readable format)
-3. **Automation** - Connect examples to code as automated tests that guide development
+# All behavior tests
 
-### Living Documentation
+dotnet test tests/ViajantesTurismo.Admin.BehaviorTests
 
-Feature files are **Living Documentation** - always up-to-date because they're executed as tests.
-Unlike traditional documentation:
+# By aggregate
 
-- ✅ **Never out of date** - Tests fail when behavior changes
-- ✅ **Stakeholder readable** - Business people can understand and validate
-- ✅ **Executable** - Automated tests verify the documentation is accurate
-- ✅ **Collaborative** - Shared language between business and technical teams
+dotnet test --filter "TestCategory=Agg:Booking"
+
+# By ADR
+
+dotnet test --filter "TestCategory=ADR:011"
+```
+
+See [Test Guidelines](../docs/TEST_GUIDELINES.md) for general testing patterns.
 
 ---
 
-## Writing Gherkin Features
+## Project Tagging Conventions
 
-### Feature Structure with Rules
+### Mandatory Tags (Feature Level)
 
-Use the `Rule` keyword to organize scenarios by business rules within a feature:
+Every feature **must** have:
 
-```gherkin
-Feature: Booking Management
+- `@BC:<BoundedContext>` - e.g., `@BC:Admin`
+- `@Agg:<Aggregate>` - e.g., `@Agg:Tour`, `@Agg:Booking`, `@Agg:Customer`
 
-  Rule: Only pending bookings can be confirmed
-    Scenario: Successfully confirm a pending booking
-      Given a pending booking exists
-      When the operator confirms the booking
-      Then the booking status should be "Confirmed"
-```
-
-**Benefits:** Groups related scenarios by business rule, provides clear traceability, and aligns with domain model.
-
-### Declarative vs. Imperative Scenarios
-
-**❌ Imperative (UI-focused):**
+**Example:**
 
 ```gherkin
-Given I am on the bookings page
-And I click the "Confirm" button
+@BC:Admin @Agg:Booking
+Feature: Booking Lifecycle Management
+  Manage booking state transitions
 ```
 
-**✅ Declarative (Domain-focused):**
+### Optional Tags
 
-```gherkin
-Given a pending booking exists
-When the operator confirms the booking
-Then the booking status should be "Confirmed"
+**Traceability:**
+
+- `@ADR:<number>` - Links to Architecture Decision Record
+- `@WI:<id>` - Links to work item/user story
+
+**Test Execution:**
+
+- `@smoke` - Critical happy paths
+- `@regression` - Full regression suite
+- `@critical` - Must pass before release
+
+**Scenario Type:**
+
+- `@happy_path` - Successful operations
+- `@error_case` - Validation failures
+- `@edge_case` - Boundary conditions
+
+**Lifecycle:**
+
+- `@wip` - Work in progress (excluded from CI)
+
+### Running Tests by Tag
+
+```powershell
+
+# Single tag
+
+dotnet test --filter "TestCategory=Agg:Booking"
+
+# Multiple tags (OR)
+
+dotnet test --filter "TestCategory=smoke|TestCategory=critical"
+
+# Multiple tags (AND)
+
+dotnet test --filter "TestCategory=Agg:Booking&TestCategory=critical"
+
+# Exclude tags
+
+dotnet test --filter "TestCategory!=wip"
 ```
 
-**Why:** Survives UI changes, more readable for stakeholders, focuses on **what** not **how**.
+See [Reqnroll: Executing Specific Scenarios][exec-scenarios] for advanced filtering.
 
-### Writing Effective Scenarios
-
-- Keep scenarios short (3-5 steps)
-- One `When` step per scenario - test **one behavior**
-- Use `And`/`But` for multiple `Given` or `Then` steps
-
-### Background Usage
-
-```gherkin
-Background:
-  Given the operator is authenticated
-  And there is an active tour "Amazon Adventure"
-```
-
-- Keep to 3-4 steps maximum
-- Use high-level, domain-focused language
-- Move technical details into step definitions
+[exec-scenarios]: https://docs.reqnroll.net/latest/execution/executing-specific-scenarios.html
 
 ---
 
 ## Feature Organization
 
-### Organize by Domain Concept
-
-Align feature files with **bounded contexts** and **domain aggregates** (not UI or technical structure):
+### Organize by Domain Aggregate
 
 ```text
 Features/
 ├── Booking/
-│   ├── BookingLifecycle.feature        # @BC:Admin @Agg:Booking
-│   ├── BookingValidation.feature       # @BC:Admin @Agg:Booking
-│   └── BookingCancellation.feature     # @BC:Admin @Agg:Booking
+│   ├── booking-lifecycle.feature
+│   ├── booking-validation.feature
+│   └── booking-cancellation.feature
 ├── Tour/
-│   ├── TourCreation.feature            # @BC:Admin @Agg:Tour
-│   └── TourScheduling.feature          # @BC:Admin @Agg:Tour
+│   ├── tour-creation.feature
+│   └── tour-capacity.feature
 └── Customer/
-    ├── CustomerRegistration.feature    # @BC:Admin @Agg:Customer
-    └── CustomerValidation.feature      # @BC:Admin @Agg:Customer
+    ├── customer-registration.feature
+    └── customer-validation.feature
 ```
 
-**✅ Organize by Domain Concept** - One file per major domain object or capability
-**❌ Avoid Feature-Coupled Organization** - Don't organize by UI page or test scenario name
+**Naming:** `<aggregate>-<capability>.feature` (lowercase-with-hyphens)
 
-This structure provides:
+**Benefits:**
 
-- Clear navigation by domain concept
-- Easy discovery of which features are tested
-- Natural alignment with domain model documentation
-- Support for running tests by aggregate or bounded context
-- Avoids the [Feature-coupled step definitions anti-pattern](
-  https://cucumber.io/docs/guides/anti-patterns#feature-coupled-step-definitions)
+- Aligns with domain model
+- Enables test filtering by aggregate
+- Avoids [feature-coupled step definitions][anti-patterns]
 
-### Tags for Traceability
-
-Tags are essential for organizing features, enabling selective test execution, and maintaining traceability between
-tests, domain concepts, and requirements.
-
-#### Tag Categories
-
-**Domain Tags** (Architecture Alignment):
-
-- `@BC:<BoundedContext>` — Bounded context (e.g., `@BC:Admin`)
-- `@Agg:<Aggregate>` — Domain aggregate (e.g., `@Agg:Tour`, `@Agg:Booking`, `@Agg:Customer`)
-- `@Entity:<Name>` — Domain entity (e.g., `@Entity:Payment`, `@Entity:BookingCustomer`)
-- `@VO:<Name>` — Value object (e.g., `@VO:DateRange`, `@VO:Discount`)
-
-**Traceability Tags**:
-
-- `@ADR:<number>` — Architecture Decision Record (e.g., `@ADR:008`, `@ADR:011`)
-- `@WI:<workItemId>` — Work item / user story (e.g., `@WI:123`, `@WI:TOUR-456`)
-- `@US:<number>` — User story (alternative to @WI if preferred)
-
-**Test Execution Tags**:
-
-- `@smoke` — Critical happy path scenarios, run on every build
-- `@regression` — Full regression suite
-- `@integration` — Tests requiring infrastructure (DB, external services)
-- `@unit` — Pure domain logic tests (no infrastructure dependencies)
-
-**Test Priority Tags**:
-
-- `@critical` — Must always pass, blocks release
-- `@high` — Important scenarios
-- `@medium` — Standard scenarios
-- `@low` — Nice-to-have coverage
-
-**Scenario Type Tags**:
-
-- `@happy_path` — Successful operations
-- `@edge_case` — Boundary conditions
-- `@error_case` — Validation failures and error handling
-- `@security` — Security-related scenarios
-- `@performance` — Performance-sensitive scenarios
-
-**Lifecycle Tags**:
-
-- `@wip` — Work in progress, not ready for CI
-- `@manual` — Manual testing required
-- `@automated` — Fully automated
-- `@flaky` — Known to be unstable (investigate and fix)
-
-#### Tag Inheritance
-
-Tags applied at Feature/Rule level are inherited by all scenarios within that scope:
-
-```gherkin
-@BC:Admin @Agg:Booking @regression
-Feature: Booking Payment Status Management
-  Scenarios for managing payment status independently from booking status
-
-  Rule: Payment status can be updated at any time
-
-    @happy_path @critical
-    Scenario: Mark confirmed booking as paid
-      Given a confirmed booking exists
-      When the operator updates the payment status to "Paid"
-      Then the booking payment status should be "Paid"
-
-    @edge_case @ADR:011
-    Scenario: Record partial payment
-      Given a confirmed booking with unpaid status exists
-      When the operator records a payment of 500
-      Then the booking payment status should be "PartiallyPaid"
-```
-
-#### Tag Naming Conventions
-
-**✅ DO:**
-
-- Use PascalCase for multi-word tags: `@EdgeCase`, `@HappyPath`
-- Keep tags concise and meaningful
-- Use consistent naming across features
-- Use domain language (aggregate names from bounded context docs)
-
-**❌ DON'T:**
-
-- Use spaces in tags (invalid Gherkin)
-- Create duplicate tags with different names (`@edge_case` vs `@boundary`)
-- Over-tag scenarios (5-7 tags maximum per scenario)
-
-#### Running Tests by Tags
-
-**Single Tag:**
-
-```powershell
-# Run all Booking aggregate tests
-dotnet test --filter "TestCategory=Agg:Booking"
-
-# Run smoke tests only
-dotnet test --filter "TestCategory=smoke"
-```
-
-**Multiple Tags (OR logic):**
-
-```powershell
-# Run smoke OR critical tests
-dotnet test --filter "TestCategory=smoke|TestCategory=critical"
-```
-
-**Multiple Tags (AND logic):**
-
-```powershell
-# Run Booking tests that are also critical
-dotnet test --filter "TestCategory=Agg:Booking&TestCategory=critical"
-
-# Run tests for specific ADR
-dotnet test --filter "TestCategory=ADR:011&TestCategory=Agg:Booking"
-```
-
-**Complex Expressions:**
-
-```powershell
-# Run critical tests for Admin BC excluding WIP
-dotnet test --filter "(TestCategory=BC:Admin&TestCategory=critical)&TestCategory!=wip"
-
-# Run all tests except flaky
-dotnet test --filter "TestCategory!=flaky"
-```
-
-#### Coverage Validation
-
-Use tags to verify domain coverage:
-
-```powershell
-# Verify all aggregates are tested
-dotnet test --filter "TestCategory=Agg:Tour" --list-tests
-dotnet test --filter "TestCategory=Agg:Booking" --list-tests
-dotnet test --filter "TestCategory=Agg:Customer" --list-tests
-
-# Find features without aggregate tags (potentially missing coverage)
-# Use reporting tools or custom scripts to analyze
-```
-
-#### CI/CD Pipeline Usage
-
-**Build Pipeline:**
-
-```yaml
-# Smoke tests on every commit
-- script: dotnet test --filter "TestCategory=smoke"
-  displayName: 'Smoke Tests'
-
-# Full regression on PR
-- script: dotnet test --filter "TestCategory=regression&TestCategory!=wip"
-  displayName: 'Regression Tests'
-```
-
-**Release Pipeline:**
-
-```yaml
-# Critical tests must pass before deployment
-- script: dotnet test --filter "TestCategory=critical"
-  displayName: 'Critical Tests'
-
-# Integration tests in staging
-- script: dotnet test --filter "TestCategory=integration"
-  displayName: 'Integration Tests'
-```
-
-#### Tag Examples by Use Case
-
-**Domain Coverage Validation:**
-
-```gherkin
-@BC:Admin @Agg:Tour @regression
-Feature: Tour Creation
-  # All Tour aggregate scenarios inherit @BC:Admin @Agg:Tour
-
-  @smoke @critical @happy_path
-  Scenario: Create tour with valid data
-    # Tags: BC:Admin, Agg:Tour, regression, smoke, critical, happy_path
-```
-
-**ADR Traceability:**
-
-```gherkin
-@BC:Admin @Agg:Booking @ADR:011
-Feature: Payment Immutability
-  Verify that payment records are immutable per ADR-011
-
-  @error_case @critical
-  Scenario: Cannot modify existing payment
-    # Links scenario to architectural decision
-```
-
-**Work Item Tracking:**
-
-```gherkin
-@BC:Admin @Agg:Customer @WI:TOUR-234
-Feature: Customer Profile Management
-  Implement customer update capabilities
-
-  @WI:TOUR-235 @happy_path
-  Scenario: Update customer contact information
-    # Links to specific work items for reporting
-```
-
-### Linking Features to Domain Rules
-
-```gherkin
-# Related Domain Rules:
-# - Booking.Confirm (Admin.Domain/Aggregates/Booking.cs)
-# - BookingPolicy.CanConfirm (Admin.Domain/Policies/)
-
-@BC:Admin @Agg:Booking @ADR:005
-Feature: Booking Lifecycle Management
-```
+[anti-patterns]: https://cucumber.io/docs/guides/anti-patterns#feature-coupled-step-definitions
 
 ---
 
-## Step Definitions
+## Step Organization
 
-### Group by Domain Concept
-
-**Group by domain concept, not by feature:**
+### Group Steps by Domain Aggregate
 
 ```text
 Steps/
-├── BookingSteps.cs           # All booking-related steps
-├── TourSteps.cs              # All tour-related steps
-├── CustomerSteps.cs          # All customer-related steps
-└── CommonSteps.cs            # Shared steps (Given operator is authenticated)
+├── BookingSteps.cs       # All booking-related steps
+├── TourSteps.cs          # All tour-related steps
+├── CustomerSteps.cs      # All customer-related steps
+└── CommonSteps.cs        # Shared authentication/setup
 ```
 
-**✅ Domain-based organization** enables step reuse across features
-**❌ Don't create** `BookingLifecycleSteps.cs`, `BookingValidationSteps.cs` - causes duplication
+**✅ DO:** Organize by domain aggregate (enables step reuse)
+**❌ DON'T:** Create per-feature step files (causes duplication)
 
-### Avoid Step Duplication
-
-Use parameterized steps:
+### Write Reusable Parameterized Steps
 
 ```csharp
-// ✅ GOOD
-[Given(@"I go to the {string} page")]
-public void GivenIGoToPage(string pageName)
+// ✅ GOOD - Reusable across features
+[Given(@"a tour exists with minimum (.*) and maximum (.*) customers")]
+public void GivenATourExists(int min, int max)
 {
-    _pageFactory.OpenPage(pageName);
+    _tourContext.Tour = Tour.Create(/*...*/).Value;
 }
 ```
 
-### Write Step Definitions Only When Needed
+See [Reqnroll: Step Definitions][step-defs] for detailed guidance.
 
-Don't write step definitions before you have scenarios that use them to avoid code cruft and maintenance burden.
+[step-defs]: https://docs.reqnroll.net/latest/automation/step-definitions.html
 
 ---
 
@@ -390,7 +187,7 @@ Don't write step definitions before you have scenarios that use them to avoid co
 
 ### HTML Reports
 
-Add to `reqnroll.json`:
+Configure in `reqnroll.json`:
 
 ```json
 {
@@ -402,464 +199,119 @@ Add to `reqnroll.json`:
 }
 ```
 
-Generate: `dotnet test` then `start TestResults/living_documentation.html`
-
-### Cucumber Messages Format
-
-For advanced reporting and integration with external tools:
-
-```json
-{
-  "formatters": {
-    "message": {
-      "outputFilePath": "TestResults/cucumber_messages.ndjson"
-    }
-  }
-}
-```
-
-This generates a standardized format that can be consumed by:
-
-- **Allure Report** - Enterprise reporting solution
-- **Custom dashboards** - Build your own coverage visualizations
-- **CI/CD integrations** - Azure DevOps, GitHub Actions
-
-### Coverage Validation and Tracking
-
-#### Domain Coverage Matrix
-
-Track which domain concepts are covered by behavioral tests:
-
-**By Aggregate:**
+Generate:
 
 ```powershell
-# Generate test counts per aggregate
-dotnet test --filter "TestCategory=Agg:Tour" --logger "console;verbosity=minimal" | Select-String "Passed"
-dotnet test --filter "TestCategory=Agg:Booking" --logger "console;verbosity=minimal" | Select-String "Passed"
-dotnet test --filter "TestCategory=Agg:Customer" --logger "console;verbosity=minimal" | Select-String "Passed"
+dotnet test
+start TestResults/living_documentation.html
 ```
 
-**By ADR:**
+### Coverage Validation
+
+Track domain coverage by aggregate:
 
 ```powershell
-# Verify each ADR has corresponding tests
-dotnet test --filter "TestCategory=ADR:001" --list-tests
-dotnet test --filter "TestCategory=ADR:008" --list-tests
+
+# List all Tour tests
+
+dotnet test --filter "TestCategory=Agg:Tour" --list-tests
+
+# Verify ADR coverage
+
 dotnet test --filter "TestCategory=ADR:011" --list-tests
 ```
 
-#### Automated Coverage Reports
+See [Reqnroll: Reporting][reporting] for advanced reporting options.
 
-Create a script to validate coverage (`tests/scripts/ValidateCoverage.ps1`):
-
-```powershell
-# Example coverage validation script
-$aggregates = @("Tour", "Booking", "Customer")
-$missingCoverage = @()
-
-foreach ($agg in $aggregates) {
-    $count = (dotnet test --filter "TestCategory=Agg:$agg" --list-tests 2>&1 |
-              Select-String "Test Cases").ToString() -replace '\D+'
-
-    if ([int]$count -lt 5) {
-        $missingCoverage += "$agg has only $count scenarios (minimum: 5)"
-    }
-}
-
-if ($missingCoverage.Count -gt 0) {
-    Write-Error "Coverage gaps found:"
-    $missingCoverage | ForEach-Object { Write-Error $_ }
-    exit 1
-}
-
-Write-Host "✓ All aggregates have sufficient test coverage" -ForegroundColor Green
-```
-
-#### Coverage Badge Generation
-
-Generate markdown coverage badges for `README.md`:
-
-```powershell
-# Count scenarios by category
-$totalTests = (dotnet test --list-tests 2>&1 | Select-String "Test Cases").ToString() -replace '\D+'
-$smokeTests = (dotnet test --filter "TestCategory=smoke" --list-tests 2>&1 |
-               Select-String "Test Cases").ToString() -replace '\D+'
-
-# Output badge markdown
-"![Total Tests](https://img.shields.io/badge/Scenarios-$totalTests-blue)"
-"![Smoke Tests](https://img.shields.io/badge/Smoke-$smokeTests-green)"
-```
-
-#### Traceability Matrix Generation
-
-Generate a comprehensive traceability report linking features to domain concepts:
-
-Create `tests/scripts/GenerateTraceability.ps1`:
-
-```powershell
-param(
-    [string]$OutputPath = "docs/TRACEABILITY.md"
-)
-
-# Parse all feature files
-$features = Get-ChildItem -Path "tests" -Filter "*.feature" -Recurse
-
-$matrix = @()
-
-foreach ($feature in $features) {
-    $content = Get-Content $feature.FullName -Raw
-
-    # Extract tags (simple regex - enhance as needed)
-    if ($content -match '@BC:(\w+)') { $bc = $matches[1] } else { $bc = "" }
-    if ($content -match '@Agg:(\w+)') { $agg = $matches[1] } else { $agg = "" }
-    if ($content -match '@ADR:(\d+)') { $adr = $matches[1] } else { $adr = "" }
-    if ($content -match '@WI:([\w\-]+)') { $wi = $matches[1] } else { $wi = "" }
-
-    # Extract feature name
-    if ($content -match 'Feature:\s*(.+)') {
-        $featureName = $matches[1].Trim()
-    }
-
-    # Count scenarios
-    $scenarioCount = ($content | Select-String "Scenario:" -AllMatches).Matches.Count
-
-    $matrix += [PSCustomObject]@{
-        Feature = $featureName
-        BoundedContext = $bc
-        Aggregate = $agg
-        ADR = $adr
-        WorkItem = $wi
-        Scenarios = $scenarioCount
-        File = $feature.FullName -replace [regex]::Escape($PWD), "."
-    }
-}
-
-# Generate markdown table
-$markdown = @"
-# Traceability Matrix
-
-Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm")
-
-## Coverage Summary
-
-- Total Features: $($matrix.Count)
-- Total Scenarios: $($matrix | Measure-Object -Property Scenarios -Sum).Sum
-
-### By Bounded Context
-
-$(($matrix | Group-Object BoundedContext | ForEach-Object {
-    "- **$($_.Name)**: $($_.Count) features, $(($_.Group | Measure-Object -Property Scenarios -Sum).Sum) scenarios"
-}) -join "`n")
-
-### By Aggregate
-
-$(($matrix | Group-Object Aggregate | Where-Object { $_.Name } | ForEach-Object {
-    "- **$($_.Name)**: $($_.Count) features, $(($_.Group | Measure-Object -Property Scenarios -Sum).Sum) scenarios"
-}) -join "`n")
-
-## Detailed Matrix
-
-| Feature | BC | Aggregate | ADR | Work Item | Scenarios | File |
-|---------|-----|-----------|-----|-----------|-----------|------|
-$(($matrix | Sort-Object BoundedContext, Aggregate, Feature | ForEach-Object {
-    "| $($_.Feature) | $($_.BoundedContext) | $($_.Aggregate) | $($_.ADR) | $($_.WorkItem) | $($_.Scenarios) | ``$($_.File)`` |"
-}) -join "`n")
-
-## Missing Coverage
-
-### Features without Aggregate tags
-$(($matrix | Where-Object { -not $_.Aggregate } | ForEach-Object {
-    "- $($_.Feature) (``$($_.File)``)"
-}) -join "`n")
-
-### ADRs without test coverage
-// TODO: Compare with docs/ARCHITECTURE_DECISIONS.md to find untested ADRs
-
-"@
-
-# Write to file
-$markdown | Out-File -FilePath $OutputPath -Encoding UTF8
-
-Write-Host "✓ Traceability matrix generated: $OutputPath" -ForegroundColor Green
-```
-
-Run in CI/CD:
-
-```yaml
-# Azure Pipelines example
-- script: |
-    pwsh -File tests/scripts/ValidateCoverage.ps1
-    pwsh -File tests/scripts/GenerateTraceability.ps1
-  displayName: 'Validate and Generate Coverage Reports'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: 'docs/TRACEABILITY.md'
-    ArtifactName: 'traceability'
-```
-
-#### Verifying Feature Coverage
-
-**Manual Verification:**
-
-1. Tag domain rules using `@Agg:` tags
-2. Document domain rules in feature headers
-3. Generate HTML reports
-4. Filter by aggregate: `dotnet test --filter "TestCategory=Agg:Booking"`
-
-**Automated Verification:**
-
-Create a test that validates all aggregates have coverage:
-
-```csharp
-// tests/ViajantesTurismo.Admin.BehaviorTests/CoverageTests.cs
-public class CoverageTests
-{
-    [Theory]
-    [InlineData("Tour")]
-    [InlineData("Booking")]
-    [InlineData("Customer")]
-    public void AllAggregates_Should_HaveTestCoverage(string aggregate)
-    {
-        // This test ensures we remember to add tags
-        // Actual validation done by CI/CD scripts
-        Assert.NotNull(aggregate);
-    }
-}
-```
-
-#### Tag Consistency Validation
-
-Create a hook to validate tags at runtime:
-
-```csharp
-// tests/ViajantesTurismo.Admin.BehaviorTests/Hooks/TagValidationHooks.cs
-using Reqnroll;
-
-[Binding]
-public class TagValidationHooks
-{
-    private readonly ScenarioContext _scenarioContext;
-
-    public TagValidationHooks(ScenarioContext scenarioContext)
-    {
-        _scenarioContext = scenarioContext;
-    }
-
-    [BeforeScenario(Order = -100)]
-    public void ValidateTags()
-    {
-        var allTags = _scenarioContext.ScenarioInfo.Tags
-            .Concat(_scenarioContext.ScenarioInfo.FeatureInfo.Tags ?? Array.Empty<string>())
-            .Distinct()
-            .ToArray();
-
-        // Validate bounded context tag exists
-        var bcTag = allTags.FirstOrDefault(t => t.StartsWith("BC:"));
-        if (bcTag == null)
-        {
-            Console.WriteLine($"[WARNING] Scenario '{_scenarioContext.ScenarioInfo.Title}' " +
-                            "is missing @BC:<context> tag");
-        }
-
-        // Validate aggregate tag exists
-        var aggTag = allTags.FirstOrDefault(t => t.StartsWith("Agg:"));
-        if (aggTag == null)
-        {
-            Console.WriteLine($"[WARNING] Scenario '{_scenarioContext.ScenarioInfo.Title}' " +
-                            "is missing @Agg:<aggregate> tag");
-        }
-
-        // Log all tags for traceability
-        Console.WriteLine($"[TRACE] Tags: {string.Join(", ", allTags)} | " +
-                         $"Scenario: {_scenarioContext.ScenarioInfo.Title}");
-    }
-}
-```
-
-### Living Documentation Best Practices
-
-1. **Keep features synchronized with domain** - When domain model changes, update feature files
-2. **Generate reports on every CI build** - Make living documentation visible to stakeholders
-3. **Review coverage gaps monthly** - Use traceability matrix to identify missing scenarios
-4. **Tag consistently** - Use tag validation hooks to enforce standards
-5. **Link to ADRs** - Every architectural decision should have test coverage
-6. **Track work items** - Link scenarios to user stories for bi-directional traceability
+[reporting]: https://docs.reqnroll.net/latest/reporting/reqnroll-formatters.html
 
 ---
 
-## Anti-Patterns to Avoid
+## Gherkin Linting
 
-### ❌ Conjunction Steps
+### Enforced Rules
 
-Use atomic steps with `And`:
+All `.feature` files are linted using `gherkin-lint` with project-specific rules:
 
-```gherkin
-Given I have shades
-And I have a brand new Mustang
+**Mandatory:**
+
+- `@BC:<BoundedContext>` tag on every feature
+- `@Agg:<Aggregate>` tag on every feature
+- Consistent indentation (Feature: 0, Rule/Scenario: 2, Steps: 4)
+- No unnamed features/scenarios
+
+**Anti-Patterns Prevented:**
+
+- Conjunction steps
+- Use of `@skip` (use `@wip` instead)
+
+### Running the Linter
+
+```powershell
+
+# Validate all feature files
+
+npm run lint:gherkin
+
+# Runs automatically in pre-commit hook
+
 ```
 
-### ❌ Feature-Coupled Step Definitions
+**Note:** gherkin-lint validates but does not auto-fix. Errors must be corrected manually.
 
-Don't organize steps by feature files:
+**Configuration:** Rules are defined in `.gherkin-lintrc` at the repository root.
 
-```text
-❌ BAD:
-Steps/
-├── EditWorkExperienceSteps.cs
-├── EditLanguagesSteps.cs
-└── EditEducationSteps.cs
-```
+### Pre-Commit Hook
 
-**Organize by domain concept instead:**
+Gherkin linting runs automatically before each commit and **blocks commit** if errors found.
 
-```text
-✅ GOOD:
-Steps/
-├── EmployeeSteps.cs
-├── EducationSteps.cs
-└── WorkExperienceSteps.cs
-```
+Install hook:
 
-### ❌ Imperative Steps
+```powershell
 
-Use declarative steps:
+# Windows
 
-```gherkin
-# ✅ DO
-Given I am authenticated as "user@example.com"
+.\scripts\install-git-hooks.ps1
 
-# ❌ DON'T
-Given I am on the login page
-When I enter "user@example.com" in the email field
+# Unix/Linux/macOS
+
+bash scripts/install-git-hooks.sh
 ```
 
 ---
 
 ## Best Practices Summary
 
-1. **Declarative over Imperative** - Focus on business behavior, not UI interactions
-2. **Domain Language** - Use ubiquitous language from your domain model
-3. **One Behavior per Scenario** - Keep scenarios focused and short (3-5 steps)
-4. **Organize by Domain** - Group features and steps by aggregate/entity
-5. **Reusable Steps** - Avoid duplication with parameterized steps
-6. **Living Documentation** - Keep scenarios readable for stakeholders
-7. **Tag Strategically** - Use tags for traceability and selective test execution
-8. **Use Rules** - Group scenarios by business rules within features
-9. **Short Backgrounds** - Keep to 3-4 steps, domain-focused
-10. **Atomic Steps** - Avoid conjunction steps, use `And`/`But` instead
-
----
-
-## Gherkin Linting Enforcement
-
-All `.feature` files are automatically linted using `gherkin-lint` to ensure consistent formatting and adherence
-to BDD best practices.
-
-### Running the Linter
-
-```powershell
-# Check all feature files (validation only, no auto-fix)
-npm run lint:gherkin
-
-# Run all linters (markdown, shell, Gherkin)
-npm run lint:all
-```
-
-**Note:** gherkin-lint validates feature files but does not support auto-fix. Formatting issues must be corrected
-manually.
-
-### Enforced Rules
-
-**Mandatory Tags (Feature-level):**
-
-- `@BC:<BoundedContext>` - Every feature MUST specify its bounded context (e.g., `@BC:Admin`)
-- `@Agg:<Aggregate>` - Every feature MUST specify its primary aggregate
-  (e.g., `@Agg:Tour`, `@Agg:Booking`, `@Agg:Customer`)
-
-**Optional Tags:**
-
-- `@Invariant:INV-<ID>` - Applied to scenarios testing specific domain invariants (not required for all scenarios)
-- `@happy_path`, `@error_case`, `@edge_case` - Scenario type classification (recommended but not enforced)
-- `@ADR:<number>`, `@WI:<id>` - Traceability tags (use when applicable)
-
-**Formatting Rules:**
-
-- Consistent indentation (Feature: 0, Background/Rule/Scenario: 2, Steps: 4)
-- No trailing spaces
-- Newline at end of file
-- No multiple consecutive empty lines
-- Unique scenario names within each feature
-- No duplicate feature names
-
-**BDD Anti-Patterns:**
-
-- `use-and` - Prevents conjunction steps (e.g., "When I do X and Y" → split into separate steps)
-- `no-unnamed-features` - Every feature must have a descriptive name
-- `no-unnamed-scenarios` - Every scenario must have a descriptive name
-- `no-restricted-tags` - Prevents use of `@skip` (use `@ignore` or `@wip` instead)
-
-### Git Pre-Commit Hook
-
-The Gherkin linter runs automatically on staged `.feature` files before each commit:
-
-- **Validates** formatting and BDD best practices
-- **Blocks commits** if errors are detected (e.g., invalid tags, incorrect indentation, unnamed scenarios)
-- Feature files must be corrected manually before committing
-
-To install the hook:
-
-```powershell
-# Windows (PowerShell)
-.\scripts\install-git-hooks.ps1
-
-# Unix/Linux/macOS (Bash)
-bash scripts/install-git-hooks.sh
-```
-
-### CI/CD Integration
-
-**For future CI/CD pipeline implementation:**
-
-Add the following command to your pipeline configuration:
-
-```yaml
-- run: npm run lint:gherkin
-```
-
-Configuration file: `.gherkin-lintrc` (repository root)
-
-### Configuration
-
-The linting rules are defined in `.gherkin-lintrc` at the repository root. This configuration:
-
-- Enforces project-specific tag patterns for bounded contexts, aggregates, and invariants
-- Maintains consistent indentation and formatting
-- Prevents common BDD anti-patterns
-- Allows project-approved tags while rejecting invalid ones
-
-To modify rules, update `.gherkin-lintrc` and document changes in this guide.
+1. **Tag every feature** with `@BC:` and `@Agg:` (enforced by linter)
+2. **Organize by aggregate**, not by feature file
+3. **Write declarative scenarios** (business behavior, not UI)
+4. **Keep scenarios short** (3-5 steps, one `When` per scenario)
+5. **Reuse steps** via parameterization
+6. **Link to ADRs** for traceability
+7. **Generate living documentation** regularly
 
 ---
 
 ## Resources
 
-### Reqnroll Documentation
+**Reqnroll:**
 
 - [Reqnroll Documentation](https://docs.reqnroll.net/latest/)
 - [Gherkin Reference](https://docs.reqnroll.net/latest/gherkin/gherkin-reference.html)
+- [Step Definitions](https://docs.reqnroll.net/latest/automation/step-definitions.html)
+- [Context Injection](https://docs.reqnroll.net/latest/automation/context-injection.html)
 - [Executing Specific Scenarios](https://docs.reqnroll.net/latest/execution/executing-specific-scenarios.html)
-- [Reqnroll Formatters & Living Documentation](https://docs.reqnroll.net/latest/reporting/reqnroll-formatters.html)
+- [Reporting & Formatters](https://docs.reqnroll.net/latest/reporting/reqnroll-formatters.html)
 
-### BDD & Gherkin Best Practices
+**BDD Best Practices:**
 
 - [Cucumber BDD Guide](https://cucumber.io/docs/bdd/)
-- [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/)
-- [Step Organization](https://cucumber.io/docs/gherkin/step-organization/)
+- [Gherkin Best Practices](https://cucumber.io/docs/gherkin/)
 - [Anti-Patterns to Avoid](https://cucumber.io/docs/guides/anti-patterns/)
+- [Step Organization](https://cucumber.io/docs/gherkin/step-organization/)
 
-### Additional Resources
+**Project Documentation:**
 
-- [Reqnroll GitHub](https://github.com/reqnroll/Reqnroll)
-- [Microsoft Docs: Requirements Traceability](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/requirements-traceability)
-- [Azure DevOps: End-to-End Traceability](https://learn.microsoft.com/en-us/azure/devops/cross-service/end-to-end-traceability)
+- [Test Guidelines](../docs/TEST_GUIDELINES.md) - General testing strategy
+- [Domain Glossary](../docs/domain/GLOSSARY.md) - Ubiquitous language
+- [Architecture Decisions](../docs/ARCHITECTURE_DECISIONS.md) - ADR index

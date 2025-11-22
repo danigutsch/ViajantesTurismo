@@ -40,30 +40,7 @@ Not all business rules belong inside aggregates. Use the right layer for the rig
 See ADR [2025-11-12 Application-level uniqueness invariants](adr/20251112-application-level-invariants.md)
 for the rationale and patterns.
 
-### Current Aggregates
-
-#### Tour Aggregate
-
-- **Purpose**: Manages tour offerings and their bookings
-- **Root**: `Tour` entity
-- **Invariants**:
-    - Tour dates must span minimum duration
-    - Prices must be non-negative
-    - Bookings cannot exceed maximum capacity
-    - Confirmed bookings count toward capacity
-    - Cannot reduce maximum capacity below current confirmed bookings
-- **Entities**: `Tour`, `Booking`, `Payment`
-
-#### Customer Aggregate
-
-- **Purpose**: Manages customer information and profiles
-- **Root**: `Customer` entity
-- **Invariants**:
-    - Email must have a valid format: `^[^@\s]+@[^@\s]+\.[^@\s]+$` (no spaces allowed)
-    - Phone must have a valid format: `^[\d\s\-\(\)\+]+$` (digits, spaces, hyphens, parentheses, plus)
-    - Customer must be at least 10 years old
-    - Email uniqueness is an application-level invariant enforced in handlers via repository checks
-    - Contact information properly formatted
+**Reference:** See [domain/AGGREGATES.md](domain/AGGREGATES.md) for detailed aggregate invariants and business rules.
 
 ## Result Pattern
 
@@ -103,73 +80,31 @@ public sealed class Tour : Entity<int>
 
 ## Validation Rules
 
-### Tour Entity
+Validation rules are enforced through factory methods and update operations. Each aggregate maintains
+its own invariants.
 
-Validation rules enforced in `Tour.Create()`:
+**For specific validation rules and constraints, see:**
 
-- Identifier: Not empty, max 128 characters
-- Name: Not empty, max 128 characters
-- Dates: End > start, minimum 5 days duration
-- Prices: 0 to 100,000
+- [Aggregates Documentation](domain/AGGREGATES.md) - Detailed invariants for Tour, Customer, and Booking
+- [Glossary](domain/GLOSSARY.md) - Domain terminology and enum definitions
+- [Contract Constants](../src/ViajantesTurismo.Admin.Contracts/ContractConstants.cs) - Shared validation constants
 
-All constraints defined in `ContractConstants`.
+**Example validation in factory method:**
 
-### Booking Entity
+```csharp
+public static Result<Tour> Create(string identifier, string name, ...)
+{
+    if (string.IsNullOrWhiteSpace(identifier))
+        return TourErrors.EmptyIdentifier();
 
-Validation rules enforced in `Booking.Create()` and update operations:
+    if (identifier.Length > ContractConstants.MaxIdentifierLength)
+        return TourErrors.IdentifierTooLong();
 
-**Creation:**
+    // Additional validations...
 
-- Base price: Must be > 0 and <= 100,000
-- Room additional cost: Must be >= 0 and <= 100,000
-- Notes: Max 2000 characters
-- Discount: If absolute, cannot exceed subtotal
-- Final price: Must be > 0 after discount
-- BikeType: Cannot be `BikeType.None` for principal or companion
-- Companion: Cannot be same as principal customer
-- Companion bike: Cannot specify companion bike type without a companion customer
-
-**State Transitions:**
-
-- Pending → Confirmed: Allowed
-- Pending → Cancelled: Allowed
-- Confirmed → Completed: Allowed
-- Confirmed → Cancelled: Allowed
-- Cancelled → *: Blocked (terminal state)
-- Completed → *: Blocked (terminal state)
-
-**Updates:**
-
-- Cannot modify Cancelled or Completed bookings (returns Conflict status)
-- Discount changes must keep final price > 0
-- Room type changes validated for companion presence
-- Detail updates (room type, bike types, companion) allowed for Pending and Confirmed bookings
-
-**Payments:**
-
-- Amount: Must be > 0
-- Amount: Cannot exceed remaining balance
-- Payment date: Cannot be in the future
-- Payment method: Must be valid enum value (Other, CreditCard, BankTransfer, Cash, Check, PayPal)
-
-### Customer Entity
-
-Validation rules enforced in `Customer.Create()`:
-
-**Personal Information:**
-
-- FirstName, LastName: Not empty, max 128 characters
-- Age: Must be at least 10 years old (calculated from birth date)
-- Birth date: Cannot be in the future
-
-**Contact Information:**
-
-- Email: Must match format `^[^@\s]+@[^@\s]+\.[^@\s]+$` (no spaces allowed), max 256 characters
-- Phone: Must match format `^[\d\s\-\(\)\+]+$` (digits, spaces, hyphens, parentheses, plus sign)
-
-**Application-level:**
-
-- Email uniqueness enforced in command handlers via repository checks
+    return new Tour(identifier, name, ...);
+}
+```
 
 ### Update Operations
 
@@ -338,109 +273,11 @@ if (!result.IsSuccess)
 await unitOfWork.SaveEntities(ct);
 ```
 
-## Domain Events
-
-Domain events communicate state changes within and across bounded contexts:
-
-### Domain Events (Synchronous)
-
-In-process events handled synchronously within the same transaction:
-
-**Naming Convention:**
-
-- Past tense: `BookingConfirmed`, `CustomerUpgraded`, `PaymentRecorded`
-- Suffix: `DomainEvent` (e.g., `BookingConfirmedDomainEvent`)
-
-**Characteristics:**
-
-- Handled synchronously within the same transaction
-- Used for domain invariants that span aggregates
-- Failures roll back the entire transaction
-- Minimal data needed by domain handlers
-
-**Example:**
-
-```csharp
-public sealed record BookingConfirmedDomainEvent(long BookingId, int TourId, DateTime ConfirmedAt);
-```
-
-### Integration Events (Asynchronous)
-
-Cross-boundary events published to external systems or bounded contexts:
-
-**Naming Convention:**
-
-- Past tense: `BookingConfirmed`, `CustomerUpgraded`
-- Suffix: `IntegrationEvent` (e.g., `BookingConfirmedIntegrationEvent`)
-
-**Characteristics:**
-
-- Published via outbox pattern for reliability
-- Consumed asynchronously by subscribers
-- Can include denormalized data for consumers
-- No immediate consistency guarantee
-
-**Example:**
-
-```csharp
-public sealed record BookingConfirmedIntegrationEvent(
-    long BookingId,
-    int TourId,
-    string TourName,
-    decimal TotalPrice,
-    DateTime ConfirmedAt);
-```
-
-## Gherkin Scenarios as Living Documentation
-
-Business-facing scenarios live under `tests/specs` and serve as executable documentation:
-
-**Principles:**
-
-- Use `Rule:` blocks to group scenarios by invariant
-- Mirror aggregate terms in Given/When/Then steps
-- Prefer declarative steps over imperative
-- Tag scenarios with aggregate and ADR references
-
-**Example:**
-
-```gherkin
-@Agg:Tour @ADR:20251108-domain-validation-factory-methods
-Feature: Tour Creation
-
-  Rule: Tour identifier must be unique and non-empty
-
-    Scenario: Create tour with valid identifier
-      Given a tour identifier "CUBA2024"
-      When I create a tour with that identifier
-      Then the tour should be created successfully
-```
-
-**Reference:** See [TEST_GUIDELINES.md](TEST_GUIDELINES.md) for BDD conventions.
-
-## Testing
-
-**Reference:** See [ADR-006: Type Safety in Test Step Definitions](adr/20251108-type-safety-test-step-definitions.md)
-
-```csharp
-[Then(@"the operation should fail")]
-public void ThenOperationShouldFail()
-{
-    var (isSuccess, errorDetail) = _result switch
-    {
-        Result<Tour> tr => (tr.IsSuccess, tr.ErrorDetails?.Detail),
-        Result r => (r.IsSuccess, r.ErrorDetails?.Detail),
-        _ => throw new InvalidOperationException("Unexpected result type")
-    };
-
-    Assert.False(isSuccess);
-    Assert.Contains("expected error", errorDetail!);
-}
-```
-
 ## Related Documentation
 
 - [Architectural Decision Records](ARCHITECTURE_DECISIONS.md) — Core architectural patterns and decisions
 - [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
 - [Test Guidelines](TEST_GUIDELINES.md) — Testing patterns and BDD scenarios
 - [Result Pattern](../src/ViajantesTurismo.Common/RESULT_PATTERN.md) — Detailed Result\<T\> usage
+- [Aggregates](domain/AGGREGATES.md) — Business invariants and domain operations
+- [Glossary](domain/GLOSSARY.md) — Domain terminology and concepts

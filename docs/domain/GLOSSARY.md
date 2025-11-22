@@ -46,14 +46,14 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 
 | Term          | Definition                                   | Values                                                                 | Notes                                                     |
 |---------------|----------------------------------------------|------------------------------------------------------------------------|-----------------------------------------------------------|
-| BookingStatus | Current state of a booking in its lifecycle. | None(0), Pending(1), Confirmed(2), Cancelled(3), Completed(4)          | State transitions enforced through domain methods.        |
-| PaymentStatus | Payment completion status for a booking.     | None(0), NotPaid(1), PartiallyPaid(2), Paid(3), Refunded(4)            | Updated as payments are recorded.                         |
-| PaymentMethod | Method used for a payment transaction.       | Other(0), CreditCard(1), BankTransfer(2), Cash(3), PayPal(4), Other(5) |                                                           |
-| BikeType      | Type of bicycle for a tour participant.      | None(0), Regular(1), EBike(2)                                          | None is invalid for bookings (validation error).          |
+| BookingStatus | Current state of a booking in its lifecycle. | Pending(0), Confirmed(1), Cancelled(2), Completed(3)                   | State transitions enforced through domain methods.        |
+| PaymentStatus | Payment completion status for a booking.     | Unpaid(0), PartiallyPaid(1), Paid(2), Refunded(3)                      | Updated automatically as payments are recorded.           |
+| PaymentMethod | Method used for a payment transaction.       | Other(0), CreditCard(1), BankTransfer(2), Cash(3), Check(4), PayPal(5) |                                                           |
+| BikeType      | Type of bicycle for a tour participant.      | None(0), Regular(1), EBike(2)                                          | None is invalid for bookings (must select Regular/EBike). |
 | RoomType      | Accommodation room configuration.            | None(0), SingleRoom(1), DoubleRoom(2)                                  | Affects pricing (double room may have supplement).        |
 | DiscountType  | Type of discount applied to a booking.       | None(0), Percentage(1), Absolute(2)                                    | Percentage limited to max 100%. Absolute is fixed amount. |
 | BedType       | Bed configuration preference within a room.  | SingleBed(0), DoubleBed(1)                                             | Used in accommodation preferences.                        |
-| Currency      | Currency for financial amounts.              | EUR(0), USD(1), GBP(2), ARS(3)                                         | All prices in a tour use same currency.                   |
+| Currency      | Currency for financial amounts.              | Real(0), Euro(1), UsDollar(2)                                          | All prices in a tour use same currency.                   |
 
 ## Domain Operations
 
