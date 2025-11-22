@@ -185,10 +185,15 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         )
     ];
 
-    public async Task Seed(CancellationToken ct)
+    public async Task ClearDatabase(CancellationToken ct)
     {
         await dbContext.Database.EnsureDeletedAsync(ct);
         await dbContext.Database.EnsureCreatedAsync(ct);
+    }
+
+    public async Task Seed(CancellationToken ct)
+    {
+        await ClearDatabase(ct);
 
         var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,

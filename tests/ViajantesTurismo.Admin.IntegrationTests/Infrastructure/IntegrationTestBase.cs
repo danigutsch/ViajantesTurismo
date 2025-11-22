@@ -21,4 +21,15 @@ public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEn
         GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;
     }
+
+    /// <summary>
+    /// Clears the database by deleting and recreating it.
+    /// Use this for tests that require an empty database.
+    /// </summary>
+    protected async Task ClearDatabaseAsync(CancellationToken cancellationToken = default)
+    {
+        using var scope = fixture.Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+        await seeder.ClearDatabase(cancellationToken);
+    }
 }

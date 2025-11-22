@@ -120,4 +120,61 @@ public sealed class UpdateBookingDetailsTests(ApiFixture fixture) : AdminApiInte
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Can_Update_Confirmed_Booking_Details()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var principal = await Client.CreateTestCustomer("Confirmed", "Update", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
+        await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
+
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.EBike);
+
+        // Act
+        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(updated);
+    }
+
+    [Fact]
+    public async Task Cannot_Update_Cancelled_Booking_Details()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var principal = await Client.CreateTestCustomer("Cancelled", "Update", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
+        await Client.CancelBooking(booking.Id, TestContext.Current.CancellationToken);
+
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular);
+
+        // Act
+        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Update_Completed_Booking_Details()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var principal = await Client.CreateTestCustomer("Completed", "Update", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, principal.Id, cancellationToken: TestContext.Current.CancellationToken);
+        await Client.ConfirmBooking(booking.Id, TestContext.Current.CancellationToken);
+        await Client.CompleteBooking(booking.Id, TestContext.Current.CancellationToken);
+
+        var updateDto = DtoBuilders.BuildUpdateBookingDetailsDto(RoomTypeDto.SingleRoom, BikeTypeDto.Regular);
+
+        // Act
+        var response = await Client.UpdateBookingDetails(booking.Id, updateDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
 }

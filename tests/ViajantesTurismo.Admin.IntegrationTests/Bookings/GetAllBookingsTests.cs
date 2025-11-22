@@ -9,6 +9,22 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     [Fact]
+    public async Task Can_Get_Empty_Booking_List()
+    {
+        // Arrange
+        await ClearDatabaseAsync(TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await Client.GetAllBookingsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(bookings);
+        Assert.Empty(bookings);
+    }
+
+    [Fact]
     public async Task Can_Get_Multiple_Bookings()
     {
         // Arrange
@@ -20,7 +36,7 @@ public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiIntegratio
         var booking2 = await Client.CreateTestBooking(tourDto.Id, customer2.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         // Act
-        var response = await Client.GetAllBookings(TestContext.Current.CancellationToken);
+        var response = await Client.GetAllBookingsAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

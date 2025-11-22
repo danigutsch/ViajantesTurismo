@@ -9,6 +9,22 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 public sealed class GetAllCustomersTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     [Fact]
+    public async Task Can_Get_Empty_Customer_List()
+    {
+        // Arrange
+        await ClearDatabaseAsync(TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await Client.GetAllCustomersAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var customers = await response.Content.ReadFromJsonAsync<GetCustomerDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(customers);
+        Assert.Empty(customers);
+    }
+
+    [Fact]
     public async Task Can_Get_Multiple_Customers()
     {
         // Arrange

@@ -183,4 +183,25 @@ public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegration
             Assert.Equal(method, updated.Payments.First().Method);
         }
     }
+
+    [Fact]
+    public async Task Record_Payment_With_Future_Date_Returns_ValidationProblem()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var customer = await Client.CreateTestCustomer("Future", "Payment", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+
+        var futureDate = DateTime.UtcNow.AddDays(1);
+        var paymentDto = DtoBuilders.BuildCreatePaymentDto(
+            amount: 100m,
+            paymentDate: futureDate,
+            method: PaymentMethodDto.Cash);
+
+        // Act
+        var response = await Client.RecordPayment(booking.Id, paymentDto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
