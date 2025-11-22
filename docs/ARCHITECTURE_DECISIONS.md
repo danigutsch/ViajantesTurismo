@@ -14,6 +14,8 @@ This is the index of architecture decisions for **ViajantesTurismo**. We use sho
 
 ### Domain & Validation
 
+Decisions about how we validate domain entities and handle errors.
+
 - **[ADR-001](adr/20251108-domain-validation-factory-methods.md)** — Domain Validation with Factory Methods
 - **[ADR-002](adr/20251108-result-pattern-over-exceptions.md)** — Result Pattern Over Exceptions
 - **[ADR-003](adr/20251108-validation-constants-contracts-project.md)** — Validation Constants in Contracts Project
@@ -22,10 +24,14 @@ This is the index of architecture decisions for **ViajantesTurismo**. We use sho
 
 ### Code Quality & Testing
 
+Decisions about code quality standards and testing practices.
+
 - **[ADR-005](adr/20251108-no-comments-domain-code.md)** — No Comments in Domain Code
 - **[ADR-006](adr/20251108-type-safety-test-step-definitions.md)** — Type Safety in Test Step Definitions
 
 ### Architecture & Layers
+
+Decisions about application architecture and layer responsibilities.
 
 - **[ADR-007](adr/20251108-application-layer-mappers-queries.md)** — Application Layer for Mappers and
   Query Interfaces
@@ -35,11 +41,14 @@ This is the index of architecture decisions for **ViajantesTurismo**. We use sho
 
 ### Business Logic & Pricing
 
+Decisions about business rules, pricing calculations, and payment handling.
+
 - **[ADR-008](adr/20251108-totalprice-calculated-property.md)** — TotalPrice as Calculated Property
 - **[ADR-009](adr/20251108-room-pricing-model.md)** — Room Pricing Model - Base Price = Single Room
 - **[ADR-010](adr/20251108-discount-value-object.md)** — Discount as Value Object with Audit Trail
 - **[ADR-011](adr/20251108-payment-tracking-immutable-records.md)** — Payment Tracking with Immutable Payment Records
 - **[ADR-012](adr/20251108-booking-details-update-after-creation.md)** — Booking Details Update After Creation
+- **[ADR-016](adr/20251113-paymentstatus-calculated-property.md)** — PaymentStatus as Calculated Property
 
 ## Principles
 

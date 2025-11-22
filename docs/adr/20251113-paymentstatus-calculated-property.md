@@ -77,5 +77,5 @@ no longer needed.
 
 ## Links
 
-- Related: [ADR-007: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)
+- Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)
 - Related: [ADR-011: Payment Tracking with Immutable Records](20251108-payment-tracking-immutable-records.md)
