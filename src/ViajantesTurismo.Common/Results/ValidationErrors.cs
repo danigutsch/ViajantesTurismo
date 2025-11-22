@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Common.Results;
+namespace ViajantesTurismo.Common.Results;
 
 /// <summary>
 /// Collects and combines multiple validation errors into a single result.

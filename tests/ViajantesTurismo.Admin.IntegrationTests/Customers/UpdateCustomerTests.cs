@@ -17,7 +17,7 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: "Alice",
             lastName: "Johnson-Smith",
-            profession: "Senior Designer",
+            occupation: "Senior Designer",
             email: "alice.smith@example.com",
             mobile: "+447123456789",
             instagram: "@alicesmith",
@@ -49,7 +49,7 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         var updatedCustomer = await getResponse.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedCustomer);
         Assert.Equal(updateRequest.PersonalInfo.LastName, updatedCustomer.PersonalInfo.LastName);
-        Assert.Equal(updateRequest.PersonalInfo.Profession, updatedCustomer.PersonalInfo.Profession);
+        Assert.Equal(updateRequest.PersonalInfo.Occupation, updatedCustomer.PersonalInfo.Occupation);
         Assert.Equal(updateRequest.ContactInfo.Email, updatedCustomer.ContactInfo.Email);
         Assert.Equal(updateRequest.ContactInfo.Instagram, updatedCustomer.ContactInfo.Instagram);
         Assert.Equal(updateRequest.Address.Street, updatedCustomer.Address.Street);
@@ -69,7 +69,7 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: "Test",
             lastName: "User",
-            profession: "Tester");
+            occupation: "Tester");
 
         // Act
         var response = await Client.PutAsJsonAsync(new Uri($"/customers/{invalidId}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
@@ -180,7 +180,7 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: "Diana",
             lastName: "Smith-Jones",
-            profession: "Architect",
+            occupation: "Architect",
             email: "diana.smithjones@example.com");
 
         // Act

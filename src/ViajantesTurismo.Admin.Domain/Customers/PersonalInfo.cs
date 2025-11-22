@@ -11,14 +11,14 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class PersonalInfo
 {
-    private PersonalInfo(string firstName, string lastName, string gender, DateTime birthDate, string nationality, string profession)
+    private PersonalInfo(string firstName, string lastName, string gender, DateTime birthDate, string nationality, string occupation)
     {
         FirstName = firstName;
         LastName = lastName;
         Gender = gender;
         BirthDate = birthDate;
         Nationality = nationality;
-        Profession = profession;
+        Occupation = occupation;
     }
 
     /// <summary>Full first name of the customer.</summary>
@@ -36,8 +36,8 @@ public sealed class PersonalInfo
     /// <summary>Nationality.</summary>
     public string Nationality { get; private set; }
 
-    /// <summary>Profession.</summary>
-    public string Profession { get; private set; }
+    /// <summary>Occupation.</summary>
+    public string Occupation { get; private set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="PersonalInfo"/> class.
@@ -47,7 +47,7 @@ public sealed class PersonalInfo
     /// <param name="gender">The gender.</param>
     /// <param name="birthDate">The birthdate.</param>
     /// <param name="nationality">The nationality.</param>
-    /// <param name="profession">The profession.</param>
+    /// <param name="occupation">The occupation.</param>
     /// <param name="timeProvider">The time provider for date validation.</param>
     /// <returns>A Result containing the PersonalInfo.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeProvider"/> is null.</exception>
@@ -57,7 +57,7 @@ public sealed class PersonalInfo
         string gender,
         DateTime birthDate,
         string nationality,
-        string profession,
+        string occupation,
         TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
@@ -66,7 +66,7 @@ public sealed class PersonalInfo
         lastName = StringSanitizer.Sanitize(lastName);
         gender = StringSanitizer.Sanitize(gender);
         nationality = StringSanitizer.Sanitize(nationality);
-        profession = StringSanitizer.Sanitize(profession);
+        occupation = StringSanitizer.Sanitize(occupation);
 
         var errors = new ValidationErrors();
 
@@ -106,13 +106,13 @@ public sealed class PersonalInfo
             errors.Add(NationalityTooLong());
         }
 
-        if (string.IsNullOrWhiteSpace(profession))
+        if (string.IsNullOrWhiteSpace(occupation))
         {
-            errors.Add(EmptyProfession());
+            errors.Add(EmptyOccupation());
         }
-        else if (profession.Length > ContractConstants.MaxNameLength)
+        else if (occupation.Length > ContractConstants.MaxNameLength)
         {
-            errors.Add(ProfessionTooLong());
+            errors.Add(OccupationTooLong());
         }
 
         var currentDate = timeProvider.GetUtcNow().Date;
@@ -136,7 +136,7 @@ public sealed class PersonalInfo
             return errors.ToResult<PersonalInfo>();
         }
 
-        return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, profession);
+        return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, occupation);
     }
 
     private static int CalculateAge(DateTime birthDate, DateTime currentDate)

@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Resources;
+namespace ViajantesTurismo.Resources;
 
 /// <summary>
 /// Contains constant resource names used across the application.

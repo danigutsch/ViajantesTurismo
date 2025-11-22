@@ -42,7 +42,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 Gender = "Male",
                 Nationality = "USA",
-                Profession = "Engineer"
+                Occupation = "Engineer"
             },
             new IdentificationInfoDto { NationalId = "ID123", IdNationality = "USA" },
             new ContactInfoDto
@@ -93,7 +93,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 Gender = "Male",
                 Nationality = "USA",
-                Profession = "Engineer"
+                Occupation = "Engineer"
             },
             new IdentificationInfoDto { NationalId = "ID123", IdNationality = "USA" },
             new ContactInfoDto
@@ -145,7 +145,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 BirthDate = existing1.PersonalInfo.BirthDate,
                 Gender = existing1.PersonalInfo.Gender,
                 Nationality = existing1.PersonalInfo.Nationality,
-                Profession = existing1.PersonalInfo.Profession
+                Occupation = existing1.PersonalInfo.Occupation
             },
             new IdentificationInfoDto
             {

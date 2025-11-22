@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;

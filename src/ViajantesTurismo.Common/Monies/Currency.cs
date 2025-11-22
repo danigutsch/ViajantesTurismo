@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Common.Monies;
+namespace ViajantesTurismo.Common.Monies;
 
 /// <summary>
 /// Represents monetary currencies.

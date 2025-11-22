@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Application;
+namespace ViajantesTurismo.Admin.Application;
 
 /// <summary>
 /// Defines a contract for a unit of work that encapsulates a series of operations to be committed as a single transaction.

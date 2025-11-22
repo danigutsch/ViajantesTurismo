@@ -89,7 +89,7 @@ accommodation information.
 ### Commands
 
 - Create — Initialize customer with all required value objects
-- UpdatePersonalInfo — Modify name, DOB, gender, nationality, profession
+- UpdatePersonalInfo — Modify name, DOB, gender, nationality, occupation
 - UpdateContactInfo — Change email, mobile, social media contacts
 - UpdateAddress — Update street, city, state, postal code, country
 - UpdatePhysicalInfo — Modify height, weight, bike preference, shoe size
@@ -97,7 +97,7 @@ accommodation information.
 - UpdateMedicalInfo — Update conditions, allergies, medications, dietary restrictions
 - UpdateEmergencyContact — Modify emergency contact person and phone numbers
 - UpdateAccommodationPreferences — Change room and dietary preferences
-- UpdateProfession — Modify occupation details
+- UpdateOccupation — Modify occupation details
 
 ### Events
 
@@ -115,7 +115,7 @@ accommodation information.
 
 - PersonalInfo, ContactInfo, Address
 - PhysicalInfo, IdentificationInfo, MedicalInfo
-- EmergencyContact, AccommodationPreferences, Profession
+- EmergencyContact, AccommodationPreferences, Occupation
 
 ### Related
 

@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Contracts;
+namespace ViajantesTurismo.Admin.Contracts;
 
 /// <summary>
 /// Data Transfer Object representing a tour with all its details.

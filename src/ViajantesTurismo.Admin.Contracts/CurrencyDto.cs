@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Contracts;
+namespace ViajantesTurismo.Admin.Contracts;
 
 /// <summary>
 /// Represents a monetary currency.

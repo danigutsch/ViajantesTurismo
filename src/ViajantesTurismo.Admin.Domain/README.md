@@ -13,7 +13,7 @@ Core business logic for tours, bookings, and customers with business rule enforc
 - **Tour**: Tour definitions with dates, pricing, services (**AGGREGATE ROOT**)
     - Contains: Booking collection
     - Responsibilities: Manages all booking operations and lifecycle
-  
+
 - **Customer**: Customer information (**AGGREGATE ROOT**)
     - Self-contained entity with no child entities
 
@@ -67,7 +67,7 @@ var booking = result.Value;
 - **Discount**: Type (None/Percentage/Absolute), Amount, Reason (immutable)
 - **Customer Value Objects** (all immutable):
     - PersonalInfo, ContactInfo, Address, PhysicalInfo, MedicalInfo
-    - IdentificationInfo, EmergencyContact, AccommodationPreferences, Profession
+    - IdentificationInfo, EmergencyContact, AccommodationPreferences, Occupation
 
 ### Enumerations
 
@@ -148,7 +148,7 @@ public static Result<Tour> Create(string identifier, string name, ...)
 {
     if (string.IsNullOrWhiteSpace(identifier))
         return TourErrors.EmptyIdentifier();
-    
+
     return new Tour(identifier, name, ...);
 }
 
@@ -198,7 +198,7 @@ public static class BookingErrors
 
 - `Create()`, `UpdatePersonalInfo()`, `UpdateContactInfo()`, `UpdateAddress()`
 - `UpdatePhysicalInfo()`, `UpdateMedicalInfo()`, `UpdateIdentificationInfo()`
-- `UpdateEmergencyContact()`, `UpdateAccommodationPreferences()`, `UpdateProfession()`
+- `UpdateEmergencyContact()`, `UpdateAccommodationPreferences()`, `UpdateOccupation()`
 
 ## Dependencies
 

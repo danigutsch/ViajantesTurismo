@@ -92,11 +92,11 @@ accommodation information.
 - Birth date cannot be in the future
 - Contact information properly formatted and valid
 - All value objects validated on creation and update
-- Personal information required (name, DOB, nationality, profession)
+- Personal information required (name, DOB, nationality, occupation)
 - First name and last name required (max 128 chars each)
 - Gender required (max 64 chars)
 - Nationality required (max 128 chars)
-- Profession required (max 128 chars)
+- Occupation required (max 128 chars)
 - Email and mobile phone required
 - Mobile phone max 64 chars
 - Instagram and Facebook handles max 64 chars (optional)
@@ -111,7 +111,7 @@ accommodation information.
 ### Commands
 
 - Create — Initialize customer with all required value objects
-- UpdatePersonalInfo — Modify name, DOB, gender, nationality, profession
+- UpdatePersonalInfo — Modify name, DOB, gender, nationality, occupation
 - UpdateContactInfo — Change email, mobile, social media contacts
 - UpdateAddress — Update street, city, state, postal code, country
 - UpdatePhysicalInfo — Modify height, weight, bike preference, shoe size
@@ -119,7 +119,7 @@ accommodation information.
 - UpdateMedicalInfo — Update conditions, allergies, medications, dietary restrictions
 - UpdateEmergencyContact — Modify emergency contact person and phone numbers
 - UpdateAccommodationPreferences — Change room and dietary preferences
-- UpdateProfession — Modify occupation details
+- UpdateOccupation — Modify occupation details
 
 ### Events
 
@@ -137,7 +137,7 @@ accommodation information.
 
 - PersonalInfo, ContactInfo, Address
 - PhysicalInfo, IdentificationInfo, MedicalInfo
-- EmergencyContact, AccommodationPreferences, Profession
+- EmergencyContact, AccommodationPreferences, Occupation
 
 ### Related
 

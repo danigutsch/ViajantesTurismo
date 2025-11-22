@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -177,7 +177,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     Gender = table.Column<string>(type: "text", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Nationality = table.Column<string>(type: "text", nullable: false),
-                    Profession = table.Column<string>(type: "text", nullable: false)
+                    Occupation = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

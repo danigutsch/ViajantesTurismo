@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Domain.Tours;
+namespace ViajantesTurismo.Admin.Domain.Tours;
 
 /// <summary>
 /// Repository interface for managing tours.

@@ -108,7 +108,7 @@ internal static class DtoBuilders
                 BirthDate = new DateTime(1990, 1, 1).ToUniversalTime(),
                 Gender = "Male",
                 Nationality = "American",
-                Profession = "Engineer"
+                Occupation = "Engineer"
             },
             IdentificationInfo = new IdentificationInfoDto
             {
@@ -266,7 +266,7 @@ internal static class DtoBuilders
         BikeTypeDto? bikeType = null,
         RoomTypeDto? roomType = null,
         BedTypeDto? bedType = null,
-        string? profession = null,
+        string? occupation = null,
         string? street = null,
         string? complement = null,
         string? city = null,
@@ -294,7 +294,7 @@ internal static class DtoBuilders
                 BirthDate = new DateTime(1990, 1, 1).ToUniversalTime(),
                 Gender = "Male",
                 Nationality = "American",
-                Profession = profession ?? "Engineer"
+                Occupation = occupation ?? "Engineer"
             },
             IdentificationInfo = new IdentificationInfoDto
             {

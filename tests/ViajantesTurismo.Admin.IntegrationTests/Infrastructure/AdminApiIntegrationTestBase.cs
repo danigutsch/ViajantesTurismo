@@ -1,4 +1,4 @@
-﻿using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.ApiService;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 

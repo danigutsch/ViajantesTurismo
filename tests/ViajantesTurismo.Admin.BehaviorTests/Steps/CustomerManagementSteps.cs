@@ -312,7 +312,7 @@ public sealed class CustomerManagementSteps(CustomerContext context, BookingCont
                 Gender = "Female",
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 Nationality = "American",
-                Profession = "Designer"
+                Occupation = "Designer"
             },
             IdentificationInfo: new IdentificationInfoDto
             {
@@ -384,7 +384,7 @@ public sealed class CustomerManagementSteps(CustomerContext context, BookingCont
                 Gender = "Female",
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 Nationality = "American",
-                Profession = "Designer"
+                Occupation = "Designer"
             },
             IdentificationInfo: new IdentificationInfoDto
             {

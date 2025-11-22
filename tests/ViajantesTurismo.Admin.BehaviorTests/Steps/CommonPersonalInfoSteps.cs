@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Scope(Feature = "Last Name Validation")]
 [Scope(Feature = "Gender Validation")]
 [Scope(Feature = "Nationality Validation")]
-[Scope(Feature = "Profession Validation")]
+[Scope(Feature = "Occupation Validation")]
 [Scope(Feature = "Birth Date Validation")]
 [Scope(Feature = "Customer Management")]
 [Scope(Feature = "Customer Creation")]
@@ -25,7 +25,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [When("I create the personal info")]
@@ -37,7 +37,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
             context.Gender,
             context.BirthDate,
             context.Nationality,
-            context.Profession,
+            context.Occupation,
             TimeProvider.System);
     }
 
@@ -61,7 +61,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -73,7 +73,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -85,7 +85,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -97,7 +97,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -139,7 +139,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Equal(context.LastName, info.LastName, StringComparer.Ordinal);
         Assert.Equal(context.Gender, info.Gender, StringComparer.Ordinal);
         Assert.Equal(context.Nationality, info.Nationality, StringComparer.Ordinal);
-        Assert.Equal(context.Profession, info.Profession, StringComparer.Ordinal);
+        Assert.Equal(context.Occupation, info.Occupation, StringComparer.Ordinal);
     }
 
     [Then("the creation should fail")]
@@ -167,7 +167,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with null first name")]
@@ -178,7 +178,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given(@"I have personal information with last name ""(.*)""")]
@@ -189,7 +189,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with null last name")]
@@ -200,7 +200,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [When("I attempt to create personal info with null last name")]
@@ -211,7 +211,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -223,7 +223,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -235,7 +235,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -247,7 +247,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -281,7 +281,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = gender;
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with null gender")]
@@ -292,7 +292,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = null!;
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given(@"I have personal information with nationality ""(.*)""")]
@@ -303,7 +303,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = nationality;
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with null nationality")]
@@ -314,29 +314,29 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = null!;
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
-    [Given(@"I have personal information with profession ""(.*)""")]
-    public void GivenIHavePersonalInformationWithProfession(string profession)
+    [Given(@"I have personal information with occupation ""(.*)""")]
+    public void GivenIHavePersonalInformationWithOccupation(string occupation)
     {
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = profession;
+        context.Occupation = occupation;
     }
 
-    [Given("I have personal information with null profession")]
-    public void GivenIHavePersonalInformationWithNullProfession()
+    [Given("I have personal information with null occupation")]
+    public void GivenIHavePersonalInformationWithNullOccupation()
     {
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = null!;
+        context.Occupation = null!;
     }
 
     [Given("I have personal information with birth date in the future")]
@@ -347,7 +347,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with birth date today")]
@@ -358,7 +358,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date;
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with birth date one day in the future")]
@@ -369,7 +369,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given("I have personal information with birth date one day in the past")]
@@ -380,7 +380,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddDays(-1);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given(@"I have personal information with birth date (\d+) years ago")]
@@ -391,7 +391,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddYears(-years);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [When("I attempt to create personal info with birth date in the future")]
@@ -402,7 +402,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -414,7 +414,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -426,7 +426,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date;
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -438,7 +438,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddDays(-1);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -450,7 +450,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = DateTime.UtcNow.Date.AddYears(-years);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
     }
 
@@ -470,7 +470,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given(@"I have personal information with last name of (\d+) characters")]
@@ -481,7 +481,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given(@"I have personal information with gender of (\d+) characters")]
@@ -492,7 +492,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = new string('A', length);
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
     [Given(@"I have personal information with nationality of (\d+) characters")]
@@ -503,18 +503,18 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = new string('A', length);
-        context.Profession = "Software Engineer";
+        context.Occupation = "Software Engineer";
     }
 
-    [Given(@"I have personal information with profession of (\d+) characters")]
-    public void GivenIHavePersonalInformationWithProfessionOfLength(int length)
+    [Given(@"I have personal information with occupation of (\d+) characters")]
+    public void GivenIHavePersonalInformationWithOccupationOfLength(int length)
     {
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
         context.BirthDate = new DateTime(1990, 5, 15);
         context.Nationality = "American";
-        context.Profession = new string('A', length);
+        context.Occupation = new string('A', length);
     }
 
     [When("I attempt to create personal info without gender")]
@@ -721,8 +721,8 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         Assert.Equal(expectedNationality, context.PersonalInfo.Nationality);
     }
 
-    [When("I attempt to create personal info without profession")]
-    public void WhenIAttemptToCreatePersonalInfoWithoutProfession()
+    [When("I attempt to create personal info without occupation")]
+    public void WhenIAttemptToCreatePersonalInfoWithoutOccupation()
     {
         context.Result = PersonalInfo.Create(
             "John",
@@ -735,8 +735,8 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         );
     }
 
-    [When("I attempt to create personal info with whitespace-only profession")]
-    public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyProfession()
+    [When("I attempt to create personal info with whitespace-only occupation")]
+    public void WhenIAttemptToCreatePersonalInfoWithWhitespaceOnlyOccupation()
     {
         context.Result = PersonalInfo.Create(
             "John",
@@ -749,8 +749,8 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         );
     }
 
-    [When(@"I create personal info with profession of (\d+) characters")]
-    public void WhenICreatePersonalInfoWithProfessionOfCharacters(int length)
+    [When(@"I create personal info with occupation of (\d+) characters")]
+    public void WhenICreatePersonalInfoWithOccupationOfCharacters(int length)
     {
         context.Result = PersonalInfo.Create(
             "John",
@@ -767,8 +767,8 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         }
     }
 
-    [When(@"I attempt to create personal info with profession of (\d+) characters")]
-    public void WhenIAttemptToCreatePersonalInfoWithProfessionOfCharacters(int length)
+    [When(@"I attempt to create personal info with occupation of (\d+) characters")]
+    public void WhenIAttemptToCreatePersonalInfoWithOccupationOfCharacters(int length)
     {
         context.Result = PersonalInfo.Create(
             "John",
@@ -781,8 +781,8 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         );
     }
 
-    [When(@"I create personal info with profession ""([^""]*)""")]
-    public void WhenICreatePersonalInfoWithProfession(string profession)
+    [When(@"I create personal info with occupation ""([^""]*)""")]
+    public void WhenICreatePersonalInfoWithOccupation(string occupation)
     {
         context.Result = PersonalInfo.Create(
             "John",
@@ -790,7 +790,7 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
             "Male",
             new DateTime(1990, 5, 15),
             "American",
-            profession,
+            occupation,
             TimeProvider.System
         );
         if (context.Result.IsSuccess)
@@ -799,27 +799,27 @@ public sealed class CommonPersonalInfoSteps(PersonalInfoContext context)
         }
     }
 
-    [Then("I should be informed that profession is required")]
-    public void ThenIShouldBeInformedThatProfessionIsRequired()
+    [Then("I should be informed that occupation is required")]
+    public void ThenIShouldBeInformedThatOccupationIsRequired()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Profession is required.", allErrors);
+        Assert.Contains("Occupation is required.", allErrors);
     }
 
-    [Then("I should be informed that profession cannot exceed 128 characters")]
-    public void ThenIShouldBeInformedThatProfessionCannotExceed128Characters()
+    [Then("I should be informed that occupation cannot exceed 128 characters")]
+    public void ThenIShouldBeInformedThatOccupationCannotExceed128Characters()
     {
         Assert.True(context.Result.IsFailure, "Expected failure but got success");
         var errors = context.Result.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Profession cannot exceed 128 characters.", allErrors);
+        Assert.Contains("Occupation cannot exceed 128 characters.", allErrors);
     }
 
-    [Then(@"the profession should be ""([^""]*)""")]
-    public void ThenTheProfessionShouldBe(string expectedProfession)
+    [Then(@"the occupation should be ""([^""]*)""")]
+    public void ThenTheOccupationShouldBe(string expectedOccupation)
     {
-        Assert.Equal(expectedProfession, context.PersonalInfo.Profession);
+        Assert.Equal(expectedOccupation, context.PersonalInfo.Occupation);
     }
 }

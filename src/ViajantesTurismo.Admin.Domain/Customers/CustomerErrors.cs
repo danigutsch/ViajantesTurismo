@@ -1,4 +1,4 @@
-﻿using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
@@ -44,13 +44,13 @@ public static class CustomerErrors
         message: "Nationality is required.");
 
     /// <summary>
-    /// Indicates that the profession is empty.
+    /// Indicates that the occupation is empty.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
-    public static Result<PersonalInfo> EmptyProfession() => Result<PersonalInfo>.Invalid(
-        detail: "Profession is required.",
-        field: "Profession",
-        message: "Profession is required.");
+    public static Result<PersonalInfo> EmptyOccupation() => Result<PersonalInfo>.Invalid(
+        detail: "Occupation is required.",
+        field: "Occupation",
+        message: "Occupation is required.");
 
     /// <summary>
     /// Indicates that the birth date is in the future.
@@ -98,13 +98,13 @@ public static class CustomerErrors
         message: "Nationality cannot exceed 128 characters.");
 
     /// <summary>
-    /// Indicates that the profession exceeds maximum length.
+    /// Indicates that the occupation exceeds maximum length.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
-    public static Result<PersonalInfo> ProfessionTooLong() => Result<PersonalInfo>.Invalid(
-        detail: "Profession cannot exceed 128 characters.",
-        field: "Profession",
-        message: "Profession cannot exceed 128 characters.");
+    public static Result<PersonalInfo> OccupationTooLong() => Result<PersonalInfo>.Invalid(
+        detail: "Occupation cannot exceed 128 characters.",
+        field: "Occupation",
+        message: "Occupation cannot exceed 128 characters.");
 
     /// <summary>
     /// Indicates that the email is empty.

@@ -87,8 +87,8 @@ public static class InvariantRegistry
         public const string GenderMaxLength = "INV-CUST-010";
         public const string NationalityRequired = "INV-CUST-011";
         public const string NationalityMaxLength = "INV-CUST-012";
-        public const string ProfessionRequired = "INV-CUST-013";
-        public const string ProfessionMaxLength = "INV-CUST-014";
+        public const string OccupationRequired = "INV-CUST-013";
+        public const string OccupationMaxLength = "INV-CUST-014";
         public const string MobileRequired = "INV-CUST-015";
         public const string MobileMaxLength = "INV-CUST-016";
         public const string WeightRange = "INV-CUST-017";

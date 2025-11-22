@@ -1,4 +1,4 @@
-﻿namespace ViajantesTurismo.Admin.Contracts;
+namespace ViajantesTurismo.Admin.Contracts;
 
 /// <summary>
 /// Contains constant values used in the contract definitions.

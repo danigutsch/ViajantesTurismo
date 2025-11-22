@@ -43,9 +43,9 @@ public sealed record PersonalInfoDto
     public required string Nationality { get; init; }
 
     /// <summary>
-    /// The profession or occupation of the customer.
+    /// The occupation or occupation of the customer.
     /// </summary>
     [Required]
     [MaxLength(ContractConstants.MaxNameLength)]
-    public required string Profession { get; init; }
+    public required string Occupation { get; init; }
 }

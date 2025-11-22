@@ -35,7 +35,7 @@ public sealed class CreateCustomerCommandHandler(
             command.PersonalInfo.Gender,
             command.PersonalInfo.BirthDate.ToUniversalTime(),
             command.PersonalInfo.Nationality,
-            command.PersonalInfo.Profession,
+            command.PersonalInfo.Occupation,
             timeProvider);
 
         var identificationInfoResult = IdentificationInfo.Create(

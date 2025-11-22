@@ -33,11 +33,11 @@ So that only valid customer data is accepted
         Then the creation should fail
         And the error should be "Nationality is required."
 
-    Scenario: Creating personal info with empty profession
-        Given I have personal information with profession ""
+    Scenario: Creating personal info with empty occupation
+        Given I have personal information with occupation ""
         When I create the personal info
         Then the creation should fail
-        And the error should be "Profession is required."
+        And the error should be "Occupation is required."
 
     Scenario: Creating personal info with future birth date
         Given I have personal information with birth date in the future

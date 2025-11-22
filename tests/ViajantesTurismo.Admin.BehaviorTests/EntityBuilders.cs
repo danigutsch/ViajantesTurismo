@@ -53,7 +53,7 @@ public static class EntityBuilders
         string? gender = null,
         DateTime? birthDate = null,
         string? nationality = null,
-        string? profession = null,
+        string? occupation = null,
         string? passportNumber = null,
         string? passportCountry = null,
         string? email = null,
@@ -84,7 +84,7 @@ public static class EntityBuilders
             gender ?? "Male",
             birthDate ?? DateTime.UtcNow.AddYears(-30),
             nationality ?? "USA",
-            profession ?? "Engineer",
+            occupation ?? "Engineer",
             TimeProvider.System).Value;
 
         var identificationInfo = IdentificationInfo.Create(

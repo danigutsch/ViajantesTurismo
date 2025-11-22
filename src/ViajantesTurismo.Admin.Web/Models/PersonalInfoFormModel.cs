@@ -24,9 +24,9 @@ internal sealed class PersonalInfoFormModel
     [MaxLength(ContractConstants.MaxDefaultLength)]
     public string Nationality { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Profession is required")]
+    [Required(ErrorMessage = "Occupation is required")]
     [MaxLength(ContractConstants.MaxDefaultLength)]
-    public string Profession { get; set; } = string.Empty;
+    public string Occupation { get; set; } = string.Empty;
 
     public PersonalInfoDto ToDto() => new()
     {
@@ -35,7 +35,7 @@ internal sealed class PersonalInfoFormModel
         BirthDate = BirthDate!.Value,
         Gender = Gender,
         Nationality = Nationality,
-        Profession = Profession
+        Occupation = Occupation
     };
 
     public static PersonalInfoFormModel FromDto(PersonalInfoDto dto) => new()
@@ -45,6 +45,6 @@ internal sealed class PersonalInfoFormModel
         BirthDate = dto.BirthDate,
         Gender = dto.Gender,
         Nationality = dto.Nationality,
-        Profession = dto.Profession
+        Occupation = dto.Occupation
     };
 }
