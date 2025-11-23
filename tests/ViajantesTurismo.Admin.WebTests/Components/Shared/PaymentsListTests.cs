@@ -5,6 +5,11 @@ namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
 public class PaymentsListTests : BunitContext
 {
+    public PaymentsListTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
     [Fact]
     public void Shows_Info_Message_When_No_Payments()
     {
@@ -43,8 +48,8 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        var table = cut.Find("table.table");
-        Assert.NotNull(table);
+        var quickGrid = cut.Find(".table.table-hover");
+        Assert.NotNull(quickGrid);
     }
 
     [Fact]
@@ -70,7 +75,7 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        Assert.Contains(paymentDate.ToShortDateString(), cut.Markup);
+        Assert.Contains("15/03/2024", cut.Markup);
     }
 
     [Fact]
@@ -278,10 +283,9 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        var rows = cut.FindAll("tr");
-        var dataRow = rows[1]; // First data row (index 0 is header)
-        var cells = dataRow.QuerySelectorAll("td");
-        Assert.Contains("-", cells[3].TextContent);
+        var cells = cut.FindAll("td");
+        var referenceCell = cells.FirstOrDefault(c => c.TextContent.Contains('-') && c.QuerySelector(".text-muted") != null);
+        Assert.NotNull(referenceCell);
     }
 
     [Fact]
@@ -362,10 +366,9 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        var rows = cut.FindAll("tr");
-        var dataRow = rows[1];
-        var cells = dataRow.QuerySelectorAll("td");
-        Assert.Contains("-", cells[4].TextContent);
+        var cells = cut.FindAll("td");
+        var notesCell = cells.FirstOrDefault(c => c.TextContent.Contains('-') && c.QuerySelector(".text-muted") != null);
+        Assert.NotNull(notesCell);
     }
 
     [Fact]
@@ -408,8 +411,8 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        var tfoot = cut.Find("tfoot");
-        Assert.Contains("400", tfoot.TextContent); // 100 + 250.50 + 49.50 = 400
+        var totalSection = cut.Find(".bg-light");
+        Assert.Contains("400", totalSection.TextContent); // 100 + 250.50 + 49.50 = 400
     }
 
     [Fact]
@@ -453,11 +456,10 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var rows = cut.FindAll("tbody tr");
-        var firstRowAmount = rows[0].QuerySelector("td strong")!.TextContent;
-        var lastRowAmount = rows[2].QuerySelector("td strong")!.TextContent;
+        var amounts = rows.Select(r => r.QuerySelector("strong")!.TextContent).ToList();
 
-        Assert.Contains("200", firstRowAmount); // March payment (most recent)
-        Assert.Contains("100", lastRowAmount); // January payment (oldest)
+        Assert.Contains("200", amounts[0]); // March payment (most recent)
+        Assert.Contains("100", amounts[2]); // January payment (oldest)
     }
 
     [Fact]
@@ -482,8 +484,8 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        var wrapper = cut.Find(".table-responsive");
-        Assert.NotNull(wrapper);
+        var quickGrid = cut.Find(".table.table-hover");
+        Assert.NotNull(quickGrid);
     }
 
     [Fact]
@@ -510,11 +512,11 @@ public class PaymentsListTests : BunitContext
         // Assert
         var headers = cut.FindAll("thead th");
         Assert.Equal(6, headers.Count);
-        Assert.Equal("Payment Date", headers[0].TextContent);
-        Assert.Equal("Amount", headers[1].TextContent);
-        Assert.Equal("Method", headers[2].TextContent);
-        Assert.Equal("Reference", headers[3].TextContent);
-        Assert.Equal("Notes", headers[4].TextContent);
-        Assert.Equal("Recorded At", headers[5].TextContent);
+        Assert.Contains("Payment Date", headers[0].TextContent);
+        Assert.Contains("Amount", headers[1].TextContent);
+        Assert.Contains("Method", headers[2].TextContent);
+        Assert.Contains("Reference", headers[3].TextContent);
+        Assert.Contains("Notes", headers[4].TextContent);
+        Assert.Contains("Recorded At", headers[5].TextContent);
     }
 }
