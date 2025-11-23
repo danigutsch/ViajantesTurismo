@@ -35,6 +35,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Tests.Shared\ViajantesTurismo.Admin.Tests.Shared.csproj"/>
     </ItemGroup>
 
 

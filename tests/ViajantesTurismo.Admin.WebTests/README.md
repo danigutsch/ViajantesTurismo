@@ -384,6 +384,35 @@ public async Task Confirmation_Dialog_Should_Return_True_When_User_Confirms()
    var result = await resultTask;  // Now it completes
    ```
 
+### JSInterop Configuration for QuickGrid
+
+Components using `QuickGrid` (BookingsList, Tours/Index, Customers/Index) require JSInterop configuration:
+
+```csharp
+public class BookingsListTests : BunitContext
+{
+    public BookingsListTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+}
+```
+
+**Why?** QuickGrid imports a JavaScript module
+(`./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js`).
+Loose mode returns default values for unconfigured JS calls, allowing tests to focus on HTML output without JS setup.
+
+**Components using QuickGrid:**
+
+- `BookingsList.razor` (shared)
+- `Tours/Index.razor`
+- `Customers/Index.razor`
+- `Bookings/Index.razor` (uses BookingsList)
+
+**Components using regular `<table>`:**
+
+- `PaymentsList.razor` (no JSInterop needed)
+
 ### Tips
 
 - Use `cut.Markup` to inspect rendered HTML during debugging
