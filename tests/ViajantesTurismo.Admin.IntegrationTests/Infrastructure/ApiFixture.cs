@@ -18,7 +18,9 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
 
     public ApiFixture()
     {
-        var options = new DistributedApplicationOptions() { AssemblyName = typeof(ApiFixture).Assembly.FullName, DisableDashboard = true };
+        UseKestrel();
+
+        var options = new DistributedApplicationOptions { AssemblyName = typeof(ApiFixture).Assembly.FullName, DisableDashboard = true };
         var appBuilder = new DistributedApplicationBuilder(options);
         DatabaseServer = appBuilder.AddPostgres(ResourceNames.DatabaseServer);
         Database = DatabaseServer.AddDatabase(ResourceNames.Database);
