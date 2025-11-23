@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Tests.Shared;
 using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
@@ -44,7 +45,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -62,7 +70,15 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", tourIdentifier: "TOUR-001")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                tourIdentifier: "TOUR-001",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -83,7 +99,15 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", tourIdentifier: "TOUR-001")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                tourIdentifier: "TOUR-001",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -103,7 +127,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "John Doe", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "John Doe",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -123,7 +154,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "John Doe", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "John Doe",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -144,7 +182,16 @@ public class BookingsListTests : BunitContext
         var companionId = Guid.NewGuid();
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", companionId: companionId, companionName: "Jane Doe")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                companionId: companionId,
+                companionName: "Jane Doe",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -162,7 +209,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", companionId: null, companionName: null)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -179,10 +233,15 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1",
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
                 discountType: DiscountTypeDto.Percentage,
                 discountAmount: 15.5m,
-                discountReason: "Early Bird")
+                discountReason: "Early Bird",
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -201,10 +260,15 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1",
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
                 discountType: DiscountTypeDto.Absolute,
                 discountAmount: 100.00m,
-                discountReason: "Group Discount")
+                discountReason: "Group Discount",
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -223,8 +287,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1",
-                discountType: DiscountTypeDto.None)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -242,7 +312,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Confirmed)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Confirmed,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -260,7 +337,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", paymentStatus: PaymentStatusDto.PartiallyPaid)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.PartiallyPaid)
         };
 
         // Act
@@ -278,7 +362,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -297,7 +388,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Pending)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -316,7 +414,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Confirmed)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Confirmed,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -334,7 +439,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Confirmed)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Confirmed,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -353,7 +465,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Pending)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -371,7 +490,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Pending)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -390,7 +516,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Completed)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Completed,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -408,7 +541,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1", status: BookingStatusDto.Cancelled)
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Cancelled,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -426,7 +566,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -447,7 +594,14 @@ public class BookingsListTests : BunitContext
         var editedId = Guid.Empty;
         var bookings = new[]
         {
-            CreateBooking(bookingId, "Customer 1", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: bookingId,
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         var cut = Render<BookingsList>(parameters => parameters
@@ -470,7 +624,14 @@ public class BookingsListTests : BunitContext
         var confirmedId = Guid.Empty;
         var bookings = new[]
         {
-            CreateBooking(bookingId, "Customer 1", "Tour 1", status: BookingStatusDto.Pending)
+            DtoBuilders.BuildBookingDto(
+                id: bookingId,
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         var cut = Render<BookingsList>(parameters => parameters
@@ -493,7 +654,14 @@ public class BookingsListTests : BunitContext
         var completedId = Guid.Empty;
         var bookings = new[]
         {
-            CreateBooking(bookingId, "Customer 1", "Tour 1", status: BookingStatusDto.Confirmed)
+            DtoBuilders.BuildBookingDto(
+                id: bookingId,
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Confirmed,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         var cut = Render<BookingsList>(parameters => parameters
@@ -516,7 +684,14 @@ public class BookingsListTests : BunitContext
         var cancelledId = Guid.Empty;
         var bookings = new[]
         {
-            CreateBooking(bookingId, "Customer 1", "Tour 1", status: BookingStatusDto.Pending)
+            DtoBuilders.BuildBookingDto(
+                id: bookingId,
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         var cut = Render<BookingsList>(parameters => parameters
@@ -539,7 +714,14 @@ public class BookingsListTests : BunitContext
         var deletedId = Guid.Empty;
         var bookings = new[]
         {
-            CreateBooking(bookingId, "Customer 1", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: bookingId,
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         var cut = Render<BookingsList>(parameters => parameters
@@ -559,7 +741,18 @@ public class BookingsListTests : BunitContext
     {
         // Arrange
         var bookings = Enumerable.Range(1, 10)
-            .Select(i => CreateBooking(Guid.NewGuid(), $"Customer {i}", "Tour 1"))
+            .Select(i =>
+            {
+                string customerName = $"Customer {i}";
+                return DtoBuilders.BuildBookingDto(
+                    id: Guid.NewGuid(),
+                    tourName: "Tour 1",
+                    customerName: customerName,
+                    discountType: DiscountTypeDto.None,
+                    discountAmount: 0,
+                    status: BookingStatusDto.Pending,
+                    paymentStatus: PaymentStatusDto.Unpaid);
+            })
             .ToArray();
 
         // Act
@@ -576,7 +769,18 @@ public class BookingsListTests : BunitContext
     {
         // Arrange
         var bookings = Enumerable.Range(1, 15)
-            .Select(i => CreateBooking(Guid.NewGuid(), $"Customer {i}", "Tour 1"))
+            .Select(i =>
+            {
+                string customerName = $"Customer {i}";
+                return DtoBuilders.BuildBookingDto(
+                    id: Guid.NewGuid(),
+                    tourName: "Tour 1",
+                    customerName: customerName,
+                    discountType: DiscountTypeDto.None,
+                    discountAmount: 0,
+                    status: BookingStatusDto.Pending,
+                    paymentStatus: PaymentStatusDto.Unpaid);
+            })
             .ToArray();
 
         // Act
@@ -594,7 +798,14 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            CreateBooking(Guid.NewGuid(), "Customer 1", "Tour 1")
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.None,
+                discountAmount: 0,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid)
         };
 
         // Act
@@ -614,42 +825,5 @@ public class BookingsListTests : BunitContext
         Assert.Contains(headers, h => h.Contains("Status"));
         Assert.Contains(headers, h => h.Contains("Payment"));
         Assert.Contains(headers, h => h.Contains("Actions"));
-    }
-
-    private static GetBookingDto CreateBooking(
-        Guid id,
-        string customerName,
-        string tourName,
-        string? tourIdentifier = null,
-        Guid? companionId = null,
-        string? companionName = null,
-        DiscountTypeDto discountType = DiscountTypeDto.None,
-        decimal discountAmount = 0,
-        string? discountReason = null,
-        BookingStatusDto status = BookingStatusDto.Pending,
-        PaymentStatusDto paymentStatus = PaymentStatusDto.Unpaid)
-    {
-        return new GetBookingDto
-        {
-            Id = id,
-            BookingDate = DateTime.Now,
-            TourId = Guid.NewGuid(),
-            TourName = tourName,
-            TourIdentifier = tourIdentifier ?? "TOUR-001",
-            CustomerId = Guid.NewGuid(),
-            CustomerName = customerName,
-            CompanionId = companionId,
-            CompanionName = companionName,
-            TotalPrice = 1000m,
-            DiscountType = discountType,
-            DiscountAmount = discountAmount,
-            DiscountReason = discountReason,
-            Status = status,
-            PaymentStatus = paymentStatus,
-            AmountPaid = 0,
-            RemainingBalance = 1000m,
-            Payments = Array.Empty<GetPaymentDto>(),
-            Notes = null
-        };
     }
 }
