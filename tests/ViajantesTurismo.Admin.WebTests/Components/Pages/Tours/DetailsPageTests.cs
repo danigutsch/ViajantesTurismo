@@ -19,7 +19,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_NotFound_When_Tour_Is_Null()
+    public void Renders_NotFound_When_Tour_Is_Null()
     {
         // Arrange
         var tourId = Guid.NewGuid();
@@ -28,7 +28,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tourId));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
 
         // Assert
         var alert = cut.Find(".alert.alert-danger");
@@ -39,7 +39,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_NotFound_When_API_Throws_Exception()
+    public void Renders_NotFound_When_API_Throws_Exception()
     {
         // Arrange
         var tourId = Guid.NewGuid();
@@ -50,7 +50,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tourId));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
 
         // Assert
         var alert = cut.Find(".alert.alert-danger");
@@ -58,7 +58,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Tour_Details_With_General_Information()
+    public void Renders_Tour_Details_With_General_Information()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -69,7 +69,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains(tour.Name, cut.Markup));
 
         // Assert
         Assert.Contains(tour.Identifier, cut.Markup);
@@ -80,7 +80,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Tour_Duration_In_Days()
+    public void Renders_Tour_Duration_In_Days()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -92,14 +92,14 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains($"{expectedDuration} days", cut.Markup));
 
         // Assert
         Assert.Contains($"{expectedDuration} days", cut.Markup);
     }
 
     [Fact]
-    public async Task Renders_Pricing_Information_With_Real_Currency()
+    public void Renders_Pricing_Information_With_Real_Currency()
     {
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.Real);
@@ -110,7 +110,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains("R$1,500.00", cut.Markup));
 
         // Assert
         Assert.Contains("R$1,500.00", cut.Markup); // Base Price
@@ -120,7 +120,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Pricing_Information_With_Euro_Currency()
+    public void Renders_Pricing_Information_With_Euro_Currency()
     {
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.Euro);
@@ -131,7 +131,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains("€1,500.00", cut.Markup));
 
         // Assert
         Assert.Contains("€1,500.00", cut.Markup); // Base Price
@@ -139,7 +139,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Pricing_Information_With_UsDollar_Currency()
+    public void Renders_Pricing_Information_With_UsDollar_Currency()
     {
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.UsDollar);
@@ -150,7 +150,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains("$1,500.00", cut.Markup));
 
         // Assert
         Assert.Contains("$1,500.00", cut.Markup); // Base Price
@@ -158,7 +158,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Capacity_Information()
+    public void Renders_Capacity_Information()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -169,7 +169,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains($"{tour.MinCustomers}", cut.Markup));
 
         // Assert
         Assert.Contains($"{tour.MinCustomers}", cut.Markup);
@@ -178,7 +178,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Available_Spots_Badge_When_Tour_Has_Capacity()
+    public void Renders_Available_Spots_Badge_When_Tour_Has_Capacity()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -194,7 +194,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find("span.badge.bg-success"));
 
         // Assert
         var badge = cut.Find("span.badge.bg-success");
@@ -202,7 +202,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Fully_Booked_Badge_When_At_Max_Capacity()
+    public void Renders_Fully_Booked_Badge_When_At_Max_Capacity()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -217,7 +217,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find("span.badge.bg-danger"));
 
         // Assert
         var badge = cut.Find("span.badge.bg-danger");
@@ -225,7 +225,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Below_Minimum_Badge_When_Under_MinCustomers()
+    public void Renders_Below_Minimum_Badge_When_Under_MinCustomers()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -241,7 +241,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find("span.badge.bg-warning"));
 
         // Assert
         var badge = cut.Find("span.badge.bg-warning");
@@ -249,7 +249,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Included_Services_When_Available()
+    public void Renders_Included_Services_When_Available()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -269,7 +269,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => Assert.Contains("Included Services", cut.Markup));
 
         // Assert
         Assert.Contains("Included Services", cut.Markup);
@@ -282,7 +282,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Does_Not_Render_Services_Section_When_Empty()
+    public void Does_Not_Render_Services_Section_When_Empty()
     {
         // Arrange
         var tour = BuildTourDto(
@@ -295,7 +295,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find(".card-header h3"));
 
         // Assert
         Assert.DoesNotContain("Included Services", cut.Markup);
@@ -303,7 +303,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Edit_Tour_Link()
+    public void Renders_Edit_Tour_Link()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -314,7 +314,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find("a.btn.btn-primary"));
 
         // Assert
         var editLink = cut.Find("a.btn.btn-primary");
@@ -323,7 +323,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Back_To_List_Link()
+    public void Renders_Back_To_List_Link()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -334,7 +334,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.FindAll("a.btn.btn-secondary"));
 
         // Assert
         var backLinks = cut.FindAll("a.btn.btn-secondary");
@@ -342,7 +342,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Page_Title()
+    public void Renders_Page_Title()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -353,7 +353,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find("h1"));
 
         // Assert
         var pageTitle = cut.Find("h1");
@@ -361,7 +361,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Tour_Name_In_Card_Header()
+    public void Renders_Tour_Name_In_Card_Header()
     {
         // Arrange
         var tour = BuildTourDto(name: "Amazing Bike Tour 2024");
@@ -372,7 +372,7 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        await cut.InvokeAsync(() => Task.Delay(100));
+        cut.WaitForAssertion(() => cut.Find(".card-header h3"));
 
         // Assert
         var cardHeader = cut.Find(".card-header h3");

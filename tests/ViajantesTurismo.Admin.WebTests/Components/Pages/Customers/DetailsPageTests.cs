@@ -31,7 +31,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Page_Title_And_Header()
+    public void Displays_Page_Title_And_Header()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -39,8 +39,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var heading = cut.Find("h1");
         Assert.Contains("Customer Details", heading.TextContent);
@@ -48,7 +47,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Back_To_Customers_Button()
+    public void Displays_Back_To_Customers_Button()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -56,15 +55,14 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var backButton = cut.Find("a.btn-outline-secondary[href='/customers']");
         Assert.Contains("Back to Customers", backButton.TextContent);
     }
 
     [Fact]
-    public async Task Displays_Edit_Customer_Button()
+    public void Displays_Edit_Customer_Button()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -72,15 +70,14 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var editButton = cut.Find($"a.btn-primary[href='/customers/{customer.Id}/edit']");
         Assert.Contains("Edit Customer", editButton.TextContent);
     }
 
     [Fact]
-    public async Task Displays_Personal_Information_Card()
+    public void Displays_Personal_Information_Card()
     {
         // Arrange
         var personalInfo = new PersonalInfoDto
@@ -97,8 +94,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Personal Information'))");
         Assert.Contains("Jane Smith", card.TextContent);
@@ -109,7 +105,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Contact_Information_Card()
+    public void Displays_Contact_Information_Card()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -124,8 +120,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var emailLink = cut.Find("a[href='mailto:test@example.com']");
         Assert.Equal("test@example.com", emailLink.TextContent);
@@ -135,7 +130,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Instagram_When_Present()
+    public void Displays_Instagram_When_Present()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -150,8 +145,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var instagramLink = cut.Find("a[href='https://instagram.com/johndoe']");
         Assert.Equal("johndoe", instagramLink.TextContent);
@@ -159,7 +153,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Does_Not_Display_Instagram_When_Empty()
+    public void Does_Not_Display_Instagram_When_Empty()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -174,15 +168,14 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var html = cut.Markup;
         Assert.DoesNotContain("Instagram", html);
     }
 
     [Fact]
-    public async Task Displays_Facebook_When_Present()
+    public void Displays_Facebook_When_Present()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -197,8 +190,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var facebookLink = cut.Find("a[href='https://facebook.com/john.doe']");
         Assert.Equal("john.doe", facebookLink.TextContent);
@@ -206,7 +198,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Identification_Information()
+    public void Displays_Identification_Information()
     {
         // Arrange
         var identificationInfo = new IdentificationInfoDto
@@ -219,8 +211,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Identification'))");
         Assert.Contains("XYZ987654", card.TextContent);
@@ -228,7 +219,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Address_Information()
+    public void Displays_Address_Information()
     {
         // Arrange
         var address = new AddressDto
@@ -246,8 +237,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Address'))");
         Assert.Contains("456 Oak Avenue", card.TextContent);
@@ -260,7 +250,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Does_Not_Display_Address_Complement_When_Empty()
+    public void Does_Not_Display_Address_Complement_When_Empty()
     {
         // Arrange
         var address = new AddressDto
@@ -278,8 +268,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Address'))");
         var complementLabel = card.QuerySelector("dt:contains('Complement')");
@@ -287,7 +276,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Physical_Information()
+    public void Displays_Physical_Information()
     {
         // Arrange
         var physicalInfo = new PhysicalInfoDto
@@ -301,8 +290,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Physical Information'))");
         Assert.Contains("82 kg", card.TextContent);
@@ -311,7 +299,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Accommodation_Preferences()
+    public void Displays_Accommodation_Preferences()
     {
         // Arrange
         var accommodationPreferences = new AccommodationPreferencesDto
@@ -325,8 +313,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Accommodation Preferences'))");
         Assert.Contains("DoubleRoom", card.TextContent);
@@ -334,7 +321,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Companion_Id_When_Present()
+    public void Displays_Companion_Id_When_Present()
     {
         // Arrange
         var companionId = Guid.NewGuid();
@@ -349,15 +336,14 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Accommodation Preferences'))");
         Assert.Contains(companionId.ToString(), card.TextContent);
     }
 
     [Fact]
-    public async Task Displays_Emergency_Contact_Information()
+    public void Displays_Emergency_Contact_Information()
     {
         // Arrange
         var emergencyContact = new EmergencyContactDto
@@ -370,8 +356,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Emergency Contact'))");
         Assert.Contains("Sarah Connor", card.TextContent);
@@ -381,7 +366,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_Medical_Information_When_Present()
+    public void Displays_Medical_Information_When_Present()
     {
         // Arrange
         var medicalInfo = new MedicalInfoDto
@@ -394,8 +379,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Medical Information'))");
         Assert.Contains("Peanuts, Shellfish", card.TextContent);
@@ -403,7 +387,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Displays_No_Medical_Info_Message_When_Empty()
+    public void Displays_No_Medical_Info_Message_When_Empty()
     {
         // Arrange
         var medicalInfo = new MedicalInfoDto
@@ -416,15 +400,14 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Medical Information'))");
         Assert.Contains("No medical information provided", card.TextContent);
     }
 
     [Fact]
-    public async Task Displays_Bookings_Section_Header()
+    public void Displays_Bookings_Section_Header()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -432,8 +415,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var bookingsCard = cut.Find("div.card:has(h5:contains('Bookings'))");
         Assert.NotNull(bookingsCard);
@@ -443,7 +425,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Has_ConfirmDialog_Component()
+    public void Has_ConfirmDialog_Component()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -451,15 +433,14 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var confirmDialog = cut.FindComponent<ConfirmDialog>();
         Assert.NotNull(confirmDialog);
     }
 
     [Fact]
-    public async Task Has_ToastNotification_Component()
+    public void Has_ToastNotification_Component()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -467,8 +448,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.Delay(50));
-
+        cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var toast = cut.FindComponent<ToastNotification>();
         Assert.NotNull(toast);
