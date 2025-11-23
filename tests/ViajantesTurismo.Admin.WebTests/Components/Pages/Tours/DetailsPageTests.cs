@@ -14,6 +14,8 @@ public class DetailsPageTests : BunitContext
         _fakeToursApi = new FakeToursApiClient();
 
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
+        Services.AddSingleton<IBookingsApiClient>(new FakeBookingsApiClient());
+        Services.AddSingleton<ICustomersApiClient>(new FakeCustomersApiClient());
     }
 
     [Fact]
@@ -21,8 +23,6 @@ public class DetailsPageTests : BunitContext
     {
         // Arrange
         var tourId = Guid.NewGuid();
-
-        // Don't add any tour to the fake - GetTourById will return null
 
         // Act
         var cut = Render<Details>(parameters => parameters
