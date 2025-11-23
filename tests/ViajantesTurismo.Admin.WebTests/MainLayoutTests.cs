@@ -79,8 +79,8 @@ public sealed class MainLayoutTests : BunitContext
         var cut = Render<MainLayout>();
 
         // Assert
-        var errorUI = cut.Find("div#blazor-error-ui");
-        Assert.NotNull(errorUI);
+        var errorUi = cut.Find("div#blazor-error-ui");
+        Assert.NotNull(errorUi);
     }
 
     [Fact]
@@ -90,8 +90,8 @@ public sealed class MainLayoutTests : BunitContext
         var cut = Render<MainLayout>();
 
         // Assert
-        var errorUI = cut.Find("div#blazor-error-ui");
-        Assert.Contains("An unhandled error has occurred.", errorUI.TextContent);
+        var errorUi = cut.Find("div#blazor-error-ui");
+        Assert.Contains("An unhandled error has occurred.", errorUi.TextContent);
     }
 
     [Fact]
@@ -101,8 +101,8 @@ public sealed class MainLayoutTests : BunitContext
         var cut = Render<MainLayout>();
 
         // Assert
-        var errorUI = cut.Find("div#blazor-error-ui");
-        var reloadLink = errorUI.QuerySelector("a.reload");
+        var errorUi = cut.Find("div#blazor-error-ui");
+        var reloadLink = errorUi.QuerySelector("a.reload");
         Assert.NotNull(reloadLink);
         Assert.Equal("Reload", reloadLink.TextContent);
         Assert.Equal("", reloadLink.GetAttribute("href"));
@@ -115,8 +115,8 @@ public sealed class MainLayoutTests : BunitContext
         var cut = Render<MainLayout>();
 
         // Assert
-        var errorUI = cut.Find("div#blazor-error-ui");
-        var dismissLink = errorUI.QuerySelector("a.dismiss");
+        var errorUi = cut.Find("div#blazor-error-ui");
+        var dismissLink = errorUi.QuerySelector("a.dismiss");
         Assert.NotNull(dismissLink);
         Assert.Equal("🗙", dismissLink.TextContent);
     }
