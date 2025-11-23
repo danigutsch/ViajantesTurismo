@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
+using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared;
 using ViajantesTurismo.Admin.Web.Components.Shared;
@@ -610,7 +611,7 @@ public class BookingsListTests : BunitContext
 
         // Act
         var editButton = cut.Find("button.btn-primary");
-        await editButton.ClickAsync(new());
+        await editButton.ClickAsync(new MouseEventArgs());
 
         // Assert
         Assert.Equal(bookingId, editedId);
@@ -640,7 +641,7 @@ public class BookingsListTests : BunitContext
 
         // Act
         var confirmButton = cut.Find("button.btn-success");
-        await confirmButton.ClickAsync(new());
+        await confirmButton.ClickAsync(new MouseEventArgs());
 
         // Assert
         Assert.Equal(bookingId, confirmedId);
@@ -670,7 +671,7 @@ public class BookingsListTests : BunitContext
 
         // Act
         var completeButton = cut.Find("button.btn-info");
-        await completeButton.ClickAsync(new());
+        await completeButton.ClickAsync(new MouseEventArgs());
 
         // Assert
         Assert.Equal(bookingId, completedId);
@@ -700,7 +701,7 @@ public class BookingsListTests : BunitContext
 
         // Act
         var cancelButton = cut.Find("button.btn-warning");
-        await cancelButton.ClickAsync(new());
+        await cancelButton.ClickAsync(new MouseEventArgs());
 
         // Assert
         Assert.Equal(bookingId, cancelledId);
@@ -730,7 +731,7 @@ public class BookingsListTests : BunitContext
 
         // Act
         var deleteButton = cut.Find("button.btn-danger");
-        await deleteButton.ClickAsync(new());
+        await deleteButton.ClickAsync(new MouseEventArgs());
 
         // Assert
         Assert.Equal(bookingId, deletedId);

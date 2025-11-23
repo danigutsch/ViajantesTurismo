@@ -236,8 +236,9 @@ else
 
                         <div class="mb-3">
                             <label for="companionId" class="form-label">Companion ID</label>
-                            <InputNumber id="companionId" class="form-control"
-                                         @bind-Value="_model.AccommodationPreferences.CompanionId"/>
+                            <InputText id="companionId" class="form-control"
+                                       @bind-Value="_companionIdDisplay" readonly/>
+                            <div class="form-text">Companion assignment cannot be changed after customer creation</div>
                         </div>
                     </div>
                 </div>
@@ -342,6 +343,7 @@ else
     private bool _redirectCancelled;
     private CancellationTokenSource? _redirectCts;
     private string? _errorMessage;
+    private string _companionIdDisplay = string.Empty;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -367,6 +369,8 @@ else
                 EmergencyContact = EmergencyContactFormModel.FromDto(customer.EmergencyContact),
                 MedicalInfo = MedicalInfoFormModel.FromDto(customer.MedicalInfo)
             };
+
+            _companionIdDisplay = customer.AccommodationPreferences.CompanionId?.ToString() ?? "None";
         }
         catch (Exception ex)
         {

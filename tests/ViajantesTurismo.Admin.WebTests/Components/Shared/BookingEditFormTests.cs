@@ -1,6 +1,7 @@
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Components.Shared;
 using static ViajantesTurismo.Admin.Tests.Shared.DtoBuilders;
@@ -338,7 +339,7 @@ public class BookingEditFormTests : BunitContext
 
         // Act
         var cancelButton = cut.Find("button[type='button']:contains('Cancel')");
-        await cancelButton.ClickAsync(new());
+        await cancelButton.ClickAsync(new MouseEventArgs());
 
         // Assert
         Assert.True(cancelCalled);

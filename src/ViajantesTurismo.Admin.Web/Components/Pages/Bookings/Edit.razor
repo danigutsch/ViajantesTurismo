@@ -139,7 +139,7 @@ else
                                     }
                                 </label>
                                 <InputNumber id="discountAmount" class="form-control" @bind-Value="_model.DiscountAmount"
-                                             @bind-Value:format="F2" step="0.01"/>
+                                             step="0.01"/>
                                 <ValidationMessage For="@(() => _model.DiscountAmount)"/>
                                 @if (_model.DiscountType == DiscountTypeDto.Percentage)
                                 {
