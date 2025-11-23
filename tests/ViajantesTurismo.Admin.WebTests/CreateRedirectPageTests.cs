@@ -1,0 +1,31 @@
+using Microsoft.AspNetCore.Components;
+using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
+
+namespace ViajantesTurismo.Admin.WebTests;
+
+public sealed class CreateRedirectPageTests : BunitContext
+{
+    [Fact]
+    public void Redirects_To_Personal_Info_Page_On_First_Render()
+    {
+        // Arrange
+        var navManager = Services.GetRequiredService<NavigationManager>();
+
+        // Act
+        var cut = Render<CreateRedirect>();
+        cut.WaitForState(() => navManager.Uri.EndsWith("/customers/create/personal-info"));
+
+        // Assert
+        Assert.EndsWith("/customers/create/personal-info", navManager.Uri);
+    }
+
+    [Fact]
+    public void Renders_Without_Content()
+    {
+        // Act
+        var cut = Render<CreateRedirect>();
+
+        // Assert
+        Assert.Empty(cut.Markup.Trim());
+    }
+}
