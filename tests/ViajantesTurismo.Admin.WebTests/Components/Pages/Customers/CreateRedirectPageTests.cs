@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 
-namespace ViajantesTurismo.Admin.WebTests;
+namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers;
 
 public sealed class CreateRedirectPageTests : BunitContext
 {

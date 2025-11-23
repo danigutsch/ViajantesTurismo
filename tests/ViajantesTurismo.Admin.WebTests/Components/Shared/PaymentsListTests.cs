@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Components.Shared;
 
-namespace ViajantesTurismo.Admin.WebTests;
+namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
 public class PaymentsListTests : BunitContext
 {

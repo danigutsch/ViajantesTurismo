@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Web.Components.Layout;
 
-namespace ViajantesTurismo.Admin.WebTests;
+namespace ViajantesTurismo.Admin.WebTests.Components.Layout;
 
 public class NavMenuTests : BunitContext
 {

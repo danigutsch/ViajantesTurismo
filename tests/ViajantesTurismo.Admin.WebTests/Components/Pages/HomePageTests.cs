@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Web.Components.Pages;
 
-namespace ViajantesTurismo.Admin.WebTests;
+namespace ViajantesTurismo.Admin.WebTests.Components.Pages;
 
 public class HomePageTests : BunitContext
 {
