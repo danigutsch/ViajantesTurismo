@@ -313,7 +313,8 @@ public class IndexPageTests : BunitContext
     [Fact]
     public void Renders_Page_Title()
     {
-        // Arrange & Act
+        // Arrange
+        // Act
         var cut = Render<Index>();
         cut.WaitForState(() => cut.FindAll("h1").Count > 0, TimeSpan.FromSeconds(2));
 
@@ -325,7 +326,8 @@ public class IndexPageTests : BunitContext
     [Fact]
     public void Renders_Page_Description()
     {
-        // Arrange & Act
+        // Arrange
+        // Act
         var cut = Render<Index>();
         cut.WaitForState(() => cut.Markup.Contains("This component demonstrates"), TimeSpan.FromSeconds(2));
 
