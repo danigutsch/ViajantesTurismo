@@ -108,50 +108,6 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Status_Dropdown_With_All_Values()
-    {
-        // Arrange
-        var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-
-        // Act
-        var cut = Render<BookingEditForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Customers, [.. customers]));
-
-        // Assert
-        var statusSelect = cut.Find("select#status");
-        var options = statusSelect.QuerySelectorAll("option");
-        Assert.Equal(4, options.Length);
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Pending");
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Confirmed");
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Cancelled");
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Completed");
-    }
-
-    [Fact]
-    public void Renders_PaymentStatus_Dropdown_With_All_Values()
-    {
-        // Arrange
-        var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-
-        // Act
-        var cut = Render<BookingEditForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Customers, [.. customers]));
-
-        // Assert
-        var paymentStatusSelect = cut.Find("select#paymentStatus");
-        var options = paymentStatusSelect.QuerySelectorAll("option");
-        Assert.Equal(4, options.Length);
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Unpaid");
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "PartiallyPaid");
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Paid");
-        Assert.Contains(options, opt => opt.GetAttribute("value") == "Refunded");
-    }
-
-    [Fact]
     public void Renders_Notes_TextArea()
     {
         // Arrange
@@ -430,8 +386,6 @@ public class BookingEditFormTests : BunitContext
         var model = new BookingFormModel
         {
             CustomerId = customerId,
-            Status = BookingStatusDto.Confirmed,
-            PaymentStatus = PaymentStatusDto.Paid,
             Notes = "Test notes",
             DiscountType = DiscountTypeDto.Percentage,
             DiscountAmount = 15.50m,
@@ -448,12 +402,6 @@ public class BookingEditFormTests : BunitContext
             .Add(p => p.Customers, [.. customers]));
 
         // Assert
-        var statusSelect = cut.Find("select#status");
-        Assert.Equal("Confirmed", statusSelect.GetAttribute("value"));
-
-        var paymentStatusSelect = cut.Find("select#paymentStatus");
-        Assert.Equal("Paid", paymentStatusSelect.GetAttribute("value"));
-
         var notesTextArea = cut.Find("textarea#notes");
         Assert.Equal("Test notes", notesTextArea.GetAttribute("value"));
 

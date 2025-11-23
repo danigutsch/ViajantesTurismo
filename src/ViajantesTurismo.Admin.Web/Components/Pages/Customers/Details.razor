@@ -450,9 +450,7 @@ else
             TourId = booking.TourId,
             CustomerId = booking.CustomerId,
             CompanionId = booking.CompanionId,
-            Notes = booking.Notes,
-            Status = booking.Status,
-            PaymentStatus = booking.PaymentStatus
+            Notes = booking.Notes
         };
         _showBookingForm = true;
         _showPaymentForm = false;
@@ -484,23 +482,8 @@ else
         {
             if (_editingBookingId.HasValue)
             {
-                // Update notes
                 var notesDto = new UpdateBookingNotesDto { Notes = model.Notes };
                 await BookingsApi.UpdateBookingNotes(_editingBookingId.Value, notesDto, CancellationToken.None);
-
-                // Handle status transitions (idempotent - safe to call even if already in that state)
-                switch (model.Status)
-                {
-                    case BookingStatusDto.Confirmed:
-                        await BookingsApi.ConfirmBooking(_editingBookingId.Value, CancellationToken.None);
-                        break;
-                    case BookingStatusDto.Cancelled:
-                        await BookingsApi.CancelBooking(_editingBookingId.Value, CancellationToken.None);
-                        break;
-                    case BookingStatusDto.Completed:
-                        await BookingsApi.CompleteBooking(_editingBookingId.Value, CancellationToken.None);
-                        break;
-                }
             }
             else
             {

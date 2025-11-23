@@ -32,32 +32,6 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label for="status" class="form-label">Status</label>
-            <InputSelect @bind-Value="Model.Status" class="form-select" id="status">
-                @foreach (var status in Enum.GetValues<BookingStatusDto>())
-                {
-                    <option value="@status">@status</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="@(() => Model.Status)"/>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label for="paymentStatus" class="form-label">Payment Status</label>
-            <InputSelect @bind-Value="Model.PaymentStatus" class="form-select" id="paymentStatus">
-                @foreach (var paymentStatus in Enum.GetValues<PaymentStatusDto>())
-                {
-                    <option value="@paymentStatus">@paymentStatus</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="@(() => Model.PaymentStatus)"/>
-        </div>
-    </div>
-
     <div class="mb-3">
         <label for="notes" class="form-label">Notes</label>
         <InputTextArea @bind-Value="Model.Notes" class="form-control" id="notes" rows="3"/>

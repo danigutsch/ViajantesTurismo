@@ -26,10 +26,6 @@ public class BookingFormModel : IValidatableObject
     [MaxLength(ContractConstants.MaxBookingNotesLength, ErrorMessage = "Notes cannot exceed 2000 characters")]
     public string? Notes { get; set; }
 
-    public BookingStatusDto Status { get; set; } = BookingStatusDto.Pending;
-
-    public PaymentStatusDto PaymentStatus { get; set; } = PaymentStatusDto.Unpaid;
-
     public DiscountTypeDto DiscountType { get; set; } = DiscountTypeDto.None;
 
     [Range(0, double.MaxValue, ErrorMessage = "Discount amount must be positive")]
