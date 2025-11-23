@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web;
 using ViajantesTurismo.Admin.Web.Components;
 using ViajantesTurismo.Admin.Web.Services;
@@ -15,9 +16,9 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<CustomerCreationState>();
 builder.Services.AddScoped<CountryService>();
 
-builder.Services.AddHttpClient<ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
-builder.Services.AddHttpClient<CustomersApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
-builder.Services.AddHttpClient<BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
+builder.Services.AddHttpClient<IToursApiClient, ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
+builder.Services.AddHttpClient<ICustomersApiClient, CustomersApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
+builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 
 var app = builder.Build();
 

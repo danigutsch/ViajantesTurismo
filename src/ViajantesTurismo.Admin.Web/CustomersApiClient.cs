@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Web.Helpers;
 
 namespace ViajantesTurismo.Admin.Web;
 
-internal sealed class CustomersApiClient(HttpClient httpClient)
+internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiClient
 {
     public async Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken,
         int maxItems = 100)

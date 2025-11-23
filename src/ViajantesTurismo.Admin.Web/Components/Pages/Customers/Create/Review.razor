@@ -1,8 +1,9 @@
 @page "/customers/create/review"
+@using ViajantesTurismo.Admin.Contracts
 @rendermode InteractiveServer
 
 @inject CustomerCreationState State
-@inject CustomersApiClient ApiClient
+@inject ICustomersApiClient ApiClient
 @inject NavigationManager Navigation
 
 <PageTitle>Create Customer - Review & Submit</PageTitle>

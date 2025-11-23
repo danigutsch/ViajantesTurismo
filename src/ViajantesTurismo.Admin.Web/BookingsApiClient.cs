@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Web.Helpers;
 
 namespace ViajantesTurismo.Admin.Web;
 
-internal sealed class BookingsApiClient(HttpClient httpClient)
+internal sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClient
 {
     public async Task<GetBookingDto[]> GetAllBookings(CancellationToken cancellationToken)
     {
