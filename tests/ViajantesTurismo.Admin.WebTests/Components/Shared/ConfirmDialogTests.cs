@@ -168,7 +168,7 @@ public sealed class ConfirmDialogTests : BunitContext
         // Arrange
         var cut = Render<ConfirmDialog>();
         var resultTask = cut.InvokeAsync(() => cut.Instance.ShowAsync("Message"));
-        cut.WaitForState(() => cut.FindAll(".modal").Count > 0);
+        await cut.WaitForStateAsync(() => cut.FindAll(".modal").Count > 0);
 
         // Act
         var confirmButton = cut.Find(".modal-footer .btn-primary");
@@ -185,7 +185,7 @@ public sealed class ConfirmDialogTests : BunitContext
         // Arrange
         var cut = Render<ConfirmDialog>();
         var resultTask = cut.InvokeAsync(() => cut.Instance.ShowAsync("Message"));
-        cut.WaitForState(() => cut.FindAll(".modal").Count > 0);
+        await cut.WaitForStateAsync(() => cut.FindAll(".modal").Count > 0);
 
         // Act
         var cancelButton = cut.Find(".modal-footer .btn-secondary");
@@ -202,7 +202,7 @@ public sealed class ConfirmDialogTests : BunitContext
         // Arrange
         var cut = Render<ConfirmDialog>();
         var resultTask = cut.InvokeAsync(() => cut.Instance.ShowAsync("Message"));
-        cut.WaitForState(() => cut.FindAll(".modal").Count > 0);
+        await cut.WaitForStateAsync(() => cut.FindAll(".modal").Count > 0);
 
         // Act
         var closeButton = cut.Find(".modal-header .btn-close");
