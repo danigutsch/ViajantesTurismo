@@ -70,7 +70,8 @@ public static class DtoBuilders
         string? notes = null,
         IReadOnlyCollection<GetPaymentDto>? payments = null,
         decimal? amountPaid = null,
-        decimal? remainingBalance = null)
+        decimal? remainingBalance = null,
+        CurrencyDto? currency = null)
     {
         var bookingTotalPrice = totalPrice ?? 1000m;
         var bookingAmountPaid = amountPaid ?? 0m;
@@ -95,7 +96,8 @@ public static class DtoBuilders
             Notes = notes,
             Payments = payments ?? Array.Empty<GetPaymentDto>(),
             AmountPaid = bookingAmountPaid,
-            RemainingBalance = remainingBalance ?? (bookingTotalPrice - bookingAmountPaid)
+            RemainingBalance = remainingBalance ?? (bookingTotalPrice - bookingAmountPaid),
+            Currency = currency ?? CurrencyDto.Real
         };
     }
 

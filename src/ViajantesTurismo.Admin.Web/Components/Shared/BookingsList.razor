@@ -150,7 +150,7 @@ else
         await OnDelete.InvokeAsync(bookingId);
     }
 
-    private string GetDiscountBadgeClass(DiscountTypeDto discountType)
+    private static string GetDiscountBadgeClass(DiscountTypeDto discountType)
     {
         return discountType switch
         {
@@ -161,17 +161,31 @@ else
         };
     }
 
-    private string GetDiscountDisplayText(GetBookingDto booking)
+    private static string GetDiscountDisplayText(GetBookingDto booking)
     {
         return booking.DiscountType switch
         {
             DiscountTypeDto.Percentage => $"{booking.DiscountAmount:F2}%",
-            DiscountTypeDto.Absolute => $"{booking.DiscountAmount:C}",
+            DiscountTypeDto.Absolute => FormatCurrency(booking.DiscountAmount, booking.Currency),
             _ => "-"
         };
     }
 
-    private string GetDiscountTooltip(GetBookingDto booking)
+    private static string FormatCurrency(decimal amount, CurrencyDto currency)
+    {
+        var (symbol, position) = currency switch
+        {
+                CurrencyDto.Real => ("R$", "before"),
+                CurrencyDto.Euro => ("€", "after"),
+                CurrencyDto.UsDollar => ("$", "before"),
+                _ => ("¤", "before")
+        };
+
+        var formattedAmount = amount.ToString("N2");
+        return position == "before" ? $"{symbol} {formattedAmount}" : $"{formattedAmount} {symbol}";
+    }
+
+    private static string GetDiscountTooltip(GetBookingDto booking)
     {
         if (booking.DiscountType == DiscountTypeDto.None)
         {

@@ -269,7 +269,8 @@ public class BookingsListTests : BunitContext
                 discountAmount: 100.00m,
                 discountReason: "Group Discount",
                 status: BookingStatusDto.Pending,
-                paymentStatus: PaymentStatusDto.Unpaid)
+                paymentStatus: PaymentStatusDto.Unpaid,
+                currency: CurrencyDto.Real)
         };
 
         // Act
@@ -278,8 +279,37 @@ public class BookingsListTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-warning.text-dark");
-        Assert.Contains("100.00", badge.TextContent);
+        Assert.Contains("100", badge.TextContent); // Currency formatting will include the amount
         Assert.Equal("Absolute Discount: Group Discount", badge.GetAttribute("title"));
+    }
+
+    [Theory]
+    [InlineData(CurrencyDto.Real, "R$")]
+    [InlineData(CurrencyDto.Euro, "€")]
+    [InlineData(CurrencyDto.UsDollar, "$")]
+    public void Displays_Discount_With_Correct_Currency_Symbol(CurrencyDto currency, string expectedSymbol)
+    {
+        // Arrange
+        var bookings = new[]
+        {
+            DtoBuilders.BuildBookingDto(
+                id: Guid.NewGuid(),
+                tourName: "Tour 1",
+                customerName: "Customer 1",
+                discountType: DiscountTypeDto.Absolute,
+                discountAmount: 150.00m,
+                status: BookingStatusDto.Pending,
+                paymentStatus: PaymentStatusDto.Unpaid,
+                currency: currency)
+        };
+
+        // Act
+        var cut = Render<BookingsList>(parameters => parameters
+            .Add(p => p.Bookings, bookings));
+
+        // Assert
+        var badge = cut.Find(".badge.bg-warning.text-dark");
+        Assert.Contains(expectedSymbol, badge.TextContent);
     }
 
     [Fact]

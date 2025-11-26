@@ -50,6 +50,9 @@ public sealed record GetBookingDto
     /// <summary>The reason for the discount, if any.</summary>
     public string? DiscountReason { get; init; }
 
+    /// <summary>The currency used for all monetary values in this booking.</summary>
+    public required CurrencyDto Currency { get; init; }
+
     /// <summary>Notes about the booking.</summary>
     public string? Notes { get; init; }
 
