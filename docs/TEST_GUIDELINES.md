@@ -278,6 +278,75 @@ public sealed class ToursApiTests : IDisposable
 
 ## Behavior Test Patterns
 
+### Context Class Guidelines
+
+Context classes (POCOs) share state between step definitions via Reqnroll's dependency injection. Follow these rules:
+
+**Result Properties:**
+
+- ❌ Never use `object` for result properties (requires casting, loses type safety)
+- ✅ Use specific `Result<T>?` properties for each operation (e.g., `Result<Tour>? CreationResult`)
+- ✅ Nullable result properties are acceptable for optional operations
+- ✅ Name results by operation: `CreationResult`, `UpdateResult`, `DeleteResult`, etc.
+
+**Input Properties:**
+
+- Use `required` modifier for properties that must be set before steps run
+- Initialize collections via field initializers: `ICollection<string> Items { get; } = [];`
+
+**Dependencies:**
+
+- Initialize Fakes and test doubles via field initializers
+- Use expression-bodied properties for command handlers: `Handler => new(Store, UnitOfWork);`
+
+**Example (Good Pattern):**
+
+```csharp
+public sealed class TourContext
+{
+    // Input data
+    public required string Identifier { get; set; }
+    public required DateTime StartDate { get; set; }
+
+    // Typed result properties (nullable for optional operations)
+    public Result<Tour>? CreationResult { get; set; }
+    public Result<TourCapacity>? CapacityUpdateResult { get; set; }
+
+    // Dependencies
+    public FakeTourStore TourStore { get; } = new();
+    public CreateTourCommandHandler Handler => new(TourStore, UnitOfWork);
+}
+```
+
+**Anti-Pattern (Avoid):**
+
+```csharp
+// ❌ BAD: Generic object requires casting everywhere
+public required object Result { get; set; }
+
+// ❌ BAD: Leads to if/else type-checking in steps
+if (context.Result is Result<Tour> tourResult) { ... }
+else if (context.Result is Result<TourCapacity> capacityResult) { ... }
+```
+
+### Step Definition Guidelines
+
+**When Steps:**
+
+- Always execute the action and store the result
+- Never check success/failure inside `When` steps
+- Store results in typed context properties
+
+**Then Steps:**
+
+- Check specific typed result properties
+- Avoid `if` statements - use separate steps for different outcomes
+
+**Given Steps:**
+
+- Keep setup logic simple and readable
+- Extract complex loops/switches to helper methods in `EntityBuilders` or dedicated helpers
+
 ## BDD/Gherkin Best Practices
 
 ### Writing Features
