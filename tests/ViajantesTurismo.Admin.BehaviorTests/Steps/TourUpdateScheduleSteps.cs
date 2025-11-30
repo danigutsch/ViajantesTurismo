@@ -1,7 +1,6 @@
 using System.Globalization;
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -21,21 +20,22 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     {
         var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.Result = tourContext.Tour.UpdateSchedule(startDate, endDate);
+        tourContext.UpdateResult = tourContext.Tour.UpdateSchedule(startDate, endDate);
     }
 
     [Then("the tour schedule update should succeed")]
     public void ThenTheTourScheduleUpdateShouldSucceed()
     {
-        var result = (Result)tourContext.Result;
-        Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails?.Detail}");
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
+            $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour schedule update should fail")]
     public void ThenTheTourScheduleUpdateShouldFail()
     {
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then(@"the tour start date should be ""(.*)""")]

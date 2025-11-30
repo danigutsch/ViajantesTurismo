@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -30,7 +29,7 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
             _ => throw new ArgumentException($"Unknown currency: {currencyCode}")
         };
 
-        tourContext.Result = tourContext.Tour.UpdatePricing(
+        tourContext.UpdateResult = tourContext.Tour.UpdatePricing(
             doubleRoomSupplement,
             regularBike,
             eBike,
@@ -40,15 +39,16 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     [Then("the tour pricing update should succeed")]
     public void ThenTheTourPricingUpdateShouldSucceed()
     {
-        var result = (Result)tourContext.Result;
-        Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails?.Detail}");
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
+            $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour pricing update should fail")]
     public void ThenTheTourPricingUpdateShouldFail()
     {
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then("the tour should have double room supplement (.*)")]

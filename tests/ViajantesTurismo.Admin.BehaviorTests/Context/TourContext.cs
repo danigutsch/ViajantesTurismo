@@ -21,9 +21,10 @@ public sealed class TourContext
     public required decimal EBikePrice { get; set; }
     public ICollection<string> IncludedServices { get; } = [];
     public required Tour Tour { get; set; }
-    public required object Result { get; set; }
+
+    public Result<Tour>? CreationResult { get; set; }
+    public Result? CapacityUpdateResult { get; set; }
     public Result? UpdateResult { get; set; }
-    public Result<Booking>? BookingResult { get; set; }
 
     public FakeTourStore TourStore { get; } = new();
     public FakeUnitOfWork UnitOfWork { get; } = new();

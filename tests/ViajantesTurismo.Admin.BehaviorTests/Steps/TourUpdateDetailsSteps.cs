@@ -1,7 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -40,7 +39,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Capacity.MinCustomers,
             tourContext.Tour.Capacity.MaxCustomers);
 
-        tourContext.Result = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
+        tourContext.UpdateResult = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
     }
 
     [When(@"I update the tour details to identifier with (.*) characters and name ""(.*)""")]
@@ -62,7 +61,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Capacity.MinCustomers,
             tourContext.Tour.Capacity.MaxCustomers);
 
-        tourContext.Result = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
+        tourContext.UpdateResult = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
     }
 
     [When(@"I update the tour details to identifier ""(.*)"" and name with (.*) characters")]
@@ -84,21 +83,22 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Capacity.MinCustomers,
             tourContext.Tour.Capacity.MaxCustomers);
 
-        tourContext.Result = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
+        tourContext.UpdateResult = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
     }
 
     [Then("the tour details update should succeed")]
     public void ThenTheTourDetailsUpdateShouldSucceed()
     {
-        var result = (Result)tourContext.Result;
-        Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails}");
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
+            $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails}");
     }
 
     [Then("the tour details update should fail")]
     public void ThenTheTourDetailsUpdateShouldFail()
     {
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then(@"the tour should have identifier ""(.*)""")]
@@ -120,8 +120,8 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [Then(@"the error should contain ""(.*)""")]
     public void ThenTheErrorShouldContain(string expectedText)
     {
-        var result = (Result)tourContext.Result;
-        var errorMessage = result.ErrorDetails?.Detail ?? string.Empty;
+        Assert.NotNull(tourContext.UpdateResult);
+        var errorMessage = tourContext.UpdateResult.Value.ErrorDetails?.Detail ?? string.Empty;
         Assert.Contains(expectedText, errorMessage, StringComparison.OrdinalIgnoreCase);
     }
 }

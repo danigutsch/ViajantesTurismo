@@ -2,7 +2,6 @@ using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -30,21 +29,22 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
     [When("I update the base price to (.*)")]
     public void WhenIUpdateTheBasePriceTo(decimal newPrice)
     {
-        tourContext.Result = tourContext.Tour.UpdateBasePrice(newPrice);
+        tourContext.UpdateResult = tourContext.Tour.UpdateBasePrice(newPrice);
     }
 
     [Then("the tour base price update should succeed")]
     public void ThenTheTourBasePriceUpdateShouldSucceed()
     {
-        var result = (Result)tourContext.Result;
-        Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorDetails?.Detail}");
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
+            $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour base price update should fail")]
     public void ThenTheTourBasePriceUpdateShouldFail()
     {
-        var result = (Result)tourContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then("the tour should have base price (.*)")]

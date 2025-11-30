@@ -4,9 +4,7 @@ using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -52,17 +50,16 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
 
         var result = await tourContext.CreateTourCommandHandler.Handle(command, CancellationToken.None);
         tourContext.CommandResult = result;
-        tourContext.Result = result;
         bookingContext.Result = result;
     }
 
     [Then(@"I should be informed that the tour identifier must be unique")]
     public void ThenIShouldBeInformedThatTheTourIdentifierMustBeUnique()
     {
-        var result = (Result<Guid>)tourContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("already exists", result.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(tourContext.CommandResult);
+        Assert.False(tourContext.CommandResult.Value.IsSuccess);
+        Assert.NotNull(tourContext.CommandResult.Value.ErrorDetails);
+        Assert.Contains("already exists", tourContext.CommandResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
@@ -217,7 +214,7 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
             ? tourContext.IncludedServices
             : ["Hotel", "Breakfast"];
 
-        tourContext.Result = Tour.Create(
+        var result = Tour.Create(
             identifier: tourContext.Identifier,
             name: tourContext.Name,
             startDate: tourContext.StartDate,
@@ -231,7 +228,9 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
             maxCustomers: 12,
             includedServices: services);
 
-        if (tourContext.Result is Result<Tour> { IsSuccess: true } result)
+        tourContext.CreationResult = result;
+
+        if (result.IsSuccess)
         {
             tourContext.Tour = result.Value;
         }
@@ -253,44 +252,33 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
     [Then("I should not be able to create the tour")]
     public void ThenIShouldNotBeAbleToCreateTheTour()
     {
-        Assert.NotNull(tourContext.Result);
-
-        var isSuccess = tourContext.Result switch
+        // Check either CreationResult (domain call) or CommandResult (command handler call)
+        if (tourContext.CreationResult.HasValue)
         {
-            Result<Tour> r => r.IsSuccess,
-            Result<TourPricing> r => r.IsSuccess,
-            Result<DateRange> r => r.IsSuccess,
-            Result<TourCapacity> r => r.IsSuccess,
-            Result<Guid> r => r.IsSuccess,
-            Result r => r.IsSuccess,
-            _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
-        };
-
-        Assert.False(isSuccess, "Expected the tour creation to fail, but it succeeded.");
+            Assert.True(tourContext.CreationResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
+        }
+        else if (tourContext.CommandResult.HasValue)
+        {
+            Assert.True(tourContext.CommandResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
+        }
+        else
+        {
+            Assert.Fail("No creation result found. Ensure the When step sets either CreationResult or CommandResult.");
+        }
     }
 
     [Then(@"the tour creation should fail with argument exception ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithArgumentException(string expectedMessage)
     {
-        Assert.NotNull(tourContext.Result);
+        Assert.NotNull(tourContext.CreationResult);
+        Assert.True(tourContext.CreationResult.Value.IsFailure);
 
-        var (isSuccess, errorDetail, validationErrors) = tourContext.Result switch
+        var errorDetails = tourContext.CreationResult.Value.ErrorDetails;
+        var messageFound = errorDetails?.Detail?.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
+
+        if (!messageFound && errorDetails?.ValidationErrors != null)
         {
-            Result<Tour> tr => (tr.IsSuccess, tr.ErrorDetails?.Detail, tr.ErrorDetails?.ValidationErrors),
-            Result<DateRange> dr => (dr.IsSuccess, dr.ErrorDetails?.Detail, dr.ErrorDetails?.ValidationErrors),
-            Result<TourPricing> pr => (pr.IsSuccess, pr.ErrorDetails?.Detail, pr.ErrorDetails?.ValidationErrors),
-            Result<TourCapacity> cr => (cr.IsSuccess, cr.ErrorDetails?.Detail, cr.ErrorDetails?.ValidationErrors),
-            Result<Guid> gr => (gr.IsSuccess, gr.ErrorDetails?.Detail, gr.ErrorDetails?.ValidationErrors),
-            Result r => (r.IsSuccess, r.ErrorDetails?.Detail, r.ErrorDetails?.ValidationErrors),
-            _ => throw new InvalidOperationException("Unexpected result type")
-        };
-
-        Assert.False(isSuccess);
-
-        var messageFound = errorDetail?.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
-        if (!messageFound && validationErrors != null)
-        {
-            messageFound = validationErrors.Values
+            messageFound = errorDetails.ValidationErrors.Values
                 .SelectMany(errors => errors)
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
@@ -332,39 +320,22 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
     [Then(@"the tour creation should fail with validation error for ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithValidationErrorFor(string fieldName)
     {
-        Assert.NotNull(tourContext.Result);
+        Assert.NotNull(tourContext.CreationResult);
+        Assert.True(tourContext.CreationResult.Value.IsFailure);
 
-        var (isSuccess, validationErrors) = tourContext.Result switch
-        {
-            Result<Tour> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result<TourPricing> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result<DateRange> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result<TourCapacity> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
-        };
-
-        Assert.False(isSuccess);
+        var validationErrors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
+        var foundKeys = validationErrors?.Keys.ToArray() ?? [];
         Assert.True(validationErrors?.ContainsKey(fieldName) ?? false,
-            $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", validationErrors.Keys)}");
+            $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", foundKeys)}");
     }
 
     [Then("the tour creation should fail with multiple validation errors")]
     public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
     {
-        Assert.NotNull(tourContext.Result);
+        Assert.NotNull(tourContext.CreationResult);
+        Assert.True(tourContext.CreationResult.Value.IsFailure);
 
-        var (isSuccess, validationErrors) = tourContext.Result switch
-        {
-            Result<Tour> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result<TourPricing> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result<DateRange> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result<TourCapacity> r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            Result r => (r.IsSuccess, r.ErrorDetails?.ValidationErrors),
-            _ => throw new InvalidOperationException($"Unexpected result type: {tourContext.Result.GetType().Name}")
-        };
-
-        Assert.False(isSuccess);
+        var validationErrors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         Assert.NotNull(validationErrors);
 
         var totalErrors = validationErrors.Values.SelectMany(e => e).Count();
