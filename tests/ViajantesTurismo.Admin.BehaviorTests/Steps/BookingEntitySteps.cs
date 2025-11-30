@@ -26,7 +26,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     {
         var principal = CreatePrincipalCustomer(bikePrice);
         var room = Enum.Parse<RoomType>(roomType);
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
             room,
@@ -35,16 +35,20 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
     [When(@"I create a booking with base price (.*), room type ""(.*)"", room cost (.*), regular bike (.*) for principal, and eBike (.*) for companion")]
-    public void WhenICreateABookingWithBasePriceRoomTypeRoomCostRegularBikeForPrincipalAndEBikeForCompanion(decimal basePrice, string roomType, decimal roomCost, decimal principalBikePrice, decimal companionBikePrice)
+    public void WhenICreateABookingWithBasePriceRoomTypeRoomCostRegularBikeForPrincipalAndEBikeForCompanion(decimal basePrice, string roomType, decimal roomCost, decimal principalBikePrice,
+        decimal companionBikePrice)
     {
         var principal = CreatePrincipalCustomer(principalBikePrice);
         var companion = CreateCompanionCustomer(companionBikePrice);
         var room = Enum.Parse<RoomType>(roomType);
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
             room,
@@ -53,6 +57,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             companion,
             Discount.Create(DiscountType.None, 0m, null).Value,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -60,7 +67,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCreateABookingWithBasePrice(decimal basePrice)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
             RoomType.DoubleRoom,
@@ -72,6 +79,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
                 0m,
                 null).Value,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -79,7 +89,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
             RoomType.SingleRoom,
@@ -88,6 +98,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -96,7 +109,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     {
         var principal = CreatePrincipalCustomer();
         var notes = new string('x', length);
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,
             RoomType.DoubleRoom,
@@ -105,6 +118,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
             notes);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -113,7 +129,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     {
         var principal = CreatePrincipalCustomer();
         var notes = new string('x', length);
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,
             RoomType.DoubleRoom,
@@ -122,6 +138,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
             notes);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -129,7 +148,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenICreateABookingWithNotes(string notes)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(Guid.CreateVersion7(),
+        var result = Booking.Create(Guid.CreateVersion7(),
             1000m,
             RoomType.DoubleRoom,
             0m,
@@ -137,6 +156,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
             notes);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -144,7 +166,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenITryToCreateABookingWithInvalidRoomTypeD(int invalidRoomType)
     {
         var principal = CreatePrincipalCustomer();
-        bookingContext.Result = Booking.Create(
+        var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,
             (RoomType)invalidRoomType,
@@ -153,6 +175,9 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -166,17 +191,17 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [Then(@"the booking update should fail with validation error for ""(.*)""")]
     public void ThenTheBookingUpdateShouldFailWithValidationErrorFor(string fieldName)
     {
-        var result = (Result)bookingContext.Result;
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(fieldName, result.ErrorDetails!.ValidationErrors!.Keys);
+        Assert.NotNull(bookingContext.BookingOperationResult);
+        Assert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
+        Assert.Contains(fieldName, bookingContext.BookingOperationResult.Value.ErrorDetails!.ValidationErrors!.Keys);
     }
 
     [Then("the booking creation should fail")]
     public void ThenTheBookingCreationShouldFail()
     {
-        var result = (Result<Booking>)bookingContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(bookingContext.BookingCreationResult);
+        Assert.False(bookingContext.BookingCreationResult.Value.IsSuccess);
     }
 
     [Then("the booking total price should be (.*)")]
@@ -188,18 +213,28 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [Then(@"the error should be for field ""(.*)""")]
     public void ThenTheErrorShouldBeForField(string fieldName)
     {
-        switch (bookingContext.Result)
+        // Check BookingCreationResult first, then BookingOperationResult, then BookingCustomerResult
+        if (bookingContext.BookingCreationResult.HasValue)
         {
-            case Result<Booking> typedResult:
-                Assert.False(typedResult.IsSuccess);
-                Assert.Equal(ResultStatus.Invalid, typedResult.Status);
-                Assert.Contains(fieldName, typedResult.ErrorDetails!.ValidationErrors!.Keys);
-                break;
-            case Result result:
-                Assert.False(result.IsSuccess);
-                Assert.Equal(ResultStatus.Invalid, result.Status);
-                Assert.Contains(fieldName, result.ErrorDetails!.ValidationErrors!.Keys);
-                break;
+            Assert.False(bookingContext.BookingCreationResult.Value.IsSuccess);
+            Assert.Equal(ResultStatus.Invalid, bookingContext.BookingCreationResult.Value.Status);
+            Assert.Contains(fieldName, bookingContext.BookingCreationResult.Value.ErrorDetails!.ValidationErrors!.Keys);
+        }
+        else if (bookingContext.BookingOperationResult.HasValue)
+        {
+            Assert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
+            Assert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
+            Assert.Contains(fieldName, bookingContext.BookingOperationResult.Value.ErrorDetails!.ValidationErrors!.Keys);
+        }
+        else if (bookingContext.BookingCustomerResult.HasValue)
+        {
+            Assert.False(bookingContext.BookingCustomerResult.Value.IsSuccess);
+            Assert.Equal(ResultStatus.Invalid, bookingContext.BookingCustomerResult.Value.Status);
+            Assert.Contains(fieldName, bookingContext.BookingCustomerResult.Value.ErrorDetails!.ValidationErrors!.Keys);
+        }
+        else
+        {
+            Assert.Fail("No booking result found.");
         }
     }
 }

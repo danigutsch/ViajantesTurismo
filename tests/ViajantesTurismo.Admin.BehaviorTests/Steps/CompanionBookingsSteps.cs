@@ -37,6 +37,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null);
 
+        bookingContext.BookingCreationResult = result;
         bookingContext.Result = result;
 
         if (result.IsSuccess)
@@ -61,6 +62,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null);
 
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
+
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -83,6 +87,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null);
 
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
+
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -102,6 +109,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             0m,
             null,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
 
         if (result.IsSuccess)
         {
@@ -125,7 +135,9 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null);
 
+        bookingContext.BookingCreationResult = result;
         bookingContext.Result = result;
+
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -146,6 +158,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             null,
             null);
 
+        bookingContext.BookingCreationResult = result;
         bookingContext.Result = result;
 
         if (result.IsSuccess)

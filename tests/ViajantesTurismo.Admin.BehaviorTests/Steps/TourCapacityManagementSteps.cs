@@ -206,6 +206,7 @@ public sealed class TourCapacityManagementSteps(
         Assert.True(result.IsSuccess);
         result.Value.Confirm();
 
+        bookingContext.BookingCreationResult = result;
         bookingContext.Result = result;
     }
 
@@ -221,7 +222,7 @@ public sealed class TourCapacityManagementSteps(
 
         var customer = customerContext.Customers.ElementAt(3);
 
-        bookingContext.Result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(
             customer.Id,
             BikeType.Regular,
             null,
@@ -231,6 +232,9 @@ public sealed class TourCapacityManagementSteps(
             0m,
             null,
             null);
+
+        bookingContext.BookingCreationResult = result;
+        bookingContext.Result = result;
     }
 
     [Then("the minimum capacity should be (.*)")]
@@ -318,9 +322,9 @@ public sealed class TourCapacityManagementSteps(
     [Then("the error should indicate the tour is fully booked")]
     public void ThenTheErrorShouldIndicateTheTourIsFullyBooked()
     {
-        var result = (Result<Booking>)bookingContext.Result;
-        Assert.True(result.IsFailure);
-        var error = result.ErrorDetails;
+        Assert.NotNull(bookingContext.BookingCreationResult);
+        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        var error = bookingContext.BookingCreationResult.Value.ErrorDetails;
         Assert.NotNull(error);
         Assert.Contains("fully booked", error.Detail, StringComparison.OrdinalIgnoreCase);
     }
