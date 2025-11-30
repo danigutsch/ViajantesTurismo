@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bookingContext)
+public sealed class TourDeletionSteps(TourContext tourContext)
 {
     [Given("a tour exists with no bookings")]
     public void GivenATourExistsWithNoBookings()
@@ -111,7 +111,6 @@ public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bo
         var command = new DeleteTourCommand(tourContext.Tour.Id);
         var result = await tourContext.DeleteTourCommandHandler.Handle(command, CancellationToken.None);
         tourContext.DeleteResult = result;
-        bookingContext.Result = result;
     }
 
     [When("I attempt to delete the tour")]
@@ -120,7 +119,6 @@ public sealed class TourDeletionSteps(TourContext tourContext, BookingContext bo
         var command = new DeleteTourCommand(tourContext.Tour.Id);
         var result = await tourContext.DeleteTourCommandHandler.Handle(command, CancellationToken.None);
         tourContext.DeleteResult = result;
-        bookingContext.Result = result;
     }
 
     [Then("the tour should be deleted successfully")]

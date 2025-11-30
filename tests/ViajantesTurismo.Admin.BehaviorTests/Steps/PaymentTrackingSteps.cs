@@ -118,7 +118,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var today = DateTime.UtcNow.Date;
         _paymentResult = bookingContext.Booking.RecordPayment(100m, today, PaymentMethod.Cash, _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I attempt to record a payment with tomorrow's date")]
@@ -126,7 +126,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var tomorrow = DateTime.UtcNow.Date.AddDays(1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, tomorrow, PaymentMethod.Cash, _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I attempt to record a payment with a negative payment method value")]
@@ -134,7 +134,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, paymentDate, (PaymentMethod)(-1), _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [Given("the booking is cancelled")]

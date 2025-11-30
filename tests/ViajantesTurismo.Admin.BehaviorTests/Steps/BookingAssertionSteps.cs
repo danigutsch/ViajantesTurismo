@@ -10,7 +10,8 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then("the booking update should fail with conflict error")]
     public void ThenTheBookingUpdateShouldFailWithConflictError()
     {
-        var result = (Result)context.Result;
+        Assert.NotNull(context.BookingOperationResult);
+        var result = context.BookingOperationResult.Value;
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Conflict, result.Status);
     }
@@ -44,7 +45,8 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then(@"the result should fail with message ""(.*)""")]
     public void ThenTheResultShouldFailWithMessage(string expectedMessage)
     {
-        var result = (Result)context.Result;
+        Assert.NotNull(context.BookingOperationResult);
+        var result = context.BookingOperationResult.Value;
         Assert.True(result.IsFailure);
         Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
@@ -52,7 +54,8 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then(@"the result should fail with message starting with ""(.*)""")]
     public void ThenTheResultShouldFailWithMessageStartingWith(string expectedMessagePrefix)
     {
-        var result = (Result)context.Result;
+        Assert.NotNull(context.BookingOperationResult);
+        var result = context.BookingOperationResult.Value;
         Assert.True(result.IsFailure);
         Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }

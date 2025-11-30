@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class CustomerManagementSteps(CustomerContext context, BookingContext bookingContext)
+public sealed class CustomerManagementSteps(CustomerContext context)
 {
     [Given("I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
@@ -369,7 +369,6 @@ public sealed class CustomerManagementSteps(CustomerContext context, BookingCont
         else
         {
             context.Customer = null!;
-            bookingContext.Result = result;
         }
     }
 

@@ -109,6 +109,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         var bikeType = Enum.Parse<BikeType>(bikeTypeString);
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), bikeType, null, null, RoomType.SingleRoom, DiscountType.None, 0m,
             null, null);
+        bookingContext.BookingCreationResult = result;
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -119,6 +120,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
         var roomType = Enum.Parse<RoomType>(roomTypeString);
         var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, roomType, DiscountType.None, 0m, null,
             null);
+        bookingContext.BookingCreationResult = result;
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -161,31 +163,36 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [When("I try to confirm a non-existent booking")]
     public void WhenITryToConfirmANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.ConfirmBooking(Guid.CreateVersion7());
+        var result = tourContext.Tour.ConfirmBooking(Guid.CreateVersion7());
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("I try to remove a non-existent booking")]
     public void WhenITryToRemoveANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.RemoveBooking(Guid.CreateVersion7());
+        var result = tourContext.Tour.RemoveBooking(Guid.CreateVersion7());
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("I try to cancel a non-existent booking")]
     public void WhenITryToCancelANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.CancelBooking(Guid.CreateVersion7());
+        var result = tourContext.Tour.CancelBooking(Guid.CreateVersion7());
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("I try to complete a non-existent booking")]
     public void WhenITryToCompleteANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.CompleteBooking(Guid.CreateVersion7());
+        var result = tourContext.Tour.CompleteBooking(Guid.CreateVersion7());
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("I try to update notes for a non-existent booking")]
     public void WhenITryToUpdateNotesForANonExistentBooking()
     {
-        bookingContext.Result = tourContext.Tour.UpdateBookingNotes(Guid.CreateVersion7(), "Some notes");
+        var result = tourContext.Tour.UpdateBookingNotes(Guid.CreateVersion7(), "Some notes");
+        bookingContext.BookingOperationResult = result;
     }
 
     [Then("the tour should have the booking")]

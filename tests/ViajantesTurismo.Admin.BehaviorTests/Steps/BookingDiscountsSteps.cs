@@ -44,7 +44,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [When(
@@ -63,7 +62,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [When(@"I create a booking with principal customer (\d+), regular bike, double room, and (\d+) absolute discount")]
@@ -81,7 +79,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [When(
@@ -101,7 +98,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [When(
@@ -121,7 +117,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
 
@@ -140,7 +135,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [When(@"I create a booking with principal customer (\d+), regular bike, single room, and (\d+) absolute discount")]
@@ -158,7 +152,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
 
@@ -183,7 +176,6 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [Then(@"the booking total price should be approximately (\d+\.\d+)")]

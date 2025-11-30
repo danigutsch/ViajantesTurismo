@@ -37,7 +37,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -59,7 +58,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -81,7 +79,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -100,7 +97,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -120,7 +116,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             notes);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -140,7 +135,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             notes);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -158,7 +152,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             notes);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 
@@ -177,7 +170,6 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
         bookingContext.Action = null!;
     }
 

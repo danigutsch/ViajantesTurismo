@@ -9,7 +9,7 @@ using ViajantesTurismo.Common.Monies;
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
-public sealed class TourManagementSteps(TourContext tourContext, BookingContext bookingContext)
+public sealed class TourManagementSteps(TourContext tourContext)
 {
     [Given(@"^a tour exists with identifier ""([^""]+)""$")]
     public void GivenATourExistsWithIdentifier(string identifier)
@@ -50,7 +50,6 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
 
         var result = await tourContext.CreateTourCommandHandler.Handle(command, CancellationToken.None);
         tourContext.CommandResult = result;
-        bookingContext.Result = result;
     }
 
     [Then(@"I should be informed that the tour identifier must be unique")]
@@ -274,7 +273,7 @@ public sealed class TourManagementSteps(TourContext tourContext, BookingContext 
         Assert.True(tourContext.CreationResult.Value.IsFailure);
 
         var errorDetails = tourContext.CreationResult.Value.ErrorDetails;
-        var messageFound = errorDetails?.Detail?.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
+        var messageFound = errorDetails?.Detail.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
 
         if (!messageFound && errorDetails?.ValidationErrors != null)
         {

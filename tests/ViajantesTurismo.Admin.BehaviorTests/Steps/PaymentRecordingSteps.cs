@@ -43,7 +43,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
 
         _paymentResult =
             bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, referenceNumber, notes);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I record a payment of (.*) on (.*) using (.*)")]
@@ -63,7 +63,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var method = Enum.Parse<PaymentMethod>(methodString);
 
         _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I attempt to record a payment with amount (.*)")]
@@ -71,7 +71,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
         _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, PaymentMethod.Cash, _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I attempt to record a payment with a date in the future")]
@@ -79,7 +79,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     {
         var futureDate = DateTime.UtcNow.AddDays(1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, futureDate, PaymentMethod.Cash, _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I attempt to record a payment with an invalid payment method")]
@@ -87,7 +87,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     {
         var paymentDate = DateTime.UtcNow.AddDays(-1);
         _paymentResult = bookingContext.Booking.RecordPayment(100m, paymentDate, (PaymentMethod)999, _timeProvider);
-        bookingContext.Result = _paymentResult;
+        bookingContext.PaymentResult = _paymentResult;
     }
 
     [When("I record payments using each payment method:")]
@@ -108,7 +108,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
             }
         }
 
-        bookingContext.Result = allSuccessful;
+        bookingContext.AllPaymentsSuccessful = allSuccessful;
     }
 
     [Then("the payment should be recorded successfully")]
@@ -161,8 +161,8 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [Then("all payments should be recorded successfully")]
     public void ThenAllPaymentsShouldBeRecordedSuccessfully()
     {
-        var result = (bool)bookingContext.Result;
-        Assert.True(result);
+        Assert.NotNull(bookingContext.AllPaymentsSuccessful);
+        Assert.True(bookingContext.AllPaymentsSuccessful.Value);
     }
 
     [Given("I record a payment of (.*) on (.*) using (.*)")]

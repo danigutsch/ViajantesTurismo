@@ -207,7 +207,6 @@ public sealed class TourCapacityManagementSteps(
         result.Value.Confirm();
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [When("I try to add a booking for a fourth customer")]
@@ -234,7 +233,6 @@ public sealed class TourCapacityManagementSteps(
             null);
 
         bookingContext.BookingCreationResult = result;
-        bookingContext.Result = result;
     }
 
     [Then("the minimum capacity should be (.*)")]

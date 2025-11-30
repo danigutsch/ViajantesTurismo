@@ -2,7 +2,6 @@ using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -89,19 +88,22 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [When("the operator tries to confirm the booking")]
     public void WhenTheOperatorTriesToConfirmTheBooking()
     {
-        bookingContext.Result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("the operator tries to cancel the booking")]
     public void WhenTheOperatorTriesToCancelTheBooking()
     {
-        bookingContext.Result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("the operator tries to complete the booking")]
     public void WhenTheOperatorTriesToCompleteTheBooking()
     {
-        bookingContext.Result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
+        bookingContext.BookingOperationResult = result;
     }
 
     [When(@"the operator updates the notes to ""(.*)""")]
@@ -122,7 +124,8 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void WhenTheOperatorTriesToUpdateTheNotesToAStringLongerThanCharacters(int maxLength)
     {
         var longNotes = new string('A', maxLength + 1);
-        bookingContext.Result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, longNotes);
+        var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, longNotes);
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("the operator records a payment for the full amount")]
@@ -153,7 +156,8 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [When("the operator attempts to remove the booking")]
     public void WhenTheOperatorAttemptsToRemoveTheBooking()
     {
-        bookingContext.Result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
+        var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
+        bookingContext.BookingOperationResult = result;
     }
 
     [When("the operator removes the booking")]
@@ -161,27 +165,27 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     {
         var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
         Assert.True(result.IsSuccess);
-        bookingContext.Result = result;
+        bookingContext.BookingOperationResult = result;
     }
 
     [Then("the removal should fail")]
     public void ThenTheRemovalShouldFail()
     {
-        var result = (Result)bookingContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(bookingContext.BookingOperationResult);
+        Assert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 
     [Then("the operation should fail")]
     public void ThenTheOperationShouldFail()
     {
-        var result = (Result)bookingContext.Result;
-        Assert.False(result.IsSuccess);
+        Assert.NotNull(bookingContext.BookingOperationResult);
+        Assert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 
     [Then("the booking should be removed successfully")]
     public void ThenTheBookingShouldBeRemovedSuccessfully()
     {
-        var result = (Result)bookingContext.Result;
-        Assert.True(result.IsSuccess);
+        Assert.NotNull(bookingContext.BookingOperationResult);
+        Assert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 }
