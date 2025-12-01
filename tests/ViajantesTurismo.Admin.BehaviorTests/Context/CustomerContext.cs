@@ -9,24 +9,24 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 [UsedImplicitly]
 public sealed class CustomerContext
 {
+    public string FirstName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
+    public string Gender { get; set; } = null!;
+    public DateTime BirthDate { get; set; }
+    public string Nationality { get; set; } = null!;
+    public string Occupation { get; set; } = null!;
+
+    public Guid? CompanionId { get; set; }
+
     public required Result<PersonalInfo> PersonalInfoResult { get; set; }
-    public PersonalInfo PersonalInfo => PersonalInfoResult.Value;
-
     public required Result<IdentificationInfo> IdentificationInfoResult { get; set; }
-    public IdentificationInfo IdentificationInfo => IdentificationInfoResult.Value;
-
     public required Result<ContactInfo> ContactInfoResult { get; set; }
-    public ContactInfo ContactInfo => ContactInfoResult.Value;
-
     public required Result<Address> AddressResult { get; set; }
-    public Address Address => AddressResult.Value;
-
     public required Result<EmergencyContact> EmergencyContactResult { get; set; }
-    public EmergencyContact EmergencyContact => EmergencyContactResult.Value;
+    public Result<PhysicalInfo>? PhysicalInfoResult { get; set; }
+    public Result<MedicalInfo>? MedicalInfoResult { get; set; }
+    public Result<AccommodationPreferences>? AccommodationPreferencesResult { get; set; }
 
-    public required PhysicalInfo PhysicalInfo { get; set; }
-    public required AccommodationPreferences AccommodationPreferences { get; set; }
-    public required MedicalInfo MedicalInfo { get; set; }
     public required Customer Customer { get; set; }
 
     public ICollection<Customer> Customers { get; } = [];

@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
 [Scope(Feature = "Address Validation")]
-public sealed class AddressValidationSteps(AddressContext context)
+public sealed class AddressValidationSteps(CustomerContext context)
 {
     [When("I attempt to create an address without a street")]
     public void WhenIAttemptToCreateAnAddressWithoutAStreet()
@@ -180,7 +180,7 @@ public sealed class AddressValidationSteps(AddressContext context)
     {
         Assert.True(context.AddressResult.IsSuccess,
             context.AddressResult.ErrorDetails?.Detail ?? "Address creation failed");
-        Assert.NotNull(context.Address);
+        Assert.NotNull(context.AddressResult.Value);
     }
 
     [Then("I should be informed that street is required")]
@@ -303,24 +303,24 @@ public sealed class AddressValidationSteps(AddressContext context)
     [Then(@"the complement should be ""(.*)""")]
     public void ThenTheComplementShouldBe(string expectedComplement)
     {
-        Assert.Equal(expectedComplement, context.Address.Complement);
+        Assert.Equal(expectedComplement, context.AddressResult.Value.Complement);
     }
 
     [Then("the complement should be empty")]
     public void ThenTheComplementShouldBeEmpty()
     {
-        Assert.Null(context.Address.Complement);
+        Assert.Null(context.AddressResult.Value.Complement);
     }
 
     [Then("all address fields should have normalized whitespace")]
     public void ThenAllAddressFieldsShouldHaveNormalizedWhitespace()
     {
-        Assert.Equal("123 Main St", context.Address.Street);
-        Assert.Equal("Apt 5B", context.Address.Complement);
-        Assert.Equal("Downtown Area", context.Address.Neighborhood);
-        Assert.Equal("10001", context.Address.PostalCode);
-        Assert.Equal("New York", context.Address.City);
-        Assert.Equal("NY", context.Address.State);
-        Assert.Equal("USA", context.Address.Country);
+        Assert.Equal("123 Main St", context.AddressResult.Value.Street);
+        Assert.Equal("Apt 5B", context.AddressResult.Value.Complement);
+        Assert.Equal("Downtown Area", context.AddressResult.Value.Neighborhood);
+        Assert.Equal("10001", context.AddressResult.Value.PostalCode);
+        Assert.Equal("New York", context.AddressResult.Value.City);
+        Assert.Equal("NY", context.AddressResult.Value.State);
+        Assert.Equal("USA", context.AddressResult.Value.Country);
     }
 }

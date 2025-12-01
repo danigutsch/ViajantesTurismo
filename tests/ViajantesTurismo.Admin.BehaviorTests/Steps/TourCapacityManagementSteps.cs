@@ -3,7 +3,6 @@ using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -41,49 +40,16 @@ public sealed class TourCapacityManagementSteps(
     [Given("the tour has (.*) confirmed booking with (.*) customers?")]
     public void GivenTheTourHasConfirmedBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
-        for (var i = 0; i < bookingCount; i++)
+        IReadOnlyList<Customer> customers = customersPerBooking switch
         {
-            var customer = EntityBuilders.BuildCustomer(firstName: $"Customer{i}", lastName: $"Test{i}");
+            1 => BookingTestHelpers.CreateConfirmedSingleBookings(tourContext.Tour, bookingCount),
+            2 => BookingTestHelpers.CreateConfirmedDoubleBookings(tourContext.Tour, bookingCount),
+            _ => throw new ArgumentException($"Unsupported customer count: {customersPerBooking}")
+        };
+
+        foreach (var customer in customers)
+        {
             customerContext.Customers.Add(customer);
-
-            Result<Booking> bookingResult;
-
-            switch (customersPerBooking)
-            {
-                case 1:
-                    bookingResult = tourContext.Tour.AddBooking(
-                        customer.Id,
-                        BikeType.Regular,
-                        null,
-                        null,
-                        RoomType.SingleRoom,
-                        DiscountType.None,
-                        0m,
-                        null,
-                        null);
-                    break;
-                case 2:
-                    var companion = EntityBuilders.BuildCustomer(firstName: $"Companion{i}", lastName: $"Test{i}");
-                    customerContext.Customers.Add(companion);
-
-                    bookingResult = tourContext.Tour.AddBooking(
-                        customer.Id,
-                        BikeType.Regular,
-                        companion.Id,
-                        BikeType.Regular,
-                        RoomType.DoubleRoom,
-                        DiscountType.None,
-                        0m,
-                        null,
-                        null);
-                    break;
-                default:
-                    throw new ArgumentException($"Unsupported customer count: {customersPerBooking}");
-            }
-
-            Assert.True(bookingResult.IsSuccess,
-                $"Failed to create confirmed booking during test setup: {bookingResult.ErrorDetails?.Detail}");
-            bookingResult.Value.Confirm();
         }
     }
 
@@ -91,24 +57,10 @@ public sealed class TourCapacityManagementSteps(
     [Given("the tour has (.*) pending booking with (.*) customer")]
     public void GivenTheTourHasPendingBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
-        for (var i = 0; i < bookingCount; i++)
+        var customers = BookingTestHelpers.CreatePendingSingleBookings(tourContext.Tour, bookingCount);
+        foreach (var customer in customers)
         {
-            var customer = EntityBuilders.BuildCustomer(firstName: $"PendingCustomer{i}", lastName: $"Test{i}");
             customerContext.Customers.Add(customer);
-
-            var bookingResult = tourContext.Tour.AddBooking(
-                customer.Id,
-                BikeType.Regular,
-                null,
-                null,
-                RoomType.SingleRoom,
-                DiscountType.None,
-                0m,
-                null,
-                null);
-
-            Assert.True(bookingResult.IsSuccess,
-                $"Failed to create pending booking during test setup: {bookingResult.ErrorDetails?.Detail}");
         }
     }
 
@@ -116,25 +68,10 @@ public sealed class TourCapacityManagementSteps(
     [Given("the tour has (.*) cancelled booking with (.*) customer")]
     public void GivenTheTourHasCancelledBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
-        for (var i = 0; i < bookingCount; i++)
+        var customers = BookingTestHelpers.CreateCancelledSingleBookings(tourContext.Tour, bookingCount);
+        foreach (var customer in customers)
         {
-            var customer = EntityBuilders.BuildCustomer(firstName: $"CancelledCustomer{i}", lastName: $"Test{i}");
             customerContext.Customers.Add(customer);
-
-            var bookingResult = tourContext.Tour.AddBooking(
-                customer.Id,
-                BikeType.Regular,
-                null,
-                null,
-                RoomType.SingleRoom,
-                DiscountType.None,
-                0m,
-                null,
-                null);
-
-            Assert.True(bookingResult.IsSuccess,
-                $"Failed to create cancelled booking during test setup: {bookingResult.ErrorDetails?.Detail}");
-            bookingResult.Value.Cancel();
         }
     }
 

@@ -1,8 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -20,16 +18,7 @@ public sealed class TourDeletionSteps(TourContext tourContext)
     public void GivenTheTourHasAPendingBooking()
     {
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
-        var result = tourContext.Tour.AddBooking(
-            Guid.CreateVersion7(),
-            BikeType.Regular,
-            null,
-            null,
-            RoomType.SingleRoom,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+        var result = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
         Assert.True(result.IsSuccess);
     }
 
@@ -41,16 +30,7 @@ public sealed class TourDeletionSteps(TourContext tourContext)
             tourContext.TourStore.AddExistingTour(tourContext.Tour);
         }
 
-        var addResult = tourContext.Tour.AddBooking(
-            Guid.CreateVersion7(),
-            BikeType.Regular,
-            null,
-            null,
-            RoomType.SingleRoom,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+        var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
         Assert.True(addResult.IsSuccess);
         var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
         Assert.True(confirmResult.IsSuccess);
@@ -66,16 +46,7 @@ public sealed class TourDeletionSteps(TourContext tourContext)
 
         for (var i = 0; i < count; i++)
         {
-            var addResult = tourContext.Tour.AddBooking(
-                Guid.CreateVersion7(),
-                BikeType.Regular,
-                null,
-                null,
-                RoomType.SingleRoom,
-                DiscountType.None,
-                0m,
-                null,
-                null);
+            var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
             Assert.True(addResult.IsSuccess);
             var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
             Assert.True(confirmResult.IsSuccess);
@@ -90,16 +61,7 @@ public sealed class TourDeletionSteps(TourContext tourContext)
             tourContext.TourStore.AddExistingTour(tourContext.Tour);
         }
 
-        var addResult = tourContext.Tour.AddBooking(
-            Guid.CreateVersion7(),
-            BikeType.Regular,
-            null,
-            null,
-            RoomType.SingleRoom,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+        var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
         Assert.True(addResult.IsSuccess);
         var cancelResult = tourContext.Tour.CancelBooking(addResult.Value.Id);
         Assert.True(cancelResult.IsSuccess);
