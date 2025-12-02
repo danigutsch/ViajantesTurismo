@@ -12,7 +12,7 @@ public sealed record ContactInfoDto
     /// The email address of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     [EmailAddress]
     public required string Email { get; init; }
 
@@ -20,7 +20,7 @@ public sealed record ContactInfoDto
     /// The mobile phone number of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxDefaultLength)]
+    [StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
     [Phone]
     public required string Mobile { get; init; }
 
@@ -28,13 +28,13 @@ public sealed record ContactInfoDto
     /// The Instagram handle or profile URL of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxDefaultLength)]
+    [StringLength(ContractConstants.MaxDefaultLength)]
     public required string? Instagram { get; init; }
 
     /// <summary>
     /// The Facebook profile name or URL of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxDefaultLength)]
+    [StringLength(ContractConstants.MaxDefaultLength)]
     public required string? Facebook { get; init; }
 }

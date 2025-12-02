@@ -12,14 +12,14 @@ public sealed record PersonalInfoDto
     /// The first name of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string FirstName { get; init; }
 
     /// <summary>
     /// The last name of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string LastName { get; init; }
 
     /// <summary>
@@ -32,20 +32,20 @@ public sealed record PersonalInfoDto
     /// The gender of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxDefaultLength)]
+    [StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
     public required string Gender { get; init; }
 
     /// <summary>
     /// The nationality of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string Nationality { get; init; }
 
     /// <summary>
     /// The occupation or occupation of the customer.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string Occupation { get; init; }
 }

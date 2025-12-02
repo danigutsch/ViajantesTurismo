@@ -5,19 +5,18 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// Represents the data required to create a new tour.
 /// </summary>
-[MinimumDuration(ContractConstants.MinimumTourDurationDays)]
-public sealed record CreateTourDto
+public sealed record CreateTourDto : IValidatableObject
 {
     /// <summary>
     /// A unique identifier for the tour.
     /// </summary>
-    [Required, MaxLength(ContractConstants.MaxNameLength)]
+    [Required, StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string Identifier { get; init; }
 
     /// <summary>
     /// The name of the tour.
     /// </summary>
-    [Required, MaxLength(ContractConstants.MaxNameLength)]
+    [Required, StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string Name { get; init; }
 
     /// <summary>
@@ -79,4 +78,20 @@ public sealed record CreateTourDto
     /// </summary>
     [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
     public required int MaxCustomers { get; init; }
+
+    /// <inheritdoc />
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var result = TourValidation.ValidateDuration(
+            StartDate,
+            EndDate,
+            ContractConstants.MinimumTourDurationDays,
+            nameof(StartDate),
+            nameof(EndDate));
+
+        if (result is not null)
+        {
+            yield return result;
+        }
+    }
 }

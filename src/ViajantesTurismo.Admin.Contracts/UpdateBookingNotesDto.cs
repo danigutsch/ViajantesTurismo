@@ -8,6 +8,6 @@ namespace ViajantesTurismo.Admin.Contracts;
 public sealed record UpdateBookingNotesDto
 {
     /// <summary>Optional notes about the booking.</summary>
-    [MaxLength(ContractConstants.MaxBookingNotesLength)]
+    [StringLength(ContractConstants.MaxBookingNotesLength)]
     public string? Notes { get; init; }
 }

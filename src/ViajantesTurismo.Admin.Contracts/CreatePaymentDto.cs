@@ -21,10 +21,10 @@ public sealed record CreatePaymentDto
     public required PaymentMethodDto Method { get; init; }
 
     /// <summary>Optional reference number for the payment.</summary>
-    [MaxLength(ContractConstants.MaxReferenceNumberLength)]
+    [StringLength(ContractConstants.MaxReferenceNumberLength)]
     public string? ReferenceNumber { get; init; }
 
     /// <summary>Optional notes about the payment.</summary>
-    [MaxLength(ContractConstants.MaxPaymentNotesLength)]
+    [StringLength(ContractConstants.MaxPaymentNotesLength)]
     public string? Notes { get; init; }
 }

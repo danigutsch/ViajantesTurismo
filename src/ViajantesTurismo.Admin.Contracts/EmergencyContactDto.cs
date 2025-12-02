@@ -12,14 +12,14 @@ public sealed record EmergencyContactDto
     /// The full name of the emergency contact person.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
     public required string Name { get; init; }
 
     /// <summary>
     /// The mobile phone number of the emergency contact person.
     /// </summary>
     [Required]
-    [MaxLength(ContractConstants.MaxDefaultLength)]
+    [StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
     [Phone]
     public required string Mobile { get; init; }
 }

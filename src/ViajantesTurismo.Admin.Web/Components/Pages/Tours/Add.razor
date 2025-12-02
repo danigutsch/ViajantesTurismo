@@ -181,8 +181,7 @@ Bike rental"/>
         _errorMessage = null;
     }
 
-    [MinimumDuration(5)]
-    private class TourFormModel
+    private class TourFormModel : IValidatableObject
     {
         [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Identifier { get; set; } = string.Empty;
@@ -219,6 +218,21 @@ Bike rental"/>
 
         [Required]
         public string ServicesInput { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var result = TourValidation.ValidateDuration(
+                    StartDate,
+                    EndDate,
+                    ContractConstants.MinimumTourDurationDays,
+                    nameof(StartDate),
+                    nameof(EndDate));
+
+            if (result is not null)
+            {
+                yield return result;
+            }
+        }
     }
 
 }

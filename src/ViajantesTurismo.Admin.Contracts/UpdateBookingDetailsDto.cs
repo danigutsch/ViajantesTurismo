@@ -26,39 +26,42 @@ public sealed record UpdateBookingDetailsDto : IValidatableObject
     /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (IsSingleRoomAndHasCompanionSelected())
+        var singleRoomResult = BookingValidation.ValidateSingleRoomNoCompanion(
+            RoomType,
+            CompanionCustomerId,
+            nameof(CompanionCustomerId));
+
+        if (singleRoomResult is not null)
         {
-            yield return new ValidationResult(
-                "Single room bookings cannot have a companion. Please select Double Room or remove the companion.",
-                [nameof(CompanionCustomerId)]);
+            yield return singleRoomResult;
         }
 
-        if (CompanionHasNoBikeTypeSelected())
+        var companionBikeTypeResult = BookingValidation.ValidateCompanionHasBikeType(
+            CompanionCustomerId,
+            CompanionBikeType,
+            nameof(CompanionBikeType));
+
+        if (companionBikeTypeResult is not null)
         {
-            yield return new ValidationResult(
-                "Companion bike type is required when a companion is selected.",
-                [nameof(CompanionBikeType)]);
+            yield return companionBikeTypeResult;
         }
 
-        if (BikeTypeIsNone())
+        var principalBikeTypeResult = BookingValidation.ValidatePrincipalBikeType(
+            PrincipalBikeType,
+            nameof(PrincipalBikeType));
+
+        if (principalBikeTypeResult is not null)
         {
-            yield return new ValidationResult(
-                "Principal customer must select a bike type (Regular or E-Bike).",
-                [nameof(PrincipalBikeType)]);
+            yield return principalBikeTypeResult;
         }
 
-        if (CompanionBikeTypeIsNone())
+        var companionBikeTypeNoneResult = BookingValidation.ValidateCompanionBikeTypeNotNone(
+            CompanionBikeType,
+            nameof(CompanionBikeType));
+
+        if (companionBikeTypeNoneResult is not null)
         {
-            yield return new ValidationResult(
-                "Companion must select a bike type (Regular or E-Bike).",
-                [nameof(CompanionBikeType)]);
+            yield return companionBikeTypeNoneResult;
         }
     }
-
-    private bool CompanionBikeTypeIsNone() => CompanionBikeType is BikeTypeDto.None;
-    private bool BikeTypeIsNone() => PrincipalBikeType == BikeTypeDto.None;
-    private bool CompanionHasNoBikeTypeSelected() => CompanionCustomerId.HasValue && !CompanionBikeType.HasValue;
-
-    private bool IsSingleRoomAndHasCompanionSelected() =>
-        RoomType == RoomTypeDto.SingleRoom && CompanionCustomerId.HasValue;
 }

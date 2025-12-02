@@ -40,7 +40,7 @@ public sealed record CreateBookingDto : IValidatableObject
     public string? DiscountReason { get; init; }
 
     /// <summary>Optional notes about the booking.</summary>
-    [MaxLength(ContractConstants.MaxBookingNotesLength)]
+    [StringLength(ContractConstants.MaxBookingNotesLength)]
     public string? Notes { get; init; }
 
     /// <summary>
@@ -49,26 +49,16 @@ public sealed record CreateBookingDto : IValidatableObject
     /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (DiscountType != DiscountTypeDto.None)
+        foreach (var result in DiscountValidation.Validate(
+                     DiscountType,
+                     DiscountAmount,
+                     DiscountReason,
+                     ContractConstants.MaxDiscountPercentage,
+                     ContractConstants.MinDiscountReasonLength,
+                     nameof(DiscountAmount),
+                     nameof(DiscountReason)))
         {
-            if (DiscountAmount <= 0)
-            {
-                yield return DiscountValidation.AmountMustBePositive();
-            }
-
-            if (DiscountType == DiscountTypeDto.Percentage && DiscountAmount > ContractConstants.MaxDiscountPercentage)
-            {
-                yield return DiscountValidation.PercentageTooHigh(ContractConstants.MaxDiscountPercentage);
-            }
-
-            if (string.IsNullOrWhiteSpace(DiscountReason))
-            {
-                yield return DiscountValidation.ReasonRequired();
-            }
-            else if (DiscountReason.Length < ContractConstants.MinDiscountReasonLength)
-            {
-                yield return DiscountValidation.ReasonTooShort(ContractConstants.MinDiscountReasonLength);
-            }
+            yield return result;
         }
     }
 }
