@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @if (Bookings == null || !Bookings.Any())
 {
     <div class="alert alert-info" role="alert">
@@ -38,7 +39,10 @@ else
             }
         </TemplateColumn>
 
-        <PropertyColumn Property="@(b => b.TotalPrice)" Title="Total Price" Format="C" Sortable="true" />
+        <TemplateColumn Title="Total Price" Sortable="true"
+                        SortBy="GridSort<GetBookingDto>.ByAscending(b => b.TotalPrice)">
+            @CurrencyFormatter.Format(context.TotalPrice, context.Currency)
+        </TemplateColumn>
 
         <TemplateColumn Title="Discount">
             @if (context.DiscountType != DiscountTypeDto.None)
@@ -166,23 +170,9 @@ else
         return booking.DiscountType switch
         {
             DiscountTypeDto.Percentage => $"{booking.DiscountAmount:F2}%",
-            DiscountTypeDto.Absolute => FormatCurrency(booking.DiscountAmount, booking.Currency),
+            DiscountTypeDto.Absolute => CurrencyFormatter.Format(booking.DiscountAmount, booking.Currency),
             _ => "-"
         };
-    }
-
-    private static string FormatCurrency(decimal amount, CurrencyDto currency)
-    {
-        var (symbol, position) = currency switch
-        {
-                CurrencyDto.Real => ("R$", "before"),
-                CurrencyDto.Euro => ("€", "after"),
-                CurrencyDto.UsDollar => ("$", "before"),
-                _ => ("¤", "before")
-        };
-
-        var formattedAmount = amount.ToString("N2");
-        return position == "before" ? $"{symbol} {formattedAmount}" : $"{formattedAmount} {symbol}";
     }
 
     private static string GetDiscountTooltip(GetBookingDto booking)

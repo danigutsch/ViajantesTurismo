@@ -1,5 +1,6 @@
 @page "/bookings/{id:guid}/edit"
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @inject IBookingsApiClient BookingsApi
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
@@ -80,7 +81,7 @@ else
                     <div class="col-md-6 mb-3">
                         <label for="totalPrice" class="form-label">Total Price (Calculated)</label>
                         <input type="text" id="totalPrice" class="form-control"
-                               value="@_booking.TotalPrice.ToString("F2")" readonly/>
+                               value="@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)" readonly/>
                         <div class="form-text">Price is automatically calculated from room type and bikes</div>
                     </div>
 

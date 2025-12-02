@@ -157,7 +157,7 @@ else if (_tour != null)
                                         <div class="card">
                                             <div class="card-body">
                                                 <h6 class="card-subtitle mb-2 text-muted">Total Price</h6>
-                                                <h4 class="card-title">@_currentBooking.TotalPrice.ToString("C")</h4>
+                                                <h4 class="card-title">@CurrencyFormatter.Format(_currentBooking.TotalPrice, _currentBooking.Currency)</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -165,7 +165,7 @@ else if (_tour != null)
                                         <div class="card">
                                             <div class="card-body">
                                                 <h6 class="card-subtitle mb-2 text-muted">Amount Paid</h6>
-                                                <h4 class="card-title text-success">@_currentBooking.AmountPaid.ToString("C")</h4>
+                                                <h4 class="card-title text-success">@CurrencyFormatter.Format(_currentBooking.AmountPaid, _currentBooking.Currency)</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -173,7 +173,7 @@ else if (_tour != null)
                                         <div class="card">
                                             <div class="card-body">
                                                 <h6 class="card-subtitle mb-2 text-muted">Remaining Balance</h6>
-                                                <h4 class="card-title text-danger">@_currentBooking.RemainingBalance.ToString("C")</h4>
+                                                <h4 class="card-title text-danger">@CurrencyFormatter.Format(_currentBooking.RemainingBalance, _currentBooking.Currency)</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -201,7 +201,7 @@ else if (_tour != null)
                                     </div>
                                 }
 
-                                <PaymentsList Payments="_currentBooking.Payments"/>
+                                <PaymentsList Payments="_currentBooking.Payments" Currency="_currentBooking.Currency"/>
                             </div>
                         }
                     }
@@ -505,17 +505,7 @@ else if (_tour != null)
         }
     }
 
-    private static string FormatPrice(decimal price, CurrencyDto currency)
-    {
-        var symbol = currency switch
-        {
-            CurrencyDto.Real => "R$",
-            CurrencyDto.Euro => "€",
-            CurrencyDto.UsDollar => "$",
-            _ => ""
-        };
-        return $"{symbol}{price:N2}";
-    }
+    private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
 
     private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
 

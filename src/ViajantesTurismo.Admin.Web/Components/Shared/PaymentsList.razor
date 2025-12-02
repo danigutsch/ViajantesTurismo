@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @if (!Payments.Any())
 {
     <div class="alert alert-info" role="alert">
@@ -13,7 +14,7 @@ else
         <PropertyColumn Property="@(p => p.PaymentDate)" Title="Payment Date" Format="dd/MM/yyyy" Sortable="true"/>
 
         <TemplateColumn Title="Amount" Sortable="true" SortBy="GridSort<GetPaymentDto>.ByAscending(p => p.Amount)">
-            <strong>@context.Amount.ToString("C")</strong>
+            <strong>@CurrencyFormatter.Format(context.Amount, Currency)</strong>
         </TemplateColumn>
 
         <TemplateColumn Title="Method" Sortable="true" SortBy="GridSort<GetPaymentDto>.ByAscending(p => p.Method)">
@@ -55,7 +56,7 @@ else
     </QuickGrid>
 
     <div class="mt-3 p-3 bg-light rounded">
-        <strong>Total Paid:</strong> <strong class="ms-2">@TotalPaid.ToString("C")</strong>
+        <strong>Total Paid:</strong> <strong class="ms-2">@CurrencyFormatter.Format(TotalPaid, Currency)</strong>
     </div>
 }
 
@@ -64,6 +65,8 @@ else
 
     [Parameter, EditorRequired]
     public required IReadOnlyCollection<GetPaymentDto> Payments { get; set; }
+
+    [Parameter, EditorRequired] public required CurrencyDto Currency { get; set; }
 
     private IQueryable<GetPaymentDto> PaymentsByDateDescending =>
         Payments.OrderByDescending(p => p.PaymentDate).AsQueryable();
