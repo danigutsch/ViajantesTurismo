@@ -397,10 +397,11 @@ getters/setters.
 
 ### Coverage Configuration
 
-Use Coverlet settings from `coverlet.runsettings` for consistent reporting:
+Code coverage is collected using **Microsoft Testing Platform (MTP)** with settings defined in `coverage.settings.xml`
+at the solution root:
 
 ```powershell
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
 ### CI/CD Integration (Future)
@@ -451,7 +452,7 @@ getters/setters.
 dotnet test                                                                    # All tests
 dotnet test tests/ViajantesTurismo.Admin.UnitTests                             # Specific project
 dotnet test --filter "FullyQualifiedName~Mapper"                               # Filtered
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings    # With coverage
+dotnet test -- --coverage --coverage-output-format cobertura                   # With coverage
 ```
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for coverage tool configuration and report generation.

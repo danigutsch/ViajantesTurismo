@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+    <CodeCoverage>
+        <ModulePaths>
+            <Exclude>
+                <ModulePath>.*ViajantesTurismo\.AppHost\.dll$</ModulePath>
+                <ModulePath>.*\.Tests\..*</ModulePath>
+                <ModulePath>.*Tests\.dll$</ModulePath>
+            </Exclude>
+        </ModulePaths>
+
+        <Sources>
+            <Exclude>
+                <Source>.*\\Migrations\\.*</Source>
+            </Exclude>
+        </Sources>
+
+        <Attributes>
+            <Exclude>
+                <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+                <Attribute>^System\.Diagnostics\.CodeAnalysis\.GeneratedCodeAttribute$</Attribute>
+                <Attribute>^System\.Runtime\.CompilerServices\.CompilerGeneratedAttribute$</Attribute>
+            </Exclude>
+        </Attributes>
+
+        <EnableStaticNativeInstrumentation>false</EnableStaticNativeInstrumentation>
+        <EnableDynamicNativeInstrumentation>false</EnableDynamicNativeInstrumentation>
+        <UseVerifiableInstrumentation>true</UseVerifiableInstrumentation>
+        <AllowLowIntegrityProcesses>true</AllowLowIntegrityProcesses>
+        <CollectFromChildProcesses>true</CollectFromChildProcesses>
+        <CollectAspDotNet>false</CollectAspDotNet>
+    </CodeCoverage>
+</Configuration>

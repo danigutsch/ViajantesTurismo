@@ -302,48 +302,48 @@ All quality tools have VS Code extensions installed for real-time feedback:
 
 ## Test Coverage Tools
 
-### Coverlet Configuration
+### Microsoft Code Coverage Configuration
 
-Test coverage is collected using **Coverlet** with settings defined in `coverlet.runsettings` at the solution root.
+Test coverage is collected using **Microsoft Testing Platform (MTP)** with the
+`Microsoft.Testing.Extensions.CodeCoverage` extension. Settings are defined in `coverage.settings.xml` at the solution
+root.
 
 **Key Configuration:**
 
 - **Format**: `cobertura` (XML format for CI/CD integration)
-- **Output Directory**: `TestResults/Coverage/`
+- **Output**: Each test project generates a `coverage.cobertura.xml` in its `TestResults` folder
 - **Include**: All `ViajantesTurismo.*` assemblies
 - **Exclude**:
-    - Generated files (`*.g.cs`, `*.designer.cs`)
-    - Test projects
+    - Generated files
+    - Test projects (`*Tests.dll`)
     - Migrations
-    - Program.cs (bootstrapping)
+    - AppHost project
 
 ### Running Tests with Coverage
 
 **Collect coverage:**
 
 ```powershell
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
 **Generate HTML report:**
 
 ```powershell
 # Run tests with coverage
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # Generate report (requires reportgenerator tool)
 dotnet tool restore
-dotnet reportgenerator -reports:TestResults/**/coverage.cobertura.xml -targetdir:TestResults/CoverageReport -reporttypes:Html
+dotnet reportgenerator -reports:**/TestResults/**/coverage.cobertura.xml -targetdir:TestResults/CoverageReport -reporttypes:Html
 
 # Open report
 start TestResults/CoverageReport/index.html
 ```
 
-**Or use the automated task:**
+**Or use the VS Code task:**
 
-```powershell
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults/Coverage
-```
+Run the "test with coverage" task from the Command Palette (Ctrl+Shift+P > Tasks: Run Task).
 
 ### Coverage Reports
 

@@ -176,7 +176,7 @@ dotnet test
 **With Code Coverage:**
 
 ```powershell
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
 **Run All Quality Checks:**

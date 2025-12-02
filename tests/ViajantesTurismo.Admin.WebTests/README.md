@@ -209,8 +209,8 @@ dotnet test tests/ViajantesTurismo.Admin.WebTests
 # Run specific test class
 dotnet test --filter "FullyQualifiedName~BookingStatusBadgeTests"
 
-# Run with coverage
-dotnet test tests/ViajantesTurismo.Admin.WebTests --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+# Run with coverage (using MTP)
+dotnet test tests/ViajantesTurismo.Admin.WebTests -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # Watch mode (re-run on file changes)
 dotnet watch test --project tests/ViajantesTurismo.Admin.WebTests

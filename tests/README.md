@@ -68,7 +68,7 @@ dotnet test
 dotnet test tests/ViajantesTurismo.Admin.UnitTests
 
 # With coverage
-dotnet test --collect:"XPlat Code Coverage"
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
 ### Running Tests with Coverage
@@ -76,11 +76,11 @@ dotnet test --collect:"XPlat Code Coverage"
 To run tests and generate a code coverage report:
 
 ```powershell
-# Run tests with coverage collection using the solution runsettings (excludes Migrations, etc.)
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory:TestResults
+# Run tests with coverage
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # Generate HTML coverage report
-dotnet reportgenerator -reports:"TestResults\**\*.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
+dotnet reportgenerator -reports:"**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
 
 # Open the report (Windows)
 Invoke-Item TestResults\CoverageReport\index.html

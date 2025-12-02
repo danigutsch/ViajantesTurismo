@@ -3,16 +3,8 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.ArchitectureTests</RootNamespace>
-        <!--
-        To enable the Microsoft Testing Platform 'dotnet test' experience, add property:
-          <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    
-        To enable the Microsoft Testing Platform native command line experience, add property:
-          <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-    
-        For more information on Microsoft Testing Platform support in xUnit.net, please visit:
-          https://xunit.net/docs/getting-started/v3/microsoft-testing-platform
-        -->
+        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,8 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="coverlet.collector">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
