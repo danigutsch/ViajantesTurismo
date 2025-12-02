@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// Provides centralised discount validation errors for DTO validation.
 /// </summary>
-public static class DiscountErrors
+public static class DiscountValidation
 {
     private const string AmountMustBePositiveMessage = "Discount amount must be greater than 0 when a discount is applied.";
     private const string ReasonRequiredMessage = "Discount reason is required when applying a discount.";

@@ -27,21 +27,21 @@ public sealed record UpdateBookingDiscountDto : IValidatableObject
         {
             if (DiscountAmount <= 0)
             {
-                yield return DiscountErrors.AmountMustBePositive();
+                yield return DiscountValidation.AmountMustBePositive();
             }
 
             if (DiscountType == DiscountTypeDto.Percentage && DiscountAmount > ContractConstants.MaxDiscountPercentage)
             {
-                yield return DiscountErrors.PercentageTooHigh(ContractConstants.MaxDiscountPercentage);
+                yield return DiscountValidation.PercentageTooHigh(ContractConstants.MaxDiscountPercentage);
             }
 
             if (string.IsNullOrWhiteSpace(DiscountReason))
             {
-                yield return DiscountErrors.ReasonRequired();
+                yield return DiscountValidation.ReasonRequired();
             }
             else if (DiscountReason.Length < ContractConstants.MinDiscountReasonLength)
             {
-                yield return DiscountErrors.ReasonTooShort(ContractConstants.MinDiscountReasonLength);
+                yield return DiscountValidation.ReasonTooShort(ContractConstants.MinDiscountReasonLength);
             }
         }
     }
