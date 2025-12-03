@@ -1,0 +1,4 @@
+# Auto-generated files - disable documentation warnings
+[*.cs]
+dotnet_diagnostic.CS1591.severity = none
+generated_code = true

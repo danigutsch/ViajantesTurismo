@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Infrastructure.CompiledModels;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
@@ -26,6 +27,8 @@ public static class InfrastructureDependencyInjection
             ResourceNames.Database,
             configureDbContextOptions: options =>
             {
+                options.UseModel(AdminWriteDbContextModel.Instance);
+
                 if (builder.Environment.IsDevelopment())
                 {
                     options.EnableDetailedErrors();
