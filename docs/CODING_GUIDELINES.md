@@ -72,150 +72,49 @@ public sealed record TourPricing(Money BasePrice, Money RoomSupplement, Money Bi
 
 ### Namespace Declaration
 
-Use file-scoped namespaces (required by EditorConfig):
+Use file-scoped namespaces (enforced by EditorConfig):
 
 ```csharp
-// ✅ CORRECT
 using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
-public sealed class Tour : Entity<Guid>
-{
-    // ...
-}
-```
-
-```csharp
-// ❌ WRONG - Block-scoped namespace
-namespace ViajantesTurismo.Admin.Domain.Tours
-{
-    public sealed class Tour : Entity<Guid>
-    {
-        // ...
-    }
-}
+public sealed class Tour : Entity<Guid> { }
 ```
 
 ### Using Directives
 
 - **Placement:** Outside namespace (enforced by EditorConfig)
-- **Order:** System namespaces first, then third-party, then project namespaces
-- **Implicit Usings:** Enabled globally, don't repeat common system namespaces
-
-```csharp
-using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
-
-namespace ViajantesTurismo.Admin.Domain.Tours;
-```
+- **Order:** System → third-party → project namespaces
+- **Implicit Usings:** Enabled globally
 
 ### File Structure
 
-1. Using directives
-2. Namespace declaration
-3. XML documentation comment
-4. Class/record/interface declaration
-5. Private fields
-6. Constructors (private first for factory pattern)
-7. Public properties
-8. Public methods (factory methods first)
-9. Private methods
-
-**Example:**
-
-```csharp
-using ViajantesTurismo.Common.Results;
-
-namespace ViajantesTurismo.Admin.Domain.Tours;
-
-/// <summary>
-/// Represents a tour entity with schedule, pricing, and booking management.
-/// </summary>
-public sealed class Tour : Entity<Guid>
-{
-    // Private fields
-    private readonly List<Booking> _bookings = [];
-
-    // Private constructor (for factory pattern)
-    private Tour(string identifier, string name)
-    {
-        Identifier = identifier;
-        Name = name;
-    }
-
-    // Public properties
-    public string Identifier { get; private set; }
-    public string Name { get; private set; }
-
-    // Public factory method
-    public static Result<Tour> Create(string identifier, string name)
-    {
-        // Validation and creation logic
-    }
-
-    // Public methods
-    public Result UpdateName(string newName)
-    {
-        // Update logic
-    }
-
-    // Private methods
-    private void ValidateInvariants()
-    {
-        // Internal validation
-    }
-}
-```
+Order: Using directives → Namespace → XML docs → Type declaration → Private fields →
+Constructors (private first) → Public properties → Public methods (factory first) → Private methods
 
 ## Code Style
 
 ### Expression Bodies
 
-Use expression bodies for simple properties and lambdas:
+Use for simple properties and lambdas, not for methods or constructors:
 
 ```csharp
-// ✅ Properties
 public int AvailableSpots => Capacity.MaxCustomers - CurrentCustomerCount;
 public bool IsFullyBooked => CurrentCustomerCount >= Capacity.MaxCustomers;
-
-// ✅ Lambdas
-.Where(b => b.Status == BookingStatus.Confirmed)
-.Select(b => b.ToDto())
-
-// ❌ Not for methods or constructors
-public Result UpdateName(string name) => /* ... */; // DON'T
 ```
 
 ### Pattern Matching
 
-Prefer pattern matching over explicit casts:
+Prefer pattern matching over explicit casts. Use switch expressions where appropriate:
 
 ```csharp
-// ✅ CORRECT
-if (obj is Tour tour)
-{
-    return tour.Identifier;
-}
+if (obj is Tour tour) { return tour.Identifier; }
 
-// ❌ WRONG
-if (obj is Tour)
-{
-    var tour = (Tour)obj;
-    return tour.Identifier;
-}
-```
-
-Use switch expressions where appropriate:
-
-```csharp
-// ✅ CORRECT
 var message = status switch
 {
     BookingStatus.Pending => "Awaiting confirmation",
     BookingStatus.Confirmed => "Booking confirmed",
-    BookingStatus.Cancelled => "Booking cancelled",
     _ => throw new ArgumentOutOfRangeException(nameof(status))
 };
 ```
@@ -226,336 +125,217 @@ var message = status switch
 - **Null-coalescing:** Prefer `??` and `??=` operators
 - **Null-conditional:** Use `?.` for null propagation
 
-```csharp
-// ✅ Nullable parameter
-public Result UpdateNotes(string? notes)
-{
-    Notes = notes ?? string.Empty;
-}
-
-// ✅ Null-conditional
-var price = booking?.FinalPrice ?? 0;
-
-// ✅ Null-coalescing assignment
-_includedServices ??= [];
-```
-
 ### Primary Constructors
 
-Prefer primary constructors for simple classes (EditorConfig warning):
+Prefer primary constructors for simple classes:
 
 ```csharp
-// ✅ CORRECT - Primary constructor
 public sealed record Money(decimal Amount, Currency Currency);
-
-// ✅ CORRECT - For classes needing validation
-public sealed class TourPricing(Money basePrice, Money roomSupplement)
-{
-    public Money BasePrice { get; } = basePrice;
-    public Money RoomSupplement { get; } = roomSupplement;
-}
 ```
 
 ### Collection Expressions
 
-Use collection expressions (`[]`) for inline initialization:
+Use collection expressions (`[]`) for initialization:
 
 ```csharp
-// ✅ CORRECT
 private readonly List<Booking> _bookings = [];
-private string[] _services = ["Hotel", "Breakfast", "Bike Rental"];
-
-// ✅ Spreading
-_includedServices = [.. includedServices];
-
-// ❌ WRONG - Old syntax
-private readonly List<Booking> _bookings = new List<Booking>();
-private string[] _services = new[] { "Hotel", "Breakfast" };
+private string[] _services = ["Hotel", "Breakfast"];
+_includedServices = [.. includedServices]; // Spreading
 ```
 
-### Line Breaking & Method Arguments
+### Line Breaking
 
-**Single-line vs Multi-line:**
-
-- Keep arguments on one line if they fit within the 200-character limit
-- If breaking to multiple lines, put **one argument per line** with proper alignment
+Keep arguments on one line if they fit (200 char limit). When breaking, put **one argument per line**:
 
 ```csharp
-// ✅ CORRECT - Fits on one line
+// ✅ Single line
 var result = Tour.Create(identifier, name, startDate, endDate);
 
-// ✅ CORRECT - Multi-line: one argument per line, aligned
-Result<Tour> failure = Result<Tour>.Failure(
-    ResultStatus.NotFound,
-    new ResultError("Tour not found", null));
-
-// ✅ CORRECT - Complex arguments
+// ✅ Multi-line: one argument per line
 var booking = tour.AddBooking(
     customerId,
     bikeType,
-    companionId,
-    companionBikeType,
-    roomType,
-    discount,
-    notes);
-
-// ❌ WRONG - Partial line break (inconsistent)
-Result<Tour> failure = Result<Tour>.Failure(ResultStatus.NotFound,
-    new ResultError("Tour not found", null));
-
-// ❌ WRONG - Multiple arguments per line when breaking
-var booking = tour.AddBooking(customerId, bikeType,
-    companionId, companionBikeType, roomType);
+    roomType);
 ```
 
-**Note:** `.editorconfig` doesn't control argument alignment. Use Visual Studio's **Format Document**
-(Ctrl+K, Ctrl+D) to apply consistent formatting.
+### Braces
 
-### Method Braces
+Always use braces for control flow statements (EditorConfig enforces).
 
-Always use braces for control flow statements (EditorConfig enforces):
+### Type Declarations
 
-```csharp
-// ✅ CORRECT
-if (count > 0)
-{
-    return Result.Success();
-}
-
-// ❌ WRONG - No braces
-if (count > 0)
-    return Result.Success();
-```
-
-### Implicit vs Explicit Types
-
-- **Prefer explicit types** for domain objects (clarity over brevity)
-- **Use `var`** for obvious types (LINQ, constructors)
-
-```csharp
-// ✅ CORRECT - Explicit domain types
-Tour tour = result.Value;
-BookingStatus status = BookingStatus.Confirmed;
-
-// ✅ CORRECT - var for obvious types
-var bookings = _bookings.Where(b => b.Status == status).ToList();
-var customer = new Customer(name, email);
-
-// ❌ WRONG - var hides domain types
-var tour = result.Value; // What type is this?
-```
+- **Explicit types** for domain objects (clarity over brevity): `Tour tour = result.Value;`
+- **`var`** for obvious types (LINQ, constructors): `var bookings = _bookings.ToList();`
 
 ## Documentation
 
 ### XML Documentation
 
-All public APIs must have XML documentation (`<GenerateDocumentationFile>true</GenerateDocumentationFile>`):
+All public APIs must have XML documentation.
+Required tags: `<summary>`, `<param>`, `<returns>`, `<remarks>` for aggregates.
 
 ```csharp
-/// <summary>
-/// Creates a new instance of the <see cref="Tour"/> class with validation.
-/// </summary>
-/// <param name="identifier">Unique business identifier for the tour.</param>
-/// <param name="name">Display name of the tour.</param>
-/// <returns>
-/// A <see cref="Result{T}"/> containing the created tour on success,
-/// or an error on validation failure.
-/// </returns>
-public static Result<Tour> Create(string identifier, string name)
-{
-    // ...
-}
-```
-
-**Required Tags:**
-
-- `<summary>` - Brief description
-- `<param>` - For each parameter
-- `<returns>` - For methods returning values
-- `<exception>` - For thrown exceptions (rare with Result pattern)
-- `<remarks>` - Additional context, invariants, or aggregate documentation
-
-**Example with remarks:**
-
-```csharp
-/// <summary>
-/// Represents a tour entity with schedule, pricing, and booking management.
-/// </summary>
-/// <remarks>
-/// <para><strong>AGGREGATE ROOT:</strong> Tour is the aggregate root for the Tour-Booking aggregate.</para>
-/// <para>All Booking entities must be created and modified through Tour methods to maintain consistency.</para>
-/// <para>Tour enforces business rules and invariants for all bookings within its aggregate boundary.</para>
-/// </remarks>
-public sealed class Tour : Entity<Guid>
-{
-    // ...
-}
+/// <summary>Creates a new <see cref="Tour"/> with validation.</summary>
+/// <param name="identifier">Unique business identifier.</param>
+/// <returns>Result containing the tour or validation error.</returns>
+public static Result<Tour> Create(string identifier, string name) { }
 ```
 
 ### Code Comments
 
-**When to Comment:**
-
-- Complex business logic that isn't obvious from code
-- Workarounds for known limitations
-- References to ADRs or external documentation
-
-**When NOT to Comment:**
-
-- Self-explanatory code
-- Restating the code in English
-- Documenting domain concepts (use DOMAIN_VALIDATION.md instead)
-
-```csharp
-// ✅ GOOD - Explains non-obvious business rule
-// PaymentStatus is calculated from payments, not stored
-// See ADR-016: PaymentStatus as Calculated Property
-public PaymentStatus PaymentStatus => /* ... */;
-
-// ❌ BAD - Restates the code
-// Get the identifier
-public string Identifier { get; private set; }
-```
+**When to comment:** Complex business logic, workarounds, ADR references.
+**When NOT to comment:** Self-explanatory code, restating the obvious.
 
 ## Immutability
 
-### Prefer Immutability
-
-- **Value Objects:** Always immutable (use `record` or readonly structs)
-- **Entities:** Mutable state, but expose via methods returning `Result`
-- **Collections:** Expose as `IReadOnlyList<T>`, store as `List<T>`
+- **Value Objects:** Always immutable (`record` or readonly struct)
+- **Entities:** Mutable via methods returning `Result`
+- **Collections:** Store as `List<T>`, expose as `IReadOnlyList<T>`
+- **DTOs:** Use `init` and `required` for immutable initialization
 
 ```csharp
-// ✅ Immutable value object
 public sealed record Money(decimal Amount, Currency Currency);
 
-// ✅ Entity with controlled mutation
 public sealed class Tour : Entity<Guid>
 {
     private readonly List<Booking> _bookings = [];
-
-    // Immutable public interface
     public IReadOnlyList<Booking> Bookings => _bookings.AsReadOnly();
-
-    // Mutation through validated methods
-    public Result<Booking> AddBooking(/* ... */)
-    {
-        // Validation
-        var booking = new Booking(/* ... */);
-        _bookings.Add(booking);
-        return Result<Booking>.Success(booking);
-    }
 }
-```
 
-### Init-Only Properties
-
-Use `init` for immutable objects initialized via object initializers:
-
-```csharp
 public sealed class TourDto
 {
     public required string Identifier { get; init; }
-    public required string Name { get; init; }
-    public required DateTime StartDate { get; init; }
 }
-
-// Usage
-var dto = new TourDto
-{
-    Identifier = "TOUR-001",
-    Name = "Alps Adventure",
-    StartDate = DateTime.UtcNow
-};
 ```
 
 ## Error Handling
 
-### Use Result Pattern
-
-Never throw exceptions for expected validation failures. See [DOMAIN_VALIDATION.md](DOMAIN_VALIDATION.md) for
-comprehensive Result pattern usage.
+Use the Result pattern for expected failures. Throw exceptions only for programmer errors,
+system failures, or invariant violations. See [DOMAIN_VALIDATION.md](DOMAIN_VALIDATION.md) for details.
 
 ```csharp
-// ✅ CORRECT - Return Result
+// ✅ Return Result for validation
 public static Result<Tour> Create(string identifier, string name)
 {
     if (string.IsNullOrWhiteSpace(identifier))
         return TourErrors.EmptyIdentifier();
-
     return new Tour(identifier, name);
 }
 
-// ❌ WRONG - Throw exception
-public static Tour Create(string identifier, string name)
-{
-    if (string.IsNullOrWhiteSpace(identifier))
-        throw new ArgumentException("Identifier cannot be empty");
-
-    return new Tour(identifier, name);
-}
-```
-
-### When to Throw Exceptions
-
-Only for truly exceptional conditions:
-
-- Programmer errors (null reference to non-nullable)
-- System failures (database unavailable, out of memory)
-- Invariant violations that should never occur
-
-```csharp
-// ✅ CORRECT - Invariant violation
+// ✅ Throw for invariant violations
 if (_bookings.Count > Capacity.MaxCustomers)
-    throw new InvalidOperationException("Booking count exceeded maximum capacity. This should never happen.");
+    throw new InvalidOperationException("Invariant violated");
 ```
 
-## Testing Considerations
+## Testing
 
-### Testable Design
+Keep methods focused, avoid static dependencies, use interfaces for repositories.
+See [TEST_GUIDELINES.md](TEST_GUIDELINES.md).
 
-- Keep methods focused and single-purpose
-- Avoid static dependencies (use dependency injection)
-- Use interfaces for repositories and external dependencies
+## Native AOT Compatibility
+
+### Project Configuration
+
+Library projects should enable AOT analysis to catch compatibility issues at compile time:
+
+```xml
+<PropertyGroup>
+  <IsAotCompatible>true</IsAotCompatible>
+</PropertyGroup>
+```
+
+API projects should additionally enable the Request Delegate Generator:
+
+```xml
+<PropertyGroup>
+  <IsAotCompatible>true</IsAotCompatible>
+  <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+</PropertyGroup>
+```
+
+**Note:** `IsAotCompatible=true` implicitly sets `IsTrimmable=true`, enabling both trim and AOT analyzers.
+
+### JSON Serialization
+
+Use source-generated JSON serializers instead of reflection-based serialization:
 
 ```csharp
-// ✅ Testable - Interface dependency
-public sealed class CreateTourHandler(ITourRepository repository)
-{
-    public async Task<Result<Tour>> Handle(CreateTourCommand command, CancellationToken ct)
-    {
-        var result = Tour.Create(command.Identifier, command.Name, /* ... */);
-        if (!result.IsSuccess)
-            return result;
+// ✅ CORRECT - Source-generated serializer
+[JsonSerializable(typeof(TourDto))]
+[JsonSerializable(typeof(CustomerDto))]
+internal partial class AppJsonSerializerContext : JsonSerializerContext { }
 
-        await repository.AddAsync(result.Value, ct);
-        return result;
+// Register in Program.cs
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+});
+
+// ❌ WRONG - Reflection-based serialization
+JsonSerializer.Serialize(dto); // Uses reflection at runtime
+```
+
+**Note:** Only list top-level types in `[JsonSerializable]` attributes.
+The source generator automatically discovers and generates serializers for member types.
+
+### Validation Patterns
+
+Avoid custom validation attributes that use reflection. Instead, implement `IValidatableObject`:
+
+```csharp
+// ✅ CORRECT - IValidatableObject pattern
+public record TourDto : IValidatableObject
+{
+    public required int Duration { get; init; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        if (Duration < TourConstraints.MinDuration)
+        {
+            yield return new ValidationResult(
+                $"Duration must be at least {TourConstraints.MinDuration} days.",
+                [nameof(Duration)]);
+        }
     }
 }
+
+// ❌ WRONG - Custom validation attribute (uses reflection)
+[TourDurationRange]
+public required int Duration { get; init; }
 ```
+
+### CreateSlimBuilder
+
+For AOT-optimized API applications, use `CreateSlimBuilder` instead of `CreateBuilder`:
+
+```csharp
+// ✅ CORRECT - Slim builder for AOT
+var builder = WebApplication.CreateSlimBuilder(args);
+
+// ❌ WRONG - Full builder includes AOT-incompatible features
+var builder = WebApplication.CreateBuilder(args);
+```
+
+`CreateSlimBuilder` excludes features incompatible with AOT
+(hosting startup assemblies, IIS integration, EventLog logging, etc.).
+
+### Known Limitations
+
+| Component | AOT Status | Notes |
+|-----------|------------|-------|
+| Common, Contracts, Domain, Application | ✅ Compatible | `IsAotCompatible=true` enabled |
+| ApiService | ✅ Compatible | Uses `CreateSlimBuilder`, JSON source generators |
+| Infrastructure (EF Core) | ⚠️ Partial | Compiled models generated, but DbContext blocks full AOT |
+| Web (Blazor Server) | ❌ Not Compatible | Blazor Server not supported for Native AOT |
+
+See [BACKLOG.md](adr/BACKLOG.md) PBI-003 for detailed status and progress.
 
 ## Performance
 
-### Avoid Allocations
-
 - Use `Span<T>` and `ReadOnlySpan<T>` for stack allocations
-- Reuse collections where appropriate
-- Use `ValueTask` for hot paths
-
-### Async/Await
-
 - Use `async`/`await` for I/O-bound operations
 - Don't use `async void` except for event handlers
-- Use `ConfigureAwait(false)` is NOT needed (InvariantGlobalization enabled)
-
-```csharp
-// ✅ CORRECT
-public async Task<Result<Tour>> Handle(CreateTourCommand command, CancellationToken ct)
-{
-    await repository.AddAsync(tour, ct);
-    return Result<Tour>.Success(tour);
-}
-```
+- `ConfigureAwait(false)` is NOT needed (InvariantGlobalization enabled)
 
 ## Related Documentation
 

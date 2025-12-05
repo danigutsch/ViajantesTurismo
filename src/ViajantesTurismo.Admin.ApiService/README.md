@@ -43,7 +43,7 @@ error handling.
 
 ## Features
 
-- OpenAPI/Swagger documentation
+- OpenAPI documentation
 - Result pattern error handling
 - Health checks at `/health`
 - Service discovery integration

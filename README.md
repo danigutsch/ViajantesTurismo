@@ -36,14 +36,26 @@ powerful tools to create and manage tour packages.
 
 ## Technology Stack
 
+### Frameworks & Runtime
+
 - **.NET 10** (Preview) - Modern cross-platform framework
-- **ASP.NET Core** - Web API framework
-- **Entity Framework Core** - Database ORM
+- **ASP.NET Core** - Web API with Native AOT preparation
+- **Blazor Server** - Web frontend with client-side routing
+- **.NET Aspire** - Cloud-native orchestration and observability
+
+### Data & Persistence
+
+- **Entity Framework Core** - ORM with compiled models for AOT
 - **PostgreSQL** - Primary database
-- **.NET Aspire** - Cloud-native orchestration
-- **Blazor** - Web frontend with client-side routing and modern UX
-- **xUnit** - Testing framework
-- **OpenAPI/Swagger** - API documentation
+
+### Testing
+
+- **xUnit** - Unit and integration testing
+- **Microsoft.Testing.Platform** - Test runner with built-in code coverage
+
+### API & Documentation
+
+- **OpenAPI** - API documentation and exploration
 
 ## Project Structure
 
@@ -199,7 +211,7 @@ The API provides RESTful endpoints for managing tours, customers, and bookings.
 - **Bookings**: Domain-driven booking lifecycle (create, confirm, cancel, complete)
 - **Payments**: Payment recording and tracking
 
-See the API documentation (Swagger/OpenAPI) at `https://localhost:7xxx/swagger` when running the application.
+See the OpenAPI documentation at `/openapi/v1.json` when running the application.
 
 For detailed business rules and domain operations, see:
 
@@ -223,6 +235,18 @@ Key patterns:
 - **Result Pattern**: Explicit error handling without exceptions
 - **Factory Methods**: Domain entities ensure a valid state from creation
 - **Aggregate Roots**: Tour manages all Booking operations
+- **AOT Compatibility**: Library projects prepared for Native AOT with trim analyzers enabled
+
+### Native AOT Readiness
+
+The solution is prepared for Native AOT compilation:
+
+- **Library projects**: `IsAotCompatible=true` with no trim warnings
+- **API project**: Uses `CreateSlimBuilder`, JSON source generators, and Request Delegate Generator
+- **EF Core**: Compiled models generated for performance
+- **Blocked**: Full AOT publishing blocked by EF Core reflection requirements (tracked in PBI-003)
+
+See [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#native-aot-compatibility) for AOT development guidelines.
 
 See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for detailed architectural decisions.
 
