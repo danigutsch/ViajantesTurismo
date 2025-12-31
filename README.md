@@ -24,10 +24,10 @@ powerful tools to create and manage tour packages.
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
-    - Base tour pricing for single room (not per person)
+    - Base tour pricing for a single room (not per person)
     - Double room supplement for larger accommodations
     - Bike rental pricing options
-    - Discount system with percentage or absolute amount support
+    - Discount system with percentage or absolute amount of support
     - Calculated total price (transparent, consistent)
         - Payment tracking with configurable payment methods
 - **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
@@ -47,26 +47,26 @@ powerful tools to create and manage tour packages.
 
 ## Project Structure
 
-```bash
+```text
 ViajantesTurismo/
 ├── src/
-│   ├── ViajantesTurismo.Admin.Domain/         # Domain entities and business logic
-│   ├── ViajantesTurismo.Admin.Application/    # Application layer (mappers, interfaces)
-│   ├── ViajantesTurismo.Admin.Infrastructure/ # Infrastructure (EF Core, DB context, stores)
-│   ├── ViajantesTurismo.AdminApi.Contracts/   # API contracts and DTOs
-│   ├── ViajantesTurismo.Admin.ApiService/     # Main API service
-│   ├── ViajantesTurismo.Admin.Web/            # Blazor admin web frontend
-│   ├── ViajantesTurismo.AppHost/              # Aspire orchestration
-│   ├── ViajantesTurismo.Common/               # Shared domain models and utilities
-│   ├── ViajantesTurismo.MigrationService/     # Database migration worker
-│   ├── ViajantesTurismo.Resources/            # Resource definitions
-│   ├── ViajantesTurismo.ServiceDefaults/      # Service defaults and extensions
-│   └── ViajantesTurismo.Web/                  # Blazor public web frontend
+│   ├── ViajantesTurismo.Admin.Domain/              # Domain entities and business logic
+│   ├── ViajantesTurismo.Admin.Application/         # Application layer (mappers, interfaces)
+│   ├── ViajantesTurismo.Admin.Infrastructure/      # Infrastructure (EF Core, DB context, stores)
+│   ├── ViajantesTurismo.AdminApi.Contracts/        # API contracts and DTOs
+│   ├── ViajantesTurismo.Admin.ApiService/          # Main API service
+│   ├── ViajantesTurismo.Admin.Web/                 # Blazor admin web frontend
+│   ├── ViajantesTurismo.AppHost/                   # Aspire orchestration
+│   ├── ViajantesTurismo.Common/                    # Shared domain models and utilities
+│   ├── ViajantesTurismo.MigrationService/          # Database migration worker
+│   ├── ViajantesTurismo.Resources/                 # Resource definitions
+│   ├── ViajantesTurismo.ServiceDefaults/           # Service defaults and extensions
+│   └── ViajantesTurismo.Web/                       # Blazor public web frontend
 └── tests/
-    ├── ViajantesTurismo.Admin.UnitTests/      # Domain unit tests
-    ├── ViajantesTurismo.Admin.BehaviorTests/  # BDD/Gherkin tests
-    ├── ViajantesTurismo.Admin.IntegrationTests/ # API integration tests
-    └── ViajantesTurismo.Common.UnitTests/     # Common utilities tests
+    ├── ViajantesTurismo.Admin.UnitTests/           # Domain unit tests
+    ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
+    ├── ViajantesTurismo.Admin.IntegrationTests/    # API integration tests
+    └── ViajantesTurismo.Common.UnitTests/          # Common utilities tests
 ```
 
 ## Getting Started
@@ -74,7 +74,7 @@ ViajantesTurismo/
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Preview) - Version specified in `global.json`
-- [Node.js](https://nodejs.org/) (LTS) - For markdown linting and documentation tools
+- [Node.js](https://nodejs.org/) (LTS) - For Markdown linting and documentation tools
 - Container runtime (for PostgreSQL):
     - [Podman](https://podman.io/) (recommended, open source) or
     - [Docker Desktop](https://www.docker.com/products/docker-desktop)
@@ -221,7 +221,7 @@ Key patterns:
 
 - **CQRS**: Separate read (queries) and write (commands) operations
 - **Result Pattern**: Explicit error handling without exceptions
-- **Factory Methods**: Domain entities ensure valid state from creation
+- **Factory Methods**: Domain entities ensure a valid state from creation
 - **Aggregate Roots**: Tour manages all Booking operations
 
 See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for detailed architectural decisions.
