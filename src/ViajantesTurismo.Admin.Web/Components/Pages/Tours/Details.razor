@@ -328,7 +328,7 @@ else if (_tour != null)
     private void ShowCreateBookingForm()
     {
         _editingBookingId = null;
-        _bookingFormModel = new BookingFormModel();
+        _bookingFormModel = new BookingFormModel { TourId = Id };
         _showCreateForm = true;
     }
 
