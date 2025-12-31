@@ -78,7 +78,7 @@ if [ -n "${CHANGED_SH_FILES}" ]; then
         done
         printf "%b" "${GREEN}✓ Shell scripts formatted and re-staged${NC}\n"
     else
-        printf "%b" "${YELLOW}⚠️  shfmt not found - skipping auto-format${NC}\n"
+        printf "%b" "${YELLOW}⚠️ shfmt not found - skipping auto-format${NC}\n"
         printf "%b" "${GREEN}✓ Shell scripts checked${NC}\n"
     fi
 fi
@@ -97,7 +97,7 @@ if [ -n "${CHANGED_PS_FILES}" ]; then
         done
         printf "%b" "${GREEN}✓ PowerShell scripts checked${NC}\n"
     else
-        printf "%b" "${YELLOW}⚠️  PowerShell not available, skipping analysis${NC}\n"
+        printf "%b" "${YELLOW}⚠️ PowerShell not available, skipping analysis${NC}\n"
     fi
 fi
 

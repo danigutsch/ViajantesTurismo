@@ -44,7 +44,7 @@ INSTALLED_SDK=$(dotnet --version 2>&1 || echo "not found")
 if [ "${INSTALLED_SDK}" != "not found" ]; then
     printf "%b" "   ${GREEN}✅ .NET SDK installed: ${INSTALLED_SDK}${NC}\n"
     if [ "${INSTALLED_SDK}" != "${REQUIRED_VERSION}" ]; then
-        printf "%b" "   ${YELLOW}⚠️  Required version: ${REQUIRED_VERSION}${NC}\n"
+        printf "%b" "   ${YELLOW}⚠️ Required version: ${REQUIRED_VERSION}${NC}\n"
         printf "%b" "   ${CYAN}💡 Download from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
     fi
 else
@@ -67,7 +67,7 @@ printf "\n%b" "${YELLOW}🔧 Restoring .NET local tools...${NC}\n"
 if dotnet tool restore > /dev/null 2>&1; then
     printf "%b" "   ${GREEN}✅ .NET tools restored (dotnet-ef, reportgenerator, Aspire CLI)${NC}\n"
 else
-    printf "%b" "   ${YELLOW}⚠️  Failed to restore .NET tools${NC}\n"
+    printf "%b" "   ${YELLOW}⚠️ Failed to restore .NET tools${NC}\n"
 fi
 
 # Check for PowerShell (optional - only for PSScriptAnalyzer)
@@ -77,7 +77,7 @@ if command -v pwsh > /dev/null 2>&1; then
     printf "%b" "   ${CYAN}💡 To install PSScriptAnalyzer:${NC}\n"
     printf "%b" "   ${CYAN}   pwsh -Command 'Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force'${NC}\n"
 else
-    printf "%b" "   ${YELLOW}⚠️  PowerShell not available - PowerShell script linting will be skipped${NC}\n"
+    printf "%b" "   ${YELLOW}⚠️ PowerShell not available - PowerShell script linting will be skipped${NC}\n"
     printf "%b" "   ${CYAN}💡 Install from: https://github.com/PowerShell/PowerShell${NC}\n"
 fi
 
@@ -107,11 +107,11 @@ if [ "${SKIP_NPM}" = false ]; then
                 exit 1
             fi
         else
-            printf "%b" "   ${YELLOW}⏭️  Skipping linter installation${NC}\n"
+            printf "%b" "   ${YELLOW}⏭️ Skipping linter installation${NC}\n"
             printf "%b" "   ${CYAN}💡 Install later with: npm install${NC}\n"
         fi
     else
-        printf "%b" "   ${YELLOW}⚠️  Node.js not found - code quality linters will not be available${NC}\n"
+        printf "%b" "   ${YELLOW}⚠️ Node.js not found - code quality linters will not be available${NC}\n"
         printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
     fi
 fi
@@ -126,10 +126,10 @@ if [ "${SKIP_GIT_HOOK}" = false ]; then
             printf "%b" "   ${GREEN}✅ Pre-commit hook installed${NC}\n"
             printf "%b" "   ${CYAN}💡 Bypass with: git commit --no-verify${NC}\n"
         else
-            printf "%b" "   ${YELLOW}⚠️  Pre-commit hook script not found at scripts/pre-commit${NC}\n"
+            printf "%b" "   ${YELLOW}⚠️ Pre-commit hook script not found at scripts/pre-commit${NC}\n"
         fi
     else
-        printf "%b" "   ${YELLOW}⚠️  Not a git repository - skipping hook installation${NC}\n"
+        printf "%b" "   ${YELLOW}⚠️ Not a git repository - skipping hook installation${NC}\n"
     fi
 fi
 

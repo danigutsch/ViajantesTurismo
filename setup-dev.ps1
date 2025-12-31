@@ -21,7 +21,7 @@ $installedSdk = dotnet --version 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Host "   ✅ .NET SDK installed: $installedSdk" -ForegroundColor Green
     if ($installedSdk -ne $requiredVersion) {
-        Write-Host "   ⚠️  Required version: $requiredVersion" -ForegroundColor Yellow
+        Write-Host "   ⚠️ Required version: $requiredVersion" -ForegroundColor Yellow
         Write-Host "   💡 Download from: https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Cyan
     }
 } else {
@@ -46,7 +46,7 @@ dotnet tool restore
 if ($LASTEXITCODE -eq 0) {
     Write-Host "   ✅ .NET tools restored (dotnet-ef, reportgenerator, Aspire CLI)" -ForegroundColor Green
 } else {
-    Write-Host "   ⚠️  Failed to restore .NET tools" -ForegroundColor Yellow
+    Write-Host "   ⚠️ Failed to restore .NET tools" -ForegroundColor Yellow
 }
 
 # Install PSScriptAnalyzer for PowerShell linting
@@ -60,7 +60,7 @@ if ($psaInstalled) {
         Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
         Write-Host "   ✅ PSScriptAnalyzer installed" -ForegroundColor Green
     } catch {
-        Write-Host "   ⚠️  Failed to install PSScriptAnalyzer: $_" -ForegroundColor Yellow
+        Write-Host "   ⚠️ Failed to install PSScriptAnalyzer: $_" -ForegroundColor Yellow
     }
 }
 
@@ -91,11 +91,11 @@ if (-not $SkipNpm) {
                 exit 1
             }
         } else {
-            Write-Host "   ⏭️  Skipping linter installation" -ForegroundColor Yellow
+            Write-Host "   ⏭️ Skipping linter installation" -ForegroundColor Yellow
             Write-Host "   💡 Install later with: npm install" -ForegroundColor Cyan
         }
     } else {
-        Write-Host "   ⚠️  Node.js not found - code quality linters will not be available" -ForegroundColor Yellow
+        Write-Host "   ⚠️ Node.js not found - code quality linters will not be available" -ForegroundColor Yellow
         Write-Host "   💡 Download from: https://nodejs.org/" -ForegroundColor Cyan
     }
 }
@@ -109,10 +109,10 @@ if (-not $SkipGitHook) {
             Write-Host "   ✅ Pre-commit hook installed" -ForegroundColor Green
             Write-Host "   💡 Bypass with: git commit --no-verify" -ForegroundColor Cyan
         } else {
-            Write-Host "   ⚠️  Pre-commit hook script not found at scripts/pre-commit" -ForegroundColor Yellow
+            Write-Host "   ⚠️ Pre-commit hook script not found at scripts/pre-commit" -ForegroundColor Yellow
         }
     } else {
-        Write-Host "   ⚠️  Not a git repository - skipping hook installation" -ForegroundColor Yellow
+        Write-Host "   ⚠️ Not a git repository - skipping hook installation" -ForegroundColor Yellow
     }
 }
 
