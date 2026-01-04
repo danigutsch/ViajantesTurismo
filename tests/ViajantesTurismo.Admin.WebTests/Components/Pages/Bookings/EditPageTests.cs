@@ -134,7 +134,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var priceInput = cut.Find("#totalPrice");
-        Assert.Equal("3250.50", priceInput.GetAttribute("value"));
+        Assert.Equal("R$ 3,250.50", priceInput.GetAttribute("value"));
         Assert.True(priceInput.HasAttribute("readonly"));
     }
 

@@ -110,13 +110,13 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("R$1,500.00", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("R$ 1,500.00", cut.Markup));
 
         // Assert
-        Assert.Contains("R$1,500.00", cut.Markup); // Base Price
-        Assert.Contains("R$300.00", cut.Markup); // Double Room Supplement
-        Assert.Contains("R$100.00", cut.Markup); // Regular Bike
-        Assert.Contains("R$250.00", cut.Markup); // E-Bike
+        Assert.Contains("R$ 1,500.00", cut.Markup); // Base Price
+        Assert.Contains("R$ 300.00", cut.Markup); // Double Room Supplement
+        Assert.Contains("R$ 100.00", cut.Markup); // Regular Bike
+        Assert.Contains("R$ 250.00", cut.Markup); // E-Bike
     }
 
     [Fact]
@@ -131,11 +131,11 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("€1,500.00", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("1,500.00 €", cut.Markup));
 
         // Assert
-        Assert.Contains("€1,500.00", cut.Markup); // Base Price
-        Assert.Contains("€300.00", cut.Markup); // Double Room Supplement
+        Assert.Contains("1,500.00 €", cut.Markup); // Base Price
+        Assert.Contains("300.00 €", cut.Markup); // Double Room Supplement
     }
 
     [Fact]
@@ -150,11 +150,11 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("$1,500.00", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("$ 1,500.00", cut.Markup));
 
         // Assert
-        Assert.Contains("$1,500.00", cut.Markup); // Base Price
-        Assert.Contains("$300.00", cut.Markup); // Double Room Supplement
+        Assert.Contains("$ 1,500.00", cut.Markup); // Base Price
+        Assert.Contains("$ 300.00", cut.Markup); // Double Room Supplement
     }
 
     [Fact]
