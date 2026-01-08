@@ -31,8 +31,6 @@ else if (_customers.Count == 0)
 else
 {
     <QuickGrid Items="@_customers.AsQueryable()" Class="table table-hover" Pagination="@(_customers.Count > 10 ? _pagination : null)">
-        <PropertyColumn Property="@(c => c.Id)" Title="ID" Sortable="true" />
-
         <TemplateColumn Title="Name" Sortable="true" SortBy="GridSort<GetCustomerDto>.ByAscending(c => c.FirstName).ThenAscending(c => c.LastName)">
             @context.FirstName @context.LastName
         </TemplateColumn>
