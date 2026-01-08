@@ -1,6 +1,7 @@
 @page "/tours"
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @rendermode InteractiveServer
 
 @inject IToursApiClient ToursApi
@@ -99,17 +100,7 @@ else
         _tours = await ToursApi.GetTours(CancellationToken.None);
     }
 
-    private static string FormatPrice(decimal price, CurrencyDto currency)
-    {
-        var symbol = currency switch
-        {
-            CurrencyDto.Real => "R$",
-            CurrencyDto.Euro => "€",
-            CurrencyDto.UsDollar => "$",
-            _ => ""
-        };
-        return $"{symbol}{price:N2}";
-    }
+    private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
 
     private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
 

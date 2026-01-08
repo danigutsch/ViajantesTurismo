@@ -106,10 +106,10 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("R$"), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("R$1,500.00", cut.Markup);
-        Assert.Contains("R$300.00", cut.Markup);
-        Assert.Contains("R$100.00", cut.Markup);
-        Assert.Contains("R$250.00", cut.Markup);
+        Assert.Contains("R$ 1,500.00", cut.Markup);
+        Assert.Contains("R$ 300.00", cut.Markup);
+        Assert.Contains("R$ 100.00", cut.Markup);
+        Assert.Contains("R$ 250.00", cut.Markup);
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains('€'), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("€1,200.00", cut.Markup);
+        Assert.Contains("1,200.00 €", cut.Markup);
     }
 
     [Fact]
@@ -136,10 +136,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("$1,800.00"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("$ 1,800.00"), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("$1,800.00", cut.Markup);
+        Assert.Contains("$ 1,800.00", cut.Markup);
     }
 
     [Fact]

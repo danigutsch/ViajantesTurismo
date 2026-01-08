@@ -319,15 +319,6 @@
         await OnValidSubmit.InvokeAsync(Model);
     }
 
-    private static string FormatPrice(decimal amount, CurrencyDto currency)
-    {
-        return currency switch
-        {
-            CurrencyDto.Euro => $"€{amount:N2}",
-            CurrencyDto.UsDollar => $"${amount:N2}",
-            CurrencyDto.Real => $"R${amount:N2}",
-            _ => $"{amount:N2}"
-        };
-    }
+    private static string FormatPrice(decimal amount, CurrencyDto currency) => CurrencyFormatter.Format(amount, currency);
 
 }
