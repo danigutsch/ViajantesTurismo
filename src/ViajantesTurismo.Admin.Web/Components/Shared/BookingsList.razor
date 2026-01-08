@@ -68,35 +68,12 @@ else
 
         <TemplateColumn Title="Actions">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-sm btn-primary"
-                        @onclick="() => OnEditClicked(context.Id)" title="Edit Booking">
+                <NavLink href="@($"/bookings/{context.Id}")" class="btn btn-sm btn-info" title="View Booking">
+                    <i class="bi bi-eye"></i> View
+                </NavLink>
+                <NavLink href="@($"/bookings/{context.Id}/edit")" class="btn btn-sm btn-primary" title="Edit Booking">
                     <i class="bi bi-pencil"></i> Edit
-                </button>
-                @if (context.Status == BookingStatusDto.Pending)
-                {
-                    <button type="button" class="btn btn-sm btn-success"
-                            @onclick="() => OnConfirmClicked(context.Id)" title="Confirm Booking">
-                        <i class="bi bi-check-circle"></i> Confirm
-                    </button>
-                }
-                else if (context.Status == BookingStatusDto.Confirmed)
-                {
-                    <button type="button" class="btn btn-sm btn-info"
-                            @onclick="() => OnCompleteClicked(context.Id)" title="Complete Booking">
-                        <i class="bi bi-check2-all"></i> Complete
-                    </button>
-                }
-                @if (context.Status != BookingStatusDto.Completed && context.Status != BookingStatusDto.Cancelled)
-                {
-                    <button type="button" class="btn btn-sm btn-warning"
-                            @onclick="() => OnCancelClicked(context.Id)" title="Cancel Booking">
-                        <i class="bi bi-x-circle"></i> Cancel
-                    </button>
-                }
-                <button type="button" class="btn btn-sm btn-danger"
-                        @onclick="() => OnDeleteClicked(context.Id)" title="Delete Booking">
-                    <i class="bi bi-trash"></i> Delete
-                </button>
+                </NavLink>
             </div>
         </TemplateColumn>
     </QuickGrid>
@@ -118,41 +95,6 @@ else
 
     [Parameter]
     public bool ShowCustomerInfo { get; set; } = true;
-
-    [Parameter] public EventCallback<Guid> OnEdit { get; set; }
-
-    [Parameter] public EventCallback<Guid> OnConfirm { get; set; }
-
-    [Parameter] public EventCallback<Guid> OnCancel { get; set; }
-
-    [Parameter] public EventCallback<Guid> OnComplete { get; set; }
-
-    [Parameter] public EventCallback<Guid> OnDelete { get; set; }
-
-    private async Task OnEditClicked(Guid bookingId)
-    {
-        await OnEdit.InvokeAsync(bookingId);
-    }
-
-    private async Task OnConfirmClicked(Guid bookingId)
-    {
-        await OnConfirm.InvokeAsync(bookingId);
-    }
-
-    private async Task OnCancelClicked(Guid bookingId)
-    {
-        await OnCancel.InvokeAsync(bookingId);
-    }
-
-    private async Task OnCompleteClicked(Guid bookingId)
-    {
-        await OnComplete.InvokeAsync(bookingId);
-    }
-
-    private async Task OnDeleteClicked(Guid bookingId)
-    {
-        await OnDelete.InvokeAsync(bookingId);
-    }
 
     private static string GetDiscountBadgeClass(DiscountTypeDto discountType)
     {

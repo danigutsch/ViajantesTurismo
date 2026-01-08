@@ -2,7 +2,6 @@
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Exceptions
 @using ViajantesTurismo.Admin.Web.Helpers
-@using ViajantesTurismo.Admin.Web.Models
 @rendermode InteractiveServer
 
 @inject IToursApiClient ToursApi
@@ -11,7 +10,6 @@
 
 <PageTitle>Tour Details</PageTitle>
 
-<ConfirmDialog @ref="_confirmDialog" />
 <ToastNotification @ref="_toast" />
 
 <h1>Tour Details</h1>
@@ -138,95 +136,21 @@ else if (_tour != null)
             else if (_showCreateForm)
             {
                 <div class="border rounded p-3 mb-3">
-                    <h5>@(_editingBookingId.HasValue ? "Edit Booking" : "Create New Booking")</h5>
-                    @if (_editingBookingId.HasValue)
-                    {
-                        <BookingEditForm Model="_bookingFormModel"
-                                         Customers="_customers"
-                                         OnValidSubmit="@HandleSaveBooking"
-                                         OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
-                                         IsSubmitting="_isSubmitting"/>
-
-                        @if (_currentBooking != null)
-                        {
-                            <div class="mt-4 border-top pt-3">
-                                <h5><i class="bi bi-cash-stack"></i> Payments</h5>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h6 class="card-subtitle mb-2 text-muted">Total Price</h6>
-                                                <h4 class="card-title">@CurrencyFormatter.Format(_currentBooking.TotalPrice, _currentBooking.Currency)</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h6 class="card-subtitle mb-2 text-muted">Amount Paid</h6>
-                                                <h4 class="card-title text-success">@CurrencyFormatter.Format(_currentBooking.AmountPaid, _currentBooking.Currency)</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h6 class="card-subtitle mb-2 text-muted">Remaining Balance</h6>
-                                                <h4 class="card-title text-danger">@CurrencyFormatter.Format(_currentBooking.RemainingBalance, _currentBooking.Currency)</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                @if (!_showPaymentForm && _currentBooking.RemainingBalance > 0)
-                                {
-                                    <button type="button" class="btn btn-success mb-3" @onclick="ShowPaymentForm">
-                                        <i class="bi bi-plus-circle"></i> Record Payment
-                                    </button>
-                                }
-
-                                @if (_showPaymentForm)
-                                {
-                                    <div class="card mb-3">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Record New Payment</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <PaymentForm Model="_paymentFormModel"
-                                                         OnValidSubmit="@HandleSavePayment"
-                                                         OnCancel="@(EventCallback.Factory.Create(this, HidePaymentForm))"
-                                                         IsSubmitting="_isSubmittingPayment"/>
-                                        </div>
-                                    </div>
-                                }
-
-                                <PaymentsList Payments="_currentBooking.Payments" Currency="_currentBooking.Currency"/>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <BookingCreateForm @ref="_bookingCreateFormRef"
-                                           Model="_bookingFormModel"
-                                           Customers="_customers"
-                                           Tours="_tours"
-                                           SelectedTour="_tour"
-                                           OnValidSubmit="@HandleSaveBooking"
-                                           OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
-                                           IsSubmitting="_isSubmitting"/>
-                    }
+                    <h5>Create New Booking</h5>
+                    <BookingCreateForm @ref="_bookingCreateFormRef"
+                                       Model="_bookingFormModel"
+                                       Customers="_customers"
+                                       Tours="_tours"
+                                       SelectedTour="_tour"
+                                       OnValidSubmit="@HandleSaveBooking"
+                                       OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                       IsSubmitting="_isSubmitting"/>
                 </div>
             }
             else
             {
                 <BookingsList Bookings="_bookings"
-                              ShowTourInfo="false"
-                              OnEdit="HandleEditBooking"
-                              OnConfirm="HandleConfirmBooking"
-                              OnCancel="HandleCancelBooking"
-                              OnComplete="HandleCompleteBooking"
-                              OnDelete="HandleDeleteBooking" />
+                              ShowTourInfo="false" />
             }
         </div>
     </div>
@@ -247,8 +171,6 @@ else if (_tour != null)
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
     private bool _showCreateForm;
-    private Guid? _editingBookingId;
-    private GetBookingDto? _currentBooking;
 
     private GetCustomerDto[] _customers = [];
     private GetTourDto[] _tours = [];
@@ -256,11 +178,6 @@ else if (_tour != null)
     private bool _isSubmitting;
     private BookingCreateForm? _bookingCreateFormRef;
 
-    private bool _showPaymentForm;
-    private PaymentFormModel _paymentFormModel = new();
-    private bool _isSubmittingPayment;
-
-    private ConfirmDialog _confirmDialog = null!;
     private ToastNotification _toast = null!;
 
     protected override async Task OnInitializedAsync()
@@ -327,45 +244,13 @@ else if (_tour != null)
 
     private void ShowCreateBookingForm()
     {
-        _editingBookingId = null;
         _bookingFormModel = new BookingFormModel { TourId = Id };
         _showCreateForm = true;
-    }
-
-    private void ShowEditBookingForm(Guid bookingId)
-    {
-        var booking = _bookings?.FirstOrDefault(b => b.Id == bookingId);
-        if (booking == null) return;
-
-        _editingBookingId = bookingId;
-        _currentBooking = booking;
-        _bookingFormModel = new BookingFormModel
-        {
-            CustomerId = booking.CustomerId,
-            CompanionId = booking.CompanionId,
-            Notes = booking.Notes
-        };
-        _showCreateForm = true;
-        _showPaymentForm = false;
     }
 
     private void HideBookingForm()
     {
         _showCreateForm = false;
-        _editingBookingId = null;
-        _currentBooking = null;
-        _showPaymentForm = false;
-    }
-
-    private void ShowPaymentForm()
-    {
-        _paymentFormModel = new PaymentFormModel();
-        _showPaymentForm = true;
-    }
-
-    private void HidePaymentForm()
-    {
-        _showPaymentForm = false;
     }
 
     private async Task HandleSaveBooking(BookingFormModel model)
@@ -373,20 +258,9 @@ else if (_tour != null)
         _isSubmitting = true;
         try
         {
-            if (_editingBookingId.HasValue)
-            {
-                // Update notes
-                var notesDto = new UpdateBookingNotesDto { Notes = model.Notes };
-                await BookingsApi.UpdateBookingNotes(_editingBookingId.Value, notesDto, CancellationToken.None);
-
-                _toast.ShowSuccess("Booking updated successfully.");
-            }
-            else
-            {
-                var createDto = model.ToDto() with { TourId = Id };
-                await BookingsApi.CreateBooking(createDto, CancellationToken.None);
-                _toast.ShowSuccess("Booking created successfully.");
-            }
+            var createDto = model.ToDto() with { TourId = Id };
+            await BookingsApi.CreateBooking(createDto, CancellationToken.None);
+            _toast.ShowSuccess("Booking created successfully.");
 
             await LoadBookings();
             HideBookingForm();
@@ -407,101 +281,6 @@ else if (_tour != null)
         finally
         {
             _isSubmitting = false;
-        }
-    }
-
-    private async Task HandleEditBooking(Guid bookingId)
-    {
-        ShowEditBookingForm(bookingId);
-        await Task.CompletedTask;
-    }
-
-    private async Task HandleConfirmBooking(Guid bookingId)
-    {
-        try
-        {
-            await BookingsApi.ConfirmBooking(bookingId, CancellationToken.None);
-            await LoadBookings();
-            _toast.ShowSuccess("Booking confirmed successfully.");
-        }
-        catch (Exception ex)
-        {
-            _toast.ShowError($"Failed to confirm booking: {ex.Message}");
-        }
-    }
-
-    private async Task HandleCancelBooking(Guid bookingId)
-    {
-        if (await _confirmDialog.ShowAsync("Are you sure you want to cancel this booking?", "Cancel Booking", "Yes, Cancel", "No", "btn-warning"))
-        {
-            try
-            {
-                await BookingsApi.CancelBooking(bookingId, CancellationToken.None);
-                await LoadBookings();
-                _toast.ShowSuccess("Booking cancelled successfully.");
-            }
-            catch (Exception ex)
-            {
-                _toast.ShowError($"Failed to cancel booking: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task HandleCompleteBooking(Guid bookingId)
-    {
-        try
-        {
-            await BookingsApi.CompleteBooking(bookingId, CancellationToken.None);
-            await LoadBookings();
-            _toast.ShowSuccess("Booking completed successfully.");
-        }
-        catch (Exception ex)
-        {
-            _toast.ShowError($"Failed to complete booking: {ex.Message}");
-        }
-    }
-
-    private async Task HandleDeleteBooking(Guid bookingId)
-    {
-        if (await _confirmDialog.ShowAsync("Are you sure you want to delete this booking? This action cannot be undone.", "Delete Booking", "Yes, Delete", "No", "btn-danger"))
-        {
-            try
-            {
-                await BookingsApi.DeleteBooking(bookingId, CancellationToken.None);
-                await LoadBookings();
-                _toast.ShowSuccess("Booking deleted successfully.");
-            }
-            catch (Exception ex)
-            {
-                _toast.ShowError($"Failed to delete booking: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task HandleSavePayment()
-    {
-        if (!_editingBookingId.HasValue) return;
-
-        _isSubmittingPayment = true;
-        try
-        {
-            var createDto = _paymentFormModel.ToDto();
-            await BookingsApi.RecordPayment(_editingBookingId.Value, createDto, CancellationToken.None);
-
-            await LoadBookings();
-
-            _currentBooking = _bookings?.FirstOrDefault(b => b.Id == _editingBookingId.Value);
-
-            _toast.ShowSuccess("Payment recorded successfully.");
-            HidePaymentForm();
-        }
-        catch (Exception ex)
-        {
-            _toast.ShowError($"Failed to record payment: {ex.Message}");
-        }
-        finally
-        {
-            _isSubmittingPayment = false;
         }
     }
 

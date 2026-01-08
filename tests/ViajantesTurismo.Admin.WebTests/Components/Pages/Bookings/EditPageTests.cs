@@ -345,10 +345,11 @@ public sealed class EditPageTests : BunitContext
         await cut.InvokeAsync(async () => await form.SubmitAsync());
 
         // Assert
-        var redirectAlert = cut.Find(".alert.alert-info");
+        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting"));
         Assert.Contains("Redirecting to bookings page in 3 seconds", redirectAlert.TextContent);
 
-        var cancelButton = cut.Find(".alert.alert-info button");
+        var cancelButton = redirectAlert.QuerySelector("button");
+        Assert.NotNull(cancelButton);
         Assert.Contains("Cancel", cancelButton.TextContent);
     }
 
@@ -365,7 +366,9 @@ public sealed class EditPageTests : BunitContext
         var form = cut.Find("form");
         await cut.InvokeAsync(async () => await form.SubmitAsync());
 
-        var cancelButton = cut.Find(".alert.alert-info button");
+        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting"));
+        var cancelButton = redirectAlert.QuerySelector("button");
+        Assert.NotNull(cancelButton);
         await cut.InvokeAsync(() => cancelButton.Click());
 
         // Assert
