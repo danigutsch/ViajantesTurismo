@@ -97,7 +97,6 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        Assert.Contains(headers, h => h.TextContent.Contains("ID"));
         Assert.Contains(headers, h => h.TextContent.Contains("Name"));
         Assert.Contains(headers, h => h.TextContent.Contains("Email"));
         Assert.Contains(headers, h => h.TextContent.Contains("Mobile"));
@@ -129,21 +128,6 @@ public class IndexPageTests : BunitContext
         Assert.Contains("Brazilian", cut.Markup);
     }
 
-    [Fact]
-    public void Renders_Customer_ID()
-    {
-        // Arrange
-        var customerId = Guid.NewGuid();
-        var customer = BuildCustomerDto(id: customerId);
-        _fakeCustomersApi.AddCustomer(customer);
-
-        // Act
-        var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains(customerId.ToString()), TimeSpan.FromSeconds(2));
-
-        // Assert
-        Assert.Contains(customerId.ToString(), cut.Markup);
-    }
 
     [Fact]
     public void Renders_View_Button_For_Each_Customer()

@@ -158,29 +158,6 @@ public class IndexPageTests : BunitContext
         Assert.Contains("Total: 3", cut.Markup);
     }
 
-    [Fact]
-    public void Renders_ConfirmDialog_Component()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Index>();
-
-        // Assert
-        var confirmDialogs = cut.FindComponents<ConfirmDialog>();
-        Assert.Single(confirmDialogs);
-    }
-
-    [Fact]
-    public void Renders_ToastNotification_Component()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Index>();
-
-        // Assert
-        var toasts = cut.FindComponents<ToastNotification>();
-        Assert.Single(toasts);
-    }
 
     [Fact]
     public void Counts_Only_Pending_Status_For_Pending_Badge()

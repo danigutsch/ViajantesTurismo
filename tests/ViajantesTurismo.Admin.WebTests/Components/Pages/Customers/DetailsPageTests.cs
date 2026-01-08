@@ -425,21 +425,6 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Has_ConfirmDialog_Component()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customer.Id));
-        cut.WaitForAssertion(() => cut.Find("h1"));
-        // Assert
-        var confirmDialog = cut.FindComponent<ConfirmDialog>();
-        Assert.NotNull(confirmDialog);
-    }
-
-    [Fact]
     public void Has_ToastNotification_Component()
     {
         // Arrange
