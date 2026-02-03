@@ -7,7 +7,9 @@ This is the index of architecture decisions for **ViajantesTurismo**. We use sho
 
 - One decision per file
 - File name: `YYYYMMDD-title.md` (e.g., `20251108-domain-validation-factory-methods.md`)
+- File title must include the ADR identifier (e.g., `# ADR-001: Title`)
 - Sections: Context · Decision · Consequences · Alternatives (if applicable) · Status · Links
+- Each file must include a link back to this index in the **Links** section
 - When a decision is replaced, add a **Superseded by** link in the older ADR and a **Supersedes** link in the new one
 
 ## Index
@@ -49,6 +51,7 @@ Decisions about business rules, pricing calculations, and payment handling.
 - **[ADR-011](adr/20251108-payment-tracking-immutable-records.md)** — Payment Tracking with Immutable Payment Records
 - **[ADR-012](adr/20251108-booking-details-update-after-creation.md)** — Booking Details Update After Creation
 - **[ADR-016](adr/20251113-paymentstatus-calculated-property.md)** — PaymentStatus as Calculated Property
+- **[ADR-017](adr/20260202-editable-fields-policy.md)** — Editable Fields Policy for Bookings, Customers, and Tours
 
 ## Principles
 
@@ -76,6 +79,7 @@ These architectural decisions establish a robust foundation:
 3. **Discount value objects** provide flexible pricing with audit trails
 4. **Immutable payments** ensure financial integrity and complete history
 5. **Post-creation updates** improve customer experience without compromising data integrity
+6. **Field editability policy** restricts high-risk changes to preserve audit trails and financial consistency
 
 ### Architecture Priorities
 
