@@ -1,4 +1,4 @@
-# Discount as value object with audit trail
+# ADR-010: Discount as Value Object with Audit Trail
 
 **Status**: Accepted — 2025-11-08
 
@@ -18,7 +18,7 @@ public sealed class Discount
     public DiscountType Type { get; }    // None, Percentage, Absolute
     public decimal Amount { get; }       // 0-100 for percentage, fixed for absolute
     public string? Reason { get; }       // Audit trail: "Early bird", "VIP", etc.
-    
+
     public decimal CalculateDiscountAmount(decimal subtotal) { }
 }
 ```
@@ -47,4 +47,5 @@ public sealed class Discount
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)

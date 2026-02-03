@@ -1,4 +1,4 @@
-# Room pricing model — base price equals single room
+# ADR-009: Room Pricing Model - Base Price = Single Room
 
 **Status**: Accepted — 2025-11-08
 
@@ -38,4 +38,5 @@ Rename `SingleRoomSupplementPrice` → `DoubleRoomSupplementPrice` to clarify th
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)

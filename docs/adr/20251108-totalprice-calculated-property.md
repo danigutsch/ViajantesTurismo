@@ -1,4 +1,4 @@
-# TotalPrice as calculated property
+# ADR-008: TotalPrice as Calculated Property
 
 **Status**: Accepted — 2025-11-08
 
@@ -46,5 +46,6 @@ EF Core configuration: `entity.Ignore(booking => booking.TotalPrice)`
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-009: Room Pricing Model](20251108-room-pricing-model.md)
 - Related: [ADR-010: Discount as Value Object](20251108-discount-value-object.md)

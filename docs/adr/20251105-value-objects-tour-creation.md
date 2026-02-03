@@ -1,4 +1,4 @@
-# Value objects for primitive parameter grouping
+# ADR-013: Value Objects for Tour Creation Parameters
 
 **Status**: Superseded — 2025-11-05
 
@@ -64,4 +64,5 @@ but was reverted in favor of:
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - **Superseded by:** Current implementation using primitive parameters in factory methods (no ADR documenting reversal).

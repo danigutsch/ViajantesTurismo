@@ -1,4 +1,4 @@
-# Dedicated error classes per aggregate root
+# ADR-004: Dedicated Error Classes per Entity
 
 **Status**: Accepted — 2025-11-08
 
@@ -17,7 +17,7 @@ public static class TourErrors
 {
     public static Result<Tour> EmptyIdentifier() => Result.Failure<Tour>(
         ResultStatus.Invalid, "Tour identifier cannot be empty.");
-    
+
     public static Result EmptyIdentifierForUpdate() => Result.Failure(
         ResultStatus.Invalid, "Tour identifier cannot be empty.");
 }
@@ -50,5 +50,6 @@ Provide both:
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-001: Domain Validation with Factory Methods](20251108-domain-validation-factory-methods.md)
 - Related: [ADR-002: Result Pattern Over Exceptions](20251108-result-pattern-over-exceptions.md)

@@ -1,4 +1,4 @@
-# Application-level invariants for uniqueness constraints
+# ADR-014: Application-level invariants for uniqueness constraints
 
 **Status**: Accepted (Completed) — 2025-11-12; completed on 2025-11-13
 
@@ -275,7 +275,8 @@ Out-of-scope items (e.g., broader booking handlerization and cross-cutting pipel
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - See `docs/DOMAIN_VALIDATION.md` for validation patterns
-- Related: [ADR-003: Domain Validation with Factory Methods](20251108-domain-validation-factory-methods.md)
+- Related: [ADR-001: Domain Validation with Factory Methods](20251108-domain-validation-factory-methods.md)
 - Related: [ADR-002: Result Pattern Over Exceptions](20251108-result-pattern-over-exceptions.md)
 - Examples: `INV-CUST-001` in `CustomerCreation.feature`, `INV-TOUR-001` in `TourCreation.feature`

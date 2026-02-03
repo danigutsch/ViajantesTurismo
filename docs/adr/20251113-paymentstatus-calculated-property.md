@@ -1,4 +1,4 @@
-# PaymentStatus as calculated property
+# ADR-016: PaymentStatus as Calculated Property
 
 **Status**: Accepted — 2025-11-13
 
@@ -77,5 +77,6 @@ no longer needed.
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)
 - Related: [ADR-011: Payment Tracking with Immutable Records](20251108-payment-tracking-immutable-records.md)

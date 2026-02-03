@@ -1,4 +1,4 @@
-# Result pattern over exceptions for domain operations
+# ADR-002: Result Pattern Over Exceptions
 
 **Status**: Accepted — 2025-11-08
 
@@ -41,4 +41,5 @@ Use the **Result pattern** for all domain operations that can fail:
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-001: Domain Validation with Factory Methods](20251108-domain-validation-factory-methods.md)

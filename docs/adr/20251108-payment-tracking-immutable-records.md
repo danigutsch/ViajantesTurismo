@@ -1,4 +1,4 @@
-# Payment tracking with immutable payment records
+# ADR-011: Payment Tracking with Immutable Payment Records
 
 **Status**: Accepted — 2025-11-08
 
@@ -55,4 +55,5 @@ Payment **status automatically calculated** based on `AmountPaid` vs `TotalPrice
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)

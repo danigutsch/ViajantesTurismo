@@ -1,4 +1,4 @@
-# Application layer for mappers and query interfaces
+# ADR-007: Application Layer for Mappers and Query Interfaces
 
 **Status**: Accepted — 2025-11-08
 
@@ -39,4 +39,5 @@ Create a separate **Application layer** (`ViajantesTurismo.Admin.Application`) c
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - See `src/ViajantesTurismo.Admin.Application/README.md`

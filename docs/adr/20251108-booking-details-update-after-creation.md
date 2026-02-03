@@ -1,4 +1,4 @@
-# Booking details update after creation
+# ADR-012: Booking Details Update After Creation
 
 **Status**: Accepted — 2025-11-08
 
@@ -22,14 +22,14 @@ public Result UpdateDetails(
 {
     if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
         return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
-    
+
     // Update properties with validation
     // TotalPrice recalculates automatically
 }
 ```
 
-**Can change**: room type, room cost, bikes, companion, discount  
-**Cannot change**: tour, principal customer, booking date, booking ID  
+**Can change**: room type, room cost, bikes, companion, discount
+**Cannot change**: tour, principal customer, booking date, booking ID
 **Blocked states**: Cancelled, Completed
 
 ## Consequences
@@ -54,4 +54,5 @@ public Result UpdateDetails(
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - Related: [ADR-008: TotalPrice as Calculated Property](20251108-totalprice-calculated-property.md)

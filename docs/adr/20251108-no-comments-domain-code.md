@@ -1,4 +1,4 @@
-# No inline comments in domain code
+# ADR-005: No Comments in Domain Code
 
 **Status**: Accepted — 2025-11-08
 
@@ -38,4 +38,5 @@ that does not scale.
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - See `docs/CODING_GUIDELINES.md` for naming conventions.

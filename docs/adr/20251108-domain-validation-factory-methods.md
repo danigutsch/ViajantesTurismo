@@ -1,4 +1,4 @@
-# Domain validation with factory methods
+# ADR-001: Domain Validation with Factory Methods
 
 **Status**: Accepted — 2025-11-08
 
@@ -42,6 +42,7 @@ Implement the **factory method pattern** for all aggregate roots:
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - See `docs/DOMAIN_VALIDATION.md` for validation conventions.
 - Related: [ADR-002: Result Pattern Over Exceptions](20251108-result-pattern-over-exceptions.md)
 - Related: [ADR-004: Dedicated Error Classes per Entity](20251108-dedicated-error-classes.md)

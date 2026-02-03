@@ -1,4 +1,4 @@
-# Validation constants in Contracts project
+# ADR-003: Validation Constants in Contracts Project
 
 **Status**: Accepted — 2025-11-08
 
@@ -48,4 +48,5 @@ Domain, API, and test projects reference these constants for validation and anno
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - See `ViajantesTurismo.Admin.Contracts/ContractConstants.cs`

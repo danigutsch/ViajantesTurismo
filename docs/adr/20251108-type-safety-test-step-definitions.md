@@ -1,4 +1,4 @@
-# Type safety in test step definitions with pattern matching
+# ADR-006: Type Safety in Test Step Definitions
 
 **Status**: Accepted — 2025-11-08
 
@@ -16,11 +16,11 @@ Use an `object?` field with **pattern matching** in test step definitions:
 private object? _result;
 
 // In Then steps:
-if (_result is Result result) 
+if (_result is Result result)
 {
     result.IsSuccess.Should().BeFalse();
 }
-else if (_result is Result<Tour> tourResult) 
+else if (_result is Result<Tour> tourResult)
 {
     tourResult.IsSuccess.Should().BeTrue();
 }
@@ -49,4 +49,5 @@ else if (_result is Result<Tour> tourResult)
 
 ## Links
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - See `tests/ViajantesTurismo.Admin.BehaviorTests/StepDefinitions/*.cs`

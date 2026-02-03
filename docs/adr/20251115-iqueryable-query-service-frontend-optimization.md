@@ -1,4 +1,4 @@
-# ADR-015: Query Service Return Types - IQueryable vs IReadOnlyList
+# ADR-015: IQueryable in Query Service for Frontend Optimization
 
 **Date:** 2025-11-15
 **Status:** Rejected (Both IQueryable and Server-Side Pagination)
@@ -192,6 +192,7 @@ Client-controlled query schema.
 
 ## Related
 
+- [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - **ADR-007**: Application Layer for Mappers and Query Interfaces
 - **Integration Test Plan**: API optimization implementation strategy
 
