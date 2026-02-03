@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared;
-using ViajantesTurismo.Admin.Web.Components.Shared;
 using static ViajantesTurismo.Admin.Tests.Shared.DtoBuilders;
 using Index = ViajantesTurismo.Admin.Web.Components.Pages.Bookings.Index;
 
