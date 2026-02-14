@@ -43,7 +43,7 @@ else
         <div class="mb-3">
             <label for="identifier" class="form-label">Tour Identifier</label>
             <InputText id="identifier" class="form-control" @bind-Value="_model.Identifier"
-                       placeholder="e.g., CUBA2024"/>
+                       placeholder="e.g., CUBA2024" disabled="@_hasBookings"/>
         </div>
 
         <div class="mb-3">
@@ -71,7 +71,7 @@ else
 
         <div class="mb-3">
             <label for="currency" class="form-label">Currency</label>
-            <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency">
+            <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency" disabled="@_hasBookings">
                 <option value="@CurrencyDto.Real">Brazilian Real (BRL)</option>
                 <option value="@CurrencyDto.Euro">Euro (EUR)</option>
                 <option value="@CurrencyDto.UsDollar">US Dollar (USD)</option>

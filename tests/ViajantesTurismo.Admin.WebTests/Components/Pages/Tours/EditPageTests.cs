@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared;
+using static ViajantesTurismo.Admin.Tests.Shared.DtoBuilders;
 using Edit = ViajantesTurismo.Admin.Web.Components.Pages.Tours.Edit;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Tours;
@@ -510,6 +511,74 @@ public class EditPageTests : BunitContext
         Assert.Equal(2, columns.Length);
     }
 
+    [Fact]
+    public async Task Identifier_Field_Is_Enabled_When_No_Bookings()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters
+            .Add(p => p.Id, tour.Id));
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
+
+        var identifier = cut.Find("input#identifier");
+        Assert.False(identifier.HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task Identifier_Field_Is_Disabled_When_Bookings_Exist()
+    {
+        // Arrange
+        var tour = CreateTestTourWithBookings();
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters
+            .Add(p => p.Id, tour.Id));
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll("input#identifier").Count > 0, TimeSpan.FromSeconds(2));
+
+        var identifier = cut.Find("input#identifier");
+        Assert.True(identifier.HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task Currency_Field_Is_Enabled_When_No_Bookings()
+    {
+        // Arrange
+        var tour = await CreateTestTour();
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters
+            .Add(p => p.Id, tour.Id));
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll("select#currency").Count > 0, TimeSpan.FromSeconds(2));
+
+        var currency = cut.Find("select#currency");
+        Assert.False(currency.HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task Currency_Field_Is_Disabled_When_Bookings_Exist()
+    {
+        // Arrange
+        var tour = CreateTestTourWithBookings();
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters
+            .Add(p => p.Id, tour.Id));
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll("select#currency").Count > 0, TimeSpan.FromSeconds(2));
+
+        var currency = cut.Find("select#currency");
+        Assert.True(currency.HasAttribute("disabled"));
+    }
+
     private async Task<GetTourDto> CreateTestTour()
     {
         var createDto = new CreateTourDto
@@ -531,5 +600,26 @@ public class EditPageTests : BunitContext
         await _fakeToursApi.CreateTour(createDto, CancellationToken.None);
         var tours = await _fakeToursApi.GetTours(CancellationToken.None);
         return tours[0];
+    }
+
+    private GetTourDto CreateTestTourWithBookings()
+    {
+        var tour = BuildTourDto(
+            identifier: "CUBA2024",
+            name: "Cuba Adventure",
+            startDate: new DateTime(2024, 6, 1),
+            endDate: new DateTime(2024, 6, 15),
+            currency: CurrencyDto.Euro,
+            price: 1500.00m,
+            doubleRoomSupplementPrice: 200.00m,
+            regularBikePrice: 50.00m,
+            eBikePrice: 100.00m,
+            includedServices: new List<string> { "Hotel", "Breakfast", "Lunch" },
+            minCustomers: 5,
+            maxCustomers: 15,
+            currentCustomerCount: 3);
+
+        _fakeToursApi.AddTour(tour);
+        return tour;
     }
 }
