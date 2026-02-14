@@ -38,7 +38,7 @@ powerful tools to create and manage tour packages.
 
 ### Frameworks & Runtime
 
-- **.NET 10** (Preview) - Modern cross-platform framework
+- **.NET 10** - Modern cross-platform framework
 - **ASP.NET Core** - Web API with Native AOT preparation
 - **Blazor Server** - Web frontend with client-side routing
 - **.NET Aspire** - Cloud-native orchestration and observability
@@ -85,7 +85,7 @@ ViajantesTurismo/
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Preview) - Version specified in `global.json`
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) - Version specified in `global.json`
 - [Node.js](https://nodejs.org/) (LTS) - For Markdown linting and documentation tools
 - Container runtime (for PostgreSQL):
     - [Podman](https://podman.io/) (recommended, open source) or
