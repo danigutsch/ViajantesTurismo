@@ -9,6 +9,7 @@
 }
 else
 {
+    <div class="table-responsive-wrapper">
     <QuickGrid Items="@PaymentsByDateDescending" Class="table table-hover"
                Pagination="@(Payments.Count > 10 ? _pagination : null)">
         <PropertyColumn Property="@(p => p.PaymentDate)" Title="Payment Date" Format="dd/MM/yyyy" Sortable="true"/>
@@ -54,6 +55,7 @@ else
             </small>
         </TemplateColumn>
     </QuickGrid>
+    </div>
 
     <div class="mt-3 p-3 bg-light rounded">
         <strong>Total Paid:</strong> <strong class="ms-2">@CurrencyFormatter.Format(TotalPaid, Currency)</strong>
