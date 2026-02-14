@@ -711,13 +711,22 @@ public sealed class Tour : Entity<Guid>
 
         var roomAdditionalCost = CalculateRoomAdditionalCost(roomType);
 
-        return booking.UpdateDetails(
-            roomType,
-            roomAdditionalCost,
-            principalBikeType,
-            principalBikePrice,
-            companionCustomerResult.Value.Value,
-            booking.Discount);
+        var companionOption = companionCustomerResult.Value;
+        var companionCustomer = companionOption.HasValue ? companionOption.Value : null;
+
+        var updateRoomResult = booking.UpdateRoom(roomType, roomAdditionalCost, companionCustomer);
+        if (updateRoomResult.IsFailure)
+        {
+            return updateRoomResult;
+        }
+
+        var updateCompanionResult = booking.UpdateCompanion(companionCustomer);
+        if (updateCompanionResult.IsFailure)
+        {
+            return updateCompanionResult;
+        }
+
+        return booking.UpdatePrincipalBike(principalBikeType, principalBikePrice);
     }
 
     private Result<Option<BookingCustomer>> ValidateAndCreateCompanionForUpdate(

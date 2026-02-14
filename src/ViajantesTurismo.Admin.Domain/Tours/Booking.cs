@@ -372,29 +372,14 @@ public sealed class Booking : Entity<Guid>
     }
 
     /// <summary>
-    /// Updates the booking details (room type, bikes, companion) after creation.
+    /// Updates the room details for the booking.
     /// </summary>
-    /// <remarks>
-    /// The principal customer identity represents the owner of the booking and cannot be changed.
-    /// New bike details are applied to the existing customer ID.
-    /// </remarks>
     /// <param name="roomType">The new room type.</param>
     /// <param name="roomAdditionalCost">The new room additional cost.</param>
-    /// <param name="principalBikeType">The updated bike type for the principal customer.</param>
-    /// <param name="principalBikePrice">The updated bike price for the principal customer.</param>
-    /// <param name="companionCustomer">The updated companion customer details (null to remove).</param>
-    /// <param name="discount">The discount applied to this booking.</param>
+    /// <param name="companionCustomer">The companion customer details (null if no companion).</param>
     /// <returns>A result indicating success or failure.</returns>
-    public Result UpdateDetails(
-        RoomType roomType,
-        decimal roomAdditionalCost,
-        BikeType principalBikeType,
-        decimal principalBikePrice,
-        BookingCustomer? companionCustomer,
-        Discount discount)
+    public Result UpdateRoom(RoomType roomType, decimal roomAdditionalCost, BookingCustomer? companionCustomer)
     {
-        ArgumentNullException.ThrowIfNull(discount);
-
         if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
@@ -419,6 +404,70 @@ public sealed class Booking : Entity<Guid>
             errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
         }
 
+        if (roomType == RoomType.SingleRoom && companionCustomer is not null)
+        {
+            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
+        RoomType = roomType;
+        RoomAdditionalCost = roomAdditionalCost;
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Updates the companion customer for the booking.
+    /// </summary>
+    /// <param name="companionCustomer">The companion customer details (null to remove).</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdateCompanion(BookingCustomer? companionCustomer)
+    {
+        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        {
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+        }
+
+        var errors = new ValidationErrors();
+
+        if (companionCustomer is not null && PrincipalCustomer.CustomerId == companionCustomer.CustomerId)
+        {
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(PrincipalCustomer.CustomerId));
+        }
+
+        if (RoomType == RoomType.SingleRoom && companionCustomer is not null)
+        {
+            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
+        }
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
+        CompanionCustomer = companionCustomer;
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Updates the principal customer's bike details.
+    /// </summary>
+    /// <param name="principalBikeType">The updated bike type.</param>
+    /// <param name="principalBikePrice">The updated bike price.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public Result UpdatePrincipalBike(BikeType principalBikeType, decimal principalBikePrice)
+    {
+        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        {
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+        }
+
+        var errors = new ValidationErrors();
+
         var principalCustomerResult = BookingCustomer.Create(
             PrincipalCustomer.CustomerId,
             principalBikeType,
@@ -436,42 +485,12 @@ public sealed class Booking : Entity<Guid>
             }
         }
 
-        if (companionCustomer is not null && PrincipalCustomer.CustomerId == companionCustomer.CustomerId)
-        {
-            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(PrincipalCustomer.CustomerId));
-        }
-
-        if (roomType == RoomType.SingleRoom && companionCustomer is not null)
-        {
-            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
-        }
-
         if (errors.HasErrors)
         {
             return errors.ToResult();
         }
 
-        // We use value from result because it's validated/sanitized
-        var principalCustomer = principalCustomerResult.Value;
-
-        var subtotal = CalculateSubtotal(BasePrice, roomAdditionalCost, principalCustomer, companionCustomer);
-
-        if (discount.Type == DiscountType.Absolute && discount.Amount > subtotal)
-        {
-            return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, subtotal);
-        }
-
-        var finalPrice = subtotal - discount.CalculateDiscountAmount(subtotal);
-        if (finalPrice <= 0)
-        {
-            return DiscountErrors.FinalPriceNotPositive(finalPrice);
-        }
-
-        RoomType = roomType;
-        RoomAdditionalCost = roomAdditionalCost;
-        PrincipalCustomer = principalCustomer;
-        CompanionCustomer = companionCustomer;
-
+        PrincipalCustomer = principalCustomerResult.Value;
         return Result.Ok();
     }
 
