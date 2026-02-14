@@ -142,7 +142,7 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(
-            identifier: $"{tour.Identifier}-V2",
+            identifier: tour.Identifier,
             name: "Updated Tour with Bookings",
             startDate: tour.StartDate,
             endDate: tour.EndDate,

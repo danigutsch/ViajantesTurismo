@@ -1,6 +1,7 @@
 using System.Globalization;
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
@@ -13,6 +14,14 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
         var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         tourContext.Tour = EntityBuilders.BuildTour(startDate: startDate, endDate: endDate);
+    }
+
+    [When(@"I try to update the tour schedule to start ""(.*)"" and end ""(.*)""")]
+    public void WhenITryToUpdateTheTourScheduleToStartAndEnd(string startDateString, string endDateString)
+    {
+        var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
+        var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
+        tourContext.UpdateResult = tourContext.Tour.UpdateSchedule(startDate, endDate);
     }
 
     [When(@"I update the tour schedule to start ""(.*)"" and end ""(.*)""")]

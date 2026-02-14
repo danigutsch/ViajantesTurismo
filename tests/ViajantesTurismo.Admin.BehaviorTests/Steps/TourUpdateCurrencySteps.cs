@@ -1,5 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
@@ -7,6 +8,18 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public sealed class TourUpdateCurrencySteps(TourContext tourContext)
 {
+    [Given(@"a tour exists with currency ""(.*)"" and has (\d+) booking")]
+    public void GivenATourExistsWithCurrencyAndHasBooking(string currencyCode, int bookingCount)
+    {
+        GivenATourExistsWithCurrency(currencyCode);
+        for (var i = 0; i < bookingCount; i++)
+        {
+            tourContext.Tour.AddBooking(
+                Guid.CreateVersion7(), BikeType.Regular, null, null,
+                RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        }
+    }
+
     [Given(@"a tour exists with currency ""(.*)""")]
     public void GivenATourExistsWithCurrency(string currencyCode)
     {
@@ -30,7 +43,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     public void WhenIUpdateTheCurrencyTo(string currencyCode)
     {
         var currency = EntityBuilders.ParseCurrency(currencyCode);
-        tourContext.Tour.UpdateCurrency(currency);
+        tourContext.UpdateResult = tourContext.Tour.UpdateCurrency(currency);
     }
 
     [Then(@"the tour should have currency ""(.*)""")]
@@ -38,5 +51,19 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     {
         var expectedCurrency = EntityBuilders.ParseCurrency(expectedCurrencyCode);
         Assert.Equal(expectedCurrency, tourContext.Tour.Pricing.Currency);
+    }
+
+    [When(@"I try to update the currency to ""(.*)""")]
+    public void WhenITryToUpdateTheCurrencyTo(string currencyCode)
+    {
+        var currency = EntityBuilders.ParseCurrency(currencyCode);
+        tourContext.UpdateResult = tourContext.Tour.UpdateCurrency(currency);
+    }
+
+    [Then("the currency update should fail")]
+    public void ThenTheCurrencyUpdateShouldFail()
+    {
+        Assert.NotNull(tourContext.UpdateResult);
+        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 }

@@ -15,22 +15,25 @@ We establish the following editability rules across the system:
 
 ### 1. Bookings
 
-- **Immutable**: `Customer` and `Companion` associations are locked after creation. Changing these would fundamentally
-- change the nature of the booking.
-- **Editable**: `Notes`, `Discount Type`, `Discount Amount`, and `Discount Reason`.
+- **Immutable**: `Customer` association is locked after creation. Changing the principal customer would fundamentally
+  change the nature of the booking.
+- **Editable**: `Companion`, `Notes`, `Discount Type`, `Discount Amount`, and `Discount Reason`. The companion may be
+  changed before the tour takes place.
 - **Audit Requirement**: Any `Discount` change requires a `Discount Reason` (10-500 characters).
 
 ### 2. Customers
 
-- **Editable**: Personal data (Name, DOB, Gender, etc.), contact info, and physical measurements (Weight/Height)
- for logistics (bike sizing).
-- **Immutable**: `Companion ID` is locked after creation to preserve group integrity.
+- **Editable**: Personal data (Name, DOB, Gender, etc.), contact info, physical measurements (Weight/Height)
+  for logistics (bike sizing), and `Companion ID` (a customer may change their preferred companion at any time).
 
 ### 3. Tours
 
-- **Restricted**: `Tour Identifier` (slug), `Currency`, `Base Price`, and `Tour Dates` should be locked if any bookings
- already exist for the tour.
-- **Editable**: `Tour Name`, `Included Services`, `Min/Max Customers`.
+- **Restricted**: `Tour Identifier` (slug) and `Currency` should be locked if any bookings
+  already exist for the tour.
+- **Warning**: `Tour Dates` (Start/End) are editable but the UI shows a warning when bookings exist,
+  since schedule changes may affect booked customers.
+- **Editable**: `Tour Name`, `Base Price`, `Double Room Supplement`, `Bike Prices`, `Included Services`,
+  `Min/Max Customers`. Pricing fields are safe to update because bookings capture a price snapshot at creation time.
 
 ## Consequences
 

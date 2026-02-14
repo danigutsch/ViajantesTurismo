@@ -1,12 +1,27 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 
 [Binding]
 public sealed class TourUpdateDetailsSteps(TourContext tourContext)
 {
+    [Given(@"a tour exists with identifier ""(.*)"" and has (\d+) booking")]
+    public void GivenATourExistsWithIdentifierAndHasBooking(string identifier, int bookingCount)
+    {
+        tourContext.Tour = EntityBuilders.BuildTour(identifier: identifier);
+        tourContext.TourStore.AddExistingTour(tourContext.Tour);
+        for (var i = 0; i < bookingCount; i++)
+        {
+            tourContext.Tour.AddBooking(
+                Guid.CreateVersion7(), BikeType.Regular, null, null,
+                RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+        }
+    }
+
     [Given(@"a tour exists with identifier ""(.*)"" and name ""(.*)""")]
     public void GivenATourExistsWithIdentifierAndName(string identifier, string name)
     {
@@ -19,6 +34,27 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     {
         var anotherTour = EntityBuilders.BuildTour(identifier: identifier, name: "Another Tour");
         tourContext.TourStore.AddExistingTour(anotherTour);
+    }
+
+    [When(@"I try to update the tour details to identifier ""(.*)"" and name ""(.*)""")]
+    public async Task WhenITryToUpdateTheTourDetailsToIdentifierAndName(string identifier, string name)
+    {
+        var command = new UpdateTourCommand(
+            tourContext.Tour.Id,
+            identifier,
+            name,
+            tourContext.Tour.Schedule.StartDate,
+            tourContext.Tour.Schedule.EndDate,
+            tourContext.Tour.Pricing.BasePrice,
+            tourContext.Tour.Pricing.DoubleRoomSupplementPrice,
+            tourContext.Tour.Pricing.RegularBikePrice,
+            tourContext.Tour.Pricing.EBikePrice,
+            tourContext.Tour.Pricing.Currency,
+            [.. tourContext.Tour.IncludedServices],
+            tourContext.Tour.Capacity.MinCustomers,
+            tourContext.Tour.Capacity.MaxCustomers);
+
+        tourContext.UpdateResult = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
     }
 
     [When(@"I update the tour details to identifier ""(.*)"" and name ""(.*)""")]

@@ -197,6 +197,12 @@ public sealed class Tour : Entity<Guid>
     public Result UpdateDetails(string identifier, string name)
     {
         var sanitizedIdentifier = StringSanitizer.Sanitize(identifier);
+
+        if (_bookings.Count > 0 && !string.Equals(Identifier, sanitizedIdentifier, StringComparison.Ordinal))
+        {
+            return TourErrors.IdentifierCannotBeChangedWithBookings();
+        }
+
         var sanitizedName = StringSanitizer.Sanitize(name);
 
         var errors = new ValidationErrors();
@@ -310,8 +316,14 @@ public sealed class Tour : Entity<Guid>
     /// Updates the currency used for all tour prices.
     /// </summary>
     /// <param name="currency">The new currency.</param>
-    public void UpdateCurrency(Currency currency)
+    /// <returns>A Result indicating success or failure.</returns>
+    public Result UpdateCurrency(Currency currency)
     {
+        if (_bookings.Count > 0)
+        {
+            return TourErrors.CurrencyCannotBeChangedWithBookings();
+        }
+
         var pricingResult = TourPricing.Create(
             Pricing.BasePrice,
             Pricing.DoubleRoomSupplementPrice,
@@ -319,10 +331,13 @@ public sealed class Tour : Entity<Guid>
             Pricing.EBikePrice,
             currency);
 
-        if (pricingResult.IsSuccess)
+        if (pricingResult.IsFailure)
         {
-            Pricing = pricingResult.Value;
+            return pricingResult.ConvertError();
         }
+
+        Pricing = pricingResult.Value;
+        return Result.Ok();
     }
 
     /// <summary>

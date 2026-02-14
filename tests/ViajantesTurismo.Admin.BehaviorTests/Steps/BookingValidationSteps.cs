@@ -91,6 +91,10 @@ public sealed class BookingValidationSteps(
         {
             errorDetails = tourContext.DeleteResult.Value.ErrorDetails;
         }
+        else if (tourContext.UpdateResult.HasValue)
+        {
+            errorDetails = tourContext.UpdateResult.Value.ErrorDetails;
+        }
         else if (customerContext.CommandResult.HasValue)
         {
             errorDetails = customerContext.CommandResult.Value.ErrorDetails;

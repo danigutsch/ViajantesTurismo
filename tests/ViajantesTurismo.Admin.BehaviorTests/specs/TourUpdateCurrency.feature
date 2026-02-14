@@ -17,3 +17,9 @@ So that I can change the pricing currency without modifying price values
         Given a tour exists with currency "USD"
         When I update the currency to "BRL"
         Then the tour should have currency "BRL"
+
+    Scenario: Cannot update tour currency if bookings exist
+        Given a tour exists with currency "EUR" and has 1 booking
+        When I try to update the currency to "USD"
+        Then the currency update should fail
+        And the error message should contain "cannot be changed if bookings exist"
