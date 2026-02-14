@@ -7,8 +7,8 @@
 
 <PageTitle>Customers</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-people-fill"></i> Customers</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h1 class="mb-0"><i class="bi bi-people-fill"></i> Customers</h1>
     <NavLink href="/customers/create" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Create New Customer
     </NavLink>
@@ -30,6 +30,7 @@ else if (_customers.Count == 0)
 }
 else
 {
+    <div class="table-responsive-wrapper">
     <QuickGrid Items="@_customers.AsQueryable()" Class="table table-hover" Pagination="@(_customers.Count > 10 ? _pagination : null)">
         <TemplateColumn Title="Name" Sortable="true" SortBy="GridSort<GetCustomerDto>.ByAscending(c => c.FirstName).ThenAscending(c => c.LastName)">
             @context.FirstName @context.LastName
@@ -50,6 +51,7 @@ else
             </div>
         </TemplateColumn>
     </QuickGrid>
+    </div>
 
     @if (_customers.Count > 10)
     {
