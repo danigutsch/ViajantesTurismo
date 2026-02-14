@@ -5,6 +5,8 @@ using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+builder.WebHost.UseKestrelHttpsConfiguration();
+
 builder.AddServiceDefaults();
 
 builder.Services.AddSingleton(TimeProvider.System);
