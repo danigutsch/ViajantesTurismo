@@ -1,6 +1,7 @@
 @page "/customers/{id:guid}"
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Exceptions
+@using ViajantesTurismo.Admin.Web.Helpers
 @rendermode InteractiveServer
 
 @inject ICustomersApiClient CustomersApi
@@ -174,10 +175,10 @@ else
                     <div class="card-body">
                         <dl class="row">
                             <dt class="col-sm-4">Room Type</dt>
-                            <dd class="col-sm-8">@_customer.AccommodationPreferences.RoomType</dd>
+                            <dd class="col-sm-8">@EnumFormatter.Format(_customer.AccommodationPreferences.RoomType)</dd>
 
                             <dt class="col-sm-4">Bed Type</dt>
-                            <dd class="col-sm-8">@_customer.AccommodationPreferences.BedType</dd>
+                            <dd class="col-sm-8">@EnumFormatter.Format(_customer.AccommodationPreferences.BedType)</dd>
 
                             @if (_customer.AccommodationPreferences.CompanionId.HasValue)
                             {
