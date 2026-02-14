@@ -1,5 +1,6 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
@@ -242,5 +243,28 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
         Assert.NotNull(bookingContext.BookingCreationResult);
         Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
         Assert.Contains("percentage", bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [When(@"I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]
+    public void WhenICreateABookingWithLongReason()
+    {
+        var longReason = new string('a', ContractConstants.MaxDiscountReasonLength + 1);
+        WhenICreateABookingWithDiscountAndReason(1, 15m, longReason);
+    }
+
+    [Then("I should be informed that the discount reason is too short")]
+    public void ThenIShouldBeInformedThatTheDiscountReasonIsTooShort()
+    {
+        Assert.NotNull(bookingContext.BookingCreationResult);
+        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        Assert.Contains("Reason must be at least", bookingContext.BookingCreationResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Then("I should be informed that the discount reason is too long")]
+    public void ThenIShouldBeInformedThatTheDiscountReasonIsTooLong()
+    {
+        Assert.NotNull(bookingContext.BookingCreationResult);
+        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        Assert.Contains("Reason cannot exceed", bookingContext.BookingCreationResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 }

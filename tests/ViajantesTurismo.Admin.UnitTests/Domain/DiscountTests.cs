@@ -138,4 +138,44 @@ public class DiscountTests
         Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail);
         Assert.Contains("0", result.ErrorDetails.Detail);
     }
+
+    [Fact]
+    public void Reason_Too_Short_Should_Return_Invalid_Result()
+    {
+        // Arrange
+        const int minLength = 10;
+        const int actualLength = 5;
+
+        // Act
+        var result = DiscountErrors.ReasonTooShort(minLength, actualLength);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Discount reason must be at least", result.ErrorDetails.Detail);
+        Assert.Contains("10", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("reason"));
+        Assert.Equal("Reason must be at least 10 characters.", result.ErrorDetails.ValidationErrors["reason"][0]);
+    }
+
+    [Fact]
+    public void Reason_Too_Long_Should_Return_Invalid_Result()
+    {
+        // Arrange
+        const int maxLength = 500;
+        const int actualLength = 501;
+
+        // Act
+        var result = DiscountErrors.ReasonTooLong(maxLength, actualLength);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Discount reason cannot exceed", result.ErrorDetails.Detail);
+        Assert.Contains("500", result.ErrorDetails.Detail);
+        Assert.NotNull(result.ErrorDetails.ValidationErrors);
+        Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("reason"));
+        Assert.Equal("Reason cannot exceed 500 characters.", result.ErrorDetails.ValidationErrors["reason"][0]);
+    }
 }

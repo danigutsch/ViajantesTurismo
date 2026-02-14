@@ -96,6 +96,18 @@ public sealed class Discount
             errors.Add(DiscountErrors.PercentageExceedsMaximum(sanitizedAmount, ContractConstants.MaxDiscountPercentage));
         }
 
+        if (!string.IsNullOrWhiteSpace(sanitizedReason))
+        {
+            if (sanitizedReason.Length < ContractConstants.MinDiscountReasonLength)
+            {
+                errors.Add(DiscountErrors.ReasonTooShort(ContractConstants.MinDiscountReasonLength, sanitizedReason.Length));
+            }
+            else if (sanitizedReason.Length > ContractConstants.MaxDiscountReasonLength)
+            {
+                errors.Add(DiscountErrors.ReasonTooLong(ContractConstants.MaxDiscountReasonLength, sanitizedReason.Length));
+            }
+        }
+
         if (errors.HasErrors)
         {
             return errors.ToResult<Discount>();

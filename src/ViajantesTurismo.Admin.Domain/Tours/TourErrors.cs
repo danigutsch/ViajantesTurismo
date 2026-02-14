@@ -250,6 +250,18 @@ public static class TourErrors
             message: $"Maximum capacity cannot be less than current bookings ({currentCustomerCount}).");
 
     /// <summary>
+    /// Indicates that the tour identifier cannot be changed if bookings exist.
+    /// </summary>
+    public static Result CannotChangeIdentifierWhenBookingsExist() => Result.Conflict(
+        detail: "Cannot change tour identifier because there are existing bookings.");
+
+    /// <summary>
+    /// Indicates that the tour currency cannot be changed if bookings exist.
+    /// </summary>
+    public static Result CannotChangeCurrencyWhenBookingsExist() => Result.Conflict(
+        detail: "Cannot change tour currency because there are existing bookings.");
+
+    /// <summary>
     /// Indicates that the tour identifier cannot be changed because bookings already exist.
     /// </summary>
     /// <returns>A Result representing the error.</returns>

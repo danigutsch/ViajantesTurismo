@@ -63,4 +63,26 @@ public static class DiscountErrors
             detail: $"Final price after discount must be greater than zero. Calculated: {finalPrice}.",
             field: "discount",
             message: "Final price after discount must be greater than zero.");
+
+    /// <summary>
+    /// Indicates that the discount reason is too short.
+    /// </summary>
+    /// <param name="minLength">The minimum required length.</param>
+    /// <param name="actualLength">The actual length provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result ReasonTooShort(int minLength, int actualLength) => Result.Invalid(
+        detail: $"Discount reason must be at least {minLength} characters long. Received: {actualLength} characters.",
+        field: "reason",
+        message: $"Reason must be at least {minLength} characters.");
+
+    /// <summary>
+    /// Indicates that the discount reason is too long.
+    /// </summary>
+    /// <param name="maxLength">The maximum allowed length.</param>
+    /// <param name="actualLength">The actual length provided.</param>
+    /// <returns>A Result representing the error.</returns>
+    public static Result ReasonTooLong(int maxLength, int actualLength) => Result.Invalid(
+        detail: $"Discount reason cannot exceed {maxLength} characters. Received: {actualLength} characters.",
+        field: "reason",
+        message: $"Reason cannot exceed {maxLength} characters.");
 }

@@ -374,20 +374,25 @@ public sealed class Booking : Entity<Guid>
     /// <summary>
     /// Updates the booking details (room type, bikes, companion) after creation.
     /// </summary>
+    /// <remarks>
+    /// The principal customer identity represents the owner of the booking and cannot be changed.
+    /// New bike details are applied to the existing customer ID.
+    /// </remarks>
     /// <param name="roomType">The new room type.</param>
     /// <param name="roomAdditionalCost">The new room additional cost.</param>
-    /// <param name="principalCustomer">The updated principal customer details.</param>
+    /// <param name="principalBikeType">The updated bike type for the principal customer.</param>
+    /// <param name="principalBikePrice">The updated bike price for the principal customer.</param>
     /// <param name="companionCustomer">The updated companion customer details (null to remove).</param>
     /// <param name="discount">The discount applied to this booking.</param>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateDetails(
         RoomType roomType,
         decimal roomAdditionalCost,
-        BookingCustomer principalCustomer,
+        BikeType principalBikeType,
+        decimal principalBikePrice,
         BookingCustomer? companionCustomer,
         Discount discount)
     {
-        ArgumentNullException.ThrowIfNull(principalCustomer);
         ArgumentNullException.ThrowIfNull(discount);
 
         if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
@@ -414,9 +419,26 @@ public sealed class Booking : Entity<Guid>
             errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
         }
 
-        if (companionCustomer is not null && principalCustomer.CustomerId == companionCustomer.CustomerId)
+        var principalCustomerResult = BookingCustomer.Create(
+            PrincipalCustomer.CustomerId,
+            principalBikeType,
+            principalBikePrice);
+
+        if (principalCustomerResult.IsFailure)
         {
-            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(principalCustomer.CustomerId));
+            if (principalCustomerResult.Status == ResultStatus.Invalid)
+            {
+                errors.Add(principalCustomerResult);
+            }
+            else
+            {
+                return principalCustomerResult.ConvertError();
+            }
+        }
+
+        if (companionCustomer is not null && PrincipalCustomer.CustomerId == companionCustomer.CustomerId)
+        {
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(PrincipalCustomer.CustomerId));
         }
 
         if (roomType == RoomType.SingleRoom && companionCustomer is not null)
@@ -428,6 +450,9 @@ public sealed class Booking : Entity<Guid>
         {
             return errors.ToResult();
         }
+
+        // We use value from result because it's validated/sanitized
+        var principalCustomer = principalCustomerResult.Value;
 
         var subtotal = CalculateSubtotal(BasePrice, roomAdditionalCost, principalCustomer, companionCustomer);
 

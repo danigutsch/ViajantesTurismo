@@ -16,7 +16,8 @@ Add a **`Booking.UpdateDetails()`** method allowing post-creation modifications:
 public Result UpdateDetails(
     RoomType roomType,
     decimal roomAdditionalCost,
-    BookingCustomer principalCustomer,
+    BikeType principalBikeType,
+    decimal principalBikePrice,
     BookingCustomer? companionCustomer,
     Discount discount)
 {

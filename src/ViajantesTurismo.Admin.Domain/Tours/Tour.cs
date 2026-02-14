@@ -191,6 +191,9 @@ public sealed class Tour : Entity<Guid>
     /// <summary>
     /// Updates the tour's basic information (identifier and name).
     /// </summary>
+    /// <remarks>
+    /// Cannot update tour identifier if bookings exist.
+    /// </remarks>
     /// <param name="identifier">The unique business identifier for the tour.</param>
     /// <param name="name">The descriptive name of the tour.</param>
     /// <returns>A Result indicating success or failure.</returns>
@@ -292,6 +295,9 @@ public sealed class Tour : Entity<Guid>
     /// <summary>
     /// Updates the base price of the tour.
     /// </summary>
+    /// <remarks>
+    /// Base price changes do not affect existing bookings as they capture a price snapshot at creation.
+    /// </remarks>
     /// <param name="price">The new base price per person.</param>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateBasePrice(decimal price)
@@ -312,9 +318,9 @@ public sealed class Tour : Entity<Guid>
         return Result.Ok();
     }
 
-    /// <summary>
-    /// Updates the currency used for all tour prices.
-    /// </summary>
+    /// <remarks>
+    /// Cannot update tour currency if bookings exist.
+    /// </remarks>
     /// <param name="currency">The new currency.</param>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdateCurrency(Currency currency)
@@ -692,15 +698,6 @@ public sealed class Tour : Entity<Guid>
         }
 
         var principalBikePrice = GetBikePrice(principalBikeType);
-        var principalCustomerResult = BookingCustomer.Create(
-            booking.PrincipalCustomer.CustomerId,
-            principalBikeType,
-            principalBikePrice);
-
-        if (principalCustomerResult.IsFailure)
-        {
-            return principalCustomerResult.ConvertError();
-        }
 
         var companionCustomerResult = ValidateAndCreateCompanionForUpdate(
             booking.PrincipalCustomer.CustomerId,
@@ -717,7 +714,8 @@ public sealed class Tour : Entity<Guid>
         return booking.UpdateDetails(
             roomType,
             roomAdditionalCost,
-            principalCustomerResult.Value,
+            principalBikeType,
+            principalBikePrice,
             companionCustomerResult.Value.Value,
             booking.Discount);
     }
