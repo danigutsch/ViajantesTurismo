@@ -18,6 +18,7 @@
 }
 else
 {
+    <div class="table-responsive-wrapper">
     <QuickGrid Items="@_tours.AsQueryable()" Class="table table-hover" Pagination="@(_tours.Length > 10 ? _pagination : null)">
         <PropertyColumn Property="@(t => t.Identifier)" Title="Identifier" Sortable="true" />
         <PropertyColumn Property="@(t => t.Name)" Title="Name" Sortable="true" />
@@ -79,6 +80,7 @@ else
             </div>
         </TemplateColumn>
     </QuickGrid>
+    </div>
 
     @if (_tours.Length > 10)
     {
