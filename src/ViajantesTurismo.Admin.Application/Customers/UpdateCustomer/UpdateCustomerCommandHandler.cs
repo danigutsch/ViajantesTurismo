@@ -39,7 +39,7 @@ public sealed class UpdateCustomerCommandHandler(
             command.PersonalInfo.FirstName,
             command.PersonalInfo.LastName,
             command.PersonalInfo.Gender,
-            command.PersonalInfo.BirthDate.ToUniversalTime(),
+            command.PersonalInfo.BirthDate,
             command.PersonalInfo.Nationality,
             command.PersonalInfo.Occupation,
             timeProvider);

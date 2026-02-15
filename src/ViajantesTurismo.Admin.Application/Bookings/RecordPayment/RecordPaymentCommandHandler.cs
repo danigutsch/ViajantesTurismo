@@ -31,7 +31,7 @@ public sealed class RecordPaymentCommandHandler(
         var result = tour.RecordBookingPayment(
             command.BookingId,
             command.Amount,
-            command.PaymentDate.ToUniversalTime(),
+            command.PaymentDate,
             BookingMapper.MapToPaymentMethod(command.Method),
             timeProvider,
             command.ReferenceNumber,

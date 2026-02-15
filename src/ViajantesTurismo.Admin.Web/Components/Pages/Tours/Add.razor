@@ -144,8 +144,8 @@ Bike rental"/>
             {
                     Identifier = _model.Identifier,
                     Name = _model.Name,
-                    StartDate = _model.StartDate.ToUniversalTime(),
-                    EndDate = _model.EndDate.ToUniversalTime(),
+                    StartDate = DateTime.SpecifyKind(_model.StartDate, DateTimeKind.Utc),
+                    EndDate = DateTime.SpecifyKind(_model.EndDate, DateTimeKind.Utc),
                     Currency = _model.Currency,
                     Price = _model.Price,
                     DoubleRoomSupplementPrice = _model.DoubleRoomSupplementPrice,

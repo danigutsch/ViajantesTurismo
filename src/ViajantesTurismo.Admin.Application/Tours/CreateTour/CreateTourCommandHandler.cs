@@ -31,8 +31,8 @@ public sealed class CreateTourCommandHandler(
         var tourResult = Tour.Create(
             command.Identifier,
             command.Name,
-            command.StartDate.ToUniversalTime(),
-            command.EndDate.ToUniversalTime(),
+            command.StartDate,
+            command.EndDate,
             command.Price,
             command.DoubleRoomSupplementPrice,
             command.RegularBikePrice,
