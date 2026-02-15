@@ -487,7 +487,7 @@ public sealed class EditPageTests : BunitContext
 
         // Assert — status dropdown should now show Confirmed
         var statusSelect = cut.Find("#status");
-        Assert.Equal(BookingStatusDto.Confirmed.ToString(), statusSelect.GetAttribute("value"));
+        Assert.Equal(nameof(BookingStatusDto.Confirmed), statusSelect.GetAttribute("value"));
     }
 
     [Fact]
@@ -506,6 +506,6 @@ public sealed class EditPageTests : BunitContext
 
         // Assert — status dropdown should now show Completed
         var statusSelect = cut.Find("#status");
-        Assert.Equal(BookingStatusDto.Completed.ToString(), statusSelect.GetAttribute("value"));
+        Assert.Equal(nameof(BookingStatusDto.Completed), statusSelect.GetAttribute("value"));
     }
 }

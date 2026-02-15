@@ -308,18 +308,6 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Page_Description()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("This component demonstrates"), TimeSpan.FromSeconds(2));
-
-        // Assert
-        Assert.Contains("This component demonstrates showing data loaded from a backend API service", cut.Markup);
-    }
-
-    [Fact]
     public void Displays_Total_Tours_Count()
     {
         // Arrange

@@ -463,7 +463,7 @@ public class CustomerBookingEditFormTests : BunitContext
         Assert.Equal("Preloaded notes", notesTextArea.GetAttribute("value"));
 
         var discountTypeSelect = cut.Find("select#discountType");
-        Assert.Equal(DiscountTypeDto.Percentage.ToString(), discountTypeSelect.GetAttribute("value"));
+        Assert.Equal(nameof(DiscountTypeDto.Percentage), discountTypeSelect.GetAttribute("value"));
 
         var discountAmountInput = cut.Find("input#discountAmount");
         Assert.Equal("20", discountAmountInput.GetAttribute("value"));
