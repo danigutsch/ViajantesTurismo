@@ -47,10 +47,10 @@ else if (_tour != null)
                         <dd class="col-sm-8">@_tour.Name</dd>
 
                         <dt class="col-sm-4">Start Date:</dt>
-                        <dd class="col-sm-8">@_tour.StartDate.ToShortDateString()</dd>
+                        <dd class="col-sm-8">@DateFormatter.FormatDate(_tour.StartDate)</dd>
 
                         <dt class="col-sm-4">End Date:</dt>
-                        <dd class="col-sm-8">@_tour.EndDate.ToShortDateString()</dd>
+                        <dd class="col-sm-8">@DateFormatter.FormatDate(_tour.EndDate)</dd>
 
                         <dt class="col-sm-4">Duration:</dt>
                         <dd class="col-sm-8">@((_tour.EndDate - _tour.StartDate).Days) days</dd>

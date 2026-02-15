@@ -38,7 +38,7 @@
                             <dd class="col-sm-8">@State.PersonalInfo!.FirstName @State.PersonalInfo.LastName</dd>
 
                             <dt class="col-sm-4">Birth Date:</dt>
-                            <dd class="col-sm-8">@State.PersonalInfo.BirthDate?.ToShortDateString()</dd>
+                            <dd class="col-sm-8">@DateFormatter.FormatDate(State.PersonalInfo.BirthDate)</dd>
 
                             <dt class="col-sm-4">Gender:</dt>
                             <dd class="col-sm-8">@State.PersonalInfo.Gender</dd>

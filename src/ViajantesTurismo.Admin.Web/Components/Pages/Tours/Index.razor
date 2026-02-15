@@ -22,8 +22,10 @@ else
     <QuickGrid Items="@_tours.AsQueryable()" Class="table table-hover" Pagination="@(_tours.Length > 10 ? _pagination : null)">
         <PropertyColumn Property="@(t => t.Identifier)" Title="Identifier" Sortable="true" />
         <PropertyColumn Property="@(t => t.Name)" Title="Name" Sortable="true" />
-        <PropertyColumn Property="@(t => t.StartDate)" Title="Start Date" Format="d" Sortable="true" />
-        <PropertyColumn Property="@(t => t.EndDate)" Title="End Date" Format="d" Sortable="true" />
+        <PropertyColumn Property="@(t => t.StartDate)" Title="Start Date" Format="@DateFormatter.DateFormat"
+                        Sortable="true"/>
+        <PropertyColumn Property="@(t => t.EndDate)" Title="End Date" Format="@DateFormatter.DateFormat"
+                        Sortable="true"/>
 
         <TemplateColumn Title="Price" Sortable="true" SortBy="GridSort<GetTourDto>.ByAscending(t => t.Price)">
             @FormatPrice(context.Price, context.Currency)

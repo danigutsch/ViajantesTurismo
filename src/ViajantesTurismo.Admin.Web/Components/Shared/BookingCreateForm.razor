@@ -11,7 +11,7 @@
                 <option value="">-- Select Tour --</option>
                 @foreach (var tour in Tours)
                 {
-                    <option value="@tour.Id">@tour.Name (@tour.StartDate.ToShortDateString())</option>
+                    <option value="@tour.Id">@tour.Name (@DateFormatter.FormatDate(tour.StartDate))</option>
                 }
             </InputSelect>
             <ValidationMessage For="@(() => Model.TourId)"/>

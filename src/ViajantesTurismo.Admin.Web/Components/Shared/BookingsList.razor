@@ -11,7 +11,8 @@ else
 {
     <div class="table-responsive-wrapper">
     <QuickGrid Items="@Bookings.AsQueryable()" Class="table table-hover" Pagination="@(Bookings.Count() > 10 ? _pagination : null)">
-        <PropertyColumn Property="@(b => b.BookingDate)" Title="Booking Date" Format="dd/MM/yyyy HH:mm" Sortable="true" />
+        <PropertyColumn Property="@(b => b.BookingDate)" Title="Booking Date" Format="@DateFormatter.DateTimeFormat"
+                        Sortable="true"/>
 
         @if (ShowTourInfo)
         {

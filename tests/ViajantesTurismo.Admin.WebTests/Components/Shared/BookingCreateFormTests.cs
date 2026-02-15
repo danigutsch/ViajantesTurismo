@@ -31,8 +31,8 @@ public class BookingCreateFormTests : BunitContext
         var tourSelect = cut.Find("select.form-select");
         var options = tourSelect.QuerySelectorAll("option");
         Assert.Equal(3, options.Length); // Placeholder + 2 tours
-        Assert.Contains("Tour A (06/01/2025)", options[1].TextContent);
-        Assert.Contains("Tour B (07/01/2025)", options[2].TextContent);
+        Assert.Contains("Tour A (01/06/2025)", options[1].TextContent);
+        Assert.Contains("Tour B (01/07/2025)", options[2].TextContent);
     }
 
     [Fact]

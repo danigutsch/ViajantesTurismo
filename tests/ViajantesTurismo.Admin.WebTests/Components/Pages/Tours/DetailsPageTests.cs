@@ -74,8 +74,8 @@ public class DetailsPageTests : BunitContext
         // Assert
         Assert.Contains(tour.Identifier, cut.Markup);
         Assert.Contains(tour.Name, cut.Markup);
-        Assert.Contains(tour.StartDate.ToShortDateString(), cut.Markup);
-        Assert.Contains(tour.EndDate.ToShortDateString(), cut.Markup);
+        Assert.Contains(tour.StartDate.ToString("dd/MM/yyyy"), cut.Markup);
+        Assert.Contains(tour.EndDate.ToString("dd/MM/yyyy"), cut.Markup);
         Assert.Contains(tour.Currency.ToString(), cut.Markup);
     }
 

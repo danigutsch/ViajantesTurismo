@@ -12,7 +12,8 @@ else
     <div class="table-responsive-wrapper">
     <QuickGrid Items="@PaymentsByDateDescending" Class="table table-hover"
                Pagination="@(Payments.Count > 10 ? _pagination : null)">
-        <PropertyColumn Property="@(p => p.PaymentDate)" Title="Payment Date" Format="dd/MM/yyyy" Sortable="true"/>
+        <PropertyColumn Property="@(p => p.PaymentDate)" Title="Payment Date" Format="@DateFormatter.DateFormat"
+                        Sortable="true"/>
 
         <TemplateColumn Title="Amount" Sortable="true" SortBy="GridSort<GetPaymentDto>.ByAscending(p => p.Amount)">
             <strong>@CurrencyFormatter.Format(context.Amount, Currency)</strong>
@@ -133,6 +134,6 @@ else
             return $"{(int)diff.TotalDays}d ago";
         }
 
-        return localTime.ToShortDateString();
+        return DateFormatter.FormatDate(localTime);
     }
 }

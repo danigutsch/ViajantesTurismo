@@ -46,7 +46,7 @@
                             <dd class="col-sm-8"><PaymentStatusBadge Status="@_booking.PaymentStatus" /></dd>
 
                             <dt class="col-sm-4">Booking Date</dt>
-                            <dd class="col-sm-8">@_booking.BookingDate.ToString("dd/MM/yyyy HH:mm")</dd>
+                            <dd class="col-sm-8">@DateFormatter.FormatDateTime(_booking.BookingDate)</dd>
 
                             <dt class="col-sm-4">Tour</dt>
                             <dd class="col-sm-8">

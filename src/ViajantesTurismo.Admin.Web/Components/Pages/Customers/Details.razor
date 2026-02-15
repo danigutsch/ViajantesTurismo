@@ -43,7 +43,7 @@ else
                             <dd class="col-sm-8">@_customer.PersonalInfo.FirstName @_customer.PersonalInfo.LastName</dd>
 
                             <dt class="col-sm-4">Date of Birth</dt>
-                            <dd class="col-sm-8">@_customer.PersonalInfo.BirthDate.ToString("dd/MM/yyyy")</dd>
+                            <dd class="col-sm-8">@DateFormatter.FormatDate(_customer.PersonalInfo.BirthDate)</dd>
 
                             <dt class="col-sm-4">Gender</dt>
                             <dd class="col-sm-8">@_customer.PersonalInfo.Gender</dd>
