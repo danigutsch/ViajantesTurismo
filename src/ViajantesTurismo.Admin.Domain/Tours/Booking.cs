@@ -67,7 +67,7 @@ public sealed class Booking : Entity<Guid>
     /// <summary>
     /// The base price per person at the time of booking.
     /// </summary>
-    public decimal BasePrice { get; private init; }
+    public decimal BasePrice { get; }
 
     /// <summary>
     /// The room type for the booking (shared by all participants).

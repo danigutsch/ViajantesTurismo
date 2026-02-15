@@ -28,14 +28,14 @@ public sealed class Discount
     /// <summary>
     /// Gets the type of discount (Percentage or Absolute).
     /// </summary>
-    public DiscountType Type { get; private init; }
+    public DiscountType Type { get; }
 
     /// <summary>
     /// Gets the discount amount.
     /// For Percentage: value between 0 and 100 (e.g. 15 = 15%).
     /// For Absolute: the fixed amount in the booking currency.
     /// </summary>
-    public decimal Amount { get; private init; }
+    public decimal Amount { get; }
 
     /// <summary>
     /// Gets the optional reason or notes for the discount (e.g. "Early bird discount", "VIP customer").
