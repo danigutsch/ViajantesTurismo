@@ -35,8 +35,11 @@ public class PaymentFormTests : BunitContext
         Assert.NotNull(submitButton);
     }
 
-    [Fact]
-    public void Amount_Field_Has_Currency_Symbol()
+    [Theory]
+    [InlineData(CurrencyDto.UsDollar, "$")]
+    [InlineData(CurrencyDto.Euro, "\u20ac")]
+    [InlineData(CurrencyDto.Real, "R$")]
+    public void Amount_Field_Has_Currency_Symbol(CurrencyDto currency, string expectedSymbol)
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -45,11 +48,12 @@ public class PaymentFormTests : BunitContext
         // Act
         var cut = Render<PaymentForm>(parameters => parameters
             .Add(p => p.Model, model)
+            .Add(p => p.Currency, currency)
             .Add(p => p.OnValidSubmit, onValidSubmit));
 
         // Assert
         var currencySymbol = cut.Find(".input-group-text");
-        Assert.Equal("$", currencySymbol.TextContent);
+        Assert.Equal(expectedSymbol, currencySymbol.TextContent);
     }
 
     [Fact]
@@ -92,22 +96,22 @@ public class PaymentFormTests : BunitContext
         // Assert
         var options = cut.FindAll("select#method option");
 
-        var creditCardOption = options.First(o => o.GetAttribute("value") == PaymentMethodDto.CreditCard.ToString());
+        var creditCardOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.CreditCard));
         Assert.Equal("Credit Card", creditCardOption.TextContent);
 
-        var bankTransferOption = options.First(o => o.GetAttribute("value") == PaymentMethodDto.BankTransfer.ToString());
+        var bankTransferOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.BankTransfer));
         Assert.Equal("Bank Transfer", bankTransferOption.TextContent);
 
-        var cashOption = options.First(o => o.GetAttribute("value") == PaymentMethodDto.Cash.ToString());
+        var cashOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.Cash));
         Assert.Equal("Cash", cashOption.TextContent);
 
-        var checkOption = options.First(o => o.GetAttribute("value") == PaymentMethodDto.Check.ToString());
+        var checkOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.Check));
         Assert.Equal("Check", checkOption.TextContent);
 
-        var paypalOption = options.First(o => o.GetAttribute("value") == PaymentMethodDto.PayPal.ToString());
+        var paypalOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.PayPal));
         Assert.Equal("PayPal", paypalOption.TextContent);
 
-        var otherOption = options.First(o => o.GetAttribute("value") == PaymentMethodDto.Other.ToString());
+        var otherOption = options.First(o => o.GetAttribute("value") == nameof(PaymentMethodDto.Other));
         Assert.Equal("Other", otherOption.TextContent);
     }
 

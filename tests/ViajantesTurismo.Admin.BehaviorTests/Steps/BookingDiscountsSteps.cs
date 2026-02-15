@@ -245,7 +245,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
         Assert.Contains("percentage", bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
-    [When(@"I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]
+    [When("I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]
     public void WhenICreateABookingWithLongReason()
     {
         var longReason = new string('a', ContractConstants.MaxDiscountReasonLength + 1);

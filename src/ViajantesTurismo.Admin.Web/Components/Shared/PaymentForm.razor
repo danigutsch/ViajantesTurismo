@@ -1,4 +1,5 @@
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @using ViajantesTurismo.Admin.Web.Models
 <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator/>
@@ -7,7 +8,7 @@
         <div class="col-md-6 mb-3">
             <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
             <div class="input-group">
-                <span class="input-group-text">$</span>
+                <span class="input-group-text">@CurrencyFormatter.GetSymbol(Currency)</span>
                 <InputNumber @bind-Value="Model.Amount" class="form-control" id="amount" step="0.01"/>
             </div>
             <ValidationMessage For="@(() => Model.Amount)"/>
@@ -78,6 +79,9 @@
 
     [Parameter]
     public EventCallback OnCancel { get; set; }
+
+    [Parameter, EditorRequired]
+    public CurrencyDto Currency { get; set; }
 
     [Parameter]
     public bool IsSubmitting { get; set; }

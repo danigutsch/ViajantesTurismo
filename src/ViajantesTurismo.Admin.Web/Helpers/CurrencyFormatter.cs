@@ -15,19 +15,29 @@ public static class CurrencyFormatter
     /// <returns>A formatted string with the currency symbol.</returns>
     public static string Format(decimal amount, CurrencyDto currency)
     {
-        var (symbol, position) = currency switch
-        {
-            CurrencyDto.Real => ("R$", CurrencySymbolPosition.Before),
-            CurrencyDto.Euro => ("€", CurrencySymbolPosition.After),
-            CurrencyDto.UsDollar => ("$", CurrencySymbolPosition.Before),
-            _ => ("¤", CurrencySymbolPosition.Before)
-        };
+        var symbol = GetSymbol(currency);
+        var position = currency == CurrencyDto.Euro
+            ? CurrencySymbolPosition.After
+            : CurrencySymbolPosition.Before;
 
         var formattedAmount = amount.ToString("N2");
         return position == CurrencySymbolPosition.Before
             ? $"{symbol} {formattedAmount}"
             : $"{formattedAmount} {symbol}";
     }
+
+    /// <summary>
+    /// Formats <see cref="CurrencyDto"/> to the appropriate currency symbol.
+    /// </summary>
+    /// <param name="currency">The currency type.</param>
+    /// <returns>A formatted string with the currency symbol.</returns>
+    public static string GetSymbol(CurrencyDto currency) => currency switch
+    {
+        CurrencyDto.Real => "R$",
+        CurrencyDto.Euro => "€",
+        CurrencyDto.UsDollar => "$",
+        _ => "¤"
+    };
 
     private enum CurrencySymbolPosition
     {

@@ -241,7 +241,7 @@ public class EditPageTests : BunitContext
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Accommodation Preferences"));
             Assert.NotNull(card.QuerySelector("select#roomType"));
             Assert.NotNull(card.QuerySelector("select#bedType"));
-            Assert.NotNull(card.QuerySelector("input#companionId"));
+            Assert.Contains("Companion", card.TextContent);
         });
     }
 

@@ -252,7 +252,7 @@ Bike rental"/>
                 RegularBikePrice = _model.RegularBikePrice,
                 EBikePrice = _model.EBikePrice,
                 IncludedServices = _model.ServicesInput
-                        .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                        .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                 MinCustomers = _model.MinCustomers,
                 MaxCustomers = _model.MaxCustomers
             };

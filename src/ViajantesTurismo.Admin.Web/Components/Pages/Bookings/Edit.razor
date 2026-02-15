@@ -237,6 +237,7 @@ else
                     </div>
                     <div class="card-body">
                         <PaymentForm Model="_paymentFormModel"
+                                     Currency="_booking.Currency"
                                      OnValidSubmit="@HandleSavePayment"
                                      OnCancel="@HidePaymentForm"
                                      IsSubmitting="_isSubmittingPayment" />
