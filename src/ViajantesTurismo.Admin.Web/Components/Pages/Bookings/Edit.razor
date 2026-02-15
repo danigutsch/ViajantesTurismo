@@ -479,6 +479,7 @@ else
             var createDto = _paymentFormModel.ToDto();
             await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
             _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            SyncModelFromBooking();
             _toast.ShowSuccess("Payment recorded successfully.");
             HidePaymentForm();
         }
@@ -498,6 +499,7 @@ else
         {
             await BookingsApi.ConfirmBooking(Id, CancellationToken.None);
             _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            SyncModelFromBooking();
             _toast.ShowSuccess("Booking confirmed successfully.");
         }
         catch (Exception ex)
@@ -514,6 +516,7 @@ else
             {
                 await BookingsApi.CancelBooking(Id, CancellationToken.None);
                 _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+                SyncModelFromBooking();
                 _toast.ShowSuccess("Booking cancelled successfully.");
             }
             catch (Exception ex)
@@ -529,6 +532,7 @@ else
         {
             await BookingsApi.CompleteBooking(Id, CancellationToken.None);
             _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+            SyncModelFromBooking();
             _toast.ShowSuccess("Booking completed successfully.");
         }
         catch (Exception ex)
@@ -552,6 +556,21 @@ else
                 _toast.ShowError($"Failed to delete booking: {ex.Message}");
             }
         }
+    }
+
+    private void SyncModelFromBooking()
+    {
+        if (_booking is null)
+        {
+            return;
+        }
+
+        _model.Status = _booking.Status;
+        _model.PaymentStatus = _booking.PaymentStatus;
+        _model.Notes = _booking.Notes ?? string.Empty;
+        _model.DiscountType = _booking.DiscountType;
+        _model.DiscountAmount = _booking.DiscountAmount;
+        _model.DiscountReason = _booking.DiscountReason ?? string.Empty;
     }
 
     private class BookingFormModel

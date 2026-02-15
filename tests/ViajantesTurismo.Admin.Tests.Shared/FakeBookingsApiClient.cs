@@ -82,16 +82,19 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public Task CancelBooking(Guid id, CancellationToken cancellationToken)
     {
+        UpdateBookingStatus(id, BookingStatusDto.Cancelled);
         return Task.CompletedTask;
     }
 
     public Task ConfirmBooking(Guid id, CancellationToken cancellationToken)
     {
+        UpdateBookingStatus(id, BookingStatusDto.Confirmed);
         return Task.CompletedTask;
     }
 
     public Task CompleteBooking(Guid id, CancellationToken cancellationToken)
     {
+        UpdateBookingStatus(id, BookingStatusDto.Completed);
         return Task.CompletedTask;
     }
 
@@ -121,4 +124,13 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public void SetGetBookingsByTourIdException(Exception exception) => _getBookingsByTourIdException = exception;
 
     public void SetGetBookingsByCustomerIdException(Exception exception) => _getBookingsByCustomerIdException = exception;
+
+    private void UpdateBookingStatus(Guid id, BookingStatusDto newStatus)
+    {
+        var index = _bookings.FindIndex(b => b.Id == id);
+        if (index >= 0)
+        {
+            _bookings[index] = _bookings[index] with { Status = newStatus };
+        }
+    }
 }

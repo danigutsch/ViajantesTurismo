@@ -470,4 +470,42 @@ public sealed class EditPageTests : BunitContext
         var pageTitle = cut.Find("h1");
         Assert.Equal("Edit Booking", pageTitle.TextContent.Trim());
     }
+
+    [Fact]
+    public async Task Status_Dropdown_Updates_After_Confirm_Action()
+    {
+        // Arrange
+        var booking = DtoBuilders.BuildBookingDto(status: BookingStatusDto.Pending);
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act — click Confirm Booking button
+        var confirmButton = cut.FindAll("button").First(b => b.TextContent.Contains("Confirm Booking"));
+        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+
+        // Assert — status dropdown should now show Confirmed
+        var statusSelect = cut.Find("#status");
+        Assert.Equal(BookingStatusDto.Confirmed.ToString(), statusSelect.GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task Status_Dropdown_Updates_After_Complete_Action()
+    {
+        // Arrange
+        var booking = DtoBuilders.BuildBookingDto(status: BookingStatusDto.Confirmed);
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act — click Complete Booking button
+        var completeButton = cut.FindAll("button").First(b => b.TextContent.Contains("Complete Booking"));
+        await cut.InvokeAsync((Action)(() => completeButton.Click()));
+
+        // Assert — status dropdown should now show Completed
+        var statusSelect = cut.Find("#status");
+        Assert.Equal(BookingStatusDto.Completed.ToString(), statusSelect.GetAttribute("value"));
+    }
 }
