@@ -89,7 +89,7 @@
                             <dd class="col-sm-8">
                                 @if (_booking.DiscountType != DiscountTypeDto.None)
                                 {
-                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : _booking.Currency.ToString())</span>
+                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : EnumFormatter.Format(_booking.Currency))</span>
                                     @if (!string.IsNullOrEmpty(_booking.DiscountReason))
                                     {
                                         <br /><small class="text-muted">Reason: @_booking.DiscountReason</small>

@@ -56,7 +56,7 @@ else if (_tour != null)
                         <dd class="col-sm-8">@((_tour.EndDate - _tour.StartDate).Days) days</dd>
 
                         <dt class="col-sm-4">Currency:</dt>
-                        <dd class="col-sm-8">@_tour.Currency</dd>
+                        <dd class="col-sm-8">@EnumFormatter.Format(_tour.Currency)</dd>
                     </dl>
                 </div>
 
