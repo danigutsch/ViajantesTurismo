@@ -308,34 +308,34 @@ Bike rental"/>
         [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
+        [Required, Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }
 
-        [Required]
+        [Required, Display(Name = "End Date")]
         public DateTime EndDate { get; set; }
 
         [Required]
         public CurrencyDto Currency { get; set; }
 
-        [Required, Range(0.01, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Base Price")]
         public decimal Price { get; set; }
 
-        [Required, Range(0.01, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Double Room Supplement")]
         public decimal DoubleRoomSupplementPrice { get; set; }
 
-        [Required, Range(0.01, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Regular Bike Price")]
         public decimal RegularBikePrice { get; set; }
 
-        [Required, Range(0.01, ContractConstants.MaxPrice)]
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "E-Bike Price")]
         public decimal EBikePrice { get; set; }
 
-        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers), Display(Name = "Minimum Customers")]
         public int MinCustomers { get; set; }
 
-        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers)]
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers), Display(Name = "Maximum Customers")]
         public int MaxCustomers { get; set; }
 
-        [Required]
+        [Required, Display(Name = "Included Services")]
         public string ServicesInput { get; set; } = string.Empty;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
