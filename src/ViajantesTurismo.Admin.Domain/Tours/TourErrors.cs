@@ -86,24 +86,6 @@ public static class TourErrors
         message: $"Duration must be at least {minimumDays} days.");
 
     /// <summary>
-    /// Indicates that the end date is not after the start date.
-    /// </summary>
-    /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> InvalidDateRange() => Result<Tour>.Invalid(
-        detail: "End date must be after start date.",
-        field: "schedule",
-        message: "End date must be after start date.");
-
-    /// <summary>
-    /// Indicates that the end date is not after the start date (non-generic version for update operations).
-    /// </summary>
-    /// <returns>A Result representing the error.</returns>
-    public static Result InvalidDateRangeUpdate() => Result.Invalid(
-        detail: "End date must be after start date.",
-        field: "schedule",
-        message: "End date must be after start date.");
-
-    /// <summary>
     /// Indicates that a price value is invalid (negative).
     /// </summary>
     /// <param name="priceType">The type of price (e.g., "Base price", "Single room supplement").</param>
@@ -184,38 +166,6 @@ public static class TourErrors
     public static Result TourFullyBooked(int maxCustomers, int currentCount) => Result.Conflict(
         detail:
         $"Tour is fully booked. Maximum capacity: {maxCustomers}, Current bookings: {currentCount}. Cannot accept more bookings.");
-
-    /// <summary>
-    /// Indicates that MinCustomers must be a positive integer (update operation).
-    /// </summary>
-    /// <param name="value">The invalid value provided.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result InvalidMinCustomersUpdate(int value) => Result.Invalid(
-        detail: $"Minimum customers must be between 1 and 20. Received: {value}.",
-        field: "minCustomers",
-        message: "Minimum customers must be between 1 and 20.");
-
-    /// <summary>
-    /// Indicates that MaxCustomers must be a positive integer (update operation).
-    /// </summary>
-    /// <param name="value">The invalid value provided.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result InvalidMaxCustomersUpdate(int value) => Result.Invalid(
-        detail: $"Maximum customers must be between 1 and 20. Received: {value}.",
-        field: "maxCustomers",
-        message: "Maximum customers must be between 1 and 20.");
-
-    /// <summary>
-    /// Indicates that MaxCustomers must be greater than or equal to MinCustomers (update operation).
-    /// </summary>
-    /// <param name="minCustomers">The minimum customers value.</param>
-    /// <param name="maxCustomers">The maximum customers value.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result MaxCustomersLessThanMinUpdate(int minCustomers, int maxCustomers) => Result.Invalid(
-        detail:
-        $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
-        field: "maxCustomers",
-        message: $"Maximum must be >= minimum ({minCustomers}).");
 
     /// <summary>
     /// Indicates that only pending bookings can be removed.
