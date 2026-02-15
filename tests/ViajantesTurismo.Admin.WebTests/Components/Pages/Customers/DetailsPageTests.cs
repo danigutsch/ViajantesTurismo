@@ -316,8 +316,8 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Accommodation Preferences'))");
-        Assert.Contains("DoubleRoom", card.TextContent);
-        Assert.Contains("DoubleBed", card.TextContent);
+        Assert.Contains("Double Room", card.TextContent);
+        Assert.Contains("Double Bed", card.TextContent);
     }
 
     [Fact]

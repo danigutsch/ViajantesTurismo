@@ -41,8 +41,6 @@ else
             @FormatPrice(context.EBikePrice, context.Currency)
         </TemplateColumn>
 
-        <PropertyColumn Property="@(t => t.Currency)" Title="Currency" />
-
         <TemplateColumn Title="Capacity" Sortable="true"
                         SortBy="GridSort<GetTourDto>.ByAscending(t => t.CurrentCustomerCount)">
             <div class="d-flex align-items-center gap-2">

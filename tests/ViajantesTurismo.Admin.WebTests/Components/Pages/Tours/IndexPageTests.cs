@@ -67,7 +67,6 @@ public class IndexPageTests : BunitContext
         Assert.Contains(headers, h => h.TextContent.Contains("Single Room Supplement"));
         Assert.Contains(headers, h => h.TextContent.Contains("Regular Bike"));
         Assert.Contains(headers, h => h.TextContent.Contains("E-Bike"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Currency"));
         Assert.Contains(headers, h => h.TextContent.Contains("Capacity"));
         Assert.Contains(headers, h => h.TextContent.Contains("Actions"));
     }
@@ -140,21 +139,6 @@ public class IndexPageTests : BunitContext
 
         // Assert
         Assert.Contains("$ 1,800.00", cut.Markup);
-    }
-
-    [Fact]
-    public void Renders_Currency_Column()
-    {
-        // Arrange
-        var tour = BuildTourDto(currency: CurrencyDto.Euro);
-        _fakeToursApi.AddTour(tour);
-
-        // Act
-        var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Euro"), TimeSpan.FromSeconds(2));
-
-        // Assert
-        Assert.Contains("Euro", cut.Markup);
     }
 
     [Fact]

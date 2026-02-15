@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Components.Shared;
+using ViajantesTurismo.Admin.Web.Helpers;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
@@ -70,7 +71,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(status.ToString(), badge.TextContent);
+        Assert.Contains(EnumFormatter.Format(status), badge.TextContent);
     }
 
     [Fact]
