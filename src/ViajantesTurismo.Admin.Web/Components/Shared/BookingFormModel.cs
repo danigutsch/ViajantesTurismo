@@ -31,8 +31,7 @@ public class BookingFormModel : IValidatableObject
     [Range(0, double.MaxValue, ErrorMessage = "Discount amount must be positive")]
     public decimal DiscountAmount { get; set; }
 
-    [StringLength(ContractConstants.MaxDiscountReasonLength, MinimumLength = ContractConstants.MinDiscountReasonLength,
-        ErrorMessage = "Discount reason must be between {2} and {1} characters")]
+    [MaxLength(ContractConstants.MaxDiscountReasonLength, ErrorMessage = "Discount reason cannot exceed {1} characters")]
     public string DiscountReason { get; set; } = string.Empty;
 
     /// <summary>

@@ -39,7 +39,6 @@ main {
 .content {
     padding-top: 1.1rem;
     padding-bottom: 2rem;
-    max-width: 1400px;
 }
 
 @media (max-width: 640px) {

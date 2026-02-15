@@ -361,7 +361,8 @@ else
         _isSubmitting = true;
         try
         {
-            var createDto = model.ToDto() with { PrincipalCustomerId = Id };
+            model.CustomerId = Id;
+            var createDto = model.ToDto();
             await BookingsApi.CreateBooking(createDto, CancellationToken.None);
 
             await LoadBookings();

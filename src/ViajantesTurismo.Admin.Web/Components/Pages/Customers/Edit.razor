@@ -235,10 +235,19 @@ else
                         </div>
 
                         <div class="mb-3">
-                            <label for="companionId" class="form-label">Companion ID</label>
-                            <InputText id="companionId" class="form-control"
-                                       @bind-Value="_companionIdDisplay" readonly/>
-                            <div class="form-text">Companion assignment cannot be changed after customer creation</div>
+                            <label class="form-label">Companion (Optional)</label>
+                            @if (_customers == null)
+                            {
+                                <div class="form-control">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Loading customers...
+                                </div>
+                            }
+                            else
+                            {
+                                <CustomerSelector @bind-Value="_model.AccommodationPreferences.CompanionId" Customers="_customers"/>
+                            }
+                            <small class="form-text text-muted">Select another customer traveling with this person</small>
                         </div>
                     </div>
                 </div>
@@ -343,7 +352,7 @@ else
     private bool _redirectCancelled;
     private CancellationTokenSource? _redirectCts;
     private string? _errorMessage;
-    private string _companionIdDisplay = string.Empty;
+    private IReadOnlyList<GetCustomerDto>? _customers;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -370,7 +379,7 @@ else
                 MedicalInfo = MedicalInfoFormModel.FromDto(customer.MedicalInfo)
             };
 
-            _companionIdDisplay = customer.AccommodationPreferences.CompanionId?.ToString() ?? "None";
+            _customers = await CustomersApi.GetCustomers(CancellationToken.None);
         }
         catch (Exception ex)
         {

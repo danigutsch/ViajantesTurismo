@@ -32,7 +32,7 @@ public sealed class PaymentFormModel
     public CreatePaymentDto ToDto() => new()
     {
         Amount = Amount!.Value,
-        PaymentDate = PaymentDate!.Value,
+        PaymentDate = DateTime.SpecifyKind(PaymentDate!.Value, DateTimeKind.Utc),
         Method = Method!.Value,
         ReferenceNumber = ReferenceNumber,
         Notes = Notes

@@ -32,7 +32,7 @@ internal sealed class PersonalInfoFormModel
     {
         FirstName = FirstName,
         LastName = LastName,
-        BirthDate = BirthDate!.Value,
+        BirthDate = DateTime.SpecifyKind(BirthDate!.Value, DateTimeKind.Utc),
         Gender = Gender,
         Nationality = Nationality,
         Occupation = Occupation
