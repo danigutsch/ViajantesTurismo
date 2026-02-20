@@ -24,13 +24,13 @@ Fast, isolated tests for domain entities. No database, no HTTP, no file system.
 ### State Transition Matrix
 
 | From      | To        | Allowed |
-|-----------|-----------|--------|
-| Pending   | Confirmed | ✅     |
-| Pending   | Cancelled | ✅     |
-| Confirmed | Completed | ✅     |
-| Confirmed | Cancelled | ✅     |
-| Cancelled | Any       | ❌     |
-| Completed | Any       | ❌     |
+|-----------|-----------|-------- |
+| Pending   | Confirmed | ✅      |
+| Pending   | Cancelled | ✅      |
+| Confirmed | Completed | ✅      |
+| Confirmed | Cancelled | ✅      |
+| Cancelled | Any       | ❌      |
+| Completed | Any       | ❌      |
 
 ## Test-Driven Development
 
