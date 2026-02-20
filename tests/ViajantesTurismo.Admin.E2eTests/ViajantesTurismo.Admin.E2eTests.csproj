@@ -1,10 +1,10 @@
-<Project Sdk="Aspire.AppHost.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-        <RootNamespace>ViajantesTurismo.Admin.IntegrationTests</RootNamespace>
+        <RootNamespace>ViajantesTurismo.Admin.E2eTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,14 +16,15 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
         <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
         <PackageReference Include="Aspire.Hosting.Redis"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
         <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.Playwright.Xunit.v3"/>
         <PackageReference Include="xunit.v3"/>
         <PackageReference Include="xunit.runner.visualstudio">
             <PrivateAssets>all</PrivateAssets>
@@ -33,6 +34,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj" IsAspireProjectResource="false"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Web\ViajantesTurismo.Admin.Web.csproj" IsAspireProjectResource="false"/>
     </ItemGroup>
 
 </Project>
