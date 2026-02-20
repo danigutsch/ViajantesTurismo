@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+        <RootNamespace>ViajantesTurismo.Admin.IntegrationTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
