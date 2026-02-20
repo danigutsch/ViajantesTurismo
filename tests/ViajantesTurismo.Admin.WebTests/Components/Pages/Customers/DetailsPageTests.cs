@@ -304,7 +304,7 @@ public sealed class DetailsPageTests : BunitContext
         // Arrange
         var accommodationPreferences = new AccommodationPreferencesDto
         {
-            RoomType = RoomTypeDto.DoubleRoom,
+            RoomType = RoomTypeDto.SingleOccupancy,
             BedType = BedTypeDto.DoubleBed,
             CompanionId = null
         };
@@ -316,7 +316,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Accommodation Preferences'))");
-        Assert.Contains("Double Room", card.TextContent);
+        Assert.Contains("Single", card.TextContent);
         Assert.Contains("Double Bed", card.TextContent);
     }
 
@@ -327,7 +327,7 @@ public sealed class DetailsPageTests : BunitContext
         var companionId = Guid.NewGuid();
         var accommodationPreferences = new AccommodationPreferencesDto
         {
-            RoomType = RoomTypeDto.DoubleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             BedType = BedTypeDto.DoubleBed,
             CompanionId = companionId
         };

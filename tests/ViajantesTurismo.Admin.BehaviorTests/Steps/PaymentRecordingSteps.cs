@@ -17,7 +17,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void GivenATourExistsWithAPendingBookingForPaymentTests()
     {
         tourContext.Tour = EntityBuilders.BuildTour(basePrice: 900.00m);
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.SingleRoom,
+        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
             DiscountType.None, 0m, null, null);
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;

@@ -10,7 +10,7 @@ public static partial class EnumFormatter
 {
     /// <summary>
     /// Formats an enum value by inserting spaces before uppercase letters.
-    /// For example, <c>SingleRoom</c> becomes <c>Single Room</c>.
+    /// For example, <c>DoubleBed</c> becomes <c>Double Bed</c>.
     /// </summary>
     public static string Format<T>(T value) where T : struct, Enum
         => PascalCaseBoundary().Replace(value.ToString(), " ");

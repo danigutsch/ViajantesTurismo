@@ -117,8 +117,8 @@ All enums are validated using `Enum.IsDefined()` to ensure only valid values are
 
 ### Pricing Model
 
-- **Base Price**: Cost for single room (NOT per person)
-- **Double Room**: Base price + double room supplement
+- **Base Price**: Cost for double occupancy (NOT per person)
+- **Single Room**: Base price + single room supplement
 - **Bikes**: Separate per-person charges
 - **Calculation**: `(BasePrice + RoomCost + Bike1 + Bike2) - Discount`
 

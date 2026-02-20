@@ -16,7 +16,7 @@ public static class ContextHelpers
         context.StartDate = DateTime.UtcNow.AddMonths(1);
         context.EndDate = DateTime.UtcNow.AddMonths(1).AddDays(7);
         context.BasePrice = 2000.00m;
-        context.DoubleRoomSupplementPrice = 500.00m;
+        context.SingleRoomSupplementPrice = 500.00m;
         context.RegularBikePrice = 100.00m;
         context.EBikePrice = 200.00m;
     }

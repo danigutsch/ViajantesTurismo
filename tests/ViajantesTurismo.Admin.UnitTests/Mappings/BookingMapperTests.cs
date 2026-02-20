@@ -68,8 +68,8 @@ public class BookingMapperTests
     }
 
     [Theory]
-    [InlineData(RoomTypeDto.SingleRoom, RoomType.SingleRoom)]
-    [InlineData(RoomTypeDto.DoubleRoom, RoomType.DoubleRoom)]
+    [InlineData(RoomTypeDto.DoubleOccupancy, RoomType.DoubleOccupancy)]
+    [InlineData(RoomTypeDto.SingleOccupancy, RoomType.SingleOccupancy)]
     public void Map_To_Room_Type_Should_Map_All_Valid_Values(RoomTypeDto dto, RoomType expected)
     {
         // Arrange
@@ -593,8 +593,8 @@ public class BookingMapperTests
     }
 
     [Theory]
-    [InlineData(RoomType.SingleRoom, RoomTypeDto.SingleRoom)]
-    [InlineData(RoomType.DoubleRoom, RoomTypeDto.DoubleRoom)]
+    [InlineData(RoomType.DoubleOccupancy, RoomTypeDto.DoubleOccupancy)]
+    [InlineData(RoomType.SingleOccupancy, RoomTypeDto.SingleOccupancy)]
     public void Map_To_Room_Type_Dto_Should_Map_All_Valid_Values(RoomType domain, RoomTypeDto expected)
     {
         // Arrange

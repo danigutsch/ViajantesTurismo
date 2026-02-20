@@ -15,7 +15,7 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: $"{tour.Identifier}-UPDATED", name: "Cuba Updated", startDate: new DateTime(2026, 11, 10).ToUniversalTime(),
-            endDate: new DateTime(2026, 11, 20).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 2800.00m, doubleRoomSupplement: 370.00m, regularBikePrice: 180.00m, eBikePrice: 280.00m,
+            endDate: new DateTime(2026, 11, 20).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 2800.00m, singleRoomSupplement: 370.00m, regularBikePrice: 180.00m, eBikePrice: 280.00m,
             includedServices: ["Hotel", "Breakfast", "City Tour", "Dinner"]);
 
         // Act
@@ -41,7 +41,7 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         const int invalidId = -1;
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: "INVALID", name: "Invalid Tour", startDate: new DateTime(2027, 1, 1).ToUniversalTime(),
-            endDate: new DateTime(2027, 1, 10).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 1000.00m, doubleRoomSupplement: 100.00m, regularBikePrice: 50.00m, eBikePrice: 80.00m,
+            endDate: new DateTime(2027, 1, 10).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 1000.00m, singleRoomSupplement: 100.00m, regularBikePrice: 50.00m, eBikePrice: 80.00m,
             includedServices: ["None"]);
 
         // Act
@@ -113,7 +113,7 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
             endDate: new DateTime(2026, 6, 15).ToUniversalTime(),
             currency: CurrencyDto.Euro,
             basePrice: 3000.00m,
-            doubleRoomSupplement: 400.00m,
+            singleRoomSupplement: 400.00m,
             regularBikePrice: 200.00m,
             eBikePrice: 300.00m,
             includedServices: ["Hotel", "Breakfast"]);
@@ -148,7 +148,7 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
             endDate: tour.EndDate,
             currency: tour.Currency,
             basePrice: 3500.00m,
-            doubleRoomSupplement: 450.00m,
+            singleRoomSupplement: 450.00m,
             regularBikePrice: 200.00m,
             eBikePrice: 300.00m,
             includedServices: ["Hotel", "Breakfast", "Lunch"]);

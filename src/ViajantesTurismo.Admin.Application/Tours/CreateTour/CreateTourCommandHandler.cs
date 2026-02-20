@@ -34,7 +34,7 @@ public sealed class CreateTourCommandHandler(
             command.StartDate,
             command.EndDate,
             command.Price,
-            command.DoubleRoomSupplementPrice,
+            command.SingleRoomSupplementPrice,
             command.RegularBikePrice,
             command.EBikePrice,
             currency,

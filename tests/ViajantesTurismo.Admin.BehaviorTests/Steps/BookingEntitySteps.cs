@@ -68,7 +68,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
-            RoomType.DoubleRoom,
+            RoomType.SingleOccupancy,
             0m,
             principal,
             null,
@@ -89,7 +89,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
-            RoomType.SingleRoom,
+            RoomType.DoubleOccupancy,
             roomCost,
             principal,
             null,
@@ -108,7 +108,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,
-            RoomType.DoubleRoom,
+            RoomType.SingleOccupancy,
             0m,
             principal,
             null,
@@ -127,7 +127,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,
-            RoomType.DoubleRoom,
+            RoomType.SingleOccupancy,
             0m,
             principal,
             null,
@@ -144,7 +144,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var principal = CreatePrincipalCustomer();
         var result = Booking.Create(Guid.CreateVersion7(),
             1000m,
-            RoomType.DoubleRoom,
+            RoomType.SingleOccupancy,
             0m,
             principal,
             null,

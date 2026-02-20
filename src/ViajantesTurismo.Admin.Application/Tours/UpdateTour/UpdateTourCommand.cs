@@ -12,7 +12,7 @@ public sealed record UpdateTourCommand(
     DateTime StartDate,
     DateTime EndDate,
     decimal Price,
-    decimal DoubleRoomSupplementPrice,
+    decimal SingleRoomSupplementPrice,
     decimal RegularBikePrice,
     decimal EBikePrice,
     Currency Currency,

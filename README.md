@@ -24,8 +24,8 @@ powerful tools to create and manage tour packages.
 - **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
   formatting and display in the web frontend
 - **Flexible Pricing**:
-    - Base tour pricing for a single room (not per person)
-    - Double room supplement for larger accommodations
+    - Base tour pricing for double occupancy (not per person)
+    - Single room supplement for solo travellers
     - Bike rental pricing options
     - Discount system with percentage or absolute amount of support
     - Calculated total price (transparent, consistent)

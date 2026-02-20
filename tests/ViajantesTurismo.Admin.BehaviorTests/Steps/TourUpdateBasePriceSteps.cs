@@ -17,7 +17,7 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             basePrice: basePrice,
-            doubleRoomSupplementPrice: 500.00m,
+            singleRoomSupplementPrice: 500.00m,
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: Currency.UsDollar,

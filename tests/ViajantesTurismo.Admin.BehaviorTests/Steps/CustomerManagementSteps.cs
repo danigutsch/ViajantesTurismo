@@ -45,7 +45,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void GivenIHaveValidAccommodationPreferences()
     {
         context.AccommodationPreferencesResult =
-            AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, Guid.CreateVersion7());
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, Guid.CreateVersion7());
     }
 
     [Given("I have valid emergency contact")]
@@ -341,7 +341,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             },
             AccommodationPreferences: new AccommodationPreferencesDto
             {
-                RoomType = RoomTypeDto.SingleRoom,
+                RoomType = RoomTypeDto.DoubleOccupancy,
                 BedType = BedTypeDto.SingleBed,
                 CompanionId = null
             },
@@ -402,7 +402,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             },
             AccommodationPreferences: new AccommodationPreferencesDto
             {
-                RoomType = RoomTypeDto.SingleRoom,
+                RoomType = RoomTypeDto.DoubleOccupancy,
                 BedType = BedTypeDto.SingleBed,
                 CompanionId = null
             },

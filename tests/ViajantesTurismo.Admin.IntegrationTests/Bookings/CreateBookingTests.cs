@@ -50,7 +50,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
             principalCustomerId: customerDto.Id,
             companionCustomerId: companionDto.Id,
             companionBikeType: BikeTypeDto.Regular,
-            roomType: RoomTypeDto.DoubleRoom,
+            roomType: RoomTypeDto.DoubleOccupancy,
             notes: "Couple booking");
 
         // Act

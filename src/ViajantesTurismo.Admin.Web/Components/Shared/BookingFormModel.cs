@@ -16,7 +16,7 @@ public class BookingFormModel : IValidatableObject
     public Guid? CompanionId { get; set; }
 
     [Required(ErrorMessage = "Room type is required")]
-    public RoomTypeDto RoomType { get; set; } = RoomTypeDto.SingleRoom;
+    public RoomTypeDto RoomType { get; set; } = RoomTypeDto.DoubleOccupancy;
 
     [Required(ErrorMessage = "Bike type is required for principal customer")]
     public BikeTypeDto PrincipalBikeType { get; set; } = BikeTypeDto.None;

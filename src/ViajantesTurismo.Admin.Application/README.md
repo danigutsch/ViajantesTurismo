@@ -132,7 +132,7 @@ private static async Task<Results<Created<GetTourDto>, ValidationProblem>> Creat
         dto.StartDate,
         dto.EndDate,
         dto.Price,
-        dto.DoubleRoomSupplementPrice,
+        dto.SingleRoomSupplementPrice,
         dto.RegularBikePrice,
         dto.EBikePrice,
         TourMapper.MapToCurrency(dto.Currency),

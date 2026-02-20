@@ -311,7 +311,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Double_Room_Supplement_Field_Is_Present()
+    public void Single_Room_Supplement_Field_Is_Present()
     {
         // Arrange
         // Act
@@ -322,7 +322,7 @@ public class AddPageTests : BunitContext
         var label = cut.FindAll("label").First(l => l.GetAttribute("for") == "singleRoom");
 
         Assert.NotNull(field);
-        Assert.Contains("Double Room Supplement", label.TextContent);
+        Assert.Contains("Single Room Supplement", label.TextContent);
     }
 
     [Fact]

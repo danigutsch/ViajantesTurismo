@@ -16,7 +16,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
         {
             tourContext.Tour.AddBooking(
                 Guid.CreateVersion7(), BikeType.Regular, null, null,
-                RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+                RoomType.DoubleOccupancy, DiscountType.None, 0m, null, null);
         }
     }
 
@@ -30,7 +30,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             basePrice: 2000.00m,
-            doubleRoomSupplementPrice: 500.00m,
+            singleRoomSupplementPrice: 500.00m,
             regularBikePrice: 100.00m,
             eBikePrice: 200.00m,
             currency: currency,

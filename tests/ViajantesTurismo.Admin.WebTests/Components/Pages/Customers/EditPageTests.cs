@@ -262,8 +262,8 @@ public class EditPageTests : BunitContext
             var roomTypeSelect = cut.Find("select#roomType");
             var options = roomTypeSelect.QuerySelectorAll("option");
             Assert.Equal(2, options.Length);
-            Assert.Contains("Single Room", options[0].TextContent);
-            Assert.Contains("Double Room", options[1].TextContent);
+            Assert.Contains("Double Room", options[0].TextContent);
+            Assert.Contains("Single Room", options[1].TextContent);
         });
     }
 

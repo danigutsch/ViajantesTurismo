@@ -11,7 +11,7 @@ So that we maintain valid tour service information
           | StartDate                 | 2025-01-15 |
           | EndDate                   | 2025-01-22 |
           | Price                     | 2500.00    |
-          | DoubleRoomSupplementPrice | 500.00     |
+          | SingleRoomSupplementPrice | 500.00     |
           | RegularBikePrice          | 50.00      |
           | EBikePrice                | 75.00      |
           | Currency                  | USD        |

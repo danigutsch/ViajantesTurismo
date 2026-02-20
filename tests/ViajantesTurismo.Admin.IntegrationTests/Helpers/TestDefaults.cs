@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
 internal static class TestDefaults
 {
     public const decimal BaseTourPrice = 2000m;
-    public const decimal DoubleRoomSupplement = 500m;
+    public const decimal SingleRoomSupplement = 500m;
     public const decimal RegularBikePrice = 100m;
     public const decimal EBikePrice = 200m;
     public const decimal ValidPercentageDiscount = 10m;

@@ -16,7 +16,7 @@ public sealed class UpdateCustomerCommandHandlerTests
         var contact = ContactInfo.Create(email, "+1000000000", null, null).Value;
         var address = Address.Create("Street", "Comp", "Neighborhood", "12345", "City", "State", "Country").Value;
         var physical = PhysicalInfo.Create(70m, 180, BikeType.Regular).Value;
-        var accommodation = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null).Value;
+        var accommodation = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value;
         var emergency = EmergencyContact.Create("Jane Doe", "+1000000001").Value;
         var medical = MedicalInfo.Create("None", null).Value;
         return new Customer(personal, identification, contact, address, physical, accommodation, emergency, medical);
@@ -59,7 +59,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.SingleRoom, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
             new EmergencyContactDto { Name = "Jane Doe", Mobile = "+1000000001" },
             new MedicalInfoDto { Allergies = "None", AdditionalInfo = null }
         );
@@ -110,7 +110,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.SingleRoom, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
             new EmergencyContactDto { Name = "Jane Doe", Mobile = "+1000000001" },
             new MedicalInfoDto { Allergies = "None", AdditionalInfo = null }
         );
@@ -171,7 +171,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 BikeType = BikeTypeDto.Regular
             },
             new AccommodationPreferencesDto
-            { RoomType = RoomTypeDto.SingleRoom, BedType = BedTypeDto.SingleBed, CompanionId = null },
+            { RoomType = RoomTypeDto.DoubleOccupancy, BedType = BedTypeDto.SingleBed, CompanionId = null },
             new EmergencyContactDto
             { Name = existing1.EmergencyContact.Name, Mobile = existing1.EmergencyContact.Mobile },
             new MedicalInfoDto

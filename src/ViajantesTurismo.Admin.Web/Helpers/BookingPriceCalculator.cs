@@ -12,11 +12,13 @@ public static class BookingPriceCalculator
         BikeTypeDto principalBikeType,
         BikeTypeDto? companionBikeType,
         decimal basePrice,
-        decimal doubleRoomSupplement,
+        decimal singleRoomSupplement,
         decimal regularBikePrice,
         decimal eBikePrice)
     {
-        var roomCost = roomType == RoomTypeDto.DoubleRoom ? doubleRoomSupplement : 0m;
+        var roomCost = roomType == RoomTypeDto.SingleOccupancy
+            ? singleRoomSupplement
+            : 0m;
 
         var principalBikeCost = principalBikeType switch
         {

@@ -104,7 +104,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     public void WhenIUpdateTheAccommodationPreferencesToBedType(string bedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(bedType + "Bed");
-        var accommodationPreferences = AccommodationPreferences.Create(RoomType.SingleRoom, bedTypeEnum, null).Value;
+        var accommodationPreferences = AccommodationPreferences.Create(RoomType.DoubleOccupancy, bedTypeEnum, null).Value;
         customerContext.Customer.UpdateAccommodationPreferences(accommodationPreferences);
     }
 

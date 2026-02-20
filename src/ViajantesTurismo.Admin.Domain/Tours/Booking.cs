@@ -21,9 +21,9 @@ public sealed class Booking : Entity<Guid>
     /// Initialises a new instance of the <see cref="Booking"/> class.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="basePrice">The base price for a single room (not per person).</param>
+    /// <param name="basePrice">The base price for double occupancy (not per person).</param>
     /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The additional cost for a double room (0 for a single room).</param>
+    /// <param name="roomAdditionalCost">The single room supplement (0 for double occupancy).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="discount">The discount applied to this booking.</param>
@@ -173,9 +173,9 @@ public sealed class Booking : Entity<Guid>
     /// Creates a new booking with validation and sanitisation.
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
-    /// <param name="basePrice">The base price for a single room (not per person).</param>
+    /// <param name="basePrice">The base price for double occupancy (not per person).</param>
     /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The additional cost for a double room (0 for a single room).</param>
+    /// <param name="roomAdditionalCost">The single room supplement (0 for double occupancy).</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="discount">The discount applied to this booking.</param>
@@ -404,7 +404,7 @@ public sealed class Booking : Entity<Guid>
             errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, ContractConstants.MaxPrice));
         }
 
-        if (roomType == RoomType.SingleRoom && companionCustomer is not null)
+        if (roomType == RoomType.SingleOccupancy && companionCustomer is not null)
         {
             errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
         }
@@ -439,7 +439,7 @@ public sealed class Booking : Entity<Guid>
             errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(PrincipalCustomer.CustomerId));
         }
 
-        if (RoomType == RoomType.SingleRoom && companionCustomer is not null)
+        if (RoomType == RoomType.SingleOccupancy && companionCustomer is not null)
         {
             errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
         }

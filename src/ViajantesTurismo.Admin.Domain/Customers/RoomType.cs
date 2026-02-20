@@ -6,12 +6,12 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 public enum RoomType
 {
     /// <summary>
-    /// Single occupancy room (one person).
+    /// Double occupancy room (shared room, base price).
     /// </summary>
-    SingleRoom = 0,
+    DoubleOccupancy = 0,
 
     /// <summary>
-    /// Double occupancy room (two people).
+    /// Single occupancy room (solo traveler, supplement applies).
     /// </summary>
-    DoubleRoom = 1
+    SingleOccupancy = 1
 }

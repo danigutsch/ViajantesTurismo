@@ -32,7 +32,7 @@ We establish the following editability rules across the system:
   already exist for the tour.
 - **Warning**: `Tour Dates` (Start/End) are editable but the UI shows a warning when bookings exist,
   since schedule changes may affect booked customers.
-- **Editable**: `Tour Name`, `Base Price`, `Double Room Supplement`, `Bike Prices`, `Included Services`,
+- **Editable**: `Tour Name`, `Base Price`, `Single Room Supplement`, `Bike Prices`, `Included Services`,
   `Min/Max Customers`. Pricing fields are safe to update because bookings capture a price snapshot at creation time.
 
 ## Consequences

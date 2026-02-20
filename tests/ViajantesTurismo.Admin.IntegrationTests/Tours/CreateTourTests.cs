@@ -14,7 +14,7 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         // Arrange
         var request = DtoBuilders.BuildCreateTourDto(
             basePrice: 2500.00m,
-            doubleRoomSupplement: 300.00m,
+            singleRoomSupplement: 300.00m,
             regularBikePrice: 150.00m,
             eBikePrice: 250.00m,
             currency: CurrencyDto.Real,
@@ -54,7 +54,7 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
             identifier: "TEST2024",
             name: "Test Tour",
             basePrice: invalidPrice,
-            doubleRoomSupplement: invalidPrice,
+            singleRoomSupplement: invalidPrice,
             regularBikePrice: invalidPrice,
             eBikePrice: invalidPrice,
             includedServices: ["Hotel"]);
@@ -114,7 +114,7 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
             identifier: "MAXPRICE",
             name: "Max Price Tour",
             basePrice: maxPrice,
-            doubleRoomSupplement: maxPrice,
+            singleRoomSupplement: maxPrice,
             regularBikePrice: maxPrice,
             eBikePrice: maxPrice);
 
@@ -134,7 +134,7 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
             identifier: "MINPRICE",
             name: "Min Price Tour",
             basePrice: minPrice,
-            doubleRoomSupplement: minPrice,
+            singleRoomSupplement: minPrice,
             regularBikePrice: minPrice,
             eBikePrice: minPrice);
 

@@ -46,7 +46,7 @@ Decisions about application architecture and layer responsibilities.
 Decisions about business rules, pricing calculations, and payment handling.
 
 - **[ADR-008](adr/20251108-totalprice-calculated-property.md)** — TotalPrice as Calculated Property
-- **[ADR-009](adr/20251108-room-pricing-model.md)** — Room Pricing Model - Base Price = Single Room
+- **[ADR-009](adr/20251108-room-pricing-model.md)** — Room Pricing Model - Base Price = Double Occupancy
 - **[ADR-010](adr/20251108-discount-value-object.md)** — Discount as Value Object with Audit Trail
 - **[ADR-011](adr/20251108-payment-tracking-immutable-records.md)** — Payment Tracking with Immutable Payment Records
 - **[ADR-012](adr/20251108-booking-details-update-after-creation.md)** — Booking Details Update After Creation
@@ -75,7 +75,7 @@ These architectural decisions establish a robust foundation:
 ### Business Rules
 
 1. **Calculated properties** ensure derived values are always consistent
-2. **Correct pricing model** reflects actual business rules (base price = single room)
+2. **Correct pricing model** reflects actual business rules (base price = double occupancy)
 3. **Discount value objects** provide flexible pricing with audit trails
 4. **Immutable payments** ensure financial integrity and complete history
 5. **Post-creation updates** improve customer experience without compromising data integrity

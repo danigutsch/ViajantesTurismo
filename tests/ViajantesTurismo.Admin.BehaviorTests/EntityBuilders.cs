@@ -18,7 +18,7 @@ public static class EntityBuilders
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? basePrice = null,
-        decimal? doubleRoomSupplementPrice = null,
+        decimal? singleRoomSupplementPrice = null,
         decimal? regularBikePrice = null,
         decimal? eBikePrice = null,
         Currency? currency = null,
@@ -35,7 +35,7 @@ public static class EntityBuilders
             startDate: start,
             endDate: end,
             basePrice: basePrice ?? 2000.00m,
-            doubleRoomSupplementPrice: doubleRoomSupplementPrice ?? 500.00m,
+            singleRoomSupplementPrice: singleRoomSupplementPrice ?? 500.00m,
             regularBikePrice: regularBikePrice ?? 100.00m,
             eBikePrice: eBikePrice ?? 200.00m,
             currency: currency ?? Currency.UsDollar,
@@ -112,7 +112,7 @@ public static class EntityBuilders
             preferredBike ?? BikeType.Regular).Value;
 
         var accommodationPreferences = AccommodationPreferences.Create(
-            preferredRoom ?? RoomType.SingleRoom,
+            preferredRoom ?? RoomType.DoubleOccupancy,
             preferredBed ?? BedType.SingleBed,
             companionId).Value;
 

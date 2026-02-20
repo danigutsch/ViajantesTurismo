@@ -19,7 +19,7 @@ Business Rules:
 - Negative discounts are not allowed
 
     Background:
-        Given a tour exists with base price 2000, double room supplement 500, regular bike price 100, and e-bike price 200
+        Given a tour exists with base price 2000, single room supplement 500, regular bike price 100, and e-bike price 200
 
     Rule: Percentage discounts must be valid and within limits
     Percentage discounts provide a proportional reduction in price.
@@ -41,7 +41,7 @@ Business Rules:
         Scenario: Apply percentage discount with companion
             When I create a booking with principal customer 1 regular bike, companion customer 2 e-bike, double room, and 20% discount
             Then the booking should be created successfully
-            And the booking total price should be 2240
+            And the booking total price should be 1840
 
         @Invariant:INV-TOUR-024
         @error_case
@@ -140,6 +140,6 @@ Business Rules:
               | base | room | bike1 | bike2 | discount | total |
               | 2000 | 0    | 100   | 0     | 10       | 1890  |
               | 2000 | 0    | 100   | 0     | 50       | 1050  |
-              | 2000 | 500  | 100   | 200   | 15       | 2380  |
-              | 2000 | 500  | 100   | 200   | 25       | 2100  |
+              | 2000 | 0    | 100   | 200   | 15       | 1955  |
+              | 2000 | 0    | 100   | 200   | 25       | 1725  |
               | 2000 | 0    | 100   | 0     | 5        | 1995  |

@@ -156,7 +156,7 @@ public sealed class BookingValidationSteps(
     public void WhenIAttemptToCreateABookingWithBasePrice(decimal basePrice)
     {
         var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.DoubleRoom, 0m, principal, null,
+        var result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.SingleOccupancy, 0m, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.BookingCreationResult = result;
     }
@@ -165,7 +165,7 @@ public sealed class BookingValidationSteps(
     public void WhenIAttemptToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
         var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.SingleRoom, roomCost, principal, null,
+        var result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.DoubleOccupancy, roomCost, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, null);
         bookingContext.BookingCreationResult = result;
     }
@@ -184,7 +184,7 @@ public sealed class BookingValidationSteps(
     {
         var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
         var notes = new string('x', characterCount);
-        var result = Booking.Create(Guid.CreateVersion7(), 1000m, RoomType.DoubleRoom, 0m, principal, null,
+        var result = Booking.Create(Guid.CreateVersion7(), 1000m, RoomType.SingleOccupancy, 0m, principal, null,
             Discount.Create(DiscountType.None, 0m, null).Value, notes);
         bookingContext.BookingCreationResult = result;
     }

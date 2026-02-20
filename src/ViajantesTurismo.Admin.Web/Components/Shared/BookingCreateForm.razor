@@ -47,14 +47,14 @@
     <div class="mb-3">
         <label class="form-label">Room Type <span class="text-danger">*</span></label>
         <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
-            <option value="@RoomTypeDto.SingleRoom">Single Room (Base Price)</option>
-            <option value="@RoomTypeDto.DoubleRoom">Double Room (Base Price + Supplement)</option>
+            <option value="@RoomTypeDto.DoubleOccupancy">Double Room (Base Price)</option>
+            <option value="@RoomTypeDto.SingleOccupancy">Single Room (Base Price + Supplement)</option>
         </InputSelect>
         <ValidationMessage For="@(() => Model.RoomType)"/>
         <div class="form-text">
-            Single Room: Tour base price (standard room).<br/>
-            Double Room: Tour base price + double room supplement (larger space, more expensive).
-            @if (Model is { RoomType: RoomTypeDto.DoubleRoom, CompanionId: null })
+            Double Room: Tour base price (shared room, standard).<br/>
+            Single Room: Tour base price + single room supplement (solo occupancy surcharge).
+            @if (Model is { RoomType: RoomTypeDto.SingleOccupancy, CompanionId: null })
             {
                 <br/>
                 <span class="badge bg-info mt-1"><i class="bi bi-info-circle"></i> Single Occupancy - No companion selected</span>
@@ -72,7 +72,7 @@
         <ValidationMessage For="@(() => Model.PrincipalBikeType)"/>
     </div>
 
-    @if (Model.RoomType == RoomTypeDto.DoubleRoom)
+    @if (Model.RoomType == RoomTypeDto.DoubleOccupancy)
     {
         <div class="mb-3">
             <label class="form-label">Companion (Optional)</label>
@@ -176,7 +176,7 @@
                         Model.PrincipalBikeType,
                         Model.CompanionBikeType,
                         SelectedTour.Price,
-                        SelectedTour.DoubleRoomSupplementPrice,
+                        SelectedTour.SingleRoomSupplementPrice,
                         SelectedTour.RegularBikePrice,
                         SelectedTour.EBikePrice);
                     var discountAmount = BookingPriceCalculator.CalculateDiscountAmount(Model.DiscountType, Model.DiscountAmount, subtotal);
@@ -289,7 +289,7 @@
 
     private void OnRoomTypeChanged()
     {
-        if (Model.RoomType != RoomTypeDto.SingleRoom)
+        if (Model.RoomType != RoomTypeDto.SingleOccupancy)
         {
             return;
         }

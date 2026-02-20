@@ -11,7 +11,7 @@ public sealed record CreateTourCommand(
     DateTime StartDate,
     DateTime EndDate,
     decimal Price,
-    decimal DoubleRoomSupplementPrice,
+    decimal SingleRoomSupplementPrice,
     decimal RegularBikePrice,
     decimal EBikePrice,
     CurrencyDto Currency,

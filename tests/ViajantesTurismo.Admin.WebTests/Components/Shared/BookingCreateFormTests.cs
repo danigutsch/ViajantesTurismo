@@ -150,17 +150,17 @@ public class BookingCreateFormTests : BunitContext
             .First(s => s.TextContent.Contains("Single Room"));
         var options = roomTypeSelect.QuerySelectorAll("option");
         Assert.Equal(2, options.Length);
-        Assert.Contains("Single Room (Base Price)", options[0].TextContent);
-        Assert.Contains("Double Room (Base Price + Supplement)", options[1].TextContent);
+        Assert.Contains("Double Room (Base Price)", options[0].TextContent);
+        Assert.Contains("Single Room (Base Price + Supplement)", options[1].TextContent);
     }
 
     [Fact]
-    public void Shows_Single_Occupancy_Badge_For_DoubleRoom_Without_Companion()
+    public void Shows_Single_Occupancy_Badge_For_SingleRoom_Without_Companion()
     {
         // Arrange
         var model = new BookingFormModel
         {
-            RoomType = RoomTypeDto.DoubleRoom,
+            RoomType = RoomTypeDto.SingleOccupancy,
             CompanionId = null
         };
         GetCustomerDto[] customers = [];
@@ -205,7 +205,7 @@ public class BookingCreateFormTests : BunitContext
     public void Hides_Companion_Section_For_SingleRoom()
     {
         // Arrange
-        var model = new BookingFormModel { RoomType = RoomTypeDto.SingleRoom };
+        var model = new BookingFormModel { RoomType = RoomTypeDto.SingleOccupancy };
         GetCustomerDto[] customers = [];
         GetTourDto[] tours = [];
 
@@ -231,7 +231,7 @@ public class BookingCreateFormTests : BunitContext
         };
         var model = new BookingFormModel
         {
-            RoomType = RoomTypeDto.DoubleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             CustomerId = customers[0].Id
         };
         GetTourDto[] tours = [];
@@ -262,7 +262,7 @@ public class BookingCreateFormTests : BunitContext
         var customer2 = BuildCustomerDto(firstName: "Bob");
         var model = new BookingFormModel
         {
-            RoomType = RoomTypeDto.DoubleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             CustomerId = customer1.Id,
             CompanionId = customer2.Id
         };
@@ -286,7 +286,7 @@ public class BookingCreateFormTests : BunitContext
         // Arrange
         var model = new BookingFormModel
         {
-            RoomType = RoomTypeDto.DoubleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             CompanionId = null
         };
         GetCustomerDto[] customers = [];
@@ -375,7 +375,7 @@ public class BookingCreateFormTests : BunitContext
         var model = new BookingFormModel
         {
             TourId = tour.Id,
-            RoomType = RoomTypeDto.SingleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.Regular
         };
         GetCustomerDto[] customers = [];
@@ -404,7 +404,7 @@ public class BookingCreateFormTests : BunitContext
         var model = new BookingFormModel
         {
             TourId = tour.Id,
-            RoomType = RoomTypeDto.SingleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.Regular,
             DiscountType = DiscountTypeDto.Percentage,
             DiscountAmount = 10m
@@ -434,12 +434,12 @@ public class BookingCreateFormTests : BunitContext
             price: 100m,
             regularBikePrice: 0m,
             eBikePrice: 0m,
-            doubleRoomSupplementPrice: 0m);
+            singleRoomSupplementPrice: 0m);
         var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
             TourId = tour.Id,
-            RoomType = RoomTypeDto.SingleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.Regular,
             DiscountType = DiscountTypeDto.Absolute,
             DiscountAmount = 150m
@@ -614,7 +614,7 @@ public class BookingCreateFormTests : BunitContext
         var model = new BookingFormModel
         {
             TourId = tour.Id,
-            RoomType = RoomTypeDto.SingleRoom,
+            RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.Regular
         };
         GetCustomerDto[] customers = [];

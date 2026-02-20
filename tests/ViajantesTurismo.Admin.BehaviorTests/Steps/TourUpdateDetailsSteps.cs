@@ -18,7 +18,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
         {
             tourContext.Tour.AddBooking(
                 Guid.CreateVersion7(), BikeType.Regular, null, null,
-                RoomType.SingleRoom, DiscountType.None, 0m, null, null);
+                RoomType.DoubleOccupancy, DiscountType.None, 0m, null, null);
         }
     }
 
@@ -46,7 +46,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Schedule.StartDate,
             tourContext.Tour.Schedule.EndDate,
             tourContext.Tour.Pricing.BasePrice,
-            tourContext.Tour.Pricing.DoubleRoomSupplementPrice,
+            tourContext.Tour.Pricing.SingleRoomSupplementPrice,
             tourContext.Tour.Pricing.RegularBikePrice,
             tourContext.Tour.Pricing.EBikePrice,
             tourContext.Tour.Pricing.Currency,
@@ -67,7 +67,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Schedule.StartDate,
             tourContext.Tour.Schedule.EndDate,
             tourContext.Tour.Pricing.BasePrice,
-            tourContext.Tour.Pricing.DoubleRoomSupplementPrice,
+            tourContext.Tour.Pricing.SingleRoomSupplementPrice,
             tourContext.Tour.Pricing.RegularBikePrice,
             tourContext.Tour.Pricing.EBikePrice,
             tourContext.Tour.Pricing.Currency,
@@ -89,7 +89,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Schedule.StartDate,
             tourContext.Tour.Schedule.EndDate,
             tourContext.Tour.Pricing.BasePrice,
-            tourContext.Tour.Pricing.DoubleRoomSupplementPrice,
+            tourContext.Tour.Pricing.SingleRoomSupplementPrice,
             tourContext.Tour.Pricing.RegularBikePrice,
             tourContext.Tour.Pricing.EBikePrice,
             tourContext.Tour.Pricing.Currency,
@@ -111,7 +111,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Schedule.StartDate,
             tourContext.Tour.Schedule.EndDate,
             tourContext.Tour.Pricing.BasePrice,
-            tourContext.Tour.Pricing.DoubleRoomSupplementPrice,
+            tourContext.Tour.Pricing.SingleRoomSupplementPrice,
             tourContext.Tour.Pricing.RegularBikePrice,
             tourContext.Tour.Pricing.EBikePrice,
             tourContext.Tour.Pricing.Currency,

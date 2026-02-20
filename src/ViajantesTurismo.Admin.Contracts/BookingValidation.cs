@@ -19,7 +19,7 @@ public static class BookingValidation
         Guid? companionCustomerId,
         string companionMemberName)
     {
-        return roomType == RoomTypeDto.SingleRoom && companionCustomerId.HasValue
+        return roomType == RoomTypeDto.SingleOccupancy && companionCustomerId.HasValue
             ? new ValidationResult(
                 "Single room bookings cannot have a companion. Please select Double Room or remove the companion.",
                 [companionMemberName])

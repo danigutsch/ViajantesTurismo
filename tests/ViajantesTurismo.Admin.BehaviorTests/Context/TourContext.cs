@@ -16,7 +16,7 @@ public sealed class TourContext
     public required DateTime StartDate { get; set; }
     public required DateTime EndDate { get; set; }
     public required decimal BasePrice { get; set; }
-    public required decimal DoubleRoomSupplementPrice { get; set; }
+    public required decimal SingleRoomSupplementPrice { get; set; }
     public required decimal RegularBikePrice { get; set; }
     public required decimal EBikePrice { get; set; }
     public ICollection<string> IncludedServices { get; } = [];

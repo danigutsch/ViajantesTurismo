@@ -114,7 +114,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         Assert.Contains("R$ 1,500.00", cut.Markup); // Base Price
-        Assert.Contains("R$ 300.00", cut.Markup); // Double Room Supplement
+        Assert.Contains("R$ 300.00", cut.Markup); // Single Room Supplement
         Assert.Contains("R$ 100.00", cut.Markup); // Regular Bike
         Assert.Contains("R$ 250.00", cut.Markup); // E-Bike
     }
@@ -135,7 +135,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         Assert.Contains("1,500.00 €", cut.Markup); // Base Price
-        Assert.Contains("300.00 €", cut.Markup); // Double Room Supplement
+        Assert.Contains("300.00 €", cut.Markup); // Single Room Supplement
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         Assert.Contains("$ 1,500.00", cut.Markup); // Base Price
-        Assert.Contains("$ 300.00", cut.Markup); // Double Room Supplement
+        Assert.Contains("$ 300.00", cut.Markup); // Single Room Supplement
     }
 
     [Fact]

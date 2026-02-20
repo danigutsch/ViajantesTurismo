@@ -27,8 +27,8 @@
                         <label for="roomType" class="form-label">Room Type <span class="text-danger">*</span></label>
                         <InputSelect id="roomType" @bind-Value="_model.RoomType" class="form-select">
                             <option value="">-- Select --</option>
-                            <option value="@RoomTypeDto.SingleRoom">Single Room</option>
-                            <option value="@RoomTypeDto.DoubleRoom">Double Room</option>
+                            <option value="@RoomTypeDto.DoubleOccupancy">Double Room</option>
+                            <option value="@RoomTypeDto.SingleOccupancy">Single Room</option>
                         </InputSelect>
                         <ValidationMessage For="@(() => _model.RoomType)"/>
                     </div>

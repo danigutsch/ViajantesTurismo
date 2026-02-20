@@ -38,10 +38,10 @@ public sealed record CreateTourDto : IValidatableObject
     public required decimal Price { get; init; }
 
     /// <summary>
-    /// The additional price for a double room.
+    /// The supplement price for single room occupancy (solo traveler surcharge).
     /// </summary>
     [Required, Range(0.01, ContractConstants.MaxPrice)]
-    public required decimal DoubleRoomSupplementPrice { get; init; }
+    public required decimal SingleRoomSupplementPrice { get; init; }
 
     /// <summary>
     /// The price for renting a regular bike.

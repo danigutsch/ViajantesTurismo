@@ -69,8 +69,8 @@
             <InputNumber id="price" class="form-control" @bind-Value="_model.Price" @bind-Value:format="F2"/>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="singleRoom" class="form-label">Double Room Supplement</label>
-            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.DoubleRoomSupplementPrice"
+            <label for="singleRoom" class="form-label">Single Room Supplement</label>
+            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"
                          @bind-Value:format="F2"/>
         </div>
     </div>
@@ -148,7 +148,7 @@ Bike rental"/>
                     EndDate = DateTime.SpecifyKind(_model.EndDate, DateTimeKind.Utc),
                     Currency = _model.Currency,
                     Price = _model.Price,
-                    DoubleRoomSupplementPrice = _model.DoubleRoomSupplementPrice,
+                    SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
                     RegularBikePrice = _model.RegularBikePrice,
                     EBikePrice = _model.EBikePrice,
                     IncludedServices = _model.ServicesInput
@@ -201,8 +201,8 @@ Bike rental"/>
         [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Base Price")]
         public decimal Price { get; set; }
 
-        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Double Room Supplement")]
-        public decimal DoubleRoomSupplementPrice { get; set; }
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Single Room Supplement")]
+        public decimal SingleRoomSupplementPrice { get; set; }
 
         [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Regular Bike Price")]
         public decimal RegularBikePrice { get; set; }

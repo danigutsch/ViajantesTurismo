@@ -44,8 +44,8 @@ public static class BookingMapper
     {
         return roomTypeDto switch
         {
-            RoomTypeDto.SingleRoom => RoomType.SingleRoom,
-            RoomTypeDto.DoubleRoom => RoomType.DoubleRoom,
+            RoomTypeDto.DoubleOccupancy => RoomType.DoubleOccupancy,
+            RoomTypeDto.SingleOccupancy => RoomType.SingleOccupancy,
             _ => throw new ArgumentOutOfRangeException(nameof(roomTypeDto), roomTypeDto, "Invalid room type value.")
         };
     }
@@ -117,8 +117,8 @@ public static class BookingMapper
     {
         return roomType switch
         {
-            RoomType.SingleRoom => RoomTypeDto.SingleRoom,
-            RoomType.DoubleRoom => RoomTypeDto.DoubleRoom,
+            RoomType.DoubleOccupancy => RoomTypeDto.DoubleOccupancy,
+            RoomType.SingleOccupancy => RoomTypeDto.SingleOccupancy,
             _ => throw new ArgumentOutOfRangeException(nameof(roomType), roomType, "Invalid room type value.")
         };
     }

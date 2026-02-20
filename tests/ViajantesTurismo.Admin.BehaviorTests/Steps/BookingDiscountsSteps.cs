@@ -10,10 +10,8 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 [Binding]
 public class BookingDiscountsSteps(TourContext tourContext, BookingContext bookingContext)
 {
-    [Given(
-        @"a tour exists with base price (\d+), double room supplement (\d+), regular bike price (\d+), and e-bike price (\d+)")]
-    public void GivenATourExistsWithPricing(decimal basePrice, decimal doubleRoomSupplement, decimal regularBikePrice,
-        decimal eBikePrice)
+    [Given(@"a tour exists with base price (\d+), single room supplement (\d+), regular bike price (\d+), and e-bike price (\d+)")]
+    public void GivenATourExistsWithPricing(decimal basePrice, decimal singleRoomSupplement, decimal regularBikePrice, decimal eBikePrice)
     {
         tourContext.Tour = Tour.Create(
             identifier: "TEST2024",
@@ -21,7 +19,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             startDate: DateTime.UtcNow.AddMonths(1),
             endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
             basePrice: basePrice,
-            doubleRoomSupplementPrice: doubleRoomSupplement,
+            singleRoomSupplementPrice: singleRoomSupplement,
             regularBikePrice: regularBikePrice,
             eBikePrice: eBikePrice,
             currency: Currency.UsDollar,
@@ -38,7 +36,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -56,7 +54,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.Percentage,
             discountPercentage,
             null,
@@ -73,7 +71,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             null,
             null,
-            RoomType.DoubleRoom,
+            RoomType.SingleOccupancy,
             DiscountType.Absolute,
             discountAmount,
             null,
@@ -92,7 +90,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.Percentage,
             discountPercentage,
             reason,
@@ -111,7 +109,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             Guid.CreateVersion7(),
             BikeType.EBike,
-            RoomType.DoubleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.Percentage,
             discountPercentage,
             null,
@@ -129,7 +127,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.Percentage,
             -discountPercentage,
             null,
@@ -146,7 +144,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             BikeType.Regular,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.Absolute,
             discountAmount,
             null,
@@ -161,7 +159,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithSpecificPricing(decimal basePrice, decimal roomCost, decimal bike1,
         decimal bike2, decimal discount)
     {
-        var roomType = bike2 > 0 ? RoomType.DoubleRoom : RoomType.SingleRoom;
+        const RoomType roomType = RoomType.DoubleOccupancy;
         var companionId = bike2 > 0 ? (Guid?)Guid.CreateVersion7() : null;
         var companionBikeType = bike2 > 0 ? (BikeType?)BikeType.EBike : null;
 

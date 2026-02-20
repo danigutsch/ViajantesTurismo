@@ -12,27 +12,27 @@ public sealed class TourPricing : ValueObject
 {
     private TourPricing(
         decimal basePrice,
-        decimal doubleRoomSupplementPrice,
+        decimal singleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency)
     {
         BasePrice = basePrice;
-        DoubleRoomSupplementPrice = doubleRoomSupplementPrice;
+        SingleRoomSupplementPrice = singleRoomSupplementPrice;
         RegularBikePrice = regularBikePrice;
         EBikePrice = eBikePrice;
         Currency = currency;
     }
 
     /// <summary>
-    /// Gets the base price of the tour (single room).
+    /// Gets the base price of the tour (double occupancy).
     /// </summary>
     public decimal BasePrice { get; }
 
     /// <summary>
-    /// Gets the supplement price for double room.
+    /// Gets the supplement price for single room occupancy.
     /// </summary>
-    public decimal DoubleRoomSupplementPrice { get; }
+    public decimal SingleRoomSupplementPrice { get; }
 
     /// <summary>
     /// Gets the price for regular bike rental.
@@ -53,20 +53,20 @@ public sealed class TourPricing : ValueObject
     /// Creates a new tour pricing with validation.
     /// </summary>
     /// <param name="basePrice">The base price of the tour.</param>
-    /// <param name="doubleRoomSupplementPrice">The supplement price for double room.</param>
+    /// <param name="singleRoomSupplementPrice">The supplement price for a single room.</param>
     /// <param name="regularBikePrice">The price for a regular bike.</param>
     /// <param name="eBikePrice">The price for e-bike.</param>
     /// <param name="currency">The currency for all prices.</param>
     /// <returns>A Result containing the TourPricing if valid, or errors if validation fails.</returns>
     public static Result<TourPricing> Create(
         decimal basePrice,
-        decimal doubleRoomSupplementPrice,
+        decimal singleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency)
     {
         basePrice = Math.Round(basePrice, 2, MidpointRounding.AwayFromZero);
-        doubleRoomSupplementPrice = Math.Round(doubleRoomSupplementPrice, 2, MidpointRounding.AwayFromZero);
+        singleRoomSupplementPrice = Math.Round(singleRoomSupplementPrice, 2, MidpointRounding.AwayFromZero);
         regularBikePrice = Math.Round(regularBikePrice, 2, MidpointRounding.AwayFromZero);
         eBikePrice = Math.Round(eBikePrice, 2, MidpointRounding.AwayFromZero);
 
@@ -81,13 +81,13 @@ public sealed class TourPricing : ValueObject
             errors.Add(TourErrors.PriceTooHigh("Base price", ContractConstants.MaxPrice, basePrice));
         }
 
-        if (doubleRoomSupplementPrice <= 0)
+        if (singleRoomSupplementPrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("Double room supplement price", doubleRoomSupplementPrice));
+            errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
         }
-        else if (doubleRoomSupplementPrice > ContractConstants.MaxPrice)
+        else if (singleRoomSupplementPrice > ContractConstants.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Double room supplement price", ContractConstants.MaxPrice, doubleRoomSupplementPrice));
+            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", ContractConstants.MaxPrice, singleRoomSupplementPrice));
         }
 
         if (regularBikePrice <= 0)
@@ -113,14 +113,14 @@ public sealed class TourPricing : ValueObject
             return errors.ToResult<TourPricing>();
         }
 
-        return new TourPricing(basePrice, doubleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
+        return new TourPricing(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
     }
 
     /// <inheritdoc />
     protected override IEnumerable<object?> GetEqualityComponents()
     {
         yield return BasePrice;
-        yield return DoubleRoomSupplementPrice;
+        yield return SingleRoomSupplementPrice;
         yield return RegularBikePrice;
         yield return EBikePrice;
         yield return Currency;

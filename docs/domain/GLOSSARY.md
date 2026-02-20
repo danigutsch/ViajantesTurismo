@@ -30,7 +30,7 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 | Term                     | Definition                                                                                                      | Notes                                                                                         |
 |--------------------------|-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
 | DateRange                | An immutable time period with start and end dates.                                                              | Used for tour schedules. Validates that end date is after start date and calculates duration. |
-| TourPricing              | Tour pricing information including base price, room supplements, and bike rental prices in a specific currency. | Groups: BasePrice, DoubleRoomSupplementPrice, RegularBikePrice, EBikePrice, Currency.         |
+| TourPricing              | Tour pricing information including base price, room supplements, and bike rental prices in a specific currency. | Groups: BasePrice, SingleRoomSupplementPrice, RegularBikePrice, EBikePrice, Currency.         |
 | TourCapacity             | Tour capacity constraints specifying minimum and maximum customers.                                             | Validates that min ≤ max and both are within allowed ranges.                                  |
 | Discount                 | Discount information including type, amount, and reason.                                                        | Types: None, Percentage, Absolute. Percentage discounts have max limit (100%).                |
 | PersonalInfo             | Customer's personal information (name, date of birth, gender, nationality, occupation).                         |                                                                                               |
@@ -50,7 +50,7 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 | PaymentStatus | Payment completion status for a booking.     | Unpaid(0), PartiallyPaid(1), Paid(2), Refunded(3)                      | Updated automatically as payments are recorded.           |
 | PaymentMethod | Method used for a payment transaction.       | Other(0), CreditCard(1), BankTransfer(2), Cash(3), Check(4), PayPal(5) |                                                           |
 | BikeType      | Type of bicycle for a tour participant.      | None(0), Regular(1), EBike(2)                                          | None is invalid for bookings (must select Regular/EBike). |
-| RoomType      | Accommodation room configuration.            | None(0), SingleRoom(1), DoubleRoom(2)                                  | Affects pricing (double room may have supplement).        |
+| RoomType      | Accommodation room configuration.            | DoubleOccupancy(0), SingleOccupancy(1)                                 | Affects pricing (single occupancy has supplement).        |
 | DiscountType  | Type of discount applied to a booking.       | None(0), Percentage(1), Absolute(2)                                    | Percentage limited to max 100%. Absolute is fixed amount. |
 | BedType       | Bed configuration preference within a room.  | SingleBed(0), DoubleBed(1)                                             | Used in accommodation preferences.                        |
 | Currency      | Currency for financial amounts.              | Real(0), Euro(1), UsDollar(2)                                          | All prices in a tour use same currency.                   |
@@ -71,19 +71,19 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 
 ## Business Concepts
 
-| Term                   | Definition                                                               | Notes                                                       |
-|------------------------|--------------------------------------------------------------------------|-------------------------------------------------------------|
-| Principal Customer     | The primary customer making a booking.                                   | Every booking has exactly one principal customer.           |
-| Companion Customer     | An optional second customer sharing a booking with the principal.        | Affects pricing (room sharing, individual bike costs).      |
-| Base Price             | The tour price for a single room (not per person).                       | Currency-specific. Basis for booking calculations.          |
-| Double Room Supplement | Additional cost when two customers share a double room.                  | May be zero if double rooms are standard.                   |
-| Included Services      | List of services included in tour package.                               | Examples: "Hotel", "Breakfast", "Bike Rental", "City Tour". |
-| Current Customer Count | Total confirmed customers across all bookings (principals + companions). | Used for capacity management.                               |
-| Available Spots        | Remaining capacity (MaxCustomers - CurrentCustomerCount).                | Cannot be negative; enforced on booking creation.           |
-| Subtotal               | Sum of base price, room costs, and bike costs before discount.           | Booking-level calculation.                                  |
-| Total Price            | Final booking price after applying discount to subtotal.                 | What customer pays.                                         |
-| Amount Paid            | Sum of all recorded payments for a booking.                              | Tracks payment progress.                                    |
-| Remaining Balance      | Outstanding amount (TotalPrice - AmountPaid).                            | Zero when fully paid.                                       |
+| Term                   | Definition                                                               | Notes                                                                                                            |
+|------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| Principal Customer     | The primary customer making a booking.                                   | Every booking has exactly one principal customer.                                                                |
+| Companion Customer     | An optional second customer sharing a booking with the principal.        | Affects pricing (room sharing, individual bike costs).                                                           |
+| Base Price             | The tour price for double occupancy (not per person).                    | Currency-specific. Basis for booking calculations.                                                               |
+| Single Room Supplement | Additional cost when a solo traveler occupies a room alone.              | Industry-standard term. Code property: SingleRoomSupplementPrice. DB column: DoubleRoomSupplementPrice (legacy). |
+| Included Services      | List of services included in tour package.                               | Examples: "Hotel", "Breakfast", "Bike Rental", "City Tour".                                                      |
+| Current Customer Count | Total confirmed customers across all bookings (principals + companions). | Used for capacity management.                                                                                    |
+| Available Spots        | Remaining capacity (MaxCustomers - CurrentCustomerCount).                | Cannot be negative; enforced on booking creation.                                                                |
+| Subtotal               | Sum of base price, room costs, and bike costs before discount.           | Booking-level calculation.                                                                                       |
+| Total Price            | Final booking price after applying discount to subtotal.                 | What customer pays.                                                                                              |
+| Amount Paid            | Sum of all recorded payments for a booking.                              | Tracks payment progress.                                                                                         |
+| Remaining Balance      | Outstanding amount (TotalPrice - AmountPaid).                            | Zero when fully paid.                                                                                            |
 
 ## Technical Terms
 

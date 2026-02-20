@@ -13,10 +13,9 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
         tourContext.Tour = EntityBuilders.BuildTour();
     }
 
-    [When(
-        @"I update the pricing to double room supplement (.*), regular bike (.*), e-bike (.*), and currency ""(.*)""")]
-    public void WhenIUpdateThePricingToDoubleRoomSupplementRegularBikeEBikeAndCurrency(
-        decimal doubleRoomSupplement,
+    [When(@"I update the pricing to single room supplement (.*), regular bike (.*), e-bike (.*), and currency ""(.*)""")]
+    public void WhenIUpdateThePricingToSingleRoomSupplementRegularBikeEBikeAndCurrency(
+        decimal singleRoomSupplement,
         decimal regularBike,
         decimal eBike,
         string currencyCode)
@@ -30,7 +29,7 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
         };
 
         tourContext.UpdateResult = tourContext.Tour.UpdatePricing(
-            doubleRoomSupplement,
+            singleRoomSupplement,
             regularBike,
             eBike,
             currency);
@@ -51,10 +50,10 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
         Assert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
-    [Then("the tour should have double room supplement (.*)")]
-    public void ThenTheTourShouldHaveDoubleRoomSupplement(decimal expectedPrice)
+    [Then("the tour should have single room supplement (.*)")]
+    public void ThenTheTourShouldHaveSingleRoomSupplement(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.DoubleRoomSupplementPrice);
+        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.SingleRoomSupplementPrice);
     }
 
     [Then("the tour should have regular bike price (.*)")]

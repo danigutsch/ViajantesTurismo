@@ -31,7 +31,7 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
             weightKg: 62.0m,
             heightCentimeters: 170,
             bikeType: BikeTypeDto.EBike,
-            roomType: RoomTypeDto.DoubleRoom,
+            roomType: RoomTypeDto.SingleOccupancy,
             bedType: BedTypeDto.DoubleBed,
             emergencyContactName: "Robert Johnson",
             emergencyContactMobile: "+447987654321",

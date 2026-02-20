@@ -31,7 +31,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.Regular,
             companionGuid,
             BikeType.Regular,
-            RoomType.DoubleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -48,7 +48,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.Regular,
             Guid.CreateVersion7(),
             BikeType.EBike,
-            RoomType.DoubleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -65,7 +65,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.EBike,
             Guid.CreateVersion7(),
             BikeType.EBike,
-            RoomType.DoubleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -80,7 +80,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.Regular,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.SingleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -97,7 +97,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.Regular,
             Guid.CreateVersion7(),
             null,
-            RoomType.DoubleRoom,
+            RoomType.DoubleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -112,7 +112,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
             BikeType.None,
             null,
             null,
-            RoomType.SingleRoom,
+            RoomType.SingleOccupancy,
             DiscountType.None,
             0m,
             null,
@@ -197,7 +197,8 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         Assert.NotNull(bookingContext.BookingCreationResult);
         Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.Equal(0m, booking.RoomAdditionalCost);
+        var tour = tourContext.Tour;
+        Assert.Equal(tour.Pricing.SingleRoomSupplementPrice, booking.RoomAdditionalCost);
     }
 
     [Then("the booking should not include single room supplement")]
@@ -206,7 +207,6 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         Assert.NotNull(bookingContext.BookingCreationResult);
         Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.DoubleRoomSupplementPrice, booking.RoomAdditionalCost);
+        Assert.Equal(0m, booking.RoomAdditionalCost);
     }
 }

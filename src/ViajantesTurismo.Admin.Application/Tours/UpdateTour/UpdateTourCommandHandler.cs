@@ -44,7 +44,7 @@ public sealed class UpdateTourCommandHandler(
         }
 
         var pricingResult = tour.UpdatePricing(
-            command.DoubleRoomSupplementPrice,
+            command.SingleRoomSupplementPrice,
             command.RegularBikePrice,
             command.EBikePrice,
             command.Currency);

@@ -27,7 +27,7 @@ internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
         entity.OwnsOne(tour => tour.Pricing, pricing =>
         {
             pricing.Property(p => p.BasePrice).HasColumnName("Price").IsRequired();
-            pricing.Property(p => p.DoubleRoomSupplementPrice).HasColumnName("DoubleRoomSupplementPrice")
+            pricing.Property(p => p.SingleRoomSupplementPrice).HasColumnName("DoubleRoomSupplementPrice")
                 .IsRequired();
             pricing.Property(p => p.RegularBikePrice).HasColumnName("RegularBikePrice").IsRequired();
             pricing.Property(p => p.EBikePrice).HasColumnName("EBikePrice").IsRequired();

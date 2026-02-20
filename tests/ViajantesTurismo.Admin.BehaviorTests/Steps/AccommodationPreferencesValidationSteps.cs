@@ -12,32 +12,32 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     public void WhenICreateAccommodationPreferencesWithDoubleRoomDoubleBedAndCompanionId(int companionId)
     {
         context.CompanionId = Guid.CreateVersion7();
-        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, context.CompanionId);
+        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, context.CompanionId);
     }
 
     [When("I create accommodation preferences with single room, single bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomSingleBedAndNoCompanion()
     {
-        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, null);
+        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.SingleBed, null);
     }
 
     [When("I create accommodation preferences with single room, double bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomDoubleBedAndNoCompanion()
     {
-        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.DoubleBed, null);
+        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null);
     }
 
     [When("I create accommodation preferences with double room, double bed, and no companion")]
     public void WhenICreateAccommodationPreferencesWithDoubleRoomDoubleBedAndNoCompanion()
     {
-        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.DoubleRoom, BedType.DoubleBed, null);
+        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.DoubleBed, null);
     }
 
     [When(@"I create accommodation preferences with single room, single bed, and companion ID (\d+)")]
     public void WhenICreateAccommodationPreferencesWithSingleRoomSingleBedAndCompanionId(int companionId)
     {
         context.CompanionId = Guid.CreateVersion7();
-        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.SingleRoom, BedType.SingleBed, context.CompanionId);
+        context.AccommodationPreferencesResult = AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.SingleBed, context.CompanionId);
     }
 
     [Then("the accommodation preferences should be created successfully")]

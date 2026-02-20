@@ -17,7 +17,7 @@ public static class DtoBuilders
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? price = null,
-        decimal? doubleRoomSupplementPrice = null,
+        decimal? singleRoomSupplementPrice = null,
         decimal? regularBikePrice = null,
         decimal? eBikePrice = null,
         CurrencyDto? currency = null,
@@ -37,7 +37,7 @@ public static class DtoBuilders
             StartDate = start,
             EndDate = end,
             Price = price ?? 1500.00m,
-            DoubleRoomSupplementPrice = doubleRoomSupplementPrice ?? 300.00m,
+            SingleRoomSupplementPrice = singleRoomSupplementPrice ?? 300.00m,
             RegularBikePrice = regularBikePrice ?? 100.00m,
             EBikePrice = eBikePrice ?? 250.00m,
             Currency = currency ?? CurrencyDto.Real,
@@ -207,7 +207,7 @@ public static class DtoBuilders
             },
             AccommodationPreferences = accommodationPreferences ?? new AccommodationPreferencesDto
             {
-                RoomType = RoomTypeDto.SingleRoom,
+                RoomType = RoomTypeDto.DoubleOccupancy,
                 BedType = BedTypeDto.SingleBed,
                 CompanionId = null
             },

@@ -70,7 +70,7 @@ internal static class TestFixtureHelpers
             principalCustomerId: customerId,
             companionCustomerId: companionId,
             companionBikeType: companionId.HasValue ? BikeTypeDto.Regular : null,
-            roomType: companionId.HasValue ? RoomTypeDto.DoubleRoom : RoomTypeDto.SingleRoom);
+            roomType: RoomTypeDto.DoubleOccupancy);
 
         var response = await client.CreateBooking(bookingRequest, cancellationToken);
         response.EnsureSuccessStatusCode();

@@ -103,8 +103,8 @@ public sealed class Tour : Entity<Guid>
     /// <param name="name">The descriptive name of the tour.</param>
     /// <param name="startDate">The start date of the tour.</param>
     /// <param name="endDate">The end date of the tour.</param>
-    /// <param name="basePrice">The base price for a single room.</param>
-    /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
+    /// <param name="basePrice">The base price for double occupancy.</param>
+    /// <param name="singleRoomSupplementPrice">The supplement price for single room occupancy.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all prices.</param>
@@ -118,7 +118,7 @@ public sealed class Tour : Entity<Guid>
         DateTime startDate,
         DateTime endDate,
         decimal basePrice,
-        decimal doubleRoomSupplementPrice,
+        decimal singleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency,
@@ -162,7 +162,7 @@ public sealed class Tour : Entity<Guid>
         }
 
         var pricingResult =
-            TourPricing.Create(basePrice, doubleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
+            TourPricing.Create(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
         if (pricingResult.IsFailure)
         {
             errors.Add(pricingResult);
@@ -265,20 +265,20 @@ public sealed class Tour : Entity<Guid>
     /// <summary>
     /// Updates all pricing for the tour except for base price but including supplements, and bike rentals.
     /// </summary>
-    /// <param name="doubleRoomSupplementPrice">The additional price for a double room.</param>
+    /// <param name="singleRoomSupplementPrice">The supplement price for single room occupancy.</param>
     /// <param name="regularBikePrice">The price for renting a regular bike.</param>
     /// <param name="eBikePrice">The price for renting an e-bike.</param>
     /// <param name="currency">The currency for all prices.</param>
     /// <returns>A Result indicating success or failure.</returns>
     public Result UpdatePricing(
-        decimal doubleRoomSupplementPrice,
+        decimal singleRoomSupplementPrice,
         decimal regularBikePrice,
         decimal eBikePrice,
         Currency currency)
     {
         var pricingResult = TourPricing.Create(
             Pricing.BasePrice,
-            doubleRoomSupplementPrice,
+            singleRoomSupplementPrice,
             regularBikePrice,
             eBikePrice,
             currency);
@@ -304,7 +304,7 @@ public sealed class Tour : Entity<Guid>
     {
         var pricingResult = TourPricing.Create(
             price,
-            Pricing.DoubleRoomSupplementPrice,
+            Pricing.SingleRoomSupplementPrice,
             Pricing.RegularBikePrice,
             Pricing.EBikePrice,
             Pricing.Currency);
@@ -332,7 +332,7 @@ public sealed class Tour : Entity<Guid>
 
         var pricingResult = TourPricing.Create(
             Pricing.BasePrice,
-            Pricing.DoubleRoomSupplementPrice,
+            Pricing.SingleRoomSupplementPrice,
             Pricing.RegularBikePrice,
             Pricing.EBikePrice,
             currency);
@@ -427,7 +427,7 @@ public sealed class Tour : Entity<Guid>
             return BookingErrors.InvalidRoomType(roomType).ConvertError<Booking>();
         }
 
-        if (roomType == RoomType.SingleRoom && companionCustomerId.HasValue)
+        if (roomType == RoomType.SingleOccupancy && companionCustomerId.HasValue)
         {
             return BookingErrors.SingleRoomCannotHaveCompanion().ConvertError<Booking>();
         }
@@ -532,8 +532,8 @@ public sealed class Tour : Entity<Guid>
 
     private decimal CalculateRoomAdditionalCost(RoomType roomType) => roomType switch
     {
-        RoomType.SingleRoom => 0m,
-        RoomType.DoubleRoom => Pricing.DoubleRoomSupplementPrice,
+        RoomType.DoubleOccupancy => 0m,
+        RoomType.SingleOccupancy => Pricing.SingleRoomSupplementPrice,
         _ => throw new ArgumentOutOfRangeException(nameof(roomType), roomType, $"Invalid room type: {roomType}")
     };
 
@@ -796,7 +796,7 @@ public sealed class Tour : Entity<Guid>
     /// Tours with confirmed bookings cannot be deleted (INV-TOUR-015).
     /// </summary>
     /// <returns>A result indicating whether the tour can be deleted.</returns>
-    public Result CanBeDeleted()
+    private Result CanBeDeleted()
     {
         var confirmedBookings = _bookings.Count(b => b.Status == BookingStatus.Confirmed);
         if (confirmedBookings > 0)

@@ -16,7 +16,7 @@ internal static class DtoBuilders
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? basePrice = null,
-        decimal? doubleRoomSupplement = null,
+        decimal? singleRoomSupplement = null,
         decimal? regularBikePrice = null,
         decimal? eBikePrice = null,
         int? minCustomers = null,
@@ -35,7 +35,7 @@ internal static class DtoBuilders
             StartDate = start,
             EndDate = end,
             Price = basePrice ?? TestDefaults.BaseTourPrice,
-            DoubleRoomSupplementPrice = doubleRoomSupplement ?? TestDefaults.DoubleRoomSupplement,
+            SingleRoomSupplementPrice = singleRoomSupplement ?? TestDefaults.SingleRoomSupplement,
             RegularBikePrice = regularBikePrice ?? TestDefaults.RegularBikePrice,
             EBikePrice = eBikePrice ?? TestDefaults.EBikePrice,
             MinCustomers = minCustomers ?? TestDefaults.MinCustomers,
@@ -54,7 +54,7 @@ internal static class DtoBuilders
         DateTime? startDate = null,
         DateTime? endDate = null,
         decimal? basePrice = null,
-        decimal? doubleRoomSupplement = null,
+        decimal? singleRoomSupplement = null,
         decimal? regularBikePrice = null,
         decimal? eBikePrice = null,
         int? minCustomers = null,
@@ -73,7 +73,7 @@ internal static class DtoBuilders
             StartDate = start,
             EndDate = end,
             Price = basePrice ?? TestDefaults.BaseTourPrice,
-            DoubleRoomSupplementPrice = doubleRoomSupplement ?? TestDefaults.DoubleRoomSupplement,
+            SingleRoomSupplementPrice = singleRoomSupplement ?? TestDefaults.SingleRoomSupplement,
             RegularBikePrice = regularBikePrice ?? TestDefaults.RegularBikePrice,
             EBikePrice = eBikePrice ?? TestDefaults.EBikePrice,
             MinCustomers = minCustomers ?? TestDefaults.MinCustomers,
@@ -140,7 +140,7 @@ internal static class DtoBuilders
             },
             AccommodationPreferences = new AccommodationPreferencesDto
             {
-                RoomType = roomType ?? RoomTypeDto.SingleRoom,
+                RoomType = roomType ?? RoomTypeDto.DoubleOccupancy,
                 BedType = bedType ?? BedTypeDto.SingleBed,
                 CompanionId = null
             },
@@ -181,7 +181,7 @@ internal static class DtoBuilders
             PrincipalBikeType = principalBikeType ?? BikeTypeDto.Regular,
             CompanionCustomerId = companionCustomerId,
             CompanionBikeType = hasCompanion ? (companionBikeType ?? BikeTypeDto.Regular) : null,
-            RoomType = roomType ?? (hasCompanion ? RoomTypeDto.DoubleRoom : RoomTypeDto.SingleRoom),
+            RoomType = roomType ?? RoomTypeDto.DoubleOccupancy,
             Notes = notes ?? "Test booking",
             DiscountType = discountType,
             DiscountAmount = discountAmount,
@@ -247,7 +247,7 @@ internal static class DtoBuilders
     {
         return new UpdateBookingDetailsDto
         {
-            RoomType = roomType ?? RoomTypeDto.SingleRoom,
+            RoomType = roomType ?? RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = principalBikeType ?? BikeTypeDto.Regular,
             CompanionCustomerId = companionCustomerId,
             CompanionBikeType = companionBikeType
@@ -326,7 +326,7 @@ internal static class DtoBuilders
             },
             AccommodationPreferences = new AccommodationPreferencesDto
             {
-                RoomType = roomType ?? RoomTypeDto.SingleRoom,
+                RoomType = roomType ?? RoomTypeDto.DoubleOccupancy,
                 BedType = bedType ?? BedTypeDto.SingleBed,
                 CompanionId = null
             },

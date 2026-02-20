@@ -72,17 +72,17 @@ So that tour bookings are properly tracked
         Then the booking should be created successfully
         And the booking principal customer bike price should be the tour ebike price
 
-    Scenario: Tour AddBooking handles SingleRoom room type correctly
+    Scenario: Tour AddBooking handles Single room type correctly
         Given a tour exists
-        When I add a booking to tour with room type "SingleRoom"
+        When I add a booking to tour with room type "SingleOccupancy"
+        Then the booking should be created successfully
+        And the booking room additional cost should be the tour single room supplement
+
+    Scenario: Tour AddBooking handles Double room type correctly
+        Given a tour exists
+        When I add a booking to tour with room type "DoubleOccupancy"
         Then the booking should be created successfully
         And the booking room additional cost should be 0
-
-    Scenario: Tour AddBooking handles DoubleRoom room type correctly
-        Given a tour exists
-        When I add a booking to tour with room type "DoubleRoom"
-        Then the booking should be created successfully
-        And the booking room additional cost should be the tour double room supplement
 
     Scenario: Tour status transitions handle all BookingStatus values - Confirm
         Given a tour exists with a pending booking

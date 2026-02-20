@@ -1,35 +1,40 @@
-# ADR-009: Room Pricing Model - Base Price = Single Room
+# ADR-009: Room Pricing Model - Base Price = Double Occupancy
 
-**Status**: Accepted — 2025-11-08
+**Status**: Superseded — 2026-02-15 (originally accepted 2025-11-08)
 
 ## Context
 
-Initial implementation incorrectly modeled room pricing by multiplying base price by customer count
-and adding a supplement for single rooms. This inverted the actual business model where double rooms
-cost more than single rooms.
+Initial implementation incorrectly modeled room pricing. The original ADR inverted the pricing model,
+treating single rooms as the base and adding a supplement for double rooms. The industry standard is:
+
+- **Double room** (shared occupancy) = base price, no supplement
+- **Single room** (solo occupancy) = base price + single room supplement
 
 ## Decision
 
-**Base price represents a single room cost**:
+**Base price represents double occupancy (shared room) cost**:
 
-- **Single room**: Base price + 0 supplement
-- **Double room**: Base price + double room supplement
+- **Double room**: Base price + 0 supplement (standard, shared room)
+- **Single room**: Base price + single room supplement (solo traveler surcharge)
 - **Companion** does NOT multiply base price — only adds their bike cost
 
-Rename `SingleRoomSupplementPrice` → `DoubleRoomSupplementPrice` to clarify the model.
+Code property renamed to `SingleRoomSupplementPrice`. DB column retains legacy name `DoubleRoomSupplementPrice`.
+Enum values renamed: `SingleRoom` → `SingleOccupancy`, `DoubleRoom` → `DoubleOccupancy`, `None` removed.
 
 ## Consequences
 
 ### Pros
 
-- Correct business model: double rooms cost MORE than single rooms (reflects reality).
+- Correct industry-standard model: single rooms cost MORE than double rooms (solo traveler surcharge).
 - Transparent pricing for customers — clear itemization.
 - Simpler calculation logic — no customer count multiplication.
+- Enum names match industry terminology.
 
 ### Cons
 
 - Breaking change requiring database migration and seed data updates.
 - All existing tests needed updates.
+- DB column retains legacy name for migration compatibility.
 
 ## Alternatives considered
 
