@@ -347,7 +347,10 @@ else
 
     private void ShowCreateBookingForm()
     {
-        _bookingFormModel = new BookingFormModel();
+        _bookingFormModel = new BookingFormModel
+        {
+            PrincipalBikeType = _customer?.PhysicalInfo.BikeType ?? BikeTypeDto.None
+        };
         _showBookingForm = true;
     }
 

@@ -3,36 +3,66 @@
 <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator/>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Tour <span class="text-danger">*</span></label>
-            <InputSelect @bind-Value="Model.TourId" class="form-select" @bind-Value:after="OnTourChanged">
-                <option value="">-- Select Tour --</option>
-                @foreach (var tour in Tours)
-                {
-                    <option value="@tour.Id">@tour.Name (@DateFormatter.FormatDate(tour.StartDate))</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="@(() => Model.TourId)"/>
-            @if (Model.TourId.HasValue && SelectedTour is not null)
+    <div class="mb-3">
+        <label class="form-label">Tour <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.TourId" class="form-select" @bind-Value:after="OnTourChanged">
+            <option value="">-- Select Tour --</option>
+            @foreach (var tour in Tours)
             {
-                var availableSpots = SelectedTour.MaxCustomers - SelectedTour.CurrentCustomerCount;
-                <div class="form-text">
-                    @if (availableSpots > 0)
-                    {
-                        <span class="text-success"><i class="bi bi-check-circle"></i> @availableSpots spot@(availableSpots == 1 ? "" : "s") available (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers booked)</span>
-                    }
-                    else
-                    {
-                        <span class="text-danger"><i class="bi bi-x-circle"></i> Tour is fully booked (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers)</span>
-                    }
-                </div>
+                <option value="@tour.Id">@tour.Name (@DateFormatter.FormatDate(tour.StartDate))</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.TourId)"/>
+        @if (Model.TourId.HasValue && SelectedTour is not null)
+        {
+            var availableSpots = SelectedTour.MaxCustomers - SelectedTour.CurrentCustomerCount;
+            <div class="form-text">
+                @if (availableSpots > 0)
+                {
+                    <span class="text-success"><i class="bi bi-check-circle"></i> @availableSpots spot@(availableSpots == 1 ? "" : "s") available (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers booked)</span>
+                }
+                else
+                {
+                    <span class="text-danger"><i class="bi bi-x-circle"></i> Tour is fully booked (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers)</span>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Room Type <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
+            <option value="@RoomTypeDto.DoubleOccupancy">Double Room (Base Price)</option>
+            <option value="@RoomTypeDto.SingleOccupancy">Single Room (Base Price + Supplement)</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.RoomType)"/>
+        <div class="form-text">
+            Double Room: Tour base price (shared room, standard).<br/>
+            Single Room: Tour base price + single room supplement (solo occupancy surcharge).
+            @if (Model is { RoomType: RoomTypeDto.SingleOccupancy, CompanionId: null })
+            {
+                <br/>
+                <span class="badge bg-info mt-1"><i class="bi bi-info-circle"></i> Single Occupancy - No companion selected</span>
             }
         </div>
+    </div>
 
-        <div class="col-md-6 mb-3">
+    <div class="mb-3">
+        <label class="form-label">Bike Type <span class="text-danger">*</span></label>
+        <InputSelect @bind-Value="Model.PrincipalBikeType" class="form-select">
+            <option value="">-- Select Bike Type --</option>
+            <option value="@BikeTypeDto.Regular">Regular Bike</option>
+            <option value="@BikeTypeDto.EBike">E-Bike</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.PrincipalBikeType)"/>
+    </div>
+
+    @if (Model.RoomType == RoomTypeDto.DoubleOccupancy)
+    {
+        <div class="mb-3">
             <label class="form-label">Companion (Optional)</label>
-            <InputSelect @bind-Value="Model.CompanionId" class="form-select">
+            <InputSelect @bind-Value="Model.CompanionId" class="form-select"
+                         @bind-Value:after="OnCompanionChanged">
                 <option value="">-- No Companion --</option>
                 @foreach (var customer in Customers.Where(c => c.Id != CurrentCustomerId))
                 {
@@ -40,8 +70,24 @@
                 }
             </InputSelect>
             <ValidationMessage For="@(() => Model.CompanionId)"/>
+            <div class="form-text">
+                Companion is optional for double rooms (allows single occupancy of double room).
+            </div>
         </div>
-    </div>
+
+        @if (Model.CompanionId.HasValue)
+        {
+            <div class="mb-3">
+                <label class="form-label">Companion Bike <span class="text-danger">*</span></label>
+                <InputSelect @bind-Value="Model.CompanionBikeType" class="form-select">
+                    <option value="">-- Select Bike Type --</option>
+                    <option value="@BikeTypeDto.Regular">Regular Bike</option>
+                    <option value="@BikeTypeDto.EBike">E-Bike</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => Model.CompanionBikeType)"/>
+            </div>
+        }
+    }
 
     <div class="mb-3">
         <label for="notes" class="form-label">Notes</label>
@@ -102,6 +148,58 @@
         </div>
     </div>
 
+    @if (SelectedTour is not null)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="bi bi-calculator"></i> Price Breakdown</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var subtotal = BookingPriceCalculator.CalculateSubtotal(
+                        Model.RoomType,
+                        Model.PrincipalBikeType,
+                        Model.CompanionBikeType,
+                        SelectedTour.Price,
+                        SelectedTour.SingleRoomSupplementPrice,
+                        SelectedTour.RegularBikePrice,
+                        SelectedTour.EBikePrice);
+                    var discountAmount = BookingPriceCalculator.CalculateDiscountAmount(Model.DiscountType, Model.DiscountAmount, subtotal);
+                    var finalTotal = BookingPriceCalculator.CalculateFinalTotal(subtotal, discountAmount);
+                }
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-8">Subtotal (before discount):</dt>
+                    <dd class="col-sm-4 text-end">@FormatPrice(subtotal, SelectedTour.Currency)</dd>
+
+                    @if (Model.DiscountType != DiscountTypeDto.None && discountAmount > 0)
+                    {
+                        <dt class="col-sm-8 text-danger">
+                            Discount
+                            @if (Model.DiscountType == DiscountTypeDto.Percentage)
+                            {
+                                <text>(@Model.DiscountAmount.ToString("F2")%)</text>
+                            }
+                            :
+                        </dt>
+                        <dd class="col-sm-4 text-end text-danger">
+                            -@FormatPrice(discountAmount, SelectedTour.Currency)</dd>
+                    }
+
+                    <dt class="col-sm-8 fw-bold border-top pt-2">Final Total:</dt>
+                    <dd class="col-sm-4 text-end fw-bold border-top pt-2">@FormatPrice(finalTotal, SelectedTour.Currency)</dd>
+                </dl>
+
+                @if (finalTotal <= 0 && Model.DiscountType != DiscountTypeDto.None)
+                {
+                    <div class="alert alert-warning mb-0 mt-2">
+                        <i class="bi bi-exclamation-triangle"></i> Warning: Final price cannot be zero or negative.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
             @if (IsSubmitting)
@@ -144,13 +242,39 @@
 
     private void OnTourChanged()
     {
-        // Trigger UI update when tour selection changes
         StateHasChanged();
+    }
+
+    private void OnRoomTypeChanged()
+    {
+        if (Model.RoomType == RoomTypeDto.SingleOccupancy)
+        {
+            Model.CompanionId = null;
+            Model.CompanionBikeType = null;
+        }
+    }
+
+    private void OnCompanionChanged()
+    {
+        if (!Model.CompanionId.HasValue)
+        {
+            Model.CompanionBikeType = null;
+        }
+        else
+        {
+            var companion = Customers.FirstOrDefault(c => c.Id == Model.CompanionId.Value);
+            if (companion is not null)
+            {
+                Model.CompanionBikeType = companion.BikeType;
+            }
+        }
     }
 
     private async Task HandleValidSubmit()
     {
         await OnValidSubmit.InvokeAsync(Model);
     }
+
+    private static string FormatPrice(decimal amount, CurrencyDto currency) => CurrencyFormatter.Format(amount, currency);
 
 }
