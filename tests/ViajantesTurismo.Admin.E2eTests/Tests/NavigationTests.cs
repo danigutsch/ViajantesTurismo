@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 
-namespace ViajantesTurismo.Admin.E2eTests.Tests;
+namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
 public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 {

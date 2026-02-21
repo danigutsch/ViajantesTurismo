@@ -1,4 +1,4 @@
-# ViajantesTurismo.Admin.E2eTests
+# ViajantesTurismo.Admin.E2ETests
 
 End-to-end UI tests for the ViajantesTurismo Admin application using
 [Playwright for .NET](https://playwright.dev/dotnet/), Aspire-managed infrastructure, and xUnit v3.

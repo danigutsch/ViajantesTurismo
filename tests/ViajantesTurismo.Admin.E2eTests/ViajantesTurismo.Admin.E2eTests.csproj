@@ -4,7 +4,7 @@
         <OutputType>Exe</OutputType>
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-        <RootNamespace>ViajantesTurismo.Admin.E2eTests</RootNamespace>
+        <RootNamespace>ViajantesTurismo.Admin.E2ETests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

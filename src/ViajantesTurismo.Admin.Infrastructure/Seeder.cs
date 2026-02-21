@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -187,13 +188,29 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
 
     public async Task ClearDatabase(CancellationToken ct)
     {
-        await dbContext.Database.EnsureDeletedAsync(ct);
-        await dbContext.Database.EnsureCreatedAsync(ct);
+        const string sql = """
+                           DO $$
+                           DECLARE
+                               tables_to_truncate text;
+                           BEGIN
+                               SELECT string_agg('"' || tablename || '"', ', ')
+                               INTO tables_to_truncate
+                               FROM pg_tables
+                               WHERE schemaname = 'public'
+                                 AND tablename <> '__EFMigrationsHistory';
+
+                               IF tables_to_truncate IS NOT NULL THEN
+                                   EXECUTE 'TRUNCATE TABLE ' || tables_to_truncate || ' RESTART IDENTITY CASCADE';
+                               END IF;
+                           END $$;
+                           """;
+
+        await dbContext.Database.ExecuteSqlRawAsync(sql, ct);
     }
 
     public async Task Seed(CancellationToken ct)
     {
-        await ClearDatabase(ct);
+        await dbContext.Database.MigrateAsync(ct);
 
         var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,

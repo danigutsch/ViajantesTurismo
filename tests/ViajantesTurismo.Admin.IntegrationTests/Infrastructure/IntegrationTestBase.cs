@@ -17,10 +17,14 @@ public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEn
         await seeder.Seed(cts.Token);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
+
+        using var scope = fixture.Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await seeder.ClearDatabase(cts.Token);
     }
 
     /// <summary>

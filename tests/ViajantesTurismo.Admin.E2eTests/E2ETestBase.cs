@@ -1,7 +1,7 @@
 using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit.v3;
 
-namespace ViajantesTurismo.Admin.E2eTests;
+namespace ViajantesTurismo.Admin.E2ETests;
 
 [Collection("E2E")]
 public abstract class E2ETestBase(E2EFixture fixture) : PageTest
@@ -13,8 +13,16 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
         await base.InitializeAsync();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
         await Fixture.Seed(cts.Token);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await Fixture.ClearDatabase(cts.Token);
+
+        await base.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>

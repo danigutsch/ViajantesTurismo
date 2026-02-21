@@ -10,7 +10,7 @@ using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Web;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.E2eTests;
+namespace ViajantesTurismo.Admin.E2ETests;
 
 public sealed class E2EFixture : IAsyncLifetime
 {
