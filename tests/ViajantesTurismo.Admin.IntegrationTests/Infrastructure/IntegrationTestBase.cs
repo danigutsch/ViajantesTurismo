@@ -13,7 +13,8 @@ public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEn
     {
         using var scope = fixture.Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.Seed(CancellationToken.None);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await seeder.Seed(cts.Token);
     }
 
     public ValueTask DisposeAsync()
@@ -26,7 +27,7 @@ public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEn
     /// Clears the database by deleting and recreating it.
     /// Use this for tests that require an empty database.
     /// </summary>
-    protected async Task ClearDatabaseAsync(CancellationToken cancellationToken = default)
+    protected async Task ClearDatabaseAsync(CancellationToken cancellationToken)
     {
         using var scope = fixture.Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
