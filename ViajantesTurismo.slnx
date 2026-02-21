@@ -23,7 +23,7 @@
         <Project Path="src/ViajantesTurismo.Admin.Web/ViajantesTurismo.Admin.Web.csproj"/>
     </Folder>
     <Folder Name="/tests/">
-        <Project Path="tests/ViajantesTurismo.Admin.E2eTests/ViajantesTurismo.Admin.E2eTests.csproj"/>
+        <Project Path="tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj"/>
         <Project Path="tests/ViajantesTurismo.Admin.Tests.Shared/ViajantesTurismo.Admin.Tests.Shared.csproj"/>
         <Project Path="tests/ViajantesTurismo.Admin.WebTests/ViajantesTurismo.Admin.WebTests.csproj"/>
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj"/>
