@@ -1,3 +1,4 @@
+using System.Net;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Helpers;
 
@@ -32,7 +33,15 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
 
     public async Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken cancellationToken)
     {
-        return await httpClient.GetFromJsonAsync<CustomerDetailsDto>($"/customers/{id}", cancellationToken);
+        using var response = await httpClient.GetAsync(new Uri($"/customers/{id}", UriKind.Relative), cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<CustomerDetailsDto>(cancellationToken);
     }
 
     public async Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken cancellationToken)

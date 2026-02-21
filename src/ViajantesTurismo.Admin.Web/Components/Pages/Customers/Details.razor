@@ -12,11 +12,18 @@
 
 <ToastNotification @ref="_toast" />
 
-@if (_customer == null)
+@if (_loading)
 {
     <p><em>Loading...</em></p>
 }
-else
+else if (_notFound)
+{
+    <div class="alert alert-danger" role="alert">
+        Customer not found.
+    </div>
+    <NavLink href="/customers" class="btn btn-secondary">Back to Customers</NavLink>
+}
+else if (_customer != null)
 {
     <div class="container-fluid">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -290,6 +297,8 @@ else
     public Guid Id { get; set; }
 
     private CustomerDetailsDto? _customer;
+    private bool _loading = true;
+    private bool _notFound;
     private GetBookingDto[]? _bookings;
     private bool _loadingBookings = true;
     private bool _showBookingForm;
@@ -304,8 +313,27 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _customer = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
-        await Task.WhenAll(LoadBookings(), LoadTours(), LoadCustomers());
+        try
+        {
+            _customer = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
+
+            if (_customer is null)
+            {
+                _notFound = true;
+            }
+            else
+            {
+                await Task.WhenAll(LoadBookings(), LoadTours(), LoadCustomers());
+            }
+        }
+        catch (Exception)
+        {
+            _notFound = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task LoadBookings()

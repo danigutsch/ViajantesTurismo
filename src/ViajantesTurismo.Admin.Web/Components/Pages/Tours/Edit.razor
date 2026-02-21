@@ -20,6 +20,13 @@ else if (_notFound)
     </div>
     <NavLink href="/tours" class="btn btn-secondary">Back to Tours</NavLink>
 }
+else if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @_errorMessage
+    </div>
+    <NavLink href="/tours" class="btn btn-secondary">Back to Tours</NavLink>
+}
 else
 {
     @if (_success)

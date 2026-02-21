@@ -1,3 +1,4 @@
+using System.Net;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Helpers;
 
@@ -25,7 +26,15 @@ internal sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiCli
 
     public async Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken cancellationToken)
     {
-        return await httpClient.GetFromJsonAsync<GetBookingDto>($"/bookings/{id}", cancellationToken);
+        using var response = await httpClient.GetAsync(new Uri($"/bookings/{id}", UriKind.Relative), cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken);
     }
 
     public async Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken cancellationToken)
