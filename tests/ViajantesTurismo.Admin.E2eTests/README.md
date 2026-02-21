@@ -31,17 +31,19 @@ For CI, use `--with-deps` to also install OS-level dependencies on Linux.
 
 ```powershell
 # All E2E tests (headless)
-dotnet test
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj
 
 # With visible browser for debugging
-dotnet test -- Playwright.LaunchOptions.Headless=false
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
 
 # Specific test
-dotnet test --filter "FullyQualifiedName~TourCrudTests.CreateTour"
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj --filter "FullyQualifiedName~TourCrudTests.CreateTour"
 
 # Slow motion (500ms between actions)
-dotnet test -- Playwright.LaunchOptions.Headless=false Playwright.LaunchOptions.SlowMo=500
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false Playwright.LaunchOptions.SlowMo=500
 ```
+
+> xUnit v3 runs on Microsoft.Testing.Platform in this repository. Keep Playwright launch options after `--`.
 
 ## Debugging
 

@@ -62,14 +62,20 @@ Domain validation uses the **Result pattern** instead of exceptions.
 
 ```powershell
 # All tests
-dotnet test
+dotnet test --solution ViajantesTurismo.slnx
 
 # Specific project
-dotnet test tests/ViajantesTurismo.Admin.UnitTests
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 
 # With coverage
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
+
+### xUnit v3 + MTP Notes
+
+- This repository runs tests with **xUnit v3** using **Microsoft.Testing.Platform (MTP)**.
+- Prefer `--project` for project-level runs and `--solution` for full runs.
+- Pass test-host options after `--`.
 
 ### Running Tests with Coverage
 
@@ -77,7 +83,7 @@ To run tests and generate a code coverage report:
 
 ```powershell
 # Run tests with coverage
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # Generate HTML coverage report
 dotnet reportgenerator -reports:"**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html

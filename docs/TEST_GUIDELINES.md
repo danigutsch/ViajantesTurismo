@@ -14,6 +14,20 @@ Our strategy follows a test pyramid approach:
 **Philosophy:** Fast feedback through comprehensive unit tests, confidence through integration tests, and business
 alignment through BDD scenarios.
 
+## Test Platform: MTP + xUnit v3
+
+This repository uses **xUnit v3** on top of **Microsoft.Testing.Platform (MTP)**.
+
+- Use `dotnet test --solution <path-to-.slnx>` for solution-wide runs.
+- Use `dotnet test --project <path-to-.csproj>` for targeted runs.
+- Pass test-host specific options after `--` (for example coverage and Playwright launch options).
+
+Example:
+
+```powershell
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
+```
+
 ## Test Project Structure
 
 ### Current Projects
@@ -401,7 +415,7 @@ Code coverage is collected using **Microsoft Testing Platform (MTP)** with setti
 at the solution root:
 
 ```powershell
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
 ### CI/CD Integration (Future)
@@ -449,10 +463,10 @@ getters/setters.
 ### Running Tests with Coverage
 
 ```powershell
-dotnet test                                                                    # All tests
-dotnet test tests/ViajantesTurismo.Admin.UnitTests                             # Specific project
-dotnet test --filter "FullyQualifiedName~Mapper"                               # Filtered
-dotnet test -- --coverage --coverage-output-format cobertura                   # With coverage
+dotnet test --solution ViajantesTurismo.slnx                                   # All tests
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj --filter "FullyQualifiedName~Mapper"
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura
 ```
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for coverage tool configuration and report generation.

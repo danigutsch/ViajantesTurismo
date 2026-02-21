@@ -50,8 +50,8 @@ powerful tools to create and manage tour packages.
 
 ### Testing
 
-- **xUnit** - Unit and integration testing
-- **Microsoft.Testing.Platform** - Test runner with built-in code coverage
+- **xUnit v3** - Unit, integration, behavior, and E2E testing framework
+- **Microsoft.Testing.Platform (MTP)** - Test host/runner integration with built-in coverage support
 
 ### API & Documentation
 
@@ -182,14 +182,22 @@ dotnet format
 **Run Tests:**
 
 ```powershell
-dotnet test
+# All tests in the solution
+dotnet test --solution ViajantesTurismo.slnx
+
+# Single project (recommended when iterating)
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 ```
 
 **With Code Coverage:**
 
 ```powershell
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
+
+**MTP/xUnit v3 note:** When passing test-host options (coverage, Playwright launch options, etc.), place them **after**
+ `--`.
+For project-specific runs, prefer `--project <path-to-csproj>` instead of positional project paths.
 
 **Run All Quality Checks:**
 

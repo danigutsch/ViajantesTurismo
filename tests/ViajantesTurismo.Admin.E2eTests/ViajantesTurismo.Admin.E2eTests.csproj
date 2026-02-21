@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
         <RootNamespace>ViajantesTurismo.Admin.E2ETests</RootNamespace>
     </PropertyGroup>
 
@@ -23,13 +21,8 @@
         <PackageReference Include="Aspire.Hosting.Redis"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
         <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
         <PackageReference Include="Microsoft.Playwright.Xunit.v3"/>
-        <PackageReference Include="xunit.v3"/>
-        <PackageReference Include="xunit.runner.visualstudio">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="xunit.v3.mtp-v2"/>
     </ItemGroup>
 
     <ItemGroup>
