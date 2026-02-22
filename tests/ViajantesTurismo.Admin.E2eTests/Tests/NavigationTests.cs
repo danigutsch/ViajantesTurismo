@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.E2ETests.Tests;
 public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     [Fact]
-    public async Task DeepLinkingAllRoutes()
+    public async Task Can_Deep_Link_All_Routes()
     {
         // === Static routes ===
         await NavigateToAsync("/");
@@ -103,7 +103,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
     }
 
     [Fact]
-    public async Task HomePageAndNavigation()
+    public async Task Can_Render_Home_Page_And_Navigate_Using_Sidebar_And_Quick_Actions()
     {
         // === Home Page Content ===
         await NavigateToAsync("/");

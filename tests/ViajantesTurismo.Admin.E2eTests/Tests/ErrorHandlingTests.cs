@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.E2ETests.Tests;
 public class ErrorHandlingTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     [Fact]
-    public async Task InvalidRoutesAndGuids()
+    public async Task Returns_NotFound_For_Invalid_Routes_And_Guids()
     {
         var randomGuid = Guid.NewGuid().ToString();
 
@@ -31,7 +31,7 @@ public class ErrorHandlingTests(E2EFixture fixture) : E2ETestBase(fixture)
     }
 
     [Fact]
-    public async Task EmptyDatabase_AllListPages()
+    public async Task Can_Show_Empty_States_On_All_List_Pages()
     {
         // Clear the database to test empty states (base class seeds by default)
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
