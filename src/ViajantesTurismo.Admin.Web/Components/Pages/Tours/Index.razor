@@ -107,5 +107,4 @@ else
     private static bool IsBelowMinimum(GetTourDto tour) => tour.CurrentCustomerCount < tour.MinCustomers;
 
     private static int GetAvailableSpots(GetTourDto tour) => tour.MaxCustomers - tour.CurrentCustomerCount;
-
 }
