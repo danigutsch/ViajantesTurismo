@@ -7,6 +7,7 @@
 @inject ICustomersApiClient CustomersApi
 @inject IBookingsApiClient BookingsApi
 @inject IToursApiClient ToursApi
+@inject ILogger<Details> Logger
 
 <PageTitle>Customer Details</PageTitle>
 
@@ -406,7 +407,8 @@ else if (_customer != null)
         }
         catch (Exception ex)
         {
-            _toast.ShowError($"Failed to save booking: {ex.Message}");
+            Logger.LogError(ex, "Unexpected error while creating booking for customer {CustomerId}", Id);
+            _toast.ShowError("Failed to save booking. Please check the form and try again.");
         }
         finally
         {

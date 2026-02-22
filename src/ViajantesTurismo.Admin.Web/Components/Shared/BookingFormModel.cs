@@ -18,7 +18,6 @@ public class BookingFormModel : IValidatableObject
     [Required(ErrorMessage = "Room type is required")]
     public RoomTypeDto RoomType { get; set; } = RoomTypeDto.DoubleOccupancy;
 
-    [Required(ErrorMessage = "Bike type is required for principal customer")]
     public BikeTypeDto PrincipalBikeType { get; set; } = BikeTypeDto.None;
 
     public BikeTypeDto? CompanionBikeType { get; set; }
@@ -39,6 +38,26 @@ public class BookingFormModel : IValidatableObject
     /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        if (!TourId.HasValue)
+        {
+            yield return new ValidationResult("Tour is required", [nameof(TourId)]);
+        }
+
+        if (!CustomerId.HasValue)
+        {
+            yield return new ValidationResult("Customer is required", [nameof(CustomerId)]);
+        }
+
+        if (PrincipalBikeType == BikeTypeDto.None)
+        {
+            yield return new ValidationResult("Bike type is required for principal customer", [nameof(PrincipalBikeType)]);
+        }
+
+        if (CompanionId.HasValue && !CompanionBikeType.HasValue)
+        {
+            yield return new ValidationResult("Bike type is required for companion customer", [nameof(CompanionBikeType)]);
+        }
+
         foreach (var result in DiscountValidation.Validate(
                      DiscountType,
                      DiscountAmount,

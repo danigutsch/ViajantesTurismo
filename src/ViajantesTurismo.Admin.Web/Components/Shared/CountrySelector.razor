@@ -2,7 +2,7 @@
 @inherits InputBase<string>
 
 <div class="position-relative">
-    <button type="button" class="form-select text-start d-flex align-items-center" @onclick="ToggleDropdown">
+    <button type="button" id="@Id" class="form-select text-start d-flex align-items-center" @onclick="ToggleDropdown">
         @if (!string.IsNullOrEmpty(Value) && _selectedCountry != null)
         {
             <span class="fi fi-@_selectedCountry.Code me-2"></span>
@@ -43,6 +43,8 @@
 </div>
 
 @code {
+
+    [Parameter] public string? Id { get; set; }
 
     [Parameter]
     public IReadOnlyList<CountryInfo>? Countries { get; set; }

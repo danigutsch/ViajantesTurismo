@@ -67,7 +67,7 @@
                         }
                         else
                         {
-                            <CountrySelector @bind-Value="_model.Nationality" Countries="_countries"/>
+                            <CountrySelector id="nationality" @bind-Value="_model.Nationality" Countries="_countries"/>
                         }
                         <ValidationMessage For="@(() => _model.Nationality)"/>
                     </div>

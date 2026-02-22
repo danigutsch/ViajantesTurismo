@@ -56,7 +56,15 @@
                         }
                         else
                         {
-                            <CustomerSelector @bind-Value="_model.CompanionId" Customers="_customers"/>
+                            <InputSelect @bind-Value="_model.CompanionId" class="form-select">
+                                <option value="">-- No Companion --</option>
+                                @foreach (var customer in _customers)
+                                {
+                                    <option
+                                        value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)
+                                    </option>
+                                }
+                            </InputSelect>
                         }
                         <ValidationMessage For="@(() => _model.CompanionId)"/>
                         <small class="form-text text-muted">Select another customer traveling with this person</small>

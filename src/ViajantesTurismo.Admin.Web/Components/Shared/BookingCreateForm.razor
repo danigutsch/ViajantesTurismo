@@ -1,6 +1,6 @@
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Helpers
-<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@EditContext" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator/>
 
     @if (Tours.Any())
@@ -246,6 +246,8 @@
     [Parameter]
     public EventCallback<BookingFormModel> OnValidSubmit { get; set; }
 
+    [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
@@ -256,7 +258,11 @@
 
     protected override void OnParametersSet()
     {
-        EditContext = new EditContext(Model);
+        if (EditContext is null || !ReferenceEquals(EditContext.Model, Model))
+        {
+            EditContext = new EditContext(Model);
+        }
+
         UpdateSelectedTour();
     }
 
@@ -317,6 +323,11 @@
     private async Task HandleValidSubmit()
     {
         await OnValidSubmit.InvokeAsync(Model);
+    }
+
+    private async Task HandleInvalidSubmit(EditContext editContext)
+    {
+        await OnInvalidSubmit.InvokeAsync(editContext);
     }
 
     private static string FormatPrice(decimal amount, CurrencyDto currency) => CurrencyFormatter.Format(amount, currency);
