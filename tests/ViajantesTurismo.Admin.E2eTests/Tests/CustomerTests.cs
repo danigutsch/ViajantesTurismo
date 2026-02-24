@@ -157,5 +157,13 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Customer Details");
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
+
+        // === Refresh persistence: hard reload and verify saved values survive ===
+        await Page.ReloadAsync();
+        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Expect(Page.GetByText("E2ETest")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("CustomerWizard")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
     }
 }

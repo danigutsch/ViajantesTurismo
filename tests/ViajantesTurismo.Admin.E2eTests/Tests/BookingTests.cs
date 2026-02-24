@@ -153,5 +153,13 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // After completion, the booking should show as completed and fields disabled
         await Expect(Page.GetByText("completed").First).ToBeVisibleAsync();
+
+        // === Refresh persistence: hard reload and verify completed booking survives ===
+        await NavigateToAsync($"/bookings/{bookingId}");
+        await Page.ReloadAsync();
+        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        await Expect(Page.GetByText("Cultural Experience").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText("David Lee").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText("$ 1,000.00").First).ToBeVisibleAsync();
     }
 }

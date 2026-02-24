@@ -89,5 +89,12 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetHeading("E2E Updated Tour")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Bike Rental")).ToBeVisibleAsync();
+
+        // === Refresh persistence: hard reload and verify saved values survive ===
+        await Page.ReloadAsync();
+        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await Expect(Page.GetHeading("E2E Updated Tour")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Bike Rental")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("E2ETST")).ToBeVisibleAsync();
     }
 }
