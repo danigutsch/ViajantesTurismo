@@ -206,10 +206,10 @@ cut.WaitForState(() => cut.Find(".result") != null, TimeSpan.FromSeconds(5));
 # Run all Web tests
 dotnet test tests/ViajantesTurismo.Admin.WebTests
 
-# Run specific test class
-dotnet test --filter "FullyQualifiedName~BookingStatusBadgeTests"
+# Run specific test class (MTP filter syntax)
+dotnet test --filter-method "*BookingStatusBadgeTests*"
 
-# Run with coverage (using MTP)
+# Run with coverage (MTP code coverage extension)
 dotnet test tests/ViajantesTurismo.Admin.WebTests -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # Watch mode (re-run on file changes)

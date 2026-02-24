@@ -53,6 +53,9 @@ dotnet test
 # Watch mode
 dotnet watch test
 
-# Specific class
-dotnet test --filter "FullyQualifiedName~TourCreationTests"
+# Specific class (MTP filter syntax)
+dotnet test --filter-method "*TourCreationTests*"
+
+# With coverage
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```

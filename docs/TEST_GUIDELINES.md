@@ -28,6 +28,44 @@ Example:
 dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
 ```
 
+### Filtering Tests (MTP)
+
+xUnit v3 on MTP uses its own filter switches — the legacy VSTest `--filter "FullyQualifiedName~..."` syntax is
+**not supported** and will silently return zero tests.
+
+With **.NET 10+** (this repo), filter switches go directly on `dotnet test`.
+With .NET 8/9, they must be passed after `--` (e.g. `dotnet test -- --filter-class ClassName`).
+
+See [xUnit v3 MTP docs](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform) for full reference.
+
+| Switch | Purpose | Example |
+|---|---|---|
+| `--filter-method` | Run a given test method | `--filter-method "*BookingApi*"` |
+| `--filter-not-method` | Exclude a method | `--filter-not-method "SlowTest"` |
+| `--filter-class` | Run all tests in a class | `--filter-class "Namespace.ClassName"` |
+| `--filter-not-class` | Exclude a class | `--filter-not-class "Namespace.SlowTests"` |
+| `--filter-namespace` | Run all tests in a namespace | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
+| `--filter-not-namespace` | Exclude a namespace | `--filter-not-namespace "ViajantesTurismo.Admin.E2ETests"` |
+| `--filter-trait` | Run tests matching a trait | `--filter-trait "Category=Fast"` |
+| `--filter-not-trait` | Exclude tests with a trait | `--filter-not-trait "Category=Slow"` |
+
+> **Multiple values:** pass several values to one switch instead of repeating it:
+> `--filter-class Foo Bar` runs both `Foo` and `Bar`.
+
+```powershell
+# Run a single test method (wildcards supported)
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*TourCreation*"
+
+# Run all tests in a specific class
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-class "ViajantesTurismo.Admin.UnitTests.Tours.TourCreationTests"
+
+# Run all tests in a namespace
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
+
+# Exclude slow tests
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-not-trait "Category=Slow"
+```
+
 ## Test Project Structure
 
 ### Current Projects
@@ -411,11 +449,20 @@ getters/setters.
 
 ### Coverage Configuration
 
-Code coverage is collected using **Microsoft Testing Platform (MTP)** with settings defined in `coverage.settings.xml`
-at the solution root:
+Code coverage is collected using **Microsoft Testing Platform (MTP)** with the
+[`Microsoft.Testing.Extensions.CodeCoverage`](https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-extensions-code-coverage)
+extension (already referenced in all test projects). Settings are defined in `coverage.settings.xml` at the solution
+root.
+
+See [xUnit v3 Code Coverage with MTP](https://xunit.net/docs/getting-started/v3/code-coverage-with-mtp) for the
+official guide.
 
 ```powershell
+# Collect coverage (cobertura XML)
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+# With custom settings file
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings ../../coverage.settings.xml
 ```
 
 ### CI/CD Integration (Future)
@@ -460,16 +507,30 @@ public void Then_The_Booking_Should_Fail_With_Error(string expectedError)
 Focus on happy paths, error paths, and boundary conditions. Don't obsess over 100% coverage or testing simple
 getters/setters.
 
+### Running Tests
+
+```powershell
+# All tests
+dotnet test --solution ViajantesTurismo.slnx
+
+# Single project
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
+
+# Filter to specific methods (MTP syntax, see "Filtering Tests" above)
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj --filter-method "*Mapper*"
+```
+
 ### Running Tests with Coverage
 
 ```powershell
-dotnet test --solution ViajantesTurismo.slnx                                   # All tests
-dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
-dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj --filter "FullyQualifiedName~Mapper"
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura
+# All tests with cobertura coverage
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+# Generate HTML report (requires reportgenerator tool)
+dotnet reportgenerator -reports:**/TestResults/**/coverage.cobertura.xml -targetdir:TestResults/CoverageReport -reporttypes:Html
 ```
 
-See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for coverage tool configuration and report generation.
+See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.
 
 ### CI/CD Integration (Future)
 

@@ -32,13 +32,19 @@ dotnet test tests/ViajantesTurismo.Admin.IntegrationTests
 ### Filter to booking integration tests
 
 ```powershell
-dotnet test --filter "FullyQualifiedName~BookingApi"
+dotnet test --filter-method "*BookingApi*"
 ```
 
 ### Example: run advanced discount/payment tests only
 
 ```powershell
-dotnet test --filter "FullyQualifiedName~BookingApiAdvancedTests"
+dotnet test --filter-class "ViajantesTurismo.Admin.IntegrationTests.Bookings.BookingApiAdvancedTests"
+```
+
+### Run with coverage
+
+```powershell
+dotnet test tests/ViajantesTurismo.Admin.IntegrationTests -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
 ## Notes

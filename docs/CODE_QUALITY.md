@@ -305,8 +305,11 @@ All quality tools have VS Code extensions installed for real-time feedback:
 ### Microsoft Code Coverage Configuration
 
 Test coverage is collected using **Microsoft Testing Platform (MTP)** with the
-`Microsoft.Testing.Extensions.CodeCoverage` extension. Settings are defined in `coverage.settings.xml` at the solution
-root.
+[`Microsoft.Testing.Extensions.CodeCoverage`](https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-extensions-code-coverage)
+extension (referenced in all test projects). Settings are defined in `coverage.settings.xml` at the solution root.
+
+See [xUnit v3 Code Coverage with MTP](https://xunit.net/docs/getting-started/v3/code-coverage-with-mtp) for the
+official guide.
 
 **Key Configuration:**
 
@@ -321,10 +324,22 @@ root.
 
 ### Running Tests with Coverage
 
+**Available coverage switches** (passed after `--` to the test host):
+
+| Switch | Purpose |
+|---|---|
+| `--coverage` | Enable code coverage collection (required) |
+| `--coverage-output-format` | Output format: `coverage`, `xml`, or `cobertura` |
+| `--coverage-output` | Output filename |
+| `--coverage-settings` | Path to XML settings file (e.g. `coverage.settings.xml`) |
+
 **Collect coverage:**
 
 ```powershell
 dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+# With explicit settings file
+dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings ../../coverage.settings.xml
 ```
 
 **Generate HTML report:**

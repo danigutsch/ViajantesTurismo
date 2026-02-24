@@ -36,14 +36,20 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Adm
 # With visible browser for debugging
 dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
 
-# Specific test
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj --filter "FullyQualifiedName~TourCrudTests.CreateTour"
+# Specific test (MTP filter syntax)
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj --filter-method "*TourCrudTests.CreateTour*"
 
 # Slow motion (500ms between actions)
 dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false Playwright.LaunchOptions.SlowMo=500
 ```
 
 > xUnit v3 runs on Microsoft.Testing.Platform in this repository. Keep Playwright launch options after `--`.
+
+### Run with coverage
+
+```powershell
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+```
 
 ## Debugging
 
