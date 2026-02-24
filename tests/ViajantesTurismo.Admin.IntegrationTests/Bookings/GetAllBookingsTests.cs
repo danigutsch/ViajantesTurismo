@@ -46,4 +46,31 @@ public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiIntegratio
         Assert.Contains(bookings, b => b.Id == booking1.Id);
         Assert.Contains(bookings, b => b.Id == booking2.Id);
     }
+
+    [Fact]
+    public async Task GetAllBookings_Returns_Correct_Payment_Status_After_Payments()
+    {
+        // Arrange
+        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var customer = await Client.CreateTestCustomer("Payment", "ListCheck", cancellationToken: TestContext.Current.CancellationToken);
+        var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+
+        var payment = DtoBuilders.BuildCreatePaymentDto(amount: 500m);
+        var paymentResponse = await Client.RecordPayment(booking.Id, payment, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, paymentResponse.StatusCode);
+
+        var singleBooking = await Client.GetBookingAndRead(booking.Id, TestContext.Current.CancellationToken);
+        Assert.Equal(PaymentStatusDto.PartiallyPaid, singleBooking.PaymentStatus);
+        Assert.Equal(500m, singleBooking.AmountPaid);
+
+        // Act
+        var allBookings = await Client.GetAllBookingsAndReadAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        var listBooking = Assert.Single(allBookings, b => b.Id == booking.Id);
+        Assert.Equal(PaymentStatusDto.PartiallyPaid, listBooking.PaymentStatus);
+        Assert.Equal(500m, listBooking.AmountPaid);
+        Assert.True(listBooking.RemainingBalance > 0);
+        Assert.Single(listBooking.Payments);
+    }
 }
