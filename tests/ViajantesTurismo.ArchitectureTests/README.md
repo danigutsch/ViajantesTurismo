@@ -14,9 +14,9 @@ conventions, naming rules, and make sure the ubiquitous language stays in sync w
 
 ## Running the tests
 
-```pwsh
+```powershell
 # From the repository root
-dotnet test tests/ViajantesTurismo.ArchitectureTests
+dotnet test --project tests/ViajantesTurismo.ArchitectureTests
 ```
 
 > These tests execute quickly (pure reflection / IL inspection) and can run on every build or CI pipeline without

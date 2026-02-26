@@ -27,12 +27,16 @@ ViajantesTurismo.Admin.BehaviorTests/
 # All behavior tests
 dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests
 
-# By aggregate tag
-dotnet test --filter "TestCategory=Agg:Booking"
+# By aggregate tag (Reqnroll maps Gherkin @tags to xUnit "Category" trait)
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=Agg:Booking"
 
 # Living documentation
-dotnet test ; start TestResults/living_documentation.html
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests ; start TestResults/living_documentation.html
 ```
+
+> **MTP note:** This project uses xUnit v3 on Microsoft Testing Platform. The legacy VSTest
+> `--filter "TestCategory=..."` syntax does **not** work. Use `--filter-trait` instead.
+> See [TEST_GUIDELINES.md](../../docs/TEST_GUIDELINES.md#filtering-tests-mtp) for all filter options.
 
 ## See Also
 

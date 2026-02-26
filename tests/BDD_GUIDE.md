@@ -36,18 +36,14 @@ This guide covers **ViajantesTurismo-specific** BDD patterns, tagging convention
 **Running Tests:**
 
 ```powershell
-
 # All behavior tests
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests
 
-dotnet test tests/ViajantesTurismo.Admin.BehaviorTests
-
-# By aggregate
-
-dotnet test --filter "TestCategory=Agg:Booking"
+# By aggregate (Reqnroll maps @tags to xUnit "Category" trait)
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=Agg:Booking"
 
 # By ADR
-
-dotnet test --filter "TestCategory=ADR:011"
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=ADR:011"
 ```
 
 See [Test Guidelines](../docs/TEST_GUIDELINES.md) for general testing patterns.
@@ -96,24 +92,22 @@ Feature: Booking Lifecycle Management
 
 ### Running Tests by Tag
 
+Reqnroll maps Gherkin `@tags` to xUnit traits with a `Category` key. Use
+`--filter-trait` and `--filter-not-trait` to filter:
+
 ```powershell
-
 # Single tag
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=Agg:Booking"
 
-dotnet test --filter "TestCategory=Agg:Booking"
-
-# Multiple tags (OR)
-
-dotnet test --filter "TestCategory=smoke|TestCategory=critical"
-
-# Multiple tags (AND)
-
-dotnet test --filter "TestCategory=Agg:Booking&TestCategory=critical"
+# Multiple tags (OR) — pass multiple values to one switch
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=smoke" "Category=critical"
 
 # Exclude tags
-
-dotnet test --filter "TestCategory!=wip"
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-not-trait "Category=wip"
 ```
+
+> **Note:** The legacy VSTest `--filter "TestCategory=..."` syntax does **not** work with MTP.
+> See [TEST_GUIDELINES.md](../docs/TEST_GUIDELINES.md#filtering-tests-mtp) for all available filters.
 
 See [Reqnroll: Executing Specific Scenarios][exec-scenarios] for advanced filtering.
 
@@ -211,14 +205,11 @@ start TestResults/living_documentation.html
 Track domain coverage by aggregate:
 
 ```powershell
-
 # List all Tour tests
-
-dotnet test --filter "TestCategory=Agg:Tour" --list-tests
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=Agg:Tour" --list-tests
 
 # Verify ADR coverage
-
-dotnet test --filter "TestCategory=ADR:011" --list-tests
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=ADR:011" --list-tests
 ```
 
 See [Reqnroll: Reporting][reporting] for advanced reporting options.

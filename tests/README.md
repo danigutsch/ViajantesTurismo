@@ -17,18 +17,26 @@ Test projects for the ViajantesTurismo Admin domain.
 ## Running Tests
 
 ```powershell
-# All tests
+# All tests in the solution
 dotnet test --solution ViajantesTurismo.slnx
 
 # Single project
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 
-# Filter by method name
-dotnet test --filter-method "*TourCreationTests*"
+# Filter by method name (use --project to target a specific project)
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*TourCreation*"
 
-# Filter by class
-dotnet test --filter-class "ViajantesTurismo.Admin.IntegrationTests.Bookings.BookingApiTests"
+# Filter by class (short name works)
+dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-class BookingApiTests
+
+# Run multiple test classes at once
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
 ```
+
+> **MTP note:** All test projects use xUnit v3 on Microsoft Testing Platform. The legacy VSTest
+> `--filter "FullyQualifiedName~..."` syntax does **not** work. Use `--filter-class`,
+> `--filter-method`, `--filter-trait`, etc. See
+> [TEST_GUIDELINES.md](../docs/TEST_GUIDELINES.md#filtering-tests-mtp) for full reference.
 
 ## Code Coverage
 
