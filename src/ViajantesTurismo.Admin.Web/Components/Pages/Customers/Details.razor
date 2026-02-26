@@ -378,6 +378,7 @@ else if (_customer != null)
     {
         _bookingFormModel = new BookingFormModel
         {
+            CustomerId = Id,
             PrincipalBikeType = _customer?.PhysicalInfo.BikeType ?? BikeTypeDto.None
         };
         _showBookingForm = true;
