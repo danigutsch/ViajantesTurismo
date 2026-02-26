@@ -1,133 +1,41 @@
 # ViajantesTurismo.Admin.BehaviorTests
 
-Behavior-Driven Development tests for the ViajantesTurismo Admin domain using [Reqnroll](https://reqnroll.net/).
+BDD tests using [Reqnroll](https://reqnroll.net/) and Gherkin syntax for domain business scenarios.
 
-## Purpose
+## Scope
 
-Business scenario tests in stakeholder-readable language using Gherkin syntax (Given-When-Then format) to verify domain
-business rules and workflows.
+Business scenario tests in stakeholder-readable language verifying domain rules and workflows.
 
-## Technology
+### Domain Coverage
 
-- **Framework**: [Reqnroll](https://reqnroll.net/) (successor to SpecFlow)
-- **Test Runner**: xUnit
-- **Language**: Gherkin with C# step definitions
-- **Assertions**: FluentAssertions
-
-## Quick Start Guide
-
-**📖 For comprehensive BDD and Reqnroll guidelines, see:**
-
-- **[BDD Guide](../BDD_GUIDE.md)** - Philosophy, feature writing, organization, anti-patterns
-- **[Reqnroll Technical Guide](../REQNROLL_GUIDE.md)** - Context injection, project structure, configuration
-
-### Running Tests
-
-```powershell
-# All behavior tests
-dotnet test
-
-# Specific aggregate tests
-dotnet test --filter "TestCategory=Agg:Booking"
-
-# Critical scenarios only
-dotnet test --filter "TestCategory=critical"
-
-# Generate living documentation
-dotnet test
-start TestResults/living_documentation.html
-```
-
-### Example Feature
-
-```gherkin
-@BC:Admin @Agg:Booking
-Feature: Booking Lifecycle
-  As a tour operator
-  I want to manage booking lifecycle
-  So that customers have confirmed reservations
-
-  Rule: Only pending bookings can be confirmed
-    
-    @critical
-    Scenario: Successfully confirm a pending booking
-      Given a pending booking exists
-      When the operator confirms the booking
-      Then the booking status should be "Confirmed"
-```
+- **Booking**: Lifecycle, validation, payments, companions
+- **Tour**: Creation, pricing, scheduling
+- **Customer**: Registration, validation
 
 ## Project Structure
 
 ```text
 ViajantesTurismo.Admin.BehaviorTests/
-├── Context/              # Domain-specific context classes
-│   ├── BookingContext.cs
-│   ├── CustomerContext.cs
-│   ├── TourContext.cs
-│   └── ...
-├── specs/                # Gherkin feature files
-│   ├── Booking/
-│   ├── Tour/
-│   └── Customer/
-├── Steps/                # Step definition classes
-│   ├── BookingSteps.cs
-│   ├── TourSteps.cs
-│   └── CustomerSteps.cs
-└── reqnroll.json         # Configuration
+├── Context/     # Domain-specific POCO context classes
+├── specs/       # Gherkin feature files (by aggregate)
+└── Steps/       # Step definition classes
 ```
 
-## Domain Coverage
+## Running
 
-### Booking Aggregate
+```powershell
+# All behavior tests
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests
 
-- BookingLifecycle.feature - State transitions
-- BookingValidation.feature - Domain rules
-- BookingPayments.feature - Payment rules
+# By aggregate tag
+dotnet test --filter "TestCategory=Agg:Booking"
 
-### Tour Aggregate
-
-- TourCreation.feature - Tour setup
-- TourValidation.feature - Date/price validation
-
-### Customer Aggregate
-
-- CustomerRegistration.feature - Customer creation
-- CustomerValidation.feature - Contact info validation
-
-## Writing New Scenarios
-
-### Best Practices for This Project
-
-1. **One aggregate per feature file** - Separate Booking, Tour, Customer
-2. **Use domain language** - Match ubiquitous language
-3. **Test business rules** - Focus on domain invariants
-4. **Keep scenarios short** - 3-5 steps ideal
-
-### Example Pattern
-
-```gherkin
-Feature: [Aggregate] [Capability]
-  As a [role]
-  I want to [goal]
-  So that [business value]
-
-  Rule: [Business rule]
-    
-    Scenario: [Specific example]
-      Given [context]
-      When [action]
-      Then [outcome]
+# Living documentation
+dotnet test ; start TestResults/living_documentation.html
 ```
 
-## Resources
+## See Also
 
-**Project-Specific:**
-
-- [Main Test README](../README.md) - Domain validation rules
-- [BDD Guide](../BDD_GUIDE.md) - Writing effective features
-- [Reqnroll Guide](../REQNROLL_GUIDE.md) - Technical implementation
-
-**External:**
-
-- [Reqnroll Documentation](https://docs.reqnroll.net/latest/)
-- [Cucumber BDD Guide](https://cucumber.io/docs/bdd/)
+- [tests/README.md](../README.md) — Running tests, coverage, conventions
+- [BDD Guide](../BDD_GUIDE.md) — Philosophy, feature writing, organization
+- [Reqnroll Guide](../REQNROLL_GUIDE.md) — Context injection, project structure

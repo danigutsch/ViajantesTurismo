@@ -1,39 +1,14 @@
 # ViajantesTurismo.Common.UnitTests
 
-Unit tests for shared types and patterns - Result pattern and common enumerations.
+Unit tests for shared types — Result pattern, Option pattern, and common enumerations.
 
-## Purpose
+## Scope
 
-Fast, isolated tests for the Result pattern implementation and shared domain types. No dependencies, no external
-resources.
+- `Result` / `Result<T>` creation, value retrieval, error handling, pattern matching
+- `Option<T>` creation, presence checks, type safety
+- Enum value ranges and string conversions
 
-## What We Test
+## See Also
 
-### Result Pattern
-
-- Success and failure creation
-- Value retrieval and error handling
-- Pattern matching behavior
-- Type safety guarantees
-
-### Enumerations
-
-- Valid value ranges
-- String conversions
-- Serialization behavior
-
-## Running Tests
-
-```powershell
-# All tests
-dotnet test
-
-# Watch mode
-dotnet test --watch
-
-# Specific class (MTP filter syntax)
-dotnet test --filter-method "*ResultTests*"
-
-# With coverage
-dotnet test -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-```
+- [tests/README.md](../README.md) — Running tests, coverage, conventions
+- [Common README](../../src/ViajantesTurismo.Common/README.md) — Type definitions
