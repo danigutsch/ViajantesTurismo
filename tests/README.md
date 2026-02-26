@@ -5,7 +5,7 @@ Test projects for the ViajantesTurismo Admin domain.
 ## Test Projects
 
 | Project | Type | Scope | Speed |
-|---------|------|-------|-------|
+| ------- | ---- | ----- | ----- |
 | [Admin.UnitTests](ViajantesTurismo.Admin.UnitTests/) | Unit | Domain logic in isolation | Fast |
 | [Admin.BehaviorTests](ViajantesTurismo.Admin.BehaviorTests/) | BDD | Business scenarios (Gherkin) | Fast–Medium |
 | [Admin.IntegrationTests](ViajantesTurismo.Admin.IntegrationTests/) | Integration | API endpoints with real DB | Slower |
@@ -63,7 +63,7 @@ Invoke-Item TestResults\CoverageReport\index.html
 ## Coverage Goals
 
 | Area | Target |
-|------|--------|
+| ---- | ------ |
 | Domain logic | 100% |
 | API endpoints | 90%+ |
 | Critical edge cases | All covered |
