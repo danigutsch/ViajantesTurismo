@@ -300,6 +300,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         _ = tours[3].ConfirmBooking(booking4.Id);
         _ = tours[3].RecordBookingPayment(booking4.Id, booking4.TotalPrice, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-003");
 
+        _ = tours[4].ConfirmBooking(booking5.Id);
         _ = tours[4].CompleteBooking(booking5.Id);
         _ = tours[0].CancelBooking(booking6.Id);
 
