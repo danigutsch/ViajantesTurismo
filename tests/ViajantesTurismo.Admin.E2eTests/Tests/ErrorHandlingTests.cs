@@ -21,9 +21,11 @@ public class ErrorHandlingTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync($"/edittour/{randomGuid}");
         await Expect(Page.GetByText("Tour not found.")).ToBeVisibleAsync();
 
-        // /bookings/{random-guid} → "Booking not found."
+        // /bookings/{random-guid} → "Booking not found." with no "Edit Booking" link
         await NavigateToAsync($"/bookings/{randomGuid}");
         await Expect(Page.GetByText("Booking not found.")).ToBeVisibleAsync();
+        await Expect(Page.GetLink("Back to List")).ToBeVisibleAsync();
+        await Expect(Page.GetLink("Edit Booking")).Not.ToBeVisibleAsync();
 
         // /bookings/{random-guid}/edit → similar error
         await NavigateToAsync($"/bookings/{randomGuid}/edit");
