@@ -26,11 +26,11 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 # Filter by method name (use --project to target a specific project)
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*TourCreation*"
 
-# Filter by class (short name works)
-dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-class BookingApiTests
+# Filter by class (fully-qualified name)
+dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-class "ViajantesTurismo.Admin.IntegrationTests.Bookings.BookingApiTests"
 
 # Run multiple test classes at once
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class "ViajantesTurismo.Admin.E2ETests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.E2ETests.Tests.BookingDeleteAndDialogTests"
 ```
 
 > **MTP note:** All test projects use xUnit v3 on Microsoft Testing Platform. The legacy VSTest
