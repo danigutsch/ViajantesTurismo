@@ -53,4 +53,42 @@ public class ErrorHandlingTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync("/bookings");
         await Expect(Page.GetByText("No bookings found")).ToBeVisibleAsync();
     }
+
+    [Fact]
+    public async Task Invalid_GUID_Format_Shows_404_Page()
+    {
+        var invalidGuids = new[] { "invalid-guid", "not-a-guid", "12345", "abc" };
+
+        foreach (var invalidGuid in invalidGuids)
+        {
+            await NavigateToAsync($"/tours/{invalidGuid}");
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+            await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
+        }
+
+        // Also verify bookings and customers with invalid GUIDs
+        await NavigateToAsync("/bookings/not-a-guid");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+
+        await NavigateToAsync("/customers/not-a-guid");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+
+        await NavigateToAsync("/customers/not-a-guid/edit");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task Non_Existent_Route_Shows_Custom_404_Page()
+    {
+        await NavigateToAsync("/nonexistent-page");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+        await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
+
+        // Should have a link back to the dashboard
+        await Expect(Page.GetByRole(AriaRole.Link, new() { Name = "Back to Dashboard" })).ToBeVisibleAsync();
+
+        // Clicking the link should navigate to the dashboard
+        await Page.GetByRole(AriaRole.Link, new() { Name = "Back to Dashboard" }).ClickAsync();
+        await Expect(Page.GetHeading("ViajantesTurismo Admin Dashboard")).ToBeVisibleAsync();
+    }
 }
