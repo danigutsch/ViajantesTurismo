@@ -15,8 +15,8 @@ error=SC2086,SC2115,SC2154,SC2155
 severity=style
 
 # Specific shell dialect (bash, sh, dash, ksh)
-# Using sh for maximum POSIX portability
-shell=sh
+# Using bash for our scripts
+shell=bash
 
 # Exclude specific checks if needed (none by default for strictness)
 # disable=SC1091  # Example: Not following sourced files

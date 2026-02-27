@@ -53,6 +53,8 @@
     "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "1"
   },
 
+  "onCreateCommand": "dotnet tool restore",
+
   "postCreateCommand": "bash .devcontainer/post-create.sh",
 
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",

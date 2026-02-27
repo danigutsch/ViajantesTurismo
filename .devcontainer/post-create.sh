@@ -1,12 +1,11 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
+
+# Error handler with line number
+trap 'echo "❌ Setup failed at line $LINENO with exit code $?"; exit 1' ERR
 
 echo "🚀 Running post-create setup..."
-
-# Restore .NET tools
-echo "📦 Restoring .NET tools..."
-dotnet tool restore
 
 # Restore NuGet packages
 echo "📦 Restoring NuGet packages..."
@@ -14,17 +13,27 @@ dotnet restore ViajantesTurismo.slnx
 
 # Install npm packages
 echo "📦 Installing npm packages..."
-npm install
+if ! npm ci --prefer-offline; then
+    echo "❌ npm installation failed"
+    exit 1
+fi
 
 # Install git hooks
 echo "🪝 Installing git hooks..."
-if [ -f "scripts/install-git-hooks.sh" ]; then
-    bash scripts/install-git-hooks.sh
+if [[ -f "scripts/install-git-hooks.sh" ]]; then
+    if bash scripts/install-git-hooks.sh; then
+        echo "✅ Git hooks installed successfully"
+    else
+        echo "⚠️ Git hooks installation failed (non-critical, continuing...)"
+    fi
 fi
 
 # Build the solution to verify everything works
 echo "🔨 Building solution..."
-dotnet build ViajantesTurismo.slnx --no-restore
+if ! dotnet build ViajantesTurismo.slnx --no-restore; then
+    echo "❌ Build failed. Please check the error messages above."
+    exit 1
+fi
 
 # Run database migrations if needed
 # Uncomment when you're ready to apply migrations automatically
