@@ -16,54 +16,105 @@ alignment through BDD scenarios.
 
 ## Test Platform: MTP + xUnit v3
 
-This repository uses **xUnit v3** on top of **Microsoft.Testing.Platform (MTP)**.
+This repository uses **xUnit v3** on top of
+[**Microsoft.Testing.Platform (MTP)**](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
 
-- Use `dotnet test --solution <path-to-.slnx>` for solution-wide runs.
-- Use `dotnet test --project <path-to-.csproj>` for targeted runs.
-- Pass test-host specific options after `--` (for example coverage and Playwright launch options).
+With MTP, each test project compiles into a standalone executable. `dotnet test` orchestrates
+discovery and execution but delegates to the test-host process. This means:
 
-Example:
+- **`dotnet test`** is a thin orchestrator — the real options come from xUnit v3 and MTP extensions.
+- The legacy **VSTest** switches (`--filter "FullyQualifiedName~..."`, `--logger`, `--settings`, etc.)
+  are **not supported** and will silently return zero tests or produce errors.
+- Use `--project` or `--solution` (named options, not positional arguments) to specify what to run.
+
+| Command                                        | Purpose                          |
+|------------------------------------------------|----------------------------------|
+| `dotnet test --solution ViajantesTurismo.slnx` | Run all tests in the solution    |
+| `dotnet test --project <path-to-.csproj>`      | Run tests in a single project    |
+| `dotnet test --project <path> -- <args>`       | Pass extra args to the test host |
+
+Example — run E2E tests in headed mode:
 
 ```powershell
 dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
 ```
 
-### Filtering Tests (MTP)
+Official references:
 
-xUnit v3 on MTP uses its own filter switches — the legacy VSTest `--filter "FullyQualifiedName~..."` syntax is
-**not supported** and will silently return zero tests.
+- [dotnet test with MTP](https://learn.microsoft.com/dotnet/core/tools/dotnet-test-mtp)
+- [MTP overview](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
+- [xUnit v3 on MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform)
 
-With **.NET 10+** (this repo), filter switches go directly on `dotnet test`.
+### Filtering Tests MTP
+
+xUnit v3 on MTP uses its own filter switches. The following **do NOT work** and will return
+zero tests or an error:
+
+- `--filter "FullyQualifiedName~..."` (VSTest syntax)
+- `--treenode-filter` (MSTest-only MTP extension)
+
+With **.NET 10+** (this repo), xUnit filter switches go **directly on `dotnet test`** as extra
+args — no `--` separator needed.
 With .NET 8/9, they must be passed after `--` (e.g. `dotnet test -- --filter-class ClassName`).
 
 See [xUnit v3 MTP docs](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform) for full reference.
 
-| Switch | Purpose | Example |
-|---|---|---|
-| `--filter-method` | Run a given test method | `--filter-method "*BookingApi*"` |
-| `--filter-not-method` | Exclude a method | `--filter-not-method "SlowTest"` |
-| `--filter-class` | Run all tests in a class | `--filter-class "Namespace.ClassName"` |
-| `--filter-not-class` | Exclude a class | `--filter-not-class "Namespace.SlowTests"` |
-| `--filter-namespace` | Run all tests in a namespace | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
-| `--filter-not-namespace` | Exclude a namespace | `--filter-not-namespace "ViajantesTurismo.Admin.E2ETests"` |
-| `--filter-trait` | Run tests matching a trait | `--filter-trait "Category=Fast"` |
-| `--filter-not-trait` | Exclude tests with a trait | `--filter-not-trait "Category=Slow"` |
+#### xUnit v3 filter switches
 
-> **Multiple values:** pass several values to one switch instead of repeating it:
-> `--filter-class Foo Bar` runs both `Foo` and `Bar`.
+| Switch                   | Purpose                                           | Example                                                       |
+|--------------------------|---------------------------------------------------|---------------------------------------------------------------|
+| `--filter-method`        | Run a given test method (wildcards `*` supported) | `--filter-method "*BookingApi*"`                              |
+| `--filter-not-method`    | Exclude a method                                  | `--filter-not-method "SlowTest"`                              |
+| `--filter-class`         | Run all tests in a class (fully-qualified name)   | `--filter-class "Namespace.TourCreationTests"`                |
+| `--filter-not-class`     | Exclude a class                                   | `--filter-not-class "SlowTests"`                              |
+| `--filter-namespace`     | Run all tests in a namespace                      | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
+| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.E2ETests"`    |
+| `--filter-trait`         | Run tests matching a trait                        | `--filter-trait "Category=Fast"`                              |
+| `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Category=Slow"`                          |
+
+> **Multiple values:** pass several quoted values to one switch instead of repeating it:
+> `--filter-class "Ns.Tests.FooTests" "Ns.Tests.BarTests"` runs both classes.
 
 ```powershell
 # Run a single test method (wildcards supported)
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*TourCreation*"
 
-# Run all tests in a specific class
+# Run all tests in a specific class (fully-qualified name)
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-class "ViajantesTurismo.Admin.UnitTests.Tours.TourCreationTests"
+
+# Run multiple test classes at once
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class "ViajantesTurismo.Admin.E2ETests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.E2ETests.Tests.BookingDeleteAndDialogTests"
 
 # Run all tests in a namespace
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
 
-# Exclude slow tests
+# Exclude slow tests by trait
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-not-trait "Category=Slow"
+```
+
+#### Useful MTP platform options
+
+These are built-in MTP options available on all test projects:
+
+| Option                         | Purpose                                                |
+|--------------------------------|--------------------------------------------------------|
+| `--list-tests`                 | List discovered tests without running them             |
+| `--timeout <value>[h\|m\|s]`   | Global test execution timeout (e.g. `--timeout 5m`)    |
+| `--minimum-expected-tests <N>` | Fail if fewer than N tests run (default: 1)            |
+| `--maximum-failed-tests <N>`   | Stop after N failures                                  |
+| `--help`                       | Show all available options including extension options |
+| `--info`                       | Show registered extensions and their options           |
+| `--diagnostic`                 | Enable diagnostic trace logging to file                |
+
+```powershell
+# List all tests in a project without executing them
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --list-tests
+
+# Run with a 10-minute timeout
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --timeout 10m
+
+# See all available options (including xUnit and extension switches)
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 ```
 
 ## Test Project Structure
@@ -510,21 +561,30 @@ getters/setters.
 ### Running Tests
 
 ```powershell
-# All tests
+# All tests in the solution
 dotnet test --solution ViajantesTurismo.slnx
 
 # Single project
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 
-# Filter to specific methods (MTP syntax, see "Filtering Tests" above)
-dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj --filter-method "*Mapper*"
+# Filter to specific methods (MTP/xUnit v3 syntax — see "Filtering Tests" above)
+dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*Mapper*"
+
+# Run specific test classes
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
 ```
+
+> **Reminder:** Do NOT use `--filter "FullyQualifiedName~..."` — that is VSTest syntax and
+> will silently return zero tests under MTP. Use `--filter-class`, `--filter-method`, etc.
 
 ### Running Tests with Coverage
 
 ```powershell
-# All tests with cobertura coverage
+# All tests with cobertura coverage (coverage flags are test-host args, passed after --)
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+# With custom settings file
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings ../../coverage.settings.xml
 
 # Generate HTML report (requires reportgenerator tool)
 dotnet reportgenerator -reports:**/TestResults/**/coverage.cobertura.xml -targetdir:TestResults/CoverageReport -reporttypes:Html
