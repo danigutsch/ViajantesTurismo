@@ -43,7 +43,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ETestBase(fixture)
         // ── Customers: sort by Name, Email, Nationality ──
         await NavigateToAsync("/customers");
         await Expect(Page).ToHaveTitleAsync("Customers");
-        await Expect(Page.GetByText("Total customers: 10")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Total customers: 15")).ToBeVisibleAsync();
 
         var customersTable = Page.Locator("table");
         var firstCustomerName = customersTable.Locator("tbody tr td:nth-child(1)").First;
@@ -56,7 +56,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Sort by Name descending
         await customersTable.GetButton("Name").ClickAsync();
         await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
-        await Expect(firstCustomerName).ToHaveTextAsync("Jack Brown"); // Z-A: Jack first
+        await Expect(firstCustomerName).ToHaveTextAsync("Oscar Fischer"); // Z-A: Oscar first
 
         // Sort by Email ascending
         await customersTable.GetButton("Email").ClickAsync();
@@ -107,20 +107,101 @@ public class ListInteractionTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Tours: 5 items (≤10) → no paginator
         await NavigateToAsync("/tours");
         await Expect(Page.GetByText("Total tours: 5")).ToBeVisibleAsync();
-        await Expect(Page.Locator("nav[aria-label='pagination']")).Not.ToBeVisibleAsync();
+        await Expect(Page.Locator(".paginator")).Not.ToBeVisibleAsync();
         // All 5 tours visible (no items hidden on second page)
         await Expect(Page.Locator("table tbody tr")).ToHaveCountAsync(5);
 
-        // Customers: 10 items (≤10) → no paginator
+        // Customers: 15 items (>10) → paginator shown (tested in pagination tests)
         await NavigateToAsync("/customers");
-        await Expect(Page.GetByText("Total customers: 10")).ToBeVisibleAsync();
-        await Expect(Page.Locator("nav[aria-label='pagination']")).Not.ToBeVisibleAsync();
-        await Expect(Page.Locator("table tbody tr")).ToHaveCountAsync(10);
+        await Expect(Page.GetByText("Total customers: 15")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".paginator")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".paginator .pagination-text")).ToContainTextAsync("Page 1 of 2");
 
         // Bookings: 10 items (≤10) → no paginator
         await NavigateToAsync("/bookings");
         await Expect(Page.GetByText("Total: 10")).ToBeVisibleAsync();
-        await Expect(Page.Locator("nav[aria-label='pagination']")).Not.ToBeVisibleAsync();
+        await Expect(Page.Locator(".paginator")).Not.ToBeVisibleAsync();
         await Expect(Page.Locator("table tbody tr")).ToHaveCountAsync(10);
+    }
+
+    [Fact]
+    public async Task Paginator_Shows_Correct_Page_Count()
+    {
+        // Customers: 15 items, page size 10 → paginator with 2 pages
+        await NavigateToAsync("/customers");
+        await Expect(Page.GetByText("Total customers: 15")).ToBeVisibleAsync();
+
+        var paginator = Page.Locator(".paginator");
+        await Expect(paginator).ToBeVisibleAsync();
+
+        // Should show page indicator "Page 1 of 2"
+        await Expect(paginator.Locator(".pagination-text")).ToContainTextAsync("Page 1 of 2");
+
+        // Tours (5) and bookings (10) still show no paginator
+        await NavigateToAsync("/tours");
+        await Expect(Page.Locator(".paginator")).Not.ToBeVisibleAsync();
+
+        await NavigateToAsync("/bookings");
+        await Expect(Page.Locator(".paginator")).Not.ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task Can_Navigate_Between_Pages()
+    {
+        await NavigateToAsync("/customers");
+        await Expect(Page.GetByText("Total customers: 15")).ToBeVisibleAsync();
+
+        var paginator = Page.Locator(".paginator");
+        var paginationText = paginator.Locator(".pagination-text");
+
+        // Page 1: shows "Page 1 of 2"
+        await Expect(paginationText).ToContainTextAsync("Page 1 of 2");
+
+        // Navigate to page 2
+        await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
+
+        // Page 2: shows "Page 2 of 2"
+        await Expect(paginationText).ToContainTextAsync("Page 2 of 2");
+
+        // Page 2 should contain Karen (11th customer alphabetically)
+        await Expect(Page.GetByText("Karen Tanaka").First).ToBeVisibleAsync();
+
+        // Navigate back to page 1
+        await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
+
+        // Page 1: back to "Page 1 of 2"
+        await Expect(paginationText).ToContainTextAsync("Page 1 of 2");
+
+        // Page 1 should contain Alice (1st customer alphabetically)
+        await Expect(Page.GetByText("Alice Smith").First).ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task Sorting_Persists_Across_Pages()
+    {
+        await NavigateToAsync("/customers");
+        await Expect(Page.GetByText("Total customers: 15")).ToBeVisibleAsync();
+
+        var customersTable = Page.Locator("table");
+
+        // Sort by Name descending (Z-A)
+        await customersTable.GetButton("Name").ClickAsync();
+        await customersTable.GetButton("Name").ClickAsync();
+        await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
+
+        // Page 1: first item should be Oscar Fischer (Z-A)
+        var firstNameCell = customersTable.Locator("tbody tr td:nth-child(1)").First;
+        await Expect(firstNameCell).ToHaveTextAsync("Oscar Fischer");
+
+        // Navigate to page 2
+        var paginator = Page.Locator(".paginator");
+        await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
+
+        // Page 2: items should still be in descending order
+        // Page 2 has the last 5 alphabetically (Z-A): Elena, David, Carla, Bob, Alice
+        await Expect(firstNameCell).ToHaveTextAsync("Elena Rodriguez");
+
+        // Sort indicator should persist
+        await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
     }
 }

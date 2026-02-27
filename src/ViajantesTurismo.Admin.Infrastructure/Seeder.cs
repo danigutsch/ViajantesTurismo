@@ -183,6 +183,56 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
             EmergencyContact.Create("Emma Brown", "+61498765432").Value,
             MedicalInfo.Create("Seafood", null).Value
+        ),
+        new(
+            PersonalInfo.Create("Karen", "Tanaka", "Female", new DateTime(1987, 2, 14).ToUniversalTime(), "Japanese", "Architect", TimeProvider.System).Value,
+            IdentificationInfo.Create("159357486", "Japanese").Value,
+            ContactInfo.Create("karen@example.com", "+81901234567", "@karen_tanaka", null).Value,
+            Address.Create("Shibuya 1-2-3", null, "Shibuya-ku", "150-0002", "Tokyo", "Tokyo", "Japan").Value,
+            PhysicalInfo.Create(52, 158, BikeType.Regular).Value,
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
+            EmergencyContact.Create("Yuki Tanaka", "+81909876543").Value,
+            MedicalInfo.Create(null, null).Value
+        ),
+        new(
+            PersonalInfo.Create("Leo", "Costa", "Male", new DateTime(1993, 8, 3).ToUniversalTime(), "Brazilian", "Software Developer", TimeProvider.System).Value,
+            IdentificationInfo.Create("264835791", "Brazilian").Value,
+            ContactInfo.Create("leo@example.com", "+5521999887766", null, "leo.costa").Value,
+            Address.Create("Av. Paulista, 1000", "Sala 10", "Bela Vista", "01310-100", "São Paulo", "SP", "Brazil").Value,
+            PhysicalInfo.Create(78, 176, BikeType.EBike).Value,
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
+            EmergencyContact.Create("Ana Costa", "+5521988776655").Value,
+            MedicalInfo.Create("Latex", null).Value
+        ),
+        new(
+            PersonalInfo.Create("Maria", "Gonzalez", "Female", new DateTime(1989, 12, 1).ToUniversalTime(), "Mexican", "Journalist", TimeProvider.System).Value,
+            IdentificationInfo.Create("375924681", "Mexican").Value,
+            ContactInfo.Create("maria@example.com", "+521234567890", "@maria_g", null).Value,
+            Address.Create("Reforma 222", null, "Juárez", "06600", "Mexico City", "CDMX", "Mexico").Value,
+            PhysicalInfo.Create(60, 163, BikeType.Regular).Value,
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
+            EmergencyContact.Create("Carlos Gonzalez", "+521987654321").Value,
+            MedicalInfo.Create("Penicillin", null).Value
+        ),
+        new(
+            PersonalInfo.Create("Nora", "Eriksson", "Female", new DateTime(1996, 5, 18).ToUniversalTime(), "Swedish", "Nurse", TimeProvider.System).Value,
+            IdentificationInfo.Create("486135792", "Swedish").Value,
+            ContactInfo.Create("nora@example.com", "+46701234567", null, "nora.eriksson").Value,
+            Address.Create("Kungsgatan 44", null, "Norrmalm", "111 35", "Stockholm", "Stockholm", "Sweden").Value,
+            PhysicalInfo.Create(64, 172, BikeType.EBike).Value,
+            AccommodationPreferences.Create(RoomType.SingleOccupancy, BedType.DoubleBed, null).Value,
+            EmergencyContact.Create("Erik Eriksson", "+46709876543").Value,
+            MedicalInfo.Create(null, null).Value
+        ),
+        new(
+            PersonalInfo.Create("Oscar", "Fischer", "Male", new DateTime(1982, 9, 27).ToUniversalTime(), "Austrian", "Musician", TimeProvider.System).Value,
+            IdentificationInfo.Create("597246813", "Austrian").Value,
+            ContactInfo.Create("oscar@example.com", "+43664123456", "@oscar_music", null).Value,
+            Address.Create("Mariahilfer Straße, 88", null, "Mariahilf", "1060", "Vienna", "Vienna", "Austria").Value,
+            PhysicalInfo.Create(74, 179, BikeType.Regular).Value,
+            AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value,
+            EmergencyContact.Create("Sabine Fischer", "+43664987654").Value,
+            MedicalInfo.Create("Aspirin", null).Value
         )
     ];
 
@@ -256,7 +306,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         var tours = dbContext.Tours.ToArray();
         var customers = dbContext.Customers.ToArray();
 
-        if (tours.Length < 5 || customers.Length < 10)
+        if (tours.Length < 5 || customers.Length < 15)
         {
             return;
         }
@@ -266,7 +316,8 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         var booking2 = tours[1].AddBooking(customers[1].Id, customers[1].PhysicalInfo.BikeType, customers[0].Id, customers[0].PhysicalInfo.BikeType, RoomType.DoubleOccupancy, DiscountType.None, 0m,
             null,
             "Traveling together as a couple").Value;
-        tours[2].AddBooking(customers[2].Id, customers[2].PhysicalInfo.BikeType, null, null, customers[2].AccommodationPreferences.RoomType, DiscountType.None, 0m, null, "Requested vegetarian meals");
+        var booking3 = tours[2].AddBooking(customers[2].Id, customers[2].PhysicalInfo.BikeType, null, null, customers[2].AccommodationPreferences.RoomType, DiscountType.None, 0m, null,
+            "Pending with partial payment, awaiting full payment").Value;
         var booking4 = tours[3].AddBooking(customers[3].Id, customers[3].PhysicalInfo.BikeType, customers[4].Id, customers[4].PhysicalInfo.BikeType, RoomType.DoubleOccupancy, DiscountType.None, 0m,
             null,
             "Upgraded to premium accommodation").Value;
@@ -313,5 +364,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
         _ = tours[0].RecordBookingPayment(booking9.Id, booking9.TotalPrice, DateTime.UtcNow, PaymentMethod.Cash, timeProvider);
 
         _ = tours[4].ConfirmBooking(booking10.Id);
+
+        _ = tours[2].RecordBookingPayment(booking3.Id, booking3.TotalPrice * 0.25m, DateTime.UtcNow, PaymentMethod.CreditCard, timeProvider, "CC-2024-006", "25% deposit paid");
     }
 }
