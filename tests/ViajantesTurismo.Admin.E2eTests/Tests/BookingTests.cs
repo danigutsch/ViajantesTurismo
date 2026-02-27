@@ -132,9 +132,13 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await paymentCard.GetButton("Record Payment").ClickAsync();
 
-        // Wait for payment toast
+        // Wait for payment toast and verify it
         var paymentToast = Page.Locator(".toast");
         await Expect(paymentToast.First).ToBeVisibleAsync();
+        await Expect(paymentToast.First).ToContainTextAsync("Payment recorded successfully");
+
+        // Wait for payment toast to disappear before next action
+        await Expect(paymentToast.First).ToBeHiddenAsync(new LocatorAssertionsToBeHiddenOptions { Timeout = 10_000 });
 
         // Verify payment appears in the payments list
         var paymentsTable = Page.Locator("table").Filter(new LocatorFilterOptions { HasText = "Cash" });
