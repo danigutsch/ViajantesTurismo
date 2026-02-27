@@ -19,7 +19,7 @@ namespace ViajantesTurismo.Admin.Application;
 public interface IQueryService
 {
     /// <summary>
-    /// Retrieves all tours.
+    /// Retrieves all tours sorted by ID.
     /// </summary>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>A read-only list of <see cref="GetTourDto"/> representing all tours.</returns>
