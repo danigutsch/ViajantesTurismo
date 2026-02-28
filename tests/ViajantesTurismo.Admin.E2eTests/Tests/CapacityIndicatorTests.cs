@@ -8,7 +8,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Tour_Capacity_Badges_Show_Correct_State_On_List_And_Details()
     {
         // === Setup: Create own tour with 3 confirmed bookings ===
-        var api = Fixture.ApiClient;
+        var api = ApiClient;
         var tour = await ApiTestHelper.CreateTourAsync(api, minCustomers: 1, maxCustomers: 10);
         var tourName = tour.Name;
 

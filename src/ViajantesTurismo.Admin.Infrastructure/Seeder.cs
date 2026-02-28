@@ -308,7 +308,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
 
     private void SeedBookings()
     {
-        var tours = dbContext.Tours.OrderBy(t => t.Id).ToArray();
+        var tours = dbContext.Tours.OrderBy(t => t.Identifier).ToArray();
         var customers = dbContext.Customers.OrderBy(c => c.Id).ToArray();
 
         if (tours.Length < 5 || customers.Length < 15)

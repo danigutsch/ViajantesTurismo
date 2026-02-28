@@ -90,7 +90,7 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     public async Task Cannot_Create_Tour_With_Duplicate_Identifier()
     {
         // Arrange
-        const string duplicateIdentifier = "DUP2024";
+        var duplicateIdentifier = TestDataGenerator.UniqueTourIdentifier("DUP");
         var firstRequest = DtoBuilders.BuildCreateTourDto(identifier: duplicateIdentifier, name: "First Tour");
         var secondRequest = DtoBuilders.BuildCreateTourDto(identifier: duplicateIdentifier, name: "Second Tour");
 

@@ -8,7 +8,7 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
     public async Task Can_Cancel_Booking_Via_Confirm_Dialog()
     {
         // Create own tour, customer, and confirmed booking via API
-        var api = Fixture.ApiClient;
+        var api = ApiClient;
         var tour = await ApiTestHelper.CreateTourAsync(api);
         var customer = await ApiTestHelper.CreateCustomerAsync(api);
         var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);
@@ -65,7 +65,7 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
     public async Task Can_Delete_Booking_Via_Confirm_Dialog()
     {
         // Create own tour, customer, and pending booking via API
-        var api = Fixture.ApiClient;
+        var api = ApiClient;
         var tour = await ApiTestHelper.CreateTourAsync(api);
         var customer = await ApiTestHelper.CreateCustomerAsync(api);
         var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);

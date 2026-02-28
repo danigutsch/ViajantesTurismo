@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.E2ETests;
 
 public abstract class E2ETestBase(E2EFixture fixture) : PageTest
 {
-    protected E2EFixture Fixture { get; } = fixture;
+    protected HttpClient ApiClient => fixture.ApiClient;
 
     /// <summary>
     /// Navigate to a path relative to the web app root, waiting for SignalR circuit.
@@ -22,7 +22,7 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
     {
         return new BrowserNewContextOptions
         {
-            BaseURL = Fixture.WebAppUrl.ToString(),
+            BaseURL = fixture.WebAppUrl.ToString(),
             ViewportSize = new ViewportSize { Width = 1920, Height = 1080 },
             IgnoreHTTPSErrors = true
         };

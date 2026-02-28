@@ -43,6 +43,8 @@ public sealed class E2EFixture : IAsyncLifetime
         ? throw new InvalidOperationException("Web app not started.")
         : new Uri(_webFactory.ServerAddress);
 
+    public HttpClient ApiClient { get; private set; } = null!;
+
     public async ValueTask InitializeAsync()
     {
         await _app.StartAsync();
@@ -73,6 +75,10 @@ public sealed class E2EFixture : IAsyncLifetime
 
         _webFactory = new WebFactory(apiBaseUrl, cacheConnectionString);
         _ = _webFactory.CreateClient();
+
+        ApiClient = _apiFactory.CreateClient();
+
+        await Seed(cts.Token);
     }
 
     public async ValueTask DisposeAsync()
@@ -97,6 +103,7 @@ public sealed class E2EFixture : IAsyncLifetime
     public async Task Seed(CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(_apiFactory);
+
         await using var scope = _apiFactory.Services.CreateAsyncScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
         await seeder.Seed(cancellationToken);
@@ -108,6 +115,7 @@ public sealed class E2EFixture : IAsyncLifetime
     public async Task ClearDatabase(CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(_apiFactory);
+
         using var scope = _apiFactory.Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
         await seeder.ClearDatabase(cancellationToken);

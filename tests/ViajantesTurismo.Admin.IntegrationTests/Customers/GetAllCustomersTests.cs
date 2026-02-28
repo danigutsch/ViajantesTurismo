@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 
-public sealed class GetAllCustomersTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
+public sealed class GetAllCustomersTests(ApiFixture fixture) : AdminApiSerialTestBase(fixture)
 {
     [Fact]
     public async Task Can_Get_Empty_Customer_List()

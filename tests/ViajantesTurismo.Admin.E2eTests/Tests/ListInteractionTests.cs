@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
-public class ListInteractionTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
     public async Task Can_Sort_List_Columns_For_All_Entities()

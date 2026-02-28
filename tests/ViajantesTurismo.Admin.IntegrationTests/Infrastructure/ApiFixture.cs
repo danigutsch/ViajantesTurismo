@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Resources;
 
@@ -46,6 +48,12 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
         };
 
         _databaseConnectionString = databaseConnectionStringBuilder.ConnectionString;
+
+        // Trigger host creation and seed once for the assembly
+        _ = CreateClient();
+        using var seedScope = Services.CreateScope();
+        var seeder = seedScope.ServiceProvider.GetRequiredService<ISeeder>();
+        await seeder.Seed(cts.Token);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

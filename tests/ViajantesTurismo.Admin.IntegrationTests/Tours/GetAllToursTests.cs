@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Tours;
 
-public sealed class GetAllToursTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
+public sealed class GetAllToursTests(ApiFixture fixture) : AdminApiSerialTestBase(fixture)
 {
     [Fact]
     public async Task Can_Get_Empty_Tour_List()

@@ -7,7 +7,7 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Customer_Edit_Renders_All_Sections_With_Populated_Data()
     {
-        // Navigate to customers list and open Alice Smith's edit page
+        // Navigate to the customers list and open Alice Smith's edit page
         await NavigateToAsync("/customers");
         var aliceRow = Page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = "Alice Smith" });

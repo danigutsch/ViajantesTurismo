@@ -2,7 +2,7 @@ using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
-public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class UiFeedbackTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
     public async Task Can_See_Toast_Notifications_And_Timed_Redirects()
