@@ -1,0 +1,46 @@
+@page "/about"
+<PageTitle>About - ViajantesTurismo</PageTitle>
+
+<div class="container mt-4">
+    <h1>About ViajantesTurismo Admin Portal</h1>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Application Information</h5>
+            <table class="table table-borderless">
+                <tr>
+                    <td class="fw-bold" style="width: 200px">Version:</td>
+                    <td>1.0.0</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold">Environment:</td>
+                    <td>@GetEnvironment()</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold">Built with:</td>
+                    <td>.NET 10 • Blazor • ASP.NET Core • PostgreSQL</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold">Copyright:</td>
+                    <td>© @DateTime.Now.Year ViajantesTurismo</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h5>Support</h5>
+        <p>For assistance, contact: <a href="mailto:support@viajantesturismo.example">support@viajantesturismo.example</a></p>
+    </div>
+
+    <div class="mt-4">
+        <a href="/" class="btn btn-primary">
+            <i class="bi bi-house-door"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+@code {
+    private string GetEnvironment() =>
+        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+}
