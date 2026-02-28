@@ -7,10 +7,6 @@
       "version": "10.0",
       "installUsingApt": true
     },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22",
-      "nodeGypDependencies": true
-    },
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
       "ppa": true
