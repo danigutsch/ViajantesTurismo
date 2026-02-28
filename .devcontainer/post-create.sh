@@ -28,11 +28,15 @@ if [[ -f "scripts/install-git-hooks.sh" ]]; then
     fi
 fi
 
-# Build the solution to verify everything works
-echo "🔨 Building solution..."
-if ! dotnet build ViajantesTurismo.slnx --no-restore; then
-    echo "❌ Build failed. Please check the error messages above."
-    exit 1
+# Build the solution to verify everything works (optional)
+if [[ "${DEVCONTAINER_VERIFY_BUILD:-1}" == "1" ]]; then
+    echo "🔨 Building solution..."
+    if ! dotnet build ViajantesTurismo.slnx --no-restore; then
+        echo "❌ Build failed. Please check the error messages above."
+        exit 1
+    fi
+else
+    echo "⏭️ Skipping build verification (DEVCONTAINER_VERIFY_BUILD=${DEVCONTAINER_VERIFY_BUILD:-0})"
 fi
 
 # Run database migrations if needed
