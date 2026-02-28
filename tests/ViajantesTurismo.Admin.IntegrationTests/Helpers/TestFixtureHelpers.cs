@@ -14,13 +14,36 @@ internal static class TestFixtureHelpers
     /// </summary>
     public static async Task<GetTourDto> CreateTestTour(
         this HttpClient client,
-        string identifier = "CUBA2024",
-        string name = "Cuba Adventure 2024",
+        string? identifier = null,
+        string? name = null,
         CancellationToken cancellationToken = default)
     {
+        // Ensure identifier and name uniqueness for parallel test safety
+        if (identifier is not null || name is not null)
+        {
+            var suffix = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+
+            if (identifier is not null)
+            {
+                identifier = $"{identifier}-{suffix}";
+            }
+
+            if (name is not null)
+            {
+                name = $"{name} {suffix}";
+            }
+        }
+
         var tourRequest = DtoBuilders.BuildCreateTourDto(identifier: identifier, name: name);
         var response = await client.CreateTourAsync(tourRequest, cancellationToken);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException(
+                $"Failed to create test tour '{identifier}'. " +
+                $"Status: {response.StatusCode}, Error: {errorContent}");
+        }
 
         var location = response.Headers.Location;
         var getResponse = await client.GetAsync(location, cancellationToken);
