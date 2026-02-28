@@ -57,25 +57,11 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Empty submit should produce friendly validation, not internal exception details.
         await Page.GetButton("Create Booking").ClickAsync();
 
-        // Feedback channel may vary (toast or inline validation messages);
-        // enforce the real contract: show user-facing validation and never leak technical details.
+        // Wait for validation feedback to appear using Playwright's built-in waiting
         var alert = Page.GetByRole(AriaRole.Alert);
         var inlineValidation = Page.Locator(".validation-message");
-
-        var feedbackDetected = false;
-        for (var i = 0; i < 20; i++)
-        {
-            if (await alert.CountAsync() > 0 || await inlineValidation.CountAsync() > 0)
-            {
-                feedbackDetected = true;
-                break;
-            }
-
-            await Task.Delay(100, TestContext.Current.CancellationToken);
-        }
-
-        Assert.True(feedbackDetected,
-            "Expected explicit user-facing validation feedback after empty submit.");
+        var feedbackLocator = Page.Locator("[role='alert'], .validation-message");
+        await Expect(feedbackLocator.First).ToBeVisibleAsync();
 
         var hasFriendlyValidationFeedback = await HasFriendlyValidationFeedbackAsync(alert, inlineValidation);
         Assert.True(hasFriendlyValidationFeedback,
@@ -103,11 +89,14 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
 
     private static async Task<bool> HasFriendlyValidationFeedbackAsync(ILocator alert, ILocator inlineValidation)
     {
-        if (await inlineValidation.CountAsync() > 0)
+        var validationCount = await inlineValidation.CountAsync();
+        if (validationCount > 0)
         {
-            for (var i = 0; i < await inlineValidation.CountAsync(); i++)
+            for (var i = 0; i < validationCount; i++)
             {
-                var text = await inlineValidation.Nth(i).InnerTextAsync();
+                var element = inlineValidation.Nth(i);
+                await element.WaitForAsync();
+                var text = await element.InnerTextAsync();
                 if (FriendlyValidationIndicators.Any(indicator =>
                         text.Contains(indicator, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -116,8 +105,10 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
             }
         }
 
-        if (await alert.CountAsync() > 0)
+        var alertCount = await alert.CountAsync();
+        if (alertCount > 0)
         {
+            await alert.First.WaitForAsync();
             var alertText = await alert.First.InnerTextAsync();
             return FriendlyValidationIndicators.Any(indicator =>
                 alertText.Contains(indicator, StringComparison.OrdinalIgnoreCase));
@@ -133,17 +124,22 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         var alertCount = await alert.CountAsync();
         for (var i = 0; i < alertCount; i++)
         {
-            feedbackTexts.Add(await alert.Nth(i).InnerTextAsync());
+            var element = alert.Nth(i);
+            await element.WaitForAsync();
+            feedbackTexts.Add(await element.InnerTextAsync());
         }
 
         var validationCount = await inlineValidation.CountAsync();
         for (var i = 0; i < validationCount; i++)
         {
-            feedbackTexts.Add(await inlineValidation.Nth(i).InnerTextAsync());
+            var element = inlineValidation.Nth(i);
+            await element.WaitForAsync();
+            feedbackTexts.Add(await element.InnerTextAsync());
         }
 
         if (feedbackTexts.Count == 0)
         {
+            await Page.Locator("body").WaitForAsync();
             feedbackTexts.Add(await Page.Locator("body").InnerTextAsync());
         }
 

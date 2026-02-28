@@ -9,10 +9,10 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         await NavigateToAsync("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        // Collect payment status from each row in the global bookings list
+        // Wait for table to render before collecting data
         var rows = Page.Locator("table tbody tr");
+        await Expect(rows.First).ToBeVisibleAsync();
         var rowCount = await rows.CountAsync();
-        Assert.True(rowCount > 0, "Expected seeded bookings in the list");
 
         var listStatuses = new Dictionary<string, string>();
 
@@ -20,10 +20,12 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         {
             var row = rows.Nth(i);
             var viewLink = row.GetLink("View");
+            await Expect(viewLink).ToBeVisibleAsync();
             var href = await viewLink.GetAttributeAsync("href");
             Assert.NotNull(href);
 
             var paymentBadge = row.Locator("td:nth-child(8) .badge");
+            await Expect(paymentBadge).ToBeVisibleAsync();
             var paymentText = (await paymentBadge.InnerTextAsync()).Trim();
 
             listStatuses[href] = paymentText;
@@ -38,8 +40,10 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
             await NavigateToAsync(href);
             await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-            var detailPaymentBadge = Page.Locator("dd .badge").Nth(1); // second badge is payment status
-            var detailPaymentText = (await detailPaymentBadge.InnerTextAsync()).Trim();
+            // Wait for badges to render, then find payment status badge
+            var badges = Page.Locator("dd .badge");
+            await Expect(badges.Nth(1)).ToBeVisibleAsync();
+            var detailPaymentText = (await badges.Nth(1).InnerTextAsync()).Trim();
 
             Assert.Equal(listPaymentStatus, detailPaymentText);
         }
@@ -53,8 +57,8 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         var globalRows = Page.Locator("table tbody tr");
+        await Expect(globalRows.First).ToBeVisibleAsync();
         var globalCount = await globalRows.CountAsync();
-        Assert.True(globalCount > 0);
 
         var globalStatuses = new Dictionary<string, string>();
 
@@ -62,10 +66,12 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         {
             var row = globalRows.Nth(i);
             var viewLink = row.GetLink("View");
+            await Expect(viewLink).ToBeVisibleAsync();
             var href = await viewLink.GetAttributeAsync("href");
             Assert.NotNull(href);
 
             var paymentBadge = row.Locator("td:nth-child(8) .badge");
+            await Expect(paymentBadge).ToBeVisibleAsync();
             var paymentText = (await paymentBadge.InnerTextAsync()).Trim();
 
             globalStatuses[href] = paymentText;
@@ -74,10 +80,12 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         // Navigate to a tour details page and check its scoped bookings list
         await NavigateToAsync("/tours");
         var tourRow = Page.Locator("table tbody tr").First;
+        await Expect(tourRow).ToBeVisibleAsync();
         await tourRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         var scopedRows = Page.Locator(".table tbody tr");
+        await Expect(scopedRows.First).ToBeVisibleAsync();
         var scopedCount = await scopedRows.CountAsync();
 
         for (var i = 0; i < scopedCount; i++)
@@ -91,6 +99,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
             }
 
             var paymentBadge = row.Locator("td .badge").Last;
+            await Expect(paymentBadge).ToBeVisibleAsync();
             var scopedText = (await paymentBadge.InnerTextAsync()).Trim();
 
             Assert.Equal(expectedStatus, scopedText);
