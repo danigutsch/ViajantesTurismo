@@ -28,7 +28,7 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.Locator("#firstName")).ToHaveValueAsync("Alice");
         await Expect(Page.Locator("#lastName")).ToHaveValueAsync("Smith");
         await Expect(Page.Locator("#gender")).ToHaveValueAsync("Female");
-        await Expect(Page.Locator("#nationality")).ToHaveValueAsync("Brazilian");
+        await Expect(Page.Locator("#nationality")).ToContainTextAsync("Brazil");
         await Expect(Page.Locator("#occupation")).ToHaveValueAsync("Engineer");
 
         // === Contact Information ===
@@ -37,7 +37,7 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // === Identification ===
         await Expect(Page.Locator("#nationalId")).ToHaveValueAsync("123456789");
-        await Expect(Page.Locator("#idNationality")).ToHaveValueAsync("Brazilian");
+        await Expect(Page.Locator("#idNationality")).ToContainTextAsync("Brazil");
 
         // === Address ===
         await Expect(Page.Locator("#street")).ToHaveValueAsync("Rua A, 123");
@@ -45,7 +45,7 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.Locator("#country")).ToHaveValueAsync("Brazil");
 
         // === Companion combobox excludes the current customer ===
-        var companionSelect = Page.Locator(".form-select");
+        var companionSelect = Page.Locator("select[name=\"_model.AccommodationPreferences.CompanionId\"]");
         await Expect(companionSelect).ToBeVisibleAsync();
         // "No Companion" option should exist
         await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = "-- No Companion --" })).ToBeAttachedAsync();

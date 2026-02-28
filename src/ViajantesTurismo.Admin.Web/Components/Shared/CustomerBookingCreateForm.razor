@@ -2,6 +2,7 @@
 @using ViajantesTurismo.Admin.Web.Helpers
 <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator/>
+    <ValidationSummary class="alert alert-danger" role="alert"/>
 
     <div class="row">
         <div class="col-md-6">
@@ -240,6 +241,16 @@
 
     [Parameter]
     public bool IsSubmitting { get; set; }
+
+    public EditContext? EditContext { get; private set; }
+
+    protected override void OnParametersSet()
+    {
+        if (EditContext is null || !ReferenceEquals(EditContext.Model, Model))
+        {
+            EditContext = new EditContext(Model);
+        }
+    }
 
     private GetTourDto? SelectedTour => Model.TourId.HasValue
         ? Tours.FirstOrDefault(t => t.Id == Model.TourId.Value)

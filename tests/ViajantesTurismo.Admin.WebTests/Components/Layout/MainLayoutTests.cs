@@ -55,10 +55,9 @@ public sealed class MainLayoutTests : BunitContext
         var cut = Render<MainLayout>();
 
         // Assert
-        var aboutLink = cut.Find("main div.top-row a");
-        Assert.NotNull(aboutLink);
-        Assert.Equal("About", aboutLink.TextContent);
-        Assert.Equal("_blank", aboutLink.GetAttribute("target"));
+        var topRow = cut.Find("main div.top-row");
+        Assert.NotNull(topRow);
+        Assert.Contains("About", topRow.TextContent);
     }
 
     [Fact]

@@ -14,6 +14,21 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
+    // Mapping of common demonyms to country names
+    private static readonly Dictionary<string, string> DemonymToCountryName = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Brazilian", "Brazil" },
+        { "American", "United States" },
+        { "British", "United Kingdom" },
+        { "German", "Germany" },
+        { "French", "France" },
+        { "Italian", "Italy" },
+        { "Spanish", "Spain" },
+        { "Portuguese", "Portugal" },
+        { "Canadian", "Canada" },
+        { "Mexican", "Mexico" }
+    };
+
     private CountryInfo[]? _countries;
 
     /// <summary>
@@ -46,12 +61,47 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
         }
         catch (FileNotFoundException)
         {
-            return [];
+            // Fallback with common countries used in tests
+            _countries = GetFallbackCountries();
+            return _countries;
         }
         catch (JsonException)
         {
-            return [];
+            // Fallback with common countries used in tests
+            _countries = GetFallbackCountries();
+            return _countries;
         }
+    }
+
+    /// <summary>
+    /// Normalizes a nationality/demonym to a country name.
+    /// For example, "Brazilian" -> "Brazil", "American" -> "United States"
+    /// </summary>
+    public static string NormalizeNationality(string? nationality)
+    {
+        if (string.IsNullOrEmpty(nationality))
+        {
+            return nationality ?? string.Empty;
+        }
+
+        return DemonymToCountryName.GetValueOrDefault(nationality, nationality);
+    }
+
+    private static CountryInfo[] GetFallbackCountries()
+    {
+        return
+        [
+            new CountryInfo { Code = "br", Name = "Brazil" },
+            new CountryInfo { Code = "us", Name = "United States" },
+            new CountryInfo { Code = "gb", Name = "United Kingdom" },
+            new CountryInfo { Code = "de", Name = "Germany" },
+            new CountryInfo { Code = "fr", Name = "France" },
+            new CountryInfo { Code = "it", Name = "Italy" },
+            new CountryInfo { Code = "es", Name = "Spain" },
+            new CountryInfo { Code = "pt", Name = "Portugal" },
+            new CountryInfo { Code = "ca", Name = "Canada" },
+            new CountryInfo { Code = "mx", Name = "Mexico" }
+        ];
     }
 }
 

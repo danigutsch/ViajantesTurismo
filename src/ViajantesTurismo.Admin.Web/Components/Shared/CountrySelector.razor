@@ -68,7 +68,8 @@
     {
         if (!string.IsNullOrEmpty(Value) && Countries != null)
         {
-            _selectedCountry = Countries.FirstOrDefault(c => c.Name == Value);
+            var normalizedValue = CountryService.NormalizeNationality(Value);
+            _selectedCountry = Countries.FirstOrDefault(c => c.Name == normalizedValue);
         }
         else
         {

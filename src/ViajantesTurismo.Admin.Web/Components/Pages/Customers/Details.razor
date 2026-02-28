@@ -268,7 +268,8 @@ else if (_customer != null)
                         {
                             <div class="border rounded p-3 mb-3">
                                 <h5>Create New Booking</h5>
-                                <CustomerBookingCreateForm Model="_bookingFormModel"
+                                <CustomerBookingCreateForm @ref="_bookingCreateFormRef"
+                                                           Model="_bookingFormModel"
                                                            Tours="@_tours"
                                                            Customers="@_customers"
                                                            CurrentCustomerId="@Id"
@@ -308,6 +309,7 @@ else if (_customer != null)
     private GetCustomerDto[] _customers = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
+    private CustomerBookingCreateForm? _bookingCreateFormRef;
 
     private ToastNotification _toast = null!;
 
@@ -402,14 +404,17 @@ else if (_customer != null)
             HideBookingForm();
             _toast.ShowSuccess("Booking created successfully.");
         }
-        catch (ApiValidationException)
+        catch (ApiValidationException ex)
         {
-            _toast.ShowError("Validation failed. Please check the form for errors.");
+            if (_bookingCreateFormRef?.EditContext is not null)
+            {
+                EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, ex);
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Unexpected error while creating booking for customer {CustomerId}", Id);
-            _toast.ShowError("Failed to save booking. Please check the form and try again.");
+            _toast.ShowError("Failed to create booking. Please check the form for errors.");
         }
         finally
         {

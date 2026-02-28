@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Hosting;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
+using ViajantesTurismo.Admin.Web.Services;
 using static ViajantesTurismo.Admin.Tests.Shared.DtoBuilders;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers;
@@ -14,6 +16,9 @@ public class EditPageTests : BunitContext
     public EditPageTests()
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
+        var webHostEnvironment = new MockWebHostEnvironment();
+        Services.AddSingleton<IWebHostEnvironment>(webHostEnvironment);
+        Services.AddSingleton(new CountryService(webHostEnvironment));
     }
 
     [Fact]
@@ -94,7 +99,7 @@ public class EditPageTests : BunitContext
             Assert.NotNull(card.QuerySelector("input#lastName"));
             Assert.NotNull(card.QuerySelector("input#birthDate"));
             Assert.NotNull(card.QuerySelector("input#gender"));
-            Assert.NotNull(card.QuerySelector("input#nationality"));
+            Assert.NotNull(card.QuerySelector("#nationality"));
             Assert.NotNull(card.QuerySelector("input#occupation"));
         });
     }
@@ -143,7 +148,7 @@ public class EditPageTests : BunitContext
         {
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Identification"));
             Assert.NotNull(card.QuerySelector("input#nationalId"));
-            Assert.NotNull(card.QuerySelector("input#idNationality"));
+            Assert.NotNull(card.QuerySelector("#idNationality"));
         });
     }
 

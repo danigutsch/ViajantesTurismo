@@ -273,13 +273,11 @@ else if (_tour != null)
             {
                 EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, ex);
             }
-
-            _toast.ShowError("Validation failed. Please check the form for errors.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Unexpected error while creating booking for tour {TourId}", Id);
-            _toast.ShowError("Failed to save booking. Please check the form and try again.");
+            _toast.ShowError("Failed to create booking. Please check the form for errors.");
         }
         finally
         {
@@ -289,7 +287,6 @@ else if (_tour != null)
 
     private Task HandleInvalidBookingSubmit(EditContext _)
     {
-        _toast.ShowError("Validation failed. Please check the form for errors.");
         return Task.CompletedTask;
     }
 
