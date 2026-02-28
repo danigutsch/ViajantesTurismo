@@ -84,9 +84,31 @@ fi
 # Check Node.js and npm
 if [ "${SKIP_NPM}" = false ]; then
     printf "\n%b" "${YELLOW}📦 Checking Node.js and npm...${NC}\n"
+
+    # Read required Node.js version from .nvmrc
+    if [ -f ".nvmrc" ]; then
+        read -r REQUIRED_NODE_VERSION < .nvmrc
+    else
+        printf "%b" "   ${YELLOW}⚠️ .nvmrc file not found${NC}\n"
+        REQUIRED_NODE_VERSION=""
+    fi
+
     NODE_VERSION=$(node --version 2>&1 || echo "not found")
+
     if [ "${NODE_VERSION}" != "not found" ]; then
         printf "%b" "   ${GREEN}✅ Node.js installed: ${NODE_VERSION}${NC}\n"
+
+        # Validate version matches .nvmrc
+        if [ -n "${REQUIRED_NODE_VERSION}" ]; then
+            if echo "${NODE_VERSION}" | grep -q "v${REQUIRED_NODE_VERSION}"; then
+                printf "%b" "   ${GREEN}✅ Version matches .nvmrc (${REQUIRED_NODE_VERSION})${NC}\n"
+            else
+                printf "%b" "   ${YELLOW}⚠️ Version mismatch!${NC}\n"
+                printf "%b" "   ${YELLOW}   Required: v${REQUIRED_NODE_VERSION} (from .nvmrc)${NC}\n"
+                printf "%b" "   ${YELLOW}   Installed: ${NODE_VERSION}${NC}\n"
+                printf "%b" "   ${CYAN}💡 Switch with: nvm use${NC}\n"
+            fi
+        fi
 
         printf "\n%b" "${CYAN}Code quality linters available (optional):${NC}\n"
         printf "%b" "  • markdownlint-cli - Markdown file linting\n"
@@ -112,6 +134,9 @@ if [ "${SKIP_NPM}" = false ]; then
         fi
     else
         printf "%b" "   ${YELLOW}⚠️ Node.js not found - code quality linters will not be available${NC}\n"
+        if [ -n "${REQUIRED_NODE_VERSION}" ]; then
+            printf "%b" "   ${CYAN}💡 Expected version: v${REQUIRED_NODE_VERSION} (from .nvmrc)${NC}\n"
+        fi
         printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
     fi
 fi

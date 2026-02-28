@@ -67,9 +67,30 @@ if ($psaInstalled) {
 # Check Node.js and npm
 if (-not $SkipNpm) {
     Write-Host "`n📦 Checking Node.js and npm..." -ForegroundColor Yellow
+    
+    # Read required Node.js version from .nvmrc
+    $requiredNodeVersion = ""
+    if (Test-Path ".nvmrc") {
+        $requiredNodeVersion = (Get-Content ".nvmrc" -Raw).Trim()
+    } else {
+        Write-Host "   ⚠️ .nvmrc file not found" -ForegroundColor Yellow
+    }
+    
     $nodeVersion = node --version 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "   ✅ Node.js installed: $nodeVersion" -ForegroundColor Green
+        
+        # Validate version matches .nvmrc
+        if ($requiredNodeVersion) {
+            if ($nodeVersion -like "v$requiredNodeVersion*") {
+                Write-Host "   ✅ Version matches .nvmrc ($requiredNodeVersion)" -ForegroundColor Green
+            } else {
+                Write-Host "   ⚠️ Version mismatch!" -ForegroundColor Yellow
+                Write-Host "      Required: v$requiredNodeVersion (from .nvmrc)" -ForegroundColor Yellow
+                Write-Host "      Installed: $nodeVersion" -ForegroundColor Yellow
+                Write-Host "   💡 Switch with: nvm use" -ForegroundColor Cyan
+            }
+        }
 
         Write-Host ""
         Write-Host "Code quality linters available (optional):" -ForegroundColor Cyan
@@ -96,6 +117,9 @@ if (-not $SkipNpm) {
         }
     } else {
         Write-Host "   ⚠️ Node.js not found - code quality linters will not be available" -ForegroundColor Yellow
+        if ($requiredNodeVersion) {
+            Write-Host "      Expected version: v$requiredNodeVersion (from .nvmrc)" -ForegroundColor Cyan
+        }
         Write-Host "   💡 Download from: https://nodejs.org/" -ForegroundColor Cyan
     }
 }
