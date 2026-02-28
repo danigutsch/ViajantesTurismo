@@ -30,6 +30,8 @@ Decisions about code quality standards and testing practices.
 
 - **[ADR-005](adr/20251108-no-comments-domain-code.md)** — No Comments in Domain Code
 - **[ADR-006](adr/20251108-type-safety-test-step-definitions.md)** — Type Safety in Test Step Definitions
+- **[ADR-018](adr/20260228-test-parallelization-with-assembly-fixtures.md)** — Test Parallelization with xUnit v3
+Assembly Fixtures
 
 ### Architecture & Layers
 

@@ -30,7 +30,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*T
 dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-class "ViajantesTurismo.Admin.IntegrationTests.Bookings.BookingApiTests"
 
 # Run multiple test classes at once
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class "ViajantesTurismo.Admin.E2ETests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.E2ETests.Tests.BookingDeleteAndDialogTests"
+dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class
+"ViajantesTurismo.Admin.E2ETests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.E2ETests.Tests.BookingDeleteAndDialogTests"
 ```
 
 > **MTP note:** All test projects use xUnit v3 on Microsoft Testing Platform. The legacy VSTest
@@ -52,6 +53,60 @@ Invoke-Item TestResults\CoverageReport\index.html
 ```
 
 > `dotnet reportgenerator` is in the local tool manifest — run `dotnet tool restore` if missing.
+
+## Test Parallelization (E2E & Integration)
+
+E2E and integration tests use **xUnit v3 Assembly Fixtures** to run tests in parallel while sharing a single Aspire app
+instance. This approach reduces total test time by ~30%.
+
+### Pattern
+
+1. **Assembly Fixture** — Shared infrastructure (PostgreSQL, Redis) initialized once per assembly:
+
+   ```csharp
+   [assembly: AssemblyFixture(typeof(E2EFixture))]
+   ```
+
+2. **Hybrid Strategy**:
+   - **Parallel Tests** (default) — Run concurrently; safe to read/write unique data; use API or UI to create their own
+     records
+   - **Serial Tests** — Opt-in via `[Collection("Domain.Serial", DisableParallelization = true)]`; can assert exact
+     counts and perform destructive operations
+
+3. **Principles**:
+   - Tests that mutate seeded data must create their own via API
+   - Read-only tests can share seeded data
+   - Serial tests are for edge cases (DB state verification, exact counts)
+
+### Applying to New Domains
+
+When adding a new domain's E2E or integration tests:
+
+1. Create a **base fixture class** (e.g., `E2EFixture` for E2E, `ApiFixture` for integration):
+   - Initialize Aspire, wait for readiness
+   - Seed once with idempotent guard check
+   - Expose `HttpClient` for API helpers
+   - Seed/Clear only relevant to serial tests
+
+2. Create **base test classes**:
+   - `DomainE2ETestBase` — inherits fixture via constructor, no per-test seed/clear
+   - `DomainE2ESerialTestBase` — includes `[Collection("Domain.Serial")]`, seeds before & clears after each test
+
+3. Add assembly fixture attribute:
+
+   ```csharp
+   [assembly: AssemblyFixture(typeof(E2EFixture))]
+   ```
+
+4. Create **API helpers** to enable data independence (e.g., `CreateTourAsync`, `CreateBookingAsync`)
+
+5. **Categorize tests**:
+   - Read-only → parallel base class
+   - Data creators → parallel base class (create unique data)
+   - Data mutators / edge cases → serial base class
+
+See [ADR-018](../docs/adr/20260228-test-parallelization-with-assembly-fixtures.md) and
+[E2E Parallelization Plan](../docs/E2E_PARALLEL_PLAN.md) for implementation details.
 
 ## Conventions
 
