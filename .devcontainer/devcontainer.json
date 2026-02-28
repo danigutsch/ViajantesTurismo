@@ -23,11 +23,7 @@
         "ms-dotnettools.csharp",
         "ms-dotnettools.dotnet-aspire",
         "ms-azuretools.vscode-docker",
-        "editorconfig.editorconfig",
-        "timonwong.shellcheck",
-        "ms-vscode.powershell",
-			  "alexkrechik.cucumberautocomplete",
-        "davidanson.vscode-markdownlint"
+        "editorconfig.editorconfig"
       ],
       "settings": {
         "dotnet.defaultSolution": "ViajantesTurismo.slnx",
