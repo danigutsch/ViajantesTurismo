@@ -7,35 +7,40 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Tour_Capacity_Badges_Show_Correct_State_On_List_And_Details()
     {
-        // === Step 1: Navigate to tours list and verify capacity badges exist ===
+        // === Setup: Create own tour with 3 confirmed bookings ===
+        var api = Fixture.ApiClient;
+        var tour = await ApiTestHelper.CreateTourAsync(api, minCustomers: 1, maxCustomers: 10);
+        var tourName = tour.Name;
+
+        // Create 3 customers and 3 confirmed bookings → CurrentCustomerCount = 3
+        for (var i = 0; i < 3; i++)
+        {
+            var customer = await ApiTestHelper.CreateCustomerAsync(api);
+            var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);
+            await ApiTestHelper.ConfirmBookingAsync(api, booking.Id);
+        }
+
+        const int currentCount = 3;
+
+        // === Step 1: Navigate to tours list and verify capacity badge ===
         await NavigateToAsync("/tours");
         await Expect(Page.GetHeading("Tours")).ToBeVisibleAsync();
 
-        // Every tour should have exactly one capacity badge (warning, danger, or success)
         var tourRows = Page.Locator("table tbody tr");
-        var rowCount = await tourRows.CountAsync();
-        Assert.True(rowCount >= 5, "Expected at least 5 tours");
-
-        // City Highlights should have a capacity badge
-        var cityRow = tourRows.Filter(new LocatorFilterOptions { HasText = "City Highlights" });
-        var capacityText = await cityRow.Locator("span.text-nowrap").TextContentAsync();
+        var tourRow = tourRows.Filter(new LocatorFilterOptions { HasText = tourName });
+        var capacityText = await tourRow.Locator("span.text-nowrap").TextContentAsync();
         Assert.NotNull(capacityText);
         Assert.Matches(@"\d+ / \d+", capacityText);
 
-        // Read the current count from the list to use in subsequent steps
-        var parts = capacityText.Split(" / ");
-        var currentCount = int.Parse(parts[0]);
-        var maxCustomers = int.Parse(parts[1]);
-
         // === Step 2: Navigate to details and verify badge consistency ===
-        await cityRow.GetLink("View").ClickAsync();
-        await Expect(Page.GetHeading("City Highlights")).ToBeVisibleAsync();
+        await tourRow.GetLink("View").ClickAsync();
+        await Expect(Page.GetHeading(tourName)).ToBeVisibleAsync();
 
         var capacitySection = Page.Locator("h5:has-text('Capacity') + dl");
-        await Expect(capacitySection.GetByText($"{currentCount} / {maxCustomers} customers")).ToBeVisibleAsync();
+        await Expect(capacitySection.GetByText($"{currentCount} / 10 customers")).ToBeVisibleAsync();
 
         // === Step 3: Edit tour to create "Full" state ===
-        // Set MaxCustomers = CurrentCount to make it fully booked
+        // Set MaxCustomers = 3 (= currentCount) to make it fully booked
         await Page.GetLink("Edit Tour").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
@@ -48,13 +53,13 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync("/tours");
 
         var cityRowFull = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "City Highlights" });
+            .Filter(new LocatorFilterOptions { HasText = tourName });
         await Expect(cityRowFull.Locator("span.badge.bg-danger")).ToContainTextAsync("Full");
         await Expect(cityRowFull.Locator("span.text-nowrap")).ToHaveTextAsync($"{currentCount} / {currentCount}");
 
         // Verify details page shows "Fully Booked"
         await cityRowFull.GetLink("View").ClickAsync();
-        await Expect(Page.GetHeading("City Highlights")).ToBeVisibleAsync();
+        await Expect(Page.GetHeading(tourName)).ToBeVisibleAsync();
         var capacityFull = Page.Locator("h5:has-text('Capacity') + dl");
         await Expect(capacityFull.Locator("span.badge.bg-danger")).ToContainTextAsync("Fully Booked");
 
@@ -71,14 +76,14 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetButton("Cancel").ClickAsync();
         await NavigateToAsync("/tours");
 
-        // City Highlights should now show green badge with "3 spots"
+        // Tour should now show green badge with "3 spots"
         var cityRowGreen = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "City Highlights" });
+            .Filter(new LocatorFilterOptions { HasText = tourName });
         await Expect(cityRowGreen.Locator("span.badge.bg-success")).ToContainTextAsync("3 spots");
 
         // Verify details page shows "3 spots available"
         await cityRowGreen.GetLink("View").ClickAsync();
-        await Expect(Page.GetHeading("City Highlights")).ToBeVisibleAsync();
+        await Expect(Page.GetHeading(tourName)).ToBeVisibleAsync();
         var capacityGreen = Page.Locator("h5:has-text('Capacity') + dl");
         await Expect(capacityGreen.Locator("span.badge.bg-success")).ToContainTextAsync("3 spots available");
 
@@ -94,14 +99,14 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetButton("Cancel").ClickAsync();
         await NavigateToAsync("/tours");
 
-        // City Highlights should now show yellow "Below Min" badge
+        // Tour should now show yellow "Below Min" badge
         var cityRowYellow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "City Highlights" });
+            .Filter(new LocatorFilterOptions { HasText = tourName });
         await Expect(cityRowYellow.Locator("span.badge.bg-warning")).ToContainTextAsync("Below Min");
 
         // Verify details page shows "Below Minimum"
         await cityRowYellow.GetLink("View").ClickAsync();
-        await Expect(Page.GetHeading("City Highlights")).ToBeVisibleAsync();
+        await Expect(Page.GetHeading(tourName)).ToBeVisibleAsync();
         var capacityYellow = Page.Locator("h5:has-text('Capacity') + dl");
         await Expect(capacityYellow.Locator("span.badge.bg-warning")).ToContainTextAsync("Below Minimum");
     }
