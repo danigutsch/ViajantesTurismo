@@ -262,6 +262,11 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
     {
         await dbContext.Database.MigrateAsync(ct);
 
+        if (await dbContext.Tours.AnyAsync(ct))
+        {
+            return;
+        }
+
         var toursToAdd = Tours.Select(t => Tour.Create(
             t.Identifier,
             t.Name,
