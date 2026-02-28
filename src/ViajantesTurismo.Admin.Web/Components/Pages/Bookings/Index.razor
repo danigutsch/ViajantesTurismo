@@ -26,7 +26,9 @@
                     <div class="col-md-6 text-end">
                         <span class="badge bg-secondary me-2">Total: @_bookings?.Length</span>
                         <span class="badge bg-warning text-dark me-2">Pending: @_bookings?.Count(b => b.Status == BookingStatusDto.Pending)</span>
-                        <span class="badge bg-success">Confirmed: @_bookings?.Count(b => b.Status == BookingStatusDto.Confirmed)</span>
+                        <span class="badge bg-success me-2">Confirmed: @_bookings?.Count(b => b.Status == BookingStatusDto.Confirmed)</span>
+                        <span class="badge bg-info me-2">Completed: @_bookings?.Count(b => b.Status == BookingStatusDto.Completed)</span>
+                        <span class="badge bg-danger">Cancelled: @_bookings?.Count(b => b.Status == BookingStatusDto.Cancelled)</span>
                     </div>
                 </div>
             </div>
