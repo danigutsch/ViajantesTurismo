@@ -1,9 +1,8 @@
 using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+
+[assembly: AssemblyFixture(typeof(ApiFixture))]
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-[Collection("Admin API")]
 public abstract class AdminApiIntegrationTestBase(ApiFixture fixture) : IntegrationTestBase<ApiMarker>(fixture);
-
-[CollectionDefinition("Admin API")]
-public sealed class AdminApiTests : ICollectionFixture<ApiFixture>;

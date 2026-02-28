@@ -4,28 +4,9 @@ using ViajantesTurismo.Admin.Application;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEntryPoint> fixture)
-    : IAsyncLifetime where TEntryPoint : class
+public abstract class IntegrationTestBase<TEntryPoint>(WebApplicationFactory<TEntryPoint> fixture) where TEntryPoint : class
 {
     protected HttpClient Client { get; } = fixture.CreateClient();
-
-    public async ValueTask InitializeAsync()
-    {
-        using var scope = fixture.Services.CreateScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await seeder.Seed(cts.Token);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        GC.SuppressFinalize(this);
-
-        using var scope = fixture.Services.CreateScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await seeder.ClearDatabase(cts.Token);
-    }
 
     /// <summary>
     /// Clears the database by deleting and recreating it.
