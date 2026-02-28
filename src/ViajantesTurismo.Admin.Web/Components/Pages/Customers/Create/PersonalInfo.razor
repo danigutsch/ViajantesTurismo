@@ -105,7 +105,7 @@
 
         State.NavigateToStep(1);
 
-        _countries = await CountryService.GetCountries();
+        _countries = await CountryService.GetCountries(CancellationToken.None);
     }
 
     private void HandleValidSubmit()

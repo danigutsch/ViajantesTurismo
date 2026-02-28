@@ -1,8 +1,10 @@
 @page "/customers/{id:guid}/edit"
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Models
+@using ViajantesTurismo.Admin.Web.Services
 @inject ICustomersApiClient CustomersApi
 @inject NavigationManager Navigation
+@inject CountryService CountryService
 @rendermode InteractiveServer
 
 <PageTitle>Edit Customer</PageTitle>
@@ -67,8 +69,18 @@ else
 
                         <div class="mb-3">
                             <label for="nationality" class="form-label">Nationality</label>
-                            <InputText id="nationality" class="form-control"
-                                       @bind-Value="_model.PersonalInfo.Nationality"/>
+                            @if (_countries == null)
+                            {
+                                <div class="form-control">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Loading countries...
+                                </div>
+                            }
+                            else
+                            {
+                                <CountrySelector id="nationality" @bind-Value="_model.PersonalInfo.Nationality"
+                                                 Countries="_countries"/>
+                            }
                         </div>
 
                         <div class="mb-3">
@@ -127,8 +139,19 @@ else
 
                         <div class="mb-3">
                             <label for="idNationality" class="form-label">ID Nationality</label>
-                            <InputText id="idNationality" class="form-control"
-                                       @bind-Value="_model.IdentificationInfo.IdNationality"/>
+                            @if (_countries == null)
+                            {
+                                <div class="form-control">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Loading countries...
+                                </div>
+                            }
+                            else
+                            {
+                                <CountrySelector id="idNationality"
+                                                 @bind-Value="_model.IdentificationInfo.IdNationality"
+                                                 Countries="_countries"/>
+                            }
                         </div>
                     </div>
                 </div>
@@ -362,6 +385,7 @@ else
     private CancellationTokenSource? _redirectCts;
     private string? _errorMessage;
     private IReadOnlyList<GetCustomerDto>? _customers;
+    private IReadOnlyList<CountryInfo>? _countries;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -389,6 +413,7 @@ else
             };
 
             _customers = await CustomersApi.GetCustomers(CancellationToken.None);
+            _countries = await CountryService.GetCountries(CancellationToken.None);
         }
         catch (Exception ex)
         {

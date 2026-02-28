@@ -20,7 +20,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
     /// Gets the list of countries asynchronously.
     /// </summary>
     /// <returns>A list of country information.</returns>
-    public async Task<CountryInfo[]> GetCountries()
+    public async Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
         if (_countries is not null)
         {
@@ -30,7 +30,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
         try
         {
             var filePath = Path.Combine(hostEnvironment.WebRootPath, "data", "countries.json");
-            var json = await File.ReadAllTextAsync(filePath);
+            var json = await File.ReadAllTextAsync(filePath, ct);
             var countriesDictionary = JsonSerializer.Deserialize<Dictionary<string, CountryData>>(json, JsonSerializerOptions);
 
             _countries = countriesDictionary?
