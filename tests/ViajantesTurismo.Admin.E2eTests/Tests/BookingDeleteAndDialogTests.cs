@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
@@ -8,18 +7,22 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
     [Fact]
     public async Task Can_Cancel_Booking_Via_Confirm_Dialog()
     {
-        // Find a Confirmed booking and navigate to its edit page
-        await NavigateToAsync("/bookings");
-        var confirmedRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-success") }).First;
-        await confirmedRow.GetLink("Edit").ClickAsync();
+        // Create own tour, customer, and confirmed booking via API
+        var api = Fixture.ApiClient;
+        var tour = await ApiTestHelper.CreateTourAsync(api);
+        var customer = await ApiTestHelper.CreateCustomerAsync(api);
+        var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);
+        await ApiTestHelper.ConfirmBookingAsync(api, booking.Id);
+
+        // Navigate directly to the created booking's edit page
+        await NavigateToAsync($"/bookings/{booking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Cancel Booking button should be visible for confirmed bookings
         var cancelButton = Page.GetButton("Cancel Booking");
         await Expect(cancelButton).ToBeVisibleAsync();
 
-        // Click Cancel Booking — confirm dialog appears
+        // Click Cancel Booking — confirm dialogue appears
         await cancelButton.ClickAsync();
 
         // Verify dialog content
@@ -61,24 +64,21 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
     [Fact]
     public async Task Can_Delete_Booking_Via_Confirm_Dialog()
     {
-        // Find a Pending booking to delete (least impact on other tests)
-        await NavigateToAsync("/bookings");
-        var pendingRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-warning") }).First;
+        // Create own tour, customer, and pending booking via API
+        var api = Fixture.ApiClient;
+        var tour = await ApiTestHelper.CreateTourAsync(api);
+        var customer = await ApiTestHelper.CreateCustomerAsync(api);
+        var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);
 
-        // Get the booking view link for later verification
-        var viewLink = pendingRow.GetLink("View");
-        var bookingHref = await viewLink.GetAttributeAsync("href");
-        Assert.NotNull(bookingHref);
-
-        await pendingRow.GetLink("Edit").ClickAsync();
+        // Navigate directly to the created booking's edit page
+        await NavigateToAsync($"/bookings/{booking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Delete button should be visible
         var deleteButton = Page.GetButton("Delete Booking");
         await Expect(deleteButton).ToBeVisibleAsync();
 
-        // Click Delete — confirm dialog appears
+        // Click Delete — confirm dialogue appears
         await deleteButton.ClickAsync();
         var dialog = Page.Locator(".modal.show");
         await Expect(dialog).ToBeVisibleAsync();
@@ -101,7 +101,7 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Deleted booking should not appear in the list
-        var deletedLink = Page.Locator($"a[href='{bookingHref}']");
+        var deletedLink = Page.Locator($"a[href='/bookings/{booking.Id}']");
         await Expect(deletedLink).ToHaveCountAsync(0);
     }
 }
