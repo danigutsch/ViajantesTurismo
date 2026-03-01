@@ -1,0 +1,40 @@
+using ViajantesTurismo.Common.BuildingBlocks;
+
+namespace ViajantesTurismo.Admin.Application.Customers.Import;
+
+/// <summary>
+/// Represents a single row parsed from a CSV file.
+/// </summary>
+public class CsvRow : ValueObject
+{
+    private CsvRow(IReadOnlyList<string> values)
+    {
+        Values = values;
+    }
+
+    /// <summary>
+    /// The values in the row.
+    /// </summary>
+    public IReadOnlyList<string> Values { get; }
+
+    /// <summary>
+    /// Parses a CSV line into a CsvRow.
+    /// </summary>
+    /// <param name="csvLine">The CSV line to parse.</param>
+    /// <returns>A CsvRow with parsed values.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when csvLine is null.</exception>
+    public static CsvRow Parse(string csvLine)
+    {
+        ArgumentNullException.ThrowIfNull(csvLine);
+
+        var values = csvLine.Split(',');
+
+        return new CsvRow([.. values]);
+    }
+
+    /// <inheritdoc />
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Values;
+    }
+}
