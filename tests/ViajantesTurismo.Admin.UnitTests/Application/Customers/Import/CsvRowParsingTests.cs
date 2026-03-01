@@ -19,4 +19,19 @@ public class CsvRowParsingTests
         Assert.Equal("Doe", result.Values[1]);
         Assert.Equal("john.doe@example.com", result.Values[2]);
     }
+
+    [Fact]
+    public void Parse_With_Whitespace_Trims_Values()
+    {
+        // Arrange
+        const string csvLine = " John , Doe , john.doe@example.com ";
+
+        // Act
+        var result = CsvRow.Parse(csvLine);
+
+        // Assert
+        Assert.Equal("John", result.Values[0]);
+        Assert.Equal("Doe", result.Values[1]);
+        Assert.Equal("john.doe@example.com", result.Values[2]);
+    }
 }

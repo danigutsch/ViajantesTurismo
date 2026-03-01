@@ -27,7 +27,7 @@ public class CsvRow : ValueObject
     {
         ArgumentNullException.ThrowIfNull(csvLine);
 
-        var values = csvLine.Split(',');
+        var values = csvLine.Split(',').Select(v => v.Trim()).ToList();
 
         return new CsvRow([.. values]);
     }
