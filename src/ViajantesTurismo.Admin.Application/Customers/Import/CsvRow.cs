@@ -7,15 +7,20 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// </summary>
 public class CsvRow : ValueObject
 {
+    private readonly IReadOnlyList<string> _values;
+
     private CsvRow(IReadOnlyList<string> values)
     {
-        Values = values;
+        _values = values;
     }
 
     /// <summary>
-    /// The values in the row.
+    /// Gets the value at the specified column index.
     /// </summary>
-    public IReadOnlyList<string> Values { get; }
+    /// <param name="index">The zero-based column index.</param>
+    /// <returns>The value at the index.</returns>
+    /// <exception cref="IndexOutOfRangeException">Thrown when index is out of range.</exception>
+    public string this[int index] => _values[index];
 
     /// <summary>
     /// Parses a CSV line into a CsvRow.
@@ -35,6 +40,6 @@ public class CsvRow : ValueObject
     /// <inheritdoc />
     protected override IEnumerable<object?> GetEqualityComponents()
     {
-        yield return Values;
+        yield return _values;
     }
 }

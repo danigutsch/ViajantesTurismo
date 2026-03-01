@@ -15,9 +15,9 @@ public class CsvRowParsingTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("John", result.Values[0]);
-        Assert.Equal("Doe", result.Values[1]);
-        Assert.Equal("john.doe@example.com", result.Values[2]);
+        Assert.Equal("John", result[0]);
+        Assert.Equal("Doe", result[1]);
+        Assert.Equal("john.doe@example.com", result[2]);
     }
 
     [Fact]
@@ -30,8 +30,31 @@ public class CsvRowParsingTests
         var result = CsvRow.Parse(csvLine);
 
         // Assert
-        Assert.Equal("John", result.Values[0]);
-        Assert.Equal("Doe", result.Values[1]);
-        Assert.Equal("john.doe@example.com", result.Values[2]);
+        Assert.Equal("John", result[0]);
+        Assert.Equal("Doe", result[1]);
+        Assert.Equal("john.doe@example.com", result[2]);
+    }
+
+    [Fact]
+    public void Parse_With_Valid_Index_Returns_Value()
+    {
+        // Arrange
+        var row = CsvRow.Parse("John,Doe,john.doe@example.com");
+
+        // Act
+        var firstValue = row[0];
+
+        // Assert
+        Assert.Equal("John", firstValue);
+    }
+
+    [Fact]
+    public void Index_OutOfRange_ThrowsException()
+    {
+        // Arrange
+        var row = CsvRow.Parse("John,Doe,john.doe@example.com");
+
+        // Act & Assert
+        Assert.Throws<IndexOutOfRangeException>(() => row[99]);
     }
 }
