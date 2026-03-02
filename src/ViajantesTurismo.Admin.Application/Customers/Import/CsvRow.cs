@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// <summary>
 /// Represents a single row parsed from a CSV file.
 /// </summary>
-public class CsvRow : ValueObject
+public sealed class CsvRow : ValueObject
 {
     private readonly IReadOnlyList<string> _values;
 
@@ -19,7 +19,7 @@ public class CsvRow : ValueObject
     /// </summary>
     /// <param name="index">The zero-based column index.</param>
     /// <returns>The value at the index.</returns>
-    /// <exception cref="IndexOutOfRangeException">Thrown when index is out of range.</exception>
+    /// <exception cref="IndexOutOfRangeException">Thrown when the index is out of range.</exception>
     public string this[int index] => _values[index];
 
     /// <summary>
