@@ -3,7 +3,7 @@ using ViajantesTurismo.Common.Results;
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
 /// <summary>
-/// Represents a parsed CSV document with headers and rows.
+/// Represents a parsed CSV document with required headers and data rows.
 /// </summary>
 public sealed class CsvDocument
 {
@@ -19,66 +19,70 @@ public sealed class CsvDocument
     public IReadOnlyList<string> Headers { get; }
 
     /// <summary>
-    /// CSV data rows.
+    /// CSV data rows (excluding the header row).
     /// </summary>
     public IReadOnlyList<CsvRow> Rows { get; }
 
     /// <summary>
-    /// Parses rows into a CsvDocument without headers.
+    /// Parses CSV content into a document with headers and rows.
     /// </summary>
-    /// <param name="rows">The collection of CsvRow objects to include in the document.</param>
-    /// <returns>A new instance of CsvDocument containing the provided rows.</returns>
-    public static Result<CsvDocument> Parse(IReadOnlyList<CsvRow> rows)
+    /// <param name="csvContent">Full CSV content, where the first line is the header row.</param>
+    /// <returns>A parsed CSV document.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="csvContent"/> is null.</exception>
+    public static Result<CsvDocument> Parse(string csvContent)
     {
-        var allRowsHaveSameLength = rows.Select(row => row.Count).Distinct().Count() == 1;
-        if (!allRowsHaveSameLength)
+        ArgumentNullException.ThrowIfNull(csvContent);
+
+        var lines = csvContent
+            .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (lines.Length == 0)
         {
-            return CsvErrors.RowsHaveInconsistentColumnCounts();
+            return CsvErrors.HeadersMustContainAtLeastOneColumn();
         }
 
-        return new CsvDocument([], rows);
+        var headerRow = CsvRow.Parse(lines[0]);
+        var headers = Enumerable.Range(0, headerRow.Count).Select(i => headerRow[i]).ToArray();
+
+        var rows = lines
+            .Skip(1)
+            .Select(CsvRow.Parse)
+            .ToArray();
+
+        return Create(headers, rows);
     }
 
     /// <summary>
-    /// Parses headers and rows into a CsvDocument.
+    /// Creates a <see cref="CsvDocument"/> from explicit headers and data rows.
     /// </summary>
     /// <param name="headers">The CSV header columns.</param>
-    /// <param name="rows">The collection of CsvRow objects to include in the document.</param>
+    /// <param name="rows">The CSV data rows (excluding headers).</param>
     /// <returns>A new instance of CsvDocument containing headers and rows.</returns>
-    public static Result<CsvDocument> Parse(IReadOnlyList<string> headers, IReadOnlyList<CsvRow> rows)
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="headers"/> or <paramref name="rows"/> is null.
+    /// </exception>
+    public static Result<CsvDocument> Create(IReadOnlyList<string> headers, IReadOnlyList<CsvRow> rows)
     {
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(rows);
+
         if (headers.Count == 0)
         {
             return CsvErrors.HeadersMustContainAtLeastOneColumn();
         }
 
-        var allRowsHaveSameLength = rows.Select(row => row.Count).Distinct().Count() == 1;
-        if (!allRowsHaveSameLength)
+        var rowsHaveInconsistentColumnCounts = rows.Select(row => row.Count).Distinct().Count() > 1;
+        if (rowsHaveInconsistentColumnCounts)
         {
             return CsvErrors.RowsHaveInconsistentColumnCounts();
         }
 
-        var allRowsMatchHeaderCount = rows.All(row => row.Count == headers.Count);
-        if (!allRowsMatchHeaderCount)
+        var headerCountDiffersFromRows = rows.Any(row => row.Count != headers.Count);
+        if (headerCountDiffersFromRows)
         {
             return CsvErrors.HeaderCountMustMatchRowColumnCount();
         }
 
         return new CsvDocument(headers, rows);
     }
-
-    /// <summary>
-    /// Factory method to create a CsvDocument from a collection of CsvRow objects.
-    /// </summary>
-    /// <param name="rows">The collection of CsvRow objects to include in the document.</param>
-    /// <returns>A new instance of CsvDocument containing the provided rows.</returns>
-    public static Result<CsvDocument> Create(IReadOnlyList<CsvRow> rows) => Parse(rows);
-
-    /// <summary>
-    /// Factory method to create a CsvDocument from headers and rows.
-    /// </summary>
-    /// <param name="headers">The CSV header columns.</param>
-    /// <param name="rows">The collection of CsvRow objects to include in the document.</param>
-    /// <returns>A new instance of CsvDocument containing headers and rows.</returns>
-    public static Result<CsvDocument> Create(IReadOnlyList<string> headers, IReadOnlyList<CsvRow> rows) => Parse(headers, rows);
 }

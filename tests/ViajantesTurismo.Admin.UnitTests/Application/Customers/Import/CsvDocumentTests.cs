@@ -5,14 +5,14 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public class CsvDocumentTests
 {
     [Fact]
-    public void Parse_With_Headers_And_Row_Exposes_Both_Collections()
+    public void Create_With_Headers_And_Row_Exposes_Both_Collections()
     {
         // Arrange
         string[] headers = ["FirstName", "LastName", "Email"];
         CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
 
         // Act
-        var documentResult = CsvDocument.Parse(headers, rows);
+        var documentResult = CsvDocument.Create(headers, rows);
 
         // Assert
         Assert.True(documentResult.IsSuccess);
@@ -30,35 +30,37 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Row_Exposes_Row_In_Collection()
+    public void Parse_With_Header_And_Row_Parses_Document()
     {
         // Arrange
-        CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
+        const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
 
         // Act
-        var documentResult = CsvDocument.Parse(rows);
+        var documentResult = CsvDocument.Parse(csvContent);
 
         // Assert
         Assert.True(documentResult.IsSuccess);
 
-        var row = Assert.Single(documentResult.Value.Rows);
+        var document = documentResult.Value;
+        Assert.Equal(3, document.Headers.Count);
+        Assert.Equal("FirstName", document.Headers[0]);
+        Assert.Equal("LastName", document.Headers[1]);
+        Assert.Equal("Email", document.Headers[2]);
+
+        var row = Assert.Single(document.Rows);
         Assert.Equal("John", row[0]);
         Assert.Equal("Doe", row[1]);
         Assert.Equal("john.doe@example.com", row[2]);
     }
 
     [Fact]
-    public void Parse_With_Multiple_Row_Exposes_Rows_In_Collection()
+    public void Parse_With_Multiple_Rows_Parses_Document()
     {
         // Arrange
-        CsvRow[] rows = [
-            CsvRow.Parse("John,Doe,john.doe@example.com"),
-            CsvRow.Parse("Jane,Smith,jane.smith@example.com"),
-            CsvRow.Parse("Alice,Johnson,alice.johnson@example.com")
-        ];
+        const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com\nJane,Smith,jane.smith@example.com\nAlice,Johnson,alice.johnson@example.com";
 
         // Act
-        var documentResult = CsvDocument.Parse(rows);
+        var documentResult = CsvDocument.Parse(csvContent);
 
         // Assert
         Assert.True(documentResult.IsSuccess);
@@ -83,7 +85,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Rows_Of_Different_Lengths_Fails()
+    public void Create_With_Rows_Of_Different_Lengths_Fails()
     {
         // Arrange
         var differentLengthRow = CsvRow.Parse("Alice,alice.johnson@example.com");
@@ -95,7 +97,7 @@ public class CsvDocumentTests
         ];
 
         // Act
-        var documentResult = CsvDocument.Parse(rows);
+        var documentResult = CsvDocument.Create(["FirstName", "LastName", "Email"], rows);
 
         // Assert
         Assert.False(documentResult.IsSuccess);
@@ -104,14 +106,14 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Empty_Headers_Fails()
+    public void Create_With_Empty_Headers_Fails()
     {
         // Arrange
         string[] headers = [];
         CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
 
         // Act
-        var documentResult = CsvDocument.Parse(headers, rows);
+        var documentResult = CsvDocument.Create(headers, rows);
 
         // Assert
         Assert.False(documentResult.IsSuccess);
@@ -120,14 +122,14 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Header_Count_Different_From_Row_Count_Fails()
+    public void Create_With_Header_Count_Different_From_Row_Count_Fails()
     {
         // Arrange
         string[] headers = ["FirstName", "LastName"];
         CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
 
         // Act
-        var documentResult = CsvDocument.Parse(headers, rows);
+        var documentResult = CsvDocument.Create(headers, rows);
 
         // Assert
         Assert.False(documentResult.IsSuccess);
