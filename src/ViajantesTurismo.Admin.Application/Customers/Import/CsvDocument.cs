@@ -27,14 +27,15 @@ public sealed class CsvDocument
     /// Parses CSV content into a document with headers and rows.
     /// </summary>
     /// <param name="csvContent">Full CSV content, where the first line is the header row.</param>
+    /// <param name="requiredHeaderNames">Optional list of required headers that must exist in the CSV header row.</param>
     /// <returns>A parsed CSV document.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="csvContent"/> is null.</exception>
-    public static Result<CsvDocument> Parse(string csvContent)
+    public static Result<CsvDocument> Parse(string csvContent, IReadOnlyList<string>? requiredHeaderNames = null)
     {
         ArgumentNullException.ThrowIfNull(csvContent);
 
         var lines = csvContent
-            .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            .Split(["\r\n", "\n"], StringSplitOptions.TrimEntries);
 
         if (lines.Length == 0)
         {
@@ -44,12 +45,23 @@ public sealed class CsvDocument
         var headerRow = CsvRow.Parse(lines[0]);
         var headers = Enumerable.Range(0, headerRow.Count).Select(i => headerRow[i]).ToArray();
 
+        var missingRequiredHeader = requiredHeaderNames?
+            .FirstOrDefault(requiredHeader =>
+                !headers.Any(header =>
+                    string.Equals(header, requiredHeader, StringComparison.OrdinalIgnoreCase)
+                )
+            );
+
+        if (missingRequiredHeader is not null)
+        {
+            return CsvErrors.RequiredHeaderMissing(missingRequiredHeader);
+        }
+
         var rows = lines
             .Skip(1)
-            .Select(CsvRow.Parse)
-            .ToArray();
+            .Select(CsvRow.Parse);
 
-        return Create(headers, rows);
+        return Create(headers, [.. rows]);
     }
 
     /// <summary>

@@ -8,6 +8,16 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 public static class CsvErrors
 {
     /// <summary>
+    /// Result indicating that a required header is missing.
+    /// </summary>
+    public static Result<CsvDocument> RequiredHeaderMissing(string headerName) =>
+        Result<CsvDocument>.Invalid(
+            detail: $"Required header '{headerName}' is missing.",
+            field: "headers",
+            message: "Required header missing."
+        );
+
+    /// <summary>
     /// Result indicating that all rows must have the same number of columns as there are headers.
     /// </summary>
     public static Result<CsvDocument> RowsHaveInconsistentColumnCounts() =>

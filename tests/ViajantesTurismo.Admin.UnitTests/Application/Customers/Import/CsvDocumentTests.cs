@@ -125,7 +125,7 @@ public class CsvDocumentTests
     public void Create_With_Header_Count_Different_From_Row_Count_Fails()
     {
         // Arrange
-        string[] headers = ["FirstName", "LastName"];
+        string[] headers = ["FirstName", "LastName", "Email", "Phone"];
         CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
 
         // Act
@@ -135,5 +135,21 @@ public class CsvDocumentTests
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
         Assert.Contains("Header count must match row column count", documentResult.ErrorDetails.Detail);
+    }
+
+    [Fact]
+    public void Parse_With_Missing_Required_Header_Fails()
+    {
+        // Arrange
+        const string csvContent = "FirstName,LastName\nJohn,Doe";
+        string[] requiredHeaders = ["CustomerCode"];
+
+        // Act
+        var documentResult = CsvDocument.Parse(csvContent, requiredHeaders);
+
+        // Assert
+        Assert.False(documentResult.IsSuccess);
+        Assert.NotNull(documentResult.ErrorDetails);
+        Assert.Contains("Required header 'CustomerCode' is missing", documentResult.ErrorDetails.Detail);
     }
 }
