@@ -1,3 +1,5 @@
+using ViajantesTurismo.Common.Results;
+
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
 /// <summary>
@@ -20,8 +22,14 @@ public sealed class CsvDocument
     /// </summary>
     /// <param name="rows">The collection of CsvRow objects to include in the document.</param>
     /// <returns>A new instance of CsvDocument containing the provided rows.</returns>
-    public static CsvDocument Create(IEnumerable<CsvRow> rows)
+    public static Result<CsvDocument> Create(IReadOnlyList<CsvRow> rows)
     {
+        var allRowsHaveSameLength = rows.Select(row => row.Count).Distinct().Count() == 1;
+        if (!allRowsHaveSameLength)
+        {
+            return CsvErrors.RowsHaveInconsistentColumnCounts();
+        }
+
         return new CsvDocument(rows);
     }
 }

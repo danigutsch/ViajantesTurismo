@@ -9,6 +9,11 @@ public sealed class CsvRow : ValueObject
 {
     private readonly IReadOnlyList<string> _values;
 
+    /// <summary>
+    /// Gets the number of columns in the row.
+    /// </summary>
+    public int Count => _values.Count;
+
     private CsvRow(IReadOnlyList<string> values)
     {
         _values = values;

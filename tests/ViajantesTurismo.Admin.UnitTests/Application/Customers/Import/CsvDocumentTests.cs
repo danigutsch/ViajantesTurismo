@@ -11,10 +11,12 @@ public class CsvDocumentTests
         CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
 
         // Act
-        var document = CsvDocument.Create(rows);
+        var documentResult = CsvDocument.Create(rows);
 
         // Assert
-        var row = Assert.Single(document.Rows);
+        Assert.True(documentResult.IsSuccess);
+
+        var row = Assert.Single(documentResult.Value.Rows);
         Assert.Equal("John", row[0]);
         Assert.Equal("Doe", row[1]);
         Assert.Equal("john.doe@example.com", row[2]);
@@ -31,9 +33,12 @@ public class CsvDocumentTests
         ];
 
         // Act
-        var document = CsvDocument.Create(rows);
+        var documentResult = CsvDocument.Create(rows);
 
         // Assert
+        Assert.True(documentResult.IsSuccess);
+
+        var document = documentResult.Value;
         Assert.Equal(3, document.Rows.Count);
 
         var row1 = document.Rows[0];
@@ -50,5 +55,26 @@ public class CsvDocumentTests
         Assert.Equal("Alice", row3[0]);
         Assert.Equal("Johnson", row3[1]);
         Assert.Equal("alice.johnson@example.com", row3[2]);
+    }
+
+    [Fact]
+    public void Create_With_Rows_Of_Different_Lengths_Fails()
+    {
+        // Arrange
+        var differentLengthRow = CsvRow.Parse("Alice,alice.johnson@example.com");
+        CsvRow[] rows =
+        [
+            CsvRow.Parse("John,Doe,john.doe@example.com"),
+            CsvRow.Parse("Jane,Smith,jane.smith@example.com"),
+            differentLengthRow
+        ];
+
+        // Act
+        var documentResult = CsvDocument.Create(rows);
+
+        // Assert
+        Assert.False(documentResult.IsSuccess);
+        Assert.NotNull(documentResult.ErrorDetails);
+        Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail);
     }
 }

@@ -41,7 +41,7 @@ public static class TourErrors
     public static Result<Tour> IdentifierTooLong(int maxLength, int actualLength) => Result<Tour>.Invalid(
         detail: $"Tour identifier cannot exceed {maxLength} characters. Received: {actualLength} characters.",
         field: "identifier",
-        message: $"Cannot exceed {maxLength} characters.");
+        message: $"Identifier cannot exceed {maxLength} characters.");
 
     /// <summary>
     /// Indicates that the tour name is empty or whitespace.
@@ -61,7 +61,7 @@ public static class TourErrors
     public static Result<Tour> NameTooLong(int maxLength, int actualLength) => Result<Tour>.Invalid(
         detail: $"Tour name cannot exceed {maxLength} characters. Received: {actualLength} characters.",
         field: "name",
-        message: $"Cannot exceed {maxLength} characters.");
+        message: $"Name cannot exceed {maxLength} characters.");
 
     /// <summary>
     /// Indicates that the tour duration is too short.
