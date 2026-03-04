@@ -48,16 +48,6 @@ public static class CsvErrors
         );
 
     /// <summary>
-    /// Result indicating that header count must match row column count.
-    /// </summary>
-    public static Result<CsvDocument> HeaderCountMustMatchRowColumnCount() =>
-        Result<CsvDocument>.Invalid(
-            detail: "Header count must match row column count.",
-            field: "headers",
-            message: "Header and row column counts do not match."
-        );
-
-    /// <summary>
     /// Result indicating that header count must match row column count and includes CSV line metadata.
     /// </summary>
     public static Result<CsvDocument> HeaderCountMustMatchRowColumnCount(int csvLineNumber) =>
