@@ -34,7 +34,7 @@ public sealed class IdentificationInfo
     /// <param name="nationalId">The national ID.</param>
     /// <param name="idNationality">The nationality that issued the ID.</param>
     /// <returns>A <see cref="Result{IdentificationInfo}"/> containing the identification info or validation errors.</returns>
-    public static Result<IdentificationInfo> Create(string? nationalId, string? idNationality)
+    public static Result<IdentificationInfo> Create(string nationalId, string idNationality)
     {
         var sanitizedNationalId = StringSanitizer.Sanitize(nationalId);
         var sanitizedIdNationality = StringSanitizer.Sanitize(idNationality);
@@ -64,7 +64,7 @@ public sealed class IdentificationInfo
             return errors.ToResult<IdentificationInfo>();
         }
 
-        return new IdentificationInfo(sanitizedNationalId!, sanitizedIdNationality!);
+        return new IdentificationInfo(sanitizedNationalId, sanitizedIdNationality);
     }
 
     /// <summary>
