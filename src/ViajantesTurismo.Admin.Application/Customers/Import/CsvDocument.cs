@@ -35,7 +35,9 @@ public sealed class CsvDocument
         ArgumentNullException.ThrowIfNull(csvContent);
 
         var lines = csvContent
-            .Split(["\r\n", "\n"], StringSplitOptions.TrimEntries);
+            .Split(["\r\n", "\n"], StringSplitOptions.TrimEntries)
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .ToArray();
 
         if (lines.Length == 0)
         {

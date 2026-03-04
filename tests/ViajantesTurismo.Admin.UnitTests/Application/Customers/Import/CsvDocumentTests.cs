@@ -152,4 +152,19 @@ public class CsvDocumentTests
         Assert.NotNull(documentResult.ErrorDetails);
         Assert.Contains("Required header 'CustomerCode' is missing", documentResult.ErrorDetails.Detail);
     }
+
+    [Fact]
+    public void Parse_With_Empty_CsvContent_Fails()
+    {
+        // Arrange
+        const string csvContent = "";
+
+        // Act
+        var documentResult = CsvDocument.Parse(csvContent);
+
+        // Assert
+        Assert.False(documentResult.IsSuccess);
+        Assert.NotNull(documentResult.ErrorDetails);
+        Assert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail);
+    }
 }
