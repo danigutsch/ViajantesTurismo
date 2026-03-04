@@ -181,4 +181,19 @@ public class CsvDocumentTests
         // Assert
         Assert.True(documentResult.IsSuccess);
     }
+
+    [Fact]
+    public void Parse_With_Empty_Data_Row_Does_Not_Ignore_It_And_Fails_Validation()
+    {
+        // Arrange
+        const string csvContent = "FirstName,LastName,Email\n\nJohn,Doe,john.doe@example.com";
+
+        // Act
+        var documentResult = CsvDocument.Parse(csvContent);
+
+        // Assert
+        Assert.False(documentResult.IsSuccess);
+        Assert.NotNull(documentResult.ErrorDetails);
+        Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail);
+    }
 }

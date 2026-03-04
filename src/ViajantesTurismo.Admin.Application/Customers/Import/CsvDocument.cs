@@ -35,11 +35,9 @@ public sealed class CsvDocument
         ArgumentNullException.ThrowIfNull(csvContent);
 
         var lines = csvContent
-            .Split(["\r\n", "\n"], StringSplitOptions.TrimEntries)
-            .Where(line => !string.IsNullOrWhiteSpace(line))
-            .ToArray();
+            .Split(["\r\n", "\n"], StringSplitOptions.TrimEntries);
 
-        if (lines.Length == 0)
+        if (lines.Length == 0 || string.IsNullOrWhiteSpace(lines[0]))
         {
             return CsvErrors.HeadersMustContainAtLeastOneColumn();
         }
