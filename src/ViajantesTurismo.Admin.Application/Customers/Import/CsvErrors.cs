@@ -28,6 +28,16 @@ public static class CsvErrors
         );
 
     /// <summary>
+    /// Result indicating that rows have inconsistent column counts and includes CSV line metadata.
+    /// </summary>
+    public static Result<CsvDocument> RowsHaveInconsistentColumnCounts(int csvLineNumber) =>
+        Result<CsvDocument>.Invalid(
+            detail: $"All rows must have the same number of columns as there are headers (line {csvLineNumber}).",
+            field: "rows",
+            message: "Inconsistent column counts detected."
+        );
+
+    /// <summary>
     /// Result indicating that CSV headers must contain at least one column.
     /// </summary>
     public static Result<CsvDocument> HeadersMustContainAtLeastOneColumn() =>
@@ -43,6 +53,16 @@ public static class CsvErrors
     public static Result<CsvDocument> HeaderCountMustMatchRowColumnCount() =>
         Result<CsvDocument>.Invalid(
             detail: "Header count must match row column count.",
+            field: "headers",
+            message: "Header and row column counts do not match."
+        );
+
+    /// <summary>
+    /// Result indicating that header count must match row column count and includes CSV line metadata.
+    /// </summary>
+    public static Result<CsvDocument> HeaderCountMustMatchRowColumnCount(int csvLineNumber) =>
+        Result<CsvDocument>.Invalid(
+            detail: $"Header count must match row column count (line {csvLineNumber}).",
             field: "headers",
             message: "Header and row column counts do not match."
         );

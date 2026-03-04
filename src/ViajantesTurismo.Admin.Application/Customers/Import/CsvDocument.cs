@@ -47,6 +47,7 @@ public sealed class CsvDocument
 
         var missingRequiredHeader = requiredHeaderNames?
             .Select(requiredHeader => requiredHeader.Trim())
+            .Where(requiredHeader => !string.IsNullOrWhiteSpace(requiredHeader))
             .FirstOrDefault(requiredHeader =>
                 !headers.Any(header =>
                     string.Equals(header, requiredHeader, StringComparison.OrdinalIgnoreCase)
@@ -84,16 +85,27 @@ public sealed class CsvDocument
             return CsvErrors.HeadersMustContainAtLeastOneColumn();
         }
 
+        var firstRowWithInvalidColumnCount = rows
+            .Select((row, index) => new { row, index })
+            .FirstOrDefault(item => item.row.Count != headers.Count);
+
         var rowsHaveInconsistentColumnCounts = rows.Select(row => row.Count).Distinct().Count() > 1;
         if (rowsHaveInconsistentColumnCounts)
         {
+            if (firstRowWithInvalidColumnCount is not null)
+            {
+                var csvLineNumber = firstRowWithInvalidColumnCount.index + 2;
+                return CsvErrors.RowsHaveInconsistentColumnCounts(csvLineNumber);
+            }
+
             return CsvErrors.RowsHaveInconsistentColumnCounts();
         }
 
-        var headerCountDiffersFromRows = rows.Any(row => row.Count != headers.Count);
+        var headerCountDiffersFromRows = firstRowWithInvalidColumnCount is not null;
         if (headerCountDiffersFromRows)
         {
-            return CsvErrors.HeaderCountMustMatchRowColumnCount();
+            var csvLineNumber = firstRowWithInvalidColumnCount!.index + 2;
+            return CsvErrors.HeaderCountMustMatchRowColumnCount(csvLineNumber);
         }
 
         return new CsvDocument(headers, rows);

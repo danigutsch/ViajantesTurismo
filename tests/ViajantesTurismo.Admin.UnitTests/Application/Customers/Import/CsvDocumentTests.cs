@@ -196,4 +196,37 @@ public class CsvDocumentTests
         Assert.NotNull(documentResult.ErrorDetails);
         Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail);
     }
+
+    [Fact]
+    public void Parse_With_Blank_RequiredHeaderNames_Ignores_Them()
+    {
+        // Arrange
+        const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
+        string[] requiredHeaders = ["   ", "Email"];
+
+        // Act
+        var documentResult = CsvDocument.Parse(csvContent, requiredHeaders);
+
+        // Assert
+        Assert.True(documentResult.IsSuccess);
+    }
+
+    [Fact]
+    public void Create_With_Rows_Of_Different_Lengths_Includes_Csv_Line_Number_In_Error_Detail()
+    {
+        // Arrange
+        CsvRow[] rows =
+        [
+            CsvRow.Parse("John,Doe,john.doe@example.com"),
+            CsvRow.Parse("Jane,jane.smith@example.com")
+        ];
+
+        // Act
+        var documentResult = CsvDocument.Create(["FirstName", "LastName", "Email"], rows);
+
+        // Assert
+        Assert.False(documentResult.IsSuccess);
+        Assert.NotNull(documentResult.ErrorDetails);
+        Assert.Contains("line 3", documentResult.ErrorDetails.Detail);
+    }
 }
