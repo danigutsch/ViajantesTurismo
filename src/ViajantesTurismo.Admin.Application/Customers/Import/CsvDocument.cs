@@ -48,6 +48,7 @@ public sealed class CsvDocument
         var headers = Enumerable.Range(0, headerRow.Count).Select(i => headerRow[i]).ToArray();
 
         var missingRequiredHeader = requiredHeaderNames?
+            .Select(requiredHeader => requiredHeader.Trim())
             .FirstOrDefault(requiredHeader =>
                 !headers.Any(header =>
                     string.Equals(header, requiredHeader, StringComparison.OrdinalIgnoreCase)

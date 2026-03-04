@@ -167,4 +167,18 @@ public class CsvDocumentTests
         Assert.NotNull(documentResult.ErrorDetails);
         Assert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail);
     }
+
+    [Fact]
+    public void Parse_With_RequiredHeader_Different_Casing_And_Whitespace_Succeeds()
+    {
+        // Arrange
+        const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
+        string[] requiredHeaders = ["  email  "];
+
+        // Act
+        var documentResult = CsvDocument.Parse(csvContent, requiredHeaders);
+
+        // Assert
+        Assert.True(documentResult.IsSuccess);
+    }
 }
