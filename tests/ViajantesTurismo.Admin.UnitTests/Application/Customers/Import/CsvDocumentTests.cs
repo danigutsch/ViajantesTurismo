@@ -229,4 +229,43 @@ public class CsvDocumentTests
         Assert.NotNull(documentResult.ErrorDetails);
         Assert.Contains("line 3", documentResult.ErrorDetails.Detail);
     }
+
+    [Fact]
+    public void String_Indexer_With_Existing_Header_Returns_Row_Value()
+    {
+        // Arrange
+        var documentResult = CsvDocument.Create(
+            headers: ["FirstName", "LastName", "Email"],
+            rows: [CsvRow.Parse("John,Doe,john.doe@example.com")]
+        );
+
+        var document = documentResult.Value;
+        var row = document.Rows[0];
+
+        // Act
+        var email = row[document.Headers, "Email"];
+
+        // Assert
+        Assert.Equal("john.doe@example.com", email);
+    }
+
+    [Fact]
+    public void TryGetByHeader_With_Missing_Header_Returns_False()
+    {
+        // Arrange
+        var documentResult = CsvDocument.Create(
+            headers: ["FirstName", "LastName", "Email"],
+            rows: [CsvRow.Parse("John,Doe,john.doe@example.com")]
+        );
+
+        var document = documentResult.Value;
+        var row = document.Rows[0];
+
+        // Act
+        var success = row.TryGetByHeader(document.Headers, "CustomerCode", out var value);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(value);
+    }
 }

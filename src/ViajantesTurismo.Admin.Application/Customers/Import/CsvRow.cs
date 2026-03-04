@@ -28,6 +28,57 @@ public sealed class CsvRow : ValueObject
     public string this[int index] => _values[index];
 
     /// <summary>
+    /// Gets a row value by header name using the provided headers.
+    /// </summary>
+    /// <param name="headers">The header columns aligned with this row.</param>
+    /// <param name="headerName">The header name to resolve.</param>
+    /// <returns>The row value under the given header.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="headers"/> or <paramref name="headerName"/> is null.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when the specified header does not exist.</exception>
+    public string this[IReadOnlyList<string> headers, string headerName]
+    {
+        get
+        {
+            if (!TryGetByHeader(headers, headerName, out var value))
+            {
+                throw new KeyNotFoundException($"Header '{headerName}' was not found.");
+            }
+
+            return value!;
+        }
+    }
+
+    /// <summary>
+    /// Tries to get a row value by header name.
+    /// </summary>
+    /// <param name="headers">The header columns aligned with this row.</param>
+    /// <param name="headerName">The header name to resolve.</param>
+    /// <param name="value">The resolved value when found; otherwise null.</param>
+    /// <returns>True when the header exists; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="headers"/> or <paramref name="headerName"/> is null.</exception>
+    public bool TryGetByHeader(IReadOnlyList<string> headers, string headerName, out string? value)
+    {
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(headerName);
+
+        var normalizedHeaderName = headerName.Trim();
+
+        var headerIndex = headers
+            .Select((header, index) => new { header, index })
+            .FirstOrDefault(item => string.Equals(item.header, normalizedHeaderName, StringComparison.OrdinalIgnoreCase))
+            ?.index ?? -1;
+
+        if (headerIndex < 0)
+        {
+            value = null;
+            return false;
+        }
+
+        value = this[headerIndex];
+        return true;
+    }
+
+    /// <summary>
     /// Parses a CSV line into a CsvRow.
     /// </summary>
     /// <param name="csvLine">The CSV line to parse.</param>
