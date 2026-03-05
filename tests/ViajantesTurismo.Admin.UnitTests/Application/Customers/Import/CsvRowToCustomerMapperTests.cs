@@ -51,4 +51,42 @@ public class CsvRowToCustomerMapperTests
         Assert.Equal("Jane Doe", customer.EmergencyContact.Name);
         Assert.Equal("Peanuts", customer.MedicalInfo.Allergies);
     }
+
+    [Fact]
+    public void MapCustomer_With_Invalid_Email_Returns_Domain_Validation_Failure()
+    {
+        // Arrange
+        string[] headers =
+        [
+            "FirstName", "LastName", "Gender", "BirthDate", "Nationality", "Occupation",
+            "NationalId", "IdNationality",
+            "Email", "Mobile", "Instagram", "Facebook",
+            "Street", "Complement", "Neighborhood", "PostalCode", "City", "State", "Country",
+            "WeightKg", "HeightCentimeters", "BikeType",
+            "RoomType", "BedType", "CompanionId",
+            "EmergencyContactName", "EmergencyContactMobile",
+            "Allergies", "AdditionalInfo"
+        ];
+
+        var row = CsvRow.Parse(
+            "John,Doe,Male,1990-01-02,Brazilian,Engineer,123456789,BR,invalid-email,+55 11 99999-9999,johndoe,john.doe,Main St 123,Apartment 1,Centro,12345-678,Sao Paulo,SP,Brazil,75.5,180,Regular,SingleOccupancy,DoubleBed,,Jane Doe,+55 11 98888-8888,Peanuts,None"
+        );
+
+        var documentResult = CsvDocument.Create(
+            headers: headers,
+            rows: [row]
+        );
+
+        var document = documentResult.Value;
+
+        // Act
+        var customerResult = CsvRowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+
+        // Assert
+        Assert.True(customerResult.IsFailure);
+        Assert.NotNull(customerResult.ErrorDetails);
+        Assert.Contains("Email", customerResult.ErrorDetails.Detail);
+        Assert.NotNull(customerResult.ErrorDetails.ValidationErrors);
+        Assert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("Email"));
+    }
 }
