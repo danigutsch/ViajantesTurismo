@@ -19,14 +19,16 @@ public sealed class Customer : Entity<Guid>
     /// <param name="accommodationPreferences">The accommodation preferences.</param>
     /// <param name="emergencyContact">The emergency contact information.</param>
     /// <param name="medicalInfo">The medical information and allergies.</param>
-    public Customer(PersonalInfo personalInfo,
+    public Customer(
+        PersonalInfo personalInfo,
         IdentificationInfo identificationInfo,
         ContactInfo contactInfo,
         Address address,
         PhysicalInfo physicalInfo,
         AccommodationPreferences accommodationPreferences,
         EmergencyContact emergencyContact,
-        MedicalInfo medicalInfo)
+        MedicalInfo medicalInfo
+    )
         : base(Guid.CreateVersion7())
     {
         PersonalInfo = personalInfo;
