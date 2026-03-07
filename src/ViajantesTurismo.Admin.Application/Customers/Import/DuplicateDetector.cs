@@ -38,4 +38,39 @@ public static class DuplicateDetector
 
         return duplicateLineNumbers;
     }
+
+    /// <summary>
+    /// Returns CSV line numbers for rows that duplicate a previously seen name.
+    /// </summary>
+    /// <param name="document">CSV document containing headers and rows.</param>
+    /// <returns>Line numbers (1-based CSV lines) for duplicate name rows.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="document"/> is null.</exception>
+    public static IReadOnlyList<int> FindDuplicateNameLineNumbers(CsvDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        var seenNames = new HashSet<string>(StringComparer.Ordinal);
+        var duplicateLineNumbers = new List<int>();
+
+        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
+        {
+            var row = document.Rows[rowIndex];
+
+            if (!row.TryGetByHeader(document.Headers, "FirstName", out var firstName)
+                || !row.TryGetByHeader(document.Headers, "LastName", out var lastName)
+                || string.IsNullOrWhiteSpace(firstName)
+                || string.IsNullOrWhiteSpace(lastName))
+            {
+                continue;
+            }
+
+            var normalizedName = StringSanitizer.NormalizeKeyRemovingDiacritics($"{firstName} {lastName}");
+            if (!seenNames.Add(normalizedName))
+            {
+                duplicateLineNumbers.Add(rowIndex + 2);
+            }
+        }
+
+        return duplicateLineNumbers;
+    }
 }

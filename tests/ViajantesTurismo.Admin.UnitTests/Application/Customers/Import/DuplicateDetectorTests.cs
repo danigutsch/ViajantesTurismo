@@ -25,4 +25,26 @@ public class DuplicateDetectorTests
         var duplicateLineNumber = Assert.Single(duplicateLineNumbers);
         Assert.Equal(3, duplicateLineNumber);
     }
+
+    [Fact]
+    public void FindDuplicateNameLineNumbers_With_Diacritics_Variation_Flags_Second_Row()
+    {
+        // Arrange
+        var headers = new[] { "FirstName", "LastName", "Email" };
+        var rows = new[]
+        {
+            CsvRow.Parse("José,Silva,jose.silva@example.com"),
+            CsvRow.Parse("Jose,Silva,jose2.silva@example.com")
+        };
+
+        var documentResult = CsvDocument.Create(headers, rows);
+        var document = documentResult.Value;
+
+        // Act
+        var duplicateLineNumbers = DuplicateDetector.FindDuplicateNameLineNumbers(document);
+
+        // Assert
+        var duplicateLineNumber = Assert.Single(duplicateLineNumbers);
+        Assert.Equal(3, duplicateLineNumber);
+    }
 }
