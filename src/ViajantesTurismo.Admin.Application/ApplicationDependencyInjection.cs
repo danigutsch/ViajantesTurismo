@@ -10,6 +10,7 @@ using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
+using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
@@ -43,6 +44,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<UpdateBookingDiscountCommandHandler>();
         builder.Services.AddScoped<UpdateBookingNotesCommandHandler>();
         builder.Services.AddScoped<CreateCustomerCommandHandler>();
+        builder.Services.AddScoped<CustomerImportCommandHandler>();
         builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();

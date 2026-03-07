@@ -5,7 +5,9 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// <summary>
 /// Handles customer import execution and persistence behavior.
 /// </summary>
-public sealed class CustomerImportCommandHandler(ICustomerStore customerStore, IUnitOfWork unitOfWork)
+public sealed class CustomerImportCommandHandler(
+    ICustomerStore customerStore,
+    IUnitOfWork unitOfWork)
 {
     /// <summary>
     /// Handles customer import execution.
