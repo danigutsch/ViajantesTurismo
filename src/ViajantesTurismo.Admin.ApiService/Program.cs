@@ -31,7 +31,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapToursEndpoints();
-app.MapCustomerEndpoints();
+app.MapCustomerEndpoints()
+    .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
 
 app.MapDefaultEndpoints();

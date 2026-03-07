@@ -8,16 +8,21 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers;
 
 public sealed class UpdateCustomerCommandHandlerTests
 {
+    private readonly FakeCustomerStore _store;
+    private readonly UpdateCustomerCommandHandler _sut;
+
+    public UpdateCustomerCommandHandlerTests()
+    {
+        _store = new FakeCustomerStore();
+        _sut = new UpdateCustomerCommandHandler(_store, new FakeUnitOfWork(), TimeProvider.System);
+    }
+
     [Fact]
     public async Task Handle_Succeeds_For_Valid_Update()
     {
         // Arrange
-        var timeProvider = TimeProvider.System;
-        var store = new FakeCustomerStore();
         var existing = EntityBuilders.BuildCustomer(email: "original@example.com");
-        store.Seed(existing);
-        var uow = new FakeUnitOfWork();
-        var handler = new UpdateCustomerCommandHandler(store, uow, timeProvider);
+        _store.Seed(existing);
 
         var command = new UpdateCustomerCommand(
             existing.Id,
@@ -51,11 +56,11 @@ public sealed class UpdateCustomerCommandHandlerTests
         );
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess, "Expected successful update.");
-        var updated = await store.GetById(existing.Id, CancellationToken.None);
+        var updated = await _store.GetById(existing.Id, CancellationToken.None);
         Assert.NotNull(updated);
         Assert.Equal("Smith", updated.PersonalInfo.LastName);
         Assert.Equal("updated@example.com", updated.ContactInfo.Email);
@@ -65,11 +70,6 @@ public sealed class UpdateCustomerCommandHandlerTests
     public async Task Handle_Returns_NotFound_For_Missing_Customer()
     {
         // Arrange
-        var timeProvider = TimeProvider.System;
-        var store = new FakeCustomerStore();
-        var uow = new FakeUnitOfWork();
-        var handler = new UpdateCustomerCommandHandler(store, uow, timeProvider);
-
         var command = new UpdateCustomerCommand(
             Guid.NewGuid(),
             new PersonalInfoDto
@@ -102,7 +102,7 @@ public sealed class UpdateCustomerCommandHandlerTests
         );
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -113,14 +113,10 @@ public sealed class UpdateCustomerCommandHandlerTests
     public async Task Handle_Returns_Invalid_For_Duplicate_Email()
     {
         // Arrange
-        var timeProvider = TimeProvider.System;
-        var store = new FakeCustomerStore();
         var existing1 = EntityBuilders.BuildCustomer(email: "a@example.com");
         var existing2 = EntityBuilders.BuildCustomer(email: "dup@example.com");
-        store.Seed(existing1);
-        store.Seed(existing2);
-        var uow = new FakeUnitOfWork();
-        var handler = new UpdateCustomerCommandHandler(store, uow, timeProvider);
+        _store.Seed(existing1);
+        _store.Seed(existing2);
 
         var command = new UpdateCustomerCommand(
             existing1.Id,
@@ -165,11 +161,10 @@ public sealed class UpdateCustomerCommandHandlerTests
         );
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(ResultStatus.Conflict, result.Status);
     }
-
 }

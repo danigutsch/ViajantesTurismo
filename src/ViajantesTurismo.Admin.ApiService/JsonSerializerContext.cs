@@ -28,4 +28,6 @@ namespace ViajantesTurismo.Admin.ApiService;
 // Payment endpoints
 [JsonSerializable(typeof(CreatePaymentDto))]
 [JsonSerializable(typeof(GetPaymentDto))]
+// Import endpoints
+[JsonSerializable(typeof(ImportResultDto))]
 internal sealed partial class AppJsonSerializerContext : JsonSerializerContext;
