@@ -185,7 +185,7 @@ public static class CsvRowToCustomerMapper
         var heightCentimetersText = GetRequired(document, row, "HeightCentimeters", errors);
         var bikeTypeText = GetRequired(document, row, "BikeType", errors);
 
-        decimal weightKg = default;
+        decimal weightKg = 0;
         if (!string.IsNullOrWhiteSpace(weightKgText)
             && !decimal.TryParse(weightKgText, out weightKg))
         {
@@ -195,7 +195,7 @@ public static class CsvRowToCustomerMapper
                 message: "WeightKg has invalid format."));
         }
 
-        var heightCentimeters = default(int);
+        var heightCentimeters = 0;
         if (!string.IsNullOrWhiteSpace(heightCentimetersText)
             && !int.TryParse(heightCentimetersText, out heightCentimeters))
         {
