@@ -1,9 +1,11 @@
+using ViajantesTurismo.Admin.Domain.Customers;
+
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
 /// <summary>
 /// Handles customer import execution and persistence behavior.
 /// </summary>
-public sealed class CustomerImportCommandHandler(IUnitOfWork unitOfWork)
+public sealed class CustomerImportCommandHandler(ICustomerStore customerStore, IUnitOfWork unitOfWork)
 {
     /// <summary>
     /// Handles customer import execution.
@@ -18,6 +20,11 @@ public sealed class CustomerImportCommandHandler(IUnitOfWork unitOfWork)
 
         if (!command.DryRun)
         {
+            foreach (var customer in command.CustomersToCreate)
+            {
+                customerStore.Add(customer);
+            }
+
             await unitOfWork.SaveEntities(ct);
         }
 
