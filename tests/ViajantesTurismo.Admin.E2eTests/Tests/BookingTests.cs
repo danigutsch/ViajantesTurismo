@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
@@ -127,7 +128,7 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(paymentCard).ToBeVisibleAsync();
 
         await paymentCard.Locator("#amount").FillAsync("1000");
-        await paymentCard.Locator("#paymentDate").FillAsync(DateTime.UtcNow.ToString("yyyy-MM-dd"));
+        await paymentCard.Locator("#paymentDate").FillAsync(DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         await paymentCard.Locator("#method").SelectOptionAsync("Cash");
 
         await paymentCard.GetButton("Record Payment").ClickAsync();

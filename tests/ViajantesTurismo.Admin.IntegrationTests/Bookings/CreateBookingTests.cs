@@ -61,7 +61,7 @@ public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegration
         var booking = await response.Content.ReadFromJsonAsync<GetBookingDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(booking);
         Assert.Equal(companionDto.Id, booking.CompanionId);
-        Assert.Contains("Bob Smith", booking.CompanionName);
+        Assert.Contains("Bob Smith", booking.CompanionName, StringComparison.Ordinal);
     }
 
     [Fact]

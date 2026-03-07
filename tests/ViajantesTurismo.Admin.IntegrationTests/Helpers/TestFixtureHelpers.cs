@@ -62,7 +62,7 @@ internal static class TestFixtureHelpers
         var customerRequest = DtoBuilders.BuildCreateCustomerDto(
             firstName: firstName,
             lastName: lastName,
-            email: TestDataGenerator.UniqueEmail($"{firstName}.{lastName}".ToLower()),
+            email: TestDataGenerator.UniqueEmail($"{firstName}.{lastName}".ToUpperInvariant()),
             nationalId: TestDataGenerator.UniqueNationalId($"{firstName}{lastName}"));
 
         var response = await client.CreateCustomerAsync(customerRequest, cancellationToken);

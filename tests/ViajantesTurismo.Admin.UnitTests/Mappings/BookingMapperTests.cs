@@ -227,7 +227,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBikeType(invalidValue));
-        Assert.Contains("Invalid bike type value", exception.Message);
+        Assert.Contains("Invalid bike type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBikeTypeDto(invalidValue));
-        Assert.Contains("Invalid bike type value", exception.Message);
+        Assert.Contains("Invalid bike type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -251,7 +251,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToRoomType(invalidValue));
-        Assert.Contains("Invalid room type value", exception.Message);
+        Assert.Contains("Invalid room type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBookingStatus(invalidValue));
-        Assert.Contains("Invalid booking status value", exception.Message);
+        Assert.Contains("Invalid booking status value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentStatus(invalidValue));
-        Assert.Contains("Invalid payment status value", exception.Message);
+        Assert.Contains("Invalid payment status value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToDiscountType(invalidValue));
-        Assert.Contains("Invalid discount type value", exception.Message);
+        Assert.Contains("Invalid discount type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -299,7 +299,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToDiscountTypeDto(invalidValue));
-        Assert.Contains("Invalid discount type value", exception.Message);
+        Assert.Contains("Invalid discount type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -344,7 +344,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentMethod(invalidValue));
-        Assert.Contains("Invalid payment method value", exception.Message);
+        Assert.Contains("Invalid payment method value", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -389,7 +389,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentMethodDto(invalidValue));
-        Assert.Contains("Invalid payment method value", exception.Message);
+        Assert.Contains("Invalid payment method value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -546,7 +546,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBookingStatusDto(invalidValue));
-        Assert.Contains("Invalid booking status value", exception.Message);
+        Assert.Contains("Invalid booking status value", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -589,7 +589,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentStatusDto(invalidValue));
-        Assert.Contains("Invalid payment status value", exception.Message);
+        Assert.Contains("Invalid payment status value", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -630,7 +630,7 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToRoomTypeDto(invalidValue));
-        Assert.Contains("Invalid room type value", exception.Message);
+        Assert.Contains("Invalid room type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -671,6 +671,6 @@ public class BookingMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToBedTypeDto(invalidValue));
-        Assert.Contains("Invalid bed type value", exception.Message);
+        Assert.Contains("Invalid bed type value", exception.Message, StringComparison.Ordinal);
     }
 }

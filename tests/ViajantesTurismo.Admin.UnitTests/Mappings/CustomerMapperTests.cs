@@ -74,7 +74,7 @@ public class CustomerMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => CustomerMapper.MapToBikeTypeDto(invalidValue));
-        Assert.Contains("Invalid bike type value", exception.Message);
+        Assert.Contains("Invalid bike type value", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -86,6 +86,6 @@ public class CustomerMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => CustomerMapper.MapToBedType(invalidValue));
-        Assert.Contains("Invalid bed type value", exception.Message);
+        Assert.Contains("Invalid bed type value", exception.Message, StringComparison.Ordinal);
     }
 }

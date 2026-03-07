@@ -61,9 +61,9 @@ public class AddPageTests : BunitContext
         var options = currencySelect.QuerySelectorAll("option");
 
         Assert.Equal(3, options.Length);
-        Assert.Contains(options, o => o.TextContent.Contains("Brazilian Real"));
-        Assert.Contains(options, o => o.TextContent.Contains("Euro"));
-        Assert.Contains(options, o => o.TextContent.Contains("US Dollar"));
+        Assert.Contains(options, o => o.TextContent.Contains("Brazilian Real", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Euro", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("US Dollar", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class AddPageTests : BunitContext
 
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Create Tour", submitButton.TextContent);
+        Assert.Contains("Create Tour", submitButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class AddPageTests : BunitContext
         var cut = Render<Add>();
 
         // Assert
-        var helpText = cut.FindAll(".form-text").First(e => e.TextContent.Contains("one service per line"));
+        var helpText = cut.FindAll(".form-text").First(e => e.TextContent.Contains("one service per line", StringComparison.Ordinal));
         Assert.NotNull(helpText);
     }
 
@@ -140,7 +140,7 @@ public class AddPageTests : BunitContext
 
         // Assert
         var helpTexts = cut.FindAll(".form-text");
-        Assert.Contains(helpTexts, t => t.TextContent.Contains("Minimum number of customers required"));
+        Assert.Contains(helpTexts, t => t.TextContent.Contains("Minimum number of customers required", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class AddPageTests : BunitContext
 
         // Assert
         var helpTexts = cut.FindAll(".form-text");
-        Assert.Contains(helpTexts, t => t.TextContent.Contains("Maximum number of customers allowed"));
+        Assert.Contains(helpTexts, t => t.TextContent.Contains("Maximum number of customers allowed", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class AddPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
         var successAlert = cut.Find(".alert-success");
-        Assert.Contains("Tour created successfully!", successAlert.TextContent);
+        Assert.Contains("Tour created successfully!", successAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -208,9 +208,9 @@ public class AddPageTests : BunitContext
         var buttons = successAlert.QuerySelectorAll("button, a.btn");
 
         Assert.True(buttons.Length >= 3);
-        Assert.Contains(buttons, b => b.TextContent.Contains("View Tour Details"));
-        Assert.Contains(buttons, b => b.TextContent.Contains("Create Another Tour"));
-        Assert.Contains(buttons, b => b.TextContent.Contains("View All Tours"));
+        Assert.Contains(buttons, b => b.TextContent.Contains("View Tour Details", StringComparison.Ordinal));
+        Assert.Contains(buttons, b => b.TextContent.Contains("Create Another Tour", StringComparison.Ordinal));
+        Assert.Contains(buttons, b => b.TextContent.Contains("View All Tours", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public class AddPageTests : BunitContext
         await cut.InvokeAsync(() => cut.Find("form").Submit());
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var createAnotherButton = cut.FindAll("button").First(b => b.TextContent.Contains("Create Another Tour"));
+        var createAnotherButton = cut.FindAll("button").First(b => b.TextContent.Contains("Create Another Tour", StringComparison.Ordinal));
         await cut.InvokeAsync(() => createAnotherButton.Click());
 
         // Assert
@@ -265,7 +265,7 @@ public class AddPageTests : BunitContext
         await cut.WaitForStateAsync(() =>
         {
             var button = cut.Find("button[type='submit']");
-            return button.TextContent.Contains("Creating...") || cut.FindAll(".alert-success").Count > 0;
+            return button.TextContent.Contains("Creating...", StringComparison.Ordinal) || cut.FindAll(".alert-success").Count > 0;
         }, TimeSpan.FromSeconds(2));
 
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
@@ -295,7 +295,7 @@ public class AddPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("Failed to create tour", errorAlert.TextContent);
+        Assert.Contains("Failed to create tour", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -322,7 +322,7 @@ public class AddPageTests : BunitContext
         var label = cut.FindAll("label").First(l => l.GetAttribute("for") == "singleRoom");
 
         Assert.NotNull(field);
-        Assert.Contains("Single Room Supplement", label.TextContent);
+        Assert.Contains("Single Room Supplement", label.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -340,8 +340,8 @@ public class AddPageTests : BunitContext
         Assert.NotNull(eBikeField);
 
         var labels = cut.FindAll("label");
-        Assert.Contains(labels, l => l.TextContent.Contains("Regular Bike Price"));
-        Assert.Contains(labels, l => l.TextContent.Contains("E-Bike Price"));
+        Assert.Contains(labels, l => l.TextContent.Contains("Regular Bike Price", StringComparison.Ordinal));
+        Assert.Contains(labels, l => l.TextContent.Contains("E-Bike Price", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -477,8 +477,8 @@ public class AddPageTests : BunitContext
         var servicesTextArea = cut.Find("textarea#services");
         var placeholder = servicesTextArea.GetAttribute("placeholder");
 
-        Assert.Contains("Hotel", placeholder);
-        Assert.Contains("Breakfast", placeholder);
+        Assert.Contains("Hotel", placeholder, StringComparison.Ordinal);
+        Assert.Contains("Breakfast", placeholder, StringComparison.Ordinal);
     }
 
     [Fact]

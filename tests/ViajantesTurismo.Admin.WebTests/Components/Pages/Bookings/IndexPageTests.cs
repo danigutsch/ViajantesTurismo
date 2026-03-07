@@ -30,7 +30,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var pageTitle = cut.Find("h1");
-        Assert.Contains("All Bookings", pageTitle.TextContent);
+        Assert.Contains("All Bookings", pageTitle.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class IndexPageTests : BunitContext
         var cut = Render<Index>();
 
         // Assert - Component should show loading then load data
-        cut.WaitForState(() => !cut.Markup.Contains("Loading bookings..."), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => !cut.Markup.Contains("Loading bookings...", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var cardHeader = cut.Find(".card-header");
-        Assert.Contains("Bookings Overview", cardHeader.TextContent);
+        Assert.Contains("Bookings Overview", cardHeader.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -67,11 +67,11 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Total: 3"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Total: 3", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
         var badges = cut.FindAll("span.badge.bg-secondary");
-        Assert.Contains(badges, b => b.TextContent.Contains("Total: 3"));
+        Assert.Contains(badges, b => b.TextContent.Contains("Total: 3", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -84,11 +84,11 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Pending: 2"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Pending: 2", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
         var badges = cut.FindAll("span.badge.bg-warning");
-        Assert.Contains(badges, b => b.TextContent.Contains("Pending: 2"));
+        Assert.Contains(badges, b => b.TextContent.Contains("Pending: 2", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -101,11 +101,11 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Confirmed: 2"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Confirmed: 2", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
         var badges = cut.FindAll("span.badge.bg-success");
-        Assert.Contains(badges, b => b.TextContent.Contains("Confirmed: 2"));
+        Assert.Contains(badges, b => b.TextContent.Contains("Confirmed: 2", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -132,9 +132,9 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.FindAll(".card-header").Count > 0, TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Total: 0", cut.Markup);
-        Assert.Contains("Pending: 0", cut.Markup);
-        Assert.Contains("Confirmed: 0", cut.Markup);
+        Assert.Contains("Total: 0", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Pending: 0", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Confirmed: 0", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -151,10 +151,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Total: 3"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Total: 3", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Total: 3", cut.Markup);
+        Assert.Contains("Total: 3", cut.Markup, StringComparison.Ordinal);
     }
 
 
@@ -169,10 +169,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Pending: 1"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Pending: 1", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Pending: 1", cut.Markup);
+        Assert.Contains("Pending: 1", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -186,10 +186,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Confirmed: 1"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Confirmed: 1", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Confirmed: 1", cut.Markup);
+        Assert.Contains("Confirmed: 1", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -206,12 +206,12 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Total: 7"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Total: 7", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Total: 7", cut.Markup);
-        Assert.Contains("Pending: 2", cut.Markup);
-        Assert.Contains("Confirmed: 3", cut.Markup);
+        Assert.Contains("Total: 7", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Pending: 2", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Confirmed: 3", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]

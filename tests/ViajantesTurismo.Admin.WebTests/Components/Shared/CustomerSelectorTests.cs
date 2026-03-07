@@ -107,7 +107,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var clearButton = cut.Find(".dropdown-item.text-muted");
-        Assert.Contains("Clear selection", clearButton.TextContent);
+        Assert.Contains("Clear selection", clearButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -132,8 +132,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var customerButton = cut.Find(".dropdown-item:not(.text-muted)");
-        Assert.Contains("Jane Smith", customerButton.TextContent);
-        Assert.Contains($"ID: {customerId}", customerButton.TextContent);
+        Assert.Contains("Jane Smith", customerButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains($"ID: {customerId}", customerButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -157,8 +157,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var customerButton = cut.Find(".dropdown-item:not(.text-muted)");
-        Assert.Contains("test@example.com", customerButton.TextContent);
-        Assert.Contains("Canada", customerButton.TextContent);
+        Assert.Contains("test@example.com", customerButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Canada", customerButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -186,7 +186,7 @@ public sealed class CustomerSelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
         Assert.Single(items);
-        Assert.Contains("Alice Brown", items[0].TextContent);
+        Assert.Contains("Alice Brown", items[0].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public sealed class CustomerSelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
         Assert.Single(items);
-        Assert.Contains("Alice", items[0].TextContent);
+        Assert.Contains("Alice", items[0].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -294,7 +294,7 @@ public sealed class CustomerSelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".dropdown-item:not(.text-muted):not(.dropdown-item-text)");
         Assert.Single(items);
-        Assert.Contains("Alice Brown", items[0].TextContent);
+        Assert.Contains("Alice Brown", items[0].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -343,7 +343,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var noResults = cut.Find(".dropdown-item-text.text-muted");
-        Assert.Contains("No customers found", noResults.TextContent);
+        Assert.Contains("No customers found", noResults.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -477,8 +477,8 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var badge = cut.Find(".badge.bg-primary");
-        Assert.Contains("Selected: Alice Brown", badge.TextContent);
-        Assert.Contains($"ID: {customerId}", badge.TextContent);
+        Assert.Contains("Selected: Alice Brown", badge.TextContent, StringComparison.Ordinal);
+        Assert.Contains($"ID: {customerId}", badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -525,7 +525,7 @@ public sealed class CustomerSelectorTests : BunitContext
 
         // Assert
         var activeItem = cut.Find(".dropdown-item.active");
-        Assert.Contains("Alice", activeItem.TextContent);
+        Assert.Contains("Alice", activeItem.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

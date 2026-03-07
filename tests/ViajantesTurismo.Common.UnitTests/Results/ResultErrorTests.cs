@@ -79,6 +79,6 @@ public sealed class ResultErrorTests
 
         var str = error.ToString();
 
-        Assert.Contains("Error message", str);
+        Assert.Contains("Error message", str, StringComparison.Ordinal);
     }
 }

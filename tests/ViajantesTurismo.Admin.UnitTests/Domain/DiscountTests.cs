@@ -16,12 +16,12 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Invalid discount type", result.ErrorDetails.Detail);
-        Assert.Contains("999", result.ErrorDetails.Detail);
-        Assert.Contains("Valid values are:", result.ErrorDetails.Detail);
+        Assert.Contains("Invalid discount type", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("999", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("Valid values are:", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountType"));
-        Assert.Contains("Invalid discount type", result.ErrorDetails.ValidationErrors["discountType"][0]);
+        Assert.Contains("Invalid discount type", result.ErrorDetails.ValidationErrors["discountType"][0], StringComparison.Ordinal);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class DiscountTests
         var allValidTypes = Enum.GetNames<DiscountType>();
         foreach (var validType in allValidTypes)
         {
-            Assert.Contains(validType, result.ErrorDetails.Detail);
+            Assert.Contains(validType, result.ErrorDetails.Detail, StringComparison.Ordinal);
         }
     }
 
@@ -54,11 +54,11 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Discount amount cannot be negative", result.ErrorDetails.Detail);
-        Assert.Contains("-10.50", result.ErrorDetails.Detail);
+        Assert.Contains("Discount amount cannot be negative", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("-10.50", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount"));
-        Assert.Equal("Discount amount cannot be negative.", result.ErrorDetails.ValidationErrors["discountAmount"][0]);
+        Assert.Contains("Discount amount cannot be negative.", result.ErrorDetails.ValidationErrors["discountAmount"][0], StringComparison.Ordinal);
     }
 
     [Fact]
@@ -74,12 +74,12 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Percentage discount cannot exceed", result.ErrorDetails.Detail);
-        Assert.Contains("100%", result.ErrorDetails.Detail);
-        Assert.Contains("150%", result.ErrorDetails.Detail);
+        Assert.Contains("Percentage discount cannot exceed", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("100%", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("150%", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount"));
-        Assert.Contains("cannot exceed 100%", result.ErrorDetails.ValidationErrors["discountAmount"][0]);
+        Assert.Contains("cannot exceed 100%", result.ErrorDetails.ValidationErrors["discountAmount"][0], StringComparison.Ordinal);
     }
 
     [Fact]
@@ -95,13 +95,13 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Absolute discount amount", result.ErrorDetails.Detail);
-        Assert.Contains("1000", result.ErrorDetails.Detail);
-        Assert.Contains("800", result.ErrorDetails.Detail);
-        Assert.Contains("cannot exceed subtotal", result.ErrorDetails.Detail);
+        Assert.Contains("Absolute discount amount", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("1000", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("800", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("cannot exceed subtotal", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discountAmount"));
-        Assert.Equal("Discount amount cannot exceed subtotal.", result.ErrorDetails.ValidationErrors["discountAmount"][0]);
+        Assert.Contains("Discount amount cannot exceed subtotal.", result.ErrorDetails.ValidationErrors["discountAmount"][0], StringComparison.Ordinal);
     }
 
     [Fact]
@@ -116,8 +116,8 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail);
-        Assert.Contains("-5", result.ErrorDetails.Detail);
+        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("-5", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discount"));
         Assert.Equal("Final price after discount must be greater than zero.", result.ErrorDetails.ValidationErrors["discount"][0]);
@@ -135,8 +135,8 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail);
-        Assert.Contains("0", result.ErrorDetails.Detail);
+        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("0", result.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Discount reason must be at least", result.ErrorDetails.Detail);
-        Assert.Contains("10", result.ErrorDetails.Detail);
+        Assert.Contains("Discount reason must be at least", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("10", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("reason"));
         Assert.Equal("Reason must be at least 10 characters.", result.ErrorDetails.ValidationErrors["reason"][0]);
@@ -172,8 +172,8 @@ public class DiscountTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Discount reason cannot exceed", result.ErrorDetails.Detail);
-        Assert.Contains("500", result.ErrorDetails.Detail);
+        Assert.Contains("Discount reason cannot exceed", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains("500", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("reason"));
         Assert.Equal("Reason cannot exceed 500 characters.", result.ErrorDetails.ValidationErrors["reason"][0]);

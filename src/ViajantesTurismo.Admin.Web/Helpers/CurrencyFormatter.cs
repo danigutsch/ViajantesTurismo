@@ -1,3 +1,4 @@
+using System.Globalization;
 using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.Web.Helpers;
@@ -20,7 +21,7 @@ public static class CurrencyFormatter
             ? CurrencySymbolPosition.After
             : CurrencySymbolPosition.Before;
 
-        var formattedAmount = amount.ToString("N2");
+        var formattedAmount = amount.ToString("N2", CultureInfo.InvariantCulture);
         return position == CurrencySymbolPosition.Before
             ? $"{symbol} {formattedAmount}"
             : $"{formattedAmount} {symbol}";

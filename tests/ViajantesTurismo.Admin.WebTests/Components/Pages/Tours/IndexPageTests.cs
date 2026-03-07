@@ -27,8 +27,8 @@ public class IndexPageTests : BunitContext
         var cut = Render<Index>();
 
         // Assert
-        cut.WaitForState(() => !cut.Markup.Contains("Loading..."), TimeSpan.FromSeconds(2));
-        Assert.DoesNotContain("Loading...", cut.Markup);
+        cut.WaitForState(() => !cut.Markup.Contains("Loading...", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        Assert.DoesNotContain("Loading...", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class IndexPageTests : BunitContext
         Assert.NotNull(grid);
 
         var totalText = cut.Find("p.text-muted");
-        Assert.Contains("Total tours: 0", totalText.TextContent);
+        Assert.Contains("Total tours: 0", totalText.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -59,16 +59,16 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        Assert.Contains(headers, h => h.TextContent.Contains("Identifier"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Name"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Start Date"));
-        Assert.Contains(headers, h => h.TextContent.Contains("End Date"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Price"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Single Room Supplement"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Regular Bike"));
-        Assert.Contains(headers, h => h.TextContent.Contains("E-Bike"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Capacity"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Actions"));
+        Assert.Contains(headers, h => h.TextContent.Contains("Identifier", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Name", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Start Date", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("End Date", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Price", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Single Room Supplement", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Regular Bike", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("E-Bike", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Capacity", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Actions", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -85,12 +85,12 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("TOUR-2024-001"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("TOUR-2024-001", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("TOUR-2024-001", cut.Markup);
-        Assert.Contains("Amazing Bike Tour", cut.Markup);
-        Assert.Contains("2024", cut.Markup);
+        Assert.Contains("TOUR-2024-001", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Amazing Bike Tour", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("2024", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -102,13 +102,13 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("R$"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("R$", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("R$ 1,500.00", cut.Markup);
-        Assert.Contains("R$ 300.00", cut.Markup);
-        Assert.Contains("R$ 100.00", cut.Markup);
-        Assert.Contains("R$ 250.00", cut.Markup);
+        Assert.Contains("R$ 1,500.00", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("R$ 300.00", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("R$ 100.00", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("R$ 250.00", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -120,10 +120,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains('€'), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains('€', StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("1,200.00 €", cut.Markup);
+        Assert.Contains("1,200.00 €", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -135,10 +135,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("$ 1,800.00"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("$ 1,800.00", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("$ 1,800.00", cut.Markup);
+        Assert.Contains("$ 1,800.00", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -159,8 +159,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-success");
-        Assert.Contains("15 spots", badge.TextContent);
-        Assert.Contains("15 / 30", cut.Markup);
+        Assert.Contains("15 spots", badge.TextContent, StringComparison.Ordinal);
+        Assert.Contains("15 / 30", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -180,8 +180,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-danger");
-        Assert.Contains("Full", badge.TextContent);
-        Assert.Contains("30 / 30", cut.Markup);
+        Assert.Contains("Full", badge.TextContent, StringComparison.Ordinal);
+        Assert.Contains("30 / 30", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -202,8 +202,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-warning");
-        Assert.Contains("Below Min", badge.TextContent);
-        Assert.Contains("5 / 30", cut.Markup);
+        Assert.Contains("Below Min", badge.TextContent, StringComparison.Ordinal);
+        Assert.Contains("5 / 30", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -220,7 +220,7 @@ public class IndexPageTests : BunitContext
         // Assert
         var viewButton = cut.Find("a.btn.btn-info");
         Assert.Equal($"/tours/{tour.Id}", viewButton.GetAttribute("href"));
-        Assert.Contains("View", viewButton.TextContent);
+        Assert.Contains("View", viewButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class IndexPageTests : BunitContext
         // Assert
         var editButton = cut.Find("a.btn.btn-primary");
         Assert.Equal($"/edittour/{tour.Id}", editButton.GetAttribute("href"));
-        Assert.Contains("Edit", editButton.TextContent);
+        Assert.Contains("Edit", editButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -250,13 +250,13 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Total tours: 3"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Total tours: 3", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("TOUR-001", cut.Markup);
-        Assert.Contains("TOUR-002", cut.Markup);
-        Assert.Contains("TOUR-003", cut.Markup);
-        Assert.Contains("Total tours: 3", cut.Markup);
+        Assert.Contains("TOUR-001", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("TOUR-002", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("TOUR-003", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Total tours: 3", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -274,7 +274,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var totalText = cut.Find("p.text-muted");
-        Assert.Contains("Total tours: 10", totalText.TextContent);
+        Assert.Contains("Total tours: 10", totalText.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.FindAll("p.text-muted").Count > 0, TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Total tours: 8", cut.Markup);
+        Assert.Contains("Total tours: 8", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var pageTitle = cut.Find("h1");
-        Assert.Contains("Tours", pageTitle.TextContent);
+        Assert.Contains("Tours", pageTitle.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

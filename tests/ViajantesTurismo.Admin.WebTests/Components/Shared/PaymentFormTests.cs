@@ -130,8 +130,8 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Record Payment", submitButton.TextContent);
-        Assert.Contains("bi-cash-stack", submitButton.InnerHtml);
+        Assert.Contains("Record Payment", submitButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-cash-stack", submitButton.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -149,8 +149,8 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Recording...", submitButton.TextContent);
-        Assert.Contains("spinner-border", submitButton.InnerHtml);
+        Assert.Contains("Recording...", submitButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains("spinner-border", submitButton.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public class PaymentFormTests : BunitContext
         // Assert
         var cancelButton = cut.Find("button[type='button']");
         Assert.NotNull(cancelButton);
-        Assert.Contains("Cancel", cancelButton.TextContent);
+        Assert.Contains("Cancel", cancelButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -245,7 +245,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount is required"));
+        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount is required", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount must be greater than zero"));
+        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment amount must be greater than zero", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -285,7 +285,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment date is required"));
+        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment date is required", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -305,7 +305,7 @@ public class PaymentFormTests : BunitContext
 
         // Assert
         var validationMessages = cut.FindAll(".validation-message");
-        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment method is required"));
+        Assert.Contains(validationMessages, vm => vm.TextContent.Contains("Payment method is required", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -71,7 +71,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(EnumFormatter.Format(status), badge.TextContent);
+        Assert.Contains(EnumFormatter.Format(status), badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

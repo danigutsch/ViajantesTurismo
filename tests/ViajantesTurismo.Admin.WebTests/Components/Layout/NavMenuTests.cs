@@ -24,8 +24,8 @@ public class NavMenuTests : BunitContext
         // Assert
         var homeLinks = cut.FindAll("a.nav-link[href='']");
         var homeLink = homeLinks[0];
-        Assert.Contains("Home", homeLink.TextContent);
-        Assert.Contains("bi-house-door-fill", homeLink.InnerHtml);
+        Assert.Contains("Home", homeLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-house-door-fill", homeLink.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var addTourLink = cut.Find("a[href='addtour']");
-        Assert.Contains("Add Tour", addTourLink.TextContent);
-        Assert.Contains("bi-plus-square-fill", addTourLink.InnerHtml);
+        Assert.Contains("Add Tour", addTourLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-plus-square-fill", addTourLink.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -48,8 +48,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var toursLink = cut.Find("a[href='tours']");
-        Assert.Contains("Tours", toursLink.TextContent);
-        Assert.Contains("bi-list-nested", toursLink.InnerHtml);
+        Assert.Contains("Tours", toursLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-list-nested", toursLink.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var bookingsLink = cut.Find("a[href='bookings']");
-        Assert.Contains("Bookings", bookingsLink.TextContent);
-        Assert.Contains("bi-calendar-check", bookingsLink.InnerHtml);
+        Assert.Contains("Bookings", bookingsLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-calendar-check", bookingsLink.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -72,8 +72,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var addCustomerLink = cut.Find("a[href='customers/create']");
-        Assert.Contains("Add Customer", addCustomerLink.TextContent);
-        Assert.Contains("bi-person-plus-fill", addCustomerLink.InnerHtml);
+        Assert.Contains("Add Customer", addCustomerLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-person-plus-fill", addCustomerLink.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,8 +84,8 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var customersLink = cut.Find("a[href='customers']");
-        Assert.Contains("Customers", customersLink.TextContent);
-        Assert.Contains("bi-people-fill", customersLink.InnerHtml);
+        Assert.Contains("Customers", customersLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-people-fill", customersLink.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]

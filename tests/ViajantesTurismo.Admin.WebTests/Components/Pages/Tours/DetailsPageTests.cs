@@ -1,3 +1,4 @@
+using System.Globalization;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared;
 using ViajantesTurismo.Admin.Web.Components.Pages.Tours;
@@ -32,7 +33,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Tour not found", alert.TextContent);
+        Assert.Contains("Tour not found", alert.TextContent, StringComparison.Ordinal);
 
         var backLink = cut.Find("a.btn.btn-secondary");
         Assert.Equal("/tours", backLink.GetAttribute("href"));
@@ -54,7 +55,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Tour not found", alert.TextContent);
+        Assert.Contains("Tour not found", alert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -69,14 +70,14 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains(tour.Name, cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains(tour.Name, cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains(tour.Identifier, cut.Markup);
-        Assert.Contains(tour.Name, cut.Markup);
-        Assert.Contains(tour.StartDate.ToString("dd/MM/yyyy"), cut.Markup);
-        Assert.Contains(tour.EndDate.ToString("dd/MM/yyyy"), cut.Markup);
-        Assert.Contains(tour.Currency.ToString(), cut.Markup);
+        Assert.Contains(tour.Identifier, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(tour.Name, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(tour.StartDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture), cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(tour.EndDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture), cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(tour.Currency.ToString(), cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -92,10 +93,10 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains($"{expectedDuration} days", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains($"{expectedDuration} days", cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains($"{expectedDuration} days", cut.Markup);
+        Assert.Contains($"{expectedDuration} days", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -110,13 +111,13 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("R$ 1,500.00", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("R$ 1,500.00", cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains("R$ 1,500.00", cut.Markup); // Base Price
-        Assert.Contains("R$ 300.00", cut.Markup); // Single Room Supplement
-        Assert.Contains("R$ 100.00", cut.Markup); // Regular Bike
-        Assert.Contains("R$ 250.00", cut.Markup); // E-Bike
+        Assert.Contains("R$ 1,500.00", cut.Markup, StringComparison.Ordinal); // Base Price
+        Assert.Contains("R$ 300.00", cut.Markup, StringComparison.Ordinal); // Single Room Supplement
+        Assert.Contains("R$ 100.00", cut.Markup, StringComparison.Ordinal); // Regular Bike
+        Assert.Contains("R$ 250.00", cut.Markup, StringComparison.Ordinal); // E-Bike
     }
 
     [Fact]
@@ -131,11 +132,11 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("1,500.00 €", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("1,500.00 €", cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains("1,500.00 €", cut.Markup); // Base Price
-        Assert.Contains("300.00 €", cut.Markup); // Single Room Supplement
+        Assert.Contains("1,500.00 €", cut.Markup, StringComparison.Ordinal); // Base Price
+        Assert.Contains("300.00 €", cut.Markup, StringComparison.Ordinal); // Single Room Supplement
     }
 
     [Fact]
@@ -150,11 +151,11 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("$ 1,500.00", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("$ 1,500.00", cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains("$ 1,500.00", cut.Markup); // Base Price
-        Assert.Contains("$ 300.00", cut.Markup); // Single Room Supplement
+        Assert.Contains("$ 1,500.00", cut.Markup, StringComparison.Ordinal); // Base Price
+        Assert.Contains("$ 300.00", cut.Markup, StringComparison.Ordinal); // Single Room Supplement
     }
 
     [Fact]
@@ -169,12 +170,12 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains($"{tour.MinCustomers}", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains($"{tour.MinCustomers}", cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains($"{tour.MinCustomers}", cut.Markup);
-        Assert.Contains($"{tour.MaxCustomers}", cut.Markup);
-        Assert.Contains($"{tour.CurrentCustomerCount} / {tour.MaxCustomers} customers", cut.Markup);
+        Assert.Contains($"{tour.MinCustomers}", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains($"{tour.MaxCustomers}", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains($"{tour.CurrentCustomerCount} / {tour.MaxCustomers} customers", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -198,7 +199,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-success");
-        Assert.Contains("15 spots available", badge.TextContent);
+        Assert.Contains("15 spots available", badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -221,7 +222,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-danger");
-        Assert.Contains("Fully Booked", badge.TextContent);
+        Assert.Contains("Fully Booked", badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -245,7 +246,7 @@ public class DetailsPageTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge.bg-warning");
-        Assert.Contains("Below Minimum", badge.TextContent);
+        Assert.Contains("Below Minimum", badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -269,16 +270,16 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => Assert.Contains("Included Services", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("Included Services", cut.Markup, StringComparison.Ordinal));
 
         // Assert
-        Assert.Contains("Included Services", cut.Markup);
+        Assert.Contains("Included Services", cut.Markup, StringComparison.Ordinal);
         var serviceItems = cut.FindAll("ul.list-group > li.list-group-item");
         Assert.Equal(4, serviceItems.Count);
-        Assert.Contains("Breakfast", serviceItems[0].TextContent);
-        Assert.Contains("Lunch", serviceItems[1].TextContent);
-        Assert.Contains("Bike rental", serviceItems[2].TextContent);
-        Assert.Contains("Tour guide", serviceItems[3].TextContent);
+        Assert.Contains("Breakfast", serviceItems[0].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Lunch", serviceItems[1].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Bike rental", serviceItems[2].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Tour guide", serviceItems[3].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -298,7 +299,7 @@ public class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find(".card-header h3"));
 
         // Assert
-        Assert.DoesNotContain("Included Services", cut.Markup);
+        Assert.DoesNotContain("Included Services", cut.Markup, StringComparison.Ordinal);
         Assert.Empty(cut.FindAll("ul.list-group"));
     }
 
@@ -319,7 +320,7 @@ public class DetailsPageTests : BunitContext
         // Assert
         var editLink = cut.Find("a.btn.btn-primary");
         Assert.Equal($"/edittour/{tour.Id}", editLink.GetAttribute("href"));
-        Assert.Contains("Edit Tour", editLink.TextContent);
+        Assert.Contains("Edit Tour", editLink.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

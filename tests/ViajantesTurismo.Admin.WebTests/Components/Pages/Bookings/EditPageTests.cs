@@ -40,7 +40,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Booking not found", alert.TextContent);
+        Assert.Contains("Booking not found", alert.TextContent, StringComparison.Ordinal);
 
         var backLink = cut.Find("a.btn.btn-secondary");
         Assert.Equal("/bookings", backLink.GetAttribute("href"));
@@ -63,13 +63,13 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var tourLink = cut.Find($"a[href='/tours/{booking.TourId}']");
-        Assert.Contains("Portugal Adventure", tourLink.TextContent);
+        Assert.Contains("Portugal Adventure", tourLink.TextContent, StringComparison.Ordinal);
 
         var tourIdentifier = cut.Find("small.text-muted");
-        Assert.Contains("PT-2024-001", tourIdentifier.TextContent);
+        Assert.Contains("PT-2024-001", tourIdentifier.TextContent, StringComparison.Ordinal);
 
         var customerLink = cut.Find($"a[href='/customers/{booking.CustomerId}']");
-        Assert.Contains("John Doe", customerLink.TextContent);
+        Assert.Contains("John Doe", customerLink.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var companionLink = cut.Find($"a[href='/customers/{companionId}']");
-        Assert.Contains("Jane Smith", companionLink.TextContent);
+        Assert.Contains("Jane Smith", companionLink.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var html = cut.Markup;
-        Assert.DoesNotContain("Companion:", html);
+        Assert.DoesNotContain("Companion:", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var html = cut.Markup;
-        Assert.Contains("15/03/2024 14:30", html);
+        Assert.Contains("15/03/2024 14:30", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -153,10 +153,10 @@ public sealed class EditPageTests : BunitContext
         var options = statusSelect.QuerySelectorAll("option");
         Assert.Equal(4, options.Length);
 
-        Assert.Contains(options, o => o.TextContent.Contains("Pending"));
-        Assert.Contains(options, o => o.TextContent.Contains("Confirmed"));
-        Assert.Contains(options, o => o.TextContent.Contains("Completed"));
-        Assert.Contains(options, o => o.TextContent.Contains("Cancelled"));
+        Assert.Contains(options, o => o.TextContent.Contains("Pending", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Confirmed", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Completed", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Cancelled", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -174,10 +174,10 @@ public sealed class EditPageTests : BunitContext
         var options = paymentStatusSelect.QuerySelectorAll("option");
         Assert.Equal(4, options.Length);
 
-        Assert.Contains(options, o => o.TextContent.Contains("Unpaid"));
-        Assert.Contains(options, o => o.TextContent.Contains("Partially Paid"));
-        Assert.Contains(options, o => o.TextContent.Contains("Paid"));
-        Assert.Contains(options, o => o.TextContent.Contains("Refunded"));
+        Assert.Contains(options, o => o.TextContent.Contains("Unpaid", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Partially Paid", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Paid", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Refunded", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public sealed class EditPageTests : BunitContext
         // Assert
         var notesTextarea = cut.Find("#notes");
         var value = notesTextarea.GetAttribute("value") ?? notesTextarea.TextContent;
-        Assert.Contains("Customer requested early check-in", value);
+        Assert.Contains("Customer requested early check-in", value, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -211,9 +211,9 @@ public sealed class EditPageTests : BunitContext
         var options = discountTypeSelect.QuerySelectorAll("option");
         Assert.Equal(3, options.Length);
 
-        Assert.Contains(options, o => o.TextContent.Contains("No Discount"));
-        Assert.Contains(options, o => o.TextContent.Contains("Percentage"));
-        Assert.Contains(options, o => o.TextContent.Contains("Absolute Amount"));
+        Assert.Contains(options, o => o.TextContent.Contains("No Discount", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Percentage", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Absolute Amount", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -228,8 +228,8 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var html = cut.Markup;
-        Assert.DoesNotContain("discountAmount", html);
-        Assert.DoesNotContain("discountReason", html);
+        Assert.DoesNotContain("discountAmount", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("discountReason", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -248,14 +248,14 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var label = cut.Find("label[for='discountAmount']");
-        Assert.Contains("Discount Percentage", label.TextContent);
+        Assert.Contains("Discount Percentage", label.TextContent, StringComparison.Ordinal);
 
         var formText = cut.Find("#discountAmount + .form-text");
-        Assert.Contains("between 0 and 100", formText.TextContent);
+        Assert.Contains("between 0 and 100", formText.TextContent, StringComparison.Ordinal);
 
         var discountReason = cut.Find("#discountReason");
         var reasonValue = discountReason.GetAttribute("value") ?? discountReason.TextContent;
-        Assert.Contains("Early bird discount", reasonValue);
+        Assert.Contains("Early bird discount", reasonValue, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -274,8 +274,8 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var label = cut.Find("label[for='discountAmount']");
-        Assert.Contains("Discount Amount", label.TextContent);
-        Assert.DoesNotContain("Percentage", label.TextContent);
+        Assert.Contains("Discount Amount", label.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Percentage", label.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public sealed class EditPageTests : BunitContext
         // Assert
         var cancelLink = cut.Find("a.btn.btn-secondary");
         Assert.Equal("/bookings", cancelLink.GetAttribute("href"));
-        Assert.Contains("Cancel", cancelLink.TextContent);
+        Assert.Contains("Cancel", cancelLink.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -306,7 +306,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Update Booking", submitButton.TextContent);
+        Assert.Contains("Update Booking", submitButton.TextContent, StringComparison.Ordinal);
         Assert.False(submitButton.HasAttribute("disabled"));
     }
 
@@ -328,7 +328,7 @@ public sealed class EditPageTests : BunitContext
 
         // Assert
         var successAlert = cut.Find(".alert.alert-success");
-        Assert.Contains("Booking updated successfully!", successAlert.TextContent);
+        Assert.Contains("Booking updated successfully!", successAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -345,12 +345,12 @@ public sealed class EditPageTests : BunitContext
         await cut.InvokeAsync(async () => await form.SubmitAsync());
 
         // Assert
-        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting"));
-        Assert.Contains("Redirecting to bookings page in 3 seconds", redirectAlert.TextContent);
+        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting", StringComparison.Ordinal));
+        Assert.Contains("Redirecting to bookings page in 3 seconds", redirectAlert.TextContent, StringComparison.Ordinal);
 
         var cancelButton = redirectAlert.QuerySelector("button");
         Assert.NotNull(cancelButton);
-        Assert.Contains("Cancel", cancelButton.TextContent);
+        Assert.Contains("Cancel", cancelButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -366,17 +366,17 @@ public sealed class EditPageTests : BunitContext
         var form = cut.Find("form");
         await cut.InvokeAsync(async () => await form.SubmitAsync());
 
-        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting"));
+        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting", StringComparison.Ordinal));
         var cancelButton = redirectAlert.QuerySelector("button");
         Assert.NotNull(cancelButton);
         await cut.InvokeAsync(() => cancelButton.Click());
 
         // Assert
         var successAlert = cut.Find(".alert.alert-success");
-        Assert.Contains("Booking updated successfully!", successAlert.TextContent);
+        Assert.Contains("Booking updated successfully!", successAlert.TextContent, StringComparison.Ordinal);
 
         var goToBookingsButton = cut.Find(".alert.alert-success button");
-        Assert.Contains("Go to Bookings", goToBookingsButton.TextContent);
+        Assert.Contains("Go to Bookings", goToBookingsButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -395,13 +395,13 @@ public sealed class EditPageTests : BunitContext
         // Assert - During submission
         var submitButton = cut.Find("button[type='submit']");
         Assert.True(submitButton.HasAttribute("disabled"));
-        Assert.Contains("Updating...", submitButton.TextContent);
+        Assert.Contains("Updating...", submitButton.TextContent, StringComparison.Ordinal);
 
         var spinner = submitButton.QuerySelector(".spinner-border");
         Assert.NotNull(spinner);
 
         var cancelLink = cut.Find("a.btn.btn-secondary");
-        Assert.Contains("disabled", cancelLink.GetAttribute("class"));
+        Assert.Contains("disabled", cancelLink.GetAttribute("class"), StringComparison.Ordinal);
 
         await submitTask;
     }
@@ -452,8 +452,8 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1, .alert"));
         // Assert
         var helpText = cut.Find("#discountReason + .form-text");
-        Assert.Contains("Required for audit purposes", helpText.TextContent);
-        Assert.Contains("10-500 characters", helpText.TextContent);
+        Assert.Contains("Required for audit purposes", helpText.TextContent, StringComparison.Ordinal);
+        Assert.Contains("10-500 characters", helpText.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -482,7 +482,7 @@ public sealed class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
 
         // Act — click Confirm Booking button
-        var confirmButton = cut.FindAll("button").First(b => b.TextContent.Contains("Confirm Booking"));
+        var confirmButton = cut.FindAll("button").First(b => b.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
         await cut.InvokeAsync((Action)(() => confirmButton.Click()));
 
         // Assert — status dropdown should now show Confirmed
@@ -501,7 +501,7 @@ public sealed class EditPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
 
         // Act — click Complete Booking button
-        var completeButton = cut.FindAll("button").First(b => b.TextContent.Contains("Complete Booking"));
+        var completeButton = cut.FindAll("button").First(b => b.TextContent.Contains("Complete Booking", StringComparison.Ordinal));
         await cut.InvokeAsync((Action)(() => completeButton.Click()));
 
         // Assert — status dropdown should now show Completed

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
@@ -19,8 +20,8 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.FillAsync("#identifier", "E2ETST");
         await Page.FillAsync("#name", "E2E Test Tour");
 
-        var startDate = DateTime.UtcNow.AddDays(30).ToString("yyyy-MM-dd");
-        var endDate = DateTime.UtcNow.AddDays(37).ToString("yyyy-MM-dd");
+        var startDate = DateTime.UtcNow.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var endDate = DateTime.UtcNow.AddDays(37).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         await Page.FillAsync("#startDate", startDate);
         await Page.FillAsync("#endDate", endDate);
 

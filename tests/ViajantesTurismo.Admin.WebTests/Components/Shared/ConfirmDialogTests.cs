@@ -86,7 +86,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var confirmButton = cut.Find(".modal-footer .btn-primary");
-        Assert.Contains(customConfirmText, confirmButton.TextContent);
+        Assert.Contains(customConfirmText, confirmButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class ConfirmDialogTests : BunitContext
 
         // Assert
         var cancelButton = cut.Find(".modal-footer .btn-secondary");
-        Assert.Contains(customCancelText, cancelButton.TextContent);
+        Assert.Contains(customCancelText, cancelButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

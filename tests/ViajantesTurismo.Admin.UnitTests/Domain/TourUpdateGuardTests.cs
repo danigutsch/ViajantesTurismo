@@ -74,7 +74,7 @@ public class TourUpdateGuardTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail);
+        Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -119,6 +119,6 @@ public class TourUpdateGuardTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail);
+        Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 }

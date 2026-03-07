@@ -51,7 +51,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
             _countries = countriesDictionary?
                 .Select(kvp => new CountryInfo
                 {
-                    Code = kvp.Key.ToLowerInvariant(),
+                    Code = kvp.Key.ToUpperInvariant(),
                     Name = kvp.Value.Name
                 })
                 .OrderBy(countryInfo => countryInfo.Name)
@@ -91,16 +91,16 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
     {
         return
         [
-            new CountryInfo { Code = "br", Name = "Brazil" },
-            new CountryInfo { Code = "us", Name = "United States" },
-            new CountryInfo { Code = "gb", Name = "United Kingdom" },
-            new CountryInfo { Code = "de", Name = "Germany" },
-            new CountryInfo { Code = "fr", Name = "France" },
-            new CountryInfo { Code = "it", Name = "Italy" },
-            new CountryInfo { Code = "es", Name = "Spain" },
-            new CountryInfo { Code = "pt", Name = "Portugal" },
-            new CountryInfo { Code = "ca", Name = "Canada" },
-            new CountryInfo { Code = "mx", Name = "Mexico" }
+            new CountryInfo { Code = "BR", Name = "Brazil" },
+            new CountryInfo { Code = "US", Name = "United States" },
+            new CountryInfo { Code = "GB", Name = "United Kingdom" },
+            new CountryInfo { Code = "DE", Name = "Germany" },
+            new CountryInfo { Code = "FR", Name = "France" },
+            new CountryInfo { Code = "IT", Name = "Italy" },
+            new CountryInfo { Code = "ES", Name = "Spain" },
+            new CountryInfo { Code = "PT", Name = "Portugal" },
+            new CountryInfo { Code = "CA", Name = "Canada" },
+            new CountryInfo { Code = "MX", Name = "Mexico" }
         ];
     }
 }

@@ -18,7 +18,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         var listPriceText = await cityHighlightsRow.InnerTextAsync();
 
         // BRL prices should use "R$" prefix
-        Assert.Contains("R$", listPriceText);
+        Assert.Contains("R$", listPriceText, StringComparison.Ordinal);
 
         // Navigate to "City Highlights" details
         await cityHighlightsRow.GetLink("View").ClickAsync();
@@ -33,7 +33,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         var historicalPriceText = await historicalRow.InnerTextAsync();
 
         // EUR prices should use "€" suffix
-        Assert.Contains("€", historicalPriceText);
+        Assert.Contains("€", historicalPriceText, StringComparison.Ordinal);
 
         await historicalRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
@@ -43,7 +43,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync("/tours");
         var culturalRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = "Cultural Experience" });
         var culturalPriceText = await culturalRow.InnerTextAsync();
-        Assert.Contains("$", culturalPriceText);
+        Assert.Contains("$", culturalPriceText, StringComparison.Ordinal);
 
         // === Date formatting: dd/MM/yyyy across list and details ===
         // Tour list and details should use consistent date format

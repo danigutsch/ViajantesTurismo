@@ -243,8 +243,8 @@ public sealed class ResultOfTTests
         var result = Result<int>.Error("Failed");
 
         var exception = Assert.Throws<InvalidOperationException>(() => result.Value);
-        Assert.Contains("Cannot access Value of a failed result", exception.Message);
-        Assert.Contains("Failed", exception.Message);
+        Assert.Contains("Cannot access Value of a failed result", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Failed", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -364,9 +364,9 @@ public sealed class ResultOfTTests
 
         var str = result.ToString();
 
-        Assert.Contains("Success", str);
-        Assert.Contains("Ok", str);
-        Assert.Contains("42", str);
+        Assert.Contains("Success", str, StringComparison.Ordinal);
+        Assert.Contains("Ok", str, StringComparison.Ordinal);
+        Assert.Contains("42", str, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -376,9 +376,9 @@ public sealed class ResultOfTTests
 
         var str = result.ToString();
 
-        Assert.Contains("Failure", str);
-        Assert.Contains("Error", str);
-        Assert.Contains("Something went wrong", str);
+        Assert.Contains("Failure", str, StringComparison.Ordinal);
+        Assert.Contains("Error", str, StringComparison.Ordinal);
+        Assert.Contains("Something went wrong", str, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -433,7 +433,7 @@ public sealed class ResultOfTTests
         var result = Result<int>.NotFound("Resource not found");
 
         var exception = Assert.Throws<InvalidOperationException>(() => result.Value);
-        Assert.Contains("Resource not found", exception.Message);
+        Assert.Contains("Resource not found", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

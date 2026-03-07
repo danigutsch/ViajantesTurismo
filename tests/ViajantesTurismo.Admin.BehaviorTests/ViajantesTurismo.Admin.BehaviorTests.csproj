@@ -7,7 +7,6 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Admin.BehaviorTests</RootNamespace>
-        <InvariantGlobalization>false</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>

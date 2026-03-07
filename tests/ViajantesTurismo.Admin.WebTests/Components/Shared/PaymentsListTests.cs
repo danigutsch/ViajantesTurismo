@@ -22,8 +22,8 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert-info");
-        Assert.Contains("No payments recorded yet", alert.TextContent);
-        Assert.Contains("bi-info-circle", alert.InnerHtml);
+        Assert.Contains("No payments recorded yet", alert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-info-circle", alert.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        Assert.Contains("15/03/2024", cut.Markup);
+        Assert.Contains("15/03/2024", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var amountCell = cut.Find("td strong");
-        Assert.Contains("123.45", amountCell.TextContent);
+        Assert.Contains("123.45", amountCell.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var cells = cut.FindAll("td");
-        var referenceCell = cells.FirstOrDefault(c => c.TextContent.Contains('-') && c.QuerySelector(".text-muted") != null);
+        var referenceCell = cells.FirstOrDefault(c => c.TextContent.Contains('-', StringComparison.Ordinal) && c.QuerySelector(".text-muted") != null);
         Assert.NotNull(referenceCell);
     }
 
@@ -311,7 +311,7 @@ public class PaymentsListTests : BunitContext
             .Add(p => p.Payments, payments));
 
         // Assert
-        Assert.Contains("Test payment notes", cut.Markup);
+        Assert.Contains("Test payment notes", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -340,7 +340,7 @@ public class PaymentsListTests : BunitContext
         // Assert
         var spans = cut.FindAll("span[title]");
         var notesSpan = spans.First(s => s.GetAttribute("title") == longNotes);
-        Assert.Contains("...", notesSpan.TextContent);
+        Assert.Contains("...", notesSpan.TextContent, StringComparison.Ordinal);
         Assert.True(notesSpan.TextContent.Length <= 34); // 30 + "..."
     }
 
@@ -367,7 +367,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var cells = cut.FindAll("td");
-        var notesCell = cells.FirstOrDefault(c => c.TextContent.Contains('-') && c.QuerySelector(".text-muted") != null);
+        var notesCell = cells.FirstOrDefault(c => c.TextContent.Contains('-', StringComparison.Ordinal) && c.QuerySelector(".text-muted") != null);
         Assert.NotNull(notesCell);
     }
 
@@ -412,7 +412,7 @@ public class PaymentsListTests : BunitContext
 
         // Assert
         var totalSection = cut.Find(".bg-light");
-        Assert.Contains("400", totalSection.TextContent); // 100 + 250.50 + 49.50 = 400
+        Assert.Contains("400", totalSection.TextContent, StringComparison.Ordinal); // 100 + 250.50 + 49.50 = 400
     }
 
     [Fact]
@@ -458,8 +458,8 @@ public class PaymentsListTests : BunitContext
         var rows = cut.FindAll("tbody tr");
         var amounts = rows.Select(r => r.QuerySelector("strong")!.TextContent).ToList();
 
-        Assert.Contains("200", amounts[0]); // March payment (most recent)
-        Assert.Contains("100", amounts[2]); // January payment (oldest)
+        Assert.Contains("200", amounts[0], StringComparison.Ordinal); // March payment (most recent)
+        Assert.Contains("100", amounts[2], StringComparison.Ordinal); // January payment (oldest)
     }
 
     [Fact]
@@ -512,11 +512,11 @@ public class PaymentsListTests : BunitContext
         // Assert
         var headers = cut.FindAll("thead th");
         Assert.Equal(6, headers.Count);
-        Assert.Contains("Payment Date", headers[0].TextContent);
-        Assert.Contains("Amount", headers[1].TextContent);
-        Assert.Contains("Method", headers[2].TextContent);
-        Assert.Contains("Reference", headers[3].TextContent);
-        Assert.Contains("Notes", headers[4].TextContent);
-        Assert.Contains("Recorded At", headers[5].TextContent);
+        Assert.Contains("Payment Date", headers[0].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Amount", headers[1].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Method", headers[2].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Reference", headers[3].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Notes", headers[4].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Recorded At", headers[5].TextContent, StringComparison.Ordinal);
     }
 }

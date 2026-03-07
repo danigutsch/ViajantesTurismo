@@ -11,7 +11,7 @@ internal static class TestDataGenerator
     /// </summary>
     public static string UniqueEmail(string prefix = "test")
     {
-        var cleanPrefix = prefix.Replace(" ", "").Replace("\t", "");
+        var cleanPrefix = prefix.Replace(" ", "", StringComparison.Ordinal).Replace("\t", "", StringComparison.Ordinal);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         return $"{cleanPrefix}.{suffix}@example.com";
     }

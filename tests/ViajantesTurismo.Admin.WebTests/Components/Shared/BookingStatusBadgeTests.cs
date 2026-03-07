@@ -67,7 +67,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(status.ToString(), badge.TextContent);
+        Assert.Contains(status.ToString(), badge.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

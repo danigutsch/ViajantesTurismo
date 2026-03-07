@@ -57,7 +57,7 @@ public sealed class MainLayoutTests : BunitContext
         // Assert
         var topRow = cut.Find("main div.top-row");
         Assert.NotNull(topRow);
-        Assert.Contains("About", topRow.TextContent);
+        Assert.Contains("About", topRow.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public sealed class MainLayoutTests : BunitContext
 
         // Assert
         var errorUi = cut.Find("div#blazor-error-ui");
-        Assert.Contains("An unhandled error has occurred.", errorUi.TextContent);
+        Assert.Contains("An unhandled error has occurred.", errorUi.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

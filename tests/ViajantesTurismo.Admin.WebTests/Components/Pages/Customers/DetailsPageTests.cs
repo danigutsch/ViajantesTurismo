@@ -31,7 +31,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Customer not found", alert.TextContent);
+        Assert.Contains("Customer not found", alert.TextContent, StringComparison.Ordinal);
 
         var backLink = cut.Find("a.btn.btn-secondary");
         Assert.Equal("/customers", backLink.GetAttribute("href"));
@@ -49,8 +49,8 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var heading = cut.Find("h1");
-        Assert.Contains("Customer Details", heading.TextContent);
-        Assert.Contains("bi-person-circle", heading.InnerHtml);
+        Assert.Contains("Customer Details", heading.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-person-circle", heading.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var backButton = cut.Find("a.btn-outline-secondary[href='/customers']");
-        Assert.Contains("Back to Customers", backButton.TextContent);
+        Assert.Contains("Back to Customers", backButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var editButton = cut.Find($"a.btn-primary[href='/customers/{customer.Id}/edit']");
-        Assert.Contains("Edit Customer", editButton.TextContent);
+        Assert.Contains("Edit Customer", editButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -104,11 +104,11 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Personal Information'))");
-        Assert.Contains("Jane Smith", card.TextContent);
-        Assert.Contains("15/05/1990", card.TextContent);
-        Assert.Contains("Female", card.TextContent);
-        Assert.Contains("Canada", card.TextContent);
-        Assert.Contains("Software Developer", card.TextContent);
+        Assert.Contains("Jane Smith", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("15/05/1990", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Female", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Canada", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Software Developer", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var html = cut.Markup;
-        Assert.DoesNotContain("Instagram", html);
+        Assert.DoesNotContain("Instagram", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -221,8 +221,8 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Identification'))");
-        Assert.Contains("XYZ987654", card.TextContent);
-        Assert.Contains("Brazil", card.TextContent);
+        Assert.Contains("XYZ987654", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Brazil", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -247,13 +247,13 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Address'))");
-        Assert.Contains("456 Oak Avenue", card.TextContent);
-        Assert.Contains("Apt 7B", card.TextContent);
-        Assert.Contains("Westside", card.TextContent);
-        Assert.Contains("90210", card.TextContent);
-        Assert.Contains("Los Angeles", card.TextContent);
-        Assert.Contains("CA", card.TextContent);
-        Assert.Contains("USA", card.TextContent);
+        Assert.Contains("456 Oak Avenue", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Apt 7B", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Westside", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("90210", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Los Angeles", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("CA", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("USA", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -300,9 +300,9 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Physical Information'))");
-        Assert.Contains("82 kg", card.TextContent);
-        Assert.Contains("180 cm", card.TextContent);
-        Assert.Contains("EBike", card.TextContent);
+        Assert.Contains("82 kg", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("180 cm", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("EBike", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -323,8 +323,8 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Accommodation Preferences'))");
-        Assert.Contains("Single", card.TextContent);
-        Assert.Contains("Double Bed", card.TextContent);
+        Assert.Contains("Single", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Double Bed", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -346,7 +346,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Accommodation Preferences'))");
-        Assert.Contains(companionId.ToString(), card.TextContent);
+        Assert.Contains(companionId.ToString(), card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -366,7 +366,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Emergency Contact'))");
-        Assert.Contains("Sarah Connor", card.TextContent);
+        Assert.Contains("Sarah Connor", card.TextContent, StringComparison.Ordinal);
 
         var mobileLink = cut.Find("a[href='tel:+1-555-HELP']");
         Assert.Equal("+1-555-HELP", mobileLink.TextContent);
@@ -389,8 +389,8 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Medical Information'))");
-        Assert.Contains("Peanuts, Shellfish", card.TextContent);
-        Assert.Contains("Requires insulin", card.TextContent);
+        Assert.Contains("Peanuts, Shellfish", card.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Requires insulin", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -410,7 +410,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
         // Assert
         var card = cut.Find("div.card:has(h5:contains('Medical Information'))");
-        Assert.Contains("No medical information provided", card.TextContent);
+        Assert.Contains("No medical information provided", card.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

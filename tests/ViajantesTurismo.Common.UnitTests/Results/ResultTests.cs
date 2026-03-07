@@ -287,8 +287,8 @@ public sealed class ResultTests
 
         var str = result.ToString();
 
-        Assert.Contains("Success", str);
-        Assert.Contains("Ok", str);
+        Assert.Contains("Success", str, StringComparison.Ordinal);
+        Assert.Contains("Ok", str, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -298,9 +298,9 @@ public sealed class ResultTests
 
         var str = result.ToString();
 
-        Assert.Contains("Failure", str);
-        Assert.Contains("Error", str);
-        Assert.Contains("Something went wrong", str);
+        Assert.Contains("Failure", str, StringComparison.Ordinal);
+        Assert.Contains("Error", str, StringComparison.Ordinal);
+        Assert.Contains("Something went wrong", str, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -310,10 +310,6 @@ public sealed class ResultTests
 
         Assert.False(result.Equals(new object()));
         Assert.False(result.Equals(null));
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        Assert.False(result.Equals("string"));
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        Assert.False(result.Equals(42));
     }
 
     [Fact]

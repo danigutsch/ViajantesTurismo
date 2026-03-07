@@ -121,15 +121,14 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void ThenThePaymentShouldBeRejectedWithError(string expectedError)
     {
         Assert.False(_paymentResult.IsSuccess);
-        Assert.Contains(expectedError, _paymentResult.ErrorDetails?.Detail ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains(expectedError, _paymentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Then(@"the payment should be rejected with error containing ""(.*)""")]
     public void ThenThePaymentShouldBeRejectedWithErrorContaining(string expectedErrorFragment)
     {
         Assert.False(_paymentResult.IsSuccess);
-        Assert.Contains(expectedErrorFragment, _paymentResult.ErrorDetails?.Detail ?? string.Empty,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedErrorFragment, _paymentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Then("the amount paid should be (.*)")]

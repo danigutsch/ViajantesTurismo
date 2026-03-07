@@ -27,7 +27,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var pageTitle = cut.Find("h1");
-        Assert.Contains("Customers", pageTitle.TextContent);
+        Assert.Contains("Customers", pageTitle.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class IndexPageTests : BunitContext
         // Assert
         var createButton = cut.Find("a.btn.btn-primary");
         Assert.Equal("/customers/create", createButton.GetAttribute("href"));
-        Assert.Contains("Create New Customer", createButton.TextContent);
+        Assert.Contains("Create New Customer", createButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -50,10 +50,10 @@ public class IndexPageTests : BunitContext
         // Arrange
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Manage customer"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Manage customer", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Manage customer information and profiles", cut.Markup);
+        Assert.Contains("Manage customer information and profiles", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -66,8 +66,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-info");
-        Assert.Contains("No customers found", alert.TextContent);
-        Assert.Contains("Create your first customer", alert.TextContent);
+        Assert.Contains("No customers found", alert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Create your first customer", alert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -97,11 +97,11 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var headers = cut.FindAll("th");
-        Assert.Contains(headers, h => h.TextContent.Contains("Name"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Email"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Mobile"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Nationality"));
-        Assert.Contains(headers, h => h.TextContent.Contains("Actions"));
+        Assert.Contains(headers, h => h.TextContent.Contains("Name", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Email", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Mobile", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Nationality", StringComparison.Ordinal));
+        Assert.Contains(headers, h => h.TextContent.Contains("Actions", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -119,13 +119,13 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("John"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("John", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("John Doe", cut.Markup);
-        Assert.Contains("john.doe@example.com", cut.Markup);
-        Assert.Contains("+1234567890", cut.Markup);
-        Assert.Contains("Brazilian", cut.Markup);
+        Assert.Contains("John Doe", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("john.doe@example.com", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("+1234567890", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Brazilian", cut.Markup, StringComparison.Ordinal);
     }
 
 
@@ -143,7 +143,7 @@ public class IndexPageTests : BunitContext
         // Assert
         var viewButton = cut.Find("a.btn.btn-info");
         Assert.Equal($"/customers/{customer.Id}", viewButton.GetAttribute("href"));
-        Assert.Contains("View", viewButton.TextContent);
+        Assert.Contains("View", viewButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class IndexPageTests : BunitContext
         var buttons = cut.FindAll("a.btn.btn-primary");
         var editButton = buttons[buttons.Count - 1];
         Assert.Equal($"/customers/{customer.Id}/edit", editButton.GetAttribute("href"));
-        Assert.Contains("Edit", editButton.TextContent);
+        Assert.Contains("Edit", editButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -174,13 +174,13 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Total customers: 3"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Total customers: 3", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Alice Smith", cut.Markup);
-        Assert.Contains("Bob Johnson", cut.Markup);
-        Assert.Contains("Carol Williams", cut.Markup);
-        Assert.Contains("Total customers: 3", cut.Markup);
+        Assert.Contains("Alice Smith", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Bob Johnson", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Carol Williams", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Total customers: 3", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var totalText = cut.Find("p.text-muted");
-        Assert.Contains("Total customers: 15", totalText.TextContent);
+        Assert.Contains("Total customers: 15", totalText.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.FindAll("p.text-muted").Count > 0, TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Total customers: 8", cut.Markup);
+        Assert.Contains("Total customers: 8", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -253,10 +253,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("Jane Doe"), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("Jane Doe", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Jane Doe", cut.Markup);
+        Assert.Contains("Jane Doe", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]

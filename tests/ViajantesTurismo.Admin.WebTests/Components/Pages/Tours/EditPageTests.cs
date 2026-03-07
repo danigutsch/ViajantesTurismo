@@ -28,7 +28,8 @@ public class EditPageTests : BunitContext
 
         // Assert
         var markup = cut.Markup;
-        Assert.True(markup.Contains("Loading...") || markup.Contains("Tour not found") || markup.Contains("input#identifier"));
+        Assert.True(markup.Contains("Loading...", StringComparison.Ordinal) || markup.Contains("Tour not found", StringComparison.Ordinal) ||
+                    markup.Contains("input#identifier", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -45,7 +46,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var alert = cut.Find(".alert-danger");
-        Assert.Contains("Tour not found", alert.TextContent);
+        Assert.Contains("Tour not found", alert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var backButton = cut.Find("a.btn-secondary");
-        Assert.Contains("Back to Tours", backButton.TextContent);
+        Assert.Contains("Back to Tours", backButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -141,9 +142,9 @@ public class EditPageTests : BunitContext
 
         var markup = cut.Markup;
 
-        Assert.Contains("Hotel", markup);
-        Assert.Contains("Breakfast", markup);
-        Assert.Contains("Lunch", markup);
+        Assert.Contains("Hotel", markup, StringComparison.Ordinal);
+        Assert.Contains("Breakfast", markup, StringComparison.Ordinal);
+        Assert.Contains("Lunch", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -160,7 +161,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("button[type='submit']").Count > 0, TimeSpan.FromSeconds(2));
 
         var submitButton = cut.Find("button[type='submit']");
-        Assert.Contains("Update Tour", submitButton.TextContent);
+        Assert.Contains("Update Tour", submitButton.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -177,8 +178,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll("a.btn-secondary").Count > 0, TimeSpan.FromSeconds(2));
 
         var cancelButton = cut.Find("a.btn-secondary");
-        Assert.Contains("Cancel", cancelButton.TextContent);
-        Assert.Contains("/tours", cancelButton.GetAttribute("href"));
+        Assert.Contains("Cancel", cancelButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains("/tours", cancelButton.GetAttribute("href"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -199,7 +200,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
         var successAlert = cut.Find(".alert-success");
-        Assert.Contains("Tour updated successfully!", successAlert.TextContent);
+        Assert.Contains("Tour updated successfully!", successAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -220,7 +221,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-info").Count > 0, TimeSpan.FromSeconds(2));
 
         var redirectAlert = cut.Find(".alert-info");
-        Assert.Contains("Redirecting to details page in 3 seconds", redirectAlert.TextContent);
+        Assert.Contains("Redirecting to details page in 3 seconds", redirectAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -240,7 +241,7 @@ public class EditPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-info").Count > 0, TimeSpan.FromSeconds(2));
 
-        var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel"));
+        var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel", StringComparison.Ordinal));
         Assert.NotNull(cancelButton);
     }
 
@@ -260,7 +261,7 @@ public class EditPageTests : BunitContext
 
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-info").Count > 0, TimeSpan.FromSeconds(2));
 
-        var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel"));
+        var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel", StringComparison.Ordinal));
         await cut.InvokeAsync(() => cancelButton.Click());
 
         // Assert
@@ -272,7 +273,7 @@ public class EditPageTests : BunitContext
         Assert.True(successAlerts.Count >= 1, "Should have at least one success alert");
 
         var markup = cut.Markup;
-        Assert.Contains("You can go to the details page now", markup);
+        Assert.Contains("You can go to the details page now", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -291,14 +292,14 @@ public class EditPageTests : BunitContext
 
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-info").Count > 0, TimeSpan.FromSeconds(2));
 
-        var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel"));
+        var cancelButton = cut.FindAll("button").First(b => b.TextContent.Contains("Cancel", StringComparison.Ordinal));
         await cut.InvokeAsync(() => cancelButton.Click());
 
         // Assert
-        await cut.WaitForStateAsync(() => cut.FindAll("button").Any(b => b.TextContent.Contains("Go to Details")),
+        await cut.WaitForStateAsync(() => cut.FindAll("button").Any(b => b.TextContent.Contains("Go to Details", StringComparison.Ordinal)),
             TimeSpan.FromSeconds(2));
 
-        var goToDetailsButton = cut.FindAll("button").First(b => b.TextContent.Contains("Go to Details"));
+        var goToDetailsButton = cut.FindAll("button").First(b => b.TextContent.Contains("Go to Details", StringComparison.Ordinal));
         Assert.NotNull(goToDetailsButton);
     }
 
@@ -322,7 +323,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("Failed to update tour", errorAlert.TextContent);
+        Assert.Contains("Failed to update tour", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -343,7 +344,7 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() =>
         {
             var button = cut.Find("button[type='submit']");
-            return button.TextContent.Contains("Updating...") || cut.FindAll(".alert-success").Count > 0;
+            return button.TextContent.Contains("Updating...", StringComparison.Ordinal) || cut.FindAll(".alert-success").Count > 0;
         }, TimeSpan.FromSeconds(2));
 
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
@@ -405,8 +406,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("Error loading tour", errorAlert.TextContent);
-        Assert.Contains("Database error", errorAlert.TextContent);
+        Assert.Contains("Error loading tour", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Database error", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -426,9 +427,9 @@ public class EditPageTests : BunitContext
         var options = currencySelect.QuerySelectorAll("option");
 
         Assert.Equal(3, options.Length);
-        Assert.Contains(options, o => o.TextContent.Contains("Brazilian Real"));
-        Assert.Contains(options, o => o.TextContent.Contains("Euro"));
-        Assert.Contains(options, o => o.TextContent.Contains("US Dollar"));
+        Assert.Contains(options, o => o.TextContent.Contains("Brazilian Real", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Euro", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("US Dollar", StringComparison.Ordinal));
     }
 
     [Fact]

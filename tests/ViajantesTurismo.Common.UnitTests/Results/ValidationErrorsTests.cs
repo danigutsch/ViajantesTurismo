@@ -33,7 +33,7 @@ public sealed class ValidationErrorsTests
         var successResult = Result.Ok();
 
         var exception = Assert.Throws<InvalidOperationException>(() => errors.Add(successResult));
-        Assert.Contains("Only validation errors can be added", exception.Message);
+        Assert.Contains("Only validation errors can be added", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class ValidationErrorsTests
         var successResult = Result<int>.Ok(42);
 
         var exception = Assert.Throws<InvalidOperationException>(() => errors.Add(successResult));
-        Assert.Contains("Only validation errors can be added", exception.Message);
+        Assert.Contains("Only validation errors can be added", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public sealed class ValidationErrorsTests
         var errors = new ValidationErrors();
 
         var exception = Assert.Throws<InvalidOperationException>(() => errors.ToResult());
-        Assert.Contains("Cannot create result from empty error collection", exception.Message);
+        Assert.Contains("Cannot create result from empty error collection", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public sealed class ValidationErrorsTests
         var errors = new ValidationErrors();
 
         var exception = Assert.Throws<InvalidOperationException>(() => errors.ToResult<int>());
-        Assert.Contains("Cannot create result from empty error collection", exception.Message);
+        Assert.Contains("Cannot create result from empty error collection", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

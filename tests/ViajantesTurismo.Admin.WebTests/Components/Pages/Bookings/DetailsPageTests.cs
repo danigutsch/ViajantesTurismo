@@ -25,7 +25,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
 
         // Assert — "Edit Booking" link must NOT be present
-        Assert.DoesNotContain("Edit Booking", cut.Markup);
+        Assert.DoesNotContain("Edit Booking", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
 
         // Assert — should still have a way to navigate back
-        var backLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Back to List"));
+        var backLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Back to List", StringComparison.Ordinal));
         Assert.NotNull(backLink);
         Assert.Equal("/bookings", backLink.GetAttribute("href"));
     }
@@ -56,7 +56,7 @@ public sealed class DetailsPageTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Booking not found", alert.TextContent);
+        Assert.Contains("Booking not found", alert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find("h1"));
 
         // Assert
-        var editLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Edit Booking"));
+        var editLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Edit Booking", StringComparison.Ordinal));
         Assert.NotNull(editLink);
         Assert.Equal($"/bookings/{booking.Id}/edit", editLink.GetAttribute("href"));
     }

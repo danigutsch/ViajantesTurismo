@@ -26,8 +26,8 @@ public class CustomerBookingEditFormTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert.alert-info");
-        Assert.Contains("Tour and companion cannot be changed after booking creation", alert.TextContent);
-        Assert.Contains("bi-info-circle", alert.InnerHtml);
+        Assert.Contains("Tour and companion cannot be changed after booking creation", alert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-info-circle", alert.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public class CustomerBookingEditFormTests : BunitContext
         Assert.True(tourSelect.HasAttribute("disabled"));
         var options = tourSelect.QuerySelectorAll("option");
         Assert.Equal(3, options.Length); // Placeholder + 2 tours
-        Assert.Contains("Tour A (01/06/2025)", options[1].TextContent);
-        Assert.Contains("Tour B (01/07/2025)", options[2].TextContent);
+        Assert.Contains("Tour A (01/06/2025)", options[1].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Tour B (01/07/2025)", options[2].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -85,8 +85,8 @@ public class CustomerBookingEditFormTests : BunitContext
         var options = companionSelect.QuerySelectorAll("option");
         Assert.Equal(2, options.Length); // "No Companion" + 1 other customer
         Assert.Equal("-- No Companion --", options[0].TextContent);
-        Assert.DoesNotContain(options, o => o.TextContent.Contains("Current Customer"));
-        Assert.Contains(options, o => o.TextContent.Contains("Companion Person"));
+        Assert.DoesNotContain(options, o => o.TextContent.Contains("Current Customer", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Companion Person", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -115,9 +115,9 @@ public class CustomerBookingEditFormTests : BunitContext
         var companionSelect = companionSelects[1];
         var options = companionSelect.QuerySelectorAll("option");
         Assert.Equal(3, options.Length); // Placeholder + 2 other customers (Alice excluded)
-        Assert.DoesNotContain(options, o => o.TextContent.Contains("Alice Brown"));
-        Assert.Contains(options, o => o.TextContent.Contains("Bob Smith"));
-        Assert.Contains(options, o => o.TextContent.Contains("Charlie Jones"));
+        Assert.DoesNotContain(options, o => o.TextContent.Contains("Alice Brown", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Bob Smith", StringComparison.Ordinal));
+        Assert.Contains(options, o => o.TextContent.Contains("Charlie Jones", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -157,9 +157,9 @@ public class CustomerBookingEditFormTests : BunitContext
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
-        var discountCard = cut.FindAll(".card").First(c => c.TextContent.Contains("Discount"));
-        Assert.Contains("Discount", discountCard.QuerySelector(".card-title")!.TextContent);
-        Assert.Contains("bi-percent", discountCard.InnerHtml);
+        var discountCard = cut.FindAll(".card").First(c => c.TextContent.Contains("Discount", StringComparison.Ordinal));
+        Assert.Contains("Discount", discountCard.QuerySelector(".card-title")!.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-percent", discountCard.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -181,9 +181,9 @@ public class CustomerBookingEditFormTests : BunitContext
         var discountTypeSelect = cut.Find("select#discountType");
         var options = discountTypeSelect.QuerySelectorAll("option");
         Assert.Equal(3, options.Length);
-        Assert.Contains("No Discount", options[0].TextContent);
-        Assert.Contains("Percentage (0-100%)", options[1].TextContent);
-        Assert.Contains("Absolute Amount", options[2].TextContent);
+        Assert.Contains("No Discount", options[0].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Percentage (0-100%)", options[1].TextContent, StringComparison.Ordinal);
+        Assert.Contains("Absolute Amount", options[2].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -203,9 +203,9 @@ public class CustomerBookingEditFormTests : BunitContext
 
         // Assert
         var labels = cut.FindAll("label");
-        Assert.DoesNotContain(labels, l => l.TextContent.Contains("Discount Percentage"));
-        Assert.DoesNotContain(labels, l => l.TextContent.Contains("Discount Amount"));
-        Assert.DoesNotContain(labels, l => l.TextContent.Contains("Discount Reason"));
+        Assert.DoesNotContain(labels, l => l.TextContent.Contains("Discount Percentage", StringComparison.Ordinal));
+        Assert.DoesNotContain(labels, l => l.TextContent.Contains("Discount Amount", StringComparison.Ordinal));
+        Assert.DoesNotContain(labels, l => l.TextContent.Contains("Discount Reason", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public class CustomerBookingEditFormTests : BunitContext
         // Assert
         var amountLabel = cut.Find("label:contains('Discount Amount')");
         Assert.NotNull(amountLabel);
-        Assert.DoesNotContain("Percentage", amountLabel.TextContent);
+        Assert.DoesNotContain("Percentage", amountLabel.TextContent, StringComparison.Ordinal);
 
         var discountAmountInput = cut.Find("input#discountAmount");
         Assert.Equal("100", discountAmountInput.GetAttribute("value"));
@@ -296,7 +296,7 @@ public class CustomerBookingEditFormTests : BunitContext
         Assert.Equal("2", reasonTextArea.GetAttribute("rows"));
 
         var helpText = cut.Find(".form-text:contains('Required for audit purposes')");
-        Assert.Contains("10-500 characters", helpText.TextContent);
+        Assert.Contains("10-500 characters", helpText.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -316,8 +316,8 @@ public class CustomerBookingEditFormTests : BunitContext
 
         // Assert
         var updateButton = cut.Find("button[type='submit']");
-        Assert.Contains("Update Booking", updateButton.TextContent);
-        Assert.Contains("btn-primary", updateButton.ClassName);
+        Assert.Contains("Update Booking", updateButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains("btn-primary", updateButton.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -337,7 +337,7 @@ public class CustomerBookingEditFormTests : BunitContext
 
         // Assert
         var cancelButton = cut.Find("button[type='button']:contains('Cancel')");
-        Assert.Contains("btn-secondary", cancelButton.ClassName);
+        Assert.Contains("btn-secondary", cancelButton.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public class CustomerBookingEditFormTests : BunitContext
         var updateButton = cut.Find("button[type='submit']");
         var spinner = updateButton.QuerySelector(".spinner-border");
         Assert.NotNull(spinner);
-        Assert.Contains("spinner-border-sm", spinner.ClassName);
+        Assert.Contains("spinner-border-sm", spinner.ClassName, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -493,9 +493,9 @@ public class CustomerBookingEditFormTests : BunitContext
         Assert.Equal(2, columns.Length);
 
         var tourColumn = columns[0];
-        Assert.Contains("Tour", tourColumn.TextContent);
+        Assert.Contains("Tour", tourColumn.TextContent, StringComparison.Ordinal);
 
         var companionColumn = columns[1];
-        Assert.Contains("Companion", companionColumn.TextContent);
+        Assert.Contains("Companion", companionColumn.TextContent, StringComparison.Ordinal);
     }
 }

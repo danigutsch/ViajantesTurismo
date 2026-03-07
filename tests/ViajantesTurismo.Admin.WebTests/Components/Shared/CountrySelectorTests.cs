@@ -132,9 +132,9 @@ public class CountrySelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".country-dropdown-item");
         Assert.Equal(3, items.Count);
-        Assert.Contains(items, i => i.TextContent.Contains("Portugal"));
-        Assert.Contains(items, i => i.TextContent.Contains("Spain"));
-        Assert.Contains(items, i => i.TextContent.Contains("France"));
+        Assert.Contains(items, i => i.TextContent.Contains("Portugal", StringComparison.Ordinal));
+        Assert.Contains(items, i => i.TextContent.Contains("Spain", StringComparison.Ordinal));
+        Assert.Contains(items, i => i.TextContent.Contains("France", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class CountrySelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".country-dropdown-item");
         Assert.Single(items);
-        Assert.Contains("Portugal", items[0].TextContent);
+        Assert.Contains("Portugal", items[0].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class CountrySelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".country-dropdown-item");
         Assert.Single(items);
-        Assert.Contains("Spain", items[0].TextContent);
+        Assert.Contains("Spain", items[0].TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -230,8 +230,8 @@ public class CountrySelectorTests : BunitContext
 
         // Assert
         var noResultsMessages = cut.FindAll(".text-muted");
-        var noResultsMessage = noResultsMessages.First(m => m.TextContent.Contains("No countries found"));
-        Assert.Contains("No countries found", noResultsMessage.TextContent);
+        var noResultsMessage = noResultsMessages.First(m => m.TextContent.Contains("No countries found", StringComparison.Ordinal));
+        Assert.Contains("No countries found", noResultsMessage.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -265,8 +265,8 @@ public class CountrySelectorTests : BunitContext
 
         // Assert - Spain is selected
         var selectedButton = cut.Find("button.form-select");
-        Assert.Contains("Spain", selectedButton.TextContent);
-        Assert.Contains("fi-ES", selectedButton.InnerHtml);
+        Assert.Contains("Spain", selectedButton.TextContent, StringComparison.Ordinal);
+        Assert.Contains("fi-ES", selectedButton.InnerHtml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -420,7 +420,7 @@ public class CountrySelectorTests : BunitContext
 
         // Assert - Should not throw, shows placeholder
         var button = cut.Find("button.form-select");
-        Assert.Contains("-- Select Country --", button.TextContent);
+        Assert.Contains("-- Select Country --", button.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -442,7 +442,7 @@ public class CountrySelectorTests : BunitContext
         // Assert
         var items = cut.FindAll(".country-dropdown-item");
         Assert.Empty(items);
-        Assert.Contains("No countries found", cut.Markup);
+        Assert.Contains("No countries found", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -467,7 +467,7 @@ public class CountrySelectorTests : BunitContext
 
         // Assert
         var item = cut.Find(".country-dropdown-item");
-        Assert.Contains("fi-PT", item.InnerHtml);
-        Assert.Contains("Portugal", item.TextContent);
+        Assert.Contains("fi-PT", item.InnerHtml, StringComparison.Ordinal);
+        Assert.Contains("Portugal", item.TextContent, StringComparison.Ordinal);
     }
 }

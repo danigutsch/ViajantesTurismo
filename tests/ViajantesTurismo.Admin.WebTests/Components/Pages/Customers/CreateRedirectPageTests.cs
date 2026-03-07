@@ -13,10 +13,10 @@ public sealed class CreateRedirectPageTests : BunitContext
 
         // Act
         var cut = Render<CreateRedirect>();
-        cut.WaitForState(() => navManager.Uri.EndsWith("/customers/create/personal-info"));
+        cut.WaitForState(() => navManager.Uri.EndsWith("/customers/create/personal-info", StringComparison.Ordinal));
 
         // Assert
-        Assert.EndsWith("/customers/create/personal-info", navManager.Uri);
+        Assert.EndsWith("/customers/create/personal-info", navManager.Uri, StringComparison.Ordinal);
     }
 
     [Fact]

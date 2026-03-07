@@ -117,7 +117,7 @@ internal static class DtoBuilders
             },
             ContactInfo = new ContactInfoDto
             {
-                Email = email ?? TestDataGenerator.UniqueEmail($"{first.ToLower()}.{last.ToLower()}"),
+                Email = email ?? TestDataGenerator.UniqueEmail($"{first.ToUpperInvariant()}.{last.ToUpperInvariant()}"),
                 Mobile = mobile ?? TestDataGenerator.UniquePhone(),
                 Instagram = null,
                 Facebook = null
@@ -303,7 +303,7 @@ internal static class DtoBuilders
             },
             ContactInfo = new ContactInfoDto
             {
-                Email = email ?? TestDataGenerator.UniqueEmail($"{first.ToLower()}.{last.ToLower()}"),
+                Email = email ?? TestDataGenerator.UniqueEmail($"{first.ToUpperInvariant()}.{last.ToUpperInvariant()}"),
                 Mobile = mobile ?? TestDataGenerator.UniquePhone(),
                 Instagram = instagram,
                 Facebook = facebook

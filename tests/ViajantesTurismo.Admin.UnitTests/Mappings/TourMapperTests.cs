@@ -45,7 +45,7 @@ public class TourMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TourMapper.MapToCurrency(invalidValue));
-        Assert.Contains("Invalid currency value", exception.Message);
+        Assert.Contains("Invalid currency value", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -87,6 +87,6 @@ public class TourMapperTests
         // Act
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TourMapper.MapToCurrencyDto(invalidValue));
-        Assert.Contains("Invalid currency value", exception.Message);
+        Assert.Contains("Invalid currency value", exception.Message, StringComparison.Ordinal);
     }
 }

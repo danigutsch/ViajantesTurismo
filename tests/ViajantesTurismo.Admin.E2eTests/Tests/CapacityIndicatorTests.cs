@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
@@ -45,7 +46,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
         await Page.Locator("#minCustomers").FillAsync("1");
-        await Page.Locator("#maxCustomers").FillAsync(currentCount.ToString());
+        await Page.Locator("#maxCustomers").FillAsync(currentCount.ToString(CultureInfo.InvariantCulture));
         await Page.GetButton("Update Tour").ClickAsync();
 
         // Cancel the redirect and verify on the list
@@ -69,8 +70,8 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetLink("Edit Tour").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
-        await Page.Locator("#minCustomers").FillAsync(currentCount.ToString());
-        await Page.Locator("#maxCustomers").FillAsync(greenMax.ToString());
+        await Page.Locator("#minCustomers").FillAsync(currentCount.ToString(CultureInfo.InvariantCulture));
+        await Page.Locator("#maxCustomers").FillAsync(greenMax.ToString(CultureInfo.InvariantCulture));
         await Page.GetButton("Update Tour").ClickAsync();
 
         await Page.GetButton("Cancel").ClickAsync();
@@ -92,7 +93,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetLink("Edit Tour").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
-        await Page.Locator("#minCustomers").FillAsync((currentCount + 5).ToString());
+        await Page.Locator("#minCustomers").FillAsync((currentCount + 5).ToString(CultureInfo.InvariantCulture));
         await Page.Locator("#maxCustomers").FillAsync("20");
         await Page.GetButton("Update Tour").ClickAsync();
 
