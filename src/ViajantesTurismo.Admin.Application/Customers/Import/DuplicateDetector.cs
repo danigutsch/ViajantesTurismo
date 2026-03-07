@@ -1,4 +1,5 @@
 using ViajantesTurismo.Common.Sanitizers;
+using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
@@ -66,6 +67,43 @@ public static class DuplicateDetector
 
             var normalizedName = StringSanitizer.NormalizeKeyRemovingDiacritics($"{firstName} {lastName}");
             if (!seenNames.Add(normalizedName))
+            {
+                duplicateLineNumbers.Add(rowIndex + 2);
+            }
+        }
+
+        return duplicateLineNumbers;
+    }
+
+    /// <summary>
+    /// Returns CSV line numbers for rows whose email already exists in the database.
+    /// </summary>
+    /// <param name="document">CSV document containing headers and rows.</param>
+    /// <param name="customerStore">Customer store used to check existing emails.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Line numbers (1-based CSV lines) for rows with duplicate emails in database.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when required arguments are null.</exception>
+    public static async Task<IReadOnlyList<int>> FindDuplicateEmailLineNumbersAgainstDatabaseAsync(
+        CsvDocument document,
+        ICustomerStore customerStore,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(customerStore);
+
+        var duplicateLineNumbers = new List<int>();
+
+        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
+        {
+            var row = document.Rows[rowIndex];
+
+            if (!row.TryGetByHeader(document.Headers, "Email", out var email) || string.IsNullOrWhiteSpace(email))
+            {
+                continue;
+            }
+
+            var normalizedEmail = StringSanitizer.NormalizeKey(email);
+            if (await customerStore.EmailExists(normalizedEmail, ct))
             {
                 duplicateLineNumbers.Add(rowIndex + 2);
             }
