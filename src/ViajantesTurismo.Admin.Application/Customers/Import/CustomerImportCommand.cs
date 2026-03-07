@@ -17,7 +17,7 @@ public sealed record CustomerImportCommand
         int successCount,
         int errorCount,
         bool dryRun)
-        : this(successCount, errorCount, dryRun, [])
+        : this(successCount, errorCount, dryRun, [], [])
     {
     }
 
@@ -33,11 +33,30 @@ public sealed record CustomerImportCommand
         int errorCount,
         bool dryRun,
         IReadOnlyList<Customer> customersToCreate)
+        : this(successCount, errorCount, dryRun, customersToCreate, [])
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CustomerImportCommand"/> record.
+    /// </summary>
+    /// <param name="successCount">Number of successfully processed rows.</param>
+    /// <param name="errorCount">Number of rows that failed processing.</param>
+    /// <param name="dryRun">Whether the import should skip persistence.</param>
+    /// <param name="customersToCreate">Customers that should be created when import is committed.</param>
+    /// <param name="customersToOverwrite">Existing customers that should be overwritten by imported data.</param>
+    public CustomerImportCommand(
+        int successCount,
+        int errorCount,
+        bool dryRun,
+        IReadOnlyList<Customer> customersToCreate,
+        IReadOnlyList<CustomerOverwritePair> customersToOverwrite)
     {
         SuccessCount = successCount;
         ErrorCount = errorCount;
         DryRun = dryRun;
         CustomersToCreate = customersToCreate;
+        CustomersToOverwrite = customersToOverwrite;
     }
 
     /// <summary>
@@ -59,4 +78,9 @@ public sealed record CustomerImportCommand
     /// Customers that should be created when import is committed.
     /// </summary>
     public IReadOnlyList<Customer> CustomersToCreate { get; }
+
+    /// <summary>
+    /// Existing customers that should be overwritten by imported data.
+    /// </summary>
+    public IReadOnlyList<CustomerOverwritePair> CustomersToOverwrite { get; }
 }

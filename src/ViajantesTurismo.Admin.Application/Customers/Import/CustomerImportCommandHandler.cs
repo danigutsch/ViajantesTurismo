@@ -25,6 +25,18 @@ public sealed class CustomerImportCommandHandler(ICustomerStore customerStore, I
                 customerStore.Add(customer);
             }
 
+            foreach (var overwritePair in command.CustomersToOverwrite)
+            {
+                overwritePair.ExistingCustomer.UpdatePersonalInfo(overwritePair.IncomingCustomer.PersonalInfo);
+                overwritePair.ExistingCustomer.UpdateIdentificationInfo(overwritePair.IncomingCustomer.IdentificationInfo);
+                overwritePair.ExistingCustomer.UpdateContactInfo(overwritePair.IncomingCustomer.ContactInfo);
+                overwritePair.ExistingCustomer.UpdateAddress(overwritePair.IncomingCustomer.Address);
+                overwritePair.ExistingCustomer.UpdatePhysicalInfo(overwritePair.IncomingCustomer.PhysicalInfo);
+                overwritePair.ExistingCustomer.UpdateAccommodationPreferences(overwritePair.IncomingCustomer.AccommodationPreferences);
+                overwritePair.ExistingCustomer.UpdateEmergencyContact(overwritePair.IncomingCustomer.EmergencyContact);
+                overwritePair.ExistingCustomer.UpdateMedicalInfo(overwritePair.IncomingCustomer.MedicalInfo);
+            }
+
             await unitOfWork.SaveEntities(ct);
         }
 

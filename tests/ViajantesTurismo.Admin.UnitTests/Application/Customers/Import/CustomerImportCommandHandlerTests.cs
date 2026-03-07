@@ -57,4 +57,32 @@ public sealed class CustomerImportCommandHandlerTests
         var persistedCustomer = await customerStore.GetById(customer.Id, CancellationToken.None);
         Assert.NotNull(persistedCustomer);
     }
+
+    [Fact]
+    public async Task Handle_With_Overwrite_Updates_Existing_Customer()
+    {
+        // Arrange
+        var customerStore = new FakeCustomerStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var existingCustomer = CreateTestCustomer(TimeProvider.System, "before@example.com");
+        var incomingCustomer = CreateTestCustomer(TimeProvider.System, "after@example.com");
+        customerStore.Seed(existingCustomer);
+
+        var handler = new CustomerImportCommandHandler(customerStore, unitOfWork);
+        var command = new CustomerImportCommand(
+            1,
+            0,
+            false,
+            [],
+            [new CustomerOverwritePair(existingCustomer, incomingCustomer)]);
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, result.SuccessCount);
+        Assert.Equal(0, result.ErrorCount);
+        Assert.Equal(1, unitOfWork.SaveEntitiesCallCount);
+        Assert.Equal("after@example.com", existingCustomer.ContactInfo.Email);
+    }
 }
