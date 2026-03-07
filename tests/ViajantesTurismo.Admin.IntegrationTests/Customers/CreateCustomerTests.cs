@@ -99,7 +99,7 @@ public sealed class CreateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
     public async Task Cannot_Create_Customer_With_Duplicate_Email()
     {
         // Arrange
-        const string duplicateEmail = "duplicate@example.com";
+        var duplicateEmail = TestDataGenerator.UniqueEmail("duplicate");
         var firstRequest = DtoBuilders.BuildCreateCustomerDto("First", "Customer");
         firstRequest = firstRequest with
         {

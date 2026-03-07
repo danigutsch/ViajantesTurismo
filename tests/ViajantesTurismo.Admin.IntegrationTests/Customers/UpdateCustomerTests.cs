@@ -13,12 +13,13 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
     {
         // Arrange
         var customer = await Client.CreateTestCustomer("Alice", "Johnson", TestContext.Current.CancellationToken);
+        var updatedEmail = TestDataGenerator.UniqueEmail("alice.smith");
 
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: "Alice",
             lastName: "Johnson-Smith",
             occupation: "Senior Designer",
-            email: "alice.smith@example.com",
+            email: updatedEmail,
             mobile: "+447123456789",
             instagram: "@alicesmith",
             facebook: "alice.smith",
@@ -138,7 +139,7 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         // Arrange
         var customer = await Client.CreateTestCustomer("Bob", "Wilson", TestContext.Current.CancellationToken);
         var originalEmail = customer.Email;
-        var newEmail = "bob.wilson.new@example.com";
+        var newEmail = TestDataGenerator.UniqueEmail("bob.wilson.new");
 
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: customer.FirstName,
@@ -177,11 +178,12 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
     {
         // Arrange
         var customer = await Client.CreateTestCustomer("Diana", "Smith", TestContext.Current.CancellationToken);
+        var updatedEmail = TestDataGenerator.UniqueEmail("diana.smithjones");
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: "Diana",
             lastName: "Smith-Jones",
             occupation: "Architect",
-            email: "diana.smithjones@example.com");
+            email: updatedEmail);
 
         // Act
         var firstResponse = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
@@ -205,12 +207,13 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
         var customer = await Client.CreateTestCustomer("Emily", "Johnson", TestContext.Current.CancellationToken);
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
         var booking = await Client.CreateTestBooking(tour.Id, customer.Id, cancellationToken: TestContext.Current.CancellationToken);
+        var updatedEmail = TestDataGenerator.UniqueEmail("emily.williams");
 
         var updateRequest = DtoBuilders.BuildUpdateCustomerDto(
             firstName: "Emily",
             lastName: "Johnson-Williams",
             occupation: "Senior Manager",
-            email: "emily.williams@example.com",
+            email: updatedEmail,
             mobile: "+447123999888");
 
         // Act

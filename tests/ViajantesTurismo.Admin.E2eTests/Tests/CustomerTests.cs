@@ -7,13 +7,21 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()
     {
+        var uid = Guid.NewGuid().ToString("N")[..8];
+        var firstName = $"E2E{uid}";
+        var lastName = $"Customer{uid}";
+        var nationalId = $"E2E{uid}";
+        var email = $"e2e-wizard-{uid}@test.com";
+        var street = $"E2E Street {uid}";
+        var emergencyContactName = $"EmergencyPerson {uid}";
+
         // === Step 1: Personal Information ===
         await NavigateToAsync("/customers/create/personal-info");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
         await Expect(Page.GetByText("Step 1 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#firstName", "E2ETest");
-        await Page.FillAsync("#lastName", "CustomerWizard");
+        await Page.FillAsync("#firstName", firstName);
+        await Page.FillAsync("#lastName", lastName);
         await Page.FillAsync("#birthDate", "1990-06-15");
         await Page.SelectOptionAsync("#gender", "Female");
 
@@ -30,7 +38,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Create Customer - Identification");
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#nationalId", "E2E987654");
+        await Page.FillAsync("#nationalId", nationalId);
 
         // CountrySelector for ID Nationality has no explicit id; locate by label context
         var idNatField = Page.Locator(".mb-3").Filter(new LocatorFilterOptions { HasText = "ID Nationality" });
@@ -44,7 +52,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#email", "e2e-wizard@test.com");
+        await Page.FillAsync("#email", email);
         await Page.FillAsync("#mobile", "+5511999990001");
 
         await Page.GetButton("Next").ClickAsync();
@@ -53,7 +61,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Create Customer - Address");
         await Expect(Page.GetByText("Step 4 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#street", "E2E Street 789");
+        await Page.FillAsync("#street", street);
         await Page.FillAsync("#neighborhood", "TestVille");
         await Page.FillAsync("#postalCode", "54321-000");
         await Page.FillAsync("#city", "E2ECity");
@@ -85,7 +93,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Create Customer - Emergency Contact");
         await Expect(Page.GetByText("Step 7 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#name", "EmergencyPerson E2E");
+        await Page.FillAsync("#name", emergencyContactName);
         await Page.FillAsync("#mobile", "+5511988880001");
 
         await Page.GetButton("Next").ClickAsync();
@@ -103,13 +111,12 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Create Customer - Review & Submit");
 
         // Verify review shows data from all steps
-        await Expect(Page.GetByText("E2ETest")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("CustomerWizard")).ToBeVisibleAsync();
+        await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Brazil").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("QA Engineer")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("e2e-wizard@test.com")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("E2E Street 789")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("EmergencyPerson E2E")).ToBeVisibleAsync();
+        await Expect(Page.GetByText(email)).ToBeVisibleAsync();
+        await Expect(Page.GetByText(street)).ToBeVisibleAsync();
+        await Expect(Page.GetByText(emergencyContactName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("None known")).ToBeVisibleAsync();
 
         // Submit
@@ -119,11 +126,10 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
         // Verify key details
-        await Expect(Page.GetByText("E2ETest")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("CustomerWizard")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("e2e-wizard@test.com")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("E2E Street 789")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("EmergencyPerson E2E")).ToBeVisibleAsync();
+        await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
+        await Expect(Page.GetByText(email)).ToBeVisibleAsync();
+        await Expect(Page.GetByText(street)).ToBeVisibleAsync();
+        await Expect(Page.GetByText(emergencyContactName)).ToBeVisibleAsync();
 
         // Extract customer ID from URL
         var detailUrl = Page.Url;
@@ -161,8 +167,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         // === Refresh persistence: hard reload and verify saved values survive ===
         await Page.ReloadAsync();
         await Expect(Page).ToHaveTitleAsync("Customer Details");
-        await Expect(Page.GetByText("E2ETest")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("CustomerWizard")).ToBeVisibleAsync();
+        await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
     }

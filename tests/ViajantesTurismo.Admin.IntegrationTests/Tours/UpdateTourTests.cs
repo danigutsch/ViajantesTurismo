@@ -106,8 +106,9 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     {
         // Arrange
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var updatedIdentifier = TestDataGenerator.UniqueTourIdentifier("UPDATED");
         var updateRequest = DtoBuilders.BuildUpdateTourDto(
-            identifier: "UPDATED001",
+            identifier: updatedIdentifier,
             name: "Updated Tour Name",
             startDate: new DateTime(2026, 6, 1).ToUniversalTime(),
             endDate: new DateTime(2026, 6, 15).ToUniversalTime(),

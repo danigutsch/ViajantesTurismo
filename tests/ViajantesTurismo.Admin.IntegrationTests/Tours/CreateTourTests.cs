@@ -110,8 +110,9 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     {
         // Arrange
         const decimal maxPrice = 100_000.00m;
+        var identifier = TestDataGenerator.UniqueTourIdentifier("MAXPRICE");
         var request = DtoBuilders.BuildCreateTourDto(
-            identifier: "MAXPRICE",
+            identifier: identifier,
             name: "Max Price Tour",
             basePrice: maxPrice,
             singleRoomSupplement: maxPrice,
@@ -130,8 +131,9 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     {
         // Arrange
         const decimal minPrice = 0.01m;
+        var identifier = TestDataGenerator.UniqueTourIdentifier("MINPRICE");
         var request = DtoBuilders.BuildCreateTourDto(
-            identifier: "MINPRICE",
+            identifier: identifier,
             name: "Min Price Tour",
             basePrice: minPrice,
             singleRoomSupplement: minPrice,
