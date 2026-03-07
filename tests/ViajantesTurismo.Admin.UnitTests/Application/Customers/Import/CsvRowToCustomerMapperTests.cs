@@ -85,7 +85,7 @@ public class CsvRowToCustomerMapperTests
         // Assert
         Assert.True(customerResult.IsFailure);
         Assert.NotNull(customerResult.ErrorDetails);
-        Assert.Contains("Email", customerResult.ErrorDetails.Detail);
+        Assert.Contains("Email", customerResult.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.NotNull(customerResult.ErrorDetails.ValidationErrors);
         Assert.True(customerResult.ErrorDetails.ValidationErrors.ContainsKey("Email"));
     }
