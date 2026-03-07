@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.BehaviorTests.Fakes;
+namespace ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 public sealed class FakeTourStore : ITourStore
 {

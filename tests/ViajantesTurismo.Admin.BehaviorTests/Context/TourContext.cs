@@ -2,7 +2,6 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
-using ViajantesTurismo.Admin.BehaviorTests.Fakes;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 using ViajantesTurismo.Common.Results;
