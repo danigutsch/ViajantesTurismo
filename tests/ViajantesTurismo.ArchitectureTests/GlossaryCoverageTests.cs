@@ -32,21 +32,15 @@ public sealed class GlossaryCoverageTests
     }
 
     [Fact]
-    public void Shared_ValueObjects_Should_Be_Present_In_Glossary()
+    public void Domain_ValueObjects_Should_Be_Present_In_Glossary()
     {
-        var valueObjects = ArchitectureProvider.Assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
-            .Where(type => type is { IsClass: true, IsAbstract: false })
-            .Where(InheritsFromValueObject)
-            .Select(type => type.Name)
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
+        var valueObjects = GetDomainTypes(type => type is { IsClass: true, IsAbstract: false } && InheritsFromValueObject(type));
 
         var missing = valueObjects.Where(name => !IsTermDocumented(name)).ToArray();
 
         Assert.False(
             missing.Length > 0,
-            $"Expected all value objects to be documented in GLOSSARY.md, but missing: {string.Join(", ", missing)}");
+            $"Expected all domain value objects to be documented in GLOSSARY.md, but missing: {string.Join(", ", missing)}");
     }
 
     private static string[] GetDomainTypes(Func<Type, bool> predicate) =>
