@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Sanitizers;
 

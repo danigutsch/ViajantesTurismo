@@ -1,9 +1,10 @@
 using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
-public class CsvRowToCustomerMapperTests
+public class RowToCustomerMapperTests
 {
     [Fact]
     public void MapCustomer_With_All_Customer_Component_Columns_Returns_Customer()
@@ -33,7 +34,7 @@ public class CsvRowToCustomerMapperTests
         var document = documentResult.Value;
 
         // Act
-        var customerResult = CsvRowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
         Assert.True(customerResult.IsSuccess);
@@ -80,7 +81,7 @@ public class CsvRowToCustomerMapperTests
         var document = documentResult.Value;
 
         // Act
-        var customerResult = CsvRowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
 
         // Assert
         Assert.True(customerResult.IsFailure);

@@ -1,40 +1,38 @@
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Import;
+namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
 /// Represents a parsed CSV document with required headers and data rows.
 /// </summary>
-public sealed class CsvDocument
+public sealed class CsvDocument : IImportDocument
 {
+    private readonly IReadOnlyList<CsvRow> _rows;
+
     private CsvDocument(IEnumerable<string> headers, IEnumerable<CsvRow> rows)
     {
         Headers = [.. headers];
-        Rows = [.. rows];
+        _rows = [.. rows];
     }
 
-    /// <summary>
-    /// CSV header columns.
-    /// </summary>
+    /// <inheritdoc/>
     public IReadOnlyList<string> Headers { get; }
 
-    /// <summary>
-    /// CSV data rows (excluding the header row).
-    /// </summary>
-    public IReadOnlyList<CsvRow> Rows { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<IImportRow> Rows => _rows;
 
     /// <summary>
     /// Parses CSV content into a document with headers and rows.
     /// </summary>
-    /// <param name="csvContent">Full CSV content, where the first line is the header row.</param>
+    /// <param name="content">Full CSV content, where the first line is the header row.</param>
     /// <param name="requiredHeaderNames">Optional list of required headers that must exist in the CSV header row.</param>
     /// <returns>A parsed CSV document.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="csvContent"/> is null.</exception>
-    public static Result<CsvDocument> Parse(string csvContent, IReadOnlyList<string>? requiredHeaderNames = null)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="content"/> is null.</exception>
+    public static Result<CsvDocument> Parse(string content, IReadOnlyList<string>? requiredHeaderNames = null)
     {
-        ArgumentNullException.ThrowIfNull(csvContent);
+        ArgumentNullException.ThrowIfNull(content);
 
-        var lines = csvContent
+        var lines = content
             .Split(["\r\n", "\n"], StringSplitOptions.TrimEntries);
 
         if (lines.Length == 0 || string.IsNullOrWhiteSpace(lines[0]))

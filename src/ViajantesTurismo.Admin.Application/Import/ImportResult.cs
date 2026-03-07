@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Application.Customers.Import;
+namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
 /// Represents the aggregated outcome of a customer import operation.

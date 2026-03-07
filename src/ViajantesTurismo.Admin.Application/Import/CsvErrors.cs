@@ -1,11 +1,11 @@
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Import;
+namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
 /// Defines common error results for CSV document processing, such as inconsistent column counts across rows.
 /// </summary>
-public static class CsvErrors
+internal static class CsvErrors
 {
     /// <summary>
     /// Result indicating that a required header is missing.

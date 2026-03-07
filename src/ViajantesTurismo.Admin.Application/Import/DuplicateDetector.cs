@@ -1,20 +1,20 @@
-using ViajantesTurismo.Common.Sanitizers;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Common.Sanitizers;
 
-namespace ViajantesTurismo.Admin.Application.Customers.Import;
+namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
-/// Detects duplicate entries inside a CSV document.
+/// Detects duplicate entries inside a document.
 /// </summary>
 public static class DuplicateDetector
 {
     /// <summary>
-    /// Returns CSV line numbers for rows that duplicate a previously seen email.
+    /// Returns line numbers for rows that duplicate a previously seen email.
     /// </summary>
-    /// <param name="document">CSV document containing headers and rows.</param>
-    /// <returns>Line numbers (1-based CSV lines) for duplicate email rows.</returns>
+    /// <param name="document">Document containing headers and rows.</param>
+    /// <returns>Line numbers (1-based lines) for duplicate email rows.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="document"/> is null.</exception>
-    public static IReadOnlyList<int> FindDuplicateEmailLineNumbers(CsvDocument document)
+    public static IReadOnlyList<int> FindDuplicateEmailLineNumbers(IImportDocument document)
     {
         ArgumentNullException.ThrowIfNull(document);
 
@@ -41,12 +41,12 @@ public static class DuplicateDetector
     }
 
     /// <summary>
-    /// Returns CSV line numbers for rows that duplicate a previously seen name.
+    /// Returns line numbers for rows that duplicate a previously seen name.
     /// </summary>
-    /// <param name="document">CSV document containing headers and rows.</param>
-    /// <returns>Line numbers (1-based CSV lines) for duplicate name rows.</returns>
+    /// <param name="document">document containing headers and rows.</param>
+    /// <returns>Line numbers (1-based lines) for duplicate name rows.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="document"/> is null.</exception>
-    public static IReadOnlyList<int> FindDuplicateNameLineNumbers(CsvDocument document)
+    public static IReadOnlyList<int> FindDuplicateNameLineNumbers(IImportDocument document)
     {
         ArgumentNullException.ThrowIfNull(document);
 
@@ -76,15 +76,15 @@ public static class DuplicateDetector
     }
 
     /// <summary>
-    /// Returns CSV line numbers for rows whose email already exists in the database.
+    /// Returns line numbers for rows whose email already exists in the database.
     /// </summary>
-    /// <param name="document">CSV document containing headers and rows.</param>
+    /// <param name="document">document containing headers and rows.</param>
     /// <param name="customerStore">Customer store used to check existing emails.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>Line numbers (1-based CSV lines) for rows with duplicate emails in database.</returns>
+    /// <returns>Line numbers (1-based lines) for rows with duplicate emails in the database.</returns>
     /// <exception cref="ArgumentNullException">Thrown when required arguments are null.</exception>
     public static async Task<IReadOnlyList<int>> FindDuplicateEmailLineNumbersAgainstDatabaseAsync(
-        CsvDocument document,
+        IImportDocument document,
         ICustomerStore customerStore,
         CancellationToken ct)
     {

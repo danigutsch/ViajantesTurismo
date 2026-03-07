@@ -10,8 +10,4 @@
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Compile Remove="Migrations\20251011202710_Initial.Designer.cs"/>
-    </ItemGroup>
-
 </Project>

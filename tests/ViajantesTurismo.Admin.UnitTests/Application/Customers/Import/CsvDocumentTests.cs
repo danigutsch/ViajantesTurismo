@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Application.Import;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 

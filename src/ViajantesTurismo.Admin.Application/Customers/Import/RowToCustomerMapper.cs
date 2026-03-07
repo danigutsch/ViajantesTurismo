@@ -1,24 +1,25 @@
+using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
 /// <summary>
-/// Maps CSV row data to validated domain objects.
+/// Maps row data to validated domain objects.
 /// </summary>
-public static class CsvRowToCustomerMapper
+public static class RowToCustomerMapper
 {
     /// <summary>
-    /// Maps a CSV row to a fully validated <see cref="Customer"/>.
+    /// Maps a row to a fully validated <see cref="Customer"/>.
     /// </summary>
-    /// <param name="document">CSV document that provides header-to-column mapping.</param>
-    /// <param name="row">CSV data row to map.</param>
-    /// <param name="timeProvider">Time provider used by domain birth-date validation.</param>
+    /// <param name="document">Document that provides header-to-column mapping.</param>
+    /// <param name="row">Data row to map.</param>
+    /// <param name="timeProvider">Time provider used by domain birthdate validation.</param>
     /// <returns>A result containing the mapped <see cref="Customer"/> or validation errors.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="document"/>, <paramref name="row"/>, or <paramref name="timeProvider"/> is null.
     /// </exception>
-    public static Result<Customer> MapCustomer(CsvDocument document, CsvRow row, TimeProvider timeProvider)
+    public static Result<Customer> MapCustomer(IImportDocument document, IImportRow row, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(row);
@@ -90,7 +91,7 @@ public static class CsvRowToCustomerMapper
             medicalInfoResult.Value);
     }
 
-    private static Result<PersonalInfo> MapPersonalInfo(CsvDocument document, CsvRow row, TimeProvider timeProvider)
+    private static Result<PersonalInfo> MapPersonalInfo(IImportDocument document, IImportRow row, TimeProvider timeProvider)
     {
         var errors = new ValidationErrors();
 
@@ -126,7 +127,7 @@ public static class CsvRowToCustomerMapper
             timeProvider);
     }
 
-    private static Result<IdentificationInfo> MapIdentificationInfo(CsvDocument document, CsvRow row)
+    private static Result<IdentificationInfo> MapIdentificationInfo(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
         var nationalId = GetRequired(document, row, "NationalId", errors);
@@ -140,7 +141,7 @@ public static class CsvRowToCustomerMapper
         return IdentificationInfo.Create(nationalId!, idNationality!);
     }
 
-    private static Result<ContactInfo> MapContactInfo(CsvDocument document, CsvRow row)
+    private static Result<ContactInfo> MapContactInfo(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
         var email = GetRequired(document, row, "Email", errors);
@@ -157,7 +158,7 @@ public static class CsvRowToCustomerMapper
         return ContactInfo.Create(email!, mobile!, instagram, facebook);
     }
 
-    private static Result<Address> MapAddress(CsvDocument document, CsvRow row)
+    private static Result<Address> MapAddress(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
 
@@ -177,7 +178,7 @@ public static class CsvRowToCustomerMapper
         return Address.Create(street!, complement, neighborhood!, postalCode!, city!, state!, country!);
     }
 
-    private static Result<PhysicalInfo> MapPhysicalInfo(CsvDocument document, CsvRow row)
+    private static Result<PhysicalInfo> MapPhysicalInfo(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
 
@@ -223,7 +224,7 @@ public static class CsvRowToCustomerMapper
         return PhysicalInfo.Create(weightKg, heightCentimeters, bikeType);
     }
 
-    private static Result<AccommodationPreferences> MapAccommodationPreferences(CsvDocument document, CsvRow row)
+    private static Result<AccommodationPreferences> MapAccommodationPreferences(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
 
@@ -275,7 +276,7 @@ public static class CsvRowToCustomerMapper
         return AccommodationPreferences.Create(roomType, bedType, companionId);
     }
 
-    private static Result<EmergencyContact> MapEmergencyContact(CsvDocument document, CsvRow row)
+    private static Result<EmergencyContact> MapEmergencyContact(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
 
@@ -290,14 +291,14 @@ public static class CsvRowToCustomerMapper
         return EmergencyContact.Create(emergencyContactName!, emergencyContactMobile!);
     }
 
-    private static Result<MedicalInfo> MapMedicalInfo(CsvDocument document, CsvRow row)
+    private static Result<MedicalInfo> MapMedicalInfo(IImportDocument document, IImportRow row)
     {
         row.TryGetByHeader(document.Headers, "Allergies", out var allergies);
         row.TryGetByHeader(document.Headers, "AdditionalInfo", out var additionalInfo);
         return MedicalInfo.Create(allergies, additionalInfo);
     }
 
-    private static string? GetRequired(CsvDocument document, CsvRow row, string headerName, ValidationErrors errors)
+    private static string? GetRequired(IImportDocument document, IImportRow row, string headerName, ValidationErrors errors)
     {
         if (row.TryGetByHeader(document.Headers, headerName, out var value))
         {
