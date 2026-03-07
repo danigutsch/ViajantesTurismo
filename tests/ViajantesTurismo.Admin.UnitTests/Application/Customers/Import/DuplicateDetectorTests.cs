@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Application.Import;
-using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Sanitizers;
+using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
@@ -73,25 +72,5 @@ public class DuplicateDetectorTests
         // Assert
         var duplicateLineNumber = Assert.Single(duplicateLineNumbers);
         Assert.Equal(2, duplicateLineNumber);
-    }
-
-    private sealed class FakeCustomerStore(IEnumerable<string> existingEmails) : ICustomerStore
-    {
-        private readonly HashSet<string> _existingEmails =
-        [
-            ..existingEmails.Select(StringSanitizer.NormalizeKey)
-        ];
-
-        public void Add(Customer customer) => throw new NotSupportedException();
-
-        public Task<Customer?> GetById(Guid id, CancellationToken ct) => throw new NotSupportedException();
-
-        public void Delete(Customer customer) => throw new NotSupportedException();
-
-        public Task<bool> EmailExists(string email, CancellationToken ct) =>
-            Task.FromResult(_existingEmails.Contains(StringSanitizer.NormalizeKey(email)));
-
-        public Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct) =>
-            Task.FromResult(_existingEmails.Contains(StringSanitizer.NormalizeKey(email)));
     }
 }
