@@ -1,13 +1,13 @@
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
+namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 /// <summary>
 /// Helper methods for creating test fixtures in integration tests.
 /// These methods combine DTO builders with API helpers to create complete test entities.
 /// </summary>
-internal static class TestFixtureHelpers
+public static class TestFixtureHelpers
 {
     /// <summary>
     /// Creates a test tour and returns the created tour DTO.

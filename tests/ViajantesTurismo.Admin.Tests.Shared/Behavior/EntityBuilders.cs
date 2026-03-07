@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
 
-namespace ViajantesTurismo.Admin.BehaviorTests;
+namespace ViajantesTurismo.Admin.Tests.Shared.Behavior;
 
 /// <summary>
 /// Provides builder methods for creating domain entities with default or custom values for behavior tests.

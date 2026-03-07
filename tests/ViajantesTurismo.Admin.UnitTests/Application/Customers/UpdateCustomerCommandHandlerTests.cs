@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Tests.Shared.Behavior;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 using ViajantesTurismo.Common.Results;
 
@@ -8,27 +8,13 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers;
 
 public sealed class UpdateCustomerCommandHandlerTests
 {
-    private static Customer CreateTestCustomer(TimeProvider timeProvider, string email = "original@example.com")
-    {
-        var personal = PersonalInfo
-            .Create("John", "Doe", "Male", DateTime.UtcNow.AddYears(-30), "USA", "Engineer", timeProvider).Value;
-        var identification = IdentificationInfo.Create("ID123", "USA").Value;
-        var contact = ContactInfo.Create(email, "+1000000000", null, null).Value;
-        var address = Address.Create("Street", "Comp", "Neighborhood", "12345", "City", "State", "Country").Value;
-        var physical = PhysicalInfo.Create(70m, 180, BikeType.Regular).Value;
-        var accommodation = AccommodationPreferences.Create(RoomType.DoubleOccupancy, BedType.SingleBed, null).Value;
-        var emergency = EmergencyContact.Create("Jane Doe", "+1000000001").Value;
-        var medical = MedicalInfo.Create("None", null).Value;
-        return new Customer(personal, identification, contact, address, physical, accommodation, emergency, medical);
-    }
-
     [Fact]
     public async Task Handle_Succeeds_For_Valid_Update()
     {
         // Arrange
         var timeProvider = TimeProvider.System;
         var store = new FakeCustomerStore();
-        var existing = CreateTestCustomer(timeProvider);
+        var existing = EntityBuilders.BuildCustomer(email: "original@example.com");
         store.Seed(existing);
         var uow = new FakeUnitOfWork();
         var handler = new UpdateCustomerCommandHandler(store, uow, timeProvider);
@@ -129,8 +115,8 @@ public sealed class UpdateCustomerCommandHandlerTests
         // Arrange
         var timeProvider = TimeProvider.System;
         var store = new FakeCustomerStore();
-        var existing1 = CreateTestCustomer(timeProvider, email: "a@example.com");
-        var existing2 = CreateTestCustomer(timeProvider, email: "dup@example.com");
+        var existing1 = EntityBuilders.BuildCustomer(email: "a@example.com");
+        var existing2 = EntityBuilders.BuildCustomer(email: "dup@example.com");
         store.Seed(existing1);
         store.Seed(existing2);
         var uow = new FakeUnitOfWork();

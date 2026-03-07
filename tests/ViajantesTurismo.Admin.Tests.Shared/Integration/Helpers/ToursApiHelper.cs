@@ -1,12 +1,12 @@
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
+namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 /// <summary>
 /// Helper methods for Tours API operations in integration tests.
 /// </summary>
-internal static class ToursApiHelper
+public static class ToursApiHelper
 {
     public static async Task<HttpResponseMessage> CreateTourAsync(
         this HttpClient client,

@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Results;
 
-namespace ViajantesTurismo.Admin.BehaviorTests;
+namespace ViajantesTurismo.Admin.Tests.Shared.Behavior;
 
 /// <summary>
 /// Helper methods for creating and managing bookings in behavior tests.

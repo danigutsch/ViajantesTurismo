@@ -4,6 +4,7 @@ using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Tests.Shared.Behavior;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;

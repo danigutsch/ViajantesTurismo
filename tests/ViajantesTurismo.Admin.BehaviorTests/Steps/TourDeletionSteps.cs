@@ -1,6 +1,7 @@
 using Reqnroll;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.BehaviorTests.Context;
+using ViajantesTurismo.Admin.Tests.Shared.Behavior;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps;
 

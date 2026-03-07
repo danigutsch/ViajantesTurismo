@@ -1,9 +1,9 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
+namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 /// <summary>
 /// Helper methods for generating unique test data to avoid collisions in parallel tests.
 /// </summary>
-internal static class TestDataGenerator
+public static class TestDataGenerator
 {
     /// <summary>
     /// Generates a unique email address for testing.

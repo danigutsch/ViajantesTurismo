@@ -1,9 +1,9 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
+namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 /// <summary>
 /// Helper methods for calculating expected prices in integration tests.
 /// </summary>
-internal static class PricingHelper
+public static class PricingHelper
 {
     /// <summary>
     /// Calculates the expected booking price based on components and discounts.

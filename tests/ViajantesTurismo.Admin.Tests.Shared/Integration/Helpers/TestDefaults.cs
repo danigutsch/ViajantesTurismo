@@ -1,9 +1,9 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Helpers;
+namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 /// <summary>
 /// Test constants and default values for integration tests.
 /// </summary>
-internal static class TestDefaults
+public static class TestDefaults
 {
     public const decimal BaseTourPrice = 2000m;
     public const decimal SingleRoomSupplement = 500m;
