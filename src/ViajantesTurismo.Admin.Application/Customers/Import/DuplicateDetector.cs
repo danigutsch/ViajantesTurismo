@@ -1,3 +1,5 @@
+using ViajantesTurismo.Common.Sanitizers;
+
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
 /// <summary>
@@ -27,7 +29,7 @@ public static class DuplicateDetector
                 continue;
             }
 
-            var normalizedEmail = NormalizeEmailKey(email);
+            var normalizedEmail = StringSanitizer.NormalizeKey(email);
             if (!seenEmails.Add(normalizedEmail))
             {
                 duplicateLineNumbers.Add(rowIndex + 2);
@@ -36,6 +38,4 @@ public static class DuplicateDetector
 
         return duplicateLineNumbers;
     }
-
-    private static string NormalizeEmailKey(string email) => email.Trim().ToLowerInvariant();
 }

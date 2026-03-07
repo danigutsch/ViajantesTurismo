@@ -102,7 +102,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail);
+        Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail);
+        Assert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("Header count must match row column count", documentResult.ErrorDetails.Detail);
+        Assert.Contains("Header count must match row column count", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("Required header 'CustomerCode' is missing", documentResult.ErrorDetails.Detail);
+        Assert.Contains("Required header 'CustomerCode' is missing", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail);
+        Assert.Contains("Headers must contain at least one column", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail);
+        Assert.Contains("All rows must have the same number of columns", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -227,7 +227,7 @@ public class CsvDocumentTests
         // Assert
         Assert.False(documentResult.IsSuccess);
         Assert.NotNull(documentResult.ErrorDetails);
-        Assert.Contains("line 3", documentResult.ErrorDetails.Detail);
+        Assert.Contains("line 3", documentResult.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
