@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
     </ItemGroup>
 </Project>

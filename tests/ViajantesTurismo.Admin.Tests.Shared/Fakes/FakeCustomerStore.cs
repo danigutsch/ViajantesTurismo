@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 
-namespace ViajantesTurismo.Admin.BehaviorTests.Fakes;
+namespace ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 public sealed class FakeCustomerStore : ICustomerStore
 {
@@ -21,4 +21,6 @@ public sealed class FakeCustomerStore : ICustomerStore
             c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && c.Id != excludeCustomerId));
 
     public void AddExistingCustomer(Customer customer) => _customers.Add(customer);
+
+    public void Seed(Customer customer) => _customers.Add(customer);
 }
