@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -72,6 +73,37 @@ public static partial class StringSanitizer
                 .OfType<string>()
                 .Distinct(StringComparer.OrdinalIgnoreCase)
         ];
+    }
+
+    /// <summary>
+    /// Produces a culture-invariant comparison key that ignores case and diacritics.
+    /// </summary>
+    /// <param name="value">String value to normalize.</param>
+    /// <returns>Normalized comparison key.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    public static string NormalizeKeyRemovingDiacritics(string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        var normalized = NormalizeKey(value);
+        var compareInfo = CultureInfo.InvariantCulture.CompareInfo;
+        var sortKey = compareInfo.GetSortKey(
+            normalized,
+            CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace);
+
+        return Convert.ToHexString(sortKey.KeyData);
+    }
+
+    /// <summary>
+    /// Normalizes a string by trimming and converting to uppercase.
+    /// </summary>
+    /// <param name="value">String value to normalize.</param>
+    /// <returns>Normalized string value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    public static string NormalizeKey(string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return value.Trim().ToUpperInvariant();
     }
 
     private static string RemoveControlCharacters(string value) => ControlCharacterRegex().Replace(value, string.Empty);
