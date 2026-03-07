@@ -11,4 +11,9 @@ public readonly record struct ConflictResolution(bool PreservesExistingCustomer,
     /// Keeps existing customer data and skips importing the conflicting row.
     /// </summary>
     public static ConflictResolution Keep => new(true, true);
+
+    /// <summary>
+    /// Overwrites existing customer data using incoming CSV data.
+    /// </summary>
+    public static ConflictResolution Overwrite => new(false, false);
 }
