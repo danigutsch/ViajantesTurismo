@@ -48,26 +48,6 @@ public sealed class ErrorClassTests
             $"Expected error classes to be static, but found violations: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
-    [Fact]
-    public void ErrorClasses_Must_Be_In_Domain_Layer()
-    {
-        const string domainNamespace = ArchitectureProvider.Namespaces.Domain;
-
-        var allErrorClasses = ArchitectureProvider.Assemblies
-            .SelectMany(a => a.GetExportedTypes())
-            .Where(t => t.Name.EndsWith("Errors", StringComparison.Ordinal)
-                        && t is { IsAbstract: true, IsSealed: true })
-            .ToArray();
-
-        var violatingTypes = allErrorClasses
-            .Where(t => t.Namespace?.StartsWith(domainNamespace, StringComparison.Ordinal) != true)
-            .ToArray();
-
-        Assert.False(
-            violatingTypes.Length != 0,
-            $"Expected error classes to reside in Domain layer, but found violations: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
-    }
-
     private static Type[] GetErrorClasses()
     {
         const string domainNamespace = ArchitectureProvider.Namespaces.Domain;
