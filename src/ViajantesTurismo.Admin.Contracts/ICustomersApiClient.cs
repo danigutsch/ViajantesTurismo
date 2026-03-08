@@ -36,4 +36,13 @@ public interface ICustomersApiClient
     /// <param name="dto">The updated customer data.</param>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Imports customers from a CSV file.
+    /// </summary>
+    /// <param name="fileContent">The CSV file content as a byte array.</param>
+    /// <param name="fileName">The original file name.</param>
+    /// <param name="cancellationToken">Cancellation token for the request.</param>
+    /// <returns>The import result summary.</returns>
+    Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken cancellationToken);
 }

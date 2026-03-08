@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Mime;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Web.Helpers;
 
@@ -6,8 +7,7 @@ namespace ViajantesTurismo.Admin.Web;
 
 internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiClient
 {
-    public async Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken,
-        int maxItems = 100)
+    public async Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100)
     {
         List<GetCustomerDto>? customers = null;
 
@@ -58,5 +58,19 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
     {
         var response = await httpClient.PutAsJsonAsync($"/customers/{id}", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
+    }
+
+    public async Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken cancellationToken)
+    {
+        using var fileBytes = new ByteArrayContent(fileContent);
+        fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
+        using var content = new MultipartFormDataContent();
+        content.Add(fileBytes, "file", fileName);
+
+        var response = await httpClient.PostAsync(new Uri("/customers/import", UriKind.Relative), content, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<ImportResultDto>(cancellationToken)
+               ?? throw new InvalidOperationException("The import response body was empty.");
     }
 }

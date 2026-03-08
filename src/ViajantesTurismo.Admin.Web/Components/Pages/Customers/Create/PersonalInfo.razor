@@ -78,10 +78,15 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between mt-4">
-                    <button @onclick="@(() => Navigation.NavigateTo("/customers"))" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> Cancel
-                    </button>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers"))" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <NavLink href="/customers/import" class="text-muted small">
+                            <i class="bi bi-upload"></i> or import from CSV
+                        </NavLink>
+                    </div>
                     <button type="submit" class="btn btn-primary">
                         Next <i class="bi bi-arrow-right"></i>
                     </button>

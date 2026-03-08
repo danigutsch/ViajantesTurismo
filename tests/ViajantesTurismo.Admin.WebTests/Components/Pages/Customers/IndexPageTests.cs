@@ -45,6 +45,19 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
+    public void Renders_Import_From_CSV_Button()
+    {
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.FindAll("a.btn-outline-secondary").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var importButton = cut.Find("a.btn-outline-secondary");
+        Assert.Equal("/customers/import", importButton.GetAttribute("href"));
+        Assert.Contains("Import from CSV", importButton.TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Renders_Page_Description()
     {
         // Arrange
@@ -159,7 +172,7 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var buttons = cut.FindAll("a.btn.btn-primary");
-        var editButton = buttons[buttons.Count - 1];
+        var editButton = buttons[^1];
         Assert.Equal($"/customers/{customer.Id}/edit", editButton.GetAttribute("href"));
         Assert.Contains("Edit", editButton.TextContent, StringComparison.Ordinal);
     }

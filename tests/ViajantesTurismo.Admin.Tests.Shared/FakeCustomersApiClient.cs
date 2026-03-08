@@ -8,6 +8,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private readonly List<GetCustomerDto> _customers = [];
     private Exception? _getCustomerByIdException;
     private Exception? _getCustomersException;
+    private ImportResultDto? _importResult;
+    private Exception? _importCustomersException;
 
     public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100)
     {
@@ -16,7 +18,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
             throw _getCustomersException;
         }
 
-        return Task.FromResult<IReadOnlyList<GetCustomerDto>>(_customers.Take(maxItems).ToArray());
+        return Task.FromResult<IReadOnlyList<GetCustomerDto>>([.. _customers.Take(maxItems)]);
     }
 
     public Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken cancellationToken)
@@ -40,6 +42,21 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.CompletedTask;
     }
 
+    public Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken cancellationToken)
+    {
+        if (_importCustomersException is not null)
+        {
+            throw _importCustomersException;
+        }
+
+        if (_importResult is not null)
+        {
+            return Task.FromResult(_importResult);
+        }
+
+        throw new NotImplementedException();
+    }
+
     public void AddCustomer(GetCustomerDto customer) => _customers.Add(customer);
 
     public void AddCustomerDetails(CustomerDetailsDto customer) => _customerDetails.Add(customer);
@@ -47,4 +64,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetGetCustomersException(Exception exception) => _getCustomersException = exception;
 
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
+
+    public void SetImportCustomersResult(ImportResultDto result) => _importResult = result;
+
+    public void SetImportCustomersException(Exception exception) => _importCustomersException = exception;
 }
