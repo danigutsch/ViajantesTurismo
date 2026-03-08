@@ -157,40 +157,6 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Auto_Matched_Column_Count_Shown_In_Details_Summary()
-    {
-        // Arrange
-        var totalFields = CustomerImportHeaderMatcher.Fields.Count;
-        var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
-
-        // Act
-        cut.FindComponent<InputFile>().UploadFiles(file);
-
-        // Assert
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("details")));
-        Assert.Contains($"{totalFields} auto-matched column(s)", cut.Markup, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Partial_Match_Shows_Only_Unmatched_Required_Dropdowns_Not_Matched_Ones()
-    {
-        // Arrange — provide some required headers so only some are unmatched
-        var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText("FirstName,LastName,Email\ndata", "customers.csv");
-
-        // Act
-        cut.FindComponent<InputFile>().UploadFiles(file);
-
-        // Assert: dropdowns shown only for fields NOT in the file
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("select.form-select-sm")));
-        var selects = cut.FindAll("select.form-select-sm");
-        var unmatchedRequired = CustomerImportHeaderMatcher.Fields
-            .Count(f => f.IsRequired && f.Name != "FirstName" && f.Name != "LastName" && f.Name != "Email");
-        Assert.Equal(unmatchedRequired, selects.Count);
-    }
-
-    [Fact]
     public void Selecting_Column_For_Required_Field_Enables_Import_When_All_Assigned()
     {
         // Arrange — only provide required fields via a single unknown column to test one-field scenario

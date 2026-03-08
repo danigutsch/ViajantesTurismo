@@ -53,10 +53,9 @@
     else if (_step == PageStep.HeaderMapping)
     {
         var unmatchedRequired = _fieldMappings
-            .Where(m => m.Field.IsRequired && !m.IsAutoMatched)
-            .ToList();
-        var autoMatchedCount = _fieldMappings.Count(m => m.IsAutoMatched);
-        var allRequiredMatched = unmatchedRequired.Count == 0;
+            .Where(m => m.Field.IsRequired && !AllRequiredFieldsMapped(m.Field.Name))
+            .ToArray();
+        var allRequiredMatched = unmatchedRequired.Length == 0;
 
         <div class="card">
             <div class="card-header d-flex align-items-center gap-2">
@@ -76,61 +75,50 @@
                 {
                     <div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
                         <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                        <span>@unmatchedRequired.Count required column(s) could not be matched. Please assign them below.</span>
+                        <span>@unmatchedRequired.Length required column(s) could not be matched. Please assign them below.</span>
                     </div>
+                }
 
-                    <table class="table table-sm align-middle">
-                        <thead>
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th></th>
+                            <th>Source Column (CSV)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mapping in _fieldMappings)
+                        {
+                            var fieldName = mapping.Field.Name;
+                            var effective = GetEffectiveMappingValue(fieldName, mapping.MatchedCsvHeader);
                             <tr>
-                                <th>Required Field</th>
-                                <th>Source Column in CSV</th>
+                                <td>@mapping.Field.DisplayName</td>
+                                <td>
+                                    @if (mapping.Field.IsRequired)
+                                    {
+                                        <span class="badge bg-danger">Required</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Optional</span>
+                                    }
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm"
+                                            data-field="@fieldName"
+                                            @onchange="@(e => OnFieldMapped(fieldName, e.Value?.ToString()))">
+                                        <option value="">(none)</option>
+                                        @foreach (var header in _csvHeaders)
+                                        {
+                                            <option value="@header" selected="@(header == effective)">@header</option>
+                                        }
+                                    </select>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var mapping in unmatchedRequired)
-                            {
-                                <tr>
-                                    <td>
-                                        @mapping.Field.DisplayName
-                                        <span class="badge bg-danger ms-1">required</span>
-                                    </td>
-                                    <td>
-                                        <select class="form-select form-select-sm"
-                                                @onchange="@(e => OnFieldMapped(mapping.Field.Name, e.Value?.ToString()))">
-                                            <option value="">— select a column —</option>
-                                            @foreach (var header in _csvHeaders)
-                                            {
-                                                <option value="@header">@header</option>
-                                            }
-                                        </select>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-
-                @if (autoMatchedCount > 0)
-                {
-                    <details class="mt-2">
-                        <summary class="text-muted small" style="cursor: pointer;">
-                            <i class="bi bi-check-circle text-success"></i>
-                            @autoMatchedCount auto-matched column(s) — click to expand
-                        </summary>
-                        <table class="table table-sm table-borderless mt-2 mb-0">
-                            <tbody>
-                                @foreach (var mapping in _fieldMappings.Where(m => m.IsAutoMatched))
-                                {
-                                    <tr>
-                                        <td class="text-muted small py-1">@mapping.Field.DisplayName</td>
-                                        <td class="text-muted small py-1"><i class="bi bi-arrow-right"></i> @mapping.MatchedCsvHeader</td>
-                                        <td class="py-1"><i class="bi bi-check-circle-fill text-success"></i></td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </details>
-                }
+                        }
+                    </tbody>
+                </table>
 
                 @if (_validationError is not null)
                 {
@@ -248,11 +236,19 @@
     private void OnFieldMapped(string fieldName, string? csvHeader) =>
         _userMappings[fieldName] = string.IsNullOrEmpty(csvHeader) ? null : csvHeader;
 
+    private string? GetEffectiveMappingValue(string fieldName, string? autoMatchedHeader)
+    {
+        return _userMappings.GetValueOrDefault(fieldName, autoMatchedHeader);
+    }
+
+    private bool AllRequiredFieldsMapped(string fieldName) =>
+        _fieldMappings.First(m => m.Field.Name == fieldName) is var mapping
+        && (GetEffectiveMappingValue(fieldName, mapping.MatchedCsvHeader) is not null);
+
     private bool AllRequiredFieldsMapped() =>
         _fieldMappings
             .Where(m => m.Field.IsRequired)
-            .All(m => m.IsAutoMatched ||
-                      (_userMappings.TryGetValue(m.Field.Name, out var v) && v is not null));
+            .All(m => GetEffectiveMappingValue(m.Field.Name, m.MatchedCsvHeader) is not null);
 
     private async Task HandleImport()
     {
