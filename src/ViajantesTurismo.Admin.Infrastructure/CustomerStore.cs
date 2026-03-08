@@ -10,6 +10,9 @@ internal sealed class CustomerStore(AdminWriteDbContext dbContext) : ICustomerSt
     public async Task<Customer?> GetById(Guid id, CancellationToken ct) =>
         await dbContext.Customers.FindAsync([id], ct);
 
+    public async Task<Customer?> GetByEmail(string email, CancellationToken ct) =>
+        await dbContext.Customers.FirstOrDefaultAsync(c => c.ContactInfo.Email == email, ct);
+
     public void Delete(Customer customer) => dbContext.Customers.Remove(customer);
 
     public async Task<bool> EmailExists(string email, CancellationToken ct) =>

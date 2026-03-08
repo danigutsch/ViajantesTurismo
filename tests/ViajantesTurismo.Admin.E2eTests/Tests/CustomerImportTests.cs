@@ -84,6 +84,36 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         var previewButton = Page.GetButton("Preview");
         await Expect(previewButton).ToBeDisabledAsync();
     }
+
+    [Fact]
+    public async Task Can_Surface_Duplicate_Resolution_And_Commit_Keep_Decision()
+    {
+        var existingCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+
+        await NavigateToAsync("/customers/import");
+
+        await UploadCsv(BuildCanonicalCsv(existingCustomer.Email));
+
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
+            .ToBeVisibleAsync();
+
+        await Page.GetButton("Preview").ClickAsync();
+        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
+
+        await Page.GetButton("Confirm Import").ClickAsync();
+
+        await Expect(Page.GetByText("Resolve Duplicates")).ToBeVisibleAsync();
+
+        var keepButton = Page.Locator("button[data-action='keep']").First;
+        await keepButton.ClickAsync();
+
+        var confirmImportButton = Page.Locator("button[data-action='confirm-import']");
+        await Expect(confirmImportButton).Not.ToBeDisabledAsync();
+        await confirmImportButton.ClickAsync();
+
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "Import complete" }))
+            .ToBeVisibleAsync();
+    }
 }
 
 /// <summary>

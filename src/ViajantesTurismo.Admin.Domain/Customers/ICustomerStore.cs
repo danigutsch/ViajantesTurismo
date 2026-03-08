@@ -20,6 +20,14 @@ public interface ICustomerStore
     Task<Customer?> GetById(Guid id, CancellationToken ct);
 
     /// <summary>
+    /// Gets a customer by their email address.
+    /// </summary>
+    /// <param name="email">The customer email address.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The customer, or null if not found.</returns>
+    Task<Customer?> GetByEmail(string email, CancellationToken ct);
+
+    /// <summary>
     /// Deletes a customer from the store.
     /// </summary>
     /// <param name="customer">The customer to delete.</param>

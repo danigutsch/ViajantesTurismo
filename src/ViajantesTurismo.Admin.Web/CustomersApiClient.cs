@@ -11,8 +11,7 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
     {
         List<GetCustomerDto>? customers = null;
 
-        await foreach (var customer in httpClient.GetFromJsonAsAsyncEnumerable<GetCustomerDto>("/customers",
-                           cancellationToken))
+        await foreach (var customer in httpClient.GetFromJsonAsAsyncEnumerable<GetCustomerDto>("/customers", cancellationToken))
         {
             if (customers?.Count >= maxItems)
             {
@@ -80,15 +79,25 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
         fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
         using var content = new MultipartFormDataContent();
         content.Add(fileBytes, "file", fileName);
-        foreach (var (email, decision) in conflictResolutions)
-        {
-            content.Add(new StringContent(decision), $"resolution[{email}]");
-        }
+        content.Add(new StringContent(SerializeConflictResolutions(conflictResolutions)), "conflictResolutions");
 
         var response = await httpClient.PostAsync(new Uri("/customers/import/commit", UriKind.Relative), content, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync<ImportResultDto>(cancellationToken)
                ?? throw new InvalidOperationException("The import response body was empty.");
+    }
+
+    private static string SerializeConflictResolutions(IReadOnlyDictionary<string, string> conflictResolutions)
+    {
+        if (conflictResolutions.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return string.Join(
+            ';',
+            conflictResolutions.Select(kvp =>
+                $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
     }
 }

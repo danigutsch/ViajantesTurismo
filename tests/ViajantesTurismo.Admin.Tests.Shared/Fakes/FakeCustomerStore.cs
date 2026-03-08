@@ -15,6 +15,9 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
     public Task<Customer?> GetById(Guid id, CancellationToken ct) =>
         Task.FromResult(_customers.SingleOrDefault(c => c.Id == id));
 
+    public Task<Customer?> GetByEmail(string email, CancellationToken ct) =>
+        Task.FromResult(_customers.SingleOrDefault(c => c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
+
     public void Delete(Customer customer) => _customers.Remove(customer);
 
     public Task<bool> EmailExists(string email, CancellationToken ct) =>
