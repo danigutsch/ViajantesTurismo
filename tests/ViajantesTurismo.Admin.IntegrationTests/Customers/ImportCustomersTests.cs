@@ -27,6 +27,13 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
         return content;
     }
 
+    private static string BuildCanonicalCsvWithBlankEmail()
+    {
+        return
+            "FirstName,LastName,Gender,BirthDate,Nationality,Occupation,NationalId,IdNationality,Email,Mobile,Street,Neighborhood,PostalCode,City,State,Country,WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile\n" +
+            "John,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA,,+1234567890,123 Main St,Downtown,10001,New York,NY,USA,75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321";
+    }
+
     [Fact]
     public async Task Can_Import_Customers_From_Csv()
     {
@@ -53,6 +60,11 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
         Assert.NotNull(result);
         Assert.Equal(1, result.SuccessCount);
         Assert.Equal(0, result.ErrorCount);
+        Assert.NotNull(result.SuccessRows);
+        var successRow = Assert.Single(result.SuccessRows);
+        Assert.Equal(uniqueEmail, successRow.Email, ignoreCase: true);
+        Assert.Equal("created", successRow.Outcome, ignoreCase: true);
+        Assert.True(successRow.CustomerId.HasValue);
     }
 
     [Fact]
@@ -92,6 +104,36 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
         Assert.NotNull(result.Conflicts);
         var conflict = Assert.Single(result.Conflicts);
         Assert.Equal(duplicateEmail, conflict.Email, ignoreCase: true);
+    }
+
+    [Fact]
+    public async Task Can_Return_Per_Row_Error_Metadata_For_Invalid_Import_Row()
+    {
+        // Arrange
+        var csv = BuildCanonicalCsvWithBlankEmail();
+        using var content = BuildCsvMultipartContent(csv);
+
+        // Act
+        var response = await Client.PostAsync(
+            new Uri("/customers/import", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Fail($"Expected OK but got {response.StatusCode}: {body}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ImportResultDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+        Assert.Equal(0, result.SuccessCount);
+        Assert.Equal(1, result.ErrorCount);
+        Assert.NotNull(result.ErrorRows);
+        var errorRow = Assert.Single(result.ErrorRows);
+        Assert.Equal(2, errorRow.LineNumber);
+        Assert.Equal("Email", errorRow.Field);
     }
 
     [Fact]
@@ -187,6 +229,7 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
         Assert.NotNull(result);
         Assert.Equal(1, result.SuccessCount);
         Assert.Equal(0, result.ErrorCount);
+        Assert.NotNull(result.SuccessRows);
 
         var customers = await Client.GetFromJsonAsync<List<GetCustomerDto>>(
             new Uri("/customers", UriKind.Relative),
@@ -195,6 +238,11 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
 
         var overwrittenCustomer = customers.Single(c =>
             c.Email.Equals(duplicateEmail, StringComparison.OrdinalIgnoreCase));
+
+        var successRow = Assert.Single(result.SuccessRows);
+        Assert.Equal(duplicateEmail, successRow.Email, ignoreCase: true);
+        Assert.Equal("updated", successRow.Outcome, ignoreCase: true);
+        Assert.Equal(overwrittenCustomer.Id, successRow.CustomerId);
 
         Assert.Equal("John", overwrittenCustomer.FirstName);
         Assert.Equal("Doe", overwrittenCustomer.LastName);
