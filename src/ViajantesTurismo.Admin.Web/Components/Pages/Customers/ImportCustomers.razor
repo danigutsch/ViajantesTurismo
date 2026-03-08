@@ -214,6 +214,41 @@
             </div>
         </div>
     }
+    else if (_step == PageStep.DuplicateResolution)
+    {
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Resolve Duplicates</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">The following @_conflicts.Count email(s) already exist in the database. Choose how to handle each conflict before completing the import.</p>
+                <table class="table table-sm duplicate-resolution-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var conflict in _conflicts)
+                        {
+                            <tr>
+                                <td>@conflict.Email.ToLowerInvariant()</td>
+                                <td><span class="badge bg-warning text-dark">Pending</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-outline-secondary"
+                            @onclick="@(() => _step = PageStep.Preview)">
+                        <i class="bi bi-arrow-left"></i> Back to Preview
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
     else
     {
         <div class="card">
@@ -243,7 +278,7 @@
 </div>
 
 @code {
-    private enum PageStep { FileSelection, HeaderMapping, Preview }
+    private enum PageStep { FileSelection, HeaderMapping, Preview, DuplicateResolution }
 
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
     private const int MaxPreviewRows = 5;
@@ -265,6 +300,7 @@
     // Result
     private string? _error;
     private ImportResultDto? _result;
+    private IReadOnlyList<ImportConflictDto> _conflicts = [];
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -378,7 +414,16 @@
                 _pendingFileBytes,
                 _fieldMappings,
                 _userMappings);
-            _result = await CustomersApi.ImportCustomers(fileBytes, _pendingFileName, CancellationToken.None);
+            var result = await CustomersApi.ImportCustomers(fileBytes, _pendingFileName, CancellationToken.None);
+            if (result.Conflicts is { Count: > 0 } conflicts)
+            {
+                _conflicts = conflicts;
+                _step = PageStep.DuplicateResolution;
+            }
+            else
+            {
+                _result = result;
+            }
         }
         catch (Exception ex)
         {
@@ -395,6 +440,7 @@
         _result = null;
         _error = null;
         _validationError = null;
+        _conflicts = [];
         _pendingFileName = "";
         _pendingFileBytes = [];
         _csvHeaders = [];
