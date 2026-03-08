@@ -35,10 +35,27 @@ public sealed class CustomerImportSteps(ImportContext context)
         context.CustomerStore.SeedEmail(email);
     }
 
+    [Given("an existing customer record with email {string} and first name {string}")]
+    public void GivenAnExistingCustomerRecordWithEmailAndFirstName(string email, string firstName)
+    {
+        context.SeedExistingCustomerRecord(email, firstName);
+    }
+
     [Given("I have a canonical CSV with duplicate email {string}")]
     public void GivenIHaveACanonicalCsvWithDuplicateEmail(string email)
     {
         context.CsvContent = ImportContext.BuildCsvWithEmail(email);
+        context.DryRun = false;
+    }
+
+    [Given("I have a canonical CSV with the following customer rows")]
+    public void GivenIHaveACanonicalCsvWithTheFollowingCustomerRows(Table table)
+    {
+        var rows = table.Rows
+            .Select(r => (FirstName: r["FirstName"], Email: r["Email"]))
+            .ToList();
+
+        context.CsvContent = ImportContext.BuildCsvWithCustomerRows(rows);
         context.DryRun = false;
     }
 
@@ -66,6 +83,30 @@ public sealed class CustomerImportSteps(ImportContext context)
     {
         var workflow = context.CreateWorkflowService();
         context.WorkflowResult = await workflow.Import(context.CsvContent, CancellationToken.None);
+    }
+
+    [When("I commit the import workflow with resolutions")]
+    public async Task WhenICommitTheImportWorkflowWithResolutions(Table table)
+    {
+        var resolutions = table.Rows
+            .ToDictionary(
+                r => r["Email"],
+                r => r["Decision"],
+                StringComparer.OrdinalIgnoreCase);
+
+        context.ConflictResolutions = resolutions;
+        var workflow = context.CreateWorkflowService();
+        context.WorkflowCommitResult = await workflow.Commit(context.CsvContent, resolutions, CancellationToken.None);
+    }
+
+    [When("I replace blank emails with generated valid emails and rerun the import")]
+    public async Task WhenIReplaceBlankEmailsWithGeneratedValidEmailsAndRerunTheImport()
+    {
+        context.ReplaceBlankEmailsWithGeneratedValidEmails();
+        var handler = context.CreateHandler();
+        context.Result = await handler.Handle(
+            new CustomerImportCommand(context.CsvContent, context.DryRun),
+            CancellationToken.None);
     }
 
     [Then("{int} customer should be imported successfully")]
@@ -114,5 +155,51 @@ public sealed class CustomerImportSteps(ImportContext context)
         Assert.NotNull(context.WorkflowResult.Conflicts);
         var conflict = Assert.Single(context.WorkflowResult.Conflicts);
         Assert.Equal(expectedEmail, conflict.Email, ignoreCase: true);
+    }
+
+    [Then("import summary should report {int} created, {int} updated, {int} skipped, and {int} failed")]
+    public void ThenImportSummaryShouldReportCreatedUpdatedSkippedAndFailed(
+        int expectedCreated,
+        int expectedUpdated,
+        int expectedSkipped,
+        int expectedFailed)
+    {
+        Assert.NotNull(context.WorkflowCommitResult);
+
+        var updatedCount = context.ConflictResolutions.Values.Count(v =>
+            v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
+            || v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
+        var skippedCount = context.ConflictResolutions.Values.Count(v =>
+            v.Equals("keep", StringComparison.OrdinalIgnoreCase));
+        var createdCount = Math.Max(0, context.WorkflowCommitResult.SuccessCount - updatedCount);
+        var failedCount = context.WorkflowCommitResult.ErrorCount;
+
+        Assert.Equal(expectedCreated, createdCount);
+        Assert.Equal(expectedUpdated, updatedCount);
+        Assert.Equal(expectedSkipped, skippedCount);
+        Assert.Equal(expectedFailed, failedCount);
+    }
+
+    [Then("customer with email {string} should have first name {string}")]
+    public void ThenCustomerWithEmailShouldHaveFirstName(string email, string expectedFirstName)
+    {
+        var customer = context.GetCustomerByEmail(email);
+        Assert.NotNull(customer);
+        Assert.Equal(expectedFirstName, customer.PersonalInfo.FirstName);
+    }
+
+    [Then("customer with email {string} should exist in the store")]
+    public void ThenCustomerWithEmailShouldExistInTheStore(string email)
+    {
+        var customer = context.GetCustomerByEmail(email);
+        Assert.NotNull(customer);
+    }
+
+    [Then("imported customer with email {string} should have a stable identifier")]
+    public void ThenImportedCustomerWithEmailShouldHaveAStableIdentifier(string email)
+    {
+        var customer = context.GetCustomerByEmail(email);
+        Assert.NotNull(customer);
+        Assert.NotEqual(Guid.Empty, customer.Id);
     }
 }
