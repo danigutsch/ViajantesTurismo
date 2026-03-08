@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Tests.Shared;
 using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
@@ -32,15 +33,10 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = new DateTime(2024, 1, 15),
-                Amount = 100.50m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                paymentDate: new DateTime(2024, 1, 15),
+                amount: 100.50m,
+                method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -59,15 +55,10 @@ public class PaymentsListTests : BunitContext
         var paymentDate = new DateTime(2024, 3, 15);
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = paymentDate,
-                Amount = 50.00m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                paymentDate: paymentDate,
+                amount: 50.00m,
+                method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -84,15 +75,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 123.45m,
-                Method = PaymentMethodDto.CreditCard,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 123.45m,
+                method: PaymentMethodDto.CreditCard)
         };
 
         // Act
@@ -110,15 +95,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.CreditCard,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.CreditCard)
         };
 
         // Act
@@ -136,15 +115,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.BankTransfer,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.BankTransfer)
         };
 
         // Act
@@ -162,15 +135,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -188,15 +155,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Check,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.Check)
         };
 
         // Act
@@ -214,15 +175,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.PayPal,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.PayPal)
         };
 
         // Act
@@ -240,16 +195,10 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.BankTransfer,
-                ReferenceNumber = "REF123456",
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.BankTransfer,
+                referenceNumber: "REF123456")
         };
 
         // Act
@@ -267,15 +216,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -294,16 +237,10 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                Notes = "Test payment notes",
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.Cash,
+                notes: "Test payment notes")
         };
 
         // Act
@@ -321,16 +258,10 @@ public class PaymentsListTests : BunitContext
         var longNotes = "This is a very long note that should be truncated to 30 characters";
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                Notes = longNotes,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.Cash,
+                notes: longNotes)
         };
 
         // Act
@@ -350,15 +281,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(
+                amount: 100m,
+                method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -377,33 +302,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            },
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 250.50m,
-                Method = PaymentMethodDto.CreditCard,
-                RecordedAt = DateTime.UtcNow
-            },
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 49.50m,
-                Method = PaymentMethodDto.BankTransfer,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash),
+            DtoBuilders.BuildPaymentDto(amount: 250.50m, method: PaymentMethodDto.CreditCard),
+            DtoBuilders.BuildPaymentDto(amount: 49.50m, method: PaymentMethodDto.BankTransfer)
         };
 
         // Act
@@ -421,33 +322,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = new DateTime(2024, 1, 1),
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            },
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = new DateTime(2024, 3, 1),
-                Amount = 200m,
-                Method = PaymentMethodDto.CreditCard,
-                RecordedAt = DateTime.UtcNow
-            },
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = new DateTime(2024, 2, 1),
-                Amount = 150m,
-                Method = PaymentMethodDto.BankTransfer,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(paymentDate: new DateTime(2024, 1, 1), amount: 100m, method: PaymentMethodDto.Cash),
+            DtoBuilders.BuildPaymentDto(paymentDate: new DateTime(2024, 3, 1), amount: 200m, method: PaymentMethodDto.CreditCard),
+            DtoBuilders.BuildPaymentDto(paymentDate: new DateTime(2024, 2, 1), amount: 150m, method: PaymentMethodDto.BankTransfer)
         };
 
         // Act
@@ -468,15 +345,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -494,15 +363,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            new GetPaymentDto
-            {
-                Id = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
-                PaymentDate = DateTime.Today,
-                Amount = 100m,
-                Method = PaymentMethodDto.Cash,
-                RecordedAt = DateTime.UtcNow
-            }
+            DtoBuilders.BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash)
         };
 
         // Act
