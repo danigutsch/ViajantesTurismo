@@ -58,17 +58,41 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_With_Invalid_Csv_Returns_Zero_Counts()
+    public async Task Handle_With_Duplicate_Email_In_File_Counts_Second_Row_As_Error()
     {
         // Arrange
-        var command = new CustomerImportCommand("", DryRun: false);
+        const string duplicateEmail = "dup@example.com";
+        const string csv =
+            $"{CsvHeaders}\n" +
+            $"John,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA,{duplicateEmail},+1234567890,123 Main St,Downtown,10001,New York,NY,USA,75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321\n" +
+            $"Jane,Smith,Female,1992-06-15,USA,Doctor,B87654321,USA,{duplicateEmail},+9876543210,456 Oak Ave,Uptown,20002,Boston,MA,USA,65,165,Regular,SingleOccupancy,DoubleBed,Jim Smith,+1122334455";
+
+        var command = new CustomerImportCommand(csv, DryRun: false);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
+        Assert.Equal(1, result.SuccessCount);
+        Assert.Equal(1, result.ErrorCount);
+    }
+
+    [Fact]
+    public async Task Handle_With_Email_Already_In_Database_Skips_Row_And_Counts_As_Error()
+    {
+        // Arrange
+        const string existingEmail = "existing@example.com";
+        var storeWithExisting = new FakeCustomerStore(seededEmails: [existingEmail]);
+        var sut = new CustomerImportCommandHandler(storeWithExisting, _uow, TimeProvider.System);
+
+        var command = new CustomerImportCommand(BuildCsv(existingEmail), DryRun: false);
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
         Assert.Equal(0, result.SuccessCount);
-        Assert.Equal(0, result.ErrorCount);
+        Assert.Equal(1, result.ErrorCount);
         Assert.Equal(0, _uow.SaveEntitiesCallCount);
     }
 }

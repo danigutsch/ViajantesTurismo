@@ -29,23 +29,40 @@ public sealed class CustomerImportCommandHandler(
         }
 
         var document = documentResult.Value;
+        var duplicateLineNumbers = new HashSet<int>(DuplicateDetector.FindDuplicateEmailLineNumbers(document));
+
         var customersToCreate = new List<Customer>();
         var errorCount = 0;
 
-        foreach (var row in document.Rows)
+        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
         {
-            var customerResult = RowToCustomerMapper.MapCustomer(document, row, timeProvider);
-            if (customerResult.IsSuccess)
-            {
-                customersToCreate.Add(customerResult.Value);
-            }
-            else
+            var lineNumber = rowIndex + 2;
+            if (duplicateLineNumbers.Contains(lineNumber))
             {
                 errorCount++;
+                continue;
             }
+
+            var row = document.Rows[rowIndex];
+            var customerResult = RowToCustomerMapper.MapCustomer(document, row, timeProvider);
+            if (customerResult.IsFailure)
+            {
+                errorCount++;
+                continue;
+            }
+
+            var customer = customerResult.Value;
+            var emailAlreadyExists = await customerStore.EmailExists(customer.ContactInfo.Email, ct);
+            if (emailAlreadyExists)
+            {
+                errorCount++;
+                continue;
+            }
+
+            customersToCreate.Add(customer);
         }
 
-        if (!command.DryRun)
+        if (!command.DryRun && customersToCreate.Count > 0)
         {
             foreach (var customer in customersToCreate)
             {
