@@ -34,4 +34,6 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
     public void AddExistingCustomer(Customer customer) => _customers.Add(customer);
 
     public void Seed(Customer customer) => _customers.Add(customer);
+
+    public void SeedEmail(string email) => _seededEmails.Add(email.Trim().ToUpperInvariant());
 }

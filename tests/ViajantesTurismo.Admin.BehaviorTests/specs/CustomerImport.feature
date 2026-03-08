@@ -42,3 +42,13 @@ Feature: Customer Import from CSV
       When I run the import in dry-run mode
       Then 1 customer success should be reported
       And no customers should exist in the store
+
+  Rule: Duplicate emails already in the database are surfaced for user resolution before commit
+
+    @duplicate_resolution
+    Scenario: Duplicate email in CSV is surfaced for resolution before commit
+      Given an existing customer with email "john.import@example.com"
+      And I have a canonical CSV with duplicate email "john.import@example.com"
+      When I run the import workflow pre-check
+      Then 1 duplicate conflict should be surfaced
+      And the duplicate conflict should contain email "john.import@example.com"

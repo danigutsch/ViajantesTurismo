@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
@@ -26,12 +27,17 @@ public sealed class ImportContext
 
     public ImportResult? Result { get; set; }
 
+    public ImportResultDto? WorkflowResult { get; set; }
+
     public FakeCustomerStore CustomerStore { get; } = new();
 
     public FakeUnitOfWork UnitOfWork { get; } = new();
 
     public CustomerImportCommandHandler CreateHandler() =>
         new(CustomerStore, UnitOfWork, TimeProvider.System);
+
+    public CustomerImportWorkflowService CreateWorkflowService() =>
+        new(CustomerStore, CreateHandler());
 
     public static string BuildValidCsv(int rowCount)
     {
@@ -43,6 +49,10 @@ public sealed class ImportContext
     public static string BuildCsvWithBlankEmail() =>
         RequiredHeaders + "\n" +
         ValidRow.Replace("john.import@example.com", "", StringComparison.Ordinal);
+
+    public static string BuildCsvWithEmail(string email) =>
+        RequiredHeaders + "\n" +
+        ValidRow.Replace("john.import@example.com", email, StringComparison.Ordinal);
 
     public static string BuildCsvWithoutEmailColumn()
     {

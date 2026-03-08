@@ -29,6 +29,19 @@ public sealed class CustomerImportSteps(ImportContext context)
         context.DryRun = false;
     }
 
+    [Given("an existing customer with email {string}")]
+    public void GivenAnExistingCustomerWithEmail(string email)
+    {
+        context.CustomerStore.SeedEmail(email);
+    }
+
+    [Given("I have a canonical CSV with duplicate email {string}")]
+    public void GivenIHaveACanonicalCsvWithDuplicateEmail(string email)
+    {
+        context.CsvContent = ImportContext.BuildCsvWithEmail(email);
+        context.DryRun = false;
+    }
+
     [When("I run the import")]
     public async Task WhenIRunTheImport()
     {
@@ -46,6 +59,13 @@ public sealed class CustomerImportSteps(ImportContext context)
         context.Result = await handler.Handle(
             new CustomerImportCommand(context.CsvContent, DryRun: true),
             CancellationToken.None);
+    }
+
+    [When("I run the import workflow pre-check")]
+    public async Task WhenIRunTheImportWorkflowPreCheck()
+    {
+        var workflow = context.CreateWorkflowService();
+        context.WorkflowResult = await workflow.ImportAsync(context.CsvContent, CancellationToken.None);
     }
 
     [Then("{int} customer should be imported successfully")]
@@ -76,5 +96,23 @@ public sealed class CustomerImportSteps(ImportContext context)
     public void ThenNoCustomersShouldExistInTheStore()
     {
         Assert.Empty(context.CustomerStore.AllCustomers);
+    }
+
+    [Then("{int} duplicate conflict should be surfaced")]
+    [Then("{int} duplicate conflicts should be surfaced")]
+    public void ThenDuplicateConflictsShouldBeSurfaced(int expectedCount)
+    {
+        Assert.NotNull(context.WorkflowResult);
+        Assert.NotNull(context.WorkflowResult.Conflicts);
+        Assert.Equal(expectedCount, context.WorkflowResult.Conflicts.Count);
+    }
+
+    [Then("the duplicate conflict should contain email {string}")]
+    public void ThenTheDuplicateConflictShouldContainEmail(string expectedEmail)
+    {
+        Assert.NotNull(context.WorkflowResult);
+        Assert.NotNull(context.WorkflowResult.Conflicts);
+        var conflict = Assert.Single(context.WorkflowResult.Conflicts);
+        Assert.Equal(expectedEmail, conflict.Email, ignoreCase: true);
     }
 }
