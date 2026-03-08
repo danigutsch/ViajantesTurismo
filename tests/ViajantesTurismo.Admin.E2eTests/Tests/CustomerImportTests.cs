@@ -67,7 +67,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     }
 
     [Fact]
-    public async Task Blocks_Preview_When_Required_Header_Is_Not_Canonical()
+    public async Task Can_Block_Preview_When_Required_Header_Is_Not_Canonical()
     {
         await NavigateToAsync("/customers/import");
 
