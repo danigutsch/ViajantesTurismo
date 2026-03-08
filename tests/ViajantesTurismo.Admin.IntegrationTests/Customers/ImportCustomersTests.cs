@@ -139,4 +139,64 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
         Assert.Equal(0, result.SuccessCount);
         Assert.Equal(0, result.ErrorCount);
     }
+
+    [Fact]
+    public async Task Can_Commit_Import_With_Overwrite_Resolution_For_Existing_Email_And_Update_Existing_Customer()
+    {
+        // Arrange
+        var duplicateEmail = TestDataGenerator.UniqueEmail("import-commit-overwrite");
+        var existingCustomer = DtoBuilders.BuildCreateCustomerDto("Existing", "Customer") with
+        {
+            ContactInfo = DtoBuilders.BuildCreateCustomerDto("Existing", "Customer").ContactInfo with
+            {
+                Email = duplicateEmail
+            }
+        };
+
+        var createResponse = await Client.PostAsJsonAsync(
+            new Uri("/customers", UriKind.Relative),
+            existingCustomer,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var csv = BuildCanonicalCsv(duplicateEmail);
+        using var content = BuildCsvMultipartContent(csv);
+        content.Add(
+            new StringContent(
+                ConflictResolutionSerialization.Serialize(
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [duplicateEmail] = "overwrite"
+                    })),
+            "conflictResolutions");
+
+        // Act
+        var response = await Client.PostAsync(
+            new Uri("/customers/import/commit", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Fail($"Expected OK but got {response.StatusCode}: {body}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ImportResultDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.SuccessCount);
+        Assert.Equal(0, result.ErrorCount);
+
+        var customers = await Client.GetFromJsonAsync<List<GetCustomerDto>>(
+            new Uri("/customers", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        Assert.NotNull(customers);
+
+        var overwrittenCustomer = customers.Single(c =>
+            c.Email.Equals(duplicateEmail, StringComparison.OrdinalIgnoreCase));
+
+        Assert.Equal("John", overwrittenCustomer.FirstName);
+        Assert.Equal("Doe", overwrittenCustomer.LastName);
+    }
 }

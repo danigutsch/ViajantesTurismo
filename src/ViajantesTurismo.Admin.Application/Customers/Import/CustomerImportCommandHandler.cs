@@ -16,7 +16,7 @@ public sealed class CustomerImportCommandHandler(
     /// </summary>
     /// <param name="command">Import command carrying CSV content and dry-run flag.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <param name="conflictResolutions">Optional conflict resolutions keyed by email ("keep" or "overwrite").</param>
+    /// <param name="conflictResolutions">Optional conflict resolutions keyed by email ("keep", "overwrite", or "mixed").</param>
     /// <returns>Aggregated import result counts.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
     public async Task<ImportResult> Handle(
@@ -123,6 +123,7 @@ public sealed class CustomerImportCommandHandler(
         }
 
         resolution = matched.Value.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
+            || matched.Value.Equals("mixed", StringComparison.OrdinalIgnoreCase)
             ? ConflictResolution.Overwrite
             : ConflictResolution.Keep;
 

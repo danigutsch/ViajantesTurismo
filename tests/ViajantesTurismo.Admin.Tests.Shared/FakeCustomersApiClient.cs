@@ -12,6 +12,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _importCustomersException;
     private ImportResultDto? _commitImportResult;
 
+    public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
+
     public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100)
     {
         if (_getCustomersException is not null)
@@ -60,6 +62,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken)
     {
+        LastCommitConflictResolutions = new Dictionary<string, string>(conflictResolutions, StringComparer.OrdinalIgnoreCase);
+
         if (_commitImportResult is not null)
         {
             return Task.FromResult(_commitImportResult);
