@@ -73,4 +73,22 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
         return await response.Content.ReadFromJsonAsync<ImportResultDto>(cancellationToken)
                ?? throw new InvalidOperationException("The import response body was empty.");
     }
+
+    public async Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken)
+    {
+        using var fileBytes = new ByteArrayContent(fileContent);
+        fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
+        using var content = new MultipartFormDataContent();
+        content.Add(fileBytes, "file", fileName);
+        foreach (var (email, decision) in conflictResolutions)
+        {
+            content.Add(new StringContent(decision), $"resolution[{email}]");
+        }
+
+        var response = await httpClient.PostAsync(new Uri("/customers/import/commit", UriKind.Relative), content, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<ImportResultDto>(cancellationToken)
+               ?? throw new InvalidOperationException("The import response body was empty.");
+    }
 }

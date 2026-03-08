@@ -232,17 +232,44 @@
                     <tbody>
                         @foreach (var conflict in _conflicts)
                         {
+                            var decision = _conflictDecisions.GetValueOrDefault(conflict.Email);
                             <tr>
                                 <td>@conflict.Email.ToLowerInvariant()</td>
-                                <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button"
+                                                class="btn @(decision == "keep" ? "btn-success" : "btn-outline-secondary")"
+                                                data-action="keep"
+                                                @onclick="@(() => _conflictDecisions[conflict.Email] = "keep")">
+                                            Keep existing
+                                        </button>
+                                        <button type="button"
+                                                class="btn @(decision == "overwrite" ? "btn-warning" : "btn-outline-secondary")"
+                                                data-action="overwrite"
+                                                @onclick="@(() => _conflictDecisions[conflict.Email] = "overwrite")">
+                                            Overwrite
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
 
                 <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary"
+                            data-action="confirm-import"
+                            @onclick="HandleCommitWithResolutions"
+                            disabled="@(_conflictDecisions.Count < _conflicts.Count || _uploading)">
+                        @if (_uploading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        <i class="bi bi-check-lg"></i> Confirm Import
+                    </button>
                     <button class="btn btn-outline-secondary"
-                            @onclick="@(() => _step = PageStep.Preview)">
+                            @onclick="@(() => _step = PageStep.Preview)"
+                            disabled="@_uploading">
                         <i class="bi bi-arrow-left"></i> Back to Preview
                     </button>
                 </div>
@@ -301,6 +328,7 @@
     private string? _error;
     private ImportResultDto? _result;
     private IReadOnlyList<ImportConflictDto> _conflicts = [];
+    private Dictionary<string, string> _conflictDecisions = new(StringComparer.OrdinalIgnoreCase);
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -435,17 +463,42 @@
         }
     }
 
+    private async Task HandleCommitWithResolutions()
+    {
+        _uploading = true;
+        _validationError = null;
+
+        try
+        {
+            var fileBytes = CustomerImportHeaderMatcher.ApplyMapping(
+                _pendingFileBytes,
+                _fieldMappings,
+                _userMappings);
+            _result = await CustomersApi.CommitImportWithResolutions(
+                fileBytes, _pendingFileName, _conflictDecisions, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
     private void Reset()
     {
         _result = null;
         _error = null;
         _validationError = null;
         _conflicts = [];
+        _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         _pendingFileName = "";
         _pendingFileBytes = [];
         _csvHeaders = [];
         _fieldMappings = [];
-        _userMappings = new();
+        _userMappings = new Dictionary<string, string?>();
         _previewRows = [];
         _uploading = false;
         _step = PageStep.FileSelection;

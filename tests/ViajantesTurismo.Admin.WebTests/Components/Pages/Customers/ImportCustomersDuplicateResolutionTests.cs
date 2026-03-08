@@ -44,4 +44,58 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         cut.WaitForAssertion(() =>
             Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void DuplicateResolution_Each_Conflict_Shows_Keep_And_Overwrite_Buttons()
+    {
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
+        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        cut.Find("button.btn-primary").Click();
+        cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
+
+        var keepButtons = cut.FindAll("button[data-action='keep']");
+        var overwriteButtons = cut.FindAll("button[data-action='overwrite']");
+
+        Assert.Equal(2, keepButtons.Count);
+        Assert.Equal(2, overwriteButtons.Count);
+    }
+
+    [Fact]
+    public void DuplicateResolution_ConfirmIsDisabled_UntilAllConflictsResolved()
+    {
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
+        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        cut.Find("button.btn-primary").Click();
+        cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
+
+        // No decisions made yet — confirm should be disabled
+        Assert.True(cut.Find("button[data-action='confirm-import']").HasAttribute("disabled"));
+
+        // Resolve only one of two — still disabled
+        cut.FindAll("button[data-action='keep']")[0].Click();
+        Assert.True(cut.Find("button[data-action='confirm-import']").HasAttribute("disabled"));
+
+        // Resolve the second — now enabled
+        cut.FindAll("button[data-action='keep']")[1].Click();
+        Assert.False(cut.Find("button[data-action='confirm-import']").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void DuplicateResolution_ConfirmImport_ShowsResultAfterAllConflictsResolved()
+    {
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
+        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        cut.Find("button.btn-primary").Click();
+        cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
+
+        cut.Find("button[data-action='keep']").Click();
+        cut.Find("button[data-action='confirm-import']").Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("1 customer(s) imported successfully", cut.Markup, StringComparison.Ordinal));
+    }
 }

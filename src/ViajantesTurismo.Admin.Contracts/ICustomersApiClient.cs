@@ -45,4 +45,14 @@ public interface ICustomersApiClient
     /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>The import result summary.</returns>
     Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Commits a customer import applying per-email conflict resolutions decided by the user.
+    /// </summary>
+    /// <param name="fileContent">The CSV file content as a byte array.</param>
+    /// <param name="fileName">The original file name.</param>
+    /// <param name="conflictResolutions">Map of email address to resolution decision ("keep" or "overwrite").</param>
+    /// <param name="cancellationToken">Cancellation token for the request.</param>
+    /// <returns>The import result summary.</returns>
+    Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken);
 }

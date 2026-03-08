@@ -10,6 +10,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _getCustomersException;
     private ImportResultDto? _importResult;
     private Exception? _importCustomersException;
+    private ImportResultDto? _commitImportResult;
 
     public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100)
     {
@@ -57,6 +58,16 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         throw new NotImplementedException();
     }
 
+    public Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken)
+    {
+        if (_commitImportResult is not null)
+        {
+            return Task.FromResult(_commitImportResult);
+        }
+
+        throw new NotImplementedException();
+    }
+
     public void AddCustomer(GetCustomerDto customer) => _customers.Add(customer);
 
     public void AddCustomerDetails(CustomerDetailsDto customer) => _customerDetails.Add(customer);
@@ -66,6 +77,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
 
     public void SetImportCustomersResult(ImportResultDto result) => _importResult = result;
+
+    public void SetCommitImportResult(ImportResultDto result) => _commitImportResult = result;
 
     public void SetImportCustomersException(Exception exception) => _importCustomersException = exception;
 }
