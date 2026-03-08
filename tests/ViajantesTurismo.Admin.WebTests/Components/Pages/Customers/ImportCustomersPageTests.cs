@@ -154,10 +154,12 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
 
-        // Act — upload file, wait for the mapping step, then click Import
+        // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
+        cut.Find("button.btn-primary").Click(); // → preview step
+        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        cut.Find("button.btn-primary").Click(); // → confirm import
 
         // Assert
         cut.WaitForAssertion(() => Assert.Contains("3 customer(s) imported successfully", cut.Markup, StringComparison.Ordinal));
@@ -172,10 +174,12 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
 
-        // Act — upload file, wait for the mapping step, then click Import
+        // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
+        cut.Find("button.btn-primary").Click(); // → preview step
+        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        cut.Find("button.btn-primary").Click(); // → confirm import
 
         // Assert
         cut.WaitForAssertion(() => Assert.Contains("2 customer(s) imported successfully", cut.Markup, StringComparison.Ordinal));
@@ -190,10 +194,12 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
 
-        // Act — upload file, wait for the mapping step, then click Import
+        // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
+        cut.Find("button.btn-primary").Click(); // → preview step
+        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        cut.Find("button.btn-primary").Click(); // → confirm import
 
         // Assert
         cut.WaitForAssertion(() => Assert.Contains("Connection refused", cut.Markup, StringComparison.Ordinal));
@@ -207,10 +213,12 @@ public sealed class ImportCustomersPageTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
 
-        // Act — upload file, wait for the mapping step, then click Import
+        // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
+        cut.Find("button.btn-primary").Click(); // → preview step
+        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        cut.Find("button.btn-primary").Click(); // → confirm import
 
         // Assert
         cut.WaitForAssertion(() => Assert.Contains("Import another file", cut.Markup, StringComparison.Ordinal));
@@ -226,7 +234,9 @@ public sealed class ImportCustomersPageTests : BunitContext
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
+        cut.Find("button.btn-primary").Click(); // → preview step
+        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        cut.Find("button.btn-primary").Click(); // → confirm import
         cut.WaitForAssertion(() => Assert.Contains("Import another file", cut.Markup, StringComparison.Ordinal));
 
         // Act — click "Import another file" (btn-sm variant in the result alert)
