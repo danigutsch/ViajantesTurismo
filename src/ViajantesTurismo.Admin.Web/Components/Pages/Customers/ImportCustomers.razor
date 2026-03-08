@@ -20,6 +20,8 @@
 
     @if (_result is not null)
     {
+        var summary = BuildImportSummary();
+
         <div class="alert @(_result.ErrorCount == 0 ? "alert-success" : "alert-warning") d-flex align-items-start gap-3">
             <i class="bi @(_result.ErrorCount == 0 ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") fs-4"></i>
             <div>
@@ -30,6 +32,12 @@
                     {
                         <li>@_result.ErrorCount row(s) could not be imported due to errors.</li>
                     }
+                </ul>
+                <ul class="mb-0 mt-2" data-testid="import-summary-counts">
+                    <li>Created: @summary.CreatedCount</li>
+                    <li>Updated: @summary.UpdatedCount</li>
+                    <li>Skipped: @summary.SkippedCount</li>
+                    <li>Failed: @summary.FailedCount</li>
                 </ul>
                 <div class="mt-2 d-flex gap-2">
                     <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Import another file</button>
@@ -367,6 +375,7 @@
 @code {
     private enum PageStep { FileSelection, HeaderMapping, Preview, DuplicateResolution }
     private enum ConflictFieldSource { Existing, Incoming }
+    private sealed record ImportSummaryCounts(int CreatedCount, int UpdatedCount, int SkippedCount, int FailedCount);
 
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
     private const int MaxPreviewRows = 5;
@@ -809,5 +818,26 @@
         }
 
         return $"\"{normalized.Replace("\"", "\"\"")}";
+    }
+
+    private ImportSummaryCounts BuildImportSummary()
+    {
+        if (_result is null)
+        {
+            return new ImportSummaryCounts(0, 0, 0, 0);
+        }
+
+        var skippedCount = _conflictDecisions.Values.Count(v =>
+            v.Equals("keep", StringComparison.OrdinalIgnoreCase));
+        var updatedCount = _conflictDecisions.Values.Count(v =>
+            v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
+            || v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
+        var createdCount = Math.Max(0, _result.SuccessCount - updatedCount);
+
+        return new ImportSummaryCounts(
+            createdCount,
+            updatedCount,
+            skippedCount,
+            _result.ErrorCount);
     }
 }
