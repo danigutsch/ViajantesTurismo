@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 
@@ -22,7 +23,9 @@ public sealed class CreateCustomerCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        if (await customerStore.EmailExists(command.ContactInfo.Email, ct))
+        var normalizedEmail = StringSanitizer.NormalizeKey(command.ContactInfo.Email);
+
+        if (await customerStore.EmailExists(normalizedEmail, ct))
         {
             return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email).ConvertError<Guid>();
         }

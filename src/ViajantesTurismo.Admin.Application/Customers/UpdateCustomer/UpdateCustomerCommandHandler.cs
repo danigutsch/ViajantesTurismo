@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Common.Results;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 
@@ -28,7 +29,9 @@ public sealed class UpdateCustomerCommandHandler(
             return CustomerErrors.CustomerNotFound(command.CustomerId);
         }
 
-        if (await customerStore.EmailExistsExcluding(command.ContactInfo.Email, command.CustomerId, ct))
+        var normalizedEmail = StringSanitizer.NormalizeKey(command.ContactInfo.Email);
+
+        if (await customerStore.EmailExistsExcluding(normalizedEmail, command.CustomerId, ct))
         {
             return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email);
         }
