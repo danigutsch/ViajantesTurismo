@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
@@ -57,8 +56,7 @@ public sealed class CustomerImportCommandHandler(
             }
 
             var customer = customerResult.Value;
-            var normalizedEmail = StringSanitizer.NormalizeKey(customer.ContactInfo.Email);
-            var emailAlreadyExists = await customerStore.EmailExists(normalizedEmail, ct);
+            var emailAlreadyExists = await customerStore.EmailExists(customer.ContactInfo.Email, ct);
             if (emailAlreadyExists)
             {
                 if (TryResolveConflict(conflictResolutions, customer.ContactInfo.Email, out var resolution))
@@ -68,7 +66,7 @@ public sealed class CustomerImportCommandHandler(
                         continue;
                     }
 
-                    var existingCustomer = await customerStore.GetByEmail(normalizedEmail, ct);
+                    var existingCustomer = await customerStore.GetByEmail(customer.ContactInfo.Email, ct);
                     if (existingCustomer is null)
                     {
                         errorCount++;

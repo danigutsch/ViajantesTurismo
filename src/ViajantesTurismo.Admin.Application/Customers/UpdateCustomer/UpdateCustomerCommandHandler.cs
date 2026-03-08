@@ -29,9 +29,9 @@ public sealed class UpdateCustomerCommandHandler(
             return CustomerErrors.CustomerNotFound(command.CustomerId);
         }
 
-        var normalizedEmail = StringSanitizer.NormalizeKey(command.ContactInfo.Email);
+        var sanitizedEmail = StringSanitizer.Sanitize(command.ContactInfo.Email);
 
-        if (await customerStore.EmailExistsExcluding(normalizedEmail, command.CustomerId, ct))
+        if (await customerStore.EmailExistsExcluding(sanitizedEmail, command.CustomerId, ct))
         {
             return CustomerErrors.EmailAlreadyExists(command.ContactInfo.Email);
         }

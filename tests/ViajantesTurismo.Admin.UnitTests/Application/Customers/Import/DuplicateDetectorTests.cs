@@ -64,7 +64,7 @@ public class DuplicateDetectorTests
         var store = new FakeCustomerStore(["JOHN.DOE@EXAMPLE.COM"]);
 
         // Act
-        var duplicateLineNumbers = await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabaseAsync(
+        var duplicateLineNumbers = await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabase(
             document,
             store,
             CancellationToken.None);

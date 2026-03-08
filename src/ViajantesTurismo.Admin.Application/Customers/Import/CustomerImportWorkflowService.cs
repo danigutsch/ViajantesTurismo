@@ -67,7 +67,7 @@ public sealed class CustomerImportWorkflowService(
             DuplicateDetector.FindDuplicateEmailLineNumbers(document));
 
         conflictLineNumbers.UnionWith(DuplicateDetector.FindDuplicateNameLineNumbers(document));
-        conflictLineNumbers.UnionWith(await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabaseAsync(
+        conflictLineNumbers.UnionWith(await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabase(
             document,
             customerStore,
             ct));

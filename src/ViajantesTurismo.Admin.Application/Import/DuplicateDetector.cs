@@ -83,7 +83,7 @@ public static class DuplicateDetector
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Line numbers (1-based lines) for rows with duplicate emails in the database.</returns>
     /// <exception cref="ArgumentNullException">Thrown when required arguments are null.</exception>
-    public static async Task<IReadOnlyList<int>> FindDuplicateEmailLineNumbersAgainstDatabaseAsync(
+    public static async Task<IReadOnlyList<int>> FindDuplicateEmailLineNumbersAgainstDatabase(
         IImportDocument document,
         ICustomerStore customerStore,
         CancellationToken ct)
@@ -102,8 +102,9 @@ public static class DuplicateDetector
                 continue;
             }
 
-            var normalizedEmail = StringSanitizer.NormalizeKey(email);
-            if (await customerStore.EmailExists(normalizedEmail, ct))
+            var sanitizedEmail = StringSanitizer.Sanitize(email);
+
+            if (await customerStore.EmailExists(sanitizedEmail, ct))
             {
                 duplicateLineNumbers.Add(rowIndex + 2);
             }
