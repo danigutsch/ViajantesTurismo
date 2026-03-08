@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
@@ -121,7 +122,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 /// Clean-slate tests that import actual data.
 /// </summary>
 [Collection("E2E.Serial")]
-public class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
+public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     private const string CanonicalHeaders =
         "FirstName,LastName,Gender,BirthDate,Nationality,Occupation," +
@@ -169,4 +170,38 @@ public class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(f
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "1 customer(s) imported successfully" }))
             .ToBeVisibleAsync();
     }
+
+    [Fact]
+    public async Task Can_Show_Final_Summary_Counts_And_Open_Customer_Details_From_View_Customer_Action()
+    {
+        var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";
+        var csv = CanonicalHeaders + "\n" + BuildValidRow(email);
+
+        await NavigateToAsync("/customers/import");
+
+        await Page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csv));
+
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
+            .ToBeVisibleAsync();
+        await Page.GetButton("Preview").ClickAsync();
+
+        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
+        await Page.GetButton("Confirm Import").ClickAsync();
+
+        await Expect(Page.Locator("[data-testid='import-summary-counts']")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Created: 1")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Updated: 0")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Skipped: 0")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Failed: 0")).ToBeVisibleAsync();
+
+        var viewCustomerLink = Page.Locator("a[data-action='view-customer']").First;
+        await Expect(viewCustomerLink).ToBeVisibleAsync();
+        await viewCustomerLink.ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(CustomerUrlRegex());
+        await Expect(Page).ToHaveTitleAsync("Customer Details");
+    }
+
+    [GeneratedRegex(".*/customers/[0-9a-fA-F-]+$")]
+    private static partial Regex CustomerUrlRegex();
 }
