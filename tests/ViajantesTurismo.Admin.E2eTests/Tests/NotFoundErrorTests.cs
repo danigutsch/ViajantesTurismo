@@ -40,33 +40,33 @@ public class NotFoundErrorTests(E2EFixture fixture) : E2ETestBase(fixture)
         foreach (var invalidGuid in invalidGuids)
         {
             await NavigateToAsync($"/tours/{invalidGuid}");
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
             await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
         }
 
         // Also verify bookings and customers with invalid GUIDs
         await NavigateToAsync("/bookings/not-a-guid");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
 
         await NavigateToAsync("/customers/not-a-guid");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
 
         await NavigateToAsync("/customers/not-a-guid/edit");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
     }
 
     [Fact]
     public async Task Non_Existent_Route_Shows_Custom_404_Page()
     {
         await NavigateToAsync("/nonexistent-page");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Page Not Found" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
         await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
 
         // Should have a link back to the dashboard
-        await Expect(Page.GetByRole(AriaRole.Link, new() { Name = "Back to Dashboard" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Back to Dashboard" })).ToBeVisibleAsync();
 
         // Clicking the link should navigate to the dashboard
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Back to Dashboard" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Back to Dashboard" }).ClickAsync();
         await Expect(Page.GetHeading("ViajantesTurismo Admin Dashboard")).ToBeVisibleAsync();
     }
 }
