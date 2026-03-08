@@ -39,7 +39,7 @@ public sealed class CustomerImportCommandHandler(
         var customersToOverwrite = new List<CustomerOverwritePair>();
         var errorCount = 0;
 
-        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
+        foreach (var (row, rowIndex) in document.Rows.Select((row, index) => (row, index)))
         {
             var lineNumber = rowIndex + 2;
             if (duplicateLineNumbers.Contains(lineNumber))
@@ -48,7 +48,6 @@ public sealed class CustomerImportCommandHandler(
                 continue;
             }
 
-            var row = document.Rows[rowIndex];
             var customerResult = RowToCustomerMapper.MapCustomer(document, row, timeProvider);
             if (customerResult.IsFailure)
             {

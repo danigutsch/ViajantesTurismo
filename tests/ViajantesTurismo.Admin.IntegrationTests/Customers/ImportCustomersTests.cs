@@ -112,7 +112,14 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
 
         var csv = BuildCanonicalCsv(duplicateEmail);
         using var content = BuildCsvMultipartContent(csv);
-        content.Add(new StringContent($"{Uri.EscapeDataString(duplicateEmail)}=keep"), "conflictResolutions");
+        content.Add(
+            new StringContent(
+                ConflictResolutionSerialization.Serialize(
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [duplicateEmail] = "keep"
+                    })),
+            "conflictResolutions");
 
         // Act
         var response = await Client.PostAsync(
