@@ -1,5 +1,7 @@
 @page "/customers/import"
+@using System.Text
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Services
 @rendermode InteractiveServer
 
 @inject ICustomersApiClient CustomersApi
@@ -48,6 +50,112 @@
             </div>
         </div>
     }
+    else if (_step == PageStep.HeaderMapping)
+    {
+        var unmatchedRequired = _fieldMappings
+            .Where(m => m.Field.IsRequired && !m.IsAutoMatched)
+            .ToList();
+        var autoMatchedCount = _fieldMappings.Count(m => m.IsAutoMatched);
+        var allRequiredMatched = unmatchedRequired.Count == 0;
+
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-text"></i>
+                <strong>@_pendingFileName</strong>
+                <span class="badge bg-secondary">@_csvHeaders.Count column(s) detected</span>
+            </div>
+            <div class="card-body">
+                @if (allRequiredMatched)
+                {
+                    <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <span>All required columns were automatically matched.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <span>@unmatchedRequired.Count required column(s) could not be matched. Please assign them below.</span>
+                    </div>
+
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Required Field</th>
+                                <th>Source Column in CSV</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mapping in unmatchedRequired)
+                            {
+                                <tr>
+                                    <td>
+                                        @mapping.Field.DisplayName
+                                        <span class="badge bg-danger ms-1">required</span>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm"
+                                                @onchange="@(e => OnFieldMapped(mapping.Field.Name, e.Value?.ToString()))">
+                                            <option value="">— select a column —</option>
+                                            @foreach (var header in _csvHeaders)
+                                            {
+                                                <option value="@header">@header</option>
+                                            }
+                                        </select>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                @if (autoMatchedCount > 0)
+                {
+                    <details class="mt-2">
+                        <summary class="text-muted small" style="cursor: pointer;">
+                            <i class="bi bi-check-circle text-success"></i>
+                            @autoMatchedCount auto-matched column(s) — click to expand
+                        </summary>
+                        <table class="table table-sm table-borderless mt-2 mb-0">
+                            <tbody>
+                                @foreach (var mapping in _fieldMappings.Where(m => m.IsAutoMatched))
+                                {
+                                    <tr>
+                                        <td class="text-muted small py-1">@mapping.Field.DisplayName</td>
+                                        <td class="text-muted small py-1"><i class="bi bi-arrow-right"></i> @mapping.MatchedCsvHeader</td>
+                                        <td class="py-1"><i class="bi bi-check-circle-fill text-success"></i></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </details>
+                }
+
+                @if (_validationError is not null)
+                {
+                    <div class="alert alert-danger mt-3 mb-0">
+                        <i class="bi bi-exclamation-circle"></i> @_validationError
+                    </div>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary"
+                            @onclick="HandleImport"
+                            disabled="@(!AllRequiredFieldsMapped() || _uploading)">
+                        @if (_uploading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        <i class="bi bi-upload"></i> Import
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="Reset" disabled="@_uploading">
+                        <i class="bi bi-arrow-left"></i> Choose different file
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
     else
     {
         <div class="card">
@@ -56,24 +164,13 @@
                      style="border-style: dashed !important;"
                      @ondragenter="@(() => _dragging++)"
                      @ondragleave="@(() => _dragging--)">
-                    @if (_uploading)
-                    {
-                        <div>
-                            <span class="spinner-border text-primary mb-3"></span>
-                            <p class="mb-0 text-muted">Uploading...</p>
-                        </div>
-                    }
-                    else
-                    {
-                        <i class="bi bi-file-earmark-arrow-up fs-1 text-muted d-block mb-2"></i>
-                        <p class="mb-1 fw-semibold">Drop a CSV file here</p>
-                        <p class="text-muted small mb-0">or click to browse &mdash; max 5 MB</p>
-                        <InputFile OnChange="OnFileSelected"
-                                   accept=".csv"
-                                   disabled="@_uploading"
-                                   class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
-                                   style="cursor: pointer;" />
-                    }
+                    <i class="bi bi-file-earmark-arrow-up fs-1 text-muted d-block mb-2"></i>
+                    <p class="mb-1 fw-semibold">Drop a CSV file here</p>
+                    <p class="text-muted small mb-0">or click to browse &mdash; max 5 MB</p>
+                    <InputFile OnChange="OnFileSelected"
+                               accept=".csv"
+                               class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                               style="cursor: pointer;" />
                 </div>
 
                 @if (_validationError is not null)
@@ -88,11 +185,24 @@
 </div>
 
 @code {
+    private enum PageStep { FileSelection, HeaderMapping }
+
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
 
+    // File selection
     private int _dragging;
-    private bool _uploading;
     private string? _validationError;
+    private PageStep _step = PageStep.FileSelection;
+
+    // Header mapping
+    private string _pendingFileName = "";
+    private byte[] _pendingFileBytes = [];
+    private IReadOnlyList<string> _csvHeaders = [];
+    private IReadOnlyList<CustomerImportFieldMapping> _fieldMappings = [];
+    private Dictionary<string, string?> _userMappings = new();
+    private bool _uploading;
+
+    // Result
     private string? _error;
     private ImportResultDto? _result;
 
@@ -115,13 +225,53 @@
             return;
         }
 
+        using var ms = new MemoryStream();
+        await using var stream = file.OpenReadStream(MaxFileSizeBytes);
+        await stream.CopyToAsync(ms);
+        _pendingFileBytes = ms.ToArray();
+        _pendingFileName = file.Name;
+
+        var text = Encoding.UTF8.GetString(_pendingFileBytes, 0, Math.Min(4096, _pendingFileBytes.Length));
+        var firstLine = text
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault() ?? "";
+        _csvHeaders = firstLine.Split(',')
+            .Select(h => h.Trim().Trim('"'))
+            .ToList()
+            .AsReadOnly();
+
+        _fieldMappings = CustomerImportHeaderMatcher.AutoMatch(_csvHeaders);
+        _userMappings = new Dictionary<string, string?>();
+        _step = PageStep.HeaderMapping;
+    }
+
+    private void OnFieldMapped(string fieldName, string? csvHeader) =>
+        _userMappings[fieldName] = string.IsNullOrEmpty(csvHeader) ? null : csvHeader;
+
+    private bool AllRequiredFieldsMapped() =>
+        _fieldMappings
+            .Where(m => m.Field.IsRequired)
+            .All(m => m.IsAutoMatched ||
+                      (_userMappings.TryGetValue(m.Field.Name, out var v) && v is not null));
+
+    private async Task HandleImport()
+    {
+        if (!AllRequiredFieldsMapped())
+        {
+            _validationError = "All required fields must be mapped before importing.";
+            return;
+        }
+
         _uploading = true;
+        _validationError = null;
+
         try
         {
-            using var ms = new MemoryStream();
-            await using var stream = file.OpenReadStream(MaxFileSizeBytes);
-            await stream.CopyToAsync(ms);
-            _result = await CustomersApi.ImportCustomers(ms.ToArray(), file.Name, CancellationToken.None);
+            var fileBytes = CustomerImportHeaderMatcher.ApplyMapping(
+                _pendingFileBytes,
+                _fieldMappings,
+                _userMappings);
+            _result = await CustomersApi.ImportCustomers(fileBytes, _pendingFileName, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -138,5 +288,12 @@
         _result = null;
         _error = null;
         _validationError = null;
+        _pendingFileName = "";
+        _pendingFileBytes = [];
+        _csvHeaders = [];
+        _fieldMappings = [];
+        _userMappings = new();
+        _uploading = false;
+        _step = PageStep.FileSelection;
     }
 }
