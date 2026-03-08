@@ -129,16 +129,86 @@
 
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-primary"
-                            @onclick="HandleImport"
+                            @onclick="ShowPreview"
                             disabled="@(!AllRequiredFieldsMapped() || _uploading)">
+                        <i class="bi bi-eye"></i> Preview
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="Reset" disabled="@_uploading">
+                        <i class="bi bi-arrow-left"></i> Choose different file
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    else if (_step == PageStep.Preview)
+    {
+        var mappedFields = _fieldMappings
+            .Where(m => GetEffectiveMappingValue(m.Field.Name, m.MatchedCsvHeader) is not null)
+            .ToList();
+
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-table"></i>
+                <strong>@_pendingFileName</strong>
+                <span class="badge bg-secondary">@_previewRows.Count of max @MaxPreviewRows row(s) shown</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Review the extracted data below. Rows with missing required values are highlighted.</p>
+
+                <div class="table-responsive">
+                    <table class="table table-sm preview-table">
+                        <thead>
+                            <tr>
+                                @foreach (var mapping in mappedFields)
+                                {
+                                    <th>
+                                        @mapping.Field.DisplayName
+                                        @if (mapping.Field.IsRequired)
+                                        {
+                                            <span class="text-danger ms-1">*</span>
+                                        }
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in _previewRows)
+                            {
+                                var hasWarning = mappedFields
+                                    .Where(m => m.Field.IsRequired)
+                                    .Any(m => !row.TryGetValue(m.Field.Name, out var v) || string.IsNullOrEmpty(v));
+                                <tr class="@(hasWarning ? "table-warning" : "")">
+                                    @foreach (var mapping in mappedFields)
+                                    {
+                                        <td>@row.GetValueOrDefault(mapping.Field.Name, "")</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (_validationError is not null)
+                {
+                    <div class="alert alert-danger mt-3 mb-0">
+                        <i class="bi bi-exclamation-circle"></i> @_validationError
+                    </div>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary"
+                            @onclick="HandleImport"
+                            disabled="@_uploading">
                         @if (_uploading)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
                         }
-                        <i class="bi bi-upload"></i> Import
+                        <i class="bi bi-check-lg"></i> Confirm Import
                     </button>
-                    <button class="btn btn-outline-secondary" @onclick="Reset" disabled="@_uploading">
-                        <i class="bi bi-arrow-left"></i> Choose different file
+                    <button class="btn btn-outline-secondary"
+                            @onclick="@(() => _step = PageStep.HeaderMapping)"
+                            disabled="@_uploading">
+                        <i class="bi bi-arrow-left"></i> Back to Mapping
                     </button>
                 </div>
             </div>
@@ -173,9 +243,10 @@
 </div>
 
 @code {
-    private enum PageStep { FileSelection, HeaderMapping }
+    private enum PageStep { FileSelection, HeaderMapping, Preview }
 
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
+    private const int MaxPreviewRows = 5;
 
     // File selection
     private int _dragging;
@@ -189,6 +260,7 @@
     private IReadOnlyList<CustomerImportFieldMapping> _fieldMappings = [];
     private Dictionary<string, string?> _userMappings = new();
     private bool _uploading;
+    private IReadOnlyList<IReadOnlyDictionary<string, string>> _previewRows = [];
 
     // Result
     private string? _error;
@@ -250,6 +322,45 @@
             .Where(m => m.Field.IsRequired)
             .All(m => GetEffectiveMappingValue(m.Field.Name, m.MatchedCsvHeader) is not null);
 
+    private void ShowPreview()
+    {
+        _previewRows = BuildPreviewRows();
+        _step = PageStep.Preview;
+    }
+
+    private IReadOnlyList<IReadOnlyDictionary<string, string>> BuildPreviewRows()
+    {
+        var text = Encoding.UTF8.GetString(_pendingFileBytes);
+        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length < 2) return [];
+
+        var fieldToColIndex = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var mapping in _fieldMappings)
+        {
+            var csvCol = GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader);
+            if (csvCol is null) continue;
+            for (var i = 0; i < _csvHeaders.Count; i++)
+            {
+                if (string.Equals(_csvHeaders[i], csvCol, StringComparison.OrdinalIgnoreCase))
+                {
+                    fieldToColIndex[mapping.Field.Name] = i;
+                    break;
+                }
+            }
+        }
+
+        var result = new List<IReadOnlyDictionary<string, string>>();
+        foreach (var line in lines.Skip(1).Take(MaxPreviewRows))
+        {
+            var values = line.Split(',');
+            var row = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var (fieldName, colIdx) in fieldToColIndex)
+                row[fieldName] = colIdx < values.Length ? values[colIdx].Trim().Trim('"') : "";
+            result.Add(row);
+        }
+        return result.AsReadOnly();
+    }
+
     private async Task HandleImport()
     {
         if (!AllRequiredFieldsMapped())
@@ -289,6 +400,7 @@
         _csvHeaders = [];
         _fieldMappings = [];
         _userMappings = new();
+        _previewRows = [];
         _uploading = false;
         _step = PageStep.FileSelection;
     }
