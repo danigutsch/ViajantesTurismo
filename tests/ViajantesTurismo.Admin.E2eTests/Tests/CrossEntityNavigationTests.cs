@@ -7,10 +7,13 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
     [Fact]
     public async Task Can_Navigate_Between_Entities_From_Booking_Details_And_Lists()
     {
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var booking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer.Id);
+
         // === From booking details: follow cross-entity links ===
-        await NavigateToAsync("/bookings");
-        var firstRow = Page.Locator("table tbody tr").First;
-        await firstRow.GetLink("View").ClickAsync();
+        await NavigateToAsync($"/bookings/{booking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         // Tour link navigates to tour details
@@ -32,12 +35,12 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
 
         // === From bookings list: tour and customer links in rows ===
         await NavigateToAsync("/bookings");
-        var rows = Page.Locator("table tbody tr");
-        var rowCount = await rows.CountAsync();
-        Assert.True(rowCount > 0);
+        var bookingRow = Page.Locator("table tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = customer.FirstName });
+        await Expect(bookingRow).ToHaveCountAsync(1);
 
         // Click tour link in first row
-        var listTourLink = rows.First.Locator("a[href^='/tours/']").First;
+        var listTourLink = bookingRow.First.Locator("a[href^='/tours/']").First;
         await listTourLink.ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
@@ -45,7 +48,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Click customer link in first row
-        var listCustomerLink = rows.First.Locator("a[href^='/customers/']").First;
+        var listCustomerLink = bookingRow.First.Locator("a[href^='/customers/']").First;
         await listCustomerLink.ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Customer Details");
     }
@@ -53,14 +56,16 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
     [Fact]
     public async Task Can_View_Contextual_Bookings_On_Customer_And_Tour_Details()
     {
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        _ = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer.Id);
+
         // === Tour details: scoped bookings list ===
-        await NavigateToAsync("/tours");
-        var tourRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "City Highlights" });
-        await tourRow.GetLink("View").ClickAsync();
+        await NavigateToAsync($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
-        // Scoped bookings list should be visible (tour has bookings from seeded data)
+        // Scoped bookings list should be visible for test-owned booking data
         var tourBookingsTable = Page.Locator("table");
         await Expect(tourBookingsTable).ToBeVisibleAsync();
 
@@ -78,9 +83,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         // === Customer details: scoped bookings list ===
-        await NavigateToAsync("/customers");
-        var customerRow = Page.Locator("table tbody tr").First;
-        await customerRow.GetLink("View").ClickAsync();
+        await NavigateToAsync($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
         // Scoped bookings list should be visible

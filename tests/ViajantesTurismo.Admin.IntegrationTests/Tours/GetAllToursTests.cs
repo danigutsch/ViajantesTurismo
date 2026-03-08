@@ -6,24 +6,8 @@ using ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Tours;
 
-public sealed class GetAllToursTests(ApiFixture fixture) : AdminApiSerialTestBase(fixture)
+public sealed class GetAllToursTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
-    [Fact]
-    public async Task Can_Get_Empty_Tour_List()
-    {
-        // Arrange
-        await ClearDatabaseAsync(TestContext.Current.CancellationToken);
-
-        // Act
-        var response = await Client.GetAllToursAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(TestContext.Current.CancellationToken);
-        Assert.NotNull(tours);
-        Assert.Empty(tours);
-    }
-
     [Fact]
     public async Task Can_Get_Multiple_Tours()
     {
@@ -40,9 +24,39 @@ public sealed class GetAllToursTests(ApiFixture fixture) : AdminApiSerialTestBas
 
         var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(tours);
-        Assert.True(tours.Length >= 3);
-        Assert.Contains(tours, t => t.Id == tour1.Id);
-        Assert.Contains(tours, t => t.Id == tour2.Id);
-        Assert.Contains(tours, t => t.Id == tour3.Id);
+
+        var createdIds = new HashSet<Guid>
+        {
+            tour1.Id,
+            tour2.Id,
+            tour3.Id,
+        };
+
+        var createdTours = tours.Where(t => createdIds.Contains(t.Id)).ToArray();
+
+        Assert.Equal(3, createdTours.Length);
+        Assert.Contains(createdTours, t => t.Id == tour1.Id);
+        Assert.Contains(createdTours, t => t.Id == tour2.Id);
+        Assert.Contains(createdTours, t => t.Id == tour3.Id);
+    }
+}
+
+public sealed class GetAllToursEmptyListTests(ApiFixture fixture) : AdminApiSerialTestBase(fixture)
+{
+    [Fact]
+    [Trait("SeedDependency", "Intentional-EmptyState-Smoke")]
+    public async Task Can_Get_Empty_Tour_List()
+    {
+        // Arrange
+        await ClearDatabaseAsync(TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await Client.GetAllToursAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tours = await response.Content.ReadFromJsonAsync<GetTourDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(tours);
+        Assert.Empty(tours);
     }
 }

@@ -6,24 +6,8 @@ using ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiSerialTestBase(fixture)
+public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
-    [Fact]
-    public async Task Can_Get_Empty_Booking_List()
-    {
-        // Arrange
-        await ClearDatabaseAsync(TestContext.Current.CancellationToken);
-
-        // Act
-        var response = await Client.GetAllBookingsAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
-        Assert.NotNull(bookings);
-        Assert.Empty(bookings);
-    }
-
     [Fact]
     public async Task Can_Get_Multiple_Bookings()
     {
@@ -42,9 +26,18 @@ public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiSerialTest
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
         Assert.NotNull(bookings);
-        Assert.True(bookings.Length >= 2);
-        Assert.Contains(bookings, b => b.Id == booking1.Id);
-        Assert.Contains(bookings, b => b.Id == booking2.Id);
+
+        var createdIds = new HashSet<Guid>
+        {
+            booking1.Id,
+            booking2.Id,
+        };
+
+        var createdBookings = bookings.Where(b => createdIds.Contains(b.Id)).ToArray();
+
+        Assert.Equal(2, createdBookings.Length);
+        Assert.Contains(createdBookings, b => b.Id == booking1.Id);
+        Assert.Contains(createdBookings, b => b.Id == booking2.Id);
     }
 
     [Fact]
@@ -72,5 +65,25 @@ public sealed class GetAllBookingsTests(ApiFixture fixture) : AdminApiSerialTest
         Assert.Equal(500m, listBooking.AmountPaid);
         Assert.True(listBooking.RemainingBalance > 0);
         Assert.Single(listBooking.Payments);
+    }
+}
+
+public sealed class GetAllBookingsEmptyListTests(ApiFixture fixture) : AdminApiSerialTestBase(fixture)
+{
+    [Fact]
+    [Trait("SeedDependency", "Intentional-EmptyState-Smoke")]
+    public async Task Can_Get_Empty_Booking_List()
+    {
+        // Arrange
+        await ClearDatabaseAsync(TestContext.Current.CancellationToken);
+
+        // Act
+        var response = await Client.GetAllBookingsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var bookings = await response.Content.ReadFromJsonAsync<GetBookingDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(bookings);
+        Assert.Empty(bookings);
     }
 }
