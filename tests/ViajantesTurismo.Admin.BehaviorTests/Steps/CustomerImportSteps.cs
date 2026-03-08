@@ -65,7 +65,7 @@ public sealed class CustomerImportSteps(ImportContext context)
     public async Task WhenIRunTheImportWorkflowPreCheck()
     {
         var workflow = context.CreateWorkflowService();
-        context.WorkflowResult = await workflow.ImportAsync(context.CsvContent, CancellationToken.None);
+        context.WorkflowResult = await workflow.Import(context.CsvContent, CancellationToken.None);
     }
 
     [Then("{int} customer should be imported successfully")]

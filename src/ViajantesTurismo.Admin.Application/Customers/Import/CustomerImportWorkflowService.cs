@@ -18,7 +18,7 @@ public sealed class CustomerImportWorkflowService(
     /// <param name="csvText">CSV content.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Import summary with optional conflicts.</returns>
-    public async Task<ImportResultDto> ImportAsync(string csvText, CancellationToken ct)
+    public async Task<ImportResultDto> Import(string csvText, CancellationToken ct)
     {
         var conflicts = await FindDatabaseEmailConflicts(csvText, ct);
         if (conflicts.Count > 0)
@@ -37,7 +37,7 @@ public sealed class CustomerImportWorkflowService(
     /// <param name="conflictResolutions">Conflict resolutions keyed by email.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Import summary.</returns>
-    public async Task<ImportResultDto> CommitAsync(
+    public async Task<ImportResultDto> Commit(
         string csvText,
         IReadOnlyDictionary<string, string> conflictResolutions,
         CancellationToken ct)
@@ -63,11 +63,32 @@ public sealed class CustomerImportWorkflowService(
         }
 
         var document = documentResult.Value;
+        var conflictLineNumbers = new HashSet<int>(
+            DuplicateDetector.FindDuplicateEmailLineNumbers(document));
+
+        conflictLineNumbers.UnionWith(DuplicateDetector.FindDuplicateNameLineNumbers(document));
+        conflictLineNumbers.UnionWith(await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabaseAsync(
+            document,
+            customerStore,
+            ct));
+
+        if (conflictLineNumbers.Count == 0)
+        {
+            return [];
+        }
+
         var seenEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var conflicts = new List<ImportConflictDto>();
 
-        foreach (var row in document.Rows)
+        foreach (var lineNumber in conflictLineNumbers.Order())
         {
+            var rowIndex = lineNumber - 2;
+            if (rowIndex < 0 || rowIndex >= document.Rows.Count)
+            {
+                continue;
+            }
+
+            var row = document.Rows[rowIndex];
             if (!row.TryGetByHeader(document.Headers, "Email", out var email) || string.IsNullOrWhiteSpace(email))
             {
                 continue;
@@ -79,10 +100,7 @@ public sealed class CustomerImportWorkflowService(
                 continue;
             }
 
-            if (await customerStore.EmailExists(normalized, ct))
-            {
-                conflicts.Add(new ImportConflictDto(normalized));
-            }
+            conflicts.Add(new ImportConflictDto(normalized));
         }
 
         return conflicts;

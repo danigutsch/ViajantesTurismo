@@ -41,7 +41,7 @@ internal static class CustomerImportEndpoints
         CancellationToken ct)
     {
         var csvText = await ReadCsvAsync(file, ct);
-        var result = await workflow.ImportAsync(csvText, ct);
+        var result = await workflow.Import(csvText, ct);
         return TypedResults.Ok(result);
     }
 
@@ -54,7 +54,7 @@ internal static class CustomerImportEndpoints
     {
         var csvText = await ReadCsvAsync(file, ct);
         var parsedConflictResolutions = ConflictResolutionSerialization.Parse(conflictResolutions);
-        var result = await workflow.CommitAsync(
+        var result = await workflow.Commit(
             csvText,
             parsedConflictResolutions,
             ct);
