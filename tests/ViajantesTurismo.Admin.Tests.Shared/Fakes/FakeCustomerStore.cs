@@ -8,6 +8,8 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
     private readonly HashSet<string> _seededEmails =
         [.. (seededEmails ?? []).Select(e => e.Trim().ToUpperInvariant())];
 
+    public IReadOnlyList<Customer> AllCustomers => _customers.AsReadOnly();
+
     public void Add(Customer customer) => _customers.Add(customer);
 
     public Task<Customer?> GetById(Guid id, CancellationToken ct) =>
