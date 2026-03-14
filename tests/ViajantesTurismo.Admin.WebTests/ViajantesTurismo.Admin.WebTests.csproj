@@ -12,7 +12,13 @@
     <ItemGroup>
         <Using Include="Bunit"/>
         <Using Include="Bunit.TestDoubles"/>
+        <Using Include="Microsoft.AspNetCore.Components.Forms"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
+        <Using Include="ViajantesTurismo.Admin.Contracts"/>
+        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders" Static="True"/>
+        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients"/>
+        <Using Include="ViajantesTurismo.Admin.Web.Components.Shared"/>
+        <Using Include="ViajantesTurismo.Admin.Web.Services"/>
         <Using Include="Xunit"/>
     </ItemGroup>
 

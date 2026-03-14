@@ -1,6 +1,4 @@
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Builders;
-using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
@@ -33,7 +31,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 paymentDate: new DateTime(2024, 1, 15),
                 amount: 100.50m,
                 method: PaymentMethodDto.Cash)
@@ -55,7 +53,7 @@ public class PaymentsListTests : BunitContext
         var paymentDate = new DateTime(2024, 3, 15);
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 paymentDate: paymentDate,
                 amount: 50.00m,
                 method: PaymentMethodDto.Cash)
@@ -75,7 +73,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 123.45m,
                 method: PaymentMethodDto.CreditCard)
         };
@@ -95,7 +93,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.CreditCard)
         };
@@ -115,7 +113,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.BankTransfer)
         };
@@ -135,7 +133,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.Cash)
         };
@@ -155,7 +153,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.Check)
         };
@@ -175,7 +173,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.PayPal)
         };
@@ -195,7 +193,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.BankTransfer,
                 referenceNumber: "REF123456")
@@ -216,7 +214,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.Cash)
         };
@@ -237,7 +235,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.Cash,
                 notes: "Test payment notes")
@@ -258,7 +256,7 @@ public class PaymentsListTests : BunitContext
         var longNotes = "This is a very long note that should be truncated to 30 characters";
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.Cash,
                 notes: longNotes)
@@ -281,7 +279,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(
+            BuildPaymentDto(
                 amount: 100m,
                 method: PaymentMethodDto.Cash)
         };
@@ -302,9 +300,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash),
-            DtoBuilders.BuildPaymentDto(amount: 250.50m, method: PaymentMethodDto.CreditCard),
-            DtoBuilders.BuildPaymentDto(amount: 49.50m, method: PaymentMethodDto.BankTransfer)
+            BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash),
+            BuildPaymentDto(amount: 250.50m, method: PaymentMethodDto.CreditCard),
+            BuildPaymentDto(amount: 49.50m, method: PaymentMethodDto.BankTransfer)
         };
 
         // Act
@@ -322,9 +320,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(paymentDate: new DateTime(2024, 1, 1), amount: 100m, method: PaymentMethodDto.Cash),
-            DtoBuilders.BuildPaymentDto(paymentDate: new DateTime(2024, 3, 1), amount: 200m, method: PaymentMethodDto.CreditCard),
-            DtoBuilders.BuildPaymentDto(paymentDate: new DateTime(2024, 2, 1), amount: 150m, method: PaymentMethodDto.BankTransfer)
+            BuildPaymentDto(paymentDate: new DateTime(2024, 1, 1), amount: 100m, method: PaymentMethodDto.Cash),
+            BuildPaymentDto(paymentDate: new DateTime(2024, 3, 1), amount: 200m, method: PaymentMethodDto.CreditCard),
+            BuildPaymentDto(paymentDate: new DateTime(2024, 2, 1), amount: 150m, method: PaymentMethodDto.BankTransfer)
         };
 
         // Act
@@ -345,7 +343,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash)
+            BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash)
         };
 
         // Act
@@ -363,7 +361,7 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            DtoBuilders.BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash)
+            BuildPaymentDto(amount: 100m, method: PaymentMethodDto.Cash)
         };
 
         // Act

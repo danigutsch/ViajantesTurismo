@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Web.Components.Shared;
 using ViajantesTurismo.Admin.Web.Models;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;

@@ -1,6 +1,3 @@
-using ViajantesTurismo.Admin.Web.Components.Shared;
-using ViajantesTurismo.Admin.Web.Services;
-
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
 public class CountrySelectorTests : BunitContext

@@ -1,10 +1,6 @@
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Web.Components.Shared;
-using static ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 

@@ -1,5 +1,3 @@
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Admin.Web.Models;

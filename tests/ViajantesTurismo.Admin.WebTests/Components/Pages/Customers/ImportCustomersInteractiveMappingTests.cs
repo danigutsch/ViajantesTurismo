@@ -1,8 +1,4 @@
-using Microsoft.AspNetCore.Components.Forms;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
-using ViajantesTurismo.Admin.Web.Services;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers;
 

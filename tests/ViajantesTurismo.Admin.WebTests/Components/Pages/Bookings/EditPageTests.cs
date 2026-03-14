@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Components.Forms;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Builders;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web.Components.Pages.Bookings;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Bookings;
@@ -19,7 +16,7 @@ public sealed class EditPageTests : BunitContext
     public void Page_Renders_Successfully_With_Valid_Id()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -68,7 +65,7 @@ public sealed class EditPageTests : BunitContext
     public async Task HandleSubmit_When_Update_Fails_Shows_Sanitized_Error_Message()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(notes: "Original notes");
+        var booking = BuildBookingDto(notes: "Original notes");
         _fakeBookingsApi.AddBooking(booking);
         _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("Update failed hard"));
 
@@ -95,7 +92,7 @@ public sealed class EditPageTests : BunitContext
     public void Displays_Booking_Information_When_Found()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(
+        var booking = BuildBookingDto(
             tourName: "Portugal Adventure",
             tourIdentifier: "PT-2024-001",
             customerName: "John Doe",
@@ -122,7 +119,7 @@ public sealed class EditPageTests : BunitContext
     {
         // Arrange
         var companionId = Guid.NewGuid();
-        var booking = DtoBuilders.BuildBookingDto(
+        var booking = BuildBookingDto(
             companionId: companionId,
             companionName: "Jane Smith"
         );
@@ -140,7 +137,7 @@ public sealed class EditPageTests : BunitContext
     public void Does_Not_Display_Companion_When_Not_Present()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(companionId: null);
+        var booking = BuildBookingDto(companionId: null);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -156,7 +153,7 @@ public sealed class EditPageTests : BunitContext
     {
         // Arrange
         var bookingDate = new DateTime(2024, 3, 15, 14, 30, 0);
-        var booking = DtoBuilders.BuildBookingDto(bookingDate: bookingDate);
+        var booking = BuildBookingDto(bookingDate: bookingDate);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -171,7 +168,7 @@ public sealed class EditPageTests : BunitContext
     public void Displays_Total_Price_As_Readonly()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(totalPrice: 3250.50m);
+        var booking = BuildBookingDto(totalPrice: 3250.50m);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -187,7 +184,7 @@ public sealed class EditPageTests : BunitContext
     public void Renders_Status_Dropdown_With_All_Options()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(status: BookingStatusDto.Pending);
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -208,7 +205,7 @@ public sealed class EditPageTests : BunitContext
     public void Renders_Payment_Status_Dropdown_With_All_Options()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(paymentStatus: PaymentStatusDto.Unpaid);
+        var booking = BuildBookingDto(paymentStatus: PaymentStatusDto.Unpaid);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -229,7 +226,7 @@ public sealed class EditPageTests : BunitContext
     public void Preloads_Existing_Notes_In_Form()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(notes: "Customer requested early check-in");
+        var booking = BuildBookingDto(notes: "Customer requested early check-in");
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -245,7 +242,7 @@ public sealed class EditPageTests : BunitContext
     public void Renders_Discount_Type_Dropdown_With_All_Options()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -265,7 +262,7 @@ public sealed class EditPageTests : BunitContext
     public void Does_Not_Show_Discount_Fields_When_Type_Is_None()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(discountType: DiscountTypeDto.None);
+        var booking = BuildBookingDto(discountType: DiscountTypeDto.None);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -281,7 +278,7 @@ public sealed class EditPageTests : BunitContext
     public void Shows_Discount_Amount_Field_When_Percentage_Selected()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(
+        var booking = BuildBookingDto(
             discountType: DiscountTypeDto.Percentage,
             discountAmount: 15m,
             discountReason: "Early bird discount"
@@ -307,7 +304,7 @@ public sealed class EditPageTests : BunitContext
     public void Shows_Discount_Amount_Field_When_Absolute_Selected()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(
+        var booking = BuildBookingDto(
             discountType: DiscountTypeDto.Absolute,
             discountAmount: 250m,
             discountReason: "Group discount"
@@ -327,7 +324,7 @@ public sealed class EditPageTests : BunitContext
     public void Renders_Cancel_Button_With_Link_To_Bookings()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -343,7 +340,7 @@ public sealed class EditPageTests : BunitContext
     public void Submit_Button_Shows_Default_Text_Initially()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -359,7 +356,7 @@ public sealed class EditPageTests : BunitContext
     public async Task Shows_Success_Message_After_Successful_Update()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(notes: "Original notes");
+        var booking = BuildBookingDto(notes: "Original notes");
         _fakeBookingsApi.AddBooking(booking);
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
@@ -380,7 +377,7 @@ public sealed class EditPageTests : BunitContext
     public async Task Shows_Pending_Redirect_Message_After_Success()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
@@ -402,7 +399,7 @@ public sealed class EditPageTests : BunitContext
     public async Task Cancel_Redirect_Button_Shows_Success_Message()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
@@ -428,7 +425,7 @@ public sealed class EditPageTests : BunitContext
     public async Task Buttons_Are_Disabled_During_Submission()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
@@ -455,7 +452,7 @@ public sealed class EditPageTests : BunitContext
     public void Form_Has_DataAnnotationsValidator()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -470,7 +467,7 @@ public sealed class EditPageTests : BunitContext
     public void Form_Has_ValidationSummary()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -485,7 +482,7 @@ public sealed class EditPageTests : BunitContext
     public void Displays_Discount_Reason_Help_Text()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(
+        var booking = BuildBookingDto(
             discountType: DiscountTypeDto.Percentage,
             discountAmount: 10m,
             discountReason: "Test"
@@ -505,7 +502,7 @@ public sealed class EditPageTests : BunitContext
     public void Page_Has_Correct_Title()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto();
+        var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
@@ -520,7 +517,7 @@ public sealed class EditPageTests : BunitContext
     public async Task Status_Dropdown_Updates_After_Confirm_Action()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(status: BookingStatusDto.Pending);
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending);
         _fakeBookingsApi.AddBooking(booking);
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
@@ -539,7 +536,7 @@ public sealed class EditPageTests : BunitContext
     public async Task Status_Dropdown_Updates_After_Complete_Action()
     {
         // Arrange
-        var booking = DtoBuilders.BuildBookingDto(status: BookingStatusDto.Confirmed);
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
         _fakeBookingsApi.AddBooking(booking);
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));

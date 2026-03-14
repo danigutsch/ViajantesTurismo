@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Components.Forms;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
-using static ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders;
 using Edit = ViajantesTurismo.Admin.Web.Components.Pages.Tours.Edit;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Tours;

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Components.QuickGrid;
-using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Builders;
-using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
@@ -44,7 +42,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -69,7 +67,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 tourIdentifier: "TOUR-001",
@@ -98,7 +96,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 tourIdentifier: "TOUR-001",
@@ -126,7 +124,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "John Doe",
@@ -153,7 +151,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "John Doe",
@@ -181,7 +179,7 @@ public class BookingsListTests : BunitContext
         var companionId = Guid.NewGuid();
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -208,7 +206,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -232,7 +230,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -259,7 +257,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -290,7 +288,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -316,7 +314,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -341,7 +339,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -366,7 +364,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -392,7 +390,7 @@ public class BookingsListTests : BunitContext
         var bookingId = Guid.NewGuid();
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: bookingId,
                 tourName: "Tour 1",
                 customerName: "Customer 1",
@@ -424,7 +422,7 @@ public class BookingsListTests : BunitContext
             .Select(i =>
             {
                 var customerName = $"Customer {i}";
-                return DtoBuilders.BuildBookingDto(
+                return BuildBookingDto(
                     id: Guid.NewGuid(),
                     tourName: "Tour 1",
                     customerName: customerName,
@@ -452,7 +450,7 @@ public class BookingsListTests : BunitContext
             .Select(i =>
             {
                 var customerName = $"Customer {i}";
-                return DtoBuilders.BuildBookingDto(
+                return BuildBookingDto(
                     id: Guid.NewGuid(),
                     tourName: "Tour 1",
                     customerName: customerName,
@@ -478,7 +476,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         var bookings = new[]
         {
-            DtoBuilders.BuildBookingDto(
+            BuildBookingDto(
                 id: Guid.NewGuid(),
                 tourName: "Tour 1",
                 customerName: "Customer 1",

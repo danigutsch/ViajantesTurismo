@@ -1,5 +1,3 @@
-using ViajantesTurismo.Admin.Web.Components.Shared;
-
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
 public sealed class ConfirmDialogTests : BunitContext

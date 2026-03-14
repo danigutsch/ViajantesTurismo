@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using ViajantesTurismo.Admin.Web;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers.Create;
-using ViajantesTurismo.Admin.Web.Services;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers.Create;
 

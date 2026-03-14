@@ -1,6 +1,3 @@
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
-using static ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders;
 using Index = ViajantesTurismo.Admin.Web.Components.Pages.Customers.Index;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers;
