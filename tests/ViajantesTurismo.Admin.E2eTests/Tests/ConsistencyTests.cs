@@ -10,6 +10,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
     public async Task Formatting_And_Badges_Are_Consistent_Across_Pages()
     {
         // Arrange: create owned tours for each currency and bookings for each status shape.
+        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync, ApiClient.GetAllBookings);
         var brlTour = await ApiClient.CreateTourAsync(currency: CurrencyDto.Real);
         var eurTour = await ApiClient.CreateTourAsync(currency: CurrencyDto.Euro);
         var usdTour = await ApiClient.CreateTourAsync(currency: CurrencyDto.UsDollar);
@@ -72,7 +73,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Pending booking: list badge and details badge.
-        var pendingRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{pendingBooking.Id}");
+        var pendingRow = await bookingsListPage.GetBookingRow(pendingBooking.Id);
         await Expect(pendingRow.Locator(".badge:has-text('Pending')")).ToBeVisibleAsync();
         await NavigateToAsync($"/bookings/{pendingBooking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
@@ -82,7 +83,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
 
         // Confirmed booking: list badge and details badge.
         await NavigateToAsync("/bookings");
-        var confirmedRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{confirmedBooking.Id}");
+        var confirmedRow = await bookingsListPage.GetBookingRow(confirmedBooking.Id);
         await Expect(confirmedRow.Locator(".badge:has-text('Confirmed')")).ToBeVisibleAsync();
         await NavigateToAsync($"/bookings/{confirmedBooking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
@@ -91,7 +92,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
 
         // === Payment status badge consistency ===
         await NavigateToAsync("/bookings");
-        var paidRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{paidBooking.Id}");
+        var paidRow = await bookingsListPage.GetBookingRow(paidBooking.Id);
         await Expect(paidRow.Locator(".badge:has-text('Paid')")).ToBeVisibleAsync();
         await NavigateToAsync($"/bookings/{paidBooking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
