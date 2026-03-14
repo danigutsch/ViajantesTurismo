@@ -47,7 +47,7 @@ public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Navigate to a Confirmed booking's edit page
         await NavigateTo("/bookings");
         var confirmedRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-success") }).First;
+            .Filter(new LocatorFilterOptions { Has = Page.Locator(".booking-status-badge.bg-success") }).First;
         await confirmedRow.GetLink("Edit").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
