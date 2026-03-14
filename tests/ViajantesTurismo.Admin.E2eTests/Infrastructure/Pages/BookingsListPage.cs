@@ -20,6 +20,19 @@ internal sealed class BookingsListPage(
     private const int MaxLookupAttempts = 3;
 
     /// <summary>
+    /// Reads the booking status badge for a known booking from the global bookings list.
+    /// </summary>
+    /// <param name="bookingId">The booking identifier to locate.</param>
+    /// <returns>The trimmed booking status text shown in the grid.</returns>
+    public async Task<string> GetBookingStatus(Guid bookingId)
+    {
+        var row = await GetBookingRow(bookingId);
+        var statusBadge = row.Locator("td:nth-child(7) .badge");
+        await statusBadge.WaitForAsync();
+        return (await statusBadge.InnerTextAsync()).Trim();
+    }
+
+    /// <summary>
     /// Reads the payment status badge for a known booking from the global bookings list.
     /// </summary>
     /// <param name="bookingId">The booking identifier to locate.</param>

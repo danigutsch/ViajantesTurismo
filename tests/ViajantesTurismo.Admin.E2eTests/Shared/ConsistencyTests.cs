@@ -50,12 +50,9 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateTo("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        var pendingRow = await BookingsList.GetBookingRow(pendingBooking.Id);
-        var paidRow = await BookingsList.GetBookingRow(paidBooking.Id);
-
-        var pendingStatusFromList = (await pendingRow.Locator(".badge").First.InnerTextAsync()).Trim();
-        var paidStatusFromList = (await paidRow.Locator(".badge").First.InnerTextAsync()).Trim();
-        var paidPaymentFromList = (await paidRow.Locator("td .badge").Last.InnerTextAsync()).Trim();
+        var pendingStatusFromList = await BookingsList.GetBookingStatus(pendingBooking.Id);
+        var paidStatusFromList = await BookingsList.GetBookingStatus(paidBooking.Id);
+        var paidPaymentFromList = await BookingsList.GetPaymentStatus(paidBooking.Id);
 
         var pendingStatusFromDetails = await ReadBookingStatusFromDetails(pendingBooking.Id);
         var paidStatusFromDetails = await ReadBookingStatusFromDetails(paidBooking.Id);
@@ -88,7 +85,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateTo($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-        var bookingStatusBadge = Page.Locator("dd .badge").First;
+        var bookingStatusBadge = GetDetailsBadge("Status");
         await Expect(bookingStatusBadge).ToBeVisibleAsync();
         return (await bookingStatusBadge.InnerTextAsync()).Trim();
     }
@@ -98,9 +95,15 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateTo($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-        var paymentStatusBadge = Page.Locator("dd .badge").Nth(1);
+        var paymentStatusBadge = GetDetailsBadge("Payment Status");
         await Expect(paymentStatusBadge).ToBeVisibleAsync();
         return (await paymentStatusBadge.InnerTextAsync()).Trim();
+    }
+
+    private ILocator GetDetailsBadge(string label)
+    {
+        var term = Page.Locator($"dt:text-is('{label}')");
+        return term.Locator("xpath=following-sibling::dd[1]").Locator(".badge");
     }
 
     [GeneratedRegex(@"R\$\s[\d,]+\.\d{2}")]
