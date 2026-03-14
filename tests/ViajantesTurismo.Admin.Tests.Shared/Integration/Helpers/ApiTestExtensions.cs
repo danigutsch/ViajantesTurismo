@@ -2,32 +2,39 @@ using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
+namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 /// <summary>
-/// Helpers for creating test data via the API, used by data-mutating E2E tests
-/// that need to own their data for parallel safety.
+/// Extension methods for creating and managing test data via the API.
+/// Designed for parallel-safe owned-data tests in integration and E2E tests.
 /// </summary>
-internal static class ApiTestExtensions
+public static class ApiTestExtensions
 {
     private static async Task<T> ReadRequiredJson<T>(
         this HttpResponseMessage response,
-        HttpStatusCode expectedStatus)
+        HttpStatusCode expectedStatus
+    )
     {
         if (response.StatusCode != expectedStatus)
         {
-            Assert.Fail($"Expected HTTP {(int)expectedStatus} ({expectedStatus}) but got {(int)response.StatusCode} ({response.StatusCode}).");
+            var body = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException(
+                $"Expected HTTP {(int)expectedStatus} ({expectedStatus}) but got " +
+                $"{(int)response.StatusCode} ({response.StatusCode}). Body: {body}");
         }
 
-        var model = await response.Content.ReadFromJsonAsync<T>();
-        Assert.NotNull(model);
-
-        return model;
+        return await response.Content.ReadFromJsonAsync<T>()
+               ?? throw new InvalidOperationException(
+                   $"Response body for {typeof(T).Name} was null.");
     }
 
     extension(HttpClient client)
     {
-        public async Task<GetTourDto> CreateTour(int minCustomers = 1,
+        /// <summary>
+        /// Creates a tour via the API and returns the created <see cref="GetTourDto"/>.
+        /// </summary>
+        public async Task<GetTourDto> CreateTour(
+            int minCustomers = 1,
             int maxCustomers = 20,
             CurrencyDto currency = CurrencyDto.Euro,
             string? identifier = null,
@@ -60,10 +67,14 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetTourDto>(HttpStatusCode.Created);
         }
 
+        /// <summary>
+        /// Creates a customer via the API and returns the created <see cref="GetCustomerDto"/>.
+        /// </summary>
         public async Task<GetCustomerDto> CreateCustomer(
             string? firstName = null,
             string? lastName = null,
-            BikeTypeDto bikeType = BikeTypeDto.Regular)
+            BikeTypeDto bikeType = BikeTypeDto.Regular
+        )
         {
             var uid = Guid.NewGuid().ToString("N")[..8];
             var phone = $"+5511{Random.Shared.Next(10000000, 99999999)}";
@@ -128,9 +139,10 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetCustomerDto>(HttpStatusCode.Created);
         }
 
-        public async Task<GetBookingDto> CreateBooking(Guid tourId,
-            Guid customerId
-        )
+        /// <summary>
+        /// Creates a booking via the API and returns the created <see cref="GetBookingDto"/>.
+        /// </summary>
+        public async Task<GetBookingDto> CreateBooking(Guid tourId, Guid customerId)
         {
             var dto = new CreateBookingDto
             {
@@ -144,36 +156,57 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.Created);
         }
 
+        /// <summary>
+        /// Returns all bookings from the API.
+        /// </summary>
         public async Task<GetBookingDto[]> GetAllBookings()
         {
             var response = await client.GetAsync(new Uri("/bookings", UriKind.Relative));
             return await response.ReadRequiredJson<GetBookingDto[]>(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// Returns all tours from the API.
+        /// </summary>
         public async Task<GetTourDto[]> GetAllTours()
         {
             var response = await client.GetAsync(new Uri("/tours", UriKind.Relative));
             return await response.ReadRequiredJson<GetTourDto[]>(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// Confirms a booking via the API and returns the updated <see cref="GetBookingDto"/>.
+        /// </summary>
         public async Task<GetBookingDto> ConfirmBooking(Guid bookingId)
         {
-            var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
+            var response = await client.PostAsync(
+                new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
             return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// Cancels a booking via the API and returns the updated <see cref="GetBookingDto"/>.
+        /// </summary>
         public async Task<GetBookingDto> CancelBooking(Guid bookingId)
         {
-            var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/cancel", UriKind.Relative), null);
+            var response = await client.PostAsync(
+                new Uri($"/bookings/{bookingId}/cancel", UriKind.Relative), null);
             return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// Completes a booking via the API and returns the updated <see cref="GetBookingDto"/>.
+        /// </summary>
         public async Task<GetBookingDto> CompleteBooking(Guid bookingId)
         {
-            var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/complete", UriKind.Relative), null);
+            var response = await client.PostAsync(
+                new Uri($"/bookings/{bookingId}/complete", UriKind.Relative), null);
             return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// Records a payment for a booking via the API.
+        /// </summary>
         public async Task RecordPayment(Guid bookingId, decimal amount)
         {
             var dto = new CreatePaymentDto
@@ -184,7 +217,8 @@ internal static class ApiTestExtensions
                 Notes = "E2E test payment"
             };
 
-            var response = await client.PostAsJsonAsync(new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
+            var response = await client.PostAsJsonAsync(
+                new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
             response.EnsureSuccessStatusCode();
         }
     }
