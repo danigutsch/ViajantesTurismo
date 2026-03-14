@@ -6,19 +6,11 @@ namespace ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 public sealed class FakeBookingsApiClient : IBookingsApiClient
 {
     private readonly List<GetBookingDto> _bookings = [];
-    private Exception? _getAllBookingsException;
     private Exception? _getBookingByIdException;
-    private Exception? _getBookingsByCustomerIdException;
-    private Exception? _getBookingsByTourIdException;
     private Exception? _updateBookingNotesException;
 
     public Task<GetBookingDto[]> GetAllBookings(CancellationToken cancellationToken)
     {
-        if (_getAllBookingsException is not null)
-        {
-            throw _getAllBookingsException;
-        }
-
         return Task.FromResult(_bookings.ToArray());
     }
 
@@ -34,21 +26,11 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken cancellationToken)
     {
-        if (_getBookingsByTourIdException is not null)
-        {
-            throw _getBookingsByTourIdException;
-        }
-
         return Task.FromResult(_bookings.Where(b => b.TourId == tourId).ToArray());
     }
 
     public Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken cancellationToken)
     {
-        if (_getBookingsByCustomerIdException is not null)
-        {
-            throw _getBookingsByCustomerIdException;
-        }
-
         return Task.FromResult(_bookings.Where(b => b.CustomerId == customerId).ToArray());
     }
 
@@ -124,13 +106,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public void AddBooking(GetBookingDto booking) => _bookings.Add(booking);
 
-    public void SetGetAllBookingsException(Exception exception) => _getAllBookingsException = exception;
-
     public void SetGetBookingByIdException(Exception exception) => _getBookingByIdException = exception;
-
-    public void SetGetBookingsByTourIdException(Exception exception) => _getBookingsByTourIdException = exception;
-
-    public void SetGetBookingsByCustomerIdException(Exception exception) => _getBookingsByCustomerIdException = exception;
 
     public void SetUpdateBookingNotesException(Exception exception) => _updateBookingNotesException = exception;
 
