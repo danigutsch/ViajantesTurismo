@@ -16,14 +16,14 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ESerialTestBase(fixt
 
         // === Setup: Create own tour with 3 confirmed bookings ===
         var api = ApiClient;
-        var tour = await api.CreateTourAsync(minCustomers: 1, maxCustomers: 10);
+        var tour = await api.CreateTour(minCustomers: 1, maxCustomers: 10);
         var tourName = tour.Name;
 
         // Create 3 customers and 3 confirmed bookings → CurrentCustomerCount = 3
         for (var i = 0; i < 3; i++)
         {
-            var customer = await api.CreateCustomerAsync();
-            var booking = await api.CreateBookingAsync(tour.Id, customer.Id);
+            var customer = await api.CreateCustomer();
+            var booking = await api.CreateBooking(tour.Id, customer.Id);
             await api.ConfirmBookingAsync(booking.Id);
         }
 

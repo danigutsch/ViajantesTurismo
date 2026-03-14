@@ -10,12 +10,12 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Bookings_List_Payment_Status_Matches_Booking_Details()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
-        var customerUnpaid = await ApiClient.CreateCustomerAsync();
-        var customerPartiallyPaid = await ApiClient.CreateCustomerAsync();
+        var tour = await ApiClient.CreateTour();
+        var customerUnpaid = await ApiClient.CreateCustomer();
+        var customerPartiallyPaid = await ApiClient.CreateCustomer();
 
-        var unpaidBooking = await ApiClient.CreateBookingAsync(tour.Id, customerUnpaid.Id);
-        var partiallyPaidBooking = await ApiClient.CreateBookingAsync(tour.Id, customerPartiallyPaid.Id);
+        var unpaidBooking = await ApiClient.CreateBooking(tour.Id, customerUnpaid.Id);
+        var partiallyPaidBooking = await ApiClient.CreateBooking(tour.Id, customerPartiallyPaid.Id);
         await ApiClient.RecordPaymentAsync(partiallyPaidBooking.Id, 500m);
 
         // Act
@@ -35,11 +35,11 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Scoped_Bookings_Payment_Status_Matches_Global_List()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
-        var customer1 = await ApiClient.CreateCustomerAsync();
-        var customer2 = await ApiClient.CreateCustomerAsync();
-        var booking1 = await ApiClient.CreateBookingAsync(tour.Id, customer1.Id);
-        var booking2 = await ApiClient.CreateBookingAsync(tour.Id, customer2.Id);
+        var tour = await ApiClient.CreateTour();
+        var customer1 = await ApiClient.CreateCustomer();
+        var customer2 = await ApiClient.CreateCustomer();
+        var booking1 = await ApiClient.CreateBooking(tour.Id, customer1.Id);
+        var booking2 = await ApiClient.CreateBooking(tour.Id, customer2.Id);
         await ApiClient.RecordPaymentAsync(booking2.Id, 300m);
 
         var booking1Href = $"/bookings/{booking1.Id}";

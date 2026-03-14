@@ -13,9 +13,9 @@ public class BookingFormInteractionTests(E2EFixture fixture) : E2ETestBase(fixtu
     public async Task Can_Toggle_Companion_Fields_By_Room_Type()
     {
         // Arrange: create owned tour and customers.
-        var tour = await ApiClient.CreateTourAsync(currency: CurrencyDto.UsDollar);
-        var customer = await ApiClient.CreateCustomerAsync();
-        var companion = await ApiClient.CreateCustomerAsync();
+        var tour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
+        var customer = await ApiClient.CreateCustomer();
+        var companion = await ApiClient.CreateCustomer();
         var customerLabel = $"{customer.FirstName} {customer.LastName} ({customer.Email})";
         var companionLabel = $"{companion.FirstName} {companion.LastName} ({companion.Email})";
 
@@ -80,8 +80,8 @@ public class BookingFormInteractionTests(E2EFixture fixture) : E2ETestBase(fixtu
     {
         // Arrange: create owned tour (USD) and customer.
         // Test Tour defaults: Base $1000, SingleSupplement $200, RegularBike $50, EBike $100.
-        var tour = await ApiClient.CreateTourAsync(currency: CurrencyDto.UsDollar);
-        var customer = await ApiClient.CreateCustomerAsync();
+        var tour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
+        var customer = await ApiClient.CreateCustomer();
         var customerLabel = $"{customer.FirstName} {customer.LastName} ({customer.Email})";
 
         // Navigate to owned tour details

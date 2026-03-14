@@ -52,7 +52,7 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Tour_Details_Add_Booking_Flow_Should_Validate_Without_Leaking_Internal_Errors()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
+        var tour = await ApiClient.CreateTour();
 
         await NavigateToAsync($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
@@ -83,7 +83,7 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         const string leakedSearchPlaceholder = "Search customers by name or email...";
 
         // Arrange
-        var customer = await ApiClient.CreateCustomerAsync();
+        var customer = await ApiClient.CreateCustomer();
 
         await NavigateToAsync("/customers/create/accommodation");
         await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);

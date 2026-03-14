@@ -27,18 +27,26 @@ internal static class ApiTestExtensions
 
     extension(HttpClient client)
     {
-        public async Task<GetTourDto> CreateTourAsync(int minCustomers = 1,
+        public async Task<GetTourDto> CreateTour(int minCustomers = 1,
             int maxCustomers = 20,
-            CurrencyDto currency = CurrencyDto.Euro
+            CurrencyDto currency = CurrencyDto.Euro,
+            string? identifier = null,
+            string? name = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            decimal price = 1000m
         )
         {
+            var resolvedStartDate = startDate ?? DateTime.UtcNow.AddDays(30);
+            var resolvedEndDate = endDate ?? resolvedStartDate.AddDays(7);
+
             var dto = new CreateTourDto
             {
-                Identifier = $"TEST-{Guid.NewGuid():N}",
-                Name = $"Test Tour {Guid.NewGuid():N}"[..30],
-                StartDate = DateTime.UtcNow.AddDays(30),
-                EndDate = DateTime.UtcNow.AddDays(37),
-                Price = 1000m,
+                Identifier = identifier ?? $"TEST-{Guid.NewGuid():N}",
+                Name = name ?? $"Test Tour {Guid.NewGuid():N}"[..30],
+                StartDate = resolvedStartDate,
+                EndDate = resolvedEndDate,
+                Price = price,
                 SingleRoomSupplementPrice = 200m,
                 RegularBikePrice = 50m,
                 EBikePrice = 100m,
@@ -52,7 +60,9 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetTourDto>(HttpStatusCode.Created);
         }
 
-        public async Task<GetCustomerDto> CreateCustomerAsync()
+        public async Task<GetCustomerDto> CreateCustomer(
+            string? firstName = null,
+            string? lastName = null)
         {
             var uid = Guid.NewGuid().ToString("N")[..8];
             var phone = $"+5511{Random.Shared.Next(10000000, 99999999)}";
@@ -60,8 +70,8 @@ internal static class ApiTestExtensions
             {
                 PersonalInfo = new PersonalInfoDto
                 {
-                    FirstName = $"Test{uid}",
-                    LastName = "User",
+                    FirstName = firstName ?? $"Test{uid}",
+                    LastName = lastName ?? "User",
                     BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     Gender = "Other",
                     Nationality = "Brazilian",
@@ -117,7 +127,7 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetCustomerDto>(HttpStatusCode.Created);
         }
 
-        public async Task<GetBookingDto> CreateBookingAsync(Guid tourId,
+        public async Task<GetBookingDto> CreateBooking(Guid tourId,
             Guid customerId
         )
         {

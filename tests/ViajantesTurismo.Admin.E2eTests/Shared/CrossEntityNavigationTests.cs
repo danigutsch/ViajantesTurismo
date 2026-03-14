@@ -11,9 +11,9 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
     public async Task Can_Navigate_Between_Entities_From_Booking_Details_And_Lists()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
-        var customer = await ApiClient.CreateCustomerAsync();
-        var booking = await ApiClient.CreateBookingAsync(tour.Id, customer.Id);
+        var tour = await ApiClient.CreateTour();
+        var customer = await ApiClient.CreateCustomer();
+        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === From booking details: follow cross-entity links ===
         await NavigateToAsync($"/bookings/{booking.Id}");
@@ -68,9 +68,9 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
     public async Task Can_View_Contextual_Bookings_On_Customer_And_Tour_Details()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
-        var customer = await ApiClient.CreateCustomerAsync();
-        _ = await ApiClient.CreateBookingAsync(tour.Id, customer.Id);
+        var tour = await ApiClient.CreateTour();
+        var customer = await ApiClient.CreateCustomer();
+        _ = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === Tour details: scoped bookings list ===
         await NavigateToAsync($"/tours/{tour.Id}");

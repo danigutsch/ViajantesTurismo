@@ -13,9 +13,9 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Deep_Link_All_Routes()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
-        var customer = await ApiClient.CreateCustomerAsync();
-        var booking = await ApiClient.CreateBookingAsync(tour.Id, customer.Id);
+        var tour = await ApiClient.CreateTour();
+        var customer = await ApiClient.CreateCustomer();
+        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === Static routes ===
         await NavigateToAsync("/");
@@ -98,7 +98,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Render_Home_Page_And_Navigate_Using_Sidebar_And_Quick_Actions()
     {
         // Arrange
-        var tour = await ApiClient.CreateTourAsync();
+        var tour = await ApiClient.CreateTour();
 
         // === Home Page Content ===
         await NavigateToAsync("/");

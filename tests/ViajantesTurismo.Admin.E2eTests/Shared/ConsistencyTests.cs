@@ -14,18 +14,18 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
     public async Task Formatting_And_Badges_Are_Consistent_Across_Pages()
     {
         // Arrange: create owned tours for each currency and bookings for each status shape.
-        var brlTour = await ApiClient.CreateTourAsync(currency: CurrencyDto.Real);
-        var eurTour = await ApiClient.CreateTourAsync(currency: CurrencyDto.Euro);
-        var usdTour = await ApiClient.CreateTourAsync(currency: CurrencyDto.UsDollar);
+        var brlTour = await ApiClient.CreateTour(currency: CurrencyDto.Real);
+        var eurTour = await ApiClient.CreateTour(currency: CurrencyDto.Euro);
+        var usdTour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
 
-        var pendingCustomer = await ApiClient.CreateCustomerAsync();
-        var confirmedCustomer = await ApiClient.CreateCustomerAsync();
-        var paidCustomer = await ApiClient.CreateCustomerAsync();
+        var pendingCustomer = await ApiClient.CreateCustomer();
+        var confirmedCustomer = await ApiClient.CreateCustomer();
+        var paidCustomer = await ApiClient.CreateCustomer();
 
-        var pendingBooking = await ApiClient.CreateBookingAsync(usdTour.Id, pendingCustomer.Id);
-        var confirmedBooking = await ApiClient.CreateBookingAsync(usdTour.Id, confirmedCustomer.Id);
+        var pendingBooking = await ApiClient.CreateBooking(usdTour.Id, pendingCustomer.Id);
+        var confirmedBooking = await ApiClient.CreateBooking(usdTour.Id, confirmedCustomer.Id);
         _ = await ApiClient.ConfirmBookingAsync(confirmedBooking.Id);
-        var paidBooking = await ApiClient.CreateBookingAsync(usdTour.Id, paidCustomer.Id);
+        var paidBooking = await ApiClient.CreateBooking(usdTour.Id, paidCustomer.Id);
         _ = await ApiClient.ConfirmBookingAsync(paidBooking.Id);
         await ApiClient.RecordPaymentAsync(paidBooking.Id, 1_250m);
 
