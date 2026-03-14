@@ -48,6 +48,30 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-method "*To
   If the behavior under test is not pagination, constrain the dataset or navigate directly by known ID.
 - Prefer asserting semantic state (status text, details page values) over fragile CSS-class-only checks.
 
+## Specialized helper classes
+
+The E2E project uses a small set of specialized helper classes to keep tests readable
+without hiding the behavior under test.
+
+Common helper categories include:
+
+- **API setup helpers** for owned test data and server-side state changes
+- **Workflow helpers** for repeated multi-step UI flows
+- **Page/list helpers** for deterministic interaction with specific screens or grids
+- **Locator helpers** for shared semantic Playwright selectors
+
+These helpers are intentionally lightweight. The README should make contributors aware
+that these helper types exist, but it should not become a growing catalog of every helper class.
+If you need a helper, look for an existing class in the project and extend it when the abstraction fits.
+
+## Helper usage rules
+
+- Prefer a dedicated helper class over private helper methods when the logic can apply in more than one test.
+- Do not append the `Async` suffix to helper method names in this project.
+- Keep scenario assertions in the test body whenever they explain why the test exists.
+- Use direct route navigation by known IDs whenever the list/grid is not the behavior under test.
+- If a helper would only hide unstable lookup or page scanning, fix the test design instead.
+
 ## See Also
 
 - [tests/README.md](../README.md) — Running tests, coverage, conventions
