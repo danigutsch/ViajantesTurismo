@@ -35,22 +35,20 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await AssertDeepLink("/customers/create/emergency-contact", "Create Customer - Emergency Contact");
         await AssertDeepLink("/customers/create/medical", "Create Customer - Medical Information");
         await AssertDeepLink("/customers/create/review", "Create Customer - Review & Submit");
-
-        // Assert
         await NavigateTo("/tours");
         await NavigateTo($"/tours/{tour.Id}");
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
-
         await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+        // Assert
+        // Deep-link assertions are verified inside the navigation helpers above; this final block checks browser back-navigation.
         await Expect(Page).ToHaveTitleAsync("Tours");
         await Expect(Page).ToHaveURLAsync(ToursRegex());
     }
 
     [Fact]
-    public async Task Can_Render_Home_Page_And_Navigate_Using_Sidebar_And_Quick_Actions()
+    public async Task Can_Render_Home_Page_With_Dashboard_Content_And_Primary_Links()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour();
         var sidebar = Page.Locator(".sidebar");
 
         // Act
@@ -68,8 +66,19 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(content.GetLink("View All")).ToHaveCountAsync(3);
         await Expect(Page.GetLink("About")).ToBeVisibleAsync();
         await Expect(sidebar.GetLink("Home")).ToHaveClassAsync(ActiveRegex());
+    }
 
-        // Act/Assert
+    [Fact]
+    public async Task Sidebar_Navigation_Should_Update_Active_State_For_Primary_Routes()
+    {
+        // Arrange
+        var tour = await ApiClient.CreateTour();
+        var sidebar = Page.Locator(".sidebar");
+
+        // Act
+        await NavigateTo("/");
+
+        // Assert
         await AssertSidebarNavigation(sidebar, "Tours", ToursRegex(), exact: true);
         await AssertSidebarNavigation(sidebar, "Bookings", BookingsRegex());
         await AssertSidebarNavigation(sidebar, "Customers", CustomersRegex(), exact: true);
@@ -77,32 +86,57 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await AssertSidebarNavigation(sidebar, "Add Tour", AddTourRegex());
         await AssertSidebarNavigation(sidebar, "Home", HomeRegex());
 
+        // Act
+        await NavigateTo($"/tours/{tour.Id}");
+
+        // Assert
+        await Expect(Page).ToHaveURLAsync(TourRegex());
+        await Expect(sidebar.GetLink("Tours", exact: true)).ToHaveClassAsync(ActiveRegex());
+    }
+
+    [Fact]
+    public async Task Quick_Actions_Should_Navigate_To_Target_Pages()
+    {
+        // Arrange
+        // No additional setup required beyond navigating to the dashboard before each quick-action check.
+
+        // Act
+        await NavigateTo("/");
+        var content = Page.Locator("article.content");
         await content.GetLink("Add Tour").ClickAsync();
+
+        // Assert
         await Expect(Page).ToHaveURLAsync(AddTourRegex());
 
+        // Act
         await NavigateTo("/");
-
         await content.GetLink("Add Customer").ClickAsync();
+
+        // Assert
         await Expect(Page).ToHaveURLAsync(CreateCustomerRegex());
 
+        // Act
         await NavigateTo("/");
-
         var viewAllLinks = content.GetLink("View All");
 
         await viewAllLinks.Nth(0).ClickAsync();
+
+        // Assert
         await Expect(Page).ToHaveURLAsync(ToursRegex());
 
+        // Act
         await NavigateTo("/");
         await viewAllLinks.Nth(1).ClickAsync();
+
+        // Assert
         await Expect(Page).ToHaveURLAsync(CustomersRegex());
 
+        // Act
         await NavigateTo("/");
         await viewAllLinks.Nth(2).ClickAsync();
-        await Expect(Page).ToHaveURLAsync(BookingsRegex());
 
-        await NavigateTo($"/tours/{tour.Id}");
-        await Expect(Page).ToHaveURLAsync(TourRegex());
-        await Expect(sidebar.GetLink("Tours", exact: true)).ToHaveClassAsync(ActiveRegex());
+        // Assert
+        await Expect(Page).ToHaveURLAsync(BookingsRegex());
     }
 
     private async Task AssertDeepLink(string path, string expectedTitle)

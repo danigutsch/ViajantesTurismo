@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.E2ETests.Shared;
 public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     [Fact]
-    public async Task Can_See_Toast_Notifications_And_Timed_Redirects()
+    public async Task Confirm_Booking_Should_Show_Success_Toast()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -16,8 +16,19 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // Assert
         await ExpectToast("Booking confirmed successfully");
+    }
+
+    [Fact]
+    public async Task Updating_Booking_Should_Show_Redirect_Alert_And_Allow_Cancelling_It()
+    {
+        // Arrange
+        var tour = await ApiClient.CreateTour();
+        var customer = await ApiClient.CreateCustomer();
+        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
+        _ = await ApiClient.ConfirmBooking(booking.Id);
 
         // Act
+        await NavigateToBookingEdit(booking.Id);
         await Page.GetButton("Update Booking").ClickAsync();
 
         var redirectAlert = Page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });

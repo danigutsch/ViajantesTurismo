@@ -10,14 +10,16 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Navigate_To_Import_Page_And_Upload_Csv_Wizard_Opens()
     {
-        await NavigateTo("/customers/import");
-
-        await Expect(Page).ToHaveTitleAsync("Import Customers");
-        await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
-
+        // Arrange
         var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";
+
+        // Act
+        await NavigateTo("/customers/import");
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
+        // Assert
+        await Expect(Page).ToHaveTitleAsync("Import Customers");
+        await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
         await Expect(Page.Locator(".badge.bg-secondary", new PageLocatorOptions { HasText = "column(s) detected" }))
             .ToBeVisibleAsync();
     }
@@ -25,11 +27,14 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Auto_Match_Canonical_Headers_And_Enable_Preview()
     {
-        await NavigateTo("/customers/import");
-
+        // Arrange
         var email = $"e2e-ui2-{Guid.NewGuid():N}@import.test";
+
+        // Act
+        await NavigateTo("/customers/import");
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
+        // Assert
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
 
@@ -40,14 +45,16 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Block_Preview_When_Required_Header_Is_Not_Canonical()
     {
-        await NavigateTo("/customers/import");
-
+        // Arrange
         var nonCanonicalCsv = CustomerImportCsvHelpers.ReplaceCanonicalHeader("Email", "EmailAddress") +
                               "\n" +
                               CustomerImportCsvHelpers.BuildValidRow($"e2e-ui3-{Guid.NewGuid():N}@import.test");
 
+        // Act
+        await NavigateTo("/customers/import");
         await CustomerImportCsvHelpers.UploadCsv(Page, nonCanonicalCsv);
 
+        // Assert
         await Expect(Page.Locator(".alert-warning", new PageLocatorOptions { HasText = "could not be matched" }))
             .ToBeVisibleAsync();
 
@@ -58,22 +65,20 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Surface_Duplicate_Resolution_And_Commit_Keep_Decision()
     {
+        // Arrange
         var existingCustomer = await ApiClient.CreateCustomer();
 
+        // Act
         await NavigateTo("/customers/import");
-
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(existingCustomer.Email));
-
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
-
         await Page.GetButton("Preview").ClickAsync();
-        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
-
         await Page.GetButton("Confirm Import").ClickAsync();
 
+        // Assert
+        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Resolve Duplicates")).ToBeVisibleAsync();
-
         var duplicateRow = Page.Locator(".duplicate-resolution-table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = existingCustomer.Email });
         await Expect(duplicateRow).ToHaveCountAsync(1);
@@ -100,28 +105,27 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
     [Fact]
     public async Task Can_Complete_Import_Flow_And_Show_Success_Summary()
     {
+        // Arrange
         var email = $"e2e-ui4-{Guid.NewGuid():N}@import.test";
         var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
 
+        // Act
         await NavigateTo("/customers/import");
-
         await CustomerImportCsvHelpers.UploadCsv(Page, csv);
-
-        // Mapping step: wait for auto-match confirmation, then click Preview
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
         await Page.GetButton("Preview").ClickAsync();
 
-        // Preview step: verify preview table shows the row
+        // Assert
         await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
         var previewRow = Page.Locator(".preview-table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = email });
         await Expect(previewRow).ToHaveCountAsync(1);
 
-        // Confirm import
+        // Act
         await Page.GetButton("Confirm Import").ClickAsync();
 
-        // Result: success banner
+        // Assert
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "1 customer(s) imported successfully" }))
             .ToBeVisibleAsync();
     }
@@ -129,20 +133,20 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
     [Fact]
     public async Task Can_Show_Final_Summary_Counts_And_Open_Customer_Details_From_View_Customer_Action()
     {
+        // Arrange
         var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";
         var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
 
+        // Act
         await NavigateTo("/customers/import");
-
         await CustomerImportCsvHelpers.UploadCsv(Page, csv);
-
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
         await Page.GetButton("Preview").ClickAsync();
-
         await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
         await Page.GetButton("Confirm Import").ClickAsync();
 
+        // Assert
         await Expect(Page.Locator("[data-testid='import-summary-counts']")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Created: 1")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Updated: 0")).ToBeVisibleAsync();

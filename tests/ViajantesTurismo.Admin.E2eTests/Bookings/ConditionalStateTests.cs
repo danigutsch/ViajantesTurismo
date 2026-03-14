@@ -33,7 +33,6 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 20);
         var cancelledCustomer = await ApiClient.CreateCustomer();
         var completedCustomer = await ApiClient.CreateCustomer();
-        var pendingCustomer = await ApiClient.CreateCustomer();
 
         var cancelledBooking = await ApiClient.CreateBooking(tour.Id, cancelledCustomer.Id);
         _ = await ApiClient.CancelBooking(cancelledBooking.Id);
@@ -42,18 +41,28 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         _ = await ApiClient.ConfirmBooking(completedBooking.Id);
         _ = await ApiClient.CompleteBooking(completedBooking.Id);
 
-        var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
-
         // Act
-        // Assert
         await ExpectTerminalBookingEditState(cancelledBooking.Id, "cancelled");
+
+        // Assert
         await Expect(Page.GetButton("Cancel Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
         await ExpectTerminalBookingEditState(completedBooking.Id, "completed");
+    }
 
+    [Fact]
+    public async Task Booking_Edit_Keeps_Editable_Fields_Enabled_For_Pending_Bookings()
+    {
+        // Arrange
+        var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 20);
+        var pendingCustomer = await ApiClient.CreateCustomer();
+        var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
+
+        // Act
         await NavigateTo($"/bookings/{pendingBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
+        // Assert
         await Expect(Page.Locator("#status")).ToBeEnabledAsync();
         await Expect(Page.Locator("#notes")).ToBeEnabledAsync();
         await Expect(Page.Locator("#discountType")).ToBeEnabledAsync();
