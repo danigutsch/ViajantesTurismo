@@ -16,7 +16,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === From booking details: follow cross-entity links ===
-        await NavigateToAsync($"/bookings/{booking.Id}");
+        await NavigateTo($"/bookings/{booking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         // Tour link navigates to tour details
@@ -46,7 +46,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
             Assert.Fail("Expected a tour link in the bookings list row.");
         }
 
-        await NavigateToAsync(listTourHref);
+        await NavigateTo(listTourHref);
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GoBackAsync();
@@ -60,7 +60,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
             Assert.Fail("Expected a customer link in the bookings list row.");
         }
 
-        await NavigateToAsync(listCustomerHref);
+        await NavigateTo(listCustomerHref);
         await Expect(Page).ToHaveTitleAsync("Customer Details");
     }
 
@@ -73,7 +73,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         _ = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === Tour details: scoped bookings list ===
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         // Scoped bookings list should be visible for test-owned booking data
@@ -94,7 +94,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         // === Customer details: scoped bookings list ===
-        await NavigateToAsync($"/customers/{customer.Id}");
+        await NavigateTo($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
         // Scoped bookings list should be visible

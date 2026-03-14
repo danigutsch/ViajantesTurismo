@@ -17,7 +17,7 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         var updatedName = $"E2E Updated Tour {uid}";
 
         // === Validation presence: submit empty form first ===
-        await NavigateToAsync("/addtour");
+        await NavigateTo("/addtour");
         await Expect(Page).ToHaveTitleAsync("Add Tour");
 
         await Page.GetButton("Create Tour").ClickAsync();
@@ -65,13 +65,13 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         var tourId = detailUrl.Split('/').Last();
 
         // === Tour appears in list ===
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
         await Expect(Page.GetByText(initialName).First).ToBeVisibleAsync();
         await Expect(Page.GetByText(identifier).First).ToBeVisibleAsync();
 
         // === Edit Tour ===
-        await NavigateToAsync($"/edittour/{tourId}");
+        await NavigateTo($"/edittour/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
         await Page.FillAsync("#name", "");
@@ -94,7 +94,7 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         }
 
         // === Verify via details page ===
-        await NavigateToAsync($"/tours/{tourId}");
+        await NavigateTo($"/tours/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetHeading(updatedName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("Bike Rental")).ToBeVisibleAsync();

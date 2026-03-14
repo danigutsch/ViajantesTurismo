@@ -20,7 +20,7 @@ public class BookingFormInteractionTests(E2EFixture fixture) : E2ETestBase(fixtu
         var companionLabel = $"{companion.FirstName} {companion.LastName} ({companion.Email})";
 
         // Navigate to owned tour details
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         // Click "Add Booking" to show the form
@@ -85,7 +85,7 @@ public class BookingFormInteractionTests(E2EFixture fixture) : E2ETestBase(fixtu
         var customerLabel = $"{customer.FirstName} {customer.LastName} ({customer.Email})";
 
         // Navigate to owned tour details
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         // Click "Add Booking" → tour is pre-selected → price breakdown shows immediately

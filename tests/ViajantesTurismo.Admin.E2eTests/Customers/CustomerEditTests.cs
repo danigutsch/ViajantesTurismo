@@ -18,7 +18,7 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
         var companionFullName = $"{companion.FirstName} {companion.LastName}";
 
         // Act
-        await NavigateToAsync($"/customers/{customer.Id}/edit");
+        await NavigateTo($"/customers/{customer.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
 
         // Assert: all 8 section headers render.

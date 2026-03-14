@@ -21,7 +21,7 @@ public class BookingCreationTests(E2EFixture fixture) : E2ETestBase(fixture)
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
 
         // Act
-        await NavigateToAsync($"/customers/{customer.Id}");
+        await NavigateTo($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
         await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
 

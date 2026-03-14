@@ -16,10 +16,10 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
         var tour = await api.CreateTour();
         var customer = await api.CreateCustomer();
         var booking = await api.CreateBooking(tour.Id, customer.Id);
-        await api.ConfirmBookingAsync(booking.Id);
+        await api.ConfirmBooking(booking.Id);
 
         // Navigate directly to the created booking's edit page
-        await NavigateToAsync($"/bookings/{booking.Id}/edit");
+        await NavigateTo($"/bookings/{booking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Cancel Booking button should be visible for confirmed bookings
@@ -75,7 +75,7 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
         var booking = await api.CreateBooking(tour.Id, customer.Id);
 
         // Navigate directly to the created booking's edit page
-        await NavigateToAsync($"/bookings/{booking.Id}/edit");
+        await NavigateTo($"/bookings/{booking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Delete button should be visible

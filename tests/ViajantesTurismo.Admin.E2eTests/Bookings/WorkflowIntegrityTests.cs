@@ -28,7 +28,7 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Customer_Creation_Flow_Should_Expose_Controls_For_All_Required_Personal_Fields()
     {
-        await NavigateToAsync("/customers/create/personal-info");
+        await NavigateTo("/customers/create/personal-info");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
 
         // Trigger validation so required messages become explicit in UI.
@@ -54,7 +54,7 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         var tour = await ApiClient.CreateTour();
 
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GetButton("Add Booking").ClickAsync();
@@ -69,12 +69,12 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         var feedbackLocator = Page.Locator("[role='alert'], .validation-message");
         await Expect(feedbackLocator.First).ToBeVisibleAsync();
 
-        var hasFriendlyValidationFeedback = await HasFriendlyValidationFeedbackAsync(alert, inlineValidation);
+        var hasFriendlyValidationFeedback = await HasFriendlyValidationFeedback(alert, inlineValidation);
         Assert.True(hasFriendlyValidationFeedback,
             "Expected user-facing validation feedback (e.g., required-field or friendly validation message). ");
 
         await Expect(Page).ToHaveTitleAsync("Tour Details");
-        await AssertNoTechnicalLeakAsync(alert, inlineValidation);
+        await AssertNoTechnicalLeak(alert, inlineValidation);
     }
 
     [Fact]
@@ -85,14 +85,14 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         var customer = await ApiClient.CreateCustomer();
 
-        await NavigateToAsync("/customers/create/accommodation");
+        await NavigateTo("/customers/create/accommodation");
         await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
 
-        await NavigateToAsync($"/customers/{customer.Id}/edit");
+        await NavigateTo($"/customers/{customer.Id}/edit");
         await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
     }
 
-    private static async Task<bool> HasFriendlyValidationFeedbackAsync(ILocator alert, ILocator inlineValidation)
+    private static async Task<bool> HasFriendlyValidationFeedback(ILocator alert, ILocator inlineValidation)
     {
         var validationCount = await inlineValidation.CountAsync();
         if (validationCount > 0)
@@ -122,7 +122,7 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         return false;
     }
 
-    private async Task AssertNoTechnicalLeakAsync(ILocator alert, ILocator inlineValidation)
+    private async Task AssertNoTechnicalLeak(ILocator alert, ILocator inlineValidation)
     {
         var feedbackTexts = new List<string>();
 

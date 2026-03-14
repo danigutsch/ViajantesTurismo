@@ -13,25 +13,25 @@ public class NotFoundErrorTests(E2EFixture fixture) : E2ETestBase(fixture)
         var randomGuid = Guid.NewGuid().ToString();
 
         // /tours/{random-guid} → "Tour not found."
-        await NavigateToAsync($"/tours/{randomGuid}");
+        await NavigateTo($"/tours/{randomGuid}");
         await Expect(Page.GetByText("Tour not found.")).ToBeVisibleAsync();
 
         // /customers/{random-guid} → "Customer not found."
-        await NavigateToAsync($"/customers/{randomGuid}");
+        await NavigateTo($"/customers/{randomGuid}");
         await Expect(Page.GetByText("Customer not found.")).ToBeVisibleAsync();
 
         // /edittour/{random-guid} → "Tour not found."
-        await NavigateToAsync($"/edittour/{randomGuid}");
+        await NavigateTo($"/edittour/{randomGuid}");
         await Expect(Page.GetByText("Tour not found.")).ToBeVisibleAsync();
 
         // /bookings/{random-guid} → "Booking not found." with no "Edit Booking" link
-        await NavigateToAsync($"/bookings/{randomGuid}");
+        await NavigateTo($"/bookings/{randomGuid}");
         await Expect(Page.GetByText("Booking not found.")).ToBeVisibleAsync();
         await Expect(Page.GetLink("Back to List")).ToBeVisibleAsync();
         await Expect(Page.GetLink("Edit Booking")).Not.ToBeVisibleAsync();
 
         // /bookings/{random-guid}/edit → similar error
-        await NavigateToAsync($"/bookings/{randomGuid}/edit");
+        await NavigateTo($"/bookings/{randomGuid}/edit");
         await Expect(Page.GetByRole(AriaRole.Alert)).ToBeVisibleAsync();
     }
 
@@ -42,26 +42,26 @@ public class NotFoundErrorTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         foreach (var invalidGuid in invalidGuids)
         {
-            await NavigateToAsync($"/tours/{invalidGuid}");
+            await NavigateTo($"/tours/{invalidGuid}");
             await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
             await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
         }
 
         // Also verify bookings and customers with invalid GUIDs
-        await NavigateToAsync("/bookings/not-a-guid");
+        await NavigateTo("/bookings/not-a-guid");
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
 
-        await NavigateToAsync("/customers/not-a-guid");
+        await NavigateTo("/customers/not-a-guid");
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
 
-        await NavigateToAsync("/customers/not-a-guid/edit");
+        await NavigateTo("/customers/not-a-guid/edit");
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
     }
 
     [Fact]
     public async Task Non_Existent_Route_Shows_Custom_404_Page()
     {
-        await NavigateToAsync("/nonexistent-page");
+        await NavigateTo("/nonexistent-page");
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
         await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
 

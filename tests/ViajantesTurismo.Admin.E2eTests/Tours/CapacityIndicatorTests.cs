@@ -24,7 +24,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ESerialTestBase(fixt
         {
             var customer = await api.CreateCustomer();
             var booking = await api.CreateBooking(tour.Id, customer.Id);
-            await api.ConfirmBookingAsync(booking.Id);
+            await api.ConfirmBooking(booking.Id);
         }
 
         const int currentCount = 3;

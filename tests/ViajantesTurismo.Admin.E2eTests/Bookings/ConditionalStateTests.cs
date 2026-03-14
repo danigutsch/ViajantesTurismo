@@ -19,7 +19,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         confirmResponse.EnsureSuccessStatusCode();
 
         // Act: navigate to the tours list and edit the owned tour by its unique identifier.
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         var tourRow = Page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = tour.Identifier });
         await tourRow.GetLink("Edit").ClickAsync();
@@ -66,7 +66,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
 
         // === Cancelled booking: all form fields disabled ===
-        await NavigateToAsync($"/bookings/{cancelledBooking.Id}/edit");
+        await NavigateTo($"/bookings/{cancelledBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Warning alert visible
@@ -89,7 +89,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
 
         // === Completed booking: same disabled behavior ===
-        await NavigateToAsync($"/bookings/{completedBooking.Id}/edit");
+        await NavigateTo($"/bookings/{completedBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Warning alert visible
@@ -108,7 +108,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetButton("Delete Booking")).ToBeEnabledAsync();
 
         // === Pending booking: fields should be ENABLED ===
-        await NavigateToAsync($"/bookings/{pendingBooking.Id}/edit");
+        await NavigateTo($"/bookings/{pendingBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         await Expect(Page.Locator("#status")).ToBeEnabledAsync();

@@ -11,7 +11,7 @@ public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Cancelled_Booking_Edit_Hides_Payment_And_Action_Buttons()
     {
         // Navigate to a Cancelled booking's edit page
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         var cancelledRow = Page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge:has-text('Cancelled')") }).First;
         await cancelledRow.GetLink("Edit").ClickAsync();
@@ -45,7 +45,7 @@ public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Confirmed_Booking_Edit_Shows_Action_Buttons_And_Payment_Section()
     {
         // Navigate to a Confirmed booking's edit page
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         var confirmedRow = Page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-success") }).First;
         await confirmedRow.GetLink("Edit").ClickAsync();

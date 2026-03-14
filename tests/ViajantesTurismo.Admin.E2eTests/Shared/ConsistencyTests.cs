@@ -17,7 +17,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         var tour = await ApiClient.CreateTour(currency: CurrencyDto.Real);
 
         // Act
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
 
         var tourRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = tour.Identifier });
@@ -43,11 +43,11 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
         var paidBooking = await ApiClient.CreateBooking(tour.Id, paidCustomer.Id);
-        _ = await ApiClient.ConfirmBookingAsync(paidBooking.Id);
-        await ApiClient.RecordPaymentAsync(paidBooking.Id, 1_250m);
+        _ = await ApiClient.ConfirmBooking(paidBooking.Id);
+        await ApiClient.RecordPayment(paidBooking.Id, 1_250m);
 
         // Act
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         var pendingRow = await BookingsList.GetBookingRow(pendingBooking.Id);
@@ -79,13 +79,13 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         // Act
         // Assert
-        await NavigateToAsync(route);
+        await NavigateTo(route);
         await Expect(Page).ToHaveTitleAsync(expectedTitle);
     }
 
     private async Task<string> ReadBookingStatusFromDetails(Guid bookingId)
     {
-        await NavigateToAsync($"/bookings/{bookingId}");
+        await NavigateTo($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         var bookingStatusBadge = Page.Locator("dd .badge").First;
@@ -95,7 +95,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
 
     private async Task<string> ReadPaymentStatusFromDetails(Guid bookingId)
     {
-        await NavigateToAsync($"/bookings/{bookingId}");
+        await NavigateTo($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         var paymentStatusBadge = Page.Locator("dd .badge").Nth(1);

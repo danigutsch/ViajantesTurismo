@@ -44,7 +44,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Navigate_To_Import_Page_And_Upload_Csv_Wizard_Opens()
     {
-        await NavigateToAsync("/customers/import");
+        await NavigateTo("/customers/import");
 
         await Expect(Page).ToHaveTitleAsync("Import Customers");
         await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
@@ -59,7 +59,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Auto_Match_Canonical_Headers_And_Enable_Preview()
     {
-        await NavigateToAsync("/customers/import");
+        await NavigateTo("/customers/import");
 
         var email = $"e2e-ui2-{Guid.NewGuid():N}@import.test";
         await UploadCsv(BuildCanonicalCsv(email));
@@ -74,7 +74,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Block_Preview_When_Required_Header_Is_Not_Canonical()
     {
-        await NavigateToAsync("/customers/import");
+        await NavigateTo("/customers/import");
 
         // Use a non-canonical header name for Email so auto-match fails
         var nonCanonicalCsv = CanonicalHeaders.Replace("Email", "EmailAddress", StringComparison.Ordinal) +
@@ -95,7 +95,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     {
         var existingCustomer = await ApiClient.CreateCustomer();
 
-        await NavigateToAsync("/customers/import");
+        await NavigateTo("/customers/import");
 
         await UploadCsv(BuildCanonicalCsv(existingCustomer.Email));
 

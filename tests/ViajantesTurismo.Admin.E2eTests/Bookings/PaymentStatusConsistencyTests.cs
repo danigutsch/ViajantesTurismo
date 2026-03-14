@@ -16,7 +16,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
 
         var unpaidBooking = await ApiClient.CreateBooking(tour.Id, customerUnpaid.Id);
         var partiallyPaidBooking = await ApiClient.CreateBooking(tour.Id, customerPartiallyPaid.Id);
-        await ApiClient.RecordPaymentAsync(partiallyPaidBooking.Id, 500m);
+        await ApiClient.RecordPayment(partiallyPaidBooking.Id, 500m);
 
         // Act
         // Assert
@@ -40,7 +40,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         var customer2 = await ApiClient.CreateCustomer();
         var booking1 = await ApiClient.CreateBooking(tour.Id, customer1.Id);
         var booking2 = await ApiClient.CreateBooking(tour.Id, customer2.Id);
-        await ApiClient.RecordPaymentAsync(booking2.Id, 300m);
+        await ApiClient.RecordPayment(booking2.Id, 300m);
 
         var booking1Href = $"/bookings/{booking1.Id}";
         var booking2Href = $"/bookings/{booking2.Id}";
@@ -48,7 +48,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         var expectedBooking2 = await BookingsList.GetPaymentStatus(booking2.Id);
 
         // Act
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         var scopedBooking1Row = Page.Locator($".table tbody tr:has(a[href='{booking1Href}'])");
@@ -66,7 +66,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
 
     private async Task<string> GetPaymentStatusFromDetails(Guid bookingId)
     {
-        await NavigateToAsync($"/bookings/{bookingId}");
+        await NavigateTo($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         var badges = Page.Locator("dd .badge");

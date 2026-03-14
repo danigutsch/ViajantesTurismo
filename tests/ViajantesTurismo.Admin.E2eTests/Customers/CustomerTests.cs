@@ -19,7 +19,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         var emergencyContactName = $"EmergencyPerson {uid}";
 
         // === Step 1: Personal Information ===
-        await NavigateToAsync("/customers/create/personal-info");
+        await NavigateTo("/customers/create/personal-info");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
         await Expect(Page.GetByText("Step 1 of 8")).ToBeVisibleAsync();
 
@@ -139,7 +139,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         var customerId = detailUrl.Split('/').Last();
 
         // === Edit Customer ===
-        await NavigateToAsync($"/customers/{customerId}/edit");
+        await NavigateTo($"/customers/{customerId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
 
         // Update occupation and mobile
@@ -162,7 +162,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         }
 
         // === Verify edits on details page ===
-        await NavigateToAsync($"/customers/{customerId}");
+        await NavigateTo($"/customers/{customerId}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();

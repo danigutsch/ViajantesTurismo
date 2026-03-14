@@ -18,75 +18,75 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === Static routes ===
-        await NavigateToAsync("/");
+        await NavigateTo("/");
         await Expect(Page).ToHaveTitleAsync("Home - ViajantesTurismo");
 
-        await NavigateToAsync("/addtour");
+        await NavigateTo("/addtour");
         await Expect(Page).ToHaveTitleAsync("Add Tour");
 
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
 
-        await NavigateToAsync("/customers");
+        await NavigateTo("/customers");
         await Expect(Page).ToHaveTitleAsync("Customers");
 
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         var tourId = tour.Id;
         var customerId = customer.Id;
         var bookingId = booking.Id;
 
-        await NavigateToAsync($"/tours/{tourId}");
+        await NavigateTo($"/tours/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
-        await NavigateToAsync($"/edittour/{tourId}");
+        await NavigateTo($"/edittour/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
-        await NavigateToAsync($"/customers/{customerId}");
+        await NavigateTo($"/customers/{customerId}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
-        await NavigateToAsync($"/customers/{customerId}/edit");
+        await NavigateTo($"/customers/{customerId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
 
-        await NavigateToAsync($"/bookings/{bookingId}");
+        await NavigateTo($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-        await NavigateToAsync($"/bookings/{bookingId}/edit");
+        await NavigateTo($"/bookings/{bookingId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // === Customer wizard redirect and steps ===
-        await NavigateToAsync("/customers/create");
+        await NavigateTo("/customers/create");
         await Expect(Page).ToHaveURLAsync(PersonalInfoRegex());
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
 
-        await NavigateToAsync("/customers/create/identification");
+        await NavigateTo("/customers/create/identification");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Identification");
 
-        await NavigateToAsync("/customers/create/contact");
+        await NavigateTo("/customers/create/contact");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
-        await NavigateToAsync("/customers/create/address");
+        await NavigateTo("/customers/create/address");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Address");
 
-        await NavigateToAsync("/customers/create/physical");
+        await NavigateTo("/customers/create/physical");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Physical Information");
 
-        await NavigateToAsync("/customers/create/accommodation");
+        await NavigateTo("/customers/create/accommodation");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Accommodation Preferences");
 
-        await NavigateToAsync("/customers/create/emergency-contact");
+        await NavigateTo("/customers/create/emergency-contact");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Emergency Contact");
 
-        await NavigateToAsync("/customers/create/medical");
+        await NavigateTo("/customers/create/medical");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Medical Information");
 
-        await NavigateToAsync("/customers/create/review");
+        await NavigateTo("/customers/create/review");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Review & Submit");
 
         // === Browser back from detail → the list preserves data ===
-        await NavigateToAsync("/tours");
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo("/tours");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.NetworkIdle });
@@ -101,7 +101,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         var tour = await ApiClient.CreateTour();
 
         // === Home Page Content ===
-        await NavigateToAsync("/");
+        await NavigateTo("/");
 
         await Expect(Page.GetHeading("ViajantesTurismo Admin Dashboard")).ToBeVisibleAsync();
 
@@ -159,13 +159,13 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await content.GetLink("Add Tour").ClickAsync();
         await Expect(Page).ToHaveURLAsync(AddTourRegex());
 
-        await NavigateToAsync("/");
+        await NavigateTo("/");
 
         // "Add Customer" card → /customers/create
         await content.GetLink("Add Customer").ClickAsync();
         await Expect(Page).ToHaveURLAsync(CreateCustomerRegex());
 
-        await NavigateToAsync("/");
+        await NavigateTo("/");
 
         // "View All" buttons: Tours, Customers, Bookings
         var viewAllLinks = content.GetLink("View All");
@@ -173,16 +173,16 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await viewAllLinks.Nth(0).ClickAsync();
         await Expect(Page).ToHaveURLAsync(ToursRegex());
 
-        await NavigateToAsync("/");
+        await NavigateTo("/");
         await viewAllLinks.Nth(1).ClickAsync();
         await Expect(Page).ToHaveURLAsync(CustomersRegex());
 
-        await NavigateToAsync("/");
+        await NavigateTo("/");
         await viewAllLinks.Nth(2).ClickAsync();
         await Expect(Page).ToHaveURLAsync(BookingsRegex());
 
         // === Prefix Match: /tours/{id} still highlights "Tours" nav link ===
-        await NavigateToAsync($"/tours/{tour.Id}");
+        await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveURLAsync(TourRegex());
         await Expect(sidebar.GetLink("Tours", exact: true)).ToHaveClassAsync(ActiveRegex());
     }

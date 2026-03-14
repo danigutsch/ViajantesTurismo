@@ -13,14 +13,14 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
 {
     protected HttpClient ApiClient => fixture.ApiClient;
 
-    private protected BookingsListPage BookingsList => new(Page, NavigateToAsync, ApiClient.GetAllBookings);
+    private protected BookingsListPage BookingsList => new(Page, NavigateTo, ApiClient.GetAllBookings);
 
-    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateToAsync);
+    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
     /// <summary>
     /// Navigate to a path relative to the web app root, waiting for SignalR circuit.
     /// </summary>
-    protected async Task NavigateToAsync(string relativePath)
+    protected async Task NavigateTo(string relativePath)
     {
         await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
     }
