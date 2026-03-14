@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared;
+using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 using ViajantesTurismo.Admin.Web.Services;
 
@@ -16,17 +16,17 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
 
+    public ImportCustomersDuplicateResolutionTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
+    }
+
     private static string BuildCsvWithEmail(string email)
     {
         var values = CustomerImportHeaderMatcher.Fields
             .Select(f => f.Name.Equals("Email", StringComparison.OrdinalIgnoreCase) ? email : "v");
         return AllCanonicalHeaders + "\n" + string.Join(",", values);
-    }
-
-    public ImportCustomersDuplicateResolutionTests()
-    {
-        JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
     private IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")

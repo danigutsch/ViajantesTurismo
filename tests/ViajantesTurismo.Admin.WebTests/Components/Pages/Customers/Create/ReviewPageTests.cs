@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared;
+using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Admin.Web.Models;
@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers.Create;
 
 public sealed class ReviewPageTests : BunitContext
 {
-    private readonly CustomerCreationState _state = new();
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+    private readonly CustomerCreationState _state = new();
 
     public ReviewPageTests()
     {

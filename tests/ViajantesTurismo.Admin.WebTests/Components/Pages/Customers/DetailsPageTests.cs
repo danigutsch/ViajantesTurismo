@@ -1,8 +1,8 @@
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared;
+using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 using ViajantesTurismo.Admin.Web.Components.Shared;
-using static ViajantesTurismo.Admin.Tests.Shared.DtoBuilders;
+using static ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers;
 

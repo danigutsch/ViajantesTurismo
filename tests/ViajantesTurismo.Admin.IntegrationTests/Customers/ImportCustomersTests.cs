@@ -1,8 +1,10 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+using ViajantesTurismo.Admin.Tests.Shared.Builders;
 using ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
@@ -19,7 +21,7 @@ public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrati
     private static MultipartFormDataContent BuildCsvMultipartContent(string csv)
     {
         var fileContent = new ByteArrayContent(Encoding.UTF8.GetBytes(csv));
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/csv");
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
         var content = new MultipartFormDataContent
         {
             { fileContent, "file", "customers.csv" }

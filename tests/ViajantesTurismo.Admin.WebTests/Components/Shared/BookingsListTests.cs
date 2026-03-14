@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.QuickGrid;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared;
+using ViajantesTurismo.Admin.Tests.Shared.Builders;
 using ViajantesTurismo.Admin.Web.Components.Shared;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;

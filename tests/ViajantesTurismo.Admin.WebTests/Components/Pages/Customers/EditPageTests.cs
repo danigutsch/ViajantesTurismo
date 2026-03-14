@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Tests.Shared;
+using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 using ViajantesTurismo.Admin.Web.Services;
-using static ViajantesTurismo.Admin.Tests.Shared.DtoBuilders;
+using ViajantesTurismo.Admin.WebTests.Infrastructure;
+using static ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers;
 

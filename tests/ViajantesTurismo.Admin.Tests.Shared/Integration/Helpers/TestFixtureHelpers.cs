@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Tests.Shared.Builders;
 
 namespace ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
