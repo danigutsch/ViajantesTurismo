@@ -382,6 +382,12 @@ apply the rules above before increasing timeouts.
 - One logical assertion per test (test one behaviour)
 - Test public behaviour, not implementation details
 - Extract common setup to helper methods (e.g., `TestHelpers.CreateTestCustomerWithNames()`)
+- Before implementing multi-step logic that is not the core behaviour under test,
+  look for an existing helper method or helper class first.
+- If no suitable helper exists and the logic is repeated or hurts readability,
+  prefer creating a helper and then using it instead of inlining the plumbing.
+- Keep the behaviour under test and assertions visible in the test body;
+  move only non-test-critical setup, navigation, and mechanical steps into helpers.
 - Avoid `Thread.Sleep()` and unnecessary waits
 - No test execution order dependencies
 

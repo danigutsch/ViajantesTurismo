@@ -16,6 +16,12 @@ This file overrides root guidance where test-specific behavior is needed.
 - Prefer test filters: `--filter-class`, `--filter-method`, `--filter-namespace`, `--filter-trait`.
 - Do not use legacy VSTest filter syntax `--filter "FullyQualifiedName~..."`.
 - Use Arrange/Act/Assert structure in test methods.
+- Before implementing multi-step logic that is **not** the core behavior under test,
+  always look for an existing helper method or helper class first.
+- If no suitable helper exists and the logic is repeated or hurts readability,
+  prefer creating a helper method/class and then using that helper instead of inlining the plumbing.
+- Keep the behavior under test and assertions visible in the test;
+  move only non-test-critical setup/navigation/mechanical steps into helpers.
 - Unit/integration/web test method names should follow
   `Method_Name_Context_Description_Expected_Behavior`.
 - Feature files should follow `<aggregate>-<capability>.feature`.
