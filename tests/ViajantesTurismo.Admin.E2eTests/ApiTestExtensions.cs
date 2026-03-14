@@ -10,6 +10,21 @@ namespace ViajantesTurismo.Admin.E2ETests;
 /// </summary>
 internal static class ApiTestExtensions
 {
+    private static async Task<T> ReadRequiredJson<T>(
+        this HttpResponseMessage response,
+        HttpStatusCode expectedStatus)
+    {
+        if (response.StatusCode != expectedStatus)
+        {
+            Assert.Fail($"Expected HTTP {(int)expectedStatus} ({expectedStatus}) but got {(int)response.StatusCode} ({response.StatusCode}).");
+        }
+
+        var model = await response.Content.ReadFromJsonAsync<T>();
+        Assert.NotNull(model);
+
+        return model;
+    }
+
     extension(HttpClient client)
     {
         public async Task<GetTourDto> CreateTourAsync(int minCustomers = 1,
@@ -124,6 +139,12 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetBookingDto[]>(HttpStatusCode.OK);
         }
 
+        public async Task<GetTourDto[]> GetAllTours()
+        {
+            var response = await client.GetAsync(new Uri("/tours", UriKind.Relative));
+            return await response.ReadRequiredJson<GetTourDto[]>(HttpStatusCode.OK);
+        }
+
         public async Task<GetBookingDto> ConfirmBookingAsync(Guid bookingId
         )
         {
@@ -146,20 +167,5 @@ internal static class ApiTestExtensions
             var response = await client.PostAsJsonAsync(new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
             response.EnsureSuccessStatusCode();
         }
-    }
-
-    private static async Task<T> ReadRequiredJson<T>(
-        this HttpResponseMessage response,
-        HttpStatusCode expectedStatus)
-    {
-        if (response.StatusCode != expectedStatus)
-        {
-            Assert.Fail($"Expected HTTP {(int)expectedStatus} ({expectedStatus}) but got {(int)response.StatusCode} ({response.StatusCode}).");
-        }
-
-        var model = await response.Content.ReadFromJsonAsync<T>();
-        Assert.NotNull(model);
-
-        return model;
     }
 }
