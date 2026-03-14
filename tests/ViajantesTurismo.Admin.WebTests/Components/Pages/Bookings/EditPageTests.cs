@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Admin.Web.Components.Pages.Bookings;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Bookings;
@@ -69,7 +70,7 @@ public sealed class EditPageTests : BunitContext
         _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("Update failed hard"));
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-        cut.WaitForAssertion(() => cut.Find("form"));
+        await cut.WaitForAssertionAsync(() => cut.Find("form"));
 
         // Act
         var notesTextarea = cut.Find("#notes");
@@ -79,7 +80,7 @@ public sealed class EditPageTests : BunitContext
         await cut.InvokeAsync(async () => await form.SubmitAsync());
 
         // Assert
-        cut.WaitForAssertion(() =>
+        await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
             Assert.Contains("We couldn't update the booking right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
@@ -522,7 +523,7 @@ public sealed class EditPageTests : BunitContext
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
 
-        // Act — click Confirm Booking button
+        // Act — click the Confirm Booking button
         var confirmButton = cut.FindAll("button").First(b => b.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
         await cut.InvokeAsync((Action)(() => confirmButton.Click()));
 
@@ -541,12 +542,163 @@ public sealed class EditPageTests : BunitContext
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
 
-        // Act — click Complete Booking button
+        // Act — click the Complete Booking button
         var completeButton = cut.FindAll("button").First(b => b.TextContent.Contains("Complete Booking", StringComparison.Ordinal));
         await cut.InvokeAsync((Action)(() => completeButton.Click()));
 
         // Assert — status dropdown should now show Completed
         var statusSelect = cut.Find("#status");
         Assert.Equal(nameof(BookingStatusDto.Completed), statusSelect.GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task Cancel_Booking_Should_Show_Configured_Confirm_Dialog()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act
+        var cancelButton = cut.FindAll("button").First(button => button.TextContent.Contains("Cancel Booking", StringComparison.Ordinal));
+        await cut.InvokeAsync((Action)(() => cancelButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            var dialog = cut.Find(".modal.show");
+            Assert.Contains("Cancel Booking", dialog.TextContent, StringComparison.Ordinal);
+            Assert.Contains("Are you sure you want to cancel this booking?", dialog.TextContent, StringComparison.Ordinal);
+            Assert.Contains("Yes, Cancel", dialog.TextContent, StringComparison.Ordinal);
+            Assert.Contains("No", dialog.TextContent, StringComparison.Ordinal);
+
+            var confirmButton = dialog.QuerySelector(".modal-footer .btn-warning");
+            Assert.NotNull(confirmButton);
+        });
+    }
+
+    [Fact]
+    public async Task Cancelling_Cancel_Dialog_Should_Keep_Status_Unchanged()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act
+        var cancelButton = cut.FindAll("button").First(button => button.TextContent.Contains("Cancel Booking", StringComparison.Ordinal));
+        await cut.InvokeAsync((Action)(() => cancelButton.Click()));
+        await cut.WaitForAssertionAsync(() => cut.Find(".modal.show"));
+
+        var noButton = cut.FindAll("button").First(button => button.TextContent.Trim() == "No");
+        await cut.InvokeAsync((Action)(() => noButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.Empty(cut.FindAll(".modal.show"));
+
+            var statusSelect = cut.Find("#status");
+            Assert.Equal(nameof(BookingStatusDto.Confirmed), statusSelect.GetAttribute("value"));
+
+            var cancelButtons = cut.FindAll("button").Where(button => button.TextContent.Contains("Cancel Booking", StringComparison.Ordinal));
+            Assert.NotEmpty(cancelButtons);
+        });
+    }
+
+    [Fact]
+    public async Task Confirming_Cancel_Booking_Should_Update_Status_And_Disable_Editing()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed, notes: "Original notes");
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act
+        var cancelButton = cut.FindAll("button").First(button => button.TextContent.Contains("Cancel Booking", StringComparison.Ordinal));
+        await cut.InvokeAsync((Action)(() => cancelButton.Click()));
+        await cut.WaitForAssertionAsync(() => cut.Find(".modal.show"));
+
+        var confirmButton = cut.FindAll("button").First(button => button.TextContent.Contains("Yes, Cancel", StringComparison.Ordinal));
+        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            var warning = cut.Find(".alert.alert-warning");
+            Assert.Contains("cancelled", warning.TextContent, StringComparison.OrdinalIgnoreCase);
+
+            var statusSelect = cut.Find("#status");
+            Assert.Equal(nameof(BookingStatusDto.Cancelled), statusSelect.GetAttribute("value"));
+            Assert.True(statusSelect.HasAttribute("disabled"));
+
+            var notes = cut.Find("#notes");
+            Assert.True(notes.HasAttribute("disabled"));
+
+            Assert.DoesNotContain(cut.FindAll("button"), button => button.TextContent.Contains("Cancel Booking", StringComparison.Ordinal));
+            Assert.Contains(cut.FindAll("button"), button => button.TextContent.Contains("Delete Booking", StringComparison.Ordinal));
+        });
+    }
+
+    [Fact]
+    public async Task Delete_Booking_Should_Show_Configured_Confirm_Dialog()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending);
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act
+        var deleteButton = cut.FindAll("button").First(button => button.TextContent.Contains("Delete Booking", StringComparison.Ordinal));
+        await cut.InvokeAsync((Action)(() => deleteButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            var dialog = cut.Find(".modal.show");
+            Assert.Contains("Delete Booking", dialog.TextContent, StringComparison.Ordinal);
+            Assert.Contains("cannot be undone", dialog.TextContent, StringComparison.Ordinal);
+            Assert.Contains("Yes, Delete", dialog.TextContent, StringComparison.Ordinal);
+            Assert.Contains("No", dialog.TextContent, StringComparison.Ordinal);
+
+            var confirmButton = dialog.QuerySelector(".modal-footer .btn-danger");
+            Assert.NotNull(confirmButton);
+        });
+    }
+
+    [Fact]
+    public async Task Cancelling_Delete_Dialog_Should_Keep_Booking_On_Edit_Page()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending);
+        _fakeBookingsApi.AddBooking(booking);
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1, .alert"));
+
+        // Act
+        var deleteButton = cut.FindAll("button").First(button => button.TextContent.Contains("Delete Booking", StringComparison.Ordinal));
+        await cut.InvokeAsync((Action)(() => deleteButton.Click()));
+        await cut.WaitForAssertionAsync(() => cut.Find(".modal.show"));
+
+        var noButton = cut.FindAll("button").First(button => button.TextContent.Trim() == "No");
+        await cut.InvokeAsync((Action)(() => noButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.Empty(cut.FindAll(".modal.show"));
+            Assert.Contains(cut.FindAll("button"), button => button.TextContent.Contains("Delete Booking", StringComparison.Ordinal));
+            Assert.DoesNotContain("/bookings", navigationManager.Uri, StringComparison.OrdinalIgnoreCase);
+        });
     }
 }

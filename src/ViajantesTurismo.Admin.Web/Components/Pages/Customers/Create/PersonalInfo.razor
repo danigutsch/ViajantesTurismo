@@ -57,16 +57,14 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nationality <span class="text-danger">*</span></label>
+                        <CountrySelector id="nationality" @bind-Value="_model.Nationality"
+                                         Countries="@(_countries ?? [])"/>
                         @if (_countries == null)
                         {
-                            <div class="form-control">
+                            <small class="form-text text-muted">
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 Loading countries...
-                            </div>
-                        }
-                        else
-                        {
-                            <CountrySelector id="nationality" @bind-Value="_model.Nationality" Countries="_countries"/>
+                            </small>
                         }
                         <ValidationMessage For="@(() => _model.Nationality)"/>
                     </div>

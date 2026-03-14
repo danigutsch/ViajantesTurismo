@@ -5,63 +5,6 @@ namespace ViajantesTurismo.Admin.E2ETests.Bookings;
 public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     [Fact]
-    public async Task Can_Cancel_Booking_Via_Confirm_Dialog()
-    {
-        // Create own tour, customer, and confirmed booking via API
-        var api = ApiClient;
-        var tour = await api.CreateTour();
-        var customer = await api.CreateCustomer();
-        var booking = await api.CreateBooking(tour.Id, customer.Id);
-        await api.ConfirmBooking(booking.Id);
-
-        // Navigate directly to the created booking's edit page
-        await NavigateTo($"/bookings/{booking.Id}/edit");
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
-
-        // Cancel Booking button should be visible for confirmed bookings
-        var cancelButton = Page.GetButton("Cancel Booking");
-        await Expect(cancelButton).ToBeVisibleAsync();
-
-        // Click Cancel Booking — confirm dialogue appears
-        await cancelButton.ClickAsync();
-
-        // Verify dialog content
-        var dialog = Page.Locator(".modal.show");
-        await Expect(dialog).ToBeVisibleAsync();
-        await Expect(dialog.Locator(".modal-title")).ToContainTextAsync("Cancel Booking");
-        await Expect(dialog.GetButton("Yes, Cancel")).ToBeVisibleAsync();
-        await Expect(dialog.GetButton("No")).ToBeVisibleAsync();
-
-        // Click "No" — booking should remain unchanged
-        await dialog.GetButton("No").ClickAsync();
-        await Expect(dialog).Not.ToBeVisibleAsync();
-
-        // Verify status is still Confirmed
-        var statusSelect = Page.Locator("#status");
-        await Expect(statusSelect).ToBeEnabledAsync();
-
-        // Now actually cancel: click Cancel Booking again and confirm
-        await cancelButton.ClickAsync();
-        var dialog2 = Page.Locator(".modal.show");
-        await Expect(dialog2).ToBeVisibleAsync();
-        await dialog2.GetButton("Yes, Cancel").ClickAsync();
-
-        // After cancellation, the warning alert should appear
-        var cancelledWarning = Page.Locator(".alert-warning");
-        await Expect(cancelledWarning).ToContainTextAsync("cancelled");
-
-        // Form fields should be disabled after cancellation
-        await Expect(Page.Locator("#status")).ToBeDisabledAsync();
-        await Expect(Page.Locator("#notes")).ToBeDisabledAsync();
-
-        // Cancel Booking button should no longer be visible
-        await Expect(Page.GetButton("Cancel Booking")).Not.ToBeVisibleAsync();
-
-        // Delete button should still be visible
-        await Expect(Page.GetButton("Delete Booking")).ToBeVisibleAsync();
-    }
-
-    [Fact]
     public async Task Can_Delete_Booking_Via_Confirm_Dialog()
     {
         // Create own tour, customer, and pending booking via API
