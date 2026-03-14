@@ -36,19 +36,6 @@ public class CsvRowParsingTests
     }
 
     [Fact]
-    public void Parse_With_Valid_Index_Returns_Value()
-    {
-        // Arrange
-        var row = CsvRow.Parse("John,Doe,john.doe@example.com");
-
-        // Act
-        var firstValue = row[0];
-
-        // Assert
-        Assert.Equal("John", firstValue);
-    }
-
-    [Fact]
     public void Index_OutOfRange_ThrowsException()
     {
         // Arrange

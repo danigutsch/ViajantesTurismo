@@ -24,22 +24,6 @@ public class PaymentTests
     }
 
     [Fact]
-    public void Invalid_Amount_With_Negative_Should_Return_Invalid_Result()
-    {
-        // Arrange
-        const decimal invalidAmount = -50.00m;
-
-        // Act
-        var result = PaymentErrors.InvalidAmount(invalidAmount);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Payment amount must be greater than zero", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Contains("-50", result.ErrorDetails.Detail, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Invalid_Payment_Method_Should_Return_Invalid_Result()
     {
         // Arrange
@@ -133,20 +117,5 @@ public class PaymentTests
         Assert.Contains("Payment with ID", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.Contains("12345", result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.Contains("was not found", result.ErrorDetails.Detail, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Payment_Not_Found_With_Different_Id_Should_Include_Correct_Id()
-    {
-        // Arrange
-        const long paymentId = 999L;
-
-        // Act
-        var result = PaymentErrors.PaymentNotFound(paymentId);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("999", result.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 }

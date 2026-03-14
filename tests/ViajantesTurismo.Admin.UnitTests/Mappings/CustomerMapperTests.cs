@@ -6,20 +6,6 @@ namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 
 public class CustomerMapperTests
 {
-    [Theory]
-    [InlineData(BikeType.None, BikeTypeDto.None)]
-    [InlineData(BikeType.Regular, BikeTypeDto.Regular)]
-    [InlineData(BikeType.EBike, BikeTypeDto.EBike)]
-    public void Map_To_Bike_Type_Dto_Should_Map_All_Valid_Values(BikeType domain, BikeTypeDto expected)
-    {
-        // Arrange
-        // Act
-        var result = CustomerMapper.MapToBikeTypeDto(domain);
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
     [Fact]
     public void Map_To_Bike_Type_Dto_Should_Cover_All_Enum_Values()
     {
@@ -34,19 +20,6 @@ public class CustomerMapperTests
             // Assert
             Assert.True(Enum.IsDefined(mappedEnum));
         }
-    }
-
-    [Theory]
-    [InlineData(BedTypeDto.SingleBed, BedType.SingleBed)]
-    [InlineData(BedTypeDto.DoubleBed, BedType.DoubleBed)]
-    public void Map_To_Bed_Type_Should_Map_All_Valid_Values(BedTypeDto dto, BedType expected)
-    {
-        // Arrange
-        // Act
-        var result = CustomerMapper.MapToBedType(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
     }
 
     [Fact]

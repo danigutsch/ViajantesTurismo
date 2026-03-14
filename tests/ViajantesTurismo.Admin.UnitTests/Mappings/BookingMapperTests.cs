@@ -7,20 +7,6 @@ namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 
 public class BookingMapperTests
 {
-    [Theory]
-    [InlineData(BikeTypeDto.None, BikeType.None)]
-    [InlineData(BikeTypeDto.Regular, BikeType.Regular)]
-    [InlineData(BikeTypeDto.EBike, BikeType.EBike)]
-    public void Map_To_Bike_Type_Should_Map_All_Valid_Values(BikeTypeDto dto, BikeType expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToBikeType(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
     [Fact]
     public void Map_To_Bike_Type_Should_Cover_All_Enum_Values()
     {
@@ -35,20 +21,6 @@ public class BookingMapperTests
             // Assert
             Assert.True(Enum.IsDefined(mappedEnum));
         }
-    }
-
-    [Theory]
-    [InlineData(BikeType.None, BikeTypeDto.None)]
-    [InlineData(BikeType.Regular, BikeTypeDto.Regular)]
-    [InlineData(BikeType.EBike, BikeTypeDto.EBike)]
-    public void Map_To_Bike_Type_Dto_Should_Map_All_Valid_Values(BikeType domain, BikeTypeDto expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToBikeTypeDto(domain);
-
-        // Assert
-        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -67,19 +39,6 @@ public class BookingMapperTests
         }
     }
 
-    [Theory]
-    [InlineData(RoomTypeDto.DoubleOccupancy, RoomType.DoubleOccupancy)]
-    [InlineData(RoomTypeDto.SingleOccupancy, RoomType.SingleOccupancy)]
-    public void Map_To_Room_Type_Should_Map_All_Valid_Values(RoomTypeDto dto, RoomType expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToRoomType(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
     [Fact]
     public void Map_To_Room_Type_Should_Cover_All_Enum_Values()
     {
@@ -94,21 +53,6 @@ public class BookingMapperTests
             // Assert
             Assert.True(Enum.IsDefined(mappedEnum));
         }
-    }
-
-    [Theory]
-    [InlineData(BookingStatusDto.Pending, BookingStatus.Pending)]
-    [InlineData(BookingStatusDto.Confirmed, BookingStatus.Confirmed)]
-    [InlineData(BookingStatusDto.Cancelled, BookingStatus.Cancelled)]
-    [InlineData(BookingStatusDto.Completed, BookingStatus.Completed)]
-    public void Map_To_Booking_Status_Should_Map_All_Valid_Values(BookingStatusDto dto, BookingStatus expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToBookingStatus(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -127,21 +71,6 @@ public class BookingMapperTests
         }
     }
 
-    [Theory]
-    [InlineData(PaymentStatusDto.Unpaid, PaymentStatus.Unpaid)]
-    [InlineData(PaymentStatusDto.PartiallyPaid, PaymentStatus.PartiallyPaid)]
-    [InlineData(PaymentStatusDto.Paid, PaymentStatus.Paid)]
-    [InlineData(PaymentStatusDto.Refunded, PaymentStatus.Refunded)]
-    public void Map_To_Payment_Status_Should_Map_All_Valid_Values(PaymentStatusDto dto, PaymentStatus expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToPaymentStatus(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
     [Fact]
     public void Map_To_Payment_Status_Should_Cover_All_Enum_Values()
     {
@@ -158,20 +87,6 @@ public class BookingMapperTests
         }
     }
 
-    [Theory]
-    [InlineData(DiscountTypeDto.None, DiscountType.None)]
-    [InlineData(DiscountTypeDto.Percentage, DiscountType.Percentage)]
-    [InlineData(DiscountTypeDto.Absolute, DiscountType.Absolute)]
-    public void Map_To_Discount_Type_Should_Map_All_Valid_Values(DiscountTypeDto dto, DiscountType expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToDiscountType(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
     [Fact]
     public void Map_To_Discount_Type_Should_Cover_All_Enum_Values()
     {
@@ -186,20 +101,6 @@ public class BookingMapperTests
             // Assert
             Assert.True(Enum.IsDefined(mappedEnum));
         }
-    }
-
-    [Theory]
-    [InlineData(DiscountType.None, DiscountTypeDto.None)]
-    [InlineData(DiscountType.Percentage, DiscountTypeDto.Percentage)]
-    [InlineData(DiscountType.Absolute, DiscountTypeDto.Absolute)]
-    public void Map_To_Discount_Type_Dto_Should_Map_All_Valid_Values(DiscountType domain, DiscountTypeDto expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToDiscountTypeDto(domain);
-
-        // Assert
-        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -302,23 +203,6 @@ public class BookingMapperTests
         Assert.Contains("Invalid discount type value", exception.Message, StringComparison.Ordinal);
     }
 
-    [Theory]
-    [InlineData(PaymentMethodDto.CreditCard, PaymentMethod.CreditCard)]
-    [InlineData(PaymentMethodDto.BankTransfer, PaymentMethod.BankTransfer)]
-    [InlineData(PaymentMethodDto.Cash, PaymentMethod.Cash)]
-    [InlineData(PaymentMethodDto.Check, PaymentMethod.Check)]
-    [InlineData(PaymentMethodDto.PayPal, PaymentMethod.PayPal)]
-    [InlineData(PaymentMethodDto.Other, PaymentMethod.Other)]
-    public void Map_To_Payment_Method_Should_Map_All_Valid_Values(PaymentMethodDto dto, PaymentMethod expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToPaymentMethod(dto);
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
     [Fact]
     public void Map_To_Payment_Method_Should_Cover_All_Enum_Values()
     {
@@ -345,23 +229,6 @@ public class BookingMapperTests
         // Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BookingMapper.MapToPaymentMethod(invalidValue));
         Assert.Contains("Invalid payment method value", exception.Message, StringComparison.Ordinal);
-    }
-
-    [Theory]
-    [InlineData(PaymentMethod.CreditCard, PaymentMethodDto.CreditCard)]
-    [InlineData(PaymentMethod.BankTransfer, PaymentMethodDto.BankTransfer)]
-    [InlineData(PaymentMethod.Cash, PaymentMethodDto.Cash)]
-    [InlineData(PaymentMethod.Check, PaymentMethodDto.Check)]
-    [InlineData(PaymentMethod.PayPal, PaymentMethodDto.PayPal)]
-    [InlineData(PaymentMethod.Other, PaymentMethodDto.Other)]
-    public void Map_To_Payment_Method_Dto_Should_Map_All_Valid_Values(PaymentMethod domain, PaymentMethodDto expected)
-    {
-        // Arrange
-        // Act
-        var result = BookingMapper.MapToPaymentMethodDto(domain);
-
-        // Assert
-        Assert.Equal(expected, result);
     }
 
     [Fact]

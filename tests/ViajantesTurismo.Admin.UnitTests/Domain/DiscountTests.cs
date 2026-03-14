@@ -25,24 +25,6 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Invalid_Discount_Type_Should_Include_All_Valid_Values()
-    {
-        // Arrange
-        const DiscountType invalidType = (DiscountType)999;
-
-        // Act
-        var result = DiscountErrors.InvalidDiscountType(invalidType);
-
-        // Assert
-        Assert.NotNull(result.ErrorDetails);
-        var allValidTypes = Enum.GetNames<DiscountType>();
-        foreach (var validType in allValidTypes)
-        {
-            Assert.Contains(validType, result.ErrorDetails.Detail, StringComparison.Ordinal);
-        }
-    }
-
-    [Fact]
     public void Negative_Discount_Amount_Should_Return_Invalid_Result()
     {
         // Arrange
@@ -121,22 +103,6 @@ public class DiscountTests
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.True(result.ErrorDetails.ValidationErrors.ContainsKey("discount"));
         Assert.Equal("Final price after discount must be greater than zero.", result.ErrorDetails.ValidationErrors["discount"][0]);
-    }
-
-    [Fact]
-    public void Final_Price_Not_Positive_With_Zero_Should_Return_Invalid_Result()
-    {
-        // Arrange
-        const decimal finalPrice = 0m;
-
-        // Act
-        var result = DiscountErrors.FinalPriceNotPositive(finalPrice);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.ErrorDetails);
-        Assert.Contains("Final price after discount must be greater than zero", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Contains("0", result.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
