@@ -11,30 +11,40 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // Act
-        await NavigateTo($"/bookings/{booking.Id}/edit");
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
-
-        // Assert: confirming via the UI shows a toast.
+        await NavigateToBookingEdit(booking.Id);
         await Page.GetButton("Confirm Booking").ClickAsync();
 
-        var toast = Page.Locator(".toast.show");
-        await Expect(toast).ToBeVisibleAsync();
-        await Expect(toast).ToContainTextAsync("Booking confirmed successfully");
+        // Assert
+        await ExpectToast("Booking confirmed successfully");
 
-        // Assert: updating the now-confirmed booking shows the timed redirect affordance.
+        // Act
         await Page.GetButton("Update Booking").ClickAsync();
 
         var redirectAlert = Page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
-        await Expect(redirectAlert).ToContainTextAsync("Redirecting to bookings page in 3 seconds...");
+        await ExpectRedirectAlert(redirectAlert);
+        await redirectAlert.GetButton("Cancel").ClickAsync();
 
-        var cancelButton = redirectAlert.GetButton("Cancel");
-        await Expect(cancelButton).ToBeVisibleAsync();
-
-        // Act: cancel the redirect.
-        await cancelButton.ClickAsync();
-
-        // Assert: the page remains on the edit route and exposes the manual navigation action.
+        // Assert
         await Expect(Page.GetButton("Go to Bookings")).ToBeVisibleAsync();
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
+    }
+
+    private async Task NavigateToBookingEdit(Guid bookingId)
+    {
+        await NavigateTo($"/bookings/{bookingId}/edit");
+        await Expect(Page).ToHaveTitleAsync("Edit Booking");
+    }
+
+    private async Task ExpectToast(string expectedText)
+    {
+        var toast = Page.Locator(".toast.show");
+        await Expect(toast).ToBeVisibleAsync();
+        await Expect(toast).ToContainTextAsync(expectedText);
+    }
+
+    private async Task ExpectRedirectAlert(ILocator redirectAlert)
+    {
+        await Expect(redirectAlert).ToContainTextAsync("Redirecting to bookings page in 3 seconds...");
+        await Expect(redirectAlert.GetButton("Cancel")).ToBeVisibleAsync();
     }
 }
