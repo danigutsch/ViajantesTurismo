@@ -41,7 +41,7 @@ public sealed class TourCapacityManagementSteps(
     [Given("the tour has (.*) confirmed booking with (.*) customers?")]
     public void GivenTheTourHasConfirmedBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
-        IReadOnlyList<Customer> customers = customersPerBooking switch
+        var customers = customersPerBooking switch
         {
             1 => BookingTestHelpers.CreateConfirmedSingleBookings(tourContext.Tour, bookingCount),
             2 => BookingTestHelpers.CreateConfirmedDoubleBookings(tourContext.Tour, bookingCount),

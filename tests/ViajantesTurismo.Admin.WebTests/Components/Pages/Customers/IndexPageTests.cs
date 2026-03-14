@@ -200,7 +200,7 @@ public class IndexPageTests : BunitContext
     public void Renders_Paginator_When_More_Than_10_Customers()
     {
         // Arrange
-        for (int i = 1; i <= 15; i++)
+        for (var i = 1; i <= 15; i++)
         {
             _fakeCustomersApi.AddCustomer(BuildCustomerDto(
                 firstName: $"Customer{i}",
@@ -221,7 +221,7 @@ public class IndexPageTests : BunitContext
     public void Does_Not_Render_Paginator_When_10_Or_Fewer_Customers()
     {
         // Arrange
-        for (int i = 1; i <= 8; i++)
+        for (var i = 1; i <= 8; i++)
         {
             _fakeCustomersApi.AddCustomer(BuildCustomerDto(
                 firstName: $"Customer{i}",
@@ -241,7 +241,7 @@ public class IndexPageTests : BunitContext
     public void Displays_Total_Customers_Count()
     {
         // Arrange
-        for (int i = 1; i <= 5; i++)
+        for (var i = 1; i <= 5; i++)
         {
             _fakeCustomersApi.AddCustomer(BuildCustomerDto(
                 firstName: $"Customer{i}",

@@ -423,7 +423,7 @@ public class BookingsListTests : BunitContext
         var bookings = Enumerable.Range(1, 10)
             .Select(i =>
             {
-                string customerName = $"Customer {i}";
+                var customerName = $"Customer {i}";
                 return DtoBuilders.BuildBookingDto(
                     id: Guid.NewGuid(),
                     tourName: "Tour 1",
@@ -451,7 +451,7 @@ public class BookingsListTests : BunitContext
         var bookings = Enumerable.Range(1, 15)
             .Select(i =>
             {
-                string customerName = $"Customer {i}";
+                var customerName = $"Customer {i}";
                 return DtoBuilders.BuildBookingDto(
                     id: Guid.NewGuid(),
                     tourName: "Tour 1",

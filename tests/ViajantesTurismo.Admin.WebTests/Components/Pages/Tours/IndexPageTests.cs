@@ -264,7 +264,7 @@ public class IndexPageTests : BunitContext
     public void Renders_Paginator_When_More_Than_10_Tours()
     {
         // Arrange
-        for (int i = 1; i <= 15; i++)
+        for (var i = 1; i <= 15; i++)
         {
             _fakeToursApi.AddTour(BuildTourDto(identifier: $"TOUR-{i:D3}"));
         }
@@ -283,7 +283,7 @@ public class IndexPageTests : BunitContext
     public void Does_Not_Render_Paginator_When_10_Or_Fewer_Tours()
     {
         // Arrange
-        for (int i = 1; i <= 8; i++)
+        for (var i = 1; i <= 8; i++)
         {
             _fakeToursApi.AddTour(BuildTourDto(identifier: $"TOUR-{i:D3}"));
         }
@@ -313,7 +313,7 @@ public class IndexPageTests : BunitContext
     public void Displays_Total_Tours_Count()
     {
         // Arrange
-        for (int i = 1; i <= 5; i++)
+        for (var i = 1; i <= 5; i++)
         {
             _fakeToursApi.AddTour(BuildTourDto(identifier: $"TOUR-{i:D3}"));
         }
