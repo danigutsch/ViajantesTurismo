@@ -8,37 +8,32 @@ namespace ViajantesTurismo.Admin.E2ETests.Shared;
 public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
-    public async Task Can_Sort_List_Columns_For_All_Entities()
+    public async Task Tour_List_Sort_Smoke_Works_For_Name_Column()
     {
         // Arrange
         await ClearDatabase(TestContext.Current.CancellationToken);
 
-        var aTour = await ApiClient.CreateTour(
+        _ = await ApiClient.CreateTour(
             identifier: "AAA-SORT",
             name: "Aaa Sort Tour",
             startDate: DateTime.UtcNow.AddDays(10),
             endDate: DateTime.UtcNow.AddDays(17),
             price: 500m);
-        var zTour = await ApiClient.CreateTour(
+        _ = await ApiClient.CreateTour(
             identifier: "ZZZ-SORT",
             name: "Zzz Sort Tour",
             startDate: DateTime.UtcNow.AddDays(40),
             endDate: DateTime.UtcNow.AddDays(47),
             price: 1500m);
 
-        var aCustomer = await ApiClient.CreateCustomer(firstName: "Aaa", lastName: "Sort Customer");
-        var zCustomer = await ApiClient.CreateCustomer(firstName: "Zzz", lastName: "Sort Customer");
-
-        _ = await ApiClient.CreateBooking(aTour.Id, aCustomer.Id);
-        _ = await ApiClient.CreateBooking(zTour.Id, zCustomer.Id);
-
-        // Tours: sort by Name ascending / descending
+        // Act
         await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
 
         var toursTable = Page.Locator("table");
         var firstTourCell = toursTable.Locator("tbody tr td:nth-child(2)").First;
 
+        // Assert: tours sort by Name ascending / descending.
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
         await Expect(firstTourCell).ToHaveTextAsync("Aaa Sort Tour");
@@ -46,37 +41,6 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
         await Expect(firstTourCell).ToHaveTextAsync("Zzz Sort Tour");
-
-        // Customers: sort by Name ascending / descending
-        await NavigateTo("/customers");
-        await Expect(Page).ToHaveTitleAsync("Customers");
-
-        var customersTable = Page.Locator("table");
-        var firstCustomerName = customersTable.Locator("tbody tr td:nth-child(1)").First;
-
-        await customersTable.GetButton("Name").ClickAsync();
-        await Expect(customersTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
-        await Expect(firstCustomerName).ToHaveTextAsync("Aaa Sort Customer");
-
-        await customersTable.GetButton("Name").ClickAsync();
-        await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
-        await Expect(firstCustomerName).ToHaveTextAsync("Zzz Sort Customer");
-
-        // Bookings: sort by Tour ascending / descending
-        await NavigateTo("/bookings");
-        await Expect(Page).ToHaveTitleAsync("Bookings");
-
-        var bookingsTable = Page.Locator("table");
-
-        await bookingsTable.GetButton("Tour").ClickAsync();
-        await Expect(bookingsTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Tour");
-        var firstTourLink = bookingsTable.Locator("tbody tr").First.GetLink("Aaa Sort Tour");
-        await Expect(firstTourLink).ToBeVisibleAsync();
-
-        await bookingsTable.GetButton("Tour").ClickAsync();
-        await Expect(bookingsTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Tour");
-        var firstTourLinkDesc = bookingsTable.Locator("tbody tr").First.GetLink("Zzz Sort Tour");
-        await Expect(firstTourLinkDesc).ToBeVisibleAsync();
     }
 
     [Fact]

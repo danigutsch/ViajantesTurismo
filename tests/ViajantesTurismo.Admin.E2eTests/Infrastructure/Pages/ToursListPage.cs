@@ -35,6 +35,13 @@ internal sealed class ToursListPage(
 
             await navigateTo("/tours");
             Assert.Equal("Tours", await page.TitleAsync());
+
+            var firstPageRow = page.Locator($"table tbody tr:has(a[href='{href}'])");
+            if (await firstPageRow.CountAsync() > 0)
+            {
+                return firstPageRow.First;
+            }
+
             await NavigateToPageContaining(tourIndex);
 
             var row = page.Locator($"table tbody tr:has(a[href='{href}'])");
@@ -70,6 +77,11 @@ internal sealed class ToursListPage(
         }
 
         var nextButton = page.Locator(".paginator button[aria-label='Go to next page']");
+        if (await nextButton.CountAsync() == 0)
+        {
+            return;
+        }
+
         for (var currentPageIndex = 0; currentPageIndex < targetPageIndex; currentPageIndex++)
         {
             var firstTourLink = page.Locator("table tbody tr a[href^='/tours/']").First;

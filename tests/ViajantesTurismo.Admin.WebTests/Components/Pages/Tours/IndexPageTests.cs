@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.QuickGrid;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients;
 using static ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders;
@@ -274,7 +275,8 @@ public class IndexPageTests : BunitContext
 
         // Assert
         var totalText = cut.Find("p.text-muted");
-        Assert.Contains("Total tours: 10", totalText.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Total tours: 15", totalText.TextContent, StringComparison.Ordinal);
+        Assert.NotEmpty(cut.FindComponents<Paginator>());
     }
 
     [Fact]

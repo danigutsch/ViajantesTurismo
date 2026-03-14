@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.E2ETests.Infrastructure.Pages;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tours;
 
-public class CapacityIndicatorTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
+public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     [Fact]
     public async Task Tour_Capacity_Badges_Show_Correct_State_On_List_And_Details()
