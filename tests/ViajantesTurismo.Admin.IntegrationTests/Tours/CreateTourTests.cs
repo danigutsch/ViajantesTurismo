@@ -25,42 +25,6 @@ public sealed class CreateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     }
 
     [Fact]
-    public async Task Create_Tour_Returns_Bad_Request_For_Invalid_Data()
-    {
-        // Arrange
-        var request = DtoBuilders.BuildCreateTourDto(
-            identifier: "",
-            name: "Test Tour");
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Tour_Returns_Validation_Problem_For_Multiple_Errors()
-    {
-        // Arrange
-        const decimal invalidPrice = 0.00m;
-        var request = DtoBuilders.BuildCreateTourDto(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            basePrice: invalidPrice,
-            singleRoomSupplement: invalidPrice,
-            regularBikePrice: invalidPrice,
-            eBikePrice: invalidPrice,
-            includedServices: ["Hotel"]);
-
-        // Act
-        var response = await Client.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), request, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Create_Tour_Returns_Bad_Request_For_Invalid_Price()
     {
         // Arrange

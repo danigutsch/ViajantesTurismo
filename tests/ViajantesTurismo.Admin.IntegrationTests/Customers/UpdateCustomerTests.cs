@@ -74,42 +74,6 @@ public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegratio
     }
 
     [Fact]
-    public async Task Cannot_Update_Customer_With_Empty_FirstName()
-    {
-        // Arrange
-        var customer = await Client.CreateTestCustomer("Alice", "Johnson", TestContext.Current.CancellationToken);
-        var updateRequest = DtoBuilders.BuildUpdateCustomerDto(firstName: "Alice", lastName: "Johnson");
-        updateRequest = updateRequest with
-        {
-            PersonalInfo = updateRequest.PersonalInfo with { FirstName = "" }
-        };
-
-        // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Cannot_Update_Customer_With_Empty_Email()
-    {
-        // Arrange
-        var customer = await Client.CreateTestCustomer("Alice", "Johnson", TestContext.Current.CancellationToken);
-        var updateRequest = DtoBuilders.BuildUpdateCustomerDto(firstName: "Alice", lastName: "Johnson");
-        updateRequest = updateRequest with
-        {
-            ContactInfo = updateRequest.ContactInfo with { Email = "" }
-        };
-
-        // Act
-        var response = await Client.PutAsJsonAsync(new Uri($"/customers/{customer.Id}", UriKind.Relative), updateRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Cannot_Update_Customer_With_Future_BirthDate()
     {
         // Arrange

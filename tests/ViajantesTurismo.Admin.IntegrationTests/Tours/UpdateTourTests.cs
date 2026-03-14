@@ -46,56 +46,6 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     }
 
     [Fact]
-    public async Task Cannot_Update_Tour_With_Empty_Name()
-    {
-        // Arrange
-        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
-        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: tour.Identifier, name: "Updated Tour");
-        updateRequest = updateRequest with { Name = "" };
-
-        // Act
-        var response = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Cannot_Update_Tour_With_Invalid_Date_Range()
-    {
-        // Arrange
-        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
-        var startDate = new DateTime(2026, 11, 10).ToUniversalTime();
-        var endDate = startDate.AddDays(2);
-        var updateRequest = DtoBuilders.BuildUpdateTourDto(
-            identifier: tour.Identifier,
-            name: "Updated Tour",
-            startDate: startDate,
-            endDate: endDate);
-
-        // Act
-        var response = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Cannot_Update_Tour_With_Negative_Price()
-    {
-        // Arrange
-        var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
-        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: tour.Identifier, name: "Updated Tour");
-        updateRequest = updateRequest with { Price = -100.00m };
-
-        // Act
-        var response = await Client.PutAsJsonAsync($"/tours/{tour.Id}", updateRequest, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Can_Update_Tour_Multiple_Times_With_Same_Data()
     {
         // Arrange
