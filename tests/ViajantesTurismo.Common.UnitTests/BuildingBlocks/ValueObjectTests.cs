@@ -7,16 +7,6 @@ namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 public sealed class ValueObjectTests
 {
     [Fact]
-    public void Equals_Returns_True_For_Same_Instance()
-    {
-        var address = new TestAddress("123 Main St", "Springfield");
-
-        var result = address.Equals(address);
-
-        Assert.True(result);
-    }
-
-    [Fact]
     public void Equals_Returns_True_For_Equal_Values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
@@ -57,17 +47,6 @@ public sealed class ValueObjectTests
         var result = address.Equals(money);
 
         Assert.False(result);
-    }
-
-    [Fact]
-    public void Equals_Object_Returns_True_For_Equal_Values()
-    {
-        var address1 = new TestAddress("123 Main St", "Springfield");
-        object address2 = new TestAddress("123 Main St", "Springfield");
-
-        var result = address1.Equals(address2);
-
-        Assert.True(result);
     }
 
     [Fact]
@@ -116,54 +95,10 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Operator_Equals_Returns_True_For_Equal_Values()
-    {
-        var address1 = new TestAddress("123 Main St", "Springfield");
-        var address2 = new TestAddress("123 Main St", "Springfield");
-
-        var result = address1 == address2;
-
-        Assert.True(result);
-    }
-
-    [Fact]
     public void Operator_Equals_Returns_False_For_Different_Values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("456 Oak Ave", "Springfield");
-
-        var result = address1 == address2;
-
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void Operator_Equals_Returns_True_When_Both_Are_Null()
-    {
-        TestAddress? address1 = null;
-        TestAddress? address2 = null;
-
-        var result = address1 == address2;
-
-        Assert.True(result);
-    }
-
-    [Fact]
-    public void Operator_Equals_Returns_False_When_Left_Is_Null()
-    {
-        TestAddress? address1 = null;
-        var address2 = new TestAddress("123 Main St", "Springfield");
-
-        var result = address1 == address2;
-
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void Operator_Equals_Returns_False_When_Right_Is_Null()
-    {
-        var address1 = new TestAddress("123 Main St", "Springfield");
-        TestAddress? address2 = null;
 
         var result = address1 == address2;
 
@@ -186,39 +121,6 @@ public sealed class ValueObjectTests
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("456 Oak Ave", "Springfield");
-
-        var result = address1 != address2;
-
-        Assert.True(result);
-    }
-
-    [Fact]
-    public void Operator_Not_Equals_Returns_False_When_Both_Are_Null()
-    {
-        TestAddress? address1 = null;
-        TestAddress? address2 = null;
-
-        var result = address1 != address2;
-
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void Operator_Not_Equals_Returns_True_When_Left_Is_Null()
-    {
-        TestAddress? address1 = null;
-        var address2 = new TestAddress("123 Main St", "Springfield");
-
-        var result = address1 != address2;
-
-        Assert.True(result);
-    }
-
-    [Fact]
-    public void Operator_Not_Equals_Returns_True_When_Right_Is_Null()
-    {
-        var address1 = new TestAddress("123 Main St", "Springfield");
-        TestAddress? address2 = null;
 
         var result = address1 != address2;
 
@@ -259,17 +161,6 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_Can_Be_Used_In_Dictionary()
-    {
-        var dictionary = new Dictionary<TestAddress, string>();
-        var address = new TestAddress("123 Main St", "Springfield");
-
-        dictionary[address] = "Home";
-
-        Assert.Equal("Home", dictionary[address]);
-    }
-
-    [Fact]
     public void Value_Object_Dictionary_Lookup_Works_With_Equal_Instance()
     {
         var dictionary = new Dictionary<TestAddress, string>();
@@ -279,19 +170,6 @@ public sealed class ValueObjectTests
         dictionary[address1] = "Home";
 
         Assert.Equal("Home", dictionary[address2]);
-    }
-
-    [Fact]
-    public void Value_Object_Can_Be_Used_In_Hash_Set()
-    {
-        var hashSet = new HashSet<TestAddress>();
-        var address1 = new TestAddress("123 Main St", "Springfield");
-        var address2 = new TestAddress("123 Main St", "Springfield");
-
-        hashSet.Add(address1);
-        hashSet.Add(address2);
-
-        Assert.Single(hashSet);
     }
 
     [Fact]

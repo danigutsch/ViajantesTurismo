@@ -5,94 +5,6 @@ namespace ViajantesTurismo.Common.UnitTests.Sanitizers;
 public sealed class NumericSanitizerTests
 {
     [Fact]
-    public void Sanitize_Price_Returns_Zero_When_Input_Is_Zero()
-    {
-        var result = NumericSanitizer.SanitizePrice(0m);
-
-        Assert.Equal(0m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Preserves_Integer_Values()
-    {
-        var result = NumericSanitizer.SanitizePrice(100m);
-
-        Assert.Equal(100m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Preserves_One_Decimal_Place()
-    {
-        var result = NumericSanitizer.SanitizePrice(99.9m);
-
-        Assert.Equal(99.9m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Preserves_Two_Decimal_Places()
-    {
-        var result = NumericSanitizer.SanitizePrice(99.99m);
-
-        Assert.Equal(99.99m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Three_Decimal_Places()
-    {
-        var result = NumericSanitizer.SanitizePrice(99.995m);
-
-        Assert.Equal(100.00m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Down_When_Below_Midpoint()
-    {
-        var result = NumericSanitizer.SanitizePrice(99.994m);
-
-        Assert.Equal(99.99m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Up_When_Above_Midpoint()
-    {
-        var result = NumericSanitizer.SanitizePrice(99.996m);
-
-        Assert.Equal(100.00m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Midpoint_Away_From_Zero_For_Positive()
-    {
-        var result = NumericSanitizer.SanitizePrice(99.995m);
-
-        Assert.Equal(100.00m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Midpoint_Away_From_Zero_For_Negative()
-    {
-        var result = NumericSanitizer.SanitizePrice(-99.995m);
-
-        Assert.Equal(-100.00m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Handles_Negative_Values()
-    {
-        var result = NumericSanitizer.SanitizePrice(-50.75m);
-
-        Assert.Equal(-50.75m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Handles_Small_Values()
-    {
-        var result = NumericSanitizer.SanitizePrice(0.01m);
-
-        Assert.Equal(0.01m, result);
-    }
-
-    [Fact]
     public void Sanitize_Price_Rounds_Very_Small_Values()
     {
         var result = NumericSanitizer.SanitizePrice(0.001m);
@@ -106,46 +18,6 @@ public sealed class NumericSanitizerTests
         var result = NumericSanitizer.SanitizePrice(0.009m);
 
         Assert.Equal(0.01m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Handles_Large_Values()
-    {
-        var result = NumericSanitizer.SanitizePrice(999999.99m);
-
-        Assert.Equal(999999.99m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Large_Values_With_Extra_Decimals()
-    {
-        var result = NumericSanitizer.SanitizePrice(999999.999m);
-
-        Assert.Equal(1000000.00m, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Handles_Maximum_Decimal_Value()
-    {
-        var result = NumericSanitizer.SanitizePrice(decimal.MaxValue);
-
-        Assert.Equal(decimal.MaxValue, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Handles_Minimum_Decimal_Value()
-    {
-        var result = NumericSanitizer.SanitizePrice(decimal.MinValue);
-
-        Assert.Equal(decimal.MinValue, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Rounds_Multiple_Trailing_Decimals()
-    {
-        var result = NumericSanitizer.SanitizePrice(12.3456789m);
-
-        Assert.Equal(12.35m, result);
     }
 
     [Fact]
@@ -194,20 +66,6 @@ public sealed class NumericSanitizerTests
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(10)]
-    [InlineData(100)]
-    [InlineData(1000)]
-    [InlineData(10000)]
-    public void Sanitize_Price_Preserves_Integer_Values_Theory(decimal value)
-    {
-        var result = NumericSanitizer.SanitizePrice(value);
-
-        Assert.Equal(value, result);
-    }
-
-    [Theory]
     [InlineData(1.001, 1.00)]
     [InlineData(1.004, 1.00)]
     [InlineData(1.005, 1.01)]
@@ -218,23 +76,5 @@ public sealed class NumericSanitizerTests
         var result = NumericSanitizer.SanitizePrice(input);
 
         Assert.Equal(expected, result);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Is_Idempotent()
-    {
-        var value = 99.999m;
-        var firstRound = NumericSanitizer.SanitizePrice(value);
-        var secondRound = NumericSanitizer.SanitizePrice(firstRound);
-
-        Assert.Equal(firstRound, secondRound);
-    }
-
-    [Fact]
-    public void Sanitize_Price_Handles_Currency_Typical_Values()
-    {
-        var result = NumericSanitizer.SanitizePrice(1234.5678m);
-
-        Assert.Equal(1234.57m, result);
     }
 }

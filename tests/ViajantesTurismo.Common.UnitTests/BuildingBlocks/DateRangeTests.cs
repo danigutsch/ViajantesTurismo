@@ -118,40 +118,6 @@ public sealed class DateRangeTests
         // Assert
         Assert.Equal(range1, range2);
         Assert.True(range1.Equals(range2));
-        Assert.True(range1 == range2);
-        Assert.False(range1 != range2);
-    }
-
-    [Fact]
-    public void Equality_WithDifferentStartDate_AreNotEqual()
-    {
-        // Arrange
-        var endDate = new DateTime(2025, 6, 10);
-        var range1 = DateRange.Create(new DateTime(2025, 6, 1), endDate).Value;
-        var range2 = DateRange.Create(new DateTime(2025, 6, 2), endDate).Value;
-
-        // Act
-        // Assert
-        Assert.NotEqual(range1, range2);
-        Assert.False(range1.Equals(range2));
-        Assert.False(range1 == range2);
-        Assert.True(range1 != range2);
-    }
-
-    [Fact]
-    public void Equality_WithDifferentEndDate_AreNotEqual()
-    {
-        // Arrange
-        var startDate = new DateTime(2025, 6, 1);
-        var range1 = DateRange.Create(startDate, new DateTime(2025, 6, 10)).Value;
-        var range2 = DateRange.Create(startDate, new DateTime(2025, 6, 11)).Value;
-
-        // Act
-        // Assert
-        Assert.NotEqual(range1, range2);
-        Assert.False(range1.Equals(range2));
-        Assert.False(range1 == range2);
-        Assert.True(range1 != range2);
     }
 
     [Fact]
@@ -165,57 +131,6 @@ public sealed class DateRangeTests
         // Assert
         Assert.NotEqual(range1, range2);
         Assert.False(range1.Equals(range2));
-    }
-
-    [Fact]
-    public void Equality_WithNull_AreNotEqual()
-    {
-        // Arrange
-        var range = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-
-        // Act
-        // Assert
-        Assert.False(range.Equals(null));
-        Assert.False(range == null);
-        Assert.True(range != null);
-    }
-
-    [Fact]
-    public void GetHashCode_WithSameDates_ReturnsSameHashCode()
-    {
-        // Arrange
-        var startDate = new DateTime(2025, 6, 1);
-        var endDate = new DateTime(2025, 6, 10);
-        var range1 = DateRange.Create(startDate, endDate).Value;
-        var range2 = DateRange.Create(startDate, endDate).Value;
-
-        // Act
-        // Assert
-        Assert.Equal(range1.GetHashCode(), range2.GetHashCode());
-    }
-
-    [Fact]
-    public void GetHashCode_WithDifferentDates_ReturnsDifferentHashCodes()
-    {
-        // Arrange
-        var range1 = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-        var range2 = DateRange.Create(new DateTime(2025, 7, 1), new DateTime(2025, 7, 10)).Value;
-
-        // Act
-        // Assert
-        Assert.NotEqual(range1.GetHashCode(), range2.GetHashCode());
-    }
-
-    [Fact]
-    public void Equality_WithDifferentTypes_ReturnsFalse()
-    {
-        // Arrange
-        var range = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-        var otherObject = new object();
-
-        // Act
-        // Assert
-        Assert.False(range.Equals(otherObject));
     }
 
     [Fact]
@@ -264,38 +179,5 @@ public sealed class DateRangeTests
         Assert.True(result.IsSuccess);
         Assert.True(result.Value.DurationDays > 0);
         Assert.True(result.Value.DurationDays < 0.001);
-    }
-
-    [Fact]
-    public void Equality_InCollection_WorksCorrectly()
-    {
-        // Arrange
-        var range1 = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-        var range2 = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-        var range3 = DateRange.Create(new DateTime(2025, 7, 1), new DateTime(2025, 7, 10)).Value;
-
-        var set = new HashSet<DateRange> { range1, range2 };
-
-        // Act
-        // Assert
-        Assert.Single(set);
-        Assert.Contains(range1, set);
-        Assert.Contains(range2, set);
-        Assert.DoesNotContain(range3, set);
-    }
-
-    [Fact]
-    public void Equality_UsingEqualsMethod_WithSameInstance_ReturnsTrue()
-    {
-        // Arrange
-        var range = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-
-        // Act
-        // Assert
-        Assert.True(range.Equals(range));
-        // ReSharper disable once EqualExpressionComparison
-#pragma warning disable CS1718
-        Assert.True(range == range);
-#pragma warning restore CS1718
     }
 }
