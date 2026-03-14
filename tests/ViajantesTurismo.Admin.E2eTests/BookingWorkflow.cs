@@ -4,8 +4,22 @@ using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.E2ETests;
 
+/// <summary>
+/// Encapsulates reusable booking-focused browser workflows for E2E tests.
+/// Keeps navigation, form interaction, and toast handling out of test bodies
+/// while leaving scenario assertions visible in the tests themselves.
+/// </summary>
+/// <param name="page">The active Playwright page.</param>
+/// <param name="navigateTo">Navigation function that resolves relative application routes.</param>
 internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
 {
+    /// <summary>
+    /// Creates a booking from the tour details page and returns the created booking identifier.
+    /// </summary>
+    /// <param name="tour">The tour that will receive the new booking.</param>
+    /// <param name="customerFullName">The owned test customer full name used to identify the new row.</param>
+    /// <param name="customerSelectionLabel">The select option label shown in the booking form.</param>
+    /// <returns>The identifier of the created booking.</returns>
     public async Task<Guid> CreateFromTourDetails(
         GetTourDto tour,
         string customerFullName,
@@ -52,12 +66,20 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         return bookingId;
     }
 
+    /// <summary>
+    /// Navigates directly to the booking details page for a known booking identifier.
+    /// </summary>
+    /// <param name="bookingId">The booking identifier.</param>
     public async Task NavigateToDetails(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}");
         Assert.Equal("Booking Details", await page.TitleAsync());
     }
 
+    /// <summary>
+    /// Applies the standard percentage discount used by booking workflow tests.
+    /// </summary>
+    /// <param name="bookingId">The booking identifier.</param>
     public async Task ApplyDiscount(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}/edit");
@@ -81,6 +103,10 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         }
     }
 
+    /// <summary>
+    /// Confirms a booking from the edit page and waits for the completion action to become available.
+    /// </summary>
+    /// <param name="bookingId">The booking identifier.</param>
     public async Task ConfirmBooking(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}/edit");
@@ -94,6 +120,9 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await page.GetButton("Complete Booking").WaitForAsync();
     }
 
+    /// <summary>
+    /// Records the standard cash payment used by booking workflow tests.
+    /// </summary>
     public async Task RecordPayment()
     {
         await page.GetButton("Record Payment").ClickAsync();
@@ -114,6 +143,9 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await paymentToast.First.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden, Timeout = 10_000 });
     }
 
+    /// <summary>
+    /// Completes the booking from the current page and verifies the completion toast.
+    /// </summary>
     public async Task CompleteBooking()
     {
         await page.GetButton("Complete Booking").ClickAsync();
