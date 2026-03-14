@@ -6,7 +6,6 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Bookings_List_Payment_Status_Matches_Booking_Details()
     {
         // Arrange
-        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync, ApiClient.GetAllBookings);
         var tour = await ApiClient.CreateTourAsync();
         var customerUnpaid = await ApiClient.CreateCustomerAsync();
         var customerPartiallyPaid = await ApiClient.CreateCustomerAsync();
@@ -17,8 +16,8 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
 
         // Act
         // Assert
-        var unpaidFromList = await bookingsListPage.GetPaymentStatus(unpaidBooking.Id);
-        var partiallyPaidFromList = await bookingsListPage.GetPaymentStatus(partiallyPaidBooking.Id);
+        var unpaidFromList = await BookingsList.GetPaymentStatus(unpaidBooking.Id);
+        var partiallyPaidFromList = await BookingsList.GetPaymentStatus(partiallyPaidBooking.Id);
 
         var unpaidFromDetails = await GetPaymentStatusFromDetails(unpaidBooking.Id);
         var partiallyPaidFromDetails = await GetPaymentStatusFromDetails(partiallyPaidBooking.Id);
@@ -32,7 +31,6 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Scoped_Bookings_Payment_Status_Matches_Global_List()
     {
         // Arrange
-        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync, ApiClient.GetAllBookings);
         var tour = await ApiClient.CreateTourAsync();
         var customer1 = await ApiClient.CreateCustomerAsync();
         var customer2 = await ApiClient.CreateCustomerAsync();
@@ -42,8 +40,8 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
 
         var booking1Href = $"/bookings/{booking1.Id}";
         var booking2Href = $"/bookings/{booking2.Id}";
-        var expectedBooking1 = await bookingsListPage.GetPaymentStatus(booking1.Id);
-        var expectedBooking2 = await bookingsListPage.GetPaymentStatus(booking2.Id);
+        var expectedBooking1 = await BookingsList.GetPaymentStatus(booking1.Id);
+        var expectedBooking2 = await BookingsList.GetPaymentStatus(booking2.Id);
 
         // Act
         await NavigateToAsync($"/tours/{tour.Id}");

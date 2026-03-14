@@ -13,6 +13,10 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 {
     protected HttpClient ApiClient => fixture.ApiClient;
 
+    private protected BookingsListPage BookingsList => new(Page, NavigateToAsync, ApiClient.GetAllBookings);
+
+    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateToAsync);
+
     protected async Task ClearDatabase(CancellationToken cancellationToken) => await fixture.ClearDatabase(cancellationToken);
 
     public override async ValueTask InitializeAsync()

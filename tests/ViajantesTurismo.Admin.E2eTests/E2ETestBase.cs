@@ -10,6 +10,10 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
 {
     protected HttpClient ApiClient => fixture.ApiClient;
 
+    private protected BookingsListPage BookingsList => new(Page, NavigateToAsync, ApiClient.GetAllBookings);
+
+    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateToAsync);
+
     /// <summary>
     /// Navigate to a path relative to the web app root, waiting for SignalR circuit.
     /// </summary>

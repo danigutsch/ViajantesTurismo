@@ -13,38 +13,37 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
         var customer = await ApiClient.CreateCustomerAsync();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
-        var bookingWorkflow = new BookingWorkflow(Page, NavigateToAsync);
 
         // Act
-        var createdBookingId = await bookingWorkflow.CreateFromTourDetails(tour, customerFullName, customerSelectionLabel);
+        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(tour, customerFullName, customerSelectionLabel);
 
         // Verify booking details
-        await bookingWorkflow.NavigateToDetails(createdBookingId);
+        await BookingWorkflow.NavigateToDetails(createdBookingId);
         await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
         await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
         await Expect(Page.GetByText("$ 1,300.00").First).ToBeVisibleAsync();
 
-        await bookingWorkflow.ApplyDiscount(createdBookingId);
+        await BookingWorkflow.ApplyDiscount(createdBookingId);
 
         // Assert
-        await bookingWorkflow.NavigateToDetails(createdBookingId);
+        await BookingWorkflow.NavigateToDetails(createdBookingId);
         await Expect(Page.GetByText("10").First).ToBeVisibleAsync(); // Discount percentage
 
-        await bookingWorkflow.ConfirmBooking(createdBookingId);
-        await bookingWorkflow.RecordPayment();
+        await BookingWorkflow.ConfirmBooking(createdBookingId);
+        await BookingWorkflow.RecordPayment();
 
         // Verify payment appears in the payments list
         var paymentsTable = Page.Locator("table").Filter(new LocatorFilterOptions { HasText = "Cash" });
         await Expect(paymentsTable.First).ToBeVisibleAsync();
         await Expect(Page.GetByText("$ 1,000.00").First).ToBeVisibleAsync();
 
-        await bookingWorkflow.CompleteBooking();
+        await BookingWorkflow.CompleteBooking();
 
         await Expect(Page.GetByText("completed").First).ToBeVisibleAsync();
 
-        await bookingWorkflow.NavigateToDetails(createdBookingId);
+        await BookingWorkflow.NavigateToDetails(createdBookingId);
         await Page.ReloadAsync();
         await Expect(Page).ToHaveTitleAsync("Booking Details");
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();

@@ -6,7 +6,6 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
     public async Task Can_Navigate_Between_Entities_From_Booking_Details_And_Lists()
     {
         // Arrange
-        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync, ApiClient.GetAllBookings);
         var tour = await ApiClient.CreateTourAsync();
         var customer = await ApiClient.CreateCustomerAsync();
         var booking = await ApiClient.CreateBookingAsync(tour.Id, customer.Id);
@@ -33,7 +32,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
         // === From bookings list: tour and customer links in rows ===
-        var bookingRow = await bookingsListPage.GetBookingRow(booking.Id);
+        var bookingRow = await BookingsList.GetBookingRow(booking.Id);
 
         // Navigate using tour link href from row
         var listTourHref = await bookingRow.Locator("a[href^='/tours/']").First.GetAttributeAsync("href");
@@ -49,7 +48,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Click customer link in first row
-        bookingRow = await bookingsListPage.GetBookingRow(booking.Id);
+        bookingRow = await BookingsList.GetBookingRow(booking.Id);
         var listCustomerHref = await bookingRow.Locator("a[href^='/customers/']").First.GetAttributeAsync("href");
         if (listCustomerHref is null)
         {
