@@ -22,10 +22,10 @@ This file narrows the broader `tests/AGENTS.md` guidance for Playwright-based E2
 
 Use the existing specialized helpers before introducing new plumbing:
 
-- `ApiTestExtensions` — API-assisted setup and state changes
-- `BookingWorkflow` — reusable booking UI flows
-- `BookingsListPage` — deterministic access to the global bookings grid
-- `LocatorHelpers` — shared semantic Playwright locators
+- `*Extensions` for API-assisted setup and server-side state changes
+- `*Workflow` helper classes for repeated multi-step UI flows
+- `*Page` helper classes for deterministic interaction with specific screens or paginated grids
+- `*Helpers` for shared semantic locator and interaction helpers
 
 When adding a new helper:
 
