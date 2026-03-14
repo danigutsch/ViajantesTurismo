@@ -6,11 +6,13 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 {
     private readonly List<CustomerDetailsDto> _customerDetails = [];
     private readonly List<GetCustomerDto> _customers = [];
+    private ImportResultDto? _commitImportResult;
+    private Exception? _createCustomerException;
     private Exception? _getCustomerByIdException;
     private Exception? _getCustomersException;
-    private ImportResultDto? _importResult;
     private Exception? _importCustomersException;
-    private ImportResultDto? _commitImportResult;
+    private ImportResultDto? _importResult;
+    private Exception? _updateCustomerException;
 
     public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
 
@@ -36,12 +38,22 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken cancellationToken)
     {
+        if (_createCustomerException is not null)
+        {
+            throw _createCustomerException;
+        }
+
         var customerId = Guid.NewGuid();
         return Task.FromResult(new Uri($"/customers/{customerId}", UriKind.Relative));
     }
 
     public Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken cancellationToken)
     {
+        if (_updateCustomerException is not null)
+        {
+            throw _updateCustomerException;
+        }
+
         return Task.CompletedTask;
     }
 
@@ -79,6 +91,10 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetGetCustomersException(Exception exception) => _getCustomersException = exception;
 
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
+
+    public void SetCreateCustomerException(Exception exception) => _createCustomerException = exception;
+
+    public void SetUpdateCustomerException(Exception exception) => _updateCustomerException = exception;
 
     public void SetImportCustomersResult(ImportResultDto result) => _importResult = result;
 

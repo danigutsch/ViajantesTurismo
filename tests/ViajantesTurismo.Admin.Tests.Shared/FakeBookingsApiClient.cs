@@ -9,6 +9,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private Exception? _getBookingByIdException;
     private Exception? _getBookingsByCustomerIdException;
     private Exception? _getBookingsByTourIdException;
+    private Exception? _updateBookingNotesException;
 
     public Task<GetBookingDto[]> GetAllBookings(CancellationToken cancellationToken)
     {
@@ -77,6 +78,11 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken cancellationToken)
     {
+        if (_updateBookingNotesException is not null)
+        {
+            throw _updateBookingNotesException;
+        }
+
         return Task.CompletedTask;
     }
 
@@ -124,6 +130,8 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public void SetGetBookingsByTourIdException(Exception exception) => _getBookingsByTourIdException = exception;
 
     public void SetGetBookingsByCustomerIdException(Exception exception) => _getBookingsByCustomerIdException = exception;
+
+    public void SetUpdateBookingNotesException(Exception exception) => _updateBookingNotesException = exception;
 
     private void UpdateBookingStatus(Guid id, BookingStatusDto newStatus)
     {
