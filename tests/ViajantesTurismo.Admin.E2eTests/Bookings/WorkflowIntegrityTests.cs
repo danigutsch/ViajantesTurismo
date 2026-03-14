@@ -22,18 +22,16 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Customer_Creation_Flow_Should_Expose_Controls_For_All_Required_Personal_Fields()
     {
+        // Act
         await NavigateTo("/customers/create/personal-info");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
 
-        // Trigger validation so required messages become explicit in UI.
         await Page.Locator("button[type='submit']").First.ClickAsync();
 
-        // Same validation text may be rendered in both summary and field-level containers.
-        // Use a non-strict assertion by checking at least one matching validation message.
+        // Assert
         var nationalityValidation = Page.Locator(".validation-message", new PageLocatorOptions { HasText = "Nationality is required" });
         await Expect(nationalityValidation.First).ToBeVisibleAsync();
 
-        // Guardrail: every required field should have a corresponding input control.
         await Expect(Page.Locator("#firstName, input[name='_model.FirstName']")).ToHaveCountAsync(1);
         await Expect(Page.Locator("#lastName, input[name='_model.LastName']")).ToHaveCountAsync(1);
         await Expect(Page.Locator("#birthDate, input[name='_model.BirthDate']")).ToHaveCountAsync(1);
@@ -48,21 +46,20 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         var tour = await ApiClient.CreateTour();
 
+        // Act
         await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GetButton("Add Booking").ClickAsync();
         await Expect(Page.GetButton("Create Booking")).ToBeVisibleAsync();
-
-        // Empty submit should produce friendly validation, not internal exception details.
         await Page.GetButton("Create Booking").ClickAsync();
 
-        // Wait for validation feedback to appear using Playwright's built-in waiting
         var alert = Page.GetByRole(AriaRole.Alert);
         var inlineValidation = Page.Locator(".validation-message");
         var feedbackLocator = Page.Locator("[role='alert'], .validation-message");
         await Expect(feedbackLocator.First).ToBeVisibleAsync();
 
+        // Assert
         var hasFriendlyValidationFeedback = await HasFriendlyValidationFeedback(alert, inlineValidation);
         Assert.True(hasFriendlyValidationFeedback,
             "Expected user-facing validation feedback (e.g., required-field or friendly validation message). ");
@@ -79,6 +76,8 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         var customer = await ApiClient.CreateCustomer();
 
+        // Act
+        // Assert
         await NavigateTo("/customers/create/accommodation");
         await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
 
@@ -88,66 +87,50 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
 
     private static async Task<bool> HasFriendlyValidationFeedback(ILocator alert, ILocator inlineValidation)
     {
-        var validationCount = await inlineValidation.CountAsync();
-        if (validationCount > 0)
-        {
-            for (var i = 0; i < validationCount; i++)
-            {
-                var element = inlineValidation.Nth(i);
-                await element.WaitForAsync();
-                var text = await element.InnerTextAsync();
-                if (FriendlyValidationIndicators.Any(indicator =>
-                        text.Contains(indicator, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return true;
-                }
-            }
-        }
-
-        var alertCount = await alert.CountAsync();
-        if (alertCount > 0)
-        {
-            await alert.First.WaitForAsync();
-            var alertText = await alert.First.InnerTextAsync();
-            return FriendlyValidationIndicators.Any(indicator =>
-                alertText.Contains(indicator, StringComparison.OrdinalIgnoreCase));
-        }
-
-        return false;
+        var feedbackTexts = await CollectFeedbackTexts(alert, inlineValidation);
+        return feedbackTexts.Any(text =>
+            FriendlyValidationIndicators.Any(indicator =>
+                text.Contains(indicator, StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task AssertNoTechnicalLeak(ILocator alert, ILocator inlineValidation)
     {
-        var feedbackTexts = new List<string>();
+        var feedbackTexts = await CollectFeedbackTexts(alert, inlineValidation);
+        var textsToInspect = feedbackTexts.Count == 0
+            ? [await ReadBodyText()]
+            : feedbackTexts;
 
-        var alertCount = await alert.CountAsync();
-        for (var i = 0; i < alertCount; i++)
-        {
-            var element = alert.Nth(i);
-            await element.WaitForAsync();
-            feedbackTexts.Add(await element.InnerTextAsync());
-        }
-
-        var validationCount = await inlineValidation.CountAsync();
-        for (var i = 0; i < validationCount; i++)
-        {
-            var element = inlineValidation.Nth(i);
-            await element.WaitForAsync();
-            feedbackTexts.Add(await element.InnerTextAsync());
-        }
-
-        if (feedbackTexts.Count == 0)
-        {
-            await Page.Locator("body").WaitForAsync();
-            feedbackTexts.Add(await Page.Locator("body").InnerTextAsync());
-        }
-
-        foreach (var text in feedbackTexts)
+        foreach (var text in textsToInspect)
         {
             foreach (var marker in TechnicalLeakIndicators)
             {
                 Assert.DoesNotContain(marker, text, StringComparison.OrdinalIgnoreCase);
             }
         }
+    }
+
+    private static async Task<List<string>> CollectFeedbackTexts(ILocator alert, ILocator inlineValidation)
+    {
+        var feedbackTexts = new List<string>();
+        await CollectTexts(alert, feedbackTexts);
+        await CollectTexts(inlineValidation, feedbackTexts);
+        return feedbackTexts;
+    }
+
+    private static async Task CollectTexts(ILocator locator, List<string> feedbackTexts)
+    {
+        var count = await locator.CountAsync();
+        for (var i = 0; i < count; i++)
+        {
+            var element = locator.Nth(i);
+            await element.WaitForAsync();
+            feedbackTexts.Add(await element.InnerTextAsync());
+        }
+    }
+
+    private async Task<string> ReadBodyText()
+    {
+        await Page.Locator("body").WaitForAsync();
+        return await Page.Locator("body").InnerTextAsync();
     }
 }

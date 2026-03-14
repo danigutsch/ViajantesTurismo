@@ -1,5 +1,3 @@
-using ViajantesTurismo.Admin.Tests.Shared.Builders;
-
 namespace ViajantesTurismo.Admin.WebTests.Components.Shared;
 
 public class PaymentsListTests : BunitContext
