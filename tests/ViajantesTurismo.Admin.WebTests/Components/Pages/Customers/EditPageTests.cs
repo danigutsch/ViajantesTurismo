@@ -314,6 +314,21 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
+    public async Task Does_Not_Render_Customer_Search_Input_In_Edit_Page()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
+        await cut.InvokeAsync(() => Task.CompletedTask);
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => { Assert.Empty(cut.FindAll("input[placeholder='Search customers by name or email...']")); });
+    }
+
+    [Fact]
     public async Task BedType_Dropdown_Has_All_Options()
     {
         // Arrange

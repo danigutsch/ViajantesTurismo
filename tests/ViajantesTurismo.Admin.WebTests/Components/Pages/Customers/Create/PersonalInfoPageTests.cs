@@ -46,6 +46,22 @@ public sealed class PersonalInfoPageTests : BunitContext
         Assert.Empty(validationSummaries);
     }
 
+    [Fact]
+    public async Task Renders_All_Required_Personal_Info_Controls()
+    {
+        // Arrange
+        var cut = Render<PersonalInfo>();
+        await cut.InvokeAsync(() => Task.CompletedTask);
+
+        // Assert
+        Assert.NotNull(cut.Find("input#firstName"));
+        Assert.NotNull(cut.Find("input#lastName"));
+        Assert.NotNull(cut.Find("input#birthDate"));
+        Assert.NotNull(cut.Find("select#gender"));
+        Assert.NotNull(cut.Find("#nationality"));
+        Assert.NotNull(cut.Find("input#occupation"));
+    }
+
     /// <summary>
     /// Minimal IWebHostEnvironment stub for CountryService.
     /// CountryService catches FileNotFoundException when countries.json is missing.

@@ -20,27 +20,6 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
     ];
 
     [Fact]
-    public async Task Customer_Creation_Flow_Should_Expose_Controls_For_All_Required_Personal_Fields()
-    {
-        // Act
-        await NavigateTo("/customers/create/personal-info");
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
-
-        await Page.Locator("button[type='submit']").First.ClickAsync();
-
-        // Assert
-        var nationalityValidation = Page.Locator(".validation-message", new PageLocatorOptions { HasText = "Nationality is required" });
-        await Expect(nationalityValidation.First).ToBeVisibleAsync();
-
-        await Expect(Page.Locator("#firstName, input[name='_model.FirstName']")).ToHaveCountAsync(1);
-        await Expect(Page.Locator("#lastName, input[name='_model.LastName']")).ToHaveCountAsync(1);
-        await Expect(Page.Locator("#birthDate, input[name='_model.BirthDate']")).ToHaveCountAsync(1);
-        await Expect(Page.Locator("#gender, select[name='_model.Gender']")).ToHaveCountAsync(1);
-        await Expect(Page.Locator("#nationality, input[name='_model.Nationality']")).ToHaveCountAsync(1);
-        await Expect(Page.Locator("#occupation, input[name='_model.Occupation']")).ToHaveCountAsync(1);
-    }
-
-    [Fact]
     public async Task Tour_Details_Add_Booking_Flow_Should_Validate_Without_Leaking_Internal_Errors()
     {
         // Arrange
@@ -66,23 +45,6 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await AssertNoTechnicalLeak(alert, inlineValidation);
-    }
-
-    [Fact]
-    public async Task Customer_Create_And_Edit_Flows_Should_Only_Render_Contextual_Inputs()
-    {
-        const string leakedSearchPlaceholder = "Search customers by name or email...";
-
-        // Arrange
-        var customer = await ApiClient.CreateCustomer();
-
-        // Act
-        // Assert
-        await NavigateTo("/customers/create/accommodation");
-        await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
-
-        await NavigateTo($"/customers/{customer.Id}/edit");
-        await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
     }
 
     private static async Task<bool> HasFriendlyValidationFeedback(ILocator alert, ILocator inlineValidation)
