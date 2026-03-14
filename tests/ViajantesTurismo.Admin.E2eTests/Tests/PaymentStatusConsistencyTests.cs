@@ -6,20 +6,19 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Bookings_List_Payment_Status_Matches_Booking_Details()
     {
         // Arrange
-        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync);
-        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
-        var customerUnpaid = await ApiTestHelper.CreateCustomerAsync(ApiClient);
-        var customerPartiallyPaid = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync, ApiClient.GetAllBookings);
+        var tour = await ApiClient.CreateTourAsync();
+        var customerUnpaid = await ApiClient.CreateCustomerAsync();
+        var customerPartiallyPaid = await ApiClient.CreateCustomerAsync();
 
-        var unpaidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customerUnpaid.Id);
-        var partiallyPaidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customerPartiallyPaid.Id);
-        await ApiTestHelper.RecordPaymentAsync(ApiClient, partiallyPaidBooking.Id, 500m);
-        var allBookings = await ApiTestHelper.GetAllBookings(ApiClient);
+        var unpaidBooking = await ApiClient.CreateBookingAsync(tour.Id, customerUnpaid.Id);
+        var partiallyPaidBooking = await ApiClient.CreateBookingAsync(tour.Id, customerPartiallyPaid.Id);
+        await ApiClient.RecordPaymentAsync(partiallyPaidBooking.Id, 500m);
 
         // Act
         // Assert
-        var unpaidFromList = await bookingsListPage.GetPaymentStatus(unpaidBooking.Id, allBookings);
-        var partiallyPaidFromList = await bookingsListPage.GetPaymentStatus(partiallyPaidBooking.Id, allBookings);
+        var unpaidFromList = await bookingsListPage.GetPaymentStatus(unpaidBooking.Id);
+        var partiallyPaidFromList = await bookingsListPage.GetPaymentStatus(partiallyPaidBooking.Id);
 
         var unpaidFromDetails = await GetPaymentStatusFromDetails(unpaidBooking.Id);
         var partiallyPaidFromDetails = await GetPaymentStatusFromDetails(partiallyPaidBooking.Id);
@@ -33,19 +32,18 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Scoped_Bookings_Payment_Status_Matches_Global_List()
     {
         // Arrange
-        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync);
-        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
-        var customer1 = await ApiTestHelper.CreateCustomerAsync(ApiClient);
-        var customer2 = await ApiTestHelper.CreateCustomerAsync(ApiClient);
-        var booking1 = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer1.Id);
-        var booking2 = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer2.Id);
-        await ApiTestHelper.RecordPaymentAsync(ApiClient, booking2.Id, 300m);
-        var allBookings = await ApiTestHelper.GetAllBookings(ApiClient);
+        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync, ApiClient.GetAllBookings);
+        var tour = await ApiClient.CreateTourAsync();
+        var customer1 = await ApiClient.CreateCustomerAsync();
+        var customer2 = await ApiClient.CreateCustomerAsync();
+        var booking1 = await ApiClient.CreateBookingAsync(tour.Id, customer1.Id);
+        var booking2 = await ApiClient.CreateBookingAsync(tour.Id, customer2.Id);
+        await ApiClient.RecordPaymentAsync(booking2.Id, 300m);
 
         var booking1Href = $"/bookings/{booking1.Id}";
         var booking2Href = $"/bookings/{booking2.Id}";
-        var expectedBooking1 = await bookingsListPage.GetPaymentStatus(booking1.Id, allBookings);
-        var expectedBooking2 = await bookingsListPage.GetPaymentStatus(booking2.Id, allBookings);
+        var expectedBooking1 = await bookingsListPage.GetPaymentStatus(booking1.Id);
+        var expectedBooking2 = await bookingsListPage.GetPaymentStatus(booking2.Id);
 
         // Act
         await NavigateToAsync($"/tours/{tour.Id}");
