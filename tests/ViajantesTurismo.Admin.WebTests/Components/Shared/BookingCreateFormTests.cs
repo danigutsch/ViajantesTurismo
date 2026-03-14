@@ -277,6 +277,56 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
+    public void Selecting_Customers_And_Toggling_Room_Type_Should_Update_Companion_Fields_And_Bike_Selection()
+    {
+        // Arrange
+        var principalCustomer = BuildCustomerDto(firstName: "Alice", lastName: "Brown", email: "alice@example.com", bikeType: BikeTypeDto.EBike);
+        var companionCustomer = BuildCustomerDto(firstName: "Bob", lastName: "Smith", email: "bob@example.com", bikeType: BikeTypeDto.Regular);
+        var model = new BookingFormModel
+        {
+            RoomType = RoomTypeDto.DoubleOccupancy
+        };
+        var customers = new List<GetCustomerDto> { principalCustomer, companionCustomer };
+        GetTourDto[] tours = [];
+
+        // Act
+        var cut = Render<BookingCreateForm>(parameters => parameters
+            .Add(p => p.Model, model)
+            .Add(p => p.Tours, tours)
+            .Add(p => p.Customers, [.. customers]));
+
+        cut.FindAll("select.form-select")[0].Change(principalCustomer.Id);
+        cut.FindAll("select.form-select")[3].Change(companionCustomer.Id);
+
+        // Assert
+        var selectsAfterCompanionSelection = cut.FindAll("select.form-select");
+        Assert.Equal("EBike", selectsAfterCompanionSelection[2].GetAttribute("value"));
+        Assert.Equal("Regular", selectsAfterCompanionSelection[4].GetAttribute("value"));
+
+        // Act
+        selectsAfterCompanionSelection[1].Change(RoomTypeDto.SingleOccupancy);
+
+        // Assert
+        var labelsAfterSingleRoom = cut.FindAll("label");
+        Assert.DoesNotContain(labelsAfterSingleRoom, label => label.TextContent.Contains("Companion (Optional)", StringComparison.Ordinal));
+        Assert.DoesNotContain(labelsAfterSingleRoom, label => label.TextContent.Contains("Companion Bike", StringComparison.Ordinal));
+        Assert.Contains("Single Occupancy", cut.Find(".badge.bg-info").TextContent, StringComparison.Ordinal);
+        Assert.Null(model.CompanionId);
+        Assert.Null(model.CompanionBikeType);
+
+        // Act
+        cut.FindAll("select.form-select")[1].Change(RoomTypeDto.DoubleOccupancy);
+
+        // Assert
+        var labelsAfterReturningToDouble = cut.FindAll("label");
+        Assert.Contains(labelsAfterReturningToDouble, label => label.TextContent.Contains("Companion (Optional)", StringComparison.Ordinal));
+
+        var companionSelect = cut.FindAll("select.form-select")[3];
+        Assert.Equal(string.Empty, companionSelect.GetAttribute("value") ?? string.Empty);
+        Assert.DoesNotContain(cut.FindAll("label"), label => label.TextContent.Contains("Companion Bike", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Hides_Companion_Bike_When_No_Companion()
     {
         // Arrange
@@ -420,6 +470,64 @@ public class BookingCreateFormTests : BunitContext
         Assert.Contains("(10.00%)", priceCard.TextContent, StringComparison.Ordinal);
         var discountRows = priceCard.QuerySelectorAll(".text-danger");
         Assert.NotEmpty(discountRows);
+    }
+
+    [Fact]
+    public void Live_Price_Breakdown_Should_Recalculate_For_Customer_Bike_Room_Type_And_Discount_Changes()
+    {
+        // Arrange
+        var tour = BuildTourDto(
+            price: 1000m,
+            currency: CurrencyDto.UsDollar,
+            regularBikePrice: 50m,
+            eBikePrice: 100m,
+            singleRoomSupplementPrice: 200m);
+        var principalCustomer = BuildCustomerDto(firstName: "Alice", lastName: "Brown", email: "alice@example.com", bikeType: BikeTypeDto.Regular);
+        var model = new BookingFormModel
+        {
+            TourId = tour.Id,
+            RoomType = RoomTypeDto.DoubleOccupancy,
+            PrincipalBikeType = BikeTypeDto.None
+        };
+        var tours = new List<GetTourDto> { tour };
+        var customers = new List<GetCustomerDto> { principalCustomer };
+
+        // Act
+        var cut = Render<BookingCreateForm>(parameters => parameters
+            .Add(p => p.Model, model)
+            .Add(p => p.Tours, tours)
+            .Add(p => p.Customers, [.. customers]));
+
+        // Assert
+        Assert.Contains("$ 1,000.00", cut.Markup, StringComparison.Ordinal);
+
+        // Act
+        cut.FindAll("select.form-select")[1].Change(principalCustomer.Id);
+
+        // Assert
+        Assert.Contains("$ 1,050.00", cut.Markup, StringComparison.Ordinal);
+
+        // Act
+        cut.FindAll("select.form-select")[3].Change(BikeTypeDto.EBike);
+
+        // Assert
+        Assert.Contains("$ 1,100.00", cut.Markup, StringComparison.Ordinal);
+
+        // Act
+        cut.FindAll("select.form-select")[2].Change(RoomTypeDto.SingleOccupancy);
+
+        // Assert
+        Assert.Contains("$ 1,300.00", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Final Total:", cut.Markup, StringComparison.Ordinal);
+
+        // Act
+        cut.Find("select#discountType").Change(DiscountTypeDto.Percentage);
+        cut.Find("input#discountAmount").Change(10m);
+
+        // Assert
+        Assert.Contains("(10.00%)", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("-$ 130.00", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("$ 1,170.00", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
