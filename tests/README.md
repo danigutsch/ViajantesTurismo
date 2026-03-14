@@ -105,8 +105,7 @@ When adding a new domain's E2E or integration tests:
    - Data creators → parallel base class (create unique data)
    - Data mutators / edge cases → serial base class
 
-See [ADR-018](../docs/adr/20260228-test-parallelization-with-assembly-fixtures.md) and
-[E2E parallel failure analysis](../docs/E2E_PARALLEL_FAILURE_ANALYSIS.md)
+See [ADR-018](../docs/adr/20260228-test-parallelization-with-assembly-fixtures.md)
 for implementation details.
 
 ### Parallel-safety checklist (required for new tests)
