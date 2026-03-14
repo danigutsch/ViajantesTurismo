@@ -75,35 +75,35 @@ Business Rules:
     Names must accommodate various cultural and linguistic patterns
     including compound names, hyphens, apostrophes, and accented characters.
 
-        @Invariant:INV-CUST-007
+        @Invariant:INV-CUST-005
         @happy_path
         Scenario: Single-word first name is accepted
             When I create personal info with first name "Maria"
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-007
+        @Invariant:INV-CUST-005
         @happy_path
         Scenario: Hyphenated first name is accepted
             When I create personal info with first name "Mary-Ann"
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-007
+        @Invariant:INV-CUST-005
         @happy_path
         Scenario: Compound first name is accepted
             When I create personal info with first name "Jean Pierre"
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-007
+        @Invariant:INV-CUST-005
         @happy_path
         Scenario: First name with apostrophe is accepted
             When I create personal info with first name "D'Angelo"
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-007
+        @Invariant:INV-CUST-005
         @happy_path
         Scenario: First name with accents is accepted
             When I create personal info with first name "José"

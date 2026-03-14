@@ -21,7 +21,7 @@ Business Rules:
     Every customer must have a last name for identification.
     Empty or whitespace-only values are not accepted.
 
-        @Invariant:INV-CUST-005
+        @Invariant:INV-CUST-007
         @smoke
         @happy_path
         Scenario: Register customer with valid last name
@@ -30,7 +30,7 @@ Business Rules:
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-005
+        @Invariant:INV-CUST-007
         @error_case
         @critical
         Scenario: Last name is required
@@ -38,14 +38,14 @@ Business Rules:
             Then I should not be able to create the personal info
             And I should be informed that last name is required
 
-        @Invariant:INV-CUST-005
+        @Invariant:INV-CUST-007
         @error_case
         Scenario: Last name cannot be empty
             When I attempt to create personal info with last name ""
             Then I should not be able to create the personal info
             And I should be informed that last name is required
 
-        @Invariant:INV-CUST-005
+        @Invariant:INV-CUST-007
         @error_case
         Scenario: Last name cannot be whitespace only
             When I attempt to create personal info with last name "   "
@@ -56,14 +56,14 @@ Business Rules:
     Names must be reasonable length to ensure compatibility with
     systems and prevent data quality issues.
 
-        @Invariant:INV-CUST-006
+        @Invariant:INV-CUST-008
         @error_case
         Scenario: Last name cannot exceed maximum length
             When I attempt to create personal info with last name of 129 characters
             Then I should not be able to create the personal info
             And I should be informed that last name cannot exceed 128 characters
 
-        @Invariant:INV-CUST-006
+        @Invariant:INV-CUST-008
         @happy_path
         @edge_case
         Scenario: Last name at maximum length is accepted

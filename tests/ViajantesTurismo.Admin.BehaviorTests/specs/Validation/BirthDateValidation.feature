@@ -19,7 +19,7 @@ Business Rules:
     Birth dates must be in the past or today to prevent
     data entry errors and ensure logical consistency.
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @smoke
         @happy_path
         Scenario: Register customer with valid birth date
@@ -28,7 +28,7 @@ Business Rules:
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @error_case
         @critical
         Scenario: Birth date cannot be in the future
@@ -36,14 +36,14 @@ Business Rules:
             Then I should not be able to create the personal info
             And I should be informed that birth date cannot be in the future
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @error_case
         Scenario: Birth date one day in the future is rejected
             When I attempt to create personal info with birth date one day in the future
             Then I should not be able to create the personal info
             And I should be informed that birth date cannot be in the future
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @happy_path
         @edge_case
         Scenario: Birth date exactly 10 years ago is accepted
@@ -51,7 +51,7 @@ Business Rules:
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @happy_path
         @edge_case
         Scenario: Birth date 11 years ago is accepted
@@ -63,21 +63,21 @@ Business Rules:
     The system requires customers to be at least 10 years old.
     Customers younger than 10 are not accepted.
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @happy_path
         Scenario: Young adult customer is accepted
             When I create personal info with birth date 25 years ago
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @happy_path
         Scenario: Minor customer is accepted
             When I create personal info with birth date 10 years ago
             Then the creation should succeed
             And the personal info should contain the provided data
 
-        @Invariant:INV-CUST-008
+        @Invariant:INV-CUST-004
         @happy_path
         Scenario: Elderly customer is accepted
             When I create personal info with birth date 100 years ago
