@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.E2ETests.Customers;
@@ -8,34 +7,6 @@ namespace ViajantesTurismo.Admin.E2ETests.Customers;
 /// </summary>
 public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
-    private const string CanonicalHeaders =
-        "FirstName,LastName,Gender,BirthDate,Nationality,Occupation," +
-        "NationalId,IdNationality,Email,Mobile,Street,Neighborhood," +
-        "PostalCode,City,State,Country,WeightKg,HeightCentimeters," +
-        "BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
-
-    private static string BuildValidRow(string email) =>
-        $"Jane,Smith,Female,1988-03-15,Brazilian,Designer,B67890,BR," +
-        $"{email},+5511888887777,Rua B 456,Centro," +
-        $"01310-100,São Paulo,SP,Brazil,60,165,Regular,DoubleOccupancy,SingleBed," +
-        $"Carlos Silva,+5511777776666";
-
-    private static string BuildCanonicalCsv(string email) =>
-        CanonicalHeaders + "\n" + BuildValidRow(email);
-
-    private static FilePayload ToCsvPayload(string csvContent, string fileName = "customers.csv") =>
-        new()
-        {
-            Name = fileName,
-            MimeType = "text/csv",
-            Buffer = Encoding.UTF8.GetBytes(csvContent)
-        };
-
-    private async Task UploadCsv(string csvContent)
-    {
-        await Page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csvContent));
-    }
-
     [Fact]
     public async Task Can_Navigate_To_Import_Page_And_Upload_Csv_Wizard_Opens()
     {
@@ -45,7 +16,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
 
         var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";
-        await UploadCsv(BuildCanonicalCsv(email));
+        await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
         await Expect(Page.Locator(".badge.bg-secondary", new PageLocatorOptions { HasText = "column(s) detected" }))
             .ToBeVisibleAsync();
@@ -57,7 +28,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateTo("/customers/import");
 
         var email = $"e2e-ui2-{Guid.NewGuid():N}@import.test";
-        await UploadCsv(BuildCanonicalCsv(email));
+        await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
@@ -71,12 +42,11 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     {
         await NavigateTo("/customers/import");
 
-        // Use a non-canonical header name for Email so auto-match fails
-        var nonCanonicalCsv = CanonicalHeaders.Replace("Email", "EmailAddress", StringComparison.Ordinal) +
+        var nonCanonicalCsv = CustomerImportCsvHelpers.ReplaceCanonicalHeader("Email", "EmailAddress") +
                               "\n" +
-                              BuildValidRow($"e2e-ui3-{Guid.NewGuid():N}@import.test");
+                              CustomerImportCsvHelpers.BuildValidRow($"e2e-ui3-{Guid.NewGuid():N}@import.test");
 
-        await UploadCsv(nonCanonicalCsv);
+        await CustomerImportCsvHelpers.UploadCsv(Page, nonCanonicalCsv);
 
         await Expect(Page.Locator(".alert-warning", new PageLocatorOptions { HasText = "could not be matched" }))
             .ToBeVisibleAsync();
@@ -92,7 +62,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await NavigateTo("/customers/import");
 
-        await UploadCsv(BuildCanonicalCsv(existingCustomer.Email));
+        await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(existingCustomer.Email));
 
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
@@ -127,35 +97,15 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 [Collection("E2E.Serial")]
 public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
-    private const string CanonicalHeaders =
-        "FirstName,LastName,Gender,BirthDate,Nationality,Occupation," +
-        "NationalId,IdNationality,Email,Mobile,Street,Neighborhood," +
-        "PostalCode,City,State,Country,WeightKg,HeightCentimeters," +
-        "BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
-
-    private static string BuildValidRow(string email) =>
-        $"Jane,Smith,Female,1988-03-15,Brazilian,Designer,B67890,BR," +
-        $"{email},+5511888887777,Rua B 456,Centro," +
-        $"01310-100,São Paulo,SP,Brazil,60,165,Regular,DoubleOccupancy,SingleBed," +
-        $"Carlos Silva,+5511777776666";
-
-    private static FilePayload ToCsvPayload(string csvContent, string fileName = "customers.csv") =>
-        new()
-        {
-            Name = fileName,
-            MimeType = "text/csv",
-            Buffer = Encoding.UTF8.GetBytes(csvContent)
-        };
-
     [Fact]
     public async Task Can_Complete_Import_Flow_And_Show_Success_Summary()
     {
         var email = $"e2e-ui4-{Guid.NewGuid():N}@import.test";
-        var csv = CanonicalHeaders + "\n" + BuildValidRow(email);
+        var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
 
         await NavigateTo("/customers/import");
 
-        await Page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csv));
+        await CustomerImportCsvHelpers.UploadCsv(Page, csv);
 
         // Mapping step: wait for auto-match confirmation, then click Preview
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
@@ -180,11 +130,11 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
     public async Task Can_Show_Final_Summary_Counts_And_Open_Customer_Details_From_View_Customer_Action()
     {
         var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";
-        var csv = CanonicalHeaders + "\n" + BuildValidRow(email);
+        var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
 
         await NavigateTo("/customers/import");
 
-        await Page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csv));
+        await CustomerImportCsvHelpers.UploadCsv(Page, csv);
 
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();

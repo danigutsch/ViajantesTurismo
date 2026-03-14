@@ -19,8 +19,8 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         var unpaidFromList = await BookingsList.GetPaymentStatus(unpaidBooking.Id);
         var partiallyPaidFromList = await BookingsList.GetPaymentStatus(partiallyPaidBooking.Id);
 
-        var unpaidFromDetails = await GetPaymentStatusFromDetails(unpaidBooking.Id);
-        var partiallyPaidFromDetails = await GetPaymentStatusFromDetails(partiallyPaidBooking.Id);
+        var unpaidFromDetails = await ReadBookingDetailsBadgeText(unpaidBooking.Id, "Payment Status");
+        var partiallyPaidFromDetails = await ReadBookingDetailsBadgeText(partiallyPaidBooking.Id, "Payment Status");
 
         Assert.Equal(unpaidFromList, unpaidFromDetails);
         Assert.Equal(partiallyPaidFromList, partiallyPaidFromDetails);
@@ -58,15 +58,5 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         // Assert
         Assert.Equal(expectedBooking1, scopedBooking1Status);
         Assert.Equal(expectedBooking2, scopedBooking2Status);
-    }
-
-    private async Task<string> GetPaymentStatusFromDetails(Guid bookingId)
-    {
-        await NavigateTo($"/bookings/{bookingId}");
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-        var badges = Page.Locator("dd .badge");
-        await Expect(badges.Nth(1)).ToBeVisibleAsync();
-        return (await badges.Nth(1).InnerTextAsync()).Trim();
     }
 }

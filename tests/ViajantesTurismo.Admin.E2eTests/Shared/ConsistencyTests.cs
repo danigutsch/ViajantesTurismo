@@ -49,9 +49,9 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         var paidStatusFromList = await BookingsList.GetBookingStatus(paidBooking.Id);
         var paidPaymentFromList = await BookingsList.GetPaymentStatus(paidBooking.Id);
 
-        var pendingStatusFromDetails = await ReadBookingStatusFromDetails(pendingBooking.Id);
-        var paidStatusFromDetails = await ReadBookingStatusFromDetails(paidBooking.Id);
-        var paidPaymentFromDetails = await ReadPaymentStatusFromDetails(paidBooking.Id);
+        var pendingStatusFromDetails = await ReadBookingDetailsBadgeText(pendingBooking.Id, "Status");
+        var paidStatusFromDetails = await ReadBookingDetailsBadgeText(paidBooking.Id, "Status");
+        var paidPaymentFromDetails = await ReadBookingDetailsBadgeText(paidBooking.Id, "Payment Status");
 
         // Assert
         Assert.Equal(pendingStatusFromList, pendingStatusFromDetails);
@@ -73,32 +73,6 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Assert
         await NavigateTo(route);
         await Expect(Page).ToHaveTitleAsync(expectedTitle);
-    }
-
-    private async Task<string> ReadBookingStatusFromDetails(Guid bookingId)
-    {
-        await NavigateTo($"/bookings/{bookingId}");
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-        var bookingStatusBadge = GetDetailsBadge("Status");
-        await Expect(bookingStatusBadge).ToBeVisibleAsync();
-        return (await bookingStatusBadge.InnerTextAsync()).Trim();
-    }
-
-    private async Task<string> ReadPaymentStatusFromDetails(Guid bookingId)
-    {
-        await NavigateTo($"/bookings/{bookingId}");
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-        var paymentStatusBadge = GetDetailsBadge("Payment Status");
-        await Expect(paymentStatusBadge).ToBeVisibleAsync();
-        return (await paymentStatusBadge.InnerTextAsync()).Trim();
-    }
-
-    private ILocator GetDetailsBadge(string label)
-    {
-        var term = Page.Locator($"dt:text-is('{label}')");
-        return term.Locator("xpath=following-sibling::dd[1]").Locator(".badge");
     }
 
     [GeneratedRegex(@"R\$\s[\d,]+\.\d{2}")]

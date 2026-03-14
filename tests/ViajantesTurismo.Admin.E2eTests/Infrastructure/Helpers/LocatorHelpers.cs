@@ -34,6 +34,17 @@ internal static class LocatorHelpers
             page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name });
 
         /// <summary>
+        /// Locates the badge displayed in the definition list row for the provided label.
+        /// </summary>
+        /// <param name="label">The definition term label.</param>
+        /// <returns>The badge locator associated with the label.</returns>
+        public ILocator GetDetailsBadge(string label)
+        {
+            var term = page.Locator($"dt:text-is('{label}')");
+            return term.Locator("xpath=following-sibling::dd[1]").Locator(".badge");
+        }
+
+        /// <summary>
         /// Cancels the timed redirect affordance when it is present on the page.
         /// </summary>
         public async Task CancelTimedRedirect()

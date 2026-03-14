@@ -22,6 +22,16 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
         await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
     }
 
+    protected async Task<string> ReadBookingDetailsBadgeText(Guid bookingId, string label)
+    {
+        await NavigateTo($"/bookings/{bookingId}");
+        await Expect(Page).ToHaveTitleAsync("Booking Details");
+
+        var badge = Page.GetDetailsBadge(label);
+        await Expect(badge).ToBeVisibleAsync();
+        return (await badge.InnerTextAsync()).Trim();
+    }
+
     public override BrowserNewContextOptions ContextOptions()
     {
         return new BrowserNewContextOptions
