@@ -1,10 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Playwright;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 namespace ViajantesTurismo.Admin.E2ETests.Customers;
 

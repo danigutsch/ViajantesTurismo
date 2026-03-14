@@ -1,4 +1,3 @@
-using Microsoft.Playwright;
 using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Pages;

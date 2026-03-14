@@ -1,8 +1,3 @@
-using Microsoft.Playwright;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
-
 namespace ViajantesTurismo.Admin.E2ETests.Customers;
 
 public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
@@ -10,6 +5,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()
     {
+        // Arrange
         var uid = Guid.NewGuid().ToString("N")[..8];
         var firstName = $"E2E{uid}";
         var lastName = $"Customer{uid}";
@@ -18,7 +14,7 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         var street = $"E2E Street {uid}";
         var emergencyContactName = $"EmergencyPerson {uid}";
 
-        // === Step 1: Personal Information ===
+        // Act
         await NavigateTo("/customers/create/personal-info");
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
         await Expect(Page.GetByText("Step 1 of 8")).ToBeVisibleAsync();
@@ -37,7 +33,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 2: Identification ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Identification");
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
@@ -51,7 +46,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 3: Contact ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
 
@@ -60,7 +54,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 4: Address ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Address");
         await Expect(Page.GetByText("Step 4 of 8")).ToBeVisibleAsync();
 
@@ -73,7 +66,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 5: Physical ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Physical Information");
         await Expect(Page.GetByText("Step 5 of 8")).ToBeVisibleAsync();
 
@@ -83,7 +75,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 6: Accommodation ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Accommodation Preferences");
         await Expect(Page.GetByText("Step 6 of 8")).ToBeVisibleAsync();
 
@@ -92,7 +83,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 7: Emergency Contact ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Emergency Contact");
         await Expect(Page.GetByText("Step 7 of 8")).ToBeVisibleAsync();
 
@@ -101,7 +91,6 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Next").ClickAsync();
 
-        // === Step 8: Medical ===
         await Expect(Page).ToHaveTitleAsync("Create Customer - Medical Information");
         await Expect(Page.GetByText("Step 8 of 8")).ToBeVisibleAsync();
 
@@ -110,10 +99,9 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Review & Submit").ClickAsync();
 
-        // === Review Step ===
+        // Assert
         await Expect(Page).ToHaveTitleAsync("Create Customer - Review & Submit");
 
-        // Verify review shows data from all steps
         await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Brazil").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("QA Engineer")).ToBeVisibleAsync();
@@ -122,27 +110,24 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetByText(emergencyContactName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("None known")).ToBeVisibleAsync();
 
-        // Submit
+        // Act
         await Page.GetButton("Create Customer").ClickAsync();
 
-        // === Redirected to Customer Details ===
+        // Assert
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
-        // Verify key details
         await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();
         await Expect(Page.GetByText(email)).ToBeVisibleAsync();
         await Expect(Page.GetByText(street)).ToBeVisibleAsync();
         await Expect(Page.GetByText(emergencyContactName)).ToBeVisibleAsync();
 
-        // Extract customer ID from URL
         var detailUrl = Page.Url;
         var customerId = detailUrl.Split('/').Last();
 
-        // === Edit Customer ===
+        // Act
         await NavigateTo($"/customers/{customerId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
 
-        // Update occupation and mobile
         await Page.FillAsync("#occupation", "");
         await Page.FillAsync("#occupation", "Senior QA Engineer");
         await Page.FillAsync("#mobile", "");
@@ -150,24 +135,17 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Update Customer").ClickAsync();
 
-        // Success message
+        // Assert
         var successAlert = Page.Locator(".alert-success");
         await Expect(successAlert).ToBeVisibleAsync();
 
-        // Cancel auto-redirect to verify details manually
-        var cancelButton = Page.Locator(".alert-info button", new PageLocatorOptions { HasText = "Cancel" });
-        if (await cancelButton.CountAsync() > 0)
-        {
-            await cancelButton.ClickAsync();
-        }
+        await Page.CancelTimedRedirect();
 
-        // === Verify edits on details page ===
         await NavigateTo($"/customers/{customerId}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
 
-        // === Refresh persistence: hard reload and verify saved values survive ===
         await Page.ReloadAsync();
         await Expect(Page).ToHaveTitleAsync("Customer Details");
         await Expect(Page.GetByText($"{firstName} {lastName}")).ToBeVisibleAsync();

@@ -1,9 +1,4 @@
-using System.Globalization;
-using Reqnroll;
-using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 

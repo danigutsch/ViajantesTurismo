@@ -1,11 +1,5 @@
-using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
-using ViajantesTurismo.Admin.Tests.Shared.Builders;
-using ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 

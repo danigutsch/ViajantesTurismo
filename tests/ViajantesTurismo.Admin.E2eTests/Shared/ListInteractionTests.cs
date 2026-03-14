@@ -1,8 +1,3 @@
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
-
 namespace ViajantesTurismo.Admin.E2ETests.Shared;
 
 public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixture)

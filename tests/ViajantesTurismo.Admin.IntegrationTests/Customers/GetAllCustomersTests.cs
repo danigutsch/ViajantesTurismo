@@ -1,9 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
-using ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers;
-
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 
 public sealed class GetAllCustomersTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)

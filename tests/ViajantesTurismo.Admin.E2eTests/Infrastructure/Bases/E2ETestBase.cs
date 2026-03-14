@@ -1,7 +1,4 @@
-using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit.v3;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Workflows;
 

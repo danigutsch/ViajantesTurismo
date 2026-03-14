@@ -1,9 +1,3 @@
-using Reqnroll;
-using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
-
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Bookings;
 
 [Binding]

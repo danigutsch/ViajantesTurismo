@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace ViajantesTurismo.Admin.BehaviorTests.Infrastructure.Coverage;
 
 /// <summary>

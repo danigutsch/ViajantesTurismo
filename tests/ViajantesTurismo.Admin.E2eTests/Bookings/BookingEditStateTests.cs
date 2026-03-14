@@ -1,8 +1,3 @@
-using Microsoft.Playwright;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
-
 namespace ViajantesTurismo.Admin.E2ETests.Bookings;
 
 public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)

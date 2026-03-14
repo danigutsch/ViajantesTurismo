@@ -1,11 +1,3 @@
-using System.Globalization;
-using Reqnroll;
-using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Tests.Shared.Behavior;
-using ViajantesTurismo.Common.Results;
-
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Payments;
 
 [Binding]

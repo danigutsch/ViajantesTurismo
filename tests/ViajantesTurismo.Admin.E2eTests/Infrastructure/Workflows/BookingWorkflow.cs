@@ -1,7 +1,5 @@
 using System.Globalization;
-using Microsoft.Playwright;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Workflows;
 
@@ -97,11 +95,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await successAlert.WaitForAsync();
         Assert.Contains("Booking updated successfully!", await successAlert.InnerTextAsync(), StringComparison.Ordinal);
 
-        var cancelRedirect = page.Locator(".alert-info button", new PageLocatorOptions { HasText = "Cancel" });
-        if (await cancelRedirect.CountAsync() > 0)
-        {
-            await cancelRedirect.ClickAsync();
-        }
+        await page.CancelTimedRedirect();
     }
 
     /// <summary>

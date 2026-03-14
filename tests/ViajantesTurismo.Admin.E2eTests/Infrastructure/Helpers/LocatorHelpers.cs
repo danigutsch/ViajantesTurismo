@@ -1,6 +1,4 @@
-﻿using Microsoft.Playwright;
-
-namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
+﻿namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 /// <summary>
 /// Helper class to provide extension methods for locating elements in Playwright tests, improving readability and maintainability of test code.
@@ -34,6 +32,20 @@ internal static class LocatorHelpers
         /// <returns>An ILocator representing the located button.</returns>
         public ILocator GetButton(string name) =>
             page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name });
+
+        /// <summary>
+        /// Cancels the timed redirect affordance when it is present on the page.
+        /// </summary>
+        public async Task CancelTimedRedirect()
+        {
+            var cancelButton = page.Locator(".alert-info button", new PageLocatorOptions { HasText = "Cancel" });
+            if (await cancelButton.CountAsync() == 0)
+            {
+                return;
+            }
+
+            await cancelButton.ClickAsync();
+        }
     }
 
     /// <param name="locator">The ILocator instance to extend.</param>

@@ -1,6 +1,4 @@
-using Reqnroll;
 using ViajantesTurismo.Admin.Application.Customers.Import;
-using ViajantesTurismo.Admin.BehaviorTests.Context;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Customers;
 

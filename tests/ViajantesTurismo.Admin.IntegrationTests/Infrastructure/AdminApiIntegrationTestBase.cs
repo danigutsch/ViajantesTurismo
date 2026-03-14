@@ -1,5 +1,4 @@
 using ViajantesTurismo.Admin.ApiService;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 [assembly: AssemblyFixture(typeof(ApiFixture))]
 

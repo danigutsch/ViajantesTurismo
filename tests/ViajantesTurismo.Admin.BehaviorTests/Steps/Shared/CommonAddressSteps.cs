@@ -1,7 +1,3 @@
-using Reqnroll;
-using ViajantesTurismo.Admin.BehaviorTests.Context;
-using ViajantesTurismo.Admin.Domain.Customers;
-
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Shared;
 
 [Binding]

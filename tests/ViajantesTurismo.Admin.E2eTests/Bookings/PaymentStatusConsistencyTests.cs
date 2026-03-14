@@ -1,7 +1,3 @@
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-
 namespace ViajantesTurismo.Admin.E2ETests.Bookings;
 
 public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)

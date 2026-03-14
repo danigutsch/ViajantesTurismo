@@ -1,8 +1,4 @@
 using System.Globalization;
-using Microsoft.Playwright;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tours;
 
@@ -11,12 +7,13 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Create_View_And_Edit_Tour()
     {
+        // Arrange
         var uid = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
         var identifier = $"E2E{uid}";
         var initialName = $"E2E Test Tour {uid}";
         var updatedName = $"E2E Updated Tour {uid}";
 
-        // === Validation presence: submit empty form first ===
+        // Act
         await NavigateTo("/addtour");
         await Expect(Page).ToHaveTitleAsync("Add Tour");
 
@@ -24,7 +21,6 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         var validationSummary = Page.Locator(".validation-errors, .validation-message");
         await Expect(validationSummary.First).ToBeVisibleAsync();
 
-        // === Add Tour: fill valid form ===
         await Page.FillAsync("#identifier", identifier);
         await Page.FillAsync("#name", initialName);
 
@@ -44,33 +40,34 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Create Tour").ClickAsync();
 
-        // === Success alert appears ===
+        // Assert
         var successAlert = Page.Locator(".alert-success");
         await Expect(successAlert).ToBeVisibleAsync();
         await Expect(successAlert).ToContainTextAsync("Tour created successfully!");
 
-        // === Navigate to tour details via success link ===
+        // Act
         await successAlert.GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = "View Tour Details" }).ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
-        // Verify details fields
+        // Assert
         await Expect(Page.GetByText(identifier)).ToBeVisibleAsync();
         await Expect(Page.GetHeading(initialName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("Hotel")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Breakfast")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Guided Tour")).ToBeVisibleAsync();
 
-        // Capture the detail page URL to extract tour ID
         var detailUrl = Page.Url;
         var tourId = detailUrl.Split('/').Last();
 
-        // === Tour appears in list ===
+        // Act
         await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
+
+        // Assert
         await Expect(Page.GetByText(initialName).First).ToBeVisibleAsync();
         await Expect(Page.GetByText(identifier).First).ToBeVisibleAsync();
 
-        // === Edit Tour ===
+        // Act
         await NavigateTo($"/edittour/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
@@ -81,25 +78,18 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Page.GetButton("Update Tour").ClickAsync();
 
-        // Success and redirect
         var editSuccess = Page.Locator(".alert-success");
         await Expect(editSuccess).ToBeVisibleAsync();
         await Expect(editSuccess).ToContainTextAsync("Tour updated successfully!");
 
-        // Cancel auto-redirect to verify details manually
-        var cancelButton = Page.Locator(".alert-info button", new PageLocatorOptions { HasText = "Cancel" });
-        if (await cancelButton.CountAsync() > 0)
-        {
-            await cancelButton.ClickAsync();
-        }
+        await Page.CancelTimedRedirect();
 
-        // === Verify via details page ===
+        // Assert
         await NavigateTo($"/tours/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetHeading(updatedName)).ToBeVisibleAsync();
         await Expect(Page.GetByText("Bike Rental")).ToBeVisibleAsync();
 
-        // === Refresh persistence: hard reload and verify saved values survive ===
         await Page.ReloadAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetHeading(updatedName)).ToBeVisibleAsync();

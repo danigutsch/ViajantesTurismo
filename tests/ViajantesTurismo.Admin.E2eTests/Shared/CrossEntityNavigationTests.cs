@@ -1,7 +1,3 @@
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-
 namespace ViajantesTurismo.Admin.E2ETests.Shared;
 
 public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
@@ -14,53 +10,25 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         var customer = await ApiClient.CreateCustomer();
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
-        // === From booking details: follow cross-entity links ===
         await NavigateTo($"/bookings/{booking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-        // Tour link navigates to tour details
-        var tourLink = Page.Locator("a[href^='/tours/']").First;
-        var tourHref = await tourLink.GetAttributeAsync("href");
-        Assert.NotNull(tourHref);
-        await tourLink.ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await FollowLinkAndExpectTitle(Page.Locator("a[href^='/tours/']").First, "Tour Details");
 
-        // Go back and follow the customer link
         await Page.GoBackAsync();
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-        var customerLink = Page.Locator("a[href^='/customers/']").First;
-        var customerHref = await customerLink.GetAttributeAsync("href");
-        Assert.NotNull(customerHref);
-        await customerLink.ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await FollowLinkAndExpectTitle(Page.Locator("a[href^='/customers/']").First, "Customer Details");
 
-        // === From the bookings list: tour and customer links in rows ===
         var bookingRow = await BookingsList.GetBookingRow(booking.Id);
 
-        // Navigate using tour link href from the row
-        var listTourHref = await bookingRow.Locator("a[href^='/tours/']").First.GetAttributeAsync("href");
-        if (listTourHref is null)
-        {
-            Assert.Fail("Expected a tour link in the bookings list row.");
-        }
-
-        await NavigateTo(listTourHref);
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
+        await FollowLinkAndExpectTitle(bookingRow.Locator("a[href^='/tours/']").First, "Tour Details");
 
         await Page.GoBackAsync();
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        // Click the customer link in the first row
         bookingRow = await BookingsList.GetBookingRow(booking.Id);
-        var listCustomerHref = await bookingRow.Locator("a[href^='/customers/']").First.GetAttributeAsync("href");
-        if (listCustomerHref is null)
-        {
-            Assert.Fail("Expected a customer link in the bookings list row.");
-        }
-
-        await NavigateTo(listCustomerHref);
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await FollowLinkAndExpectTitle(bookingRow.Locator("a[href^='/customers/']").First, "Customer Details");
     }
 
     [Fact]
@@ -71,45 +39,35 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         var customer = await ApiClient.CreateCustomer();
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
-        // === Tour details: scoped bookings list ===
         await NavigateTo($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
-        // Scoped bookings list should be visible for test-owned booking data
         var tourBookingsTable = Page.Locator("table");
         await Expect(tourBookingsTable).ToBeVisibleAsync();
 
-        // Tour column should be hidden (ShowTourInfo=false)
-        var tourColumnHeaders = tourBookingsTable.Locator("th:has-text('Tour')");
-        await Expect(tourColumnHeaders).ToHaveCountAsync(0);
+        await ExpectColumnVisibility(tourBookingsTable, hiddenHeader: "Tour", visibleHeader: "Customer");
+        await FollowLinkAndExpectTitle(tourBookingsTable.Locator($"a[href='/bookings/{booking.Id}']"), "Booking Details");
 
-        // Customer column should be visible
-        var customerColumn = tourBookingsTable.Locator("th:has-text('Customer')");
-        await Expect(customerColumn).ToBeVisibleAsync();
-
-        // Booking links should navigate to the owned booking details deterministically.
-        var bookingViewLink = tourBookingsTable.Locator($"a[href='/bookings/{booking.Id}']");
-        await Expect(bookingViewLink).ToBeVisibleAsync();
-        await bookingViewLink.ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-        // === Customer details: scoped bookings list ===
         await NavigateTo($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
-        // Scoped bookings list should be visible for the owned booking data.
         var customerBookingsTable = Page.Locator("table");
         await Expect(customerBookingsTable).ToBeVisibleAsync();
 
-        // Customer column should be hidden (ShowCustomerInfo=false)
-        var customerHeaders = customerBookingsTable.Locator("th:has-text('Customer')");
-        await Expect(customerHeaders).ToHaveCountAsync(0);
+        await ExpectColumnVisibility(customerBookingsTable, hiddenHeader: "Customer", visibleHeader: "Tour");
+        await Expect(customerBookingsTable.Locator($"a[href='/bookings/{booking.Id}']")).ToBeVisibleAsync();
+    }
 
-        // Tour column should be visible
-        var tourColumn = customerBookingsTable.Locator("th:has-text('Tour')");
-        await Expect(tourColumn).ToBeVisibleAsync();
+    private async Task FollowLinkAndExpectTitle(ILocator link, string expectedTitle)
+    {
+        await Expect(link).ToBeVisibleAsync();
+        await link.ClickAsync();
+        await Expect(Page).ToHaveTitleAsync(expectedTitle);
+    }
 
-        var customerBookingLink = customerBookingsTable.Locator($"a[href='/bookings/{booking.Id}']");
-        await Expect(customerBookingLink).ToBeVisibleAsync();
+    private async Task ExpectColumnVisibility(ILocator table, string hiddenHeader, string visibleHeader)
+    {
+        await Expect(table.Locator($"th:has-text('{hiddenHeader}')")).ToHaveCountAsync(0);
+        await Expect(table.Locator($"th:has-text('{visibleHeader}')")).ToBeVisibleAsync();
     }
 }

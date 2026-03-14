@@ -14,6 +14,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="System.Globalization"/>
+        <Using Include="Reqnroll"/>
+        <Using Include="ViajantesTurismo.Admin.BehaviorTests.Context"/>
+        <Using Include="ViajantesTurismo.Admin.Domain.Customers"/>
+        <Using Include="ViajantesTurismo.Admin.Domain.Tours"/>
+        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Behavior"/>
+        <Using Include="ViajantesTurismo.Common.Results"/>
         <Using Include="Xunit" />
     </ItemGroup>
 

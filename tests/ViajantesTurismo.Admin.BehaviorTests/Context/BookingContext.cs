@@ -1,6 +1,4 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 

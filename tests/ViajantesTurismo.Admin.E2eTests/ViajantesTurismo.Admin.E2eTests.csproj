@@ -10,6 +10,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="Microsoft.Playwright"/>
+        <Using Include="ViajantesTurismo.Admin.E2ETests.Infrastructure.Api"/>
+        <Using Include="ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases"/>
+        <Using Include="ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures"/>
+        <Using Include="ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers"/>
         <Using Include="Xunit"/>
     </ItemGroup>
 

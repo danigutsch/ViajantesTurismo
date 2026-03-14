@@ -10,6 +10,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="System.Net"/>
+        <Using Include="System.Net.Http.Json"/>
+        <Using Include="ViajantesTurismo.Admin.Contracts"/>
+        <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure"/>
+        <Using Include="ViajantesTurismo.Admin.Tests.Shared"/>
+        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Builders"/>
+        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Integration.Helpers"/>
         <Using Include="Xunit"/>
     </ItemGroup>
 

@@ -1,8 +1,4 @@
 using System.Text.RegularExpressions;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 namespace ViajantesTurismo.Admin.E2ETests.Bookings;
 

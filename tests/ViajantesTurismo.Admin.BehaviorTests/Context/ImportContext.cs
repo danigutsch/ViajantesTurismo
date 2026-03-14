@@ -2,7 +2,6 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;

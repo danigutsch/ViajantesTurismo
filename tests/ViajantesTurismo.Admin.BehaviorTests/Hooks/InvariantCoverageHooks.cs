@@ -1,9 +1,7 @@
 #pragma warning disable CA1303
 
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using Reqnroll;
 using ViajantesTurismo.Admin.BehaviorTests.Infrastructure.Coverage;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Hooks;
