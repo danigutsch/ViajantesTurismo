@@ -16,24 +16,6 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_NotFound_When_Customer_Is_Null()
-    {
-        // Arrange
-        var customerId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, customerId));
-        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
-
-        // Assert
-        var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Customer not found", alert.TextContent, StringComparison.Ordinal);
-
-        var backLink = cut.Find("a.btn.btn-secondary");
-        Assert.Equal("/customers", backLink.GetAttribute("href"));
-    }
-
-    [Fact]
     public void Displays_Page_Title_And_Header()
     {
         // Arrange

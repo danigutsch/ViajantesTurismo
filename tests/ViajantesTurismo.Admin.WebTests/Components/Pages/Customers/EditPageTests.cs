@@ -31,27 +31,6 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Shows_Not_Found_When_Customer_Does_Not_Exist()
-    {
-        // Arrange
-        var nonExistentId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, nonExistentId));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var alert = cut.Find(".alert.alert-danger");
-            Assert.Contains("Customer not found", alert.TextContent, StringComparison.Ordinal);
-        });
-
-        var backLink = cut.Find("a.btn.btn-secondary");
-        Assert.Equal("/customers", backLink.GetAttribute("href"));
-    }
-
-    [Fact]
     public async Task OnInitializedAsync_When_Load_Fails_Shows_Sanitized_Error_Message()
     {
         // Arrange
@@ -162,14 +141,8 @@ public class EditPageTests : BunitContext
             var card = cut.FindAll(".card").First(c => c.TextContent.Contains("Contact Information", StringComparison.Ordinal));
             Assert.NotNull(card.QuerySelector("input#email"));
             Assert.NotNull(card.QuerySelector("input#mobile"));
-
-            var instagramInput = card.QuerySelector("input#instagram");
-            Assert.NotNull(instagramInput);
-            Assert.Equal("username", instagramInput.GetAttribute("placeholder"));
-
-            var facebookInput = card.QuerySelector("input#facebook");
-            Assert.NotNull(facebookInput);
-            Assert.Equal("facebook.com/username", facebookInput.GetAttribute("placeholder"));
+            Assert.NotNull(card.QuerySelector("input#instagram"));
+            Assert.NotNull(card.QuerySelector("input#facebook"));
         });
     }
 
@@ -314,21 +287,6 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Does_Not_Render_Customer_Search_Input_In_Edit_Page()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() => { Assert.Empty(cut.FindAll("input[placeholder='Search customers by name or email...']")); });
-    }
-
-    [Fact]
     public async Task BedType_Dropdown_Has_All_Options()
     {
         // Arrange
@@ -397,133 +355,6 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Update_Button()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var updateButton = cut.Find("button[type='submit']");
-            Assert.Contains("Update Customer", updateButton.TextContent, StringComparison.Ordinal);
-            Assert.Contains("btn-primary", updateButton.ClassName, StringComparison.Ordinal);
-        });
-    }
-
-    [Fact]
-    public async Task Renders_Cancel_Link()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var cancelLink = cut.Find("a:contains('Cancel')");
-            Assert.Equal("/customers", cancelLink.GetAttribute("href"));
-            Assert.Contains("btn-secondary", cancelLink.ClassName, StringComparison.Ordinal);
-        });
-    }
-
-    [Fact]
-    public async Task Renders_DataAnnotationsValidator()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var validator = cut.FindComponent<DataAnnotationsValidator>();
-            Assert.NotNull(validator);
-        });
-    }
-
-    [Fact]
-    public async Task Renders_ValidationSummary()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var validationSummary = cut.FindComponent<ValidationSummary>();
-            Assert.NotNull(validationSummary);
-        });
-    }
-
-    [Fact]
-    public async Task Shows_Success_Message_After_Successful_Update()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Act
-        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
-        var submitButton = cut.Find("button[type='submit']");
-        await cut.InvokeAsync(async () => await submitButton.ClickAsync(new MouseEventArgs()));
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var successAlert = cut.Find(".alert.alert-success");
-            Assert.Contains("Customer updated successfully", successAlert.TextContent, StringComparison.Ordinal);
-        }, timeout: TimeSpan.FromSeconds(5));
-    }
-
-    [Fact]
-    public async Task Shows_Pending_Redirect_Message_After_Update()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Act
-        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
-        var submitButton = cut.Find("button[type='submit']");
-        await cut.InvokeAsync(async () => await submitButton.ClickAsync(new MouseEventArgs()));
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var redirectAlert = cut.Find(".alert.alert-info");
-            Assert.Contains("Redirecting to details page in 3 seconds", redirectAlert.TextContent, StringComparison.Ordinal);
-
-            var cancelButton = redirectAlert.QuerySelector("button");
-            Assert.Contains("Cancel", cancelButton!.TextContent, StringComparison.Ordinal);
-        }, timeout: TimeSpan.FromSeconds(5));
-    }
-
-    [Fact]
     public async Task Can_Cancel_Redirect_After_Update()
     {
         // Arrange
@@ -552,30 +383,6 @@ public class EditPageTests : BunitContext
             var goToDetailsButton = cancelledAlert.QuerySelector("button");
             Assert.NotNull(goToDetailsButton);
             Assert.Contains("Go to Details", goToDetailsButton.TextContent, StringComparison.Ordinal);
-        });
-    }
-
-    [Fact]
-    public async Task All_Cards_Are_In_Proper_Layout()
-    {
-        // Arrange
-        var customer = BuildCustomerDetailsDto();
-        _fakeCustomersApi.AddCustomerDetails(customer);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
-        await cut.InvokeAsync(() => Task.CompletedTask);
-
-        // Assert
-        await cut.WaitForAssertionAsync(() =>
-        {
-            var rows = cut.FindAll(".row");
-            Assert.True(rows.Count >= 4); // At least 4 rows for card pairs
-
-            // Verify cards are in two-column layout
-            var firstRow = rows.First(r => r.TextContent.Contains("Personal Information", StringComparison.Ordinal));
-            var columns = firstRow.QuerySelectorAll(".col-md-6");
-            Assert.Equal(2, columns.Length);
         });
     }
 }

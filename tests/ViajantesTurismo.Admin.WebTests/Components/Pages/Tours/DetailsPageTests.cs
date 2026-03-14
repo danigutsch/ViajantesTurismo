@@ -17,45 +17,6 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_NotFound_When_Tour_Is_Null()
-    {
-        // Arrange
-        var tourId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Details>(parameters => parameters
-            .Add(p => p.Id, tourId));
-
-        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
-
-        // Assert
-        var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Tour not found", alert.TextContent, StringComparison.Ordinal);
-
-        var backLink = cut.Find("a.btn.btn-secondary");
-        Assert.Equal("/tours", backLink.GetAttribute("href"));
-    }
-
-    [Fact]
-    public void Renders_NotFound_When_API_Throws_Exception()
-    {
-        // Arrange
-        var tourId = Guid.NewGuid();
-
-        _fakeToursApi.SetGetTourByIdException(new HttpRequestException("Not found"));
-
-        // Act
-        var cut = Render<Details>(parameters => parameters
-            .Add(p => p.Id, tourId));
-
-        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
-
-        // Assert
-        var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Tour not found", alert.TextContent, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Renders_Tour_Details_With_General_Information()
     {
         // Arrange

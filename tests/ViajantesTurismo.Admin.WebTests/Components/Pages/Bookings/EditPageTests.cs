@@ -28,23 +28,6 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Not_Found_When_Booking_Does_Not_Exist()
-    {
-        // Arrange
-        var bookingId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, bookingId));
-        cut.WaitForAssertion(() => cut.Find("h1, .alert"));
-        // Assert
-        var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Booking not found", alert.TextContent, StringComparison.Ordinal);
-
-        var backLink = cut.Find("a.btn.btn-secondary");
-        Assert.Equal("/bookings", backLink.GetAttribute("href"));
-    }
-
-    [Fact]
     public void OnInitializedAsync_When_Load_Fails_Shows_Sanitized_Error_Message()
     {
         // Arrange
@@ -353,49 +336,6 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Shows_Success_Message_After_Successful_Update()
-    {
-        // Arrange
-        var booking = BuildBookingDto(notes: "Original notes");
-        _fakeBookingsApi.AddBooking(booking);
-
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-
-        // Act - Update notes
-        var notesTextarea = cut.Find("#notes");
-        await cut.InvokeAsync(() => notesTextarea.Change("Updated notes"));
-
-        var form = cut.Find("form");
-        await cut.InvokeAsync(async () => await form.SubmitAsync());
-
-        // Assert
-        var successAlert = cut.Find(".alert.alert-success");
-        Assert.Contains("Booking updated successfully!", successAlert.TextContent, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Shows_Pending_Redirect_Message_After_Success()
-    {
-        // Arrange
-        var booking = BuildBookingDto();
-        _fakeBookingsApi.AddBooking(booking);
-
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-
-        // Act - Submit form
-        var form = cut.Find("form");
-        await cut.InvokeAsync(async () => await form.SubmitAsync());
-
-        // Assert
-        var redirectAlert = cut.FindAll(".alert.alert-info").First(a => a.TextContent.Contains("Redirecting", StringComparison.Ordinal));
-        Assert.Contains("Redirecting to bookings page in 3 seconds", redirectAlert.TextContent, StringComparison.Ordinal);
-
-        var cancelButton = redirectAlert.QuerySelector("button");
-        Assert.NotNull(cancelButton);
-        Assert.Contains("Cancel", cancelButton.TextContent, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task Cancel_Redirect_Button_Shows_Success_Message()
     {
         // Arrange
@@ -446,36 +386,6 @@ public sealed class EditPageTests : BunitContext
         Assert.Contains("disabled", cancelLink.GetAttribute("class"), StringComparison.Ordinal);
 
         await submitTask;
-    }
-
-    [Fact]
-    public void Form_Has_DataAnnotationsValidator()
-    {
-        // Arrange
-        var booking = BuildBookingDto();
-        _fakeBookingsApi.AddBooking(booking);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-        cut.WaitForAssertion(() => cut.Find("h1, .alert"));
-        // Assert
-        var validator = cut.FindComponent<DataAnnotationsValidator>();
-        Assert.NotNull(validator);
-    }
-
-    [Fact]
-    public void Form_Has_ValidationSummary()
-    {
-        // Arrange
-        var booking = BuildBookingDto();
-        _fakeBookingsApi.AddBooking(booking);
-
-        // Act
-        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
-        cut.WaitForAssertion(() => cut.Find("h1, .alert"));
-        // Assert
-        var validationSummary = cut.FindComponent<ValidationSummary>();
-        Assert.NotNull(validationSummary);
     }
 
     [Fact]

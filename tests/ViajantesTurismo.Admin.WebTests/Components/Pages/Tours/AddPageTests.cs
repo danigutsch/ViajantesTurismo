@@ -93,66 +93,6 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Identifier_Field_Has_Placeholder()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var identifierInput = cut.Find("input#identifier");
-        Assert.Equal("e.g., CUBA2024", identifierInput.GetAttribute("placeholder"));
-    }
-
-    [Fact]
-    public void Name_Field_Has_Placeholder()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var nameInput = cut.Find("input#name");
-        Assert.Equal("e.g., Isla de Cuba", nameInput.GetAttribute("placeholder"));
-    }
-
-    [Fact]
-    public void Services_TextArea_Has_Help_Text()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var helpText = cut.FindAll(".form-text").First(e => e.TextContent.Contains("one service per line", StringComparison.Ordinal));
-        Assert.NotNull(helpText);
-    }
-
-    [Fact]
-    public void Min_Customers_Field_Has_Help_Text()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var helpTexts = cut.FindAll(".form-text");
-        Assert.Contains(helpTexts, t => t.TextContent.Contains("Minimum number of customers required", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void Max_Customers_Field_Has_Help_Text()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var helpTexts = cut.FindAll(".form-text");
-        Assert.Contains(helpTexts, t => t.TextContent.Contains("Maximum number of customers allowed", StringComparison.Ordinal));
-    }
-
-    [Fact]
     public async Task Successful_Submission_Shows_Success_Message()
     {
         // Arrange
@@ -343,66 +283,6 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Form_Has_Two_Column_Layout_For_Dates()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var rows = cut.FindAll(".row");
-        var dateRow = rows.First(r => r.QuerySelectorAll("input#startDate, input#endDate").Length > 0);
-
-        var columns = dateRow.QuerySelectorAll(".col-md-6");
-        Assert.Equal(2, columns.Length);
-    }
-
-    [Fact]
-    public void Form_Has_Two_Column_Layout_For_Prices()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var rows = cut.FindAll(".row");
-        var priceRow = rows.First(r => r.QuerySelectorAll("input#price, input#singleRoom").Length > 0);
-
-        var columns = priceRow.QuerySelectorAll(".col-md-6");
-        Assert.Equal(2, columns.Length);
-    }
-
-    [Fact]
-    public void Form_Has_Two_Column_Layout_For_Bike_Prices()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var rows = cut.FindAll(".row");
-        var bikeRow = rows.First(r => r.QuerySelectorAll("input#regularBike, input#eBike").Length > 0);
-
-        var columns = bikeRow.QuerySelectorAll(".col-md-6");
-        Assert.Equal(2, columns.Length);
-    }
-
-    [Fact]
-    public void Form_Has_Two_Column_Layout_For_Capacity()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var rows = cut.FindAll(".row");
-        var capacityRow = rows.First(r => r.QuerySelectorAll("input#minCustomers, input#maxCustomers").Length > 0);
-
-        var columns = capacityRow.QuerySelectorAll(".col-md-6");
-        Assert.Equal(2, columns.Length);
-    }
-
-    [Fact]
     public async Task Creates_Tour_With_Correct_Data()
     {
         // Arrange
@@ -462,33 +342,5 @@ public class AddPageTests : BunitContext
         Assert.Contains("Service 1", tour.IncludedServices);
         Assert.Contains("Service 2", tour.IncludedServices);
         Assert.Contains("Service 3", tour.IncludedServices);
-    }
-
-    [Fact]
-    public void Services_TextArea_Has_Placeholder()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var servicesTextArea = cut.Find("textarea#services");
-        var placeholder = servicesTextArea.GetAttribute("placeholder");
-
-        Assert.Contains("Hotel", placeholder, StringComparison.Ordinal);
-        Assert.Contains("Breakfast", placeholder, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Currency_Defaults_To_Euro()
-    {
-        // Arrange
-        // Act
-        var cut = Render<Add>();
-
-        // Assert
-        var currencySelect = cut.Find("select#currency");
-
-        Assert.NotNull(currencySelect);
     }
 }

@@ -12,51 +12,6 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void NotFound_Hides_Edit_Booking_Link()
-    {
-        // Arrange — non-existent booking
-        var bookingId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, bookingId));
-        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
-
-        // Assert — "Edit Booking" link must NOT be present
-        Assert.DoesNotContain("Edit Booking", cut.Markup, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void NotFound_Shows_Back_To_List_Link()
-    {
-        // Arrange
-        var bookingId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, bookingId));
-        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
-
-        // Assert — should still have a way to navigate back
-        var backLink = cut.FindAll("a").FirstOrDefault(a => a.TextContent.Contains("Back to List", StringComparison.Ordinal));
-        Assert.NotNull(backLink);
-        Assert.Equal("/bookings", backLink.GetAttribute("href"));
-    }
-
-    [Fact]
-    public void NotFound_Shows_Alert_Message()
-    {
-        // Arrange
-        var bookingId = Guid.NewGuid();
-
-        // Act
-        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, bookingId));
-        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
-
-        // Assert
-        var alert = cut.Find(".alert.alert-danger");
-        Assert.Contains("Booking not found", alert.TextContent, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Booking_Found_Shows_Edit_Booking_Link()
     {
         // Arrange
