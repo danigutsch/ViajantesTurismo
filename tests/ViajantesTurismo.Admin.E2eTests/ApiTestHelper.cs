@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts;
 
@@ -32,8 +33,7 @@ internal static class ApiTestHelper
         };
 
         var response = await client.PostAsJsonAsync("/tours", dto);
-        response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetTourDto>())!;
+        return await ReadRequiredJson<GetTourDto>(response, HttpStatusCode.Created);
     }
 
     public static async Task<GetCustomerDto> CreateCustomerAsync(HttpClient client)
@@ -98,8 +98,7 @@ internal static class ApiTestHelper
         };
 
         var response = await client.PostAsJsonAsync("/customers", dto);
-        response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>())!;
+        return await ReadRequiredJson<GetCustomerDto>(response, HttpStatusCode.Created);
     }
 
     public static async Task<GetBookingDto> CreateBookingAsync(
@@ -116,8 +115,13 @@ internal static class ApiTestHelper
         };
 
         var response = await client.PostAsJsonAsync("/bookings", dto);
-        response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto>())!;
+        return await ReadRequiredJson<GetBookingDto>(response, HttpStatusCode.Created);
+    }
+
+    public static async Task<GetBookingDto[]> GetAllBookings(HttpClient client)
+    {
+        var response = await client.GetAsync(new Uri("/bookings", UriKind.Relative));
+        return await ReadRequiredJson<GetBookingDto[]>(response, HttpStatusCode.OK);
     }
 
     public static async Task<GetBookingDto> ConfirmBookingAsync(
@@ -125,8 +129,7 @@ internal static class ApiTestHelper
         Guid bookingId)
     {
         var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
-        response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto>())!;
+        return await ReadRequiredJson<GetBookingDto>(response, HttpStatusCode.OK);
     }
 
     public static async Task RecordPaymentAsync(
@@ -144,5 +147,20 @@ internal static class ApiTestHelper
 
         var response = await client.PostAsJsonAsync(new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
         response.EnsureSuccessStatusCode();
+    }
+
+    private static async Task<T> ReadRequiredJson<T>(
+        HttpResponseMessage response,
+        HttpStatusCode expectedStatus)
+    {
+        if (response.StatusCode != expectedStatus)
+        {
+            Assert.Fail($"Expected HTTP {(int)expectedStatus} ({expectedStatus}) but got {(int)response.StatusCode} ({response.StatusCode}).");
+        }
+
+        var model = await response.Content.ReadFromJsonAsync<T>();
+        Assert.NotNull(model);
+
+        return model;
     }
 }
