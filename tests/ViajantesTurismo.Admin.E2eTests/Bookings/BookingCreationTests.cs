@@ -1,24 +1,29 @@
 using Microsoft.Playwright;
+using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 namespace ViajantesTurismo.Admin.E2ETests.Bookings;
 
-public class BookingCreationTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
+public class BookingCreationTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     [Fact]
     public async Task Can_Create_Booking_From_Customer_Details_With_Prefilled_Data()
     {
-        // Navigate to the customers list and find Elena Rodriguez (EBike preference)
-        await NavigateTo("/customers");
-        await Expect(Page).ToHaveTitleAsync("Customers");
+        // Arrange
+        var tour = await ApiClient.CreateTour(name: "Owned Cultural Experience");
+        var customer = await ApiClient.CreateCustomer(
+            firstName: "Elena",
+            lastName: "Owned",
+            bikeType: BikeTypeDto.EBike);
+        var customerFullName = $"{customer.FirstName} {customer.LastName}";
 
-        var elenaRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "Elena Rodriguez" });
-        await elenaRow.First.GetLink("View").ClickAsync();
+        // Act
+        await NavigateToAsync($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
-        await Expect(Page.GetByText("Elena Rodriguez").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
 
         // Click "Add Booking" to show the inline booking creation form
         await Page.GetButton("Add Booking").ClickAsync();
@@ -27,41 +32,35 @@ public class BookingCreationTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         var bookingForm = Page.Locator("form:has(button:text('Create Booking'))");
         await Expect(bookingForm).ToBeVisibleAsync();
 
-        // Verify the bike type is pre-filled with Elena's preference (EBike)
+        // Assert: bike type is pre-filled from the owned customer's EBike preference.
         var bikeTypeSelect = bookingForm.Locator("div.mb-3")
             .Filter(new LocatorFilterOptions { HasText = "Bike Type" }).First.Locator("select");
         await Expect(bikeTypeSelect).ToHaveValueAsync("EBike");
 
-        // No customer select should exist (customer is pre-determined)
+        // Assert: no customer select exists because the details page pre-determines the principal customer.
         var customerFields = bookingForm.Locator("div.mb-3")
             .Filter(new LocatorFilterOptions { HasText = "Customer" });
         await Expect(customerFields).ToHaveCountAsync(0);
 
-        // Select Cultural Experience tour (label includes dynamic date, so find the matching option)
+        // Select the owned test tour (label includes dynamic date, so find the matching option by name).
         var tourSelect = bookingForm.Locator("div.mb-3")
             .Filter(new LocatorFilterOptions { HasText = "Tour" }).First.Locator("select");
-        var culturalOption = tourSelect.Locator("option", new LocatorLocatorOptions { HasText = "Cultural Experience" });
-        var optionValue = await culturalOption.GetAttributeAsync("value");
+        var ownedTourOption = tourSelect.Locator("option", new LocatorLocatorOptions { HasText = tour.Name });
+        var optionValue = await ownedTourOption.GetAttributeAsync("value");
         await tourSelect.SelectOptionAsync(optionValue!);
 
-        // Tour availability info should appear
+        // Assert: availability and price breakdown appear for the selected owned tour.
         await Expect(bookingForm.GetByText("available")).ToBeVisibleAsync();
-
-        // Price breakdown card should appear after selecting a tour
         await Expect(bookingForm.GetByText("Price Breakdown")).ToBeVisibleAsync();
 
-        // Add notes
+        // Act: submit the booking.
         await bookingForm.Locator("#notes").FillAsync("E2E test booking from customer details");
-
-        // Submit the booking
         await bookingForm.GetButton("Create Booking").ClickAsync();
 
-        // Wait for success toast
+        // Assert: success toast and resulting customer-bookings row use the owned tour.
         var toast = Page.Locator(".toast");
         await Expect(toast.First).ToBeVisibleAsync();
         await Expect(toast.First).ToContainTextAsync("Booking created successfully");
-
-        // Verify the new booking appears in the customer's bookings list
-        await Expect(Page.GetByText("Cultural Experience").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
     }
 }

@@ -62,7 +62,8 @@ internal static class ApiTestExtensions
 
         public async Task<GetCustomerDto> CreateCustomer(
             string? firstName = null,
-            string? lastName = null)
+            string? lastName = null,
+            BikeTypeDto bikeType = BikeTypeDto.Regular)
         {
             var uid = Guid.NewGuid().ToString("N")[..8];
             var phone = $"+5511{Random.Shared.Next(10000000, 99999999)}";
@@ -103,7 +104,7 @@ internal static class ApiTestExtensions
                 {
                     WeightKg = 70m,
                     HeightCentimeters = 170,
-                    BikeType = BikeTypeDto.Regular
+                    BikeType = bikeType
                 },
                 AccommodationPreferences = new AccommodationPreferencesDto
                 {
