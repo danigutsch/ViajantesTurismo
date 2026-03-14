@@ -9,10 +9,10 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
     {
         // Create own tour, customer, and confirmed booking via API
         var api = ApiClient;
-        var tour = await ApiTestHelper.CreateTourAsync(api);
-        var customer = await ApiTestHelper.CreateCustomerAsync(api);
-        var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);
-        await ApiTestHelper.ConfirmBookingAsync(api, booking.Id);
+        var tour = await api.CreateTourAsync();
+        var customer = await api.CreateCustomerAsync();
+        var booking = await api.CreateBookingAsync(tour.Id, customer.Id);
+        await api.ConfirmBookingAsync(booking.Id);
 
         // Navigate directly to the created booking's edit page
         await NavigateToAsync($"/bookings/{booking.Id}/edit");
@@ -66,9 +66,9 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
     {
         // Create own tour, customer, and pending booking via API
         var api = ApiClient;
-        var tour = await ApiTestHelper.CreateTourAsync(api);
-        var customer = await ApiTestHelper.CreateCustomerAsync(api);
-        var booking = await ApiTestHelper.CreateBookingAsync(api, tour.Id, customer.Id);
+        var tour = await api.CreateTourAsync();
+        var customer = await api.CreateCustomerAsync();
+        var booking = await api.CreateBookingAsync(tour.Id, customer.Id);
 
         // Navigate directly to the created booking's edit page
         await NavigateToAsync($"/bookings/{booking.Id}/edit");

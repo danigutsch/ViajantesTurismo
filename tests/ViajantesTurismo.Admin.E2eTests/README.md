@@ -41,7 +41,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-method "*To
 - Default to `E2ETestBase` when a test owns its own data and does not require DB resets.
 - Use `E2ESerialTestBase` when a test needs strict baseline isolation (for example exact counts,
   per-test `ClearDatabase`, or destructive shared-state operations).
-- Prefer API-assisted setup (`ApiTestHelper`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
+- Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
 - Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
   explicit search/filter state, or other stable semantic locators.
 - For grid assertions, avoid assuming page 1 and avoid scanning pages until a row is found.

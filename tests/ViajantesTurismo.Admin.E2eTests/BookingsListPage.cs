@@ -5,23 +5,28 @@ namespace ViajantesTurismo.Admin.E2ETests;
 
 /// <summary>
 /// Provides deterministic access to rows in the global bookings list without scanning paginator pages.
-/// It uses the API booking order to jump directly to the page that should contain a known booking.
+/// It uses the live API booking order to jump directly to the page that should contain a known booking.
+/// This avoids paginator scanning while still tolerating concurrent test inserts that can shift page boundaries.
 /// </summary>
 /// <param name="page">The active Playwright page.</param>
 /// <param name="navigateTo">Navigation function that resolves relative application routes.</param>
-internal sealed class BookingsListPage(IPage page, Func<string, Task> navigateTo)
+/// <param name="getAllBookings">Function that retrieves the current ordered bookings list from the API.</param>
+internal sealed class BookingsListPage(
+    IPage page,
+    Func<string, Task> navigateTo,
+    Func<Task<GetBookingDto[]>> getAllBookings)
 {
     private const int ItemsPerPage = 10;
+    private const int MaxLookupAttempts = 3;
 
     /// <summary>
     /// Reads the payment status badge for a known booking from the global bookings list.
     /// </summary>
     /// <param name="bookingId">The booking identifier to locate.</param>
-    /// <param name="allBookings">The ordered booking data used to calculate the correct paginator page.</param>
     /// <returns>The trimmed payment status text shown in the grid.</returns>
-    public async Task<string> GetPaymentStatus(Guid bookingId, IReadOnlyList<GetBookingDto> allBookings)
+    public async Task<string> GetPaymentStatus(Guid bookingId)
     {
-        var row = await GetBookingRow(bookingId, allBookings);
+        var row = await GetBookingRow(bookingId);
         var paymentBadge = row.Locator("td:nth-child(8) .badge");
         await paymentBadge.WaitForAsync();
         return (await paymentBadge.InnerTextAsync()).Trim();
@@ -31,20 +36,29 @@ internal sealed class BookingsListPage(IPage page, Func<string, Task> navigateTo
     /// Returns the grid row for a known booking after navigating to the page that should contain it.
     /// </summary>
     /// <param name="bookingId">The booking identifier to locate.</param>
-    /// <param name="allBookings">The ordered booking data used to calculate the correct paginator page.</param>
     /// <returns>The matching bookings table row.</returns>
-    public async Task<ILocator> GetBookingRow(Guid bookingId, IReadOnlyList<GetBookingDto> allBookings)
+    public async Task<ILocator> GetBookingRow(Guid bookingId)
     {
-        var bookingIndex = FindBookingIndex(allBookings, bookingId);
-        await navigateTo("/bookings");
-        Assert.Equal("Bookings", await page.TitleAsync());
-
-        await NavigateToPageContaining(bookingIndex);
-
         var href = $"/bookings/{bookingId}";
-        var row = page.Locator($"table tbody tr:has(a[href='{href}'])");
-        await row.First.WaitForAsync();
-        return row.First;
+
+        for (var attempt = 0; attempt < MaxLookupAttempts; attempt++)
+        {
+            var allBookings = await getAllBookings();
+            var bookingIndex = FindBookingIndex(allBookings, bookingId);
+
+            await navigateTo("/bookings");
+            Assert.Equal("Bookings", await page.TitleAsync());
+            await NavigateToPageContaining(bookingIndex);
+
+            var row = page.Locator($"table tbody tr:has(a[href='{href}'])");
+            if (await row.CountAsync() > 0)
+            {
+                return row.First;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Booking row '{href}' could not be found after {MaxLookupAttempts} deterministic lookup attempt(s).");
     }
 
     /// <summary>
@@ -53,9 +67,9 @@ internal sealed class BookingsListPage(IPage page, Func<string, Task> navigateTo
     /// <param name="allBookings">The ordered bookings collection.</param>
     /// <param name="bookingId">The booking identifier to find.</param>
     /// <returns>The zero-based index of the booking in the ordered list.</returns>
-    private static int FindBookingIndex(IReadOnlyList<GetBookingDto> allBookings, Guid bookingId)
+    private static int FindBookingIndex(GetBookingDto[] allBookings, Guid bookingId)
     {
-        for (var index = 0; index < allBookings.Count; index++)
+        for (var index = 0; index < allBookings.Length; index++)
         {
             if (allBookings[index].Id == bookingId)
             {

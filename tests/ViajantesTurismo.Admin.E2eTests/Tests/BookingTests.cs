@@ -9,8 +9,8 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Create_Booking_Manage_Lifecycle_Apply_Discount_And_Record_Payments()
     {
         // Arrange
-        var tour = await ApiTestHelper.CreateTourAsync(ApiClient, currency: CurrencyDto.UsDollar);
-        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var tour = await ApiClient.CreateTourAsync(currency: CurrencyDto.UsDollar);
+        var customer = await ApiClient.CreateCustomerAsync();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
         var bookingWorkflow = new BookingWorkflow(Page, NavigateToAsync);

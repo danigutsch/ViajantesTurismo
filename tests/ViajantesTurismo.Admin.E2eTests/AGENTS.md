@@ -11,7 +11,7 @@ This file narrows the broader `tests/AGENTS.md` guidance for Playwright-based E2
 
 ## E2E design rules
 
-- Prefer owned-data tests created through `ApiTestHelper`.
+- Prefer owned-data tests created through `ApiTestExtensions`.
 - Default to direct route navigation by known IDs when the grid or list is not the behavior under test.
 - Avoid first-row assumptions, seeded-name assumptions, and page-1 assumptions.
 - Do not introduce helpers that scan paginator pages until a matching row is found.
@@ -22,7 +22,7 @@ This file narrows the broader `tests/AGENTS.md` guidance for Playwright-based E2
 
 Use the existing specialized helpers before introducing new plumbing:
 
-- `ApiTestHelper` — API-assisted setup and state changes
+- `ApiTestExtensions` — API-assisted setup and state changes
 - `BookingWorkflow` — reusable booking UI flows
 - `BookingsListPage` — deterministic access to the global bookings grid
 - `LocatorHelpers` — shared semantic Playwright locators

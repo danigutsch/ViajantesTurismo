@@ -89,7 +89,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Surface_Duplicate_Resolution_And_Commit_Keep_Decision()
     {
-        var existingCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var existingCustomer = await ApiClient.CreateCustomerAsync();
 
         await NavigateToAsync("/customers/import");
 
