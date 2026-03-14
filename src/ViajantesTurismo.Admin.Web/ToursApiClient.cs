@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.Web;
 
 internal sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
 {
-    public async Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = 10)
+    public async Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
         List<GetTourDto>? tours = null;
 

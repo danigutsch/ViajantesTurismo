@@ -11,7 +11,7 @@ public sealed class FakeToursApiClient : IToursApiClient
     private Exception? _getToursException;
     private Exception? _updateTourException;
 
-    public Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = 10)
+    public Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
         if (_getToursException is not null)
         {

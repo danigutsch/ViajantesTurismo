@@ -9,9 +9,9 @@ public interface IToursApiClient
     /// Gets a list of tours with optional pagination.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the request.</param>
-    /// <param name="maxItems">Maximum number of items to return (default: 10).</param>
+    /// <param name="maxItems">Maximum number of items to return (default: all items).</param>
     /// <returns>Array of tour DTOs.</returns>
-    Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = 10);
+    Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue);
 
     /// <summary>
     /// Gets a specific tour by its ID.
