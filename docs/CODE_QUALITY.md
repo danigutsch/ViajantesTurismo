@@ -38,7 +38,7 @@ Markdown linting rules are defined in `.markdownlint.json` at the solution root.
 
 **Key Rules:**
 
-- **MD013**: Line length limited to **120 characters** (excludes tables, code blocks, and headings)
+- **MD013**: Line length limited to **160 characters** (excludes tables, code blocks, and headings)
 - **MD007**: List indentation uses **4 spaces** (matches official Markdown Guide)
 - **MD003**: Enforce ATX-style headings (`# Heading` not `Heading\n=======`)
 - **MD004**: Enforce dash-style lists (`-` not `*` or `+`)
@@ -327,7 +327,7 @@ official guide.
 **Available coverage switches** (passed after `--` to the test host):
 
 | Switch | Purpose |
-|---|---|
+| --- | --- |
 | `--coverage` | Enable code coverage collection (required) |
 | `--coverage-output-format` | Output format: `coverage`, `xml`, or `cobertura` |
 | `--coverage-output` | Output filename |

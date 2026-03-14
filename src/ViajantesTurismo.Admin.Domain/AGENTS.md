@@ -27,6 +27,7 @@ This file overrides root guidance where domain-specific behavior is needed.
 
 - Follow `docs/CODING_GUIDELINES.md` and `.editorconfig`.
 - Use file-scoped namespaces and 4-space indentation.
+- Do not append the `Async` suffix to method names; keep domain method names intention-revealing without the suffix.
 - Use explicit domain types where clarity matters.
 - Keep public APIs documented with XML docs.
 

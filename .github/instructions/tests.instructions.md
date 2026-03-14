@@ -12,12 +12,17 @@ applyTo: "tests/**/*.cs, tests/**/*.feature"
 ## Naming and Structure
 
 - Unit/integration/web test method names: `Method_Name_Context_Description_Expected_Behavior`.
+- Do not append the `Async` suffix to test or helper method names; keep names descriptive without the suffix, even when methods are asynchronous.
 - Feature files (`.feature`) should follow: `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer Arrange/Act/Assert structure with explicit section comments.
 - Keep tests focused on one behavior and avoid testing implementation details.
 - Before adding multi-step plumbing that is not the core behavior under test, look for an existing helper,
   builder, fixture, or page object first and extend it when appropriate instead of creating a parallel pattern.
+- Prefer dedicated helper classes for reusable test helper methods instead of keeping them as
+  private methods on test classes.
+- Keep private methods inside a test class only when they are truly local to that class and do not
+  apply anywhere else.
 - Keep the behavior under test and assertions visible in the test; move only non-critical setup,
   navigation, and mechanical steps into helpers.
 - Keep reusable test-only helpers close to the consuming test project, and do not move domain or

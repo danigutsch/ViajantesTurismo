@@ -41,6 +41,9 @@ All projects use `.editorconfig` for consistent formatting. Key settings:
 
 ### Specific Conventions
 
+**Asynchronous methods:** Do not use the `Async` suffix. Name methods for their
+intent whether they are synchronous or asynchronous.
+
 **Error Classes:** Suffix with `Errors`
 
 ```csharp
@@ -321,14 +324,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 ### Known Limitations
 
-| Component | AOT Status | Notes |
-|-----------|------------|-------|
-| Common, Contracts, Domain, Application | ✅ Compatible | `IsAotCompatible=true` enabled |
-| ApiService | ✅ Compatible | Uses `CreateSlimBuilder`, JSON source generators |
-| Infrastructure (EF Core) | ⚠️ Partial | Compiled models generated, but DbContext blocks full AOT |
-| Web (Blazor Server) | ❌ Not Compatible | Blazor Server not supported for Native AOT |
-
-See [BACKLOG.md](adr/BACKLOG.md) PBI-003 for detailed status and progress.
+| Component                              | AOT Status       | Notes                                                    |
+|----------------------------------------|------------------|----------------------------------------------------------|
+| Common, Contracts, Domain, Application | ✅ Compatible     | `IsAotCompatible=true` enabled                           |
+| ApiService                             | ✅ Compatible     | Uses `CreateSlimBuilder`, JSON source generators         |
+| Infrastructure (EF Core)               | ⚠️ Partial       | Compiled models generated, but DbContext blocks full AOT |
+| Web (Blazor Server)                    | ❌ Not Compatible | Blazor Server not supported for Native AOT               |
 
 ## Performance
 

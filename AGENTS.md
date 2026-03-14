@@ -23,6 +23,8 @@ For scoped rules, use nested `AGENTS.md` files and `.github/instructions/*.instr
 
 - Follow `docs/CODING_GUIDELINES.md` and `.editorconfig`.
 - Use file-scoped namespaces, 4-space indentation, nullable reference types, and XML docs on public APIs.
+- Do not append the `Async` suffix to method names; use intention-revealing names
+    without the suffix, including for asynchronous methods.
 - Treat warnings as errors (`Directory.Build.props`).
 
 ### Architecture

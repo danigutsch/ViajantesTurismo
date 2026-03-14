@@ -35,6 +35,7 @@ applyTo: "src/ViajantesTurismo.Admin.Domain/**/*.cs"
 
 - Follow `docs/CODING_GUIDELINES.md` and `.editorconfig`.
 - Use file-scoped namespaces and 4-space indentation.
+- Do not append the `Async` suffix to method names; keep domain method names intention-revealing without the suffix.
 - Keep public APIs documented with XML comments.
 - Preserve naming conventions from `docs/CODING_GUIDELINES.md`.
 

@@ -13,6 +13,9 @@ This file overrides root guidance where test-specific behavior is needed.
 
 - Follow `docs/TEST_GUIDELINES.md`.
 - Use xUnit v3 with Microsoft.Testing.Platform (MTP).
+- Do not append the `Async` suffix to test or helper method names; use
+  descriptive names without the suffix, even when the implementation is
+  asynchronous.
 - Prefer test filters: `--filter-class`, `--filter-method`, `--filter-namespace`, `--filter-trait`.
 - Do not use legacy VSTest filter syntax `--filter "FullyQualifiedName~..."`.
 - Use Arrange/Act/Assert structure in test methods.
@@ -20,6 +23,10 @@ This file overrides root guidance where test-specific behavior is needed.
   always look for an existing helper method or helper class first.
 - If no suitable helper exists and the logic is repeated or hurts readability,
   prefer creating a helper method/class and then using that helper instead of inlining the plumbing.
+- Prefer dedicated helper classes for reusable test helper methods instead of keeping them as
+  private methods on test classes.
+- Keep private methods inside a test class only when they are truly local to that class and do not
+  apply anywhere else.
 - Before adding new test plumbing, check whether the repository already has a builder,
   fixture, page object, or helper for the same concern, and extend it when appropriate
   instead of creating a parallel pattern.

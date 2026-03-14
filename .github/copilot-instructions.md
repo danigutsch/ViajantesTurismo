@@ -4,6 +4,7 @@
 
 - Follow `docs/CODING_GUIDELINES.md` and `.editorconfig` for C# formatting and naming.
 - Use file-scoped namespaces, 4-space indentation, and nullable reference types.
+- Do not append the `Async` suffix to method names; use clear method names without the suffix, including for asynchronous methods.
 - Treat all warnings as errors (`Directory.Build.props` enforces this); avoid introducing analyzer warnings.
 - Prefer explicit domain types for clarity and `var` only when type is obvious.
 - Public APIs should include XML documentation.

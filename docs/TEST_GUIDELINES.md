@@ -386,6 +386,10 @@ apply the rules above before increasing timeouts.
   look for an existing helper method or helper class first.
 - If no suitable helper exists and the logic is repeated or hurts readability,
   prefer creating a helper and then using it instead of inlining the plumbing.
+- Prefer dedicated helper classes for reusable test helper methods instead of keeping them inside
+  test classes.
+- Keep private methods inside a test class only when they are truly local to that class and would
+  not be appropriate or useful anywhere else.
 - Keep the behaviour under test and assertions visible in the test body;
   move only non-test-critical setup, navigation, and mechanical steps into helpers.
 - Avoid `Thread.Sleep()` and unnecessary waits
