@@ -16,6 +16,13 @@ applyTo: "tests/**/*.cs, tests/**/*.feature"
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer Arrange/Act/Assert structure with explicit section comments.
 - Keep tests focused on one behavior and avoid testing implementation details.
+- Before adding multi-step plumbing that is not the core behavior under test, look for an existing helper,
+  builder, fixture, or page object first and extend it when appropriate instead of creating a parallel pattern.
+- Keep the behavior under test and assertions visible in the test; move only non-critical setup,
+  navigation, and mechanical steps into helpers.
+- Keep reusable test-only helpers close to the consuming test project, and do not move domain or
+  application behavior into test helpers.
+- Prefer precise assertions on business-visible outcomes over incidental implementation details.
 
 ## Running and Filtering Tests
 
@@ -43,10 +50,16 @@ applyTo: "tests/**/*.cs, tests/**/*.feature"
 ## Test Type Conventions
 
 - Unit tests: fast, in-memory, deterministic.
+- Unit tests should stay isolated from real external dependencies; prefer mocks, fakes, or test doubles.
 - Integration tests: validate HTTP + persistence behavior and status codes.
 - Behavior tests (`.feature`): use domain language and keep scenarios business-focused.
 - Web component tests: follow bUnit patterns used in `tests/ViajantesTurismo.Admin.WebTests`.
+- Reserve real browser, network, database, or container interactions for integration, behavior, or E2E tests.
+- Do not silently broaden a unit test into an integration test unless that wider interaction is the behavior
+being verified.
 - Tests should be independent and not depend on pre-seeded data where possible.
+- Prefer deterministic tests; avoid fixed delays and unnecessary timing assumptions.
+- Await observable outcomes instead of using `Task.Delay` unless the delay itself is the behavior under test.
 
 ## References
 

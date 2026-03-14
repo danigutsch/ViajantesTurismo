@@ -28,9 +28,12 @@ applyTo: "src/ViajantesTurismo.Admin.Domain/**/*.cs"
 - Keep business rules inside aggregates/value objects, not in application or API layers.
 - Prefer explicit domain types for clarity and model intent.
 - Keep value objects immutable and validation-focused.
+- If guidance here conflicts with repository-wide instructions, prefer the domain-scoped rules for files under
+`src/ViajantesTurismo.Admin.Domain/`.
 
 ## Style and Documentation
 
+- Follow `docs/CODING_GUIDELINES.md` and `.editorconfig`.
 - Use file-scoped namespaces and 4-space indentation.
 - Keep public APIs documented with XML comments.
 - Preserve naming conventions from `docs/CODING_GUIDELINES.md`.
@@ -40,5 +43,5 @@ applyTo: "src/ViajantesTurismo.Admin.Domain/**/*.cs"
 - `docs/DOMAIN_VALIDATION.md`
 - `docs/CODING_GUIDELINES.md`
 - `docs/ARCHITECTURE_DECISIONS.md`
-- `docs/domain/AGGREGATES.md`
+- `docs/adr/`
 - `src/ViajantesTurismo.Common/FUNCTIONAL_PATTERNS.md`
