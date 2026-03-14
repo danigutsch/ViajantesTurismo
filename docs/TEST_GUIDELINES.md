@@ -352,6 +352,10 @@ Use these rules to avoid flaky behaviour:
 - **Separate concerns**: route/title checks should not depend on list ordering assertions.
 - **Use serial collections only when required** (exact-count assertions, destructive DB resets,
   or scenarios that intentionally mutate the shared baseline state).
+- **Document intentional exceptions**: if a test remains serial, seeded, or exact-dataset dependent on purpose,
+  record why it remains and what would allow it to be rewritten.
+- **Do not scan paginated lists for non-pagination behavior**: if the scenario is not about paging,
+  navigate directly by known ID/route or use deterministic owned-data row targeting.
 
 Antipatterns to avoid:
 
@@ -359,6 +363,7 @@ Antipatterns to avoid:
 - text-only row matching when multiple rows could qualify
 - iterating paginator buttons until an item is eventually found
 - assertions that only pass because the item happened to land on page 1
+- pagination traversal helpers that click through pages until a matching row eventually appears
 
 ### E2E-specific base class guidance
 
@@ -386,14 +391,35 @@ apply the rules above before increasing timeouts.
   look for an existing helper method or helper class first.
 - If no suitable helper exists and the logic is repeated or hurts readability,
   prefer creating a helper and then using it instead of inlining the plumbing.
+- Extract shared helpers only for genuinely duplicated mechanics.
+- Keep one-off readability helpers local to the test class until a second real consumer exists.
 - Prefer dedicated helper classes for reusable test helper methods instead of keeping them inside
   test classes.
 - Keep private methods inside a test class only when they are truly local to that class and would
   not be appropriate or useful anywhere else.
 - Keep the behaviour under test and assertions visible in the test body;
   move only non-test-critical setup, navigation, and mechanical steps into helpers.
+- Avoid narration-style comments when simple Arrange/Act/Assert structure or a small helper method
+  makes the intent clear.
+- Avoid conditional logic in test bodies unless the conditional behavior itself is what the test is proving.
 - Avoid `Thread.Sleep()` and unnecessary waits
 - No test execution order dependencies
+
+### E2E selector strategy
+
+Prefer selectors in this order:
+
+1. **Accessible semantic selectors**
+   - role + accessible name
+   - label-based field lookup
+   - heading/link/button names
+2. **Business-key selectors**
+   - known `href`
+   - known entity ID in the route
+   - unique identifier text owned by the test
+3. **Explicit test hooks** only when semantic and business-key selectors are insufficient
+
+Avoid introducing raw HTML IDs or brittle CSS traversal solely to compensate for weak test setup.
 
 ## Mapper Testing Pattern
 
