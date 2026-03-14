@@ -33,7 +33,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         _ = await ApiClient.CreateBooking(zTour.Id, zCustomer.Id);
 
         // Tours: sort by Name ascending / descending
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
 
         var toursTable = Page.Locator("table");
@@ -48,7 +48,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         await Expect(firstTourCell).ToHaveTextAsync("Zzz Sort Tour");
 
         // Customers: sort by Name ascending / descending
-        await NavigateToAsync("/customers");
+        await NavigateTo("/customers");
         await Expect(Page).ToHaveTitleAsync("Customers");
 
         var customersTable = Page.Locator("table");
@@ -63,7 +63,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         await Expect(firstCustomerName).ToHaveTextAsync("Zzz Sort Customer");
 
         // Bookings: sort by Tour ascending / descending
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         var bookingsTable = Page.Locator("table");
@@ -91,7 +91,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         }
 
         // Act
-        await NavigateToAsync("/customers");
+        await NavigateTo("/customers");
         await Expect(Page).ToHaveTitleAsync("Customers");
 
         var customersTable = Page.Locator("table");

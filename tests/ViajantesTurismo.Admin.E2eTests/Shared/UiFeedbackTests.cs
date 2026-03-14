@@ -11,7 +11,7 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
     public async Task Can_See_Toast_Notifications_And_Timed_Redirects()
     {
         // Navigate to a Pending booking's edit page
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         var pendingRow = Page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { Has = Page.GetByText("Pending", new PageGetByTextOptions { Exact = true }) }).First;
         await pendingRow.GetLink("Edit").ClickAsync();
@@ -51,7 +51,7 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
     public async Task Bookings_Overview_Shows_Correct_Summary_Badges()
     {
         // Seed data: 10 bookings — 2 Pending, 6 Confirmed, 1 Cancelled, 1 Completed
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Badges are in the card-header

@@ -11,7 +11,7 @@ public class BookingCreationTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
     public async Task Can_Create_Booking_From_Customer_Details_With_Prefilled_Data()
     {
         // Navigate to the customers list and find Elena Rodriguez (EBike preference)
-        await NavigateToAsync("/customers");
+        await NavigateTo("/customers");
         await Expect(Page).ToHaveTitleAsync("Customers");
 
         var elenaRow = Page.Locator("table tbody tr")

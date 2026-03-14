@@ -14,17 +14,17 @@ public class ErrorHandlingTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
         await ClearDatabase(cts.Token);
 
         // Tour list: no rows, no error
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page.GetHeading("Tours")).ToBeVisibleAsync();
         await Expect(Page.Locator("table tbody tr")).ToHaveCountAsync(0);
 
         // Customer list: "No customers found" with a create link
-        await NavigateToAsync("/customers");
+        await NavigateTo("/customers");
         await Expect(Page.GetByText("No customers found")).ToBeVisibleAsync();
         await Expect(Page.GetLink("Create your first customer")).ToBeVisibleAsync();
 
         // Booking list: "No bookings found."
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         await Expect(Page.GetByText("No bookings found")).ToBeVisibleAsync();
     }
 }

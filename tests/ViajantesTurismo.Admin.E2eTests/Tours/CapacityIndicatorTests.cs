@@ -12,7 +12,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ESerialTestBase(fixt
     [Fact]
     public async Task Tour_Capacity_Badges_Show_Correct_State_On_List_And_Details()
     {
-        var toursListPage = new ToursListPage(Page, NavigateToAsync, ApiClient.GetAllTours);
+        var toursListPage = new ToursListPage(Page, NavigateTo, ApiClient.GetAllTours);
 
         // === Setup: Create own tour with 3 confirmed bookings ===
         var api = ApiClient;
@@ -30,7 +30,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ESerialTestBase(fixt
         const int currentCount = 3;
 
         // === Step 1: Navigate to the tours list and verify capacity badge ===
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page.GetHeading("Tours")).ToBeVisibleAsync();
 
         var tourRow = await toursListPage.GetTourRow(tour.Id);

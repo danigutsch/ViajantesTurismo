@@ -154,7 +154,7 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
         var email = $"e2e-ui4-{Guid.NewGuid():N}@import.test";
         var csv = CanonicalHeaders + "\n" + BuildValidRow(email);
 
-        await NavigateToAsync("/customers/import");
+        await NavigateTo("/customers/import");
 
         await Page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csv));
 
@@ -181,7 +181,7 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
         var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";
         var csv = CanonicalHeaders + "\n" + BuildValidRow(email);
 
-        await NavigateToAsync("/customers/import");
+        await NavigateTo("/customers/import");
 
         await Page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csv));
 

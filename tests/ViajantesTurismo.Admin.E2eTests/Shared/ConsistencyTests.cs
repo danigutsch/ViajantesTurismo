@@ -30,7 +30,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
         await ApiClient.RecordPaymentAsync(paidBooking.Id, 1_250m);
 
         // === Currency formatting: Tour list → Tour details ===
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
 
         // BRL row/list and details formatting.
@@ -46,7 +46,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
         await Expect(Page.GetByText(BrlPriceRegex()).First).ToBeVisibleAsync();
 
         // EUR row/list and details formatting.
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         var eurRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = eurTour.Identifier });
         await Expect(eurRow).ToBeVisibleAsync();
         var eurListPriceText = await eurRow.InnerTextAsync();
@@ -59,7 +59,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
         await Expect(Page.GetByText(EurPriceRegex()).First).ToBeVisibleAsync();
 
         // USD row/list and details formatting.
-        await NavigateToAsync("/tours");
+        await NavigateTo("/tours");
         var usdRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = usdTour.Identifier });
         await Expect(usdRow).ToBeVisibleAsync();
         var usdListPriceText = await usdRow.InnerTextAsync();
@@ -72,32 +72,32 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
         await Expect(Page.GetByText(DateFormatRegex()).First).ToBeVisibleAsync();
 
         // === Booking status badge consistency: list vs details ===
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Pending booking: list badge and details badge.
         var pendingRow = await BookingsList.GetBookingRow(pendingBooking.Id);
         await Expect(pendingRow.Locator(".badge:has-text('Pending')")).ToBeVisibleAsync();
-        await NavigateToAsync($"/bookings/{pendingBooking.Id}");
+        await NavigateTo($"/bookings/{pendingBooking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
         var detailPendingBadge = Page.Locator(".badge.bg-warning");
         await Expect(detailPendingBadge.First).ToBeVisibleAsync();
         await Expect(detailPendingBadge.First).ToContainTextAsync("Pending");
 
         // Confirmed booking: list badge and details badge.
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         var confirmedRow = await BookingsList.GetBookingRow(confirmedBooking.Id);
         await Expect(confirmedRow.Locator(".badge:has-text('Confirmed')")).ToBeVisibleAsync();
-        await NavigateToAsync($"/bookings/{confirmedBooking.Id}");
+        await NavigateTo($"/bookings/{confirmedBooking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
         var detailConfirmedBadge = Page.Locator(".badge.bg-success");
         await Expect(detailConfirmedBadge.First).ToBeVisibleAsync();
 
         // === Payment status badge consistency ===
-        await NavigateToAsync("/bookings");
+        await NavigateTo("/bookings");
         var paidRow = await BookingsList.GetBookingRow(paidBooking.Id);
         await Expect(paidRow.Locator(".badge:has-text('Paid')")).ToBeVisibleAsync();
-        await NavigateToAsync($"/bookings/{paidBooking.Id}");
+        await NavigateTo($"/bookings/{paidBooking.Id}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
         var detailPaymentBadge = Page.Locator(".badge:has-text('Paid')");
         await Expect(detailPaymentBadge.First).ToBeVisibleAsync();
@@ -114,7 +114,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fi
 
         foreach (var (route, expectedTitle) in routeTitles)
         {
-            await NavigateToAsync(route);
+            await NavigateTo(route);
             await Expect(Page).ToHaveTitleAsync(expectedTitle);
         }
     }

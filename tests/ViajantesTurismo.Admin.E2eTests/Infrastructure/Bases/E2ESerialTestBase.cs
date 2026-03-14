@@ -17,9 +17,9 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 {
     protected HttpClient ApiClient => fixture.ApiClient;
 
-    private protected BookingsListPage BookingsList => new(Page, NavigateToAsync, ApiClient.GetAllBookings);
+    private protected BookingsListPage BookingsList => new(Page, NavigateTo, ApiClient.GetAllBookings);
 
-    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateToAsync);
+    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
     protected async Task ClearDatabase(CancellationToken cancellationToken) => await fixture.ClearDatabase(cancellationToken);
 
@@ -41,7 +41,7 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
         GC.SuppressFinalize(this);
     }
 
-    protected async Task NavigateToAsync(string relativePath)
+    protected async Task NavigateTo(string relativePath)
     {
         await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
     }
