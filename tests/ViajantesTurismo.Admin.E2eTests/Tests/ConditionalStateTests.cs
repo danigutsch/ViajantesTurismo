@@ -7,10 +7,17 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Tour_Edit_Disables_Locked_Fields_When_Bookings_Exist()
     {
-        // Navigate to tours list and find a tour that has bookings (City Highlights = tours[0], has bookings)
+        // Arrange: create owned tour/customer/booking so the tour has bookings.
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient, minCustomers: 1, maxCustomers: 10);
+        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var booking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer.Id);
+        using var confirmResponse = await ApiClient.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        confirmResponse.EnsureSuccessStatusCode();
+
+        // Act: navigate to tours list and edit the owned tour by its unique identifier.
         await NavigateToAsync("/tours");
         var tourRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "City Highlights" });
+            .Filter(new LocatorFilterOptions { HasText = tour.Identifier });
         await tourRow.GetLink("Edit").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
@@ -35,11 +42,27 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Booking_Edit_Disables_All_Fields_For_Terminal_States()
     {
+        // Arrange: create owned bookings in Cancelled, Completed, and Pending states.
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient, minCustomers: 1, maxCustomers: 20);
+        var cancelledCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var completedCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var pendingCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+
+        var cancelledBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, cancelledCustomer.Id);
+        using var cancelResponse = await ApiClient.PostAsync(new Uri($"/bookings/{cancelledBooking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        cancelResponse.EnsureSuccessStatusCode();
+
+        var completedBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, completedCustomer.Id);
+        using var confirmResponse = await ApiClient.PostAsync(new Uri($"/bookings/{completedBooking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        confirmResponse.EnsureSuccessStatusCode();
+
+        using var completeResponse = await ApiClient.PostAsync(new Uri($"/bookings/{completedBooking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
+        completeResponse.EnsureSuccessStatusCode();
+
+        var pendingBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, pendingCustomer.Id);
+
         // === Cancelled booking: all form fields disabled ===
-        await NavigateToAsync("/bookings");
-        var cancelledRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge:has-text('Cancelled')") }).First;
-        await cancelledRow.GetLink("Edit").ClickAsync();
+        await NavigateToAsync($"/bookings/{cancelledBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Warning alert visible
@@ -62,10 +85,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
 
         // === Completed booking: same disabled behavior ===
-        await NavigateToAsync("/bookings");
-        var completedRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge:has-text('Completed')") }).First;
-        await completedRow.GetLink("Edit").ClickAsync();
+        await NavigateToAsync($"/bookings/{completedBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         // Warning alert visible
@@ -84,10 +104,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetButton("Delete Booking")).ToBeEnabledAsync();
 
         // === Pending booking: fields should be ENABLED ===
-        await NavigateToAsync("/bookings");
-        var pendingRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-warning") }).First;
-        await pendingRow.GetLink("Edit").ClickAsync();
+        await NavigateToAsync($"/bookings/{pendingBooking.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
 
         await Expect(Page.Locator("#status")).ToBeEnabledAsync();

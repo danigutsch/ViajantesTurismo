@@ -4,15 +4,15 @@ Test projects for the ViajantesTurismo Admin domain.
 
 ## Test Projects
 
-| Project | Type | Scope | Speed |
-| ------- | ---- | ----- | ----- |
-| [Admin.UnitTests](ViajantesTurismo.Admin.UnitTests/) | Unit | Domain logic in isolation | Fast |
-| [Admin.BehaviorTests](ViajantesTurismo.Admin.BehaviorTests/) | BDD | Business scenarios (Gherkin) | Fast–Medium |
-| [Admin.IntegrationTests](ViajantesTurismo.Admin.IntegrationTests/) | Integration | API endpoints with real DB | Slower |
-| [Admin.WebTests](ViajantesTurismo.Admin.WebTests/) | Component | Blazor components (bUnit) | Fast |
-| [Admin.E2ETests](ViajantesTurismo.Admin.E2ETests/) | E2E | Full-stack browser tests (Playwright) | Slowest |
-| [ArchitectureTests](ViajantesTurismo.ArchitectureTests/) | Architecture | Layer boundaries & conventions | Fast |
-| [Common.UnitTests](ViajantesTurismo.Common.UnitTests/) | Unit | Shared types (Result, Option) | Fast |
+| Project                                                            | Type         | Scope                                 | Speed       |
+|--------------------------------------------------------------------|--------------|---------------------------------------|-------------|
+| [Admin.UnitTests](ViajantesTurismo.Admin.UnitTests/)               | Unit         | Domain logic in isolation             | Fast        |
+| [Admin.BehaviorTests](ViajantesTurismo.Admin.BehaviorTests/)       | BDD          | Business scenarios (Gherkin)          | Fast–Medium |
+| [Admin.IntegrationTests](ViajantesTurismo.Admin.IntegrationTests/) | Integration  | API endpoints with real DB            | Slower      |
+| [Admin.WebTests](ViajantesTurismo.Admin.WebTests/)                 | Component    | Blazor components (bUnit)             | Fast        |
+| [Admin.E2ETests](ViajantesTurismo.Admin.E2ETests/)                 | E2E          | Full-stack browser tests (Playwright) | Slowest     |
+| [ArchitectureTests](ViajantesTurismo.ArchitectureTests/)           | Architecture | Layer boundaries & conventions        | Fast        |
+| [Common.UnitTests](ViajantesTurismo.Common.UnitTests/)             | Unit         | Shared types (Result, Option)         | Fast        |
 
 ## Running Tests
 
@@ -106,7 +106,27 @@ When adding a new domain's E2E or integration tests:
    - Data mutators / edge cases → serial base class
 
 See [ADR-018](../docs/adr/20260228-test-parallelization-with-assembly-fixtures.md) and
-[E2E Parallelization Plan](../docs/E2E_PARALLEL_PLAN.md) for implementation details.
+[E2E parallel failure analysis](../docs/E2E_PARALLEL_FAILURE_ANALYSIS.md)
+for implementation details.
+
+### Parallel-safety checklist (required for new tests)
+
+- Create **owned data** inside each test (API helpers preferred).
+- Prefer **ID-based** assertions and navigation over text-only row filters.
+- Make assertions **deterministic**: use known IDs, hrefs, unique identifiers,
+  or explicit search/filter state.
+- If interacting with a paginated list, constrain the dataset or sort/filter state
+  first rather than scanning pages until a match appears.
+- Do not assert implicit/default ordering unless sorting is explicitly applied first.
+- Keep DB-destructive or exact-count scenarios in serial test collections.
+
+### Common flakiness anti-patterns
+
+- Looking for a row by `HasText` only when lists are paginated.
+- Using `table tbody tr`.First or other page-position selectors as business assertions.
+- Clicking unstable grid rows while the UI is re-rendering instead of navigating by known route.
+- Depending on seeded entities like fixed tour/customer names in parallel tests.
+- Mixing parallel test classes with tests that call DB clear/reset operations.
 
 ## Conventions
 

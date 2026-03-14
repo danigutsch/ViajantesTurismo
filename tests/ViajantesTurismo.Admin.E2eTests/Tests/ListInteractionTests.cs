@@ -12,14 +12,13 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
 
         var toursTable = Page.Locator("table");
 
-        // Default order: City Highlights first (unsorted / insertion order)
+        // Do not assert default unsorted order, as backend default ordering is not guaranteed.
         var firstTourCell = toursTable.Locator("tbody tr td:nth-child(2)").First;
-        await Expect(firstTourCell).ToHaveTextAsync("City Highlights");
 
         // Sort by Name ascending
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
-        await Expect(firstTourCell).ToHaveTextAsync("City Highlights"); // A-Z: City is still first
+        await Expect(firstTourCell).ToHaveTextAsync("City Highlights"); // A-Z
 
         // Sort by Name descending
         await toursTable.GetButton("Name").ClickAsync();

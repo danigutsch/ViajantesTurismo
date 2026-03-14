@@ -7,7 +7,7 @@ public class ErrorHandlingTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
     {
         // Clear the database to test empty states (base class seeds by default)
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await Fixture.ClearDatabase(cts.Token);
+        await ClearDatabase(cts.Token);
 
         // Tour list: no rows, no error
         await NavigateToAsync("/tours");

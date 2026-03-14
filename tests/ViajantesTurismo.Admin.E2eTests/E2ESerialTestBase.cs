@@ -11,21 +11,23 @@ namespace ViajantesTurismo.Admin.E2ETests;
 [Collection("E2E.Serial")]
 public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 {
-    protected E2EFixture Fixture { get; } = fixture;
+    protected HttpClient ApiClient => fixture.ApiClient;
+
+    protected async Task ClearDatabase(CancellationToken cancellationToken) => await fixture.ClearDatabase(cancellationToken);
 
     public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await Fixture.ClearDatabase(cts.Token);
-        await Fixture.Seed(cts.Token);
+        await fixture.ClearDatabase(cts.Token);
+        await fixture.Seed(cts.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await Fixture.ClearDatabase(cts.Token);
+        await fixture.ClearDatabase(cts.Token);
 
         await base.DisposeAsync();
         GC.SuppressFinalize(this);
@@ -40,7 +42,7 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
     {
         return new BrowserNewContextOptions
         {
-            BaseURL = Fixture.WebAppUrl.ToString(),
+            BaseURL = fixture.WebAppUrl.ToString(),
             ViewportSize = new ViewportSize { Width = 1920, Height = 1080 },
             IgnoreHTTPSErrors = true
         };

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Playwright;
+using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
@@ -8,15 +9,15 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Create_Booking_Manage_Lifecycle_Apply_Discount_And_Record_Payments()
     {
-        // === Create booking from Tour Details ===
-        await NavigateToAsync("/tours");
-        await Expect(Page).ToHaveTitleAsync("Tours");
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient, currency: CurrencyDto.UsDollar);
+        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var customerFullName = $"{customer.FirstName} {customer.LastName}";
+        var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
 
-        // Find "Cultural Experience" tour and view its details
-        var tourRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = "Cultural Experience" });
-        await tourRow.GetLink("View").ClickAsync();
+        // === Create booking from Tour Details ===
+        await NavigateToAsync($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
-        await Expect(Page.GetByText("Cultural Experience").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
 
         // Click "Add Booking" to show the booking creation form
         await Page.GetButton("Add Booking").ClickAsync();
@@ -25,11 +26,11 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Fill booking form: locate selects within the form area
         var bookingForm = Page.Locator("form:has(button:text('Create Booking'))");
 
-        // Select customer: David Lee
+        // Select customer: owned test customer
         var customerField = bookingForm.Locator("div.mb-3")
             .Filter(new LocatorFilterOptions { HasText = "Customer" }).First;
         await customerField.Locator("select")
-            .SelectOptionAsync(new SelectOptionValue { Label = "David Lee (david@example.com)" });
+            .SelectOptionAsync(new SelectOptionValue { Label = customerSelectionLabel });
 
         // Select Room Type: Single Room
         var roomTypeField = bookingForm.Locator("div.mb-3")
@@ -55,22 +56,20 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        var bookingRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "David Lee" });
-        await Expect(bookingRow.First).ToBeVisibleAsync();
+        var bookingRow = await Page.RequireRowByLinkAcrossPagesAsync($"/customers/{customer.Id}");
 
         // Navigate to booking details
-        await bookingRow.First.GetLink("View").ClickAsync();
+        await bookingRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
         // Verify booking details
         await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("Cultural Experience").First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("David Lee").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
 
         // Total price should include base + single supplement + ebike: 1800 + 350 + 220 = 2370
-        await Expect(Page.GetByText("$ 2,370.00").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText("$ 1,300.00").First).ToBeVisibleAsync();
 
         // Extract booking ID from URL
         var bookingUrl = Page.Url;
@@ -163,8 +162,8 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync($"/bookings/{bookingId}");
         await Page.ReloadAsync();
         await Expect(Page).ToHaveTitleAsync("Booking Details");
-        await Expect(Page.GetByText("Cultural Experience").First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("David Lee").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
         await Expect(Page.GetByText("$ 1,000.00").First).ToBeVisibleAsync();
     }
 }

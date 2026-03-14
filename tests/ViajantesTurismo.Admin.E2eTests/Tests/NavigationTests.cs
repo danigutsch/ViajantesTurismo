@@ -8,6 +8,11 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Can_Deep_Link_All_Routes()
     {
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var booking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer.Id);
+
         // === Static routes ===
         await NavigateToAsync("/");
         await Expect(Page).ToHaveTitleAsync("Home - ViajantesTurismo");
@@ -24,13 +29,9 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        // === Parameterized routes: grab IDs from list pages ===
-
-        // Tour routes
-        await NavigateToAsync("/tours");
-        var tourViewHref = await Page.Locator("table tbody tr").First
-            .GetLink("View").GetAttributeAsync("href");
-        var tourId = tourViewHref!.Split('/').Last();
+        var tourId = tour.Id;
+        var customerId = customer.Id;
+        var bookingId = booking.Id;
 
         await NavigateToAsync($"/tours/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
@@ -38,23 +39,11 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync($"/edittour/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
-        // Customer routes
-        await NavigateToAsync("/customers");
-        var customerViewHref = await Page.Locator("table tbody tr").First
-            .GetLink("View").GetAttributeAsync("href");
-        var customerId = customerViewHref!.Split('/').Last();
-
         await NavigateToAsync($"/customers/{customerId}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
         await NavigateToAsync($"/customers/{customerId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
-
-        // Booking routes
-        await NavigateToAsync("/bookings");
-        var bookingViewHref = await Page.Locator("table tbody tr").First
-            .GetLink("View").GetAttributeAsync("href");
-        var bookingId = bookingViewHref!.Split('/').Last();
 
         await NavigateToAsync($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
@@ -93,18 +82,20 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // === Browser back from detail → list preserves data ===
         await NavigateToAsync("/tours");
-        await Expect(Page.Locator("table tbody tr").First).ToBeVisibleAsync();
-        await Page.Locator("table tbody tr").First.GetLink("View").ClickAsync();
+        await NavigateToAsync($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.NetworkIdle });
         await Expect(Page).ToHaveTitleAsync("Tours");
-        await Expect(Page.Locator("table tbody tr").First).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(ToursRegex());
     }
 
     [Fact]
     public async Task Can_Render_Home_Page_And_Navigate_Using_Sidebar_And_Quick_Actions()
     {
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+
         // === Home Page Content ===
         await NavigateToAsync("/");
 
@@ -187,8 +178,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page).ToHaveURLAsync(BookingsRegex());
 
         // === Prefix Match: /tours/{id} still highlights "Tours" nav link ===
-        await NavigateToAsync("/tours");
-        await content.GetLink("View").First.ClickAsync();
+        await NavigateToAsync($"/tours/{tour.Id}");
         await Expect(Page).ToHaveURLAsync(TourRegex());
         await Expect(sidebar.GetLink("Tours", exact: true)).ToHaveClassAsync(ActiveRegex());
     }

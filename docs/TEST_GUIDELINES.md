@@ -8,7 +8,7 @@ Our strategy follows a test pyramid approach:
 
 - **Unit Tests** (fast, in-memory) — Majority of tests
 - **Integration Tests** (database, HTTP) — Key API scenarios
-- **Behavior Tests** (BDD/Gherkin) — Business-critical scenarios
+- **Behaviour Tests** (BDD/Gherkin) — Business-critical scenarios
 - **End-to-End/Acceptance** (future) — Thin layer of critical user journeys
 
 **Philosophy:** Fast feedback through comprehensive unit tests, confidence through integration tests, and business
@@ -121,7 +121,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 ### Current Projects
 
-- **`ViajantesTurismo.Common.UnitTests`** — Shared utilities: building blocks, Result pattern, sanitizers, extensions.
+- **`ViajantesTurismo.Common.UnitTests`** — Shared utilities: building blocks, Result pattern, sanitisers, extensions.
   Fast, no dependencies.
 - **`ViajantesTurismo.Admin.UnitTests`** — Domain logic: entities, aggregates, mappers, business rules. Fast, in-memory
   only.
@@ -129,7 +129,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
   Uses bUnit for fast, in-memory component testing.
 - **`ViajantesTurismo.Admin.IntegrationTests`** — API endpoints with real PostgreSQL database. Slower, tests complete
   request-response cycle.
-- **`ViajantesTurismo.Admin.BehaviorTests`** — Behavior-driven tests using Gherkin/SpecFlow for backend domain
+- **`ViajantesTurismo.Admin.BehaviorTests`** — Behaviour-driven tests using Gherkin/SpecFlow for backend domain
   scenarios, written in business language.
 
 ### Suggested Structure (Future Evolution)
@@ -169,7 +169,7 @@ booking-capacity-management.feature
 payment-recording.feature
 ```
 
-### Behavior Test Step Definitions
+### Behaviour Test Step Definitions
 
 Follow Gherkin/SpecFlow conventions with descriptive method names:
 
@@ -295,14 +295,14 @@ public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception(
 
 - **Unit Tests:** Direct instantiation with factory methods (e.g., `Tour.Create()`)
 - **Integration Tests:** Seeded database using `Seeder` class with known data
-- **Behavior Tests:** Context objects to share state between steps
+- **Behaviour Tests:** Context objects to share state between steps
 
 ### Best Practices
 
 - **Prefer object mothers/builders** for complex aggregates and value objects
 - **Keep test data in code** (avoid external files unless absolutely necessary)
 - **Avoid shared mutable state** between tests
-- **Use ephemeral resources** for integration tests (e.g., Testcontainers, in-memory databases)
+- **Use ephemeral resources** for integration tests (e.g. Testcontainers, in-memory databases)
 - **Use FakeTimeProvider** instead of `DateTime.UtcNow` for deterministic time-based tests
 
 **Example Object Mother:**
@@ -331,23 +331,56 @@ public static class TestHelpers
 - Use specific assertions (`Assert.Equal`, `Assert.Contains`) over generic `Assert.True`
 - Multiple related assertions in one test are acceptable
 - Avoid conditional logic in assertions
-- Be specific but not fragile (e.g., check message contains key phrase, not exact text)
+- Be specific but not fragile (e.g. check that the message contains key phrase, not exact text)
 
 ## Testing Best Practices
 
+## Parallel-Safe Test Design
+
+Parallel execution is the default expectation for most tests in this repository.
+Use these rules to avoid flaky behaviour:
+
+- **Own your data per test**: create tours/customers/bookings inside the test (or via helper methods)
+  instead of relying on shared seeded rows.
+- **Use stable identifiers**: prefer ID-based navigation and selectors (`/tours/{id}`, `/bookings/{id}`)
+  over non-unique text filters (first name, title text only).
+- **All assertions must be deterministic**: assert against a known entity, route, unique identifier,
+  or stable semantic locator rather than whichever row happens to be visible.
+- **Avoid first-page assumptions** in paginated lists: if list presence is asserted, constrain the dataset
+  or UI state first (for example, by explicit sort/filter/search) rather than assuming row visibility on page 1.
+- **Do not depend on default unsorted order** from data grids or backend queries.
+- **Separate concerns**: route/title checks should not depend on list ordering assertions.
+- **Use serial collections only when required** (exact-count assertions, destructive DB resets,
+  or scenarios that intentionally mutate the shared baseline state).
+
+Antipatterns to avoid:
+
+- `table tbody tr`.First
+- text-only row matching when multiple rows could qualify
+- iterating paginator buttons until an item is eventually found
+- assertions that only pass because the item happened to land on page 1
+
+### E2E-specific base class guidance
+
+- Use `E2ETestBase` for tests that can safely run in parallel with owned data.
+- Use `E2ESerialTestBase` for tests that require per-test `ClearDatabase + Seed` isolation.
+
+If a test intermittently fails only in full-suite runs but passes alone, treat it as a parallel-safety smell and
+apply the rules above before increasing timeouts.
+
 ### FIRST Principles
 
-- **Fast**: Unit tests < 100ms, Integration ~24s (includes database setup), Behavior < 10s (frontend E2E tests when
+- **Fast**: Unit tests < 100 ms, Integration ~24 s (includes database setup), Behaviour < 10s (frontend E2E tests when
   added will be slower)
-- **Independent**: Tests run in any order without shared state
+- **Independent**: Tests run in any order without a shared state
 - **Repeatable**: Same result every time (use `FakeTimeProvider` instead of `DateTime.UtcNow`)
 - **Self-Validating**: Clear pass/fail without manual inspection
 - **Timely**: Written with production code
 
 ### Guidelines
 
-- One logical assertion per test (test one behavior)
-- Test public behavior, not implementation details
+- One logical assertion per test (test one behaviour)
+- Test public behaviour, not implementation details
 - Extract common setup to helper methods (e.g., `TestHelpers.CreateTestCustomerWithNames()`)
 - Avoid `Thread.Sleep()` and unnecessary waits
 - No test execution order dependencies
@@ -395,11 +428,11 @@ Context classes (POCOs) share state between step definitions via Reqnroll's depe
 **Input Properties:**
 
 - Use `required` modifier for properties that must be set before steps run
-- Initialize collections via field initializers: `ICollection<string> Items { get; } = [];`
+- Initialise collections via field initialisers: `ICollection<string> Items { get; } = [];`
 
 **Dependencies:**
 
-- Initialize Fakes and test doubles via field initializers
+- Initialise Fakes and test doubles via field initialisers
 - Use expression-bodied properties for command handlers: `Handler => new(Store, UnitOfWork);`
 
 **Example (Good Pattern):**
@@ -493,7 +526,7 @@ Use tags to link scenarios to architectural concepts:
 
 - **Unit Tests:** 80%+ code coverage
 - **Integration Tests:** All API endpoints
-- **Behavior Tests:** Business-critical scenarios
+- **Behaviour Tests:** Business-critical scenarios
 
 Focus on happy paths, error paths, and boundary conditions. Don't obsess over 100% coverage or testing simple
 getters/setters.
@@ -521,10 +554,10 @@ dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-for
 When CI is added:
 
 - Fail the build on acceptance/domain test failures
-- Publish coverage reports to dashboard
+- Publish coverage reports to the dashboard
 - Run unit tests on every PR
 - Run integration tests on merge to main
-- Run full test suite on release branches
+- Run the full test suite on release branches
   **Pattern:** Match regex and update context objects
 
 ```csharp
@@ -553,7 +586,7 @@ public void Then_The_Booking_Should_Fail_With_Error(string expectedError)
 
 - **Unit Tests:** 80%+ code coverage
 - **Integration Tests:** All API endpoints
-- **Behavior Tests:** Business-critical scenarios
+- **Behaviour Tests:** Business-critical scenarios
 
 Focus on happy paths, error paths, and boundary conditions. Don't obsess over 100% coverage or testing simple
 getters/setters.
@@ -597,10 +630,10 @@ See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool c
 When CI is added:
 
 - Fail the build on test failures
-- Publish coverage reports to dashboard
+- Publish coverage reports to the dashboard
 - Run unit tests on every PR
 - Run integration tests on merge to main
-- Run full test suite on release branches
+- Run the full test suite on release branches
 
 ## Related Documentation
 
@@ -621,7 +654,7 @@ guidelines to maintain a high-quality test suite that gives confidence when maki
 - Use declarative BDD scenarios in domain language
 - Prefer object mothers/builders over complex test data
 - Tag scenarios to link business requirements with technical implementation
-- Keep tests fast, independent, and focused on behavior
+- Keep tests fast, independent, and focused on behaviour
 
 ## Common Anti-Patterns to Avoid
 

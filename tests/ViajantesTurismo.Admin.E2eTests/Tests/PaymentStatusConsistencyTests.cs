@@ -5,104 +5,82 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     [Fact]
     public async Task Bookings_List_Payment_Status_Matches_Booking_Details()
     {
-        // Navigate to /bookings list page
-        await NavigateToAsync("/bookings");
-        await Expect(Page).ToHaveTitleAsync("Bookings");
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+        var customerUnpaid = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var customerPartiallyPaid = await ApiTestHelper.CreateCustomerAsync(ApiClient);
 
-        // Wait for table to render before collecting data
-        var rows = Page.Locator("table tbody tr");
-        await Expect(rows.First).ToBeVisibleAsync();
-        var rowCount = await rows.CountAsync();
+        var unpaidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customerUnpaid.Id);
+        var partiallyPaidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customerPartiallyPaid.Id);
+        await ApiTestHelper.RecordPaymentAsync(ApiClient, partiallyPaidBooking.Id, 500m);
 
-        var listStatuses = new Dictionary<string, string>();
+        // Act
+        // Assert
+        var unpaidFromList = await GetPaymentStatusFromBookingsListAsync(unpaidBooking.Id);
+        var partiallyPaidFromList = await GetPaymentStatusFromBookingsListAsync(partiallyPaidBooking.Id);
 
-        for (var i = 0; i < rowCount; i++)
-        {
-            var row = rows.Nth(i);
-            var viewLink = row.GetLink("View");
-            await Expect(viewLink).ToBeVisibleAsync();
-            var href = await viewLink.GetAttributeAsync("href");
-            Assert.NotNull(href);
+        var unpaidFromDetails = await GetPaymentStatusFromDetailsAsync(unpaidBooking.Id);
+        var partiallyPaidFromDetails = await GetPaymentStatusFromDetailsAsync(partiallyPaidBooking.Id);
 
-            var paymentBadge = row.Locator("td:nth-child(8) .badge");
-            await Expect(paymentBadge).ToBeVisibleAsync();
-            var paymentText = (await paymentBadge.InnerTextAsync()).Trim();
-
-            listStatuses[href] = paymentText;
-        }
-
-        // Verify at least one booking is not "Unpaid" (proves Include(Payments) is working)
-        Assert.Contains(listStatuses.Values, status => status != "Unpaid");
-
-        // Navigate to each booking's detail page and compare payment status
-        foreach (var (href, listPaymentStatus) in listStatuses)
-        {
-            await NavigateToAsync(href);
-            await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-            // Wait for badges to render, then find payment status badge
-            var badges = Page.Locator("dd .badge");
-            await Expect(badges.Nth(1)).ToBeVisibleAsync();
-            var detailPaymentText = (await badges.Nth(1).InnerTextAsync()).Trim();
-
-            Assert.Equal(listPaymentStatus, detailPaymentText);
-        }
+        Assert.Equal(unpaidFromList, unpaidFromDetails);
+        Assert.Equal(partiallyPaidFromList, partiallyPaidFromDetails);
+        Assert.NotEqual("Unpaid", partiallyPaidFromList);
     }
 
     [Fact]
     public async Task Scoped_Bookings_Payment_Status_Matches_Global_List()
     {
-        // Collect payment status from global /bookings list
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+        var customer1 = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var customer2 = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var booking1 = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer1.Id);
+        var booking2 = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer2.Id);
+        await ApiTestHelper.RecordPaymentAsync(ApiClient, booking2.Id, 300m);
+
+        var booking1Href = $"/bookings/{booking1.Id}";
+        var booking2Href = $"/bookings/{booking2.Id}";
+        var expectedBooking1 = await GetPaymentStatusFromBookingsListAsync(booking1.Id);
+        var expectedBooking2 = await GetPaymentStatusFromBookingsListAsync(booking2.Id);
+
+        // Act
+        await NavigateToAsync($"/tours/{tour.Id}");
+        await Expect(Page).ToHaveTitleAsync("Tour Details");
+
+        var scopedBooking1Row = Page.Locator($".table tbody tr:has(a[href='{booking1Href}'])");
+        var scopedBooking2Row = Page.Locator($".table tbody tr:has(a[href='{booking2Href}'])");
+        await Expect(scopedBooking1Row).ToHaveCountAsync(1);
+        await Expect(scopedBooking2Row).ToHaveCountAsync(1);
+
+        var scopedBooking1Status = (await scopedBooking1Row.First.Locator("td .badge").Last.InnerTextAsync()).Trim();
+        var scopedBooking2Status = (await scopedBooking2Row.First.Locator("td .badge").Last.InnerTextAsync()).Trim();
+
+        // Assert
+        Assert.Equal(expectedBooking1, scopedBooking1Status);
+        Assert.Equal(expectedBooking2, scopedBooking2Status);
+    }
+
+    private async Task<string> GetPaymentStatusFromBookingsListAsync(Guid bookingId)
+    {
+        var href = $"/bookings/{bookingId}";
+
         await NavigateToAsync("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        var globalRows = Page.Locator("table tbody tr");
-        await Expect(globalRows.First).ToBeVisibleAsync();
-        var globalCount = await globalRows.CountAsync();
+        var row = await Page.RequireRowByLinkAcrossPagesAsync(href);
 
-        var globalStatuses = new Dictionary<string, string>();
+        var paymentBadge = row.Locator("td:nth-child(8) .badge");
+        await Expect(paymentBadge).ToBeVisibleAsync();
+        return (await paymentBadge.InnerTextAsync()).Trim();
+    }
 
-        for (var i = 0; i < globalCount; i++)
-        {
-            var row = globalRows.Nth(i);
-            var viewLink = row.GetLink("View");
-            await Expect(viewLink).ToBeVisibleAsync();
-            var href = await viewLink.GetAttributeAsync("href");
-            Assert.NotNull(href);
+    private async Task<string> GetPaymentStatusFromDetailsAsync(Guid bookingId)
+    {
+        await NavigateToAsync($"/bookings/{bookingId}");
+        await Expect(Page).ToHaveTitleAsync("Booking Details");
 
-            var paymentBadge = row.Locator("td:nth-child(8) .badge");
-            await Expect(paymentBadge).ToBeVisibleAsync();
-            var paymentText = (await paymentBadge.InnerTextAsync()).Trim();
-
-            globalStatuses[href] = paymentText;
-        }
-
-        // Navigate to a tour details page and check its scoped bookings list
-        await NavigateToAsync("/tours");
-        var tourRow = Page.Locator("table tbody tr").First;
-        await Expect(tourRow).ToBeVisibleAsync();
-        await tourRow.GetLink("View").ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Tour Details");
-
-        var scopedRows = Page.Locator(".table tbody tr");
-        await Expect(scopedRows.First).ToBeVisibleAsync();
-        var scopedCount = await scopedRows.CountAsync();
-
-        for (var i = 0; i < scopedCount; i++)
-        {
-            var row = scopedRows.Nth(i);
-            var viewLink = row.GetLink("View");
-            var href = await viewLink.GetAttributeAsync("href");
-            if (href is null || !globalStatuses.TryGetValue(href, out var expectedStatus))
-            {
-                continue;
-            }
-
-            var paymentBadge = row.Locator("td .badge").Last;
-            await Expect(paymentBadge).ToBeVisibleAsync();
-            var scopedText = (await paymentBadge.InnerTextAsync()).Trim();
-
-            Assert.Equal(expectedStatus, scopedText);
-        }
+        var badges = Page.Locator("dd .badge");
+        await Expect(badges.Nth(1)).ToBeVisibleAsync();
+        return (await badges.Nth(1).InnerTextAsync()).Trim();
     }
 }

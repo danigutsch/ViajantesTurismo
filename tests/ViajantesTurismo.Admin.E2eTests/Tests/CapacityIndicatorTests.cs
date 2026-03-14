@@ -1,9 +1,8 @@
 using System.Globalization;
-using Microsoft.Playwright;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
-public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class CapacityIndicatorTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
     public async Task Tour_Capacity_Badges_Show_Correct_State_On_List_And_Details()
@@ -23,12 +22,11 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         const int currentCount = 3;
 
-        // === Step 1: Navigate to tours list and verify capacity badge ===
+        // === Step 1: Navigate to the tours list and verify capacity badge ===
         await NavigateToAsync("/tours");
         await Expect(Page.GetHeading("Tours")).ToBeVisibleAsync();
 
-        var tourRows = Page.Locator("table tbody tr");
-        var tourRow = tourRows.Filter(new LocatorFilterOptions { HasText = tourName });
+        var tourRow = await Page.RequireRowByLinkAcrossPagesAsync($"/tours/{tour.Id}");
         var capacityText = await tourRow.Locator("span.text-nowrap").TextContentAsync();
         Assert.NotNull(capacityText);
         Assert.Matches(@"\d+ / \d+", capacityText);
@@ -53,8 +51,7 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetButton("Cancel").ClickAsync();
         await NavigateToAsync("/tours");
 
-        var cityRowFull = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = tourName });
+        var cityRowFull = await Page.RequireRowByLinkAcrossPagesAsync($"/tours/{tour.Id}");
         await Expect(cityRowFull.Locator("span.badge.bg-danger")).ToContainTextAsync("Full");
         await Expect(cityRowFull.Locator("span.text-nowrap")).ToHaveTextAsync($"{currentCount} / {currentCount}");
 
@@ -77,9 +74,8 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetButton("Cancel").ClickAsync();
         await NavigateToAsync("/tours");
 
-        // Tour should now show green badge with "3 spots"
-        var cityRowGreen = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = tourName });
+        // Tour should now show a green badge with "3 spots"
+        var cityRowGreen = await Page.RequireRowByLinkAcrossPagesAsync($"/tours/{tour.Id}");
         await Expect(cityRowGreen.Locator("span.badge.bg-success")).ToContainTextAsync("3 spots");
 
         // Verify details page shows "3 spots available"
@@ -100,9 +96,8 @@ public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetButton("Cancel").ClickAsync();
         await NavigateToAsync("/tours");
 
-        // Tour should now show yellow "Below Min" badge
-        var cityRowYellow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = tourName });
+        // Tour should now show a yellow "Below Min" badge
+        var cityRowYellow = await Page.RequireRowByLinkAcrossPagesAsync($"/tours/{tour.Id}");
         await Expect(cityRowYellow.Locator("span.badge.bg-warning")).ToContainTextAsync("Below Min");
 
         // Verify details page shows "Below Minimum"

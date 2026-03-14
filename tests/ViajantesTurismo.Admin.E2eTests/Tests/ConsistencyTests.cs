@@ -1,53 +1,69 @@
 using System.Text.RegularExpressions;
 using Microsoft.Playwright;
+using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
-public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
+public partial class ConsistencyTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
     public async Task Formatting_And_Badges_Are_Consistent_Across_Pages()
     {
+        // Arrange: create owned tours for each currency and bookings for each status shape.
+        var brlTour = await ApiTestHelper.CreateTourAsync(ApiClient, currency: CurrencyDto.Real);
+        var eurTour = await ApiTestHelper.CreateTourAsync(ApiClient, currency: CurrencyDto.Euro);
+        var usdTour = await ApiTestHelper.CreateTourAsync(ApiClient, currency: CurrencyDto.UsDollar);
+
+        var pendingCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var confirmedCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+        var paidCustomer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+
+        var pendingBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, usdTour.Id, pendingCustomer.Id);
+        var confirmedBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, usdTour.Id, confirmedCustomer.Id);
+        _ = await ApiTestHelper.ConfirmBookingAsync(ApiClient, confirmedBooking.Id);
+        var paidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, usdTour.Id, paidCustomer.Id);
+        _ = await ApiTestHelper.ConfirmBookingAsync(ApiClient, paidBooking.Id);
+        await ApiTestHelper.RecordPaymentAsync(ApiClient, paidBooking.Id, 1_250m);
+
         // === Currency formatting: Tour list → Tour details ===
         await NavigateToAsync("/tours");
         await Expect(Page).ToHaveTitleAsync("Tours");
 
-        // Get pricing text for first BRL tour (City Highlights: R$ 1,500.00)
-        var cityHighlightsRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = "City Highlights" });
-        await Expect(cityHighlightsRow).ToBeVisibleAsync();
-        var listPriceText = await cityHighlightsRow.InnerTextAsync();
+        // BRL row/list and details formatting.
+        var brlRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = brlTour.Identifier });
+        await Expect(brlRow).ToBeVisibleAsync();
+        var brlListPriceText = await brlRow.InnerTextAsync();
 
         // BRL prices should use "R$" prefix
-        Assert.Contains("R$", listPriceText, StringComparison.Ordinal);
+        Assert.Contains("R$", brlListPriceText, StringComparison.Ordinal);
 
-        // Navigate to "City Highlights" details
-        await cityHighlightsRow.GetLink("View").ClickAsync();
+        await brlRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
-
-        // Currency formatting on details should match: R$ prefix for Real
         await Expect(Page.GetByText(BrlPriceRegex()).First).ToBeVisibleAsync();
 
-        // Navigate back and check EUR tour (Historical Landmarks: 2,000.00 €)
+        // EUR row/list and details formatting.
         await NavigateToAsync("/tours");
-        var historicalRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = "Historical Landmarks" });
-        var historicalPriceText = await historicalRow.InnerTextAsync();
+        var eurRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = eurTour.Identifier });
+        await Expect(eurRow).ToBeVisibleAsync();
+        var eurListPriceText = await eurRow.InnerTextAsync();
 
         // EUR prices should use "€" suffix
-        Assert.Contains("€", historicalPriceText, StringComparison.Ordinal);
+        Assert.Contains("€", eurListPriceText, StringComparison.Ordinal);
 
-        await historicalRow.GetLink("View").ClickAsync();
+        await eurRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetByText(EurPriceRegex()).First).ToBeVisibleAsync();
 
-        // Navigate back and check USD tour (Cultural Experience)
+        // USD row/list and details formatting.
         await NavigateToAsync("/tours");
-        var culturalRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = "Cultural Experience" });
-        var culturalPriceText = await culturalRow.InnerTextAsync();
-        Assert.Contains("$", culturalPriceText, StringComparison.Ordinal);
+        var usdRow = Page.Locator("table tbody tr").Filter(new LocatorFilterOptions { HasText = usdTour.Identifier });
+        await Expect(usdRow).ToBeVisibleAsync();
+        var usdListPriceText = await usdRow.InnerTextAsync();
+        Assert.Contains("$", usdListPriceText, StringComparison.Ordinal);
 
         // === Date formatting: dd/MM/yyyy across list and details ===
         // Tour list and details should use consistent date format
-        await culturalRow.GetLink("View").ClickAsync();
+        await usdRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
         await Expect(Page.GetByText(DateFormatRegex()).First).ToBeVisibleAsync();
 
@@ -55,51 +71,32 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         await NavigateToAsync("/bookings");
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
-        // Find a booking with "Pending" status in the list
-        var pendingBadgeInList = Page.Locator("table tbody tr .badge.bg-warning");
-        if (await pendingBadgeInList.CountAsync() > 0)
-        {
-            var pendingRow = Page.Locator("table tbody tr")
-                .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-warning") }).First;
-            await pendingRow.GetLink("View").ClickAsync();
-            await Expect(Page).ToHaveTitleAsync("Booking Details");
+        // Pending booking: list badge and details badge.
+        var pendingRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{pendingBooking.Id}");
+        await Expect(pendingRow.Locator(".badge:has-text('Pending')")).ToBeVisibleAsync();
+        await NavigateToAsync($"/bookings/{pendingBooking.Id}");
+        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        var detailPendingBadge = Page.Locator(".badge.bg-warning");
+        await Expect(detailPendingBadge.First).ToBeVisibleAsync();
+        await Expect(detailPendingBadge.First).ToContainTextAsync("Pending");
 
-            // Details page should also show Pending badge with same class
-            var detailPendingBadge = Page.Locator(".badge.bg-warning");
-            await Expect(detailPendingBadge.First).ToBeVisibleAsync();
-            await Expect(detailPendingBadge.First).ToContainTextAsync("Pending");
-        }
-
-        // Find a booking with "Confirmed" status
+        // Confirmed booking: list badge and details badge.
         await NavigateToAsync("/bookings");
-        var confirmedBadgeInList = Page.Locator("table tbody tr .badge.bg-success");
-        if (await confirmedBadgeInList.CountAsync() > 0)
-        {
-            var confirmedRow = Page.Locator("table tbody tr")
-                .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge.bg-success") }).First;
-            await confirmedRow.GetLink("View").ClickAsync();
-            await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-            var detailConfirmedBadge = Page.Locator(".badge.bg-success");
-            await Expect(detailConfirmedBadge.First).ToBeVisibleAsync();
-        }
+        var confirmedRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{confirmedBooking.Id}");
+        await Expect(confirmedRow.Locator(".badge:has-text('Confirmed')")).ToBeVisibleAsync();
+        await NavigateToAsync($"/bookings/{confirmedBooking.Id}");
+        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        var detailConfirmedBadge = Page.Locator(".badge.bg-success");
+        await Expect(detailConfirmedBadge.First).ToBeVisibleAsync();
 
         // === Payment status badge consistency ===
         await NavigateToAsync("/bookings");
-
-        // Check for "Paid" badge
-        var paidBadge = Page.Locator("table tbody tr .badge:has-text('Paid')");
-        if (await paidBadge.CountAsync() > 0)
-        {
-            var paidRow = Page.Locator("table tbody tr")
-                .Filter(new LocatorFilterOptions { Has = Page.Locator(".badge:has-text('Paid')") }).First;
-            await paidRow.GetLink("View").ClickAsync();
-            await Expect(Page).ToHaveTitleAsync("Booking Details");
-
-            // Payment status badge on details should be consistent
-            var detailPaymentBadge = Page.Locator(".badge:has-text('Paid')");
-            await Expect(detailPaymentBadge.First).ToBeVisibleAsync();
-        }
+        var paidRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{paidBooking.Id}");
+        await Expect(paidRow.Locator(".badge:has-text('Paid')")).ToBeVisibleAsync();
+        await NavigateToAsync($"/bookings/{paidBooking.Id}");
+        await Expect(Page).ToHaveTitleAsync("Booking Details");
+        var detailPaymentBadge = Page.Locator(".badge:has-text('Paid')");
+        await Expect(detailPaymentBadge.First).ToBeVisibleAsync();
 
         // === Route-title consistency for major pages ===
         var routeTitles = new Dictionary<string, string>

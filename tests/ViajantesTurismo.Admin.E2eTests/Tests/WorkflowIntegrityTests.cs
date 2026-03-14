@@ -47,8 +47,10 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Tour_Details_Add_Booking_Flow_Should_Validate_Without_Leaking_Internal_Errors()
     {
-        await NavigateToAsync("/tours");
-        await Page.Locator("table tbody tr").First.GetLink("View").ClickAsync();
+        // Arrange
+        var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
+
+        await NavigateToAsync($"/tours/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GetButton("Add Booking").ClickAsync();
@@ -76,14 +78,13 @@ public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
     {
         const string leakedSearchPlaceholder = "Search customers by name or email...";
 
+        // Arrange
+        var customer = await ApiTestHelper.CreateCustomerAsync(ApiClient);
+
         await NavigateToAsync("/customers/create/accommodation");
         await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
 
-        await NavigateToAsync("/customers");
-        var editHref = await Page.Locator("table tbody tr").First
-            .GetLink("Edit").GetAttributeAsync("href");
-
-        await NavigateToAsync(editHref!);
+        await NavigateToAsync($"/customers/{customer.Id}/edit");
         await Expect(Page.Locator($"input[placeholder='{leakedSearchPlaceholder}']")).ToHaveCountAsync(0);
     }
 

@@ -62,4 +62,90 @@ internal static class LocatorHelpers
     /// <returns>An ILocator representing the located button.</returns>
     public static ILocator GetButton(this ILocator locator, string name) =>
         locator.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = name });
+
+    /// <summary>
+    /// Finds a row containing a link with the given href, traversing paginator pages when present.
+    /// Returns <c>null</c> if no matching row is found.
+    /// </summary>
+    /// <param name="page">The current page.</param>
+    /// <param name="href">The href to search for (for example, /bookings/{id}).</param>
+    /// <param name="tableSelector">Optional table selector. Defaults to "table".</param>
+    /// <param name="maxPages">Safety cap for number of pages to inspect.</param>
+    /// <param name="retryPasses">Number of full scan passes to retry before giving up.</param>
+    private static async Task<ILocator?> FindRowByLinkAcrossPagesAsync(
+        this IPage page,
+        string href,
+        string tableSelector = "table",
+        int maxPages = 50,
+        int retryPasses = 3)
+    {
+        var row = page.Locator($"{tableSelector} tbody tr:has(a[href='{href}'])");
+        var nextButton = page.Locator(".paginator button[aria-label='Go to next page']");
+        var previousButton = page.Locator(".paginator button[aria-label='Go to previous page']");
+
+        for (var pass = 0; pass < retryPasses; pass++)
+        {
+            if (await row.CountAsync() > 0)
+            {
+                return row.First;
+            }
+
+            if (await previousButton.CountAsync() > 0)
+            {
+                for (var i = 0; i < maxPages; i++)
+                {
+                    if (await previousButton.IsDisabledAsync())
+                    {
+                        break;
+                    }
+
+                    await previousButton.ClickAsync();
+
+                    if (await row.CountAsync() > 0)
+                    {
+                        return row.First;
+                    }
+                }
+            }
+
+            if (await nextButton.CountAsync() > 0)
+            {
+                for (var i = 0; i < maxPages; i++)
+                {
+                    if (await nextButton.IsDisabledAsync())
+                    {
+                        break;
+                    }
+
+                    await nextButton.ClickAsync();
+
+                    if (await row.CountAsync() > 0)
+                    {
+                        return row.First;
+                    }
+                }
+            }
+
+            if (pass < retryPasses - 1)
+            {
+                await Task.Delay(250);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds a row by link across pages or throws with a descriptive message.
+    /// </summary>
+    public static async Task<ILocator> RequireRowByLinkAcrossPagesAsync(
+        this IPage page,
+        string href,
+        string tableSelector = "table",
+        int maxPages = 50,
+        int retryPasses = 3)
+    {
+        var row = await page.FindRowByLinkAcrossPagesAsync(href, tableSelector, maxPages, retryPasses);
+        return row ?? throw new InvalidOperationException($"Could not find row containing link '{href}' within {maxPages} page(s) and {retryPasses} pass(es).");
+    }
 }

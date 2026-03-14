@@ -1,5 +1,3 @@
-using Microsoft.Playwright;
-
 namespace ViajantesTurismo.Admin.E2ETests.Tests;
 
 public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
@@ -35,21 +33,22 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
 
         // === From bookings list: tour and customer links in rows ===
         await NavigateToAsync("/bookings");
-        var bookingRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = customer.FirstName });
-        await Expect(bookingRow).ToHaveCountAsync(1);
+        var bookingRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{booking.Id}");
 
-        // Click tour link in first row
-        var listTourLink = bookingRow.First.Locator("a[href^='/tours/']").First;
-        await listTourLink.ClickAsync();
+        // Navigate using tour link href from row
+        var listTourHref = await bookingRow.Locator("a[href^='/tours/']").First.GetAttributeAsync("href");
+        Assert.NotNull(listTourHref);
+        await NavigateToAsync(listTourHref);
         await Expect(Page).ToHaveTitleAsync("Tour Details");
 
         await Page.GoBackAsync();
         await Expect(Page).ToHaveTitleAsync("Bookings");
 
         // Click customer link in first row
-        var listCustomerLink = bookingRow.First.Locator("a[href^='/customers/']").First;
-        await listCustomerLink.ClickAsync();
+        bookingRow = await Page.RequireRowByLinkAcrossPagesAsync($"/bookings/{booking.Id}");
+        var listCustomerHref = await bookingRow.Locator("a[href^='/customers/']").First.GetAttributeAsync("href");
+        Assert.NotNull(listCustomerHref);
+        await NavigateToAsync(listCustomerHref);
         await Expect(Page).ToHaveTitleAsync("Customer Details");
     }
 

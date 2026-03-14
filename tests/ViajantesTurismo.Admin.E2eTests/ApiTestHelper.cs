@@ -12,7 +12,8 @@ internal static class ApiTestHelper
     public static async Task<GetTourDto> CreateTourAsync(
         HttpClient client,
         int minCustomers = 1,
-        int maxCustomers = 20)
+        int maxCustomers = 20,
+        CurrencyDto currency = CurrencyDto.Euro)
     {
         var dto = new CreateTourDto
         {
@@ -24,7 +25,7 @@ internal static class ApiTestHelper
             SingleRoomSupplementPrice = 200m,
             RegularBikePrice = 50m,
             EBikePrice = 100m,
-            Currency = CurrencyDto.Euro,
+            Currency = currency,
             IncludedServices = ["Hotel", "Breakfast"],
             MinCustomers = minCustomers,
             MaxCustomers = maxCustomers
@@ -126,5 +127,22 @@ internal static class ApiTestHelper
         var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto>())!;
+    }
+
+    public static async Task RecordPaymentAsync(
+        HttpClient client,
+        Guid bookingId,
+        decimal amount)
+    {
+        var dto = new CreatePaymentDto
+        {
+            Amount = amount,
+            PaymentDate = DateTime.UtcNow,
+            Method = PaymentMethodDto.CreditCard,
+            Notes = "E2E test payment"
+        };
+
+        var response = await client.PostAsJsonAsync(new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
+        response.EnsureSuccessStatusCode();
     }
 }
