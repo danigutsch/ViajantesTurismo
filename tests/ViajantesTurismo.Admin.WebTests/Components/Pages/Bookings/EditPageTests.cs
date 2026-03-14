@@ -47,6 +47,50 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
+    public void OnInitializedAsync_When_Load_Fails_Shows_Sanitized_Error_Message()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+        _fakeBookingsApi.SetGetBookingByIdException(new InvalidOperationException("SQL timeout"));
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, bookingId));
+        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger"));
+
+        // Assert
+        var alert = cut.Find(".alert.alert-danger");
+        Assert.Contains("We couldn't load the booking right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("SQL timeout", alert.TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandleSubmit_When_Update_Fails_Shows_Sanitized_Error_Message()
+    {
+        // Arrange
+        var booking = DtoBuilders.BuildBookingDto(notes: "Original notes");
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("Update failed hard"));
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("form"));
+
+        // Act
+        var notesTextarea = cut.Find("#notes");
+        await cut.InvokeAsync(() => notesTextarea.Change("Updated notes"));
+
+        var form = cut.Find("form");
+        await cut.InvokeAsync(async () => await form.SubmitAsync());
+
+        // Assert
+        cut.WaitForAssertion(() =>
+        {
+            var alert = cut.Find(".alert.alert-danger");
+            Assert.Contains("We couldn't update the booking right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            Assert.DoesNotContain("Update failed hard", alert.TextContent, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public void Displays_Booking_Information_When_Found()
     {
         // Arrange

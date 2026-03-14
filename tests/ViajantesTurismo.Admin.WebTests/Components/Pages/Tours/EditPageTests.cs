@@ -323,7 +323,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("Failed to update tour", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("We couldn't update the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Failed to update tour", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -406,8 +407,8 @@ public class EditPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("Error loading tour", errorAlert.TextContent, StringComparison.Ordinal);
-        Assert.Contains("Database error", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("We couldn't load the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Database error", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

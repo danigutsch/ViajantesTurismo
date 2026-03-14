@@ -362,9 +362,9 @@ else
                 DiscountReason = _booking.DiscountReason ?? string.Empty
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error loading booking: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("load the booking");
         }
         finally
         {
@@ -445,9 +445,9 @@ else
                 /* Cancelled by the user */
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("update the booking");
         }
         finally
         {
@@ -491,9 +491,9 @@ else
             _toast.ShowSuccess("Payment recorded successfully.");
             HidePaymentForm();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _toast.ShowError($"Failed to record payment: {ex.Message}");
+            _toast.ShowError(UserFacingErrorMessage.ForOperation("record the payment"));
         }
         finally
         {
@@ -510,9 +510,9 @@ else
             SyncModelFromBooking();
             _toast.ShowSuccess("Booking confirmed successfully.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _toast.ShowError($"Failed to confirm booking: {ex.Message}");
+            _toast.ShowError(UserFacingErrorMessage.ForOperation("confirm the booking"));
         }
     }
 
@@ -527,9 +527,9 @@ else
                 SyncModelFromBooking();
                 _toast.ShowSuccess("Booking cancelled successfully.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _toast.ShowError($"Failed to cancel booking: {ex.Message}");
+                _toast.ShowError(UserFacingErrorMessage.ForOperation("cancel the booking"));
             }
         }
     }
@@ -543,9 +543,9 @@ else
             SyncModelFromBooking();
             _toast.ShowSuccess("Booking completed successfully.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _toast.ShowError($"Failed to complete booking: {ex.Message}");
+            _toast.ShowError(UserFacingErrorMessage.ForOperation("complete the booking"));
         }
     }
 
@@ -559,9 +559,9 @@ else
                 _toast.ShowSuccess("Booking deleted successfully.");
                 Navigation.NavigateTo("/bookings");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _toast.ShowError($"Failed to delete booking: {ex.Message}");
+                _toast.ShowError(UserFacingErrorMessage.ForOperation("delete the booking"));
             }
         }
     }

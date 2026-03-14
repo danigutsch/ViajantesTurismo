@@ -1,6 +1,7 @@
 @page "/addtour"
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @inject IToursApiClient ToursApi
 @rendermode InteractiveServer
 
@@ -163,9 +164,9 @@ Bike rental"/>
             _createdTourUrl = response.ToString();
             _success = true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("create the tour");
         }
         finally
         {

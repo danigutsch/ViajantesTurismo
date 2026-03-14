@@ -1,6 +1,8 @@
 @page "/customers/import"
+@using System.Globalization
 @using System.Text
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @using ViajantesTurismo.Admin.Web.Services
 @rendermode InteractiveServer
 
@@ -615,9 +617,9 @@
                 _result = result;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = ex.Message;
+            _error = UserFacingErrorMessage.ForOperation("import the customers");
         }
         finally
         {
@@ -646,9 +648,9 @@
             _result = await CustomersApi.CommitImportWithResolutions(
                 fileBytes, _pendingFileName, _conflictDecisions, CancellationToken.None);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _error = ex.Message;
+            _error = UserFacingErrorMessage.ForOperation("complete the customer import");
         }
         finally
         {
@@ -788,8 +790,8 @@
             ["City"] = details.Address.City,
             ["State"] = details.Address.State,
             ["Country"] = details.Address.Country,
-            ["WeightKg"] = details.PhysicalInfo.WeightKg.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            ["HeightCentimeters"] = details.PhysicalInfo.HeightCentimeters.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["WeightKg"] = details.PhysicalInfo.WeightKg.ToString(CultureInfo.InvariantCulture),
+            ["HeightCentimeters"] = details.PhysicalInfo.HeightCentimeters.ToString(CultureInfo.InvariantCulture),
             ["BikeType"] = details.PhysicalInfo.BikeType.ToString(),
             ["RoomType"] = details.AccommodationPreferences.RoomType.ToString(),
             ["BedType"] = details.AccommodationPreferences.BedType.ToString(),

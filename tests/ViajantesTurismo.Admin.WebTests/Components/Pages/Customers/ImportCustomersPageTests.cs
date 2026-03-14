@@ -202,7 +202,11 @@ public sealed class ImportCustomersPageTests : BunitContext
         cut.Find("button.btn-primary").Click(); // → confirm import
 
         // Assert
-        cut.WaitForAssertion(() => Assert.Contains("Connection refused", cut.Markup, StringComparison.Ordinal));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains("We couldn't import the customers right now. Please try again.", cut.Markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("Connection refused", cut.Markup, StringComparison.Ordinal);
+        });
     }
 
     [Fact]

@@ -56,6 +56,51 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
+    public async Task OnInitializedAsync_When_Load_Fails_Shows_Sanitized_Error_Message()
+    {
+        // Arrange
+        var customerId = Guid.NewGuid();
+        _fakeCustomersApi.SetGetCustomerByIdException(new InvalidOperationException("Database unavailable"));
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customerId));
+        await cut.InvokeAsync(() => Task.CompletedTask);
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            var alert = cut.Find(".alert.alert-danger");
+            Assert.Contains("We couldn't load the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            Assert.DoesNotContain("Database unavailable", alert.TextContent, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public async Task HandleSubmit_When_Update_Fails_Shows_Sanitized_Error_Message()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        _fakeCustomersApi.SetUpdateCustomerException(new InvalidOperationException("Customer update exploded"));
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
+        await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
+
+        // Act
+        var submitButton = cut.Find("button[type='submit']");
+        await cut.InvokeAsync(async () => await submitButton.ClickAsync(new MouseEventArgs()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            var alert = cut.Find(".alert.alert-danger");
+            Assert.Contains("We couldn't update the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            Assert.DoesNotContain("Customer update exploded", alert.TextContent, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public async Task Loads_And_Displays_Customer_Data()
     {
         // Arrange

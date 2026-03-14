@@ -295,7 +295,8 @@ public class AddPageTests : BunitContext
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count > 0, TimeSpan.FromSeconds(2));
 
         var errorAlert = cut.Find(".alert-danger");
-        Assert.Contains("Failed to create tour", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.Contains("We couldn't create the tour right now. Please try again.", errorAlert.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Failed to create tour", errorAlert.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

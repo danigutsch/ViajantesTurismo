@@ -1,6 +1,7 @@
 @page "/edittour/{id:guid}"
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @inject IToursApiClient ToursApi
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
@@ -221,9 +222,9 @@ Bike rental"/>
                 MaxCustomers = tour.MaxCustomers
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error loading tour: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("load the tour");
         }
         finally
         {
@@ -284,9 +285,9 @@ Bike rental"/>
                 /* Cancelled by the user */
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("update the tour");
         }
         finally
         {

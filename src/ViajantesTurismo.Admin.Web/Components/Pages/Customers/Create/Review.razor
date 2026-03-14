@@ -252,9 +252,9 @@
             var customerId = location.ToString().Split('/').Last();
             Navigation.NavigateTo($"/customers/{customerId}");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Failed to create customer: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("create the customer");
         }
         finally
         {

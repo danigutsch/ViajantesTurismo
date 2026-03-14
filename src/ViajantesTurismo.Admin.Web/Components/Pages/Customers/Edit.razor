@@ -1,5 +1,6 @@
 @page "/customers/{id:guid}/edit"
 @using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Admin.Web.Helpers
 @using ViajantesTurismo.Admin.Web.Models
 @using ViajantesTurismo.Admin.Web.Services
 @inject ICustomersApiClient CustomersApi
@@ -415,9 +416,9 @@ else
             _customers = await CustomersApi.GetCustomers(CancellationToken.None);
             _countries = await CountryService.GetCountries(CancellationToken.None);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error loading customer: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("load the customer");
         }
         finally
         {
@@ -473,9 +474,9 @@ else
                 /* Cancelled by the user */
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _errorMessage = $"Error: {ex.Message}";
+            _errorMessage = UserFacingErrorMessage.ForOperation("update the customer");
         }
         finally
         {
