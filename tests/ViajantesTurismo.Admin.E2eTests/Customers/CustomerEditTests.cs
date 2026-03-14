@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
@@ -10,14 +11,17 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
     [Fact]
     public async Task Customer_Edit_Renders_All_Sections_With_Populated_Data()
     {
-        // Navigate to the customers list and open Alice Smith's edit page
-        await NavigateToAsync("/customers");
-        var aliceRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = "Alice Smith" });
-        await aliceRow.GetLink("Edit").ClickAsync();
+        // Arrange
+        var customer = await ApiClient.CreateCustomer(firstName: "Alice", lastName: "Owned");
+        var companion = await ApiClient.CreateCustomer(firstName: "Bob", lastName: "Owned");
+        var customerFullName = $"{customer.FirstName} {customer.LastName}";
+        var companionFullName = $"{companion.FirstName} {companion.LastName}";
+
+        // Act
+        await NavigateToAsync($"/customers/{customer.Id}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
 
-        // === All 8 section headers rendered ===
+        // Assert: all 8 section headers render.
         await Expect(Page.Locator(".card-title", new PageLocatorOptions { HasText = "Personal Information" })).ToBeVisibleAsync();
         await Expect(Page.Locator(".card-title", new PageLocatorOptions { HasText = "Contact Information" })).ToBeVisibleAsync();
         await Expect(Page.Locator(".card-title", new PageLocatorOptions { HasText = "Identification" })).ToBeVisibleAsync();
@@ -27,37 +31,33 @@ public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.Locator(".card-title", new PageLocatorOptions { HasText = "Emergency Contact" })).ToBeVisibleAsync();
         await Expect(Page.Locator(".card-title", new PageLocatorOptions { HasText = "Medical Information" })).ToBeVisibleAsync();
 
-        // === Personal Information fields populated ===
-        await Expect(Page.Locator("#firstName")).ToHaveValueAsync("Alice");
-        await Expect(Page.Locator("#lastName")).ToHaveValueAsync("Smith");
-        await Expect(Page.Locator("#gender")).ToHaveValueAsync("Female");
+        // Assert: known owned/default values are populated.
+        await Expect(Page.Locator("#firstName")).ToHaveValueAsync(customer.FirstName);
+        await Expect(Page.Locator("#lastName")).ToHaveValueAsync(customer.LastName);
+        await Expect(Page.Locator("#gender")).ToHaveValueAsync("Other");
         await Expect(Page.Locator("#nationality")).ToContainTextAsync("Brazil");
-        await Expect(Page.Locator("#occupation")).ToHaveValueAsync("Engineer");
+        await Expect(Page.Locator("#occupation")).ToHaveValueAsync("Tester");
 
-        // === Contact Information ===
-        await Expect(Page.Locator("#email")).ToHaveValueAsync("alice@example.com");
-        await Expect(Page.Locator("#mobile")).ToHaveValueAsync("+5511999999999");
+        // Assert: generated contact fields are populated and identification controls render.
+        await Expect(Page.Locator("#email")).ToHaveValueAsync(customer.Email);
+        await Expect(Page.Locator("#mobile")).Not.ToHaveValueAsync(string.Empty);
 
-        // === Identification ===
-        await Expect(Page.Locator("#nationalId")).ToHaveValueAsync("123456789");
-        await Expect(Page.Locator("#idNationality")).ToContainTextAsync("Brazil");
+        await Expect(Page.Locator("#nationalId")).Not.ToHaveValueAsync(string.Empty);
+        await Expect(Page.Locator("#idNationality")).ToBeVisibleAsync();
 
-        // === Address ===
-        await Expect(Page.Locator("#street")).ToHaveValueAsync("Rua A, 123");
-        await Expect(Page.Locator("#city")).ToHaveValueAsync("São Paulo");
+        // Assert: address defaults are populated.
+        await Expect(Page.Locator("#street")).ToHaveValueAsync("Test Street 1");
+        await Expect(Page.Locator("#city")).ToHaveValueAsync("Test City");
         await Expect(Page.Locator("#country")).ToHaveValueAsync("Brazil");
 
-        // === Companion combobox excludes the current customer ===
+        // Assert: companion combobox excludes the current customer and includes another owned customer.
         var companionSelect = Page.Locator("select[name=\"_model.AccommodationPreferences.CompanionId\"]");
         await Expect(companionSelect).ToBeVisibleAsync();
-        // "No Companion" option should exist
         await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = "-- No Companion --" })).ToBeAttachedAsync();
-        // Alice should NOT appear in the companion dropdown
-        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = "Alice Smith" })).Not.ToBeAttachedAsync();
-        // Another customer should be present
-        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = "Bob Johnson" })).ToBeAttachedAsync();
+        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = customerFullName })).Not.ToBeAttachedAsync();
+        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = companionFullName })).ToBeAttachedAsync();
 
-        // === Update and Cancel buttons ===
+        // Assert: standard actions are visible.
         await Expect(Page.GetButton("Update Customer")).ToBeVisibleAsync();
         await Expect(Page.GetLink("Cancel")).ToBeVisibleAsync();
     }
