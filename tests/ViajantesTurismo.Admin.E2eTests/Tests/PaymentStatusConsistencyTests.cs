@@ -6,6 +6,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Bookings_List_Payment_Status_Matches_Booking_Details()
     {
         // Arrange
+        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync);
         var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
         var customerUnpaid = await ApiTestHelper.CreateCustomerAsync(ApiClient);
         var customerPartiallyPaid = await ApiTestHelper.CreateCustomerAsync(ApiClient);
@@ -13,14 +14,15 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         var unpaidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customerUnpaid.Id);
         var partiallyPaidBooking = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customerPartiallyPaid.Id);
         await ApiTestHelper.RecordPaymentAsync(ApiClient, partiallyPaidBooking.Id, 500m);
+        var allBookings = await ApiTestHelper.GetAllBookings(ApiClient);
 
         // Act
         // Assert
-        var unpaidFromList = await GetPaymentStatusFromBookingsListAsync(unpaidBooking.Id);
-        var partiallyPaidFromList = await GetPaymentStatusFromBookingsListAsync(partiallyPaidBooking.Id);
+        var unpaidFromList = await bookingsListPage.GetPaymentStatus(unpaidBooking.Id, allBookings);
+        var partiallyPaidFromList = await bookingsListPage.GetPaymentStatus(partiallyPaidBooking.Id, allBookings);
 
-        var unpaidFromDetails = await GetPaymentStatusFromDetailsAsync(unpaidBooking.Id);
-        var partiallyPaidFromDetails = await GetPaymentStatusFromDetailsAsync(partiallyPaidBooking.Id);
+        var unpaidFromDetails = await GetPaymentStatusFromDetails(unpaidBooking.Id);
+        var partiallyPaidFromDetails = await GetPaymentStatusFromDetails(partiallyPaidBooking.Id);
 
         Assert.Equal(unpaidFromList, unpaidFromDetails);
         Assert.Equal(partiallyPaidFromList, partiallyPaidFromDetails);
@@ -31,17 +33,19 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
     public async Task Scoped_Bookings_Payment_Status_Matches_Global_List()
     {
         // Arrange
+        var bookingsListPage = new BookingsListPage(Page, NavigateToAsync);
         var tour = await ApiTestHelper.CreateTourAsync(ApiClient);
         var customer1 = await ApiTestHelper.CreateCustomerAsync(ApiClient);
         var customer2 = await ApiTestHelper.CreateCustomerAsync(ApiClient);
         var booking1 = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer1.Id);
         var booking2 = await ApiTestHelper.CreateBookingAsync(ApiClient, tour.Id, customer2.Id);
         await ApiTestHelper.RecordPaymentAsync(ApiClient, booking2.Id, 300m);
+        var allBookings = await ApiTestHelper.GetAllBookings(ApiClient);
 
         var booking1Href = $"/bookings/{booking1.Id}";
         var booking2Href = $"/bookings/{booking2.Id}";
-        var expectedBooking1 = await GetPaymentStatusFromBookingsListAsync(booking1.Id);
-        var expectedBooking2 = await GetPaymentStatusFromBookingsListAsync(booking2.Id);
+        var expectedBooking1 = await bookingsListPage.GetPaymentStatus(booking1.Id, allBookings);
+        var expectedBooking2 = await bookingsListPage.GetPaymentStatus(booking2.Id, allBookings);
 
         // Act
         await NavigateToAsync($"/tours/{tour.Id}");
@@ -60,21 +64,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         Assert.Equal(expectedBooking2, scopedBooking2Status);
     }
 
-    private async Task<string> GetPaymentStatusFromBookingsListAsync(Guid bookingId)
-    {
-        var href = $"/bookings/{bookingId}";
-
-        await NavigateToAsync("/bookings");
-        await Expect(Page).ToHaveTitleAsync("Bookings");
-
-        var row = await Page.RequireRowByLinkAcrossPagesAsync(href);
-
-        var paymentBadge = row.Locator("td:nth-child(8) .badge");
-        await Expect(paymentBadge).ToBeVisibleAsync();
-        return (await paymentBadge.InnerTextAsync()).Trim();
-    }
-
-    private async Task<string> GetPaymentStatusFromDetailsAsync(Guid bookingId)
+    private async Task<string> GetPaymentStatusFromDetails(Guid bookingId)
     {
         await NavigateToAsync($"/bookings/{bookingId}");
         await Expect(Page).ToHaveTitleAsync("Booking Details");
