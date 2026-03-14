@@ -15,14 +15,10 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 10);
         var customer = await ApiClient.CreateCustomer();
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
-        using var confirmResponse = await ApiClient.PostAsync(new Uri($"/bookings/{booking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
-        confirmResponse.EnsureSuccessStatusCode();
+        _ = await ApiClient.ConfirmBooking(booking.Id);
 
-        // Act: navigate to the tours list and edit the owned tour by its unique identifier.
-        await NavigateTo("/tours");
-        var tourRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = tour.Identifier });
-        await tourRow.GetLink("Edit").ClickAsync();
+        // Act: navigate directly to the owned tour edit page.
+        await NavigateTo($"/edittour/{tour.Id}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
         // Identifier and Currency should be disabled
@@ -53,15 +49,11 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         var pendingCustomer = await ApiClient.CreateCustomer();
 
         var cancelledBooking = await ApiClient.CreateBooking(tour.Id, cancelledCustomer.Id);
-        using var cancelResponse = await ApiClient.PostAsync(new Uri($"/bookings/{cancelledBooking.Id}/cancel", UriKind.Relative), null, TestContext.Current.CancellationToken);
-        cancelResponse.EnsureSuccessStatusCode();
+        _ = await ApiClient.CancelBooking(cancelledBooking.Id);
 
         var completedBooking = await ApiClient.CreateBooking(tour.Id, completedCustomer.Id);
-        using var confirmResponse = await ApiClient.PostAsync(new Uri($"/bookings/{completedBooking.Id}/confirm", UriKind.Relative), null, TestContext.Current.CancellationToken);
-        confirmResponse.EnsureSuccessStatusCode();
-
-        using var completeResponse = await ApiClient.PostAsync(new Uri($"/bookings/{completedBooking.Id}/complete", UriKind.Relative), null, TestContext.Current.CancellationToken);
-        completeResponse.EnsureSuccessStatusCode();
+        _ = await ApiClient.ConfirmBooking(completedBooking.Id);
+        _ = await ApiClient.CompleteBooking(completedBooking.Id);
 
         var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
 

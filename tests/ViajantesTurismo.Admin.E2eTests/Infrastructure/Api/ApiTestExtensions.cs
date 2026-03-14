@@ -156,10 +156,21 @@ internal static class ApiTestExtensions
             return await response.ReadRequiredJson<GetTourDto[]>(HttpStatusCode.OK);
         }
 
-        public async Task<GetBookingDto> ConfirmBooking(Guid bookingId
-        )
+        public async Task<GetBookingDto> ConfirmBooking(Guid bookingId)
         {
             var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
+            return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
+        }
+
+        public async Task<GetBookingDto> CancelBooking(Guid bookingId)
+        {
+            var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/cancel", UriKind.Relative), null);
+            return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
+        }
+
+        public async Task<GetBookingDto> CompleteBooking(Guid bookingId)
+        {
+            var response = await client.PostAsync(new Uri($"/bookings/{bookingId}/complete", UriKind.Relative), null);
             return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
         }
 

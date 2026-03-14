@@ -1,7 +1,6 @@
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Api;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Helpers;
 
 namespace ViajantesTurismo.Admin.E2ETests.Shared;
 
@@ -70,7 +69,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         // Arrange
         var tour = await ApiClient.CreateTour();
         var customer = await ApiClient.CreateCustomer();
-        _ = await ApiClient.CreateBooking(tour.Id, customer.Id);
+        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // === Tour details: scoped bookings list ===
         await NavigateTo($"/tours/{tour.Id}");
@@ -88,8 +87,9 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         var customerColumn = tourBookingsTable.Locator("th:has-text('Customer')");
         await Expect(customerColumn).ToBeVisibleAsync();
 
-        // Booking links should navigate to booking details
-        var bookingViewLink = tourBookingsTable.Locator("tbody tr").First.GetLink("View");
+        // Booking links should navigate to the owned booking details deterministically.
+        var bookingViewLink = tourBookingsTable.Locator($"a[href='/bookings/{booking.Id}']");
+        await Expect(bookingViewLink).ToBeVisibleAsync();
         await bookingViewLink.ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Booking Details");
 
@@ -97,17 +97,19 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await NavigateTo($"/customers/{customer.Id}");
         await Expect(Page).ToHaveTitleAsync("Customer Details");
 
-        // Scoped bookings list should be visible
+        // Scoped bookings list should be visible for the owned booking data.
         var customerBookingsTable = Page.Locator("table");
-        if (await customerBookingsTable.CountAsync() > 0)
-        {
-            // Customer column should be hidden (ShowCustomerInfo=false)
-            var customerHeaders = customerBookingsTable.Locator("th:has-text('Customer')");
-            await Expect(customerHeaders).ToHaveCountAsync(0);
+        await Expect(customerBookingsTable).ToBeVisibleAsync();
 
-            // Tour column should be visible
-            var tourColumn = customerBookingsTable.Locator("th:has-text('Tour')");
-            await Expect(tourColumn).ToBeVisibleAsync();
-        }
+        // Customer column should be hidden (ShowCustomerInfo=false)
+        var customerHeaders = customerBookingsTable.Locator("th:has-text('Customer')");
+        await Expect(customerHeaders).ToHaveCountAsync(0);
+
+        // Tour column should be visible
+        var tourColumn = customerBookingsTable.Locator("th:has-text('Tour')");
+        await Expect(tourColumn).ToBeVisibleAsync();
+
+        var customerBookingLink = customerBookingsTable.Locator($"a[href='/bookings/{booking.Id}']");
+        await Expect(customerBookingLink).ToBeVisibleAsync();
     }
 }

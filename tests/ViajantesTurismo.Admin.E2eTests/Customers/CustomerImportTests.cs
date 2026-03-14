@@ -109,7 +109,11 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Expect(Page.GetByText("Resolve Duplicates")).ToBeVisibleAsync();
 
-        var keepButton = Page.Locator("button[data-action='keep']").First;
+        var duplicateRow = Page.Locator(".duplicate-resolution-table tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = existingCustomer.Email });
+        await Expect(duplicateRow).ToHaveCountAsync(1);
+
+        var keepButton = duplicateRow.Locator("button[data-action='keep']");
         await keepButton.ClickAsync();
 
         var confirmImportButton = Page.Locator("button[data-action='confirm-import']");
@@ -165,7 +169,9 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
 
         // Preview step: verify preview table shows the row
         await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".preview-table tbody tr").First).ToBeVisibleAsync();
+        var previewRow = Page.Locator(".preview-table tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = email });
+        await Expect(previewRow).ToHaveCountAsync(1);
 
         // Confirm import
         await Page.GetButton("Confirm Import").ClickAsync();
@@ -198,7 +204,11 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
         await Expect(Page.GetByText("Skipped: 0")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Failed: 0")).ToBeVisibleAsync();
 
-        var viewCustomerLink = Page.Locator("a[data-action='view-customer']").First;
+        var successRow = Page.Locator("[data-testid='summary-success-rows'] tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = email });
+        await Expect(successRow).ToHaveCountAsync(1);
+
+        var viewCustomerLink = successRow.Locator("a[data-action='view-customer']");
         await Expect(viewCustomerLink).ToBeVisibleAsync();
         await viewCustomerLink.ClickAsync();
 
