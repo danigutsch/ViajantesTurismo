@@ -48,7 +48,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void UpdateDetails_without_bookings_should_succeed()
+    public void Update_Details_Without_Bookings_Should_Succeed()
     {
         // Arrange
         var tour = CreateTour();
@@ -63,7 +63,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void UpdateDetails_with_bookings_should_fail()
+    public void Update_Details_With_Bookings_Should_Fail()
     {
         // Arrange
         var tour = CreateTour(identifier: "ORIG2024");
@@ -78,7 +78,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void UpdateDetails_with_bookings_same_identifier_should_succeed()
+    public void Update_Details_With_Bookings_Same_Identifier_Should_Succeed()
     {
         // Arrange
         var tour = CreateTour(identifier: "KEEP2024");
@@ -94,7 +94,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void UpdateCurrency_without_bookings_should_succeed()
+    public void Update_Currency_Without_Bookings_Should_Succeed()
     {
         // Arrange
         var tour = CreateTour(currency: Currency.UsDollar);
@@ -108,7 +108,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void UpdateCurrency_with_bookings_should_fail()
+    public void Update_Currency_With_Bookings_Should_Fail()
     {
         // Arrange
         var tour = CreateTour(currency: Currency.UsDollar);
