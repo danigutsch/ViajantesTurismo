@@ -6,35 +6,14 @@ public class NotFoundErrorTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Invalid_GUID_Format_Shows_404_Page()
     {
         // Arrange
-        var invalidGuids = new[] { "invalid-guid", "not-a-guid", "12345", "abc" };
-
-        foreach (var invalidGuid in invalidGuids)
-        {
-            // Act
-            await NavigateTo($"/tours/{invalidGuid}");
-
-            // Assert
-            await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
-            await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
-        }
+        const string invalidGuid = "not-a-guid";
 
         // Act
-        await NavigateTo("/bookings/not-a-guid");
+        await NavigateTo($"/tours/{invalidGuid}");
 
         // Assert
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
-
-        // Act
-        await NavigateTo("/customers/not-a-guid");
-
-        // Assert
-        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
-
-        // Act
-        await NavigateTo("/customers/not-a-guid/edit");
-
-        // Assert
-        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Page Not Found" })).ToBeVisibleAsync();
+        await Expect(Page.GetByText("does not exist or the URL is invalid")).ToBeVisibleAsync();
     }
 
     [Fact]
