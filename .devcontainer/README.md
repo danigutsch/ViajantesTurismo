@@ -16,7 +16,7 @@ This directory contains the configuration for developing ViajantesTurismo in a c
 Ubuntu-based container with the following tools installed via features:
 
 - **.NET 10 SDK**: For building and running the application
-- **Node.js 22**: For npm scripts and development tools
+- **Node.js 24**: For npm scripts and development tools
 - **Git**: Version control
 - **Docker-outside-of-Docker**: Reuse host Docker socket from inside the container (for Aspire)
 
@@ -55,7 +55,7 @@ No additional database containers are configured in the dev container - Aspire h
 
    ```bash
    dotnet --version    # Should show 10.x
-   node --version      # Should show v22.x
+   node --version      # Should show v24.x
    git --version
    ```
 
@@ -150,7 +150,7 @@ On first container creation, the `post-create.sh` script automatically:
 The dev container is optional. You can develop on your host machine if you have:
 
 - .NET 10 SDK installed
-- Node.js 22 installed
+- Node.js 24 installed
 - A container runtime running (for Aspire)
 
 Aspire will work the same way whether inside or outside the container.

@@ -21,11 +21,6 @@ sudo chown -R vscode:vscode \
 
 dotnet tool restore
 
-# Trust HTTPS dev certificate once (instead of on every container start).
-if ! dotnet dev-certs https --check --trust >/dev/null 2>&1; then
-    dotnet dev-certs https --trust
-fi
-
 # Configure repository as safe for git once.
 if ! git config --global --get-all safe.directory | grep -Fxq "${WORKSPACE_FOLDER}"; then
     git config --global --add safe.directory "${WORKSPACE_FOLDER}"

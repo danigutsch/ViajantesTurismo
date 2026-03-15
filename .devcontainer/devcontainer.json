@@ -4,7 +4,7 @@
 
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "22",
+      "version": "24",
       "nodeGypDependencies": true
     },
     "ghcr.io/devcontainers/features/git:1": {
@@ -68,6 +68,8 @@
   "onCreateCommand": "bash .devcontainer/on-create.sh ${containerWorkspaceFolder}",
 
   "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "postStartCommand": "dotnet dev-certs https --trust || true",
 
   "mounts": [
     "source=viajantesTurismo-nuget-packages,target=/home/vscode/.nuget/packages,type=volume",
