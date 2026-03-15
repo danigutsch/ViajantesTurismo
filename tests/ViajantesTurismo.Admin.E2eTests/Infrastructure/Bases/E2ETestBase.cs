@@ -14,6 +14,8 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
 
     private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
+    private protected UiFeedbackAssertions UiFeedback => new(Page);
+
     /// <summary>
     /// Navigate to a path relative to the web app root, waiting for SignalR circuit.
     /// </summary>

@@ -12,6 +12,8 @@ namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Workflows;
 /// <param name="navigateTo">Navigation function that resolves relative application routes.</param>
 internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
 {
+    private UiFeedbackAssertions UiFeedback => new(page);
+
     /// <summary>
     /// Creates a booking from the tour details page and returns the created booking identifier.
     /// </summary>
@@ -49,8 +51,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await bookingForm.Locator("#notes").FillAsync("E2E test booking created from tour details");
         await bookingForm.GetButton("Create Booking").ClickAsync();
 
-        var toast = page.Locator(".toast");
-        await toast.First.WaitForAsync();
+        await UiFeedback.ExpectToast("Booking created successfully");
 
         var createdBookingRow = page.Locator("table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = customerFullName });
@@ -109,9 +110,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
 
         await page.GetButton("Confirm Booking").ClickAsync();
 
-        var confirmToast = page.Locator(".toast");
-        await confirmToast.First.WaitForAsync();
-        Assert.Contains("Booking confirmed successfully", await confirmToast.First.InnerTextAsync(), StringComparison.Ordinal);
+        await UiFeedback.ExpectToast("Booking confirmed successfully");
         await page.GetButton("Complete Booking").WaitForAsync();
     }
 
@@ -131,11 +130,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
 
         await paymentCard.GetButton("Record Payment").ClickAsync();
 
-        var paymentToast = page.Locator(".toast")
-            .Filter(new LocatorFilterOptions { HasText = "Payment recorded successfully" });
-        await paymentToast.First.WaitForAsync();
-        Assert.Contains("Payment recorded successfully", await paymentToast.First.InnerTextAsync(), StringComparison.Ordinal);
-        await paymentToast.First.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden, Timeout = 10_000 });
+        await UiFeedback.ExpectToastThenHide("Payment recorded successfully");
     }
 
     /// <summary>
@@ -145,8 +140,6 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     {
         await page.GetButton("Complete Booking").ClickAsync();
 
-        var completeToast = page.Locator(".toast");
-        await completeToast.First.WaitForAsync();
-        Assert.Contains("Booking completed successfully", await completeToast.First.InnerTextAsync(), StringComparison.Ordinal);
+        await UiFeedback.ExpectToast("Booking completed successfully");
     }
 }

@@ -18,6 +18,8 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 
     private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
+    private protected UiFeedbackAssertions UiFeedback => new(Page);
+
     protected async Task ClearDatabase(CancellationToken cancellationToken) => await fixture.ClearDatabase(cancellationToken);
 
     public override async ValueTask InitializeAsync()
