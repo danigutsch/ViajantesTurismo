@@ -200,7 +200,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 **With Code Coverage:**
 
 ```powershell
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
 ```
 
 With **xUnit v3 + Microsoft.Testing.Platform (MTP)**, a solution-level test run writes one

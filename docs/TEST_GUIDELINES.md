@@ -54,7 +54,7 @@ This repository uses the MTP-native coverage collection for xUnit v3 test projec
 Generate fresh Cobertura coverage for the whole solution:
 
 ```powershell
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
 ```
 
 Generate a single HTML report from all per-project coverage files:
@@ -624,10 +624,9 @@ official guide.
 
 ```powershell
 # Collect coverage (cobertura XML)
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-
-# With custom settings file
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
+
+# `coverage.settings.xml` excludes migrations and common generated-source patterns during collection
 ```
 
 After a solution-level run, MTP writes one `coverage.cobertura.xml` file per test project under that
@@ -689,14 +688,13 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class Condi
 
 ```powershell
 # All tests with cobertura coverage (coverage flags are test-host args, passed after --)
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-
-# With custom settings file
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
 
 # Generate HTML report from all per-project coverage files (requires reportgenerator tool)
 reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
 ```
+
+> If `coverage.settings.xml` changed, regenerate the Cobertura files before building the HTML report.
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.
 

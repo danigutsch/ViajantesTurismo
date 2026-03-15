@@ -12,6 +12,9 @@
         <Sources>
             <Exclude>
                 <Source>.*\\Migrations\\.*</Source>
+                <Source>.*\\obj\\.*</Source>
+                <Source>.*\.g\.cs$</Source>
+                <Source>.*\.generated\.cs$</Source>
             </Exclude>
         </Sources>
 

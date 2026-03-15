@@ -43,7 +43,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class
 
 ```powershell
 # Run with coverage
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
 
 # Generate HTML report from all per-project coverage files
 reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
