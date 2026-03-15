@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # ViajantesTurismo Development Environment Setup Script
 # This script installs all required and optional tools for development
 
@@ -8,7 +8,7 @@ SKIP_GIT_HOOK=false
 SKIP_NPM=false
 
 # Parse arguments
-while [ $# -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
     case $1 in
         --skip-git-hook)
             SKIP_GIT_HOOK=true
@@ -41,9 +41,9 @@ printf "%b" "${YELLOW}📦 Checking .NET SDK...${NC}\n"
 REQUIRED_VERSION=$(grep -oP '(?<="version": ")[^"]*' global.json)
 INSTALLED_SDK=$(dotnet --version 2>&1 || echo "not found")
 
-if [ "${INSTALLED_SDK}" != "not found" ]; then
+if [[ "${INSTALLED_SDK}" != "not found" ]]; then
     printf "%b" "   ${GREEN}✅ .NET SDK installed: ${INSTALLED_SDK}${NC}\n"
-    if [ "${INSTALLED_SDK}" != "${REQUIRED_VERSION}" ]; then
+    if [[ "${INSTALLED_SDK}" != "${REQUIRED_VERSION}" ]]; then
         printf "%b" "   ${YELLOW}⚠️ Required version: ${REQUIRED_VERSION}${NC}\n"
         printf "%b" "   ${CYAN}💡 Download from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
     fi
@@ -82,11 +82,11 @@ else
 fi
 
 # Check Node.js and npm
-if [ "${SKIP_NPM}" = false ]; then
+if [[ "${SKIP_NPM}" = false ]]; then
     printf "\n%b" "${YELLOW}📦 Checking Node.js and npm...${NC}\n"
 
     # Read required Node.js version from .nvmrc
-    if [ -f ".nvmrc" ]; then
+    if [[ -f ".nvmrc" ]]; then
         read -r REQUIRED_NODE_VERSION < .nvmrc
     else
         printf "%b" "   ${YELLOW}⚠️ .nvmrc file not found${NC}\n"
@@ -95,11 +95,11 @@ if [ "${SKIP_NPM}" = false ]; then
 
     NODE_VERSION=$(node --version 2>&1 || echo "not found")
 
-    if [ "${NODE_VERSION}" != "not found" ]; then
+    if [[ "${NODE_VERSION}" != "not found" ]]; then
         printf "%b" "   ${GREEN}✅ Node.js installed: ${NODE_VERSION}${NC}\n"
 
         # Validate version matches .nvmrc
-        if [ -n "${REQUIRED_NODE_VERSION}" ]; then
+        if [[ -n "${REQUIRED_NODE_VERSION}" ]]; then
             if echo "${NODE_VERSION}" | grep -q "v${REQUIRED_NODE_VERSION}"; then
                 printf "%b" "   ${GREEN}✅ Version matches .nvmrc (${REQUIRED_NODE_VERSION})${NC}\n"
             else
@@ -120,7 +120,7 @@ if [ "${SKIP_NPM}" = false ]; then
         printf "%b" "Install code quality linters? (y/N): "
         read -r INSTALL_LINTERS
 
-        if [ "${INSTALL_LINTERS}" = "y" ] || [ "${INSTALL_LINTERS}" = "Y" ]; then
+        if [[ "${INSTALL_LINTERS}" = "y" ]] || [[ "${INSTALL_LINTERS}" = "Y" ]]; then
             printf "\n%b" "${YELLOW}📦 Installing npm dependencies...${NC}\n"
             if npm install > /dev/null 2>&1; then
                 printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt, gherkin-lint, ESLint)${NC}\n"
@@ -134,7 +134,7 @@ if [ "${SKIP_NPM}" = false ]; then
         fi
     else
         printf "%b" "   ${YELLOW}⚠️ Node.js not found - code quality linters will not be available${NC}\n"
-        if [ -n "${REQUIRED_NODE_VERSION}" ]; then
+        if [[ -n "${REQUIRED_NODE_VERSION}" ]]; then
             printf "%b" "   ${CYAN}💡 Expected version: v${REQUIRED_NODE_VERSION} (from .nvmrc)${NC}\n"
         fi
         printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
@@ -142,10 +142,10 @@ if [ "${SKIP_NPM}" = false ]; then
 fi
 
 # Install pre-commit hook (optional)
-if [ "${SKIP_GIT_HOOK}" = false ]; then
+if [[ "${SKIP_GIT_HOOK}" = false ]]; then
     printf "\n%b" "${YELLOW}🪝 Setting up git pre-commit hook...${NC}\n"
-    if [ -d ".git/hooks" ]; then
-        if [ -f "scripts/pre-commit" ]; then
+    if [[ -d ".git/hooks" ]]; then
+        if [[ -f "scripts/pre-commit" ]]; then
             cp scripts/pre-commit .git/hooks/pre-commit
             chmod +x .git/hooks/pre-commit
             printf "%b" "   ${GREEN}✅ Pre-commit hook installed${NC}\n"
