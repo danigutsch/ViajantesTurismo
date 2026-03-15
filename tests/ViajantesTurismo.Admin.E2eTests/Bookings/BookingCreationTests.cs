@@ -53,9 +53,7 @@ public class BookingCreationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await bookingForm.GetButton("Create Booking").ClickAsync();
 
         // Assert: success toast and resulting customer-bookings row use the owned tour.
-        var toast = Page.Locator(".toast");
-        await Expect(toast.First).ToBeVisibleAsync();
-        await Expect(toast.First).ToContainTextAsync("Booking created successfully");
+        await UiFeedback.ExpectToast("Booking created successfully");
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
     }
 }
