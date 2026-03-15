@@ -139,10 +139,10 @@ for implementation details.
 
 ## Coverage Goals
 
-| Area | Target |
-| ---- | ------ |
-| Domain logic | 100% |
-| API endpoints | 90%+ |
+| Area                | Target      |
+|---------------------|-------------|
+| Domain logic        | 100%        |
+| API endpoints       | 90%+        |
 | Critical edge cases | All covered |
 
 ## See Also
