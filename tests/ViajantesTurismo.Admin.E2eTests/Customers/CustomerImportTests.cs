@@ -103,35 +103,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
-    public async Task Can_Complete_Import_Flow_And_Show_Success_Summary()
-    {
-        // Arrange
-        var email = $"e2e-ui4-{Guid.NewGuid():N}@import.test";
-        var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
-
-        // Act
-        await NavigateTo("/customers/import");
-        await CustomerImportCsvHelpers.UploadCsv(Page, csv);
-        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
-            .ToBeVisibleAsync();
-        await Page.GetButton("Preview").ClickAsync();
-
-        // Assert
-        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
-        var previewRow = Page.Locator(".preview-table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = email });
-        await Expect(previewRow).ToHaveCountAsync(1);
-
-        // Act
-        await Page.GetButton("Confirm Import").ClickAsync();
-
-        // Assert
-        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "1 customer(s) imported successfully" }))
-            .ToBeVisibleAsync();
-    }
-
-    [Fact]
-    public async Task Can_Show_Final_Summary_Counts_And_Open_Customer_Details_From_View_Customer_Action()
+    public async Task Can_Complete_Import_Flow_Show_Final_Summary_And_Open_Customer_Details()
     {
         // Arrange
         var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";
@@ -143,10 +115,18 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
         await Page.GetButton("Preview").ClickAsync();
+
+        var previewRow = Page.Locator(".preview-table tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = email });
+
         await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
+        await Expect(previewRow).ToHaveCountAsync(1);
+
         await Page.GetButton("Confirm Import").ClickAsync();
 
         // Assert
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "1 customer(s) imported successfully" }))
+            .ToBeVisibleAsync();
         await Expect(Page.Locator("[data-testid='import-summary-counts']")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Created: 1")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Updated: 0")).ToBeVisibleAsync();

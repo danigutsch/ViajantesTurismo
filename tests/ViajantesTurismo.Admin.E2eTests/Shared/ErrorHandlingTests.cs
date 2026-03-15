@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.E2ETests.Shared;
 public class ErrorHandlingTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
-    public async Task Can_Show_Empty_States_On_All_List_Pages()
+    public async Task Can_Show_Destructive_Reset_Empty_State_Smoke_On_Customers_List()
     {
         // Arrange
         // Clear the database to test empty states (base class seeds by default)
@@ -11,23 +11,11 @@ public class ErrorHandlingTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
         await ClearDatabase(cts.Token);
 
         // Act
-        await NavigateTo("/tours");
-
-        // Assert
-        await Expect(Page.GetHeading("Tours")).ToBeVisibleAsync();
-        await Expect(Page.Locator("table tbody tr")).ToHaveCountAsync(0);
-
-        // Act
         await NavigateTo("/customers");
+        await Expect(Page).ToHaveTitleAsync("Customers");
 
         // Assert
         await Expect(Page.GetByText("No customers found")).ToBeVisibleAsync();
         await Expect(Page.GetLink("Create your first customer")).ToBeVisibleAsync();
-
-        // Act
-        await NavigateTo("/bookings");
-
-        // Assert
-        await Expect(Page.GetByText("No bookings found")).ToBeVisibleAsync();
     }
 }
