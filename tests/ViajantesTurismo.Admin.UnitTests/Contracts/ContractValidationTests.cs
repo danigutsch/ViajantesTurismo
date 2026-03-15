@@ -6,6 +6,25 @@ namespace ViajantesTurismo.Admin.UnitTests.Contracts;
 public class ContractValidationTests
 {
     [Fact]
+    public void Discount_Validation_With_No_Discount_Should_Return_No_Errors()
+    {
+        // Arrange
+        var results = DiscountValidation.Validate(
+                DiscountTypeDto.None,
+                0m,
+                null,
+                ContractConstants.MaxDiscountPercentage,
+                ContractConstants.MinDiscountReasonLength,
+                "DiscountAmount",
+                "DiscountReason")
+            .ToArray();
+
+        // Act
+        // Assert
+        Assert.Empty(results);
+    }
+
+    [Fact]
     public void Discount_Validation_With_Invalid_Percentage_Discount_Should_Return_Amount_And_Reason_Errors()
     {
         // Arrange
@@ -50,6 +69,63 @@ public class ContractValidationTests
         Assert.Equal(["CompanionCustomerId"], result.MemberNames);
     }
 
+    [Theory]
+    [InlineData(RoomTypeDto.SingleOccupancy, false)]
+    [InlineData(RoomTypeDto.DoubleOccupancy, true)]
+    public void Booking_Validation_With_Allowed_Room_And_Companion_Combination_Should_Return_No_Error(
+        RoomTypeDto roomType,
+        bool hasCompanion)
+    {
+        // Arrange
+        Guid? companionCustomerId = hasCompanion ? Guid.CreateVersion7() : null;
+
+        // Act
+        var result = BookingValidation.ValidateSingleRoomNoCompanion(
+            roomType,
+            companionCustomerId,
+            "CompanionCustomerId");
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void Booking_Validation_With_Companion_And_Missing_Bike_Type_Should_Return_Companion_Bike_Type_Error()
+    {
+        // Arrange
+        var result = BookingValidation.ValidateCompanionHasBikeType(
+            Guid.CreateVersion7(),
+            null,
+            "CompanionBikeType");
+
+        // Act
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(
+            "Companion bike type is required when a companion is selected.",
+            result.ErrorMessage);
+        Assert.Equal(["CompanionBikeType"], result.MemberNames);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Booking_Validation_With_Valid_Companion_Bike_Type_State_Should_Return_No_Error(bool hasCompanion)
+    {
+        // Arrange
+        Guid? companionCustomerId = hasCompanion ? Guid.CreateVersion7() : null;
+        BikeTypeDto? companionBikeType = hasCompanion ? BikeTypeDto.Regular : null;
+
+        // Act
+        var result = BookingValidation.ValidateCompanionHasBikeType(
+            companionCustomerId,
+            companionBikeType,
+            "CompanionBikeType");
+
+        // Assert
+        Assert.Null(result);
+    }
+
     [Fact]
     public void Booking_Validation_With_Principal_Bike_Type_None_Should_Return_Principal_Bike_Type_Error()
     {
@@ -63,6 +139,33 @@ public class ContractValidationTests
             "Principal customer must select a bike type (Regular or E-Bike).",
             result.ErrorMessage);
         Assert.Equal(["PrincipalBikeType"], result.MemberNames);
+    }
+
+    [Theory]
+    [InlineData(BikeTypeDto.Regular)]
+    [InlineData(BikeTypeDto.EBike)]
+    public void Booking_Validation_With_Valid_Principal_Bike_Type_Should_Return_No_Error(BikeTypeDto principalBikeType)
+    {
+        // Arrange
+        // Act
+        var result = BookingValidation.ValidatePrincipalBikeType(principalBikeType, "PrincipalBikeType");
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BikeTypeDto.Regular)]
+    [InlineData(BikeTypeDto.EBike)]
+    public void Booking_Validation_With_Allowed_Companion_Bike_Type_Value_Should_Return_No_Error(BikeTypeDto? companionBikeType)
+    {
+        // Arrange
+        // Act
+        var result = BookingValidation.ValidateCompanionBikeTypeNotNone(companionBikeType, "CompanionBikeType");
+
+        // Assert
+        Assert.Null(result);
     }
 
     [Fact]
