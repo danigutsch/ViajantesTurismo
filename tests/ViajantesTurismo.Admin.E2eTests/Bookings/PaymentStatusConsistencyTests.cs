@@ -11,8 +11,10 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         var customerPartiallyPaid = await ApiClient.CreateCustomer();
 
         var unpaidBooking = await ApiClient.CreateBooking(tour.Id, customerUnpaid.Id);
-        var partiallyPaidBooking = await ApiClient.CreateBooking(tour.Id, customerPartiallyPaid.Id);
-        await ApiClient.RecordPayment(partiallyPaidBooking.Id, 500m);
+        var partiallyPaidBooking = await ApiClient.CreatePartiallyPaidBooking(
+            tour.Id,
+            customerPartiallyPaid.Id,
+            500m);
 
         // Act
         // Assert
@@ -35,8 +37,7 @@ public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fix
         var customer1 = await ApiClient.CreateCustomer();
         var customer2 = await ApiClient.CreateCustomer();
         var booking1 = await ApiClient.CreateBooking(tour.Id, customer1.Id);
-        var booking2 = await ApiClient.CreateBooking(tour.Id, customer2.Id);
-        await ApiClient.RecordPayment(booking2.Id, 300m);
+        var booking2 = await ApiClient.CreatePartiallyPaidBooking(tour.Id, customer2.Id, 300m);
 
         var booking1Href = $"/bookings/{booking1.Id}";
         var booking2Href = $"/bookings/{booking2.Id}";

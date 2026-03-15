@@ -37,9 +37,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
         var paidCustomer = await ApiClient.CreateCustomer();
 
         var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
-        var paidBooking = await ApiClient.CreateBooking(tour.Id, paidCustomer.Id);
-        _ = await ApiClient.ConfirmBooking(paidBooking.Id);
-        await ApiClient.RecordPayment(paidBooking.Id, 1_250m);
+        var paidBooking = await ApiClient.CreateConfirmedPaidBooking(tour.Id, paidCustomer.Id);
 
         // Act
         await NavigateTo("/bookings");

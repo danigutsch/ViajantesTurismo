@@ -8,8 +8,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 10);
         var customer = await ApiClient.CreateCustomer();
-        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
-        _ = await ApiClient.ConfirmBooking(booking.Id);
+        _ = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
 
         // Act
         await NavigateTo($"/edittour/{tour.Id}");
@@ -34,12 +33,8 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         var cancelledCustomer = await ApiClient.CreateCustomer();
         var completedCustomer = await ApiClient.CreateCustomer();
 
-        var cancelledBooking = await ApiClient.CreateBooking(tour.Id, cancelledCustomer.Id);
-        _ = await ApiClient.CancelBooking(cancelledBooking.Id);
-
-        var completedBooking = await ApiClient.CreateBooking(tour.Id, completedCustomer.Id);
-        _ = await ApiClient.ConfirmBooking(completedBooking.Id);
-        _ = await ApiClient.CompleteBooking(completedBooking.Id);
+        var cancelledBooking = await ApiClient.CreateCancelledBooking(tour.Id, cancelledCustomer.Id);
+        var completedBooking = await ApiClient.CreateCompletedBooking(tour.Id, completedCustomer.Id);
 
         // Act
         await ExpectTerminalBookingEditState(cancelledBooking.Id, "cancelled");

@@ -15,7 +15,7 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Page.GetButton("Confirm Booking").ClickAsync();
 
         // Assert
-        await ExpectToast("Booking confirmed successfully");
+        await UiFeedback.ExpectToast("Booking confirmed successfully");
     }
 
     [Fact]
@@ -24,15 +24,14 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Arrange
         var tour = await ApiClient.CreateTour();
         var customer = await ApiClient.CreateCustomer();
-        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
-        _ = await ApiClient.ConfirmBooking(booking.Id);
+        var booking = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
 
         // Act
         await NavigateToBookingEdit(booking.Id);
         await Page.GetButton("Update Booking").ClickAsync();
 
         var redirectAlert = Page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
-        await ExpectRedirectAlert(redirectAlert);
+        await UiFeedback.ExpectRedirectAlert();
         await redirectAlert.GetButton("Cancel").ClickAsync();
 
         // Assert
@@ -44,18 +43,5 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
     {
         await NavigateTo($"/bookings/{bookingId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
-    }
-
-    private async Task ExpectToast(string expectedText)
-    {
-        var toast = Page.Locator(".toast.show");
-        await Expect(toast).ToBeVisibleAsync();
-        await Expect(toast).ToContainTextAsync(expectedText);
-    }
-
-    private async Task ExpectRedirectAlert(ILocator redirectAlert)
-    {
-        await Expect(redirectAlert).ToContainTextAsync("Redirecting to bookings page in 3 seconds...");
-        await Expect(redirectAlert.GetButton("Cancel")).ToBeVisibleAsync();
     }
 }
