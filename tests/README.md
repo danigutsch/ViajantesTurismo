@@ -122,6 +122,22 @@ for implementation details.
 - Do not assert implicit/default ordering unless sorting is explicitly applied first.
 - Keep DB-destructive or exact-count scenarios in serial test collections.
 
+### Intentional serial survivors
+
+Serial tests in this repository should be narrow, explicit survivors rather than
+the default mode.
+
+The current acceptable survivor categories are:
+
+- thin browser list-interaction smokes that cheaper layers do not yet prove
+- one clean-slate import commit smoke for the full upload → preview → confirm
+   → summary workflow
+- destructive-reset browser smoke coverage after a true database clear
+- explicit empty-list API contract smokes for aggregate list endpoints
+
+Keep the E2E suite in a single project unless CI cadence, fixture policy, or
+ownership boundaries diverge enough to justify a split.
+
 ### Common flakiness anti-patterns
 
 - Looking for a row by `HasText` only when lists are paginated.

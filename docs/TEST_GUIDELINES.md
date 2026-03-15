@@ -415,6 +415,25 @@ Antipatterns to avoid:
 - Use `E2ETestBase` for tests that can safely run in parallel with owned data.
 - Use `E2ESerialTestBase` for tests that require per-test `ClearDatabase + Seed` isolation.
 
+### Intentional serial exception patterns
+
+Serial execution should remain the exception, not the default.
+When a test stays serial on purpose, it should be both thin and clearly justified.
+
+In this repository, the acceptable survivor patterns are:
+
+- **exact-dataset browser interaction smokes** when cheaper layers do not prove the
+  same signal, such as real sort-click or paginator-preserves-sort behaviour
+- **single clean-slate import commit smokes** when the workflow confidence depends
+  on a real browser upload, preview, commit, and final summary path
+- **destructive-reset browser smokes** when the UI must be verified after a true
+  database clear/reset rather than component-only rendering
+- **explicit empty-list API contract smokes** when a real empty database response
+  must be verified for status code and array contract shape
+
+If a test does not fit one of those patterns, prefer rewriting it to owned-data
+parallel execution before accepting a serial exception.
+
 If a test intermittently fails only in full-suite runs but passes alone, treat it as a parallel-safety smell and
 apply the rules above before increasing timeouts.
 
