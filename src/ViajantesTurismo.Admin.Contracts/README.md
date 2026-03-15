@@ -1,4 +1,4 @@
-# ViajantesTurismo.AdminApi.Contracts
+# ViajantesTurismo.Admin.Contracts
 
 Data Transfer Objects (DTOs) and contracts for the Admin API.
 

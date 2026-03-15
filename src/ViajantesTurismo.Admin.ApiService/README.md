@@ -52,5 +52,5 @@ error handling.
 
 - **ViajantesTurismo.Admin.Domain**: Business logic
 - **ViajantesTurismo.Admin.Infrastructure**: Data access
-- **ViajantesTurismo.AdminApi.Contracts**: DTOs
+- **ViajantesTurismo.Admin.Contracts**: DTOs
 - **ViajantesTurismo.ServiceDefaults**: Shared configuration

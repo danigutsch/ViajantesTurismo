@@ -65,15 +65,14 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Admin.Domain/              # Domain entities and business logic
 │   ├── ViajantesTurismo.Admin.Application/         # Application layer (mappers, interfaces)
 │   ├── ViajantesTurismo.Admin.Infrastructure/      # Infrastructure (EF Core, DB context, stores)
-│   ├── ViajantesTurismo.AdminApi.Contracts/        # API contracts and DTOs
+│   ├── ViajantesTurismo.Admin.Contracts/           # API contracts and DTOs
 │   ├── ViajantesTurismo.Admin.ApiService/          # Main API service
 │   ├── ViajantesTurismo.Admin.Web/                 # Blazor admin web frontend
 │   ├── ViajantesTurismo.AppHost/                   # Aspire orchestration
 │   ├── ViajantesTurismo.Common/                    # Shared domain models and utilities
 │   ├── ViajantesTurismo.MigrationService/          # Database migration worker
 │   ├── ViajantesTurismo.Resources/                 # Resource definitions
-│   ├── ViajantesTurismo.ServiceDefaults/           # Service defaults and extensions
-│   └── ViajantesTurismo.Web/                       # Blazor public web frontend
+│   └── ViajantesTurismo.ServiceDefaults/           # Service defaults and extensions
 └── tests/
     ├── ViajantesTurismo.Admin.UnitTests/           # Domain unit tests
     ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
@@ -97,7 +96,7 @@ ViajantesTurismo/
     - [JetBrains Rider](https://www.jetbrains.com/rider/)
 
 **Note for VS Code users:** Open the workspace using `ViajantesTurismo.code-workspace`
- for the best developmentexperience.
+for the best development experience.
 
 ### Quick Setup
 
@@ -162,14 +161,23 @@ See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
 ### Running the Application
 
 ```powershell
+# Preferred when the Aspire CLI is available
+aspire run
+
+# Alternative using only the .NET SDK
 dotnet run --project src/ViajantesTurismo.AppHost
 ```
 
 **Access the application:**
 
-- API: `https://localhost:7xxx`
-- Web: `https://localhost:7xxx`
-- Aspire Dashboard: `https://localhost:15xxx`
+- API and web endpoints are assigned dynamically by Aspire
+- Aspire Dashboard: shown in terminal output when the app starts
+
+For service-specific details, see:
+
+- [AppHost README](src/ViajantesTurismo.AppHost/README.md)
+- [Admin API README](src/ViajantesTurismo.Admin.ApiService/README.md)
+- [Admin Web README](src/ViajantesTurismo.Admin.Web/README.md)
 
 ### Development Workflow
 
@@ -276,7 +284,7 @@ See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for detaile
 ### Building the Solution
 
 ```powershell
-dotnet build
+dotnet build ViajantesTurismo.slnx
 ```
 
 ### Database Migrations

@@ -664,16 +664,7 @@ public void Then_The_Booking_Should_Fail_With_Error(string expectedError)
 - Step definitions call domain/application layer directly (no UI)
 - Use context objects to share state between steps
 
-## Unit & Integration Test Coverage
-
-### Coverage Goals
-
-- **Unit Tests:** 80%+ code coverage
-- **Integration Tests:** All API endpoints
-- **Behaviour Tests:** Business-critical scenarios
-
-Focus on happy paths, error paths, and boundary conditions. Don't obsess over 100% coverage or testing simple
-getters/setters.
+## Running Tests
 
 ### Running Tests
 
@@ -709,16 +700,6 @@ reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targe
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.
 
-### CI/CD Integration (Future)
-
-When CI is added:
-
-- Fail the build on test failures
-- Publish coverage reports to the dashboard
-- Run unit tests on every PR
-- Run integration tests on merge to main
-- Run the full test suite on release branches
-
 ## Related Documentation
 
 - [BDD Guide](../tests/BDD_GUIDE.md) — Gherkin/BDD-specific guidelines and best practices
@@ -747,8 +728,3 @@ guidelines to maintain a high-quality test suite that gives confidence when maki
 ❌ Using `Thread.Sleep()` or arbitrary delays
 ❌ Tests depending on execution order or shared state
 ❌ Complex logic in tests (loops, conditionals)
-
-## Conclusion
-
-Good tests are **Fast**, **Independent**, **Repeatable**, **Self-Validating**, and **Timely** (FIRST). Follow these
-guidelines to maintain a high-quality test suite that gives confidence when making changes.

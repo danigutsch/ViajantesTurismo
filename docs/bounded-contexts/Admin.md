@@ -111,7 +111,7 @@ for specific invariants.
 
 ### Persistence
 
-- **Database:** SQL Server (Entity Framework Core)
+- **Database:** PostgreSQL (Entity Framework Core via Npgsql)
 - **Repositories:** `ITourRepository`, `ICustomerRepository`
 - **Unit of Work:** `IUnitOfWork` for transactional consistency
 

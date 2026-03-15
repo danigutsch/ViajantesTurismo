@@ -34,12 +34,12 @@ Inject via constructor:
 public class BookingSteps
 {
     private readonly BookingContext _context;
-    
+
     public BookingSteps(BookingContext context)
     {
         _context = context;
     }
-    
+
     [Given(@"a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
@@ -115,7 +115,7 @@ public class BookingSteps
 {
     private readonly BookingContext _bookingContext;
     private readonly TourContext _tourContext;
-    
+
     public BookingSteps(
         BookingContext bookingContext,
         TourContext tourContext)
@@ -123,7 +123,7 @@ public class BookingSteps
         _bookingContext = bookingContext;
         _tourContext = tourContext;
     }
-    
+
     [Given(@"a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
@@ -159,18 +159,25 @@ public void ThenTheBookingShouldBeConfirmed()
 ## Running Tests
 
 ```powershell
-# All tests
-dotnet test
+# All behavior tests
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests
 
-# Specific feature
-dotnet test --filter "FullyQualifiedName~BookingLifecycle"
+# Filter by aggregate tag (Reqnroll maps @tags to xUnit Category traits)
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=Agg:Booking"
 
-# By tag
-dotnet test --filter "TestCategory=critical"
+# Filter by custom tag
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests --filter-trait "Category=critical"
 
 # Disable parallelization
-dotnet test -- xUnit.parallelizeTestCollections=false
+dotnet test --project tests/ViajantesTurismo.Admin.BehaviorTests -- xUnit.parallelizeTestCollections=false
 ```
+
+> **MTP note:** This repository uses xUnit v3 on Microsoft Testing Platform. Do **not** use
+> legacy VSTest filters such as `--filter "FullyQualifiedName~..."` or `--filter "TestCategory=..."`.
+> Use `--filter-trait`, `--filter-class`, or `--filter-method` instead.
+
+For the canonical test command reference, see [Test Guidelines](../docs/TEST_GUIDELINES.md#filtering-tests-mtp)
+and the [BDD Guide](BDD_GUIDE.md#quick-start).
 
 ---
 
@@ -228,10 +235,10 @@ public class Hooks
 {
     [BeforeScenario]
     public void BeforeScenario() { }
-    
+
     [AfterScenario]
     public void AfterScenario() { }
-    
+
     [BeforeScenario("@database")]
     public void BeforeDatabaseScenario() { }
 }

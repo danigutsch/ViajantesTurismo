@@ -38,6 +38,10 @@ PostgreSQL → Database → MigrationService
 ## Running
 
 ```powershell
+# Preferred when the Aspire CLI is available
+aspire run
+
+# Alternative using only the .NET SDK
 dotnet run --project src/ViajantesTurismo.AppHost
 ```
 

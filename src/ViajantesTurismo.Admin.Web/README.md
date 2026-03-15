@@ -38,7 +38,7 @@ using Blazor Server components.
 ## Dependencies
 
 - **ViajantesTurismo.Admin.ApiService**: Backend API
-- **ViajantesTurismo.AdminApi.Contracts**: Shared DTOs and contracts
+- **ViajantesTurismo.Admin.Contracts**: Shared DTOs and contracts
 - **ViajantesTurismo.Resources**: Shared resource names
 - **ViajantesTurismo.ServiceDefaults**: Service discovery and defaults
 - **Redis**: Output caching

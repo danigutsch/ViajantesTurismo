@@ -62,7 +62,10 @@ No additional database containers are configured in the dev container - Aspire h
 3. **Run the Application**:
 
    ```bash
-   # Start the Aspire app host (this starts all services)
+   # Preferred when the Aspire CLI is available
+   aspire run
+
+   # Alternative using only the .NET SDK
    dotnet run --project src/ViajantesTurismo.AppHost
    ```
 
