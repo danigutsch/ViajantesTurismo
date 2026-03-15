@@ -38,12 +38,18 @@ PostgreSQL → Database → MigrationService
 ## Running
 
 ```powershell
-# Preferred when the Aspire CLI is available
-aspire run
+# Preferred when using the repo-pinned local .NET tool manifest
+dotnet tool run aspire run
 
 # Alternative using only the .NET SDK
 dotnet run --project src/ViajantesTurismo.AppHost
+
+# If you installed Aspire CLI globally or via the install script
+aspire run
 ```
+
+This repository pins `aspire.cli` in `.config/dotnet-tools.json`, so `dotnet tool run aspire run` is the reproducible
+command for contributors and CI. A global/script installation exposes `aspire` directly on `PATH`.
 
 Opens Aspire dashboard showing all services, logs, traces, and metrics.
 

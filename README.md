@@ -161,12 +161,19 @@ See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
 ### Running the Application
 
 ```powershell
-# Preferred when the Aspire CLI is available
-aspire run
+# Preferred when using the repo-pinned local .NET tool manifest
+dotnet tool run aspire run
 
 # Alternative using only the .NET SDK
 dotnet run --project src/ViajantesTurismo.AppHost
+
+# If you installed Aspire CLI globally or via the install script
+aspire run
 ```
+
+`aspire.cli` is pinned in `.config/dotnet-tools.json` as a **local .NET tool**, so the repository-safe command is
+`dotnet tool run aspire run`. If you install Aspire globally or via the official install script, it adds a standalone
+`aspire` command to your shell `PATH`, and then `aspire run` works directly.
 
 **Access the application:**
 
