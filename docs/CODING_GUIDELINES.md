@@ -128,6 +128,33 @@ var message = status switch
 - **Null-coalescing:** Prefer `??` and `??=` operators
 - **Null-conditional:** Use `?.` for null propagation
 
+### Guard Clauses at Public Boundaries
+
+Guard public entry points and fail fast for invalid caller input.
+
+- Use `ArgumentNullException.ThrowIfNull(value);` for required references
+- Use `ArgumentException.ThrowIfNullOrWhiteSpace(value);` for required strings
+- Use `ArgumentOutOfRangeException` for invalid ranges
+
+Guard once at the boundary. Use `Result` for expected business validation.
+
+```csharp
+public TourCommandHandler(ITourRepository repository, IUnitOfWork unitOfWork)
+{
+    ArgumentNullException.ThrowIfNull(repository);
+    ArgumentNullException.ThrowIfNull(unitOfWork);
+
+    _repository = repository;
+    _unitOfWork = unitOfWork;
+}
+
+public static string NormalizeIdentifier(string value)
+{
+    ArgumentException.ThrowIfNullOrWhiteSpace(value);
+    return value.Trim().ToUpperInvariant();
+}
+```
+
 ### Primary Constructors
 
 Prefer primary constructors for simple classes:
@@ -230,6 +257,8 @@ if (_bookings.Count > Capacity.MaxCustomers)
     throw new InvalidOperationException("Invariant violated");
 ```
 
+Use argument exceptions for invalid caller input and `Result` for expected business validation.
+
 ## Testing
 
 Keep methods focused, avoid static dependencies, use interfaces for repositories.
@@ -324,11 +353,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 ### Known Limitations
 
-| Component                              | AOT Status       | Notes                                                    |
-|----------------------------------------|------------------|----------------------------------------------------------|
+| Component                              | AOT Status        | Notes                                                    |
+| -------------------------------------- | ----------------- | -------------------------------------------------------- |
 | Common, Contracts, Domain, Application | ✅ Compatible     | `IsAotCompatible=true` enabled                           |
 | ApiService                             | ✅ Compatible     | Uses `CreateSlimBuilder`, JSON source generators         |
-| Infrastructure (EF Core)               | ⚠️ Partial       | Compiled models generated, but DbContext blocks full AOT |
+| Infrastructure (EF Core)               | ⚠️ Partial        | Compiled models generated, but DbContext blocks full AOT |
 | Web (Blazor Server)                    | ❌ Not Compatible | Blazor Server not supported for Native AOT               |
 
 ## Performance

@@ -177,6 +177,26 @@ enabled).
 
 See `Directory.Build.props` for complete build configuration.
 
+### Guard-Clause Analyzer Enforcement
+
+Enable guard checks for production code.
+
+#### CA1062: Validate arguments of public methods
+
+Use `CA1062` for required null validation on public methods and constructors.
+
+- **Production projects:** enable it as `error`
+- **Test projects:** keep it suppressed
+- **Generated code and migrations:** exclude
+
+Preferred patterns:
+
+- `ArgumentNullException.ThrowIfNull(value);`
+- `ArgumentException.ThrowIfNullOrWhiteSpace(value);`
+- `ArgumentOutOfRangeException.ThrowIfNegative(value);`
+
+Keep suppressions narrow and do not use guard clauses instead of domain validation.
+
 ### Commands
 
 **Format all .NET code:**
