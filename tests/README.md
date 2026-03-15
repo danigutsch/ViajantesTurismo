@@ -135,6 +135,27 @@ The current acceptable survivor categories are:
 - destructive-reset browser smoke coverage after a true database clear
 - explicit empty-list API contract smokes for aggregate list endpoints
 
+The currently audited intentional survivors are:
+
+- `ViajantesTurismo.Admin.E2ETests.Shared.ListInteractionTests`
+    - exact-dataset browser sort/paginator smokes backed by a true clear-and-own-data setup
+- `ViajantesTurismo.Admin.E2ETests.Shared.ErrorHandlingTests`
+    - destructive-reset browser empty-state smoke after a true database clear
+- `ViajantesTurismo.Admin.E2ETests.Customers.CustomerImportSerialTests`
+    - single clean-slate browser import commit smoke for upload → preview → confirm → summary
+- `ViajantesTurismo.Admin.IntegrationTests.Tours.GetAllToursEmptyListTests`
+- `ViajantesTurismo.Admin.IntegrationTests.Customers.GetAllCustomersEmptyListTests`
+- `ViajantesTurismo.Admin.IntegrationTests.Bookings.GetAllBookingsEmptyListTests`
+    - explicit empty-list API contract smokes, tagged with
+      `SeedDependency=Intentional-EmptyState-Smoke`
+
+Broader audit status:
+
+- E2E and integration suites default to owned-data execution via API helpers and shared test data generators.
+- Behavior tests use scenario-local in-memory contexts/fakes rather than shared seeded application state.
+- Web component tests use fake API clients and local DTO setup rather than shared seeded records.
+- Paginated-list lookup helpers use API-ordered, ID-based targeting instead of blind paginator scanning.
+
 Keep the E2E suite in a single project unless CI cadence, fixture policy, or
 ownership boundaries diverge enough to justify a split.
 

@@ -431,6 +431,14 @@ In this repository, the acceptable survivor patterns are:
 - **explicit empty-list API contract smokes** when a real empty database response
   must be verified for status code and array contract shape
 
+The current audited repository survivors are:
+
+- `ListInteractionTests` for exact-dataset browser list interaction smokes
+- `ErrorHandlingTests` for destructive-reset browser empty-state smoke coverage
+- `CustomerImportSerialTests` for the single clean-slate browser import commit smoke
+- `GetAllToursEmptyListTests`, `GetAllCustomersEmptyListTests`, and `GetAllBookingsEmptyListTests`
+  for explicit empty-list API contract smokes
+
 If a test does not fit one of those patterns, prefer rewriting it to owned-data
 parallel execution before accepting a serial exception.
 
