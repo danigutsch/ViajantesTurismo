@@ -45,14 +45,17 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class
 # Run with coverage
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
-# Generate HTML report
-dotnet reportgenerator -reports:"**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults\CoverageReport" -reporttypes:Html
+# Generate HTML report from all per-project coverage files
+reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
 
 # Open report (Windows)
 Invoke-Item TestResults\CoverageReport\index.html
 ```
 
-> `dotnet reportgenerator` is in the local tool manifest — run `dotnet tool restore` if missing.
+> With MTP, solution-level coverage writes one `coverage.cobertura.xml` file per test project under that
+> project's `TestResults` folder. Aggregate those files with the glob above rather than expecting a
+> single root-level coverage XML file.
+> `reportgenerator` is available via the local tool manifest — run `dotnet tool restore` if missing.
 
 ## Test Parallelization (E2E & Integration)
 

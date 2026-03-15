@@ -45,6 +45,51 @@ Official references:
 - [MTP overview](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
 - [xUnit v3 on MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform)
 
+### Code Coverage with MTP + xUnit v3
+
+This repository uses the MTP-native coverage collection for xUnit v3 test projects.
+
+#### Canonical commands
+
+Generate fresh Cobertura coverage for the whole solution:
+
+```powershell
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+```
+
+Generate a single HTML report from all per-project coverage files:
+
+```powershell
+reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
+```
+
+Open `TestResults/CoverageReport/index.html` to inspect the aggregated report.
+
+#### Important MTP behavior
+
+When you run coverage at the **solution** level, MTP writes one
+`coverage.cobertura.xml` file per test project inside that project's `TestResults` folder.
+
+Do **not** assume a single file such as:
+
+```text
+TestResults/Coverage/coverage.cobertura.xml
+```
+
+it exists after the solution runs.
+
+Instead, aggregate the per-project files using the glob pattern above:
+
+```text
+tests/**/TestResults/**/coverage.cobertura.xml
+```
+
+#### Why the known filename still matters
+
+Passing `--coverage-output coverage.cobertura.xml` ensures each project emits a predictable filename,
+which makes `reportgenerator` aggregation stable even though the files are produced in different
+project output folders.
+
 ### Filtering Tests MTP
 
 xUnit v3 on MTP uses its own filter switches. The following **do NOT work** and will return
@@ -354,7 +399,7 @@ Use these rules to avoid flaky behaviour:
   or scenarios that intentionally mutate the shared baseline state).
 - **Document intentional exceptions**: if a test remains serial, seeded, or exact-dataset dependent on purpose,
   record why it remains and what would allow it to be rewritten.
-- **Do not scan paginated lists for non-pagination behavior**: if the scenario is not about paging,
+- **Do not scan paginated lists for non-pagination behaviour**: if the scenario is not about paging,
   navigate directly by known ID/route or use deterministic owned-data row targeting.
 
 Antipatterns to avoid:
@@ -387,7 +432,7 @@ apply the rules above before increasing timeouts.
 - One logical assertion per test (test one behaviour)
 - Test public behaviour, not implementation details
 - Extract common setup to helper methods (e.g., `TestHelpers.CreateTestCustomerWithNames()`)
-- Before implementing multi-step logic that is not the core behaviour under test,
+- Before implementing multistep logic that is not the core behaviour under test,
   look for an existing helper method or helper class first.
 - If no suitable helper exists and the logic is repeated or hurts readability,
   prefer creating a helper and then using it instead of inlining the plumbing.
@@ -399,9 +444,9 @@ apply the rules above before increasing timeouts.
   not be appropriate or useful anywhere else.
 - Keep the behaviour under test and assertions visible in the test body;
   move only non-test-critical setup, navigation, and mechanical steps into helpers.
-- Avoid narration-style comments when simple Arrange/Act/Assert structure or a small helper method
+- Avoid narration-style comments when a simple Arrange / Act / Assert structure or a small helper method
   makes the intent clear.
-- Avoid conditional logic in test bodies unless the conditional behavior itself is what the test is proving.
+- Avoid conditional logic in test bodies unless the conditional behaviour itself is what the test is proving.
 - Avoid `Thread.Sleep()` and unnecessary waits
 - No test execution order dependencies
 
@@ -582,8 +627,11 @@ official guide.
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # With custom settings file
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings ../../coverage.settings.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
 ```
+
+After a solution-level run, MTP writes one `coverage.cobertura.xml` file per test project under that
+project's `TestResults` folder. Aggregate them with `reportgenerator` using the glob documented above.
 
 ### CI/CD Integration (Future)
 
@@ -653,10 +701,10 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class Condi
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 
 # With custom settings file
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings ../../coverage.settings.xml
+dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
 
-# Generate HTML report (requires reportgenerator tool)
-dotnet reportgenerator -reports:**/TestResults/**/coverage.cobertura.xml -targetdir:TestResults/CoverageReport -reporttypes:Html
+# Generate HTML report from all per-project coverage files (requires reportgenerator tool)
+reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
 ```
 
 See [Code Quality](CODE_QUALITY.md#test-coverage-tools) for full coverage tool configuration and report generation.

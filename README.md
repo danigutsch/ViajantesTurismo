@@ -195,6 +195,19 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
 ```
 
+With **xUnit v3 + Microsoft.Testing.Platform (MTP)**, a solution-level test run writes one
+`coverage.cobertura.xml` file **per test project** into that project's `TestResults` folder.
+It does **not** produce a single root-level coverage file.
+
+To generate one human-readable HTML report from all test projects, aggregate those per-project
+Cobertura files with `reportgenerator`:
+
+```powershell
+reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
+```
+
+Open `TestResults/CoverageReport/index.html` after generation.
+
 **MTP/xUnit v3 note:** When passing test-host options (coverage, Playwright launch options, etc.), place them **after**
  `--`.
 For project-specific runs, prefer `--project <path-to-csproj>` instead of positional project paths.
