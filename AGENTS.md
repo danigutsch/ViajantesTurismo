@@ -75,10 +75,12 @@ AppHost code (for this repo, see `src/ViajantesTurismo.AppHost`).
 
 ### Running the application
 
-- Preferred command: `aspire run`
+- Preferred repository-safe command: `dotnet tool run aspire run`
 - Notes from official CLI behavior:
+    - `dotnet tool run aspire run` uses the repo-pinned `aspire.cli` local tool from `.config/dotnet-tools.json`.
     - `aspire run` builds the AppHost/resources, starts resources, launches dashboard,
-      and prints endpoints.
+        and prints endpoints.
+    - If Aspire CLI is installed globally or via the official install script, `aspire run` also works directly.
     - If multiple AppHosts exist, specify with `--project <path-to-apphost-csproj>`.
 
 ### Checking resources and debugging
@@ -101,7 +103,7 @@ When adding a new resource/integration:
 
 ### AppHost and tooling notes
 
-- If AppHost changes do not appear, restart `aspire run`.
+- If AppHost changes do not appear, restart `dotnet tool run aspire run` (or `aspire run` if using a global/script installation).
 - Use `aspire update` when intentionally updating AppHost/related Aspire packages.
 - Persistent containers can create state issues early in development; prefer resettable local flows.
 - Do **not** install/use the obsolete Aspire workload.
