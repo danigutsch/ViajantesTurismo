@@ -157,6 +157,17 @@ public static class ApiTestExtensions
         }
 
         /// <summary>
+        /// Retrieves a booking by identifier via the API.
+        /// </summary>
+        /// <param name="bookingId">The booking identifier.</param>
+        /// <returns>The current booking representation.</returns>
+        public async Task<GetBookingDto> GetBooking(Guid bookingId)
+        {
+            var response = await client.GetAsync(new Uri($"/bookings/{bookingId}", UriKind.Relative));
+            return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
+        }
+
+        /// <summary>
         /// Returns all bookings from the API.
         /// </summary>
         public async Task<GetBookingDto[]> GetAllBookings()
@@ -185,6 +196,18 @@ public static class ApiTestExtensions
         }
 
         /// <summary>
+        /// Creates and confirms a booking via the API.
+        /// </summary>
+        /// <param name="tourId">The owning tour identifier.</param>
+        /// <param name="customerId">The principal customer identifier.</param>
+        /// <returns>The confirmed booking.</returns>
+        public async Task<GetBookingDto> CreateConfirmedBooking(Guid tourId, Guid customerId)
+        {
+            var booking = await client.CreateBooking(tourId, customerId);
+            return await client.ConfirmBooking(booking.Id);
+        }
+
+        /// <summary>
         /// Cancels a booking via the API and returns the updated <see cref="GetBookingDto"/>.
         /// </summary>
         public async Task<GetBookingDto> CancelBooking(Guid bookingId)
@@ -195,6 +218,18 @@ public static class ApiTestExtensions
         }
 
         /// <summary>
+        /// Creates and cancels a booking via the API.
+        /// </summary>
+        /// <param name="tourId">The owning tour identifier.</param>
+        /// <param name="customerId">The principal customer identifier.</param>
+        /// <returns>The cancelled booking.</returns>
+        public async Task<GetBookingDto> CreateCancelledBooking(Guid tourId, Guid customerId)
+        {
+            var booking = await client.CreateBooking(tourId, customerId);
+            return await client.CancelBooking(booking.Id);
+        }
+
+        /// <summary>
         /// Completes a booking via the API and returns the updated <see cref="GetBookingDto"/>.
         /// </summary>
         public async Task<GetBookingDto> CompleteBooking(Guid bookingId)
@@ -202,6 +237,18 @@ public static class ApiTestExtensions
             var response = await client.PostAsync(
                 new Uri($"/bookings/{bookingId}/complete", UriKind.Relative), null);
             return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Creates, confirms, and completes a booking via the API.
+        /// </summary>
+        /// <param name="tourId">The owning tour identifier.</param>
+        /// <param name="customerId">The principal customer identifier.</param>
+        /// <returns>The completed booking.</returns>
+        public async Task<GetBookingDto> CreateCompletedBooking(Guid tourId, Guid customerId)
+        {
+            var booking = await client.CreateConfirmedBooking(tourId, customerId);
+            return await client.CompleteBooking(booking.Id);
         }
 
         /// <summary>
@@ -220,6 +267,46 @@ public static class ApiTestExtensions
             var response = await client.PostAsJsonAsync(
                 new Uri($"/bookings/{bookingId}/payments", UriKind.Relative), dto);
             response.EnsureSuccessStatusCode();
+        }
+
+        /// <summary>
+        /// Creates a booking and records a partial payment via the API.
+        /// </summary>
+        /// <param name="tourId">The owning tour identifier.</param>
+        /// <param name="customerId">The principal customer identifier.</param>
+        /// <param name="amount">The partial payment amount to record.</param>
+        /// <returns>The updated partially paid booking.</returns>
+        public async Task<GetBookingDto> CreatePartiallyPaidBooking(Guid tourId, Guid customerId, decimal amount)
+        {
+            var booking = await client.CreateBooking(tourId, customerId);
+            await client.RecordPayment(booking.Id, amount);
+            return await client.GetBooking(booking.Id);
+        }
+
+        /// <summary>
+        /// Creates and fully pays a booking via the API.
+        /// </summary>
+        /// <param name="tourId">The owning tour identifier.</param>
+        /// <param name="customerId">The principal customer identifier.</param>
+        /// <returns>The updated fully paid booking.</returns>
+        public async Task<GetBookingDto> CreatePaidBooking(Guid tourId, Guid customerId)
+        {
+            var booking = await client.CreateBooking(tourId, customerId);
+            await client.RecordPayment(booking.Id, booking.TotalPrice);
+            return await client.GetBooking(booking.Id);
+        }
+
+        /// <summary>
+        /// Creates, confirms, and fully pays a booking via the API.
+        /// </summary>
+        /// <param name="tourId">The owning tour identifier.</param>
+        /// <param name="customerId">The principal customer identifier.</param>
+        /// <returns>The updated confirmed and fully paid booking.</returns>
+        public async Task<GetBookingDto> CreateConfirmedPaidBooking(Guid tourId, Guid customerId)
+        {
+            var booking = await client.CreateConfirmedBooking(tourId, customerId);
+            await client.RecordPayment(booking.Id, booking.TotalPrice);
+            return await client.GetBooking(booking.Id);
         }
     }
 }
