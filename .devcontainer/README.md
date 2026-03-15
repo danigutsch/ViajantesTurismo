@@ -18,7 +18,7 @@ Ubuntu-based container with the following tools installed via features:
 - **.NET 10 SDK**: For building and running the application
 - **Node.js 22**: For npm scripts and development tools
 - **Git**: Version control
-- **Docker-in-Docker**: Run Docker commands inside the container (for Aspire)
+- **Docker-outside-of-Docker**: Reuse host Docker socket from inside the container (for Aspire)
 
 ### VS Code Extensions
 
@@ -137,7 +137,7 @@ On first container creation, the `post-create.sh` script automatically:
 
 ### Aspire Services Won't Start
 
-- Ensure Docker-in-Docker is working: Run `docker ps` in the dev container terminal
+- Ensure Docker access from the dev container is working: run `docker ps` in the dev container terminal
 - Check your container runtime has enough resources allocated
 
 ### Performance Issues on Windows
