@@ -15,6 +15,16 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     private UiFeedbackAssertions UiFeedback => new(page);
 
     /// <summary>
+    /// Navigates directly to the booking edit page for a known booking identifier.
+    /// </summary>
+    /// <param name="bookingId">The booking identifier.</param>
+    public async Task NavigateToEdit(Guid bookingId)
+    {
+        await navigateTo($"/bookings/{bookingId}/edit");
+        Assert.Equal("Edit Booking", await page.TitleAsync());
+    }
+
+    /// <summary>
     /// Creates a booking from the tour details page and returns the created booking identifier.
     /// </summary>
     /// <param name="tour">The tour that will receive the new booking.</param>
@@ -82,8 +92,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     /// <param name="bookingId">The booking identifier.</param>
     public async Task ApplyDiscount(Guid bookingId)
     {
-        await navigateTo($"/bookings/{bookingId}/edit");
-        Assert.Equal("Edit Booking", await page.TitleAsync());
+        await NavigateToEdit(bookingId);
 
         await page.Locator("#notes").FillAsync("E2E test booking - notes updated during edit");
         await page.SelectOptionAsync("#discountType", "Percentage");
@@ -105,8 +114,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     /// <param name="bookingId">The booking identifier.</param>
     public async Task ConfirmBooking(Guid bookingId)
     {
-        await navigateTo($"/bookings/{bookingId}/edit");
-        Assert.Equal("Edit Booking", await page.TitleAsync());
+        await NavigateToEdit(bookingId);
 
         await page.GetButton("Confirm Booking").ClickAsync();
 

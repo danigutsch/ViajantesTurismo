@@ -14,7 +14,7 @@ public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixtu
         var booking = await api.CreateBooking(tour.Id, customer.Id);
 
         // Act
-        await NavigateTo($"/bookings/{booking.Id}/edit");
+        await BookingWorkflow.NavigateToEdit(booking.Id);
         var deleteButton = Page.GetButton("Delete Booking");
         await deleteButton.ClickAsync();
 

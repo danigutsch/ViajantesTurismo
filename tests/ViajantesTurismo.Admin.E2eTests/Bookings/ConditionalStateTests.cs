@@ -54,8 +54,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
 
         // Act
-        await NavigateTo($"/bookings/{pendingBooking.Id}/edit");
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
+        await BookingWorkflow.NavigateToEdit(pendingBooking.Id);
 
         // Assert
         await Expect(Page.Locator("#status")).ToBeEnabledAsync();
@@ -66,8 +65,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
 
     private async Task ExpectTerminalBookingEditState(Guid bookingId, string terminalStateText)
     {
-        await NavigateTo($"/bookings/{bookingId}/edit");
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
+        await BookingWorkflow.NavigateToEdit(bookingId);
 
         await Expect(Page.Locator(".alert-warning")).ToContainTextAsync(terminalStateText);
         await Expect(Page.Locator("#status")).ToBeDisabledAsync();

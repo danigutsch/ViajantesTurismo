@@ -11,7 +11,7 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // Act
-        await NavigateToBookingEdit(booking.Id);
+        await BookingWorkflow.NavigateToEdit(booking.Id);
         await Page.GetButton("Confirm Booking").ClickAsync();
 
         // Assert
@@ -27,7 +27,7 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
         var booking = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
 
         // Act
-        await NavigateToBookingEdit(booking.Id);
+        await BookingWorkflow.NavigateToEdit(booking.Id);
         await Page.GetButton("Update Booking").ClickAsync();
 
         var redirectAlert = Page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
@@ -36,12 +36,6 @@ public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // Assert
         await Expect(Page.GetButton("Go to Bookings")).ToBeVisibleAsync();
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
-    }
-
-    private async Task NavigateToBookingEdit(Guid bookingId)
-    {
-        await NavigateTo($"/bookings/{bookingId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Booking");
     }
 }
