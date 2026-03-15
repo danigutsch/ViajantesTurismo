@@ -22,6 +22,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The personal information form model.</param>
     public void SetPersonalInfo(PersonalInfoFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         PersonalInfo = model;
         CurrentStep = Math.Max(CurrentStep, 2);
     }
@@ -32,6 +34,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The identification information form model.</param>
     public void SetIdentificationInfo(IdentificationInfoFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         IdentificationInfo = model;
         CurrentStep = Math.Max(CurrentStep, 3);
     }
@@ -42,6 +46,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The contact information form model.</param>
     public void SetContactInfo(ContactInfoFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         ContactInfo = model;
         CurrentStep = Math.Max(CurrentStep, 4);
     }
@@ -52,6 +58,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The address information form model.</param>
     public void SetAddress(AddressFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         Address = model;
         CurrentStep = Math.Max(CurrentStep, 5);
     }
@@ -62,6 +70,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The physical information form model.</param>
     public void SetPhysicalInfo(PhysicalInfoFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         PhysicalInfo = model;
         CurrentStep = Math.Max(CurrentStep, 6);
     }
@@ -72,6 +82,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The accommodation preferences form model.</param>
     public void SetAccommodationPreferences(AccommodationPreferencesFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         AccommodationPreferences = model;
         CurrentStep = Math.Max(CurrentStep, 7);
     }
@@ -82,6 +94,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The emergency contact information form model.</param>
     public void SetEmergencyContact(EmergencyContactFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         EmergencyContact = model;
         CurrentStep = Math.Max(CurrentStep, 8);
     }
@@ -92,6 +106,8 @@ internal sealed class CustomerCreationState
     /// <param name="model">The medical information form model.</param>
     public void SetMedicalInfo(MedicalInfoFormModel model)
     {
+        ArgumentNullException.ThrowIfNull(model);
+
         MedicalInfo = model;
         CurrentStep = Math.Max(CurrentStep, 8);
     }

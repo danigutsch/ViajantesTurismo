@@ -22,6 +22,8 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
             configureDbContextOptions: options =>
@@ -63,6 +65,8 @@ public static class InfrastructureDependencyInjection
     public static TApplicationBuilder AddSeeding<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
             configureDbContextOptions: options =>
@@ -83,5 +87,10 @@ public static class InfrastructureDependencyInjection
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddSeeding(this IServiceCollection services) => services.AddScoped<ISeeder, Seeder>();
+    public static IServiceCollection AddSeeding(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.AddScoped<ISeeder, Seeder>();
+    }
 }

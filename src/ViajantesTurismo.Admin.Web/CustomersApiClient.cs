@@ -45,8 +45,9 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
 
     public async Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken cancellationToken)
     {
-        var response =
-            await httpClient.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), dto, cancellationToken);
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var response = await httpClient.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
         return response.Headers.Location ??
@@ -55,12 +56,17 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
 
     public async Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PutAsJsonAsync($"/customers/{id}", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
     public async Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(fileContent);
+        ArgumentNullException.ThrowIfNull(fileName);
+
         using var fileBytes = new ByteArrayContent(fileContent);
         fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
         using var content = new MultipartFormDataContent();
@@ -75,6 +81,10 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
 
     public async Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(fileContent);
+        ArgumentNullException.ThrowIfNull(fileName);
+        ArgumentNullException.ThrowIfNull(conflictResolutions);
+
         using var fileBytes = new ByteArrayContent(fileContent);
         fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
         using var content = new MultipartFormDataContent();

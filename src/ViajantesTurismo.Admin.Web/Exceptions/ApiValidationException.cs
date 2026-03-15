@@ -42,6 +42,8 @@ public class ApiValidationException : HttpRequestException
     /// <param name="validationErrors">The validation errors from the API.</param>
     public ApiValidationException(string message, IDictionary<string, string[]> validationErrors) : base(message, null, HttpStatusCode.BadRequest)
     {
+        ArgumentNullException.ThrowIfNull(validationErrors);
+
         ValidationErrors = new Dictionary<string, string[]>(validationErrors);
     }
 

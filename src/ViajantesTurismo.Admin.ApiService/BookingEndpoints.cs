@@ -28,6 +28,8 @@ internal static class BookingEndpoints
     /// <returns>The web application for chaining.</returns>
     public static void MapBookingEndpoints(this WebApplication app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         var bookingsGroup = app.MapGroup("/bookings")
             .WithGroupName("Bookings")
             .WithTags("Bookings");
@@ -144,6 +146,8 @@ internal static class BookingEndpoints
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new CreateBookingCommand(
             dto.TourId,
             dto.PrincipalCustomerId,
@@ -177,6 +181,8 @@ internal static class BookingEndpoints
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new UpdateBookingDiscountCommand(
             id,
             dto.DiscountType,
@@ -275,6 +281,8 @@ internal static class BookingEndpoints
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new UpdateBookingNotesCommand(id, dto.Notes);
 
         var result = await handler.Handle(command, ct);
@@ -321,6 +329,8 @@ internal static class BookingEndpoints
             [FromServices] IQueryService queryService,
             CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new RecordPaymentCommand(
             id,
             dto.Amount,
@@ -353,6 +363,8 @@ internal static class BookingEndpoints
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new UpdateBookingDetailsCommand(
             id,
             dto.RoomType,

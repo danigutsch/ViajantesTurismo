@@ -75,6 +75,8 @@ internal sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiCli
 
     public async Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
@@ -84,18 +86,24 @@ internal sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiCli
 
     public async Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/discount", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
     public async Task UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/details", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
 
     public async Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PatchAsJsonAsync($"/bookings/{id}/notes", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }
@@ -127,6 +135,8 @@ internal sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiCli
 
     public async Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PostAsJsonAsync($"/bookings/{bookingId}/payments", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 

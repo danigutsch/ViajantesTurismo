@@ -16,6 +16,8 @@ internal static class CustomerImportEndpoints
     /// <param name="app">The web application builder.</param>
     public static WebApplication MapCustomerImportEndpoints(this WebApplication app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         app.MapPost("/customers/import", ImportCustomers)
         .WithGroupName("Customers")
         .WithTags("Customers")
@@ -40,6 +42,8 @@ internal static class CustomerImportEndpoints
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(file);
+
         var csvText = await ReadCsvAsync(file, ct);
         var result = await workflow.Import(csvText, ct);
         return TypedResults.Ok(result);
@@ -52,6 +56,8 @@ internal static class CustomerImportEndpoints
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(file);
+
         var csvText = await ReadCsvAsync(file, ct);
         var parsedConflictResolutions = ConflictResolutionSerialization.Parse(conflictResolutions);
         var result = await workflow.Commit(
@@ -64,6 +70,8 @@ internal static class CustomerImportEndpoints
 
     private static async Task<string> ReadCsvAsync(IFormFile file, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(file);
+
         using var reader = new StreamReader(file.OpenReadStream());
         return await reader.ReadToEndAsync(ct);
     }

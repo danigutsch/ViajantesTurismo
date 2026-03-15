@@ -44,6 +44,8 @@ internal sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
 
     public async Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
@@ -53,6 +55,8 @@ internal sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
 
     public async Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, cancellationToken);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
     }

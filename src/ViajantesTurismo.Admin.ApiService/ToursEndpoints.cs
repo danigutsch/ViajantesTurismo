@@ -22,6 +22,8 @@ internal static class ToursEndpoints
     /// <returns>The web application for chaining.</returns>
     public static void MapToursEndpoints(this WebApplication app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         var toursGroup = app.MapGroup("/tours")
             .WithGroupName("Tours")
             .WithTags("Tours");
@@ -53,6 +55,8 @@ internal static class ToursEndpoints
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(tourDto);
+
         var command = new CreateTourCommand(
             tourDto.Identifier,
             tourDto.Name,
@@ -110,6 +114,8 @@ internal static class ToursEndpoints
         [FromServices] UpdateTourCommandHandler handler,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(tourDto);
+
         var command = new UpdateTourCommand(
             id,
             tourDto.Identifier,

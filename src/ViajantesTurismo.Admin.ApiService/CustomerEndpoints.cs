@@ -21,6 +21,8 @@ internal static class CustomerEndpoints
     /// <returns>The web application for chaining.</returns>
     public static WebApplication MapCustomerEndpoints(this WebApplication app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         var customersGroup = app.MapGroup("/customers")
             .WithGroupName("Customers")
             .WithTags("Customers");
@@ -77,6 +79,8 @@ internal static class CustomerEndpoints
             [FromServices] IQueryService queryService,
             CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new CreateCustomerCommand(
             dto.PersonalInfo,
             dto.IdentificationInfo,
@@ -122,6 +126,8 @@ internal static class CustomerEndpoints
         [FromServices] UpdateCustomerCommandHandler handler,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var command = new UpdateCustomerCommand(
             id,
             dto.PersonalInfo,
