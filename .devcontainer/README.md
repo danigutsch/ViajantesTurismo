@@ -62,12 +62,18 @@ No additional database containers are configured in the dev container - Aspire h
 3. **Run the Application**:
 
    ```bash
-   # Preferred when the Aspire CLI is available
-   aspire run
+   # Preferred when using the repo-pinned local .NET tool manifest
+   dotnet tool run aspire run
 
    # Alternative using only the .NET SDK
    dotnet run --project src/ViajantesTurismo.AppHost
+
+   # If you installed Aspire CLI globally or via the install script
+   aspire run
    ```
+
+   The repository pins `aspire.cli` as a local .NET tool, so `dotnet tool run aspire run` works reliably inside a new
+   dev container even when a standalone `aspire` command is not on `PATH`.
 
    The Aspire dashboard will open automatically, showing all running services and their dynamically assigned ports.
 

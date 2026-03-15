@@ -66,6 +66,7 @@ fi
 printf "\n%b" "${YELLOW}🔧 Restoring .NET local tools...${NC}\n"
 if dotnet tool restore > /dev/null 2>&1; then
     printf "%b" "   ${GREEN}✅ .NET tools restored (dotnet-ef, reportgenerator, Aspire CLI)${NC}\n"
+    printf "%b" "   ${CYAN}💡 Run the repo-pinned Aspire CLI with: dotnet tool run aspire run${NC}\n"
 else
     printf "%b" "   ${YELLOW}⚠️ Failed to restore .NET tools${NC}\n"
 fi
@@ -163,7 +164,8 @@ printf "\n%b" "${GREEN}✨ Setup Complete!${NC}\n"
 printf "%b" "${GREEN}==================${NC}\n\n"
 
 printf "%b" "${CYAN}Next steps:${NC}\n"
-printf "%b" "  1. Run the application: ${NC}dotnet run --project src/ViajantesTurismo.AppHost\n"
+printf "%b" "  1. Run the application: ${NC}dotnet tool run aspire run\n"
 printf "%b" "  2. Run tests: ${NC}dotnet test\n"
 printf "%b" "  3. Check markdown: ${NC}npm run lint:md\n"
+printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
 printf "\n"
