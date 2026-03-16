@@ -23,3 +23,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: Restore .NET dependencies
+        run: dotnet restore ViajantesTurismo.slnx
+
+      - name: Build solution
+        run: dotnet build ViajantesTurismo.slnx --no-restore
