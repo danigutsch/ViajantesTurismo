@@ -39,3 +39,14 @@ jobs:
 
       - name: Build solution
         run: dotnet build ViajantesTurismo.slnx --no-restore
+
+      - name: Run tests
+        run: dotnet test --solution ViajantesTurismo.slnx --no-build
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: "**/TestResults/**"
+          retention-days: 7
