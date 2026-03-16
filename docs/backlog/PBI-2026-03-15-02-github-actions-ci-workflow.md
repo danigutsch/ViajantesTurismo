@@ -6,7 +6,7 @@
 - **Improvement:** IMP-027
 - **Title:** Add GitHub Actions CI workflow for build, test, and quality gates
 - **Priority:** High
-- **Status:** Proposed
+- **Status:** In Progress
 - **Type:** Infrastructure / Developer Experience / Quality
 - **Target Area:** `.github/workflows/`, repository documentation
 - **Related Work:** PBI-2026-03-15-01 (canonical repo command/script layer)
@@ -520,74 +520,74 @@ implemented, reviewed, and validated without needing the entire CI system to lan
 
 #### Workflow skeleton
 
-- [ ] Create `.github/workflows/ci.yml` with only `name` and triggers for `pull_request`, `push`, and
+- [x] Create `.github/workflows/ci.yml` with only `name` and triggers for `pull_request`, `push`, and
     `workflow_dispatch`.
     - **How to test:** validate YAML structure locally and confirm the workflow appears in GitHub Actions on the next
         push.
-- [ ] Add top-level `permissions` with the minimum baseline scope.
+- [x] Add top-level `permissions` with the minimum baseline scope.
     - **How to test:** confirm the workflow still starts successfully and does not request write permissions.
-- [ ] Add top-level `concurrency` with cancellation for superseded branch or PR runs.
+- [x] Add top-level `concurrency` with cancellation for superseded branch or PR runs.
     - **How to test:** push two quick successive commits to the same branch and confirm the earlier run is cancelled.
 
 #### Build-and-test job foundation
 
-- [ ] Add a `build-and-test` job with `runs-on` and a checkout step only.
+- [x] Add a `build-and-test` job with `runs-on` and a checkout step only.
     - **How to test:** confirm the job starts and the repository contents are available to later steps.
-- [ ] Add .NET setup using `global.json`.
+- [x] Add .NET setup using `global.json`.
     - **How to test:** print or verify the installed SDK version during the run and confirm it matches
         `10.0.100`.
-- [ ] Add Node setup aligned with `package.json` engines.
+- [x] Add Node setup aligned with `package.json` engines.
     - **How to test:** print or verify the Node version during the run and confirm it is within the supported
         `>=24.0.0 <25.0.0` range.
-- [ ] Add solution restore: `dotnet restore ViajantesTurismo.slnx`.
+- [x] Add solution restore: `dotnet restore ViajantesTurismo.slnx`.
     - **How to test:** the step exits successfully and later build steps can use `--no-restore`.
-- [ ] Add solution build: `dotnet build ViajantesTurismo.slnx --no-restore`.
+- [x] Add solution build: `dotnet build ViajantesTurismo.slnx --no-restore`.
     - **How to test:** the build step passes independently after restore and fails if compilation breaks.
-- [ ] Add solution test: `dotnet test --solution ViajantesTurismo.slnx --no-build`.
+- [x] Add solution test: `dotnet test --solution ViajantesTurismo.slnx --no-build`.
     - **How to test:** the test step passes on a healthy branch and fails the job if a test fails.
 
 #### Artifact publishing
 
-- [ ] Add artifact upload for `**/TestResults/**` using `if: always()`.
+- [x] Add artifact upload for `**/TestResults/**` using `if: always()`.
     - **How to test:** confirm artifacts are uploaded on a successful run and still upload when tests fail.
-- [ ] Add explicit artifact naming and retention.
+- [x] Add explicit artifact naming and retention.
     - **How to test:** confirm the artifact name is stable in the Actions UI and retention is shown as expected.
 - [ ] Add a small, focused diagnostic output if build or test fails.
     - **How to test:** induce a failing run and confirm the diagnostic files are present and useful.
 
 #### Lint job foundation
 
-- [ ] Add a separate `lint` job with checkout and Node setup.
+- [x] Add a separate `lint` job with checkout and Node setup.
     - **How to test:** confirm the job starts independently from `build-and-test`.
-- [ ] Add deterministic package installation with `npm ci`.
+- [x] Add deterministic package installation with `npm ci`.
     - **How to test:** the step succeeds using `package-lock.json` and fails if the lockfile or manifest is invalid.
-- [ ] Add `npm run lint:all`.
+- [x] Add `npm run lint:all`.
     - **How to test:** the job passes on a clean branch and fails when markdown, JSON, shell, or Gherkin linting is
         broken.
 
 #### Caching and performance-safe improvements
 
-- [ ] Enable supported built-in caching for Node setup.
+- [x] Enable supported built-in caching for Node setup.
     - **How to test:** confirm cache restore/save behavior appears in the job logs and does not change correctness.
 - [ ] Enable supported built-in caching for .NET setup if it provides clear value.
     - **How to test:** confirm cache activity appears in logs and the workflow still succeeds from a cold cache.
 
 #### Documentation changes
 
-- [ ] Update `README.md` with a short CI summary and the local commands that correspond to CI.
+- [x] Update `README.md` with a short CI summary and the local commands that correspond to CI.
     - **How to test:** a contributor can follow the documented commands locally without needing extra context.
-- [ ] Update `docs/CODE_QUALITY.md` or add a dedicated CI document describing jobs, artifacts, and failure
+- [x] Update `docs/CODE_QUALITY.md` or add a dedicated CI document describing jobs, artifacts, and failure
     reproduction.
     - **How to test:** the docs mention the actual workflow/job names and match the committed YAML.
-- [ ] Document the intended required status checks once job names are final.
+- [x] Document the intended required status checks once job names are final.
     - **How to test:** the documented names exactly match the job names shown in GitHub Actions.
 
 #### Governance and trust policy
 
-- [ ] Document the action versioning policy for the workflow.
+- [x] Document the action versioning policy for the workflow.
     - **How to test:** reviewers can identify whether actions are pinned by major tag or immutable SHA and how updates
         are handled.
-- [ ] Add or update `CODEOWNERS` coverage for `.github/workflows/**` if governance is included in this increment.
+- [x] Add or update `CODEOWNERS` coverage for `.github/workflows/**` if governance is included in this increment.
     - **How to test:** a pull request changing workflow files requests the expected reviewers.
 
 #### Optional supplemental work

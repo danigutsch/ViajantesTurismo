@@ -236,6 +236,41 @@ npm run lint:all
 See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration and usage, and
 [docs/TEST_GUIDELINES.md](docs/TEST_GUIDELINES.md) for testing strategy and patterns.
 
+## Continuous Integration
+
+Every pull request and push to `master` is validated by a GitHub Actions workflow
+(`.github/workflows/ci.yml`). The workflow runs two parallel jobs:
+
+| Job | What it does |
+| --- | --- |
+| **Build and Test** | Provisions .NET and Node, restores, builds, runs all tests, uploads test result artifacts |
+| **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
+
+### Reproducing CI locally
+
+The CI commands map directly to local commands:
+
+```powershell
+# Build and test (mirrors the Build and Test job)
+dotnet restore ViajantesTurismo.slnx
+dotnet build ViajantesTurismo.slnx --no-restore
+dotnet test --solution ViajantesTurismo.slnx --no-build
+
+# Lint (mirrors the Lint job)
+npm ci
+npm run lint:all
+```
+
+### Required status checks
+
+Once branch protection is configured, require both of these job names:
+
+- `Build and Test`
+- `Lint`
+
+See [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_ROLLOUT.md) for the action versioning policy and
+governance details.
+
 ## API Endpoints
 
 The API provides RESTful endpoints for managing tours, customers, and bookings.
