@@ -30,7 +30,9 @@ The CI workflow runs on every pull request targeting `main`, every push to `main
 10. Run `bash scripts/run-tests-with-coverage.sh` when build/test work is required;
   this helper runs the coverage-enabled test command, verifies Cobertura output exists,
   and generates the HTML coverage report
-11. Upload test result artifacts and coverage report artifacts (`actions/upload-artifact`, runs on `always()` after the test step executes) when tests ran
+11. When build or test work fails, create a focused diagnostic summary under `TestResults/ci-diagnostics/`
+12. Upload test result artifacts and coverage report artifacts (`actions/upload-artifact`, runs on `always()` after the test step executes) when tests ran
+13. Upload the focused `build-test-diagnostics` artifact when the job fails
 
 For pull requests and pushes that only modify `docs/**`, `README.md`, or `CONTRIBUTING.md`,
 the job still runs and reports a successful `Build and Test` check, but it skips the expensive
@@ -112,6 +114,7 @@ Test result artifacts are uploaded by the `build-and-test` job unconditionally (
 | --- | --- | --- |
 | `test-results` | `**/TestResults/**` from all test projects | 7 days |
 | `coverage-report` | Aggregated HTML report under `TestResults/CoverageReport/**` | 7 days |
+| `build-test-diagnostics` | Focused summary file under `TestResults/ci-diagnostics/**` when build/test fails | 7 days |
 
 The artifact includes per-project `TestResults` folders, which contain `.trx` result files and
 `coverage.cobertura.xml` when coverage collection is enabled.
@@ -129,6 +132,10 @@ Coverage now has two consumers:
 
 Artifact scope is kept narrow — only test outputs that materially help diagnose failures are
 included. Do not broaden the upload glob without a clear reason.
+
+When the `Build and Test` job fails before full test artifacts are available, CI also uploads a
+small `build-test-diagnostics` artifact containing step outcomes, toolchain versions, and a
+`TestResults` inventory snapshot to speed up first-pass diagnosis.
 
 ## Reproducing Failures Locally
 
@@ -314,8 +321,6 @@ including the main CI workflow and the separate dependency review workflow.
 
 The near-term required items from the initial rollout are complete. Monitor the workflow in
 normal use and move deferred items into scope only when there is a concrete operational need.
-The remaining small enhancement from the original backlog is focused failure diagnostics for
-build/test failures; treat that as follow-up work rather than a blocker for baseline CI rollout.
 
 ## Deferred Work
 
