@@ -238,7 +238,7 @@ See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration
 
 ## Continuous Integration
 
-Every pull request and push to `master` is validated by a GitHub Actions workflow
+Every pull request and push to `main` is validated by a GitHub Actions workflow
 (`.github/workflows/ci.yml`). The workflow runs two parallel jobs:
 
 | Job | What it does |
