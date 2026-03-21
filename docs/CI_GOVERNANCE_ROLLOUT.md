@@ -330,7 +330,6 @@ The following follow-up items are planned after the baseline rollout:
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
-- README badge wiring for CI and SonarCloud health visibility
 - Align branch protection settings so `SonarCloud` is required on `main`
 
 ## Related Documentation
