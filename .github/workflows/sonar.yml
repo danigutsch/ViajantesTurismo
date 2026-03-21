@@ -1,0 +1,93 @@
+name: SonarCloud
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      build_required: ${{ steps.change-scope.outputs.build_required }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect docs-only changes
+        id: change-scope
+        shell: bash
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_AFTER_SHA: ${{ github.event.after }}
+        run: bash scripts/detect-changes.sh
+
+  sonarcloud:
+    name: SonarCloud
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Restore .NET dependencies
+        run: dotnet restore ViajantesTurismo.slnx
+
+      - name: Restore .NET local tools
+        run: dotnet tool restore
+
+      - name: Install Playwright browsers
+        run: pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+
+      - name: Trust HTTPS developer certificate
+        run: |
+          dotnet dev-certs https --trust || true
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust" >> "$GITHUB_ENV"
+
+      - name: Run SonarCloud analysis
+        run: bash scripts/run-sonar-analysis.sh
+
+      - name: Upload Sonar coverage input
+        uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          if-no-files-found: error
+          name: sonar-coverage
+          path: TestResults/sonar-coverage.xml
+          retention-days: 7
