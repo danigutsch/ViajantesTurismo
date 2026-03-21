@@ -23,11 +23,14 @@ The CI workflow runs on every pull request targeting `main`, every push to `main
 3. Set up .NET SDK from `global.json` (`actions/setup-dotnet`) when build/test work is required
 4. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required
 5. `dotnet restore ViajantesTurismo.slnx` when build/test work is required
-6. `dotnet build ViajantesTurismo.slnx --no-restore` when build/test work is required
-7. Install Playwright browsers and OS dependencies (`playwright.ps1 install --with-deps`, located dynamically via `find`) when build/test work is required
-8. Trust HTTPS developer certificate and set `SSL_CERT_DIR` when build/test work is required
-9. `dotnet test --solution ViajantesTurismo.slnx --no-build` when build/test work is required
-10. Upload test result artifacts (`actions/upload-artifact`, runs on `always()` after the test step executes) when tests ran
+6. `dotnet tool restore` when build/test work is required
+7. `dotnet build ViajantesTurismo.slnx --no-restore` when build/test work is required
+8. Install Playwright browsers and OS dependencies (`playwright.ps1 install --with-deps`, located dynamically via `find`) when build/test work is required
+9. Trust HTTPS developer certificate and set `SSL_CERT_DIR` when build/test work is required
+10. Run `bash scripts/run-tests-with-coverage.sh` when build/test work is required;
+  this helper runs the coverage-enabled test command, verifies Cobertura output exists,
+  and generates the HTML coverage report
+11. Upload test result artifacts and coverage report artifacts (`actions/upload-artifact`, runs on `always()` after the test step executes) when tests ran
 
 For pull requests and pushes that only modify `docs/**`, `README.md`, or `CONTRIBUTING.md`,
 the job still runs and reports a successful `Build and Test` check, but it skips the expensive
@@ -66,11 +69,21 @@ Test result artifacts are uploaded by the `build-and-test` job unconditionally (
 | Artifact name | Contents | Retention |
 | --- | --- | --- |
 | `test-results` | `**/TestResults/**` from all test projects | 7 days |
+| `coverage-report` | Aggregated HTML report under `TestResults/CoverageReport/**` | 7 days |
 
 The artifact includes per-project `TestResults` folders, which contain `.trx` result files and
 `coverage.cobertura.xml` when coverage collection is enabled.
 If the test step ran, missing result files are treated as an error because that indicates the
 test infrastructure did not produce the expected outputs.
+The HTML coverage artifact is generated from those per-project Cobertura files with the repo's
+local `reportgenerator` tool manifest entry.
+
+Coverage reporting is currently GitHub-only: CI publishes Cobertura XML inside the test-results
+artifact and an aggregated HTML coverage artifact, but it does not yet publish coverage to an
+external service or expose a coverage badge. If the repository later needs pull-request-native
+coverage feedback, hosted status checks, or a stable badge source, the preferred next step is
+Codecov rather than Coveralls because it fits the existing Cobertura output and provides stronger
+GitHub pull request coverage workflows.
 
 Artifact scope is kept narrow — only test outputs that materially help diagnose failures are
 included. Do not broaden the upload glob without a clear reason.
@@ -84,12 +97,17 @@ All CI commands map directly to local developer commands.
 ```bash
 # From repository root
 dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
 dotnet build ViajantesTurismo.slnx --no-restore
 pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
-dotnet test --solution ViajantesTurismo.slnx --no-build
+bash scripts/run-tests-with-coverage.sh
 ```
+
+`scripts/run-tests-with-coverage.sh` is a post-build helper. It assumes the restore/build steps
+above have already completed and then runs tests, verifies Cobertura output exists, and generates
+the aggregated HTML coverage report.
 
 For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), CI skips the
 build-and-test commands above but still records a successful `Build and Test` check.
@@ -159,6 +177,11 @@ The workflow uses only official GitHub-maintained actions:
 
 Before adding any third-party action, document the trust decision and update this table.
 
+If hosted coverage reporting is added later, treat it as a separate trust decision. For this
+repository, Codecov is the preferred candidate over Coveralls because it works directly with the
+existing Cobertura reports and offers better pull request coverage checks, annotations, and badge
+support.
+
 ### Update process
 
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The configuration
@@ -204,8 +227,8 @@ include scope annotations.
 
 ## Branch Protection Rules
 
-Branch protection for `main` must be configured manually in the GitHub repository settings.
-The following status checks should be required:
+Branch protection for `main` is configured in the GitHub repository settings.
+The following status checks are required:
 
 - `Build and Test` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
@@ -214,24 +237,25 @@ The following status checks should be required:
 These names match the `name:` fields in the respective workflow files. Any rename of the jobs
 must be reflected in branch protection settings.
 
-> **Note:** This is a manual GitHub UI configuration step. Navigate to
-> **Settings → Branches → Branch protection rules → Add rule** for the `main` branch, then
-> enable **Require status checks to pass before merging** and add the check names above.
+Representative pull request validation has also been observed successfully with these checks,
+including the main CI workflow and the separate dependency review workflow.
 
 ## Next Required Work
 
 The near-term required items from the initial rollout are complete. Monitor the workflow in
 normal use and move deferred items into scope only when there is a concrete operational need.
+The remaining small enhancement from the original backlog is focused failure diagnostics for
+build/test failures; treat that as follow-up work rather than a blocker for baseline CI rollout.
 
 ## Deferred Work
 
 The following items remain out of scope until a concrete need or prerequisite is met:
 
 - SHA pinning for actions (see [Action Versioning Policy](#action-versioning-policy) above)
-- Coverage report generation and upload as a separate artifact
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
+- Hosted coverage publishing and badges; if adopted, prefer Codecov over Coveralls
 
 ## Related Documentation
 

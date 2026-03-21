@@ -6,7 +6,7 @@
 - **Improvement:** IMP-027
 - **Title:** Add GitHub Actions CI workflow for build, test, and quality gates
 - **Priority:** High
-- **Status:** In Progress
+- **Status:** Completed
 - **Type:** Infrastructure / Developer Experience / Quality
 - **Target Area:** `.github/workflows/`, repository documentation
 - **Related Work:** PBI-2026-03-15-01 (canonical repo command/script layer)
@@ -22,6 +22,13 @@ Node toolchains, restores dependencies, builds the solution, runs automated test
 and publishes useful diagnostics when something fails. The baseline path should stay lean and conventional: use
 standard runner jobs for normal PR validation, and treat devcontainer validation as a supplemental environment-parity
 check rather than the default gate for every change.
+
+Branch protection is configured on `main`, and a representative pull request has completed successfully with the
+required checks `Build and Test`, `Lint`, and `Dependency Review`; the dependency review gate is implemented by the
+separate `.github/workflows/dependency-review.yml` workflow described in `docs/CI_GOVERNANCE_ROLLOUT.md`. Any
+remaining CI enhancements should be treated as follow-up work, not blockers for the baseline rollout. Coverage is
+currently retained as GitHub Actions artifacts only; if the repository later needs a badge or PR-native coverage
+feedback, a hosted coverage service should be treated as follow-up work rather than part of the baseline rollout.
 
 ## Problem Statement
 
@@ -554,6 +561,7 @@ implemented, reviewed, and validated without needing the entire CI system to lan
     - **How to test:** confirm the artifact name is stable in the Actions UI and retention is shown as expected.
 - [ ] Add a small, focused diagnostic output if build or test fails.
     - **How to test:** induce a failing run and confirm the diagnostic files are present and useful.
+    - **Status note:** deferred as follow-up work after baseline rollout completion.
 
 #### Lint job foundation
 
@@ -738,6 +746,7 @@ The implementation can be considered ready for review when all of the following 
 Potential follow-up items after the baseline workflow is stable:
 
 - coverage artifact/report generation refinement
+- hosted coverage publishing, badge support, and PR-native coverage checks; prefer Codecov over Coveralls if adopted
 - branch protection guidance for required checks
 - `CODEOWNERS` protection for `.github/workflows/**` and related automation assets
 - Dependabot updates for GitHub Actions references and other CI-related dependency surfaces
