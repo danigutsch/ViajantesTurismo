@@ -15,7 +15,7 @@
 
 The repository has strong local guidance for building, testing, and running quality checks, but it does not yet have a
 repository-owned GitHub Actions CI workflow checked into `.github/workflows/`. That means pull requests and
-`master`-branch changes are not validated by a shared, repeatable automation contract before merge.
+`main`-branch changes are not validated by a shared, repeatable automation contract before merge.
 
 This PBI adds a baseline CI workflow that runs on GitHub-hosted runners, provisions the repository's pinned .NET and
 Node toolchains, restores dependencies, builds the solution, runs automated tests, executes repository quality checks,
@@ -190,8 +190,8 @@ The baseline workflow should:
 
 At minimum, CI should run on:
 
-- `pull_request` targeting `master`
-- `push` to `master`
+- `pull_request` targeting `main`
+- `push` to `main`
 
 It should also consider:
 
@@ -320,7 +320,7 @@ Documentation should also clarify recommended repository governance that sits ar
 ## Acceptance Criteria
 
 - A GitHub Actions workflow exists under `.github/workflows/` and runs automatically for pull requests and pushes to
-  `master`.
+  `main`.
 - CI restores and builds the solution using the repository's pinned SDK and toolchain expectations.
 - CI runs the relevant automated tests and fails when tests fail.
 - CI runs repository quality checks appropriate for the agreed baseline scope.
@@ -417,8 +417,8 @@ Create the first repository-owned workflow under `.github/workflows/` using stan
 actions.
 
 - Add `.github/workflows/ci.yml` with triggers for:
-    - `pull_request` targeting `master`
-    - `push` to `master`
+    - `pull_request` targeting `main`
+    - `push` to `main`
     - `workflow_dispatch`
 - Add top-level `permissions` using least privilege, starting with `contents: read` unless a specific job proves it
   needs more.
@@ -724,7 +724,7 @@ Keep the first PR intentionally boring in the best possible way.
 
 The implementation can be considered ready for review when all of the following are true:
 
-- the workflow file exists and triggers on PRs and pushes to `master`
+- the workflow file exists and triggers on PRs and pushes to `main`
 - hosted-runner jobs restore, build, test, and lint using repository-aligned commands
 - permissions, concurrency, and artifact upload are explicitly configured
 - CI documentation is updated with local reproduction guidance
@@ -762,7 +762,7 @@ Potential follow-up items after the baseline workflow is stable:
 ## Success Metrics
 
 - Pull requests receive fast, reliable feedback on build, test, and quality regressions.
-- Fewer broken changes reach `master`.
+- Fewer broken changes reach `main`.
 - Reviewers spend less time manually verifying routine merge safety.
 - Contributors can reproduce CI failures locally with minimal ambiguity.
 - CI remains easy to extend as new checks and projects are added.

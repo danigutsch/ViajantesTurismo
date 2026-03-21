@@ -5,7 +5,7 @@ the GitHub Actions CI workflow (`.github/workflows/ci.yml`).
 
 ## Workflow Jobs
 
-The CI workflow runs on every pull request targeting `master`, every push to `master`, and on
+The CI workflow runs on every pull request targeting `main`, every push to `main`, and on
 `workflow_dispatch`. It defines two parallel jobs:
 
 ### Build and Test
@@ -102,7 +102,7 @@ npm run lint:all:fix
 
 ## Required Status Checks
 
-Once branch protection is configured for `master`, require both of these exact job names:
+Once branch protection is configured for `main`, require both of these exact job names:
 
 - `Build and Test`
 - `Lint`
