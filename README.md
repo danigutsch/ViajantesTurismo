@@ -243,6 +243,10 @@ Every pull request and push to `main` is validated by a GitHub Actions workflow
 workflow (`.github/workflows/sonar.yml`) following the same branch and pull-request
 triggers.
 
+SonarCloud `Automatic Analysis` must remain disabled for this repository because
+hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
+the SonarCloud job to fail with a duplicate-analysis error.
+
 The main CI workflow runs two parallel jobs:
 
 | Job | What it does |
@@ -265,7 +269,7 @@ export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-tests-with-coverage.sh
 
 # Lint (mirrors the Lint job)
-npm ci
+npm ci --ignore-scripts
 npm run lint:all
 ```
 

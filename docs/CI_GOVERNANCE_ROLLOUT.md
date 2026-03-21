@@ -59,7 +59,7 @@ workflow YAML. If the script cannot determine the diff range reliably, it fails 
 
 1. Checkout repository (`actions/checkout`)
 2. Set up Node.js from `.nvmrc` with npm cache (`actions/setup-node`)
-3. `npm ci`
+3. `npm ci --ignore-scripts`
 4. `npm run lint:all`
 
 ## SonarCloud Workflow
@@ -99,6 +99,10 @@ required checks can still resolve cleanly without trigger-level `paths` filters.
 `scripts/run-tests-with-coverage.sh` because SonarCloud does not consume the repo's current
 Cobertura output directly; it expects a supported coverage format such as the Visual Studio XML
 format emitted by `dotnet-coverage -f xml`.
+
+SonarCloud `Automatic Analysis` must stay disabled for this project. The repository already
+runs hosted analysis through `.github/workflows/sonar.yml`, and enabling both modes causes the
+workflow job to fail with a duplicate-analysis error.
 
 ## Artifacts
 
@@ -169,7 +173,7 @@ build-and-test commands above but still records a successful `Build and Test` ch
 
 ```bash
 # From repository root
-npm ci
+npm ci --ignore-scripts
 npm run lint:all
 ```
 
@@ -246,6 +250,7 @@ The SonarCloud workflow requires these GitHub repository settings:
 - Actions secret `SONAR_TOKEN`
 - Repository variable `SONAR_ORGANIZATION`
 - Repository variable `SONAR_PROJECT_KEY`
+- SonarCloud project setting: `Automatic Analysis` disabled
 
 ### Update process
 
