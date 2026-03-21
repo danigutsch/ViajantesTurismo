@@ -303,7 +303,7 @@ include scope annotations.
 
 ## Branch Protection Rules
 
-Branch protection for `main` should require the following status checks:
+Branch protection for `main` is configured to require the following status checks:
 
 - `Build and Test` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
@@ -330,7 +330,6 @@ The following follow-up items are planned after the baseline rollout:
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
-- Align branch protection settings so `SonarCloud` is required on `main`
 
 ## Related Documentation
 
