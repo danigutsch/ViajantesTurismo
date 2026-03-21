@@ -23,8 +23,9 @@ The CI workflow runs on every pull request targeting `master`, every push to `ma
 3. Set up Node.js from `.nvmrc` (`actions/setup-node`)
 4. `dotnet restore ViajantesTurismo.slnx`
 5. `dotnet build ViajantesTurismo.slnx --no-restore`
-6. `dotnet test --solution ViajantesTurismo.slnx --no-build`
-7. Upload test result artifacts (`actions/upload-artifact`, runs on `always()`)
+6. Trust HTTPS developer certificate (`dotnet dev-certs https --trust`)
+7. `dotnet test --solution ViajantesTurismo.slnx --no-build`
+8. Upload test result artifacts (`actions/upload-artifact`, runs on `always()`)
 
 ### Lint
 
@@ -65,6 +66,7 @@ All CI commands map directly to local developer commands.
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet build ViajantesTurismo.slnx --no-restore
+dotnet dev-certs https --trust
 dotnet test --solution ViajantesTurismo.slnx --no-build
 ```
 
