@@ -66,7 +66,7 @@ jobs:
             devcontainer up --workspace-folder . --log-level trace \
             2>&1 | tee TestResults/devcontainer-smoke/devcontainer-up.log
 
-          container_id="$(grep -Eo '"containerId":"[^"]+' TestResults/devcontainer-smoke/devcontainer-up.log | tail -1 | cut -d'"' -f4)"
+          container_id="$(grep -aEo '"containerId":"[^"]+' TestResults/devcontainer-smoke/devcontainer-up.log | tail -1 | cut -d'"' -f4)"
           if [[ -z "${container_id}" ]]; then
             echo "Failed to determine devcontainer container ID from devcontainer-up.log." >&2
             exit 1
