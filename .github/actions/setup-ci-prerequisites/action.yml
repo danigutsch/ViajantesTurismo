@@ -1,0 +1,48 @@
+name: Setup CI Prerequisites
+description: Set up the repository toolchains and restore shared prerequisites for CI jobs.
+
+inputs:
+  solution-path:
+    description: Path to the solution file to restore.
+    required: false
+    default: ViajantesTurismo.slnx
+  dotnet-global-json:
+    description: Path to the global.json file used to select the .NET SDK.
+    required: false
+    default: global.json
+  node-version-file:
+    description: Path to the Node.js version file.
+    required: false
+    default: .nvmrc
+  trust-dev-certificate:
+    description: Whether to trust the ASP.NET HTTPS developer certificate.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up .NET SDK
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: ${{ inputs.dotnet-global-json }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version-file: ${{ inputs.node-version-file }}
+
+    - name: Restore .NET dependencies
+      shell: bash
+      run: dotnet restore "${{ inputs.solution-path }}"
+
+    - name: Restore .NET local tools
+      shell: bash
+      run: dotnet tool restore
+
+    - name: Trust HTTPS developer certificate
+      if: ${{ inputs.trust-dev-certificate == 'true' }}
+      shell: bash
+      run: |
+        dotnet dev-certs https --trust || true
+        echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust" >> "$GITHUB_ENV"

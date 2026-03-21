@@ -59,15 +59,46 @@ Write-Host "========================================`n" -ForegroundColor $ColorI
 
 # Step 1: Run behavior tests
 Write-Host "Running behavior tests..." -ForegroundColor $ColorInfo
-$testCommand = "dotnet test `"$TestProject`" --verbosity quiet --nologo"
+$stdoutPath = [System.IO.Path]::GetTempFileName()
+$stderrPath = [System.IO.Path]::GetTempFileName()
 
 try {
-    $testOutput = Invoke-Expression $testCommand 2>&1
-    $testExitCode = $LASTEXITCODE
+    $testProcess = Start-Process \
+        -FilePath "dotnet" \
+        -ArgumentList @("test", $TestProject, "--verbosity", "quiet", "--nologo") \
+        -NoNewWindow \
+        -Wait \
+        -PassThru \
+        -RedirectStandardOutput $stdoutPath \
+        -RedirectStandardError $stderrPath
+
+    $testExitCode = $testProcess.ExitCode
+    $testOutput = if ((Test-Path $stdoutPath) -and (Get-Item $stdoutPath).Length -gt 0) {
+        Get-Content $stdoutPath -Raw
+    }
+    else {
+        $null
+    }
+    $testErrorOutput = if ((Test-Path $stderrPath) -and (Get-Item $stderrPath).Length -gt 0) {
+        Get-Content $stderrPath -Raw
+    }
+    else {
+        $null
+    }
 
     if ($testExitCode -ne 0) {
         Write-Host "`n❌ Tests failed with exit code: $testExitCode" -ForegroundColor $ColorError
-        Write-Host $testOutput
+
+        if ($null -ne $testOutput) {
+            Write-Host "`nStandard output:" -ForegroundColor $ColorInfo
+            Write-Host $testOutput
+        }
+
+        if ($null -ne $testErrorOutput) {
+            Write-Host "`nStandard error:" -ForegroundColor $ColorError
+            Write-Host $testErrorOutput
+        }
+
         exit $testExitCode
     }
 
@@ -76,6 +107,9 @@ try {
 catch {
     Write-Host "`n❌ Error running tests: $_" -ForegroundColor $ColorError
     exit 1
+}
+finally {
+    Remove-Item $stdoutPath, $stderrPath -ErrorAction SilentlyContinue
 }
 
 # Step 2: Check if coverage report was generated
