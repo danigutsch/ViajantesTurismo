@@ -206,13 +206,12 @@ Once branch protection is configured for `main`, require these exact job names:
 - `Build and Test`
 - `Lint`
 - `Dependency Review`
-
-If SonarCloud is later promoted to a merge gate, require the exact job name `SonarCloud` from
-`.github/workflows/sonar.yml`.
+- `SonarCloud`
 
 These names match the `name:` fields in `.github/workflows/ci.yml` and
-`.github/workflows/dependency-review.yml`. Any rename of the jobs must be reflected in branch
-protection settings.
+`.github/workflows/dependency-review.yml`. The `SonarCloud` check comes from
+`.github/workflows/sonar.yml`. Any rename of the jobs must be reflected in branch protection
+settings.
 
 ## Action Versioning Policy
 
@@ -304,34 +303,35 @@ include scope annotations.
 
 ## Branch Protection Rules
 
-Branch protection for `main` is configured in the GitHub repository settings.
-The following status checks are required:
+Branch protection for `main` should require the following status checks:
 
 - `Build and Test` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
+- `SonarCloud` (from `.github/workflows/sonar.yml`)
 
 These names match the `name:` fields in the respective workflow files. Any rename of the jobs
 must be reflected in branch protection settings.
 
 Representative pull request validation has also been observed successfully with these checks,
-including the main CI workflow and the separate dependency review workflow.
+including the main CI workflow, the separate dependency review workflow, and the SonarCloud
+workflow.
 
 ## Next Required Work
 
 The near-term required items from the initial rollout are complete. Monitor the workflow in
 normal use and move deferred items into scope only when there is a concrete operational need.
 
-## Deferred Work
+## Planned Follow-Up Work
 
-The following items remain out of scope until a concrete need or prerequisite is met:
+The following follow-up items are planned after the baseline rollout:
 
 - SHA pinning for actions (see [Action Versioning Policy](#action-versioning-policy) above)
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
-- README badge wiring after the hosted quality path is implemented and stable
-- Promoting `SonarCloud` to a required branch-protection check after stable runs are observed
+- README badge wiring for CI and SonarCloud health visibility
+- Align branch protection settings so `SonarCloud` is required on `main`
 
 ## Related Documentation
 
