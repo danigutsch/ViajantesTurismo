@@ -20,7 +20,7 @@ The CI workflow runs on every pull request targeting `master`, every push to `ma
 
 1. Checkout repository (`actions/checkout`)
 2. Set up .NET SDK from `global.json` (`actions/setup-dotnet`)
-3. Set up Node.js from `package.json` engines (`actions/setup-node`)
+3. Set up Node.js from `.nvmrc` (`actions/setup-node`)
 4. `dotnet restore ViajantesTurismo.slnx`
 5. `dotnet build ViajantesTurismo.slnx --no-restore`
 6. `dotnet test --solution ViajantesTurismo.slnx --no-build`
@@ -37,7 +37,7 @@ The CI workflow runs on every pull request targeting `master`, every push to `ma
 **Steps:**
 
 1. Checkout repository (`actions/checkout`)
-2. Set up Node.js from `package.json` engines with npm cache (`actions/setup-node`)
+2. Set up Node.js from `.nvmrc` with npm cache (`actions/setup-node`)
 3. `npm ci`
 4. `npm run lint:all`
 
