@@ -243,7 +243,7 @@ Every pull request and push to `main` is validated by a GitHub Actions workflow
 
 | Job | What it does |
 | --- | --- |
-| **Build and Test** | Provisions .NET and Node, restores, builds, trusts HTTPS dev cert, runs all tests, uploads test result artifacts |
+| **Build and Test** | Provisions .NET and Node, restores, builds, installs Playwright browsers, trusts HTTPS dev cert, runs all tests, uploads test result artifacts |
 | **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
 
 ### Reproducing CI locally
@@ -254,6 +254,7 @@ The CI commands map directly to local commands:
 # Build and test (mirrors the Build and Test job)
 dotnet restore ViajantesTurismo.slnx
 dotnet build ViajantesTurismo.slnx --no-restore
+pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 dotnet test --solution ViajantesTurismo.slnx --no-build

@@ -40,6 +40,9 @@ jobs:
       - name: Build solution
         run: dotnet build ViajantesTurismo.slnx --no-restore
 
+      - name: Install Playwright browsers
+        run: pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+
       - name: Trust HTTPS developer certificate
         run: |
           dotnet dev-certs https --trust || true
