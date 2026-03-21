@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+commit_message_file="$1"
+
+if [[ -z "${commit_message_file}" ]]; then
+    echo "commit-msg hook requires the commit message file path" >&2
+    exit 1
+fi
+
+npx commitlint --edit "${commit_message_file}"
