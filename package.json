@@ -20,6 +20,8 @@
     "tools:restore": "npm install ; dotnet tool restore"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "eslint": "^9.39.1",
     "eslint-plugin-jsonc": "^2.21.0",
     "gherkin-lint": "^4.2.4",
