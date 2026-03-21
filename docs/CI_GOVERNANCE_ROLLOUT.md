@@ -286,6 +286,38 @@ or higher.
 This workflow is intentionally separate from the main CI workflow so that its required check
 status does not interfere with path-based optimizations in the CI workflow.
 
+## Devcontainer Smoke Workflow
+
+A separate workflow (`.github/workflows/devcontainer-smoke.yml`) runs supplemental devcontainer
+validation on a weekly schedule, on manual dispatch, and for pull requests or pushes that touch
+devcontainer/bootstrap inputs such as `.devcontainer/**`, `.nvmrc`, `global.json`, or dependency
+manifests for npm and NuGet packages.
+
+### Devcontainer Smoke
+
+| Attribute | Value |
+| --- | --- |
+| Workflow file | `.github/workflows/devcontainer-smoke.yml` |
+| Primary job name | `Devcontainer Smoke` |
+| Runner | `ubuntu-latest` |
+| Merge gate | Not required |
+
+**Steps:**
+
+1. Checkout repository (`actions/checkout`)
+2. Set up Node.js from `.nvmrc` (`actions/setup-node`)
+3. Run `devcontainer up` via the pinned `@devcontainers/cli` package to build and start the
+  repository devcontainer
+4. Allow the configured `onCreateCommand`, `postCreateCommand`, and `postStartCommand` lifecycle
+  hooks to execute as part of container creation
+5. Run `devcontainer exec` to verify `.NET`, Node.js, Git, and Docker access inside the container
+6. Run `devcontainer down` during cleanup
+7. Upload `devcontainer-smoke-logs` when the workflow fails
+
+This workflow is intentionally supplemental rather than required. It is meant to catch
+environment drift in the repository's containerized developer path without expanding the required
+pull-request gate for ordinary application changes.
+
 ## Dependabot Configuration
 
 `.github/dependabot.yml` automates version update PRs for three ecosystems:
@@ -313,7 +345,8 @@ must be reflected in branch protection settings.
 
 Representative pull request validation has also been observed successfully with these checks,
 including the main CI workflow, the separate dependency review workflow, and the SonarCloud
-workflow.
+workflow. The `Devcontainer Smoke` workflow remains supplemental and is not part of the required
+merge gate.
 
 ## Next Required Work
 
@@ -324,7 +357,6 @@ normal use and move deferred items into scope only when there is a concrete oper
 
 The following follow-up items are planned after the baseline rollout:
 
-- Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
 

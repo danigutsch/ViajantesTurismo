@@ -387,8 +387,6 @@ Documentation should also clarify recommended repository governance that sits ar
 
 The baseline CI rollout is complete. The remaining planned follow-up work is:
 
-- migrate GitHub Actions references from major tags to immutable SHAs when the stricter supply-chain posture is adopted
-- add scheduled devcontainer smoke validation if environment-drift protection becomes necessary
 - add a multi-OS matrix only when there is a concrete cross-platform requirement
 - introduce coverage thresholds only after baseline coverage trends are stable
 
