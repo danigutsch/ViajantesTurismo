@@ -84,23 +84,22 @@ focused on build, test, and lint concerns while SonarCloud analysis runs in its 
 
 1. Checkout repository with full history (`actions/checkout` with `fetch-depth: 0`)
 2. Detect whether the change set is documentation-only using `git diff`
-3. Set up .NET SDK from `global.json` (`actions/setup-dotnet`) when analysis work is required
-4. Set up Node.js from `.nvmrc` (`actions/setup-node`) when analysis work is required
-5. `dotnet restore ViajantesTurismo.slnx` when analysis work is required
-6. `dotnet tool restore` when analysis work is required
-7. Install Playwright browsers and OS dependencies when analysis work is required
-8. Trust HTTPS developer certificate and set `SSL_CERT_DIR` when analysis work is required
-9. Run `bash scripts/run-sonar-analysis.sh` when analysis work is required
-10. Upload the Sonar coverage input artifact (`TestResults/sonar-coverage.xml`) for troubleshooting
+3. Run the shared CI setup action (`.github/actions/setup-ci-prerequisites`) when analysis work is required;
+  this provisions the pinned .NET and Node toolchains, restores the solution, restores local
+  tools, and trusts the HTTPS developer certificate
+4. Cache SonarCloud packages under `~/.sonar/cache`
+5. Run `bash scripts/run-sonar-analysis.sh` when analysis work is required
+6. Upload the Sonar coverage input artifact (`TestResults/sonar-coverage.xml`) for troubleshooting
 
 The workflow uses the same docs-only detection strategy as the main CI workflow so that future
 required checks can still resolve cleanly without trigger-level `paths` filters.
 
-`scripts/run-sonar-analysis.sh` wraps the `begin` / `build` / `test with dotnet-coverage` /
-`end` pattern recommended by SonarCloud for `.NET` projects. This is separate from
-`scripts/run-tests-with-coverage.sh` because SonarCloud does not consume the repo's current
-Cobertura output directly; it expects a supported coverage format such as the Visual Studio XML
-format emitted by `dotnet-coverage -f xml`.
+`scripts/run-sonar-analysis.sh` wraps the `begin` / `build` / `coverage collection` /
+`coverage conversion` / `end` pattern for `.NET` projects. The current hosted path reuses the
+repo's canonical coverage collection helper (`scripts/collect-test-coverage.sh`) to generate
+per-project Cobertura files, then converts that coverage into SonarQube generic format with the
+repo-pinned `reportgenerator` tool before publishing `TestResults/sonar-coverage.xml` to the
+scanner.
 
 SonarCloud `Automatic Analysis` must stay disabled for this project. The repository already
 runs hosted analysis through `.github/workflows/sonar.yml`, and enabling both modes causes the
@@ -245,10 +244,14 @@ The workflow uses only official GitHub-maintained actions:
 
 The GitHub workflow surface still uses only official GitHub-maintained actions.
 SonarCloud integration is implemented through repo-pinned local `.NET` tools rather than an
-additional third-party GitHub Action:
+additional third-party GitHub Action. The current hosted analysis path actively uses:
 
 - `dotnet-sonarscanner` `11.2.0`
-- `dotnet-coverage` `18.5.2`
+- `dotnet-reportgenerator-globaltool` `5.5.1`
+
+The local tool manifest also contains `dotnet-coverage` `18.5.2` for supported `.NET` coverage
+workflows, but the current SonarCloud workflow does not rely on the direct `dotnet-coverage -f xml`
+path.
 
 This keeps the GitHub Actions dependency surface narrow while still adopting the SonarCloud
 analysis model used in BookWorm's quality strategy.
@@ -311,7 +314,8 @@ manifests for npm and NuGet packages.
 4. Allow the configured `onCreateCommand`, `postCreateCommand`, and `postStartCommand` lifecycle
   hooks to execute as part of container creation
 5. Run `devcontainer exec` to verify `.NET`, Node.js, Git, and Docker access inside the container
-6. Run `devcontainer down` during cleanup
+6. Parse the started container ID from the `devcontainer up` log and remove the container with
+  `docker rm -f` during cleanup
 7. Upload `devcontainer-smoke-logs` when the workflow fails
 
 This workflow is intentionally supplemental rather than required. It is meant to catch
@@ -358,7 +362,7 @@ normal use and move deferred items into scope only when there is a concrete oper
 The following follow-up items are planned after the baseline rollout:
 
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
-- Coverage thresholds (not enforced until baseline coverage trends are established)
+- Coverage thresholds (planned for enforcement after baseline coverage trends and threshold policy are stable)
 
 ## Related Documentation
 

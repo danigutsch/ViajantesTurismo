@@ -21,8 +21,9 @@ required checks `Build and Test`, `Lint`, `Dependency Review`, and `SonarCloud`;
 separate `.github/workflows/dependency-review.yml` workflow described in `docs/CI_GOVERNANCE_ROLLOUT.md`. Any
 remaining CI enhancements should be treated as follow-up work, not blockers for the baseline rollout. Coverage is
 published both as GitHub Actions artifacts and through a dedicated SonarCloud analysis workflow;
-planned follow-up work should focus on policy tuning, scheduled supplemental validation, and keeping SonarCloud
-enforced as a required merge gate.
+planned follow-up work should focus on policy tuning, scheduled supplemental validation, future
+coverage-threshold enforcement once baseline behavior is stable, and keeping SonarCloud enforced
+as a required merge gate.
 
 ## Problem Statement
 
@@ -388,7 +389,7 @@ Documentation should also clarify recommended repository governance that sits ar
 The baseline CI rollout is complete. The remaining planned follow-up work is:
 
 - add a multi-OS matrix only when there is a concrete cross-platform requirement
-- introduce coverage thresholds only after baseline coverage trends are stable
+- introduce and enforce coverage thresholds only after baseline coverage trends and the threshold policy are stable
 
 ## Actionable Delivery Plan
 
