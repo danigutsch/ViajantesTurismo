@@ -56,6 +56,9 @@
     - `npm run lint:all`
     - `npm run lint:all:fix`
 - Linting is separate from `dotnet build`; run relevant checks when touching markdown, shell, JSON, or Gherkin files.
+- When generating or suggesting commit messages, use Conventional Commits in the form
+    `<type>[optional scope]: <description>`.
+- Allowed commit types: `feat`, `fix`, `docs`, `ci`, `build`, `test`, `refactor`, `perf`, `style`, `chore`, `revert`.
 
 ## Key References
 
