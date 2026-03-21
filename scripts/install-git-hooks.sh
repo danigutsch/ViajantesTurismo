@@ -7,8 +7,8 @@ set -euo pipefail
 hook_sources=("scripts/pre-commit" "scripts/commit-msg")
 hook_names=("pre-commit" "commit-msg")
 
-if ! hook_dir=$(git rev-parse --git-path hooks 2>/dev/null); then
-    echo "Error: Not a git repository"
+if ! hook_dir=$(git rev-parse --git-path hooks 2> /dev/null); then
+    echo "Error: Not a git repository" >&2
     exit 1
 fi
 
@@ -20,7 +20,7 @@ for i in "${!hook_sources[@]}"; do
     hook_dest="${hook_dir}/${hook_names[${i}]}"
 
     if [[ ! -f "${hook_source}" ]]; then
-        echo "Error: Hook file not found at ${hook_source}"
+        echo "Error: Hook file not found at ${hook_source}" >&2
         exit 1
     fi
 

@@ -5,6 +5,8 @@ namespace ViajantesTurismo.Admin.UnitTests.Contracts;
 
 public class ContractValidationTests
 {
+    private const string CompanionBikeTypeMemberName = "CompanionBikeType";
+
     [Fact]
     public void Discount_Validation_With_No_Discount_Should_Return_No_Errors()
     {
@@ -96,7 +98,7 @@ public class ContractValidationTests
         var result = BookingValidation.ValidateCompanionHasBikeType(
             Guid.CreateVersion7(),
             null,
-            "CompanionBikeType");
+            CompanionBikeTypeMemberName);
 
         // Act
         // Assert
@@ -104,7 +106,7 @@ public class ContractValidationTests
         Assert.Equal(
             "Companion bike type is required when a companion is selected.",
             result.ErrorMessage);
-        Assert.Equal(["CompanionBikeType"], result.MemberNames);
+        Assert.Equal([CompanionBikeTypeMemberName], result.MemberNames);
     }
 
     [Theory]
@@ -120,7 +122,7 @@ public class ContractValidationTests
         var result = BookingValidation.ValidateCompanionHasBikeType(
             companionCustomerId,
             companionBikeType,
-            "CompanionBikeType");
+            CompanionBikeTypeMemberName);
 
         // Assert
         Assert.Null(result);
@@ -162,7 +164,7 @@ public class ContractValidationTests
     {
         // Arrange
         // Act
-        var result = BookingValidation.ValidateCompanionBikeTypeNotNone(companionBikeType, "CompanionBikeType");
+        var result = BookingValidation.ValidateCompanionBikeTypeNotNone(companionBikeType, CompanionBikeTypeMemberName);
 
         // Assert
         Assert.Null(result);

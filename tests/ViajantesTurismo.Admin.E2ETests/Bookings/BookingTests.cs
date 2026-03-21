@@ -8,7 +8,7 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Create_Booking_And_Show_Initial_Details()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
@@ -29,7 +29,7 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Apply_Discount_Confirm_Booking_And_Record_Payment()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
@@ -52,7 +52,7 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Complete_Booking_And_Persist_Final_State()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";

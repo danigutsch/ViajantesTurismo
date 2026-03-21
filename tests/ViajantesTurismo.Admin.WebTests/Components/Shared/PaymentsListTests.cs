@@ -30,7 +30,7 @@ public class PaymentsListTests : BunitContext
         var payments = new[]
         {
             BuildPaymentDto(
-                paymentDate: new DateTime(2024, 1, 15),
+                paymentDate: new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc),
                 amount: 100.50m,
                 method: PaymentMethodDto.Cash)
         };
@@ -48,7 +48,7 @@ public class PaymentsListTests : BunitContext
     public void Displays_Payment_Date()
     {
         // Arrange
-        var paymentDate = new DateTime(2024, 3, 15);
+        var paymentDate = new DateTime(2024, 3, 15, 0, 0, 0, DateTimeKind.Utc);
         var payments = new[]
         {
             BuildPaymentDto(
@@ -318,9 +318,9 @@ public class PaymentsListTests : BunitContext
         // Arrange
         var payments = new[]
         {
-            BuildPaymentDto(paymentDate: new DateTime(2024, 1, 1), amount: 100m, method: PaymentMethodDto.Cash),
-            BuildPaymentDto(paymentDate: new DateTime(2024, 3, 1), amount: 200m, method: PaymentMethodDto.CreditCard),
-            BuildPaymentDto(paymentDate: new DateTime(2024, 2, 1), amount: 150m, method: PaymentMethodDto.BankTransfer)
+            BuildPaymentDto(paymentDate: new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), amount: 100m, method: PaymentMethodDto.Cash),
+            BuildPaymentDto(paymentDate: new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc), amount: 200m, method: PaymentMethodDto.CreditCard),
+            BuildPaymentDto(paymentDate: new DateTime(2024, 2, 1, 0, 0, 0, DateTimeKind.Utc), amount: 150m, method: PaymentMethodDto.BankTransfer)
         };
 
         // Act

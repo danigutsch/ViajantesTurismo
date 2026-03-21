@@ -8,7 +8,7 @@ public class BookingCreationTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Can_Create_Booking_From_Customer_Details_With_Prefilled_Data()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(name: "Owned Cultural Experience");
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Name = "Owned Cultural Experience" });
         var customer = await ApiClient.CreateCustomer(
             firstName: "Elena",
             lastName: "Owned",

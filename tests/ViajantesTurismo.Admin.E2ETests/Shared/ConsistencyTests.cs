@@ -9,7 +9,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Tour_List_And_Details_Show_Consistent_Currency_And_Date_Formatting()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(currency: CurrencyDto.Real);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Real });
 
         // Act
         await NavigateTo("/tours");
@@ -32,7 +32,7 @@ public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Booking_List_And_Details_Show_Consistent_Status_And_Payment_Badges()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(currency: CurrencyDto.UsDollar);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
         var pendingCustomer = await ApiClient.CreateCustomer();
         var paidCustomer = await ApiClient.CreateCustomer();
 

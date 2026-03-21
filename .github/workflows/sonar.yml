@@ -9,10 +9,6 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pull-requests: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -21,6 +17,8 @@ jobs:
   detect-changes:
     name: Detect Changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       build_required: ${{ steps.change-scope.outputs.build_required }}
     steps:
@@ -46,6 +44,9 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     env:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
