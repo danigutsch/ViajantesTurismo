@@ -215,19 +215,20 @@ settings.
 
 ## Action Versioning Policy
 
-All GitHub Actions used in this workflow are pinned to **major version tags**
-(for example `actions/checkout@v6`). This is the initial baseline policy.
+All external GitHub Actions used in repository workflows are pinned to **immutable commit SHAs**
+with the upstream release noted in an inline comment (for example
+`actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6`).
 
 ### Rationale
 
-Major version tags offer a practical balance between stability and security for the early
-lifecycle of this workflow:
+Immutable SHA pinning is the repository baseline for workflow supply-chain hardening:
 
-- The risk surface from a compromised major-version tag is accepted as reasonable given
-  that these are all official GitHub-maintained actions.
-- Major version tags receive patch and minor fixes automatically, including security patches.
-- Pinning to immutable SHAs provides stronger supply-chain guarantees but increases
-  maintenance burden; that trade-off is deferred until the workflow has proven stable.
+- GitHub executes the exact reviewed revision referenced by the workflow, not whatever a tag
+  is moved to later.
+- Inline version comments preserve readability and make review of Dependabot action updates
+  straightforward.
+- The workflow surface still stays narrow because the repository uses only official
+  GitHub-maintained actions.
 
 ### Trusted actions
 
@@ -235,11 +236,12 @@ The workflow uses only official GitHub-maintained actions:
 
 | Action | Purpose |
 | --- | --- |
-| `actions/checkout@v6` | Repository checkout |
-| `actions/setup-dotnet@v5` | .NET SDK provisioning |
-| `actions/setup-node@v6` | Node.js provisioning |
-| `actions/upload-artifact@v7` | Test result artifact upload |
-| `actions/dependency-review-action@v4` | PR dependency and license review |
+| `actions/checkout` | Repository checkout |
+| `actions/setup-dotnet` | .NET SDK provisioning |
+| `actions/setup-node` | Node.js provisioning |
+| `actions/cache` | SonarCloud package cache |
+| `actions/upload-artifact` | Test result artifact upload |
+| `actions/dependency-review-action` | PR dependency and license review |
 
 The GitHub workflow surface still uses only official GitHub-maintained actions.
 SonarCloud integration is implemented through repo-pinned local `.NET` tools rather than an
@@ -262,14 +264,10 @@ The SonarCloud workflow requires these GitHub repository settings:
 
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The configuration
   covers `github-actions`, `nuget`, and `npm` ecosystems on a weekly schedule.
-- When upgrading a major version (for example `@v6` to `@v7`), review the migration guide and
-  verify the workflow still passes before merging.
-
-### Future migration to SHA pinning
-
-If the project adopts a stricter supply-chain posture, migrate to immutable SHAs and introduce
-a documented process for keeping those SHAs current (for example, using a tool such as
-[`pin-github-action`](https://github.com/mheap/pin-github-action) or Dependabot SHA pinning).
+- When Dependabot proposes an action update, review both the release notes and the resolved SHA,
+  then verify the affected workflows still pass before merging.
+- When upgrading across major action versions, review the migration guidance before accepting the
+  new SHA-pinned reference.
 
 ## Workflow Ownership (CODEOWNERS)
 
@@ -326,7 +324,6 @@ normal use and move deferred items into scope only when there is a concrete oper
 
 The following follow-up items are planned after the baseline rollout:
 
-- SHA pinning for actions (see [Action Versioning Policy](#action-versioning-policy) above)
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
