@@ -42,6 +42,7 @@ jobs:
 
       - name: Trust HTTPS developer certificate
         run: dotnet dev-certs https --trust
+        continue-on-error: true
 
       - name: Run tests
         run: dotnet test --solution ViajantesTurismo.slnx --no-build
