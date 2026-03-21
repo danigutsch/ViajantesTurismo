@@ -1,0 +1,97 @@
+name: Devcontainer Smoke
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .devcontainer/**
+      - .github/workflows/devcontainer-smoke.yml
+      - .nvmrc
+      - global.json
+      - package.json
+      - package-lock.json
+      - NuGet.Config
+      - Directory.Packages.props
+      - ViajantesTurismo.slnx
+      - scripts/install-git-hooks.sh
+  push:
+    branches:
+      - main
+    paths:
+      - .devcontainer/**
+      - .github/workflows/devcontainer-smoke.yml
+      - .nvmrc
+      - global.json
+      - package.json
+      - package-lock.json
+      - NuGet.Config
+      - Directory.Packages.props
+      - ViajantesTurismo.slnx
+      - scripts/install-git-hooks.sh
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  devcontainer-smoke:
+    name: Devcontainer Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Create devcontainer smoke log directory
+        shell: bash
+        run: mkdir -p TestResults/devcontainer-smoke
+
+      - name: Build and start devcontainer
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package @devcontainers/cli@0.84.1 -- \
+            devcontainer up --workspace-folder . --log-level trace \
+            2>&1 | tee TestResults/devcontainer-smoke/devcontainer-up.log
+
+      - name: Verify container toolchain and Docker access
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package @devcontainers/cli@0.84.1 -- \
+            devcontainer exec --workspace-folder . bash -lc '
+              set -euo pipefail
+              dotnet --version
+              node --version
+              git --version
+              docker version --format "{{.Server.Version}}"
+            ' 2>&1 | tee TestResults/devcontainer-smoke/devcontainer-verify.log
+
+      - name: Stop devcontainer
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package @devcontainers/cli@0.84.1 -- \
+            devcontainer down --workspace-folder .
+
+      - name: Upload devcontainer smoke logs
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: ${{ failure() }}
+        with:
+          if-no-files-found: error
+          name: devcontainer-smoke-logs
+          path: TestResults/devcontainer-smoke/**
+          retention-days: 7

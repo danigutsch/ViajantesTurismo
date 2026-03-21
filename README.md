@@ -245,7 +245,9 @@ See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration
 Every pull request and push to `main` is validated by a GitHub Actions workflow
 (`.github/workflows/ci.yml`). Hosted code quality analysis runs in a separate
 workflow (`.github/workflows/sonar.yml`) following the same branch and pull-request
-triggers.
+triggers. A supplemental devcontainer smoke workflow (`.github/workflows/devcontainer-smoke.yml`)
+runs on a weekly schedule, on demand, and when devcontainer/bootstrap files change to catch
+environment drift in the repository's containerized development path.
 
 SonarCloud `Automatic Analysis` must remain disabled for this repository because
 hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
@@ -289,6 +291,9 @@ When tests run, CI also publishes a `coverage-report` artifact containing an agg
 The separate `SonarCloud` workflow restores the repo-pinned `.NET` tools, runs SonarScanner for
 `.NET`, collects cross-platform XML coverage with `dotnet-coverage`, and waits for the SonarCloud
 quality gate result before completing.
+The `Devcontainer Smoke` workflow brings up the repository devcontainer with the pinned
+`@devcontainers/cli`, executes the configured lifecycle scripts, verifies .NET, Node, Git, and
+Docker access inside the container, and uploads logs on failure.
 
 To enable hosted analysis, configure these repository settings in GitHub:
 
@@ -298,10 +303,12 @@ To enable hosted analysis, configure these repository settings in GitHub:
 
 ### Required status checks
 
-Once branch protection is configured, require both of these job names:
+Once branch protection is configured, require these job names:
 
 - `Build and Test`
 - `Lint`
+- `Dependency Review`
+- `SonarCloud`
 
 See [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_ROLLOUT.md) for the action versioning policy and
 governance details.
