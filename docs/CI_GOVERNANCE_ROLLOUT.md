@@ -104,18 +104,20 @@ npm run lint:all:fix
 
 ## Required Status Checks
 
-Once branch protection is configured for `main`, require both of these exact job names:
+Once branch protection is configured for `main`, require these exact job names:
 
 - `Build and Test`
 - `Lint`
+- `Dependency Review`
 
-These names match the `name:` fields in `.github/workflows/ci.yml`. Any rename of the jobs must
-be reflected in branch protection settings.
+These names match the `name:` fields in `.github/workflows/ci.yml` and
+`.github/workflows/dependency-review.yml`. Any rename of the jobs must be reflected in branch
+protection settings.
 
 ## Action Versioning Policy
 
 All GitHub Actions used in this workflow are pinned to **major version tags**
-(for example `actions/checkout@v4`). This is the initial baseline policy.
+(for example `actions/checkout@v6`). This is the initial baseline policy.
 
 ### Rationale
 
@@ -134,21 +136,19 @@ The workflow uses only official GitHub-maintained actions:
 
 | Action | Purpose |
 | --- | --- |
-| `actions/checkout@v4` | Repository checkout |
-| `actions/setup-dotnet@v4` | .NET SDK provisioning |
-| `actions/setup-node@v4` | Node.js provisioning |
-| `actions/upload-artifact@v4` | Test result artifact upload |
+| `actions/checkout@v6` | Repository checkout |
+| `actions/setup-dotnet@v5` | .NET SDK provisioning |
+| `actions/setup-node@v6` | Node.js provisioning |
+| `actions/upload-artifact@v7` | Test result artifact upload |
+| `actions/dependency-review-action@v4` | PR dependency and license review |
 
-Third-party actions are not used. Before adding any third-party action, document the trust
-decision and update this table.
+Before adding any third-party action, document the trust decision and update this table.
 
 ### Update process
 
-- GitHub Dependabot is the recommended mechanism for keeping action references current.
-  See [Dependabot configuration](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot)
-  for setup details.
-- Until Dependabot is configured, review action release notes manually when bumping versions.
-- When upgrading a major version (for example `@v4` to `@v5`), review the migration guide and
+- GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The configuration
+  covers `github-actions`, `nuget`, and `npm` ecosystems on a weekly schedule.
+- When upgrading a major version (for example `@v6` to `@v7`), review the migration guide and
   verify the workflow still passes before merging.
 
 ### Future migration to SHA pinning
@@ -164,20 +164,69 @@ The `CODEOWNERS` file at the repository root requires review for all changes to 
 Any pull request that modifies `.github/workflows/**` will request review from the designated
 code owners. See `CODEOWNERS` for the current ownership mapping.
 
+## Dependency Review Workflow
+
+A separate workflow (`.github/workflows/dependency-review.yml`) runs the
+`actions/dependency-review-action` on every pull request. It scans manifest and lock file
+changes for newly introduced vulnerabilities and fails the check when severity is `moderate`
+or higher.
+
+This workflow is intentionally separate from the main CI workflow so that its required check
+status does not interfere with path-based optimizations in the CI workflow.
+
+## Dependabot Configuration
+
+`.github/dependabot.yml` automates version update PRs for three ecosystems:
+
+| Ecosystem | Scope | Schedule |
+| --- | --- | --- |
+| `github-actions` | Workflow action references | Weekly |
+| `nuget` | .NET package dependencies | Weekly |
+| `npm` | Node.js dependencies | Weekly |
+
+Dependabot PRs use conventional commit prefixes (`ci` for actions, `deps` for packages) and
+include scope annotations.
+
+## Branch Protection Rules
+
+Branch protection for `main` must be configured manually in the GitHub repository settings.
+The following status checks should be required:
+
+- `Build and Test` (from `.github/workflows/ci.yml`)
+- `Lint` (from `.github/workflows/ci.yml`)
+- `Dependency Review` (from `.github/workflows/dependency-review.yml`)
+
+These names match the `name:` fields in the respective workflow files. Any rename of the jobs
+must be reflected in branch protection settings.
+
+> **Note:** This is a manual GitHub UI configuration step. Navigate to
+> **Settings → Branches → Branch protection rules → Add rule** for the `main` branch, then
+> enable **Require status checks to pass before merging** and add the check names above.
+
+## Next Required Work
+
+The following items are prioritized for near-term implementation:
+
+1. **Branch protection rules** — Configure required status checks on `main` as documented in the
+   [Branch Protection Rules](#branch-protection-rules) section above. This is a manual GitHub
+   settings step.
+2. **Path-based workflow optimization** — Investigate adding `paths-ignore` filters to skip the
+   `build-and-test` job on doc-only changes. **Caveat:** If the CI workflow is skipped via
+   `paths-ignore`, GitHub leaves the associated status checks in a "Pending" state, which blocks
+   PRs that require those checks. This conflicts with branch protection. Options to resolve:
+   - Use a conditional step (e.g., `dorny/paths-filter`) inside the job instead of trigger-level
+     path filters (the job still runs but skips expensive steps).
+   - Accept that all PRs run the full CI workflow until a more sophisticated solution is needed.
+
 ## Deferred Work
 
-The following items are intentionally out of scope for the baseline workflow and are captured as
-follow-up work:
+The following items remain out of scope until a concrete need or prerequisite is met:
 
 - SHA pinning for actions (see [Action Versioning Policy](#action-versioning-policy) above)
-- Dependabot configuration for GitHub Actions version updates
-- Branch protection rule configuration with required status checks
 - Coverage report generation and upload as a separate artifact
-- Path-based workflow optimization (skip jobs on doc-only changes)
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
-- Dependency review for pull requests that change manifests or lock files
 
 ## Related Documentation
 
