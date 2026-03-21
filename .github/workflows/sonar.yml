@@ -60,6 +60,14 @@ jobs:
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonarcloud-cache-v1
+          restore-keys: |
+            ${{ runner.os }}-sonarcloud-cache-
+
       - name: Run SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
