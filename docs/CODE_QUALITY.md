@@ -287,7 +287,8 @@ npm run tools:restore    # Install all npm and .NET tools
 
 ## Pre-Commit Hooks
 
-A pre-commit hook is provided in `scripts/pre-commit`. It automatically lints and formats code before each commit.
+Git hooks are provided in `scripts/pre-commit` and `scripts/commit-msg`. They lint staged
+files before each commit and validate commit messages against Conventional Commits.
 
 **Installation:**
 
@@ -308,8 +309,47 @@ bash scripts/install-git-hooks.sh
 - **Shell**: Lints with ShellCheck, formats with shfmt (never blocks)
 - **PowerShell**: Lints with PSScriptAnalyzer if available (never blocks)
 - **.NET C#**: Auto-fixes whitespace with `dotnet format` (blocks on failure)
+- **Commit messages**: Validates `<type>[optional scope]: <description>` with `commitlint` (blocks on errors)
 
 Bypass if needed: `git commit --no-verify`
+
+## Commit Message Conventions
+
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and enforces them with [`commitlint`](https://commitlint.js.org/).
+
+**Required format:**
+
+```text
+<type>[optional scope]: <description>
+```
+
+**Allowed types:**
+
+- `feat`
+- `fix`
+- `docs`
+- `ci`
+- `build`
+- `test`
+- `refactor`
+- `perf`
+- `style`
+- `chore`
+- `revert`
+
+**Examples:**
+
+```text
+ci: add dependency review workflow
+docs(ci): document branch protection requirements
+fix(web): prevent empty booking date submission
+```
+
+**Manual validation:**
+
+```powershell
+"ci: add dependency review workflow" | npx commitlint
+```
 
 ### VS Code Integration
 

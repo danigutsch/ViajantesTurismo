@@ -59,6 +59,9 @@ For scoped rules, use nested `AGENTS.md` files and `.github/instructions/*.instr
     - `npm run lint:all`
     - `npm run lint:all:fix`
 - Linting is separate from build.
+- When generating or suggesting commit messages, use Conventional Commits in the form
+    `<type>[optional scope]: <description>`.
+- Allowed commit types: `feat`, `fix`, `docs`, `ci`, `build`, `test`, `refactor`, `perf`, `style`, `chore`, `revert`.
 
 ## Aspire operations
 
