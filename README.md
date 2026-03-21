@@ -253,22 +253,27 @@ The CI commands map directly to local commands:
 ```powershell
 # Build and test (mirrors the Build and Test job)
 dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
 dotnet build ViajantesTurismo.slnx --no-restore
 pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
-dotnet test --solution ViajantesTurismo.slnx --no-build
+bash scripts/run-tests-with-coverage.sh
 
 # Lint (mirrors the Lint job)
 npm ci
 npm run lint:all
 ```
 
+`scripts/run-tests-with-coverage.sh` is a post-build helper: run it after the explicit restore and
+build steps above, not as a standalone replacement for the full CI sequence.
+
 For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), the `Build and Test`
 job records a passing check but skips the restore, build, Playwright, and test commands above.
 The workflow intentionally does this inside the job graph instead of using trigger-level path filters,
 so required checks still resolve cleanly. The change-detection logic lives in `scripts/detect-changes.sh`
 and defaults to running the full job if the diff cannot be evaluated reliably.
+When tests run, CI also publishes a `coverage-report` artifact containing an aggregated HTML report.
 
 ### Required status checks
 
