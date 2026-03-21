@@ -21,7 +21,7 @@ required checks `Build and Test`, `Lint`, `Dependency Review`, and `SonarCloud`;
 separate `.github/workflows/dependency-review.yml` workflow described in `docs/CI_GOVERNANCE_ROLLOUT.md`. Any
 remaining CI enhancements should be treated as follow-up work, not blockers for the baseline rollout. Coverage is
 published both as GitHub Actions artifacts and through a dedicated SonarCloud analysis workflow;
-planned follow-up work should focus on policy tuning, badges, SHA pinning, and keeping SonarCloud
+planned follow-up work should focus on policy tuning, scheduled supplemental validation, and keeping SonarCloud
 enforced as a required merge gate.
 
 ## Problem Statement
@@ -207,7 +207,7 @@ The workflow should use repository-aligned tool versions and inputs:
 - deterministic npm installation via `npm ci`
 - built-in dependency caching from `actions/setup-dotnet` and `actions/setup-node` where it adds value
 - least-privilege `permissions` for the `GITHUB_TOKEN`, defaulting to the minimum needed for baseline CI
-- a documented policy for trusted GitHub Actions dependencies, including how versions are pinned and updated
+- a documented policy for trusted GitHub Actions dependencies, including immutable SHA pinning and update review expectations
 
 ### Suggested job layout
 
@@ -243,7 +243,7 @@ The baseline workflow should also establish a small but explicit security and go
 - default `GITHUB_TOKEN` permissions should be restricted to the minimum required, such as `contents: read` unless a
   job needs more
 - official GitHub-maintained actions should be preferred where possible
-- third-party actions or workflows, if introduced, should follow a documented pinning/update strategy
+- third-party actions or workflows, if introduced, should follow the same documented immutable-SHA pinning and update-review strategy
 - job names should be stable, human-readable, and unique so they can safely become required status checks
 - workflow files should be protected by repository governance such as `CODEOWNERS` review where practical
 - caches and artifacts must not contain credentials, tokens, or other secret-bearing files
