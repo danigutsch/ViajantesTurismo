@@ -23,12 +23,15 @@ The CI workflow runs on every pull request targeting `master`, every push to `ma
 3. Set up Node.js from `.nvmrc` (`actions/setup-node`)
 4. `dotnet restore ViajantesTurismo.slnx`
 5. `dotnet build ViajantesTurismo.slnx --no-restore`
-6. Trust HTTPS developer certificate (`dotnet dev-certs https --trust`, `continue-on-error: true`)
+6. Trust HTTPS developer certificate and set `SSL_CERT_DIR`
 7. `dotnet test --solution ViajantesTurismo.slnx --no-build`
 8. Upload test result artifacts (`actions/upload-artifact`, runs on `always()`)
 
-> **Note:** Step 6 uses `continue-on-error: true` due to a [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391)
+> **Note:** Step 6 works around a [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391)
 > where `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-latest` in SDK 10.0.103+.
+> The step uses `|| true` to tolerate the non-zero exit and then sets
+> `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP clients in
+> the test run trust the per-user dev certificate.
 
 ### Lint
 
@@ -69,7 +72,8 @@ All CI commands map directly to local developer commands.
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet build ViajantesTurismo.slnx --no-restore
-dotnet dev-certs https --trust
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 dotnet test --solution ViajantesTurismo.slnx --no-build
 ```
 

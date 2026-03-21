@@ -254,7 +254,8 @@ The CI commands map directly to local commands:
 # Build and test (mirrors the Build and Test job)
 dotnet restore ViajantesTurismo.slnx
 dotnet build ViajantesTurismo.slnx --no-restore
-dotnet dev-certs https --trust
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 dotnet test --solution ViajantesTurismo.slnx --no-build
 
 # Lint (mirrors the Lint job)

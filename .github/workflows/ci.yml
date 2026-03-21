@@ -41,8 +41,9 @@ jobs:
         run: dotnet build ViajantesTurismo.slnx --no-restore
 
       - name: Trust HTTPS developer certificate
-        run: dotnet dev-certs https --trust
-        continue-on-error: true
+        run: |
+          dotnet dev-certs https --trust || true
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust" >> "$GITHUB_ENV"
 
       - name: Run tests
         run: dotnet test --solution ViajantesTurismo.slnx --no-build
