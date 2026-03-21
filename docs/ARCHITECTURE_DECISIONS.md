@@ -32,6 +32,7 @@ Decisions about code quality standards and testing practices.
 - **[ADR-006](adr/20251108-type-safety-test-step-definitions.md)** — Type Safety in Test Step Definitions
 - **[ADR-018](adr/20260228-test-parallelization-with-assembly-fixtures.md)** — Test Parallelization with xUnit v3
 Assembly Fixtures
+- **[ADR-019](adr/20260321-no-task-delay-in-production-code.md)** — No Direct Task.Delay in Production Code
 
 ### Architecture & Layers
 
@@ -73,6 +74,7 @@ These architectural decisions establish a robust foundation:
 2. **Type-safe testing** handles multiple Result types correctly
 3. **Application layer** separates mapping and query concerns from domain
 4. **IQueryable queries** enable efficient server-side operations for frontend grids
+5. **No direct Task.Delay in production code** keeps flow control explicit, testable, and event-driven
 
 ### Business Rules
 
