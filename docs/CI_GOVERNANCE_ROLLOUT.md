@@ -23,11 +23,12 @@ The CI workflow runs on every pull request targeting `main`, every push to `main
 3. Set up Node.js from `.nvmrc` (`actions/setup-node`)
 4. `dotnet restore ViajantesTurismo.slnx`
 5. `dotnet build ViajantesTurismo.slnx --no-restore`
-6. Trust HTTPS developer certificate and set `SSL_CERT_DIR`
-7. `dotnet test --solution ViajantesTurismo.slnx --no-build`
-8. Upload test result artifacts (`actions/upload-artifact`, runs on `always()`)
+6. Install Playwright browsers and OS dependencies (`playwright.ps1 install --with-deps`, located dynamically via `find`)
+7. Trust HTTPS developer certificate and set `SSL_CERT_DIR`
+8. `dotnet test --solution ViajantesTurismo.slnx --no-build`
+9. Upload test result artifacts (`actions/upload-artifact`, runs on `always()`)
 
-> **Note:** Step 6 works around a [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391)
+> **Note:** Step 7 works around a [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391)
 > where `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-latest` in SDK 10.0.103+.
 > The step uses `|| true` to tolerate the non-zero exit and then sets
 > `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP clients in
@@ -72,6 +73,7 @@ All CI commands map directly to local developer commands.
 # From repository root
 dotnet restore ViajantesTurismo.slnx
 dotnet build ViajantesTurismo.slnx --no-restore
+pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 dotnet test --solution ViajantesTurismo.slnx --no-build
