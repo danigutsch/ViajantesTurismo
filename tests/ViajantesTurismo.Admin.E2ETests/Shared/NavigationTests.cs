@@ -4,6 +4,9 @@ namespace ViajantesTurismo.Admin.E2ETests.Shared;
 
 public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
+    private const string AddTourTitle = "Add Tour";
+    private const string ToursTitle = "Tours";
+
     [Fact]
     public async Task Can_Deep_Link_All_Routes()
     {
@@ -14,8 +17,8 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // Act
         await AssertDeepLink("/", "Home - ViajantesTurismo");
-        await AssertDeepLink("/addtour", "Add Tour");
-        await AssertDeepLink("/tours", "Tours");
+        await AssertDeepLink("/addtour", AddTourTitle);
+        await AssertDeepLink("/tours", ToursTitle);
         await AssertDeepLink("/customers", "Customers");
         await AssertDeepLink("/bookings", "Bookings");
 
@@ -41,7 +44,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         // Assert
         // Deep-link assertions are verified inside the navigation helpers above; this final block checks browser back-navigation.
-        await Expect(Page).ToHaveTitleAsync("Tours");
+        await Expect(Page).ToHaveTitleAsync(ToursTitle);
         await Expect(Page).ToHaveURLAsync(ToursRegex());
     }
 
@@ -61,7 +64,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetHeading("Bookings Management")).ToBeVisibleAsync();
 
         var content = Page.Locator("article.content");
-        await Expect(content.GetLink("Add Tour")).ToBeVisibleAsync();
+        await Expect(content.GetLink(AddTourTitle)).ToBeVisibleAsync();
         await Expect(content.GetLink("Add Customer")).ToBeVisibleAsync();
         await Expect(content.GetLink("View All")).ToHaveCountAsync(3);
         await Expect(Page.GetLink("About")).ToBeVisibleAsync();
@@ -83,7 +86,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         await AssertSidebarNavigation(sidebar, "Bookings", BookingsRegex());
         await AssertSidebarNavigation(sidebar, "Customers", CustomersRegex(), exact: true);
         await AssertSidebarNavigation(sidebar, "Add Customer", CreateCustomerRegex());
-        await AssertSidebarNavigation(sidebar, "Add Tour", AddTourRegex());
+        await AssertSidebarNavigation(sidebar, AddTourTitle, AddTourRegex());
         await AssertSidebarNavigation(sidebar, "Home", HomeRegex());
 
         // Act
@@ -103,7 +106,7 @@ public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Act
         await NavigateTo("/");
         var content = Page.Locator("article.content");
-        await content.GetLink("Add Tour").ClickAsync();
+        await content.GetLink(AddTourTitle).ClickAsync();
 
         // Assert
         await Expect(Page).ToHaveURLAsync(AddTourRegex());

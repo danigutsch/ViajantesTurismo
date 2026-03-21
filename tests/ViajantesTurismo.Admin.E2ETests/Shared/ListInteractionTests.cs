@@ -2,24 +2,30 @@ namespace ViajantesTurismo.Admin.E2ETests.Shared;
 
 public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
+    private const string DescendingSortSelector = "th[aria-sort='descending']";
+
     [Fact]
     public async Task Tour_List_Sort_Smoke_Works_For_Name_Column()
     {
         // Arrange
         await ClearDatabase(TestContext.Current.CancellationToken);
 
-        _ = await ApiClient.CreateTour(
-            identifier: "AAA-SORT",
-            name: "Aaa Sort Tour",
-            startDate: DateTime.UtcNow.AddDays(10),
-            endDate: DateTime.UtcNow.AddDays(17),
-            price: 500m);
-        _ = await ApiClient.CreateTour(
-            identifier: "ZZZ-SORT",
-            name: "Zzz Sort Tour",
-            startDate: DateTime.UtcNow.AddDays(40),
-            endDate: DateTime.UtcNow.AddDays(47),
-            price: 1500m);
+        _ = await ApiClient.CreateTour(new CreateTourOptions
+        {
+            Identifier = "AAA-SORT",
+            Name = "Aaa Sort Tour",
+            StartDate = DateTime.UtcNow.AddDays(10),
+            EndDate = DateTime.UtcNow.AddDays(17),
+            Price = 500m
+        });
+        _ = await ApiClient.CreateTour(new CreateTourOptions
+        {
+            Identifier = "ZZZ-SORT",
+            Name = "Zzz Sort Tour",
+            StartDate = DateTime.UtcNow.AddDays(40),
+            EndDate = DateTime.UtcNow.AddDays(47),
+            Price = 1500m
+        });
 
         // Act
         await NavigateTo("/tours");
@@ -34,7 +40,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         await Expect(firstTourCell).ToHaveTextAsync("Aaa Sort Tour");
 
         await toursTable.GetButton("Name").ClickAsync();
-        await Expect(toursTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
+        await Expect(toursTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
         await Expect(firstTourCell).ToHaveTextAsync("Zzz Sort Tour");
     }
 
@@ -62,7 +68,7 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
 
         await customersTable.GetButton("Name").ClickAsync();
         await customersTable.GetButton("Name").ClickAsync();
-        await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
+        await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         var firstNameCell = customersTable.Locator("tbody tr td:nth-child(1)").First;
         await Expect(firstNameCell).ToHaveTextAsync("User10 List");
@@ -70,11 +76,11 @@ public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixtur
         await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 2 of 2");
         await Expect(firstNameCell).ToHaveTextAsync("User00 List");
-        await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
+        await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 1 of 2");
         await Expect(firstNameCell).ToHaveTextAsync("User10 List");
-        await Expect(customersTable.Locator("th[aria-sort='descending']")).ToContainTextAsync("Name");
+        await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
     }
 }

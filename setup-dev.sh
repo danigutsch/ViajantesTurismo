@@ -6,6 +6,7 @@ set -e
 
 SKIP_GIT_HOOK=false
 SKIP_NPM=false
+NOT_FOUND="not found"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -39,9 +40,9 @@ printf "%b" "${CYAN}====================================${NC}\n\n"
 # Check .NET SDK version
 printf "%b" "${YELLOW}📦 Checking .NET SDK...${NC}\n"
 REQUIRED_VERSION=$(grep -oP '(?<="version": ")[^"]*' global.json)
-INSTALLED_SDK=$(dotnet --version 2>&1 || echo "not found")
+INSTALLED_SDK=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
 
-if [[ "${INSTALLED_SDK}" != "not found" ]]; then
+if [[ "${INSTALLED_SDK}" != "${NOT_FOUND}" ]]; then
     printf "%b" "   ${GREEN}✅ .NET SDK installed: ${INSTALLED_SDK}${NC}\n"
     if [[ "${INSTALLED_SDK}" != "${REQUIRED_VERSION}" ]]; then
         printf "%b" "   ${YELLOW}⚠️ Required version: ${REQUIRED_VERSION}${NC}\n"
@@ -94,9 +95,9 @@ if [[ "${SKIP_NPM}" = false ]]; then
         REQUIRED_NODE_VERSION=""
     fi
 
-    NODE_VERSION=$(node --version 2>&1 || echo "not found")
+    NODE_VERSION=$(node --version 2>&1 || echo "${NOT_FOUND}")
 
-    if [[ "${NODE_VERSION}" != "not found" ]]; then
+    if [[ "${NODE_VERSION}" != "${NOT_FOUND}" ]]; then
         printf "%b" "   ${GREEN}✅ Node.js installed: ${NODE_VERSION}${NC}\n"
 
         # Validate version matches .nvmrc

@@ -38,5 +38,9 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.markdownlint": "explicit",
     "source.organizeImports": "explicit"
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "danigutsch",
+    "projectKey": "danigutsch_ViajantesTurismo"
   }
 }

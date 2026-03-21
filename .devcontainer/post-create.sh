@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Error handler with line number
-trap 'echo "❌ Setup failed at line $LINENO with exit code $?"; exit 1' ERR
+trap 'echo "❌ Setup failed at line $LINENO with exit code $?" >&2; exit 1' ERR
 
 echo "🚀 Running post-create setup..."
 
@@ -14,7 +14,7 @@ dotnet restore ViajantesTurismo.slnx
 # Install npm packages
 echo "📦 Installing npm packages..."
 if ! npm ci --prefer-offline; then
-    echo "❌ npm installation failed"
+    echo "❌ npm installation failed" >&2
     exit 1
 fi
 
@@ -32,7 +32,7 @@ fi
 if [[ "${DEVCONTAINER_VERIFY_BUILD:-1}" == "1" ]]; then
     echo "🔨 Building solution..."
     if ! dotnet build ViajantesTurismo.slnx --no-restore; then
-        echo "❌ Build failed. Please check the error messages above."
+        echo "❌ Build failed. Please check the error messages above." >&2
         exit 1
     fi
 else

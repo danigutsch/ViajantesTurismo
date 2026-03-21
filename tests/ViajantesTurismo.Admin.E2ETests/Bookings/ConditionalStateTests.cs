@@ -6,7 +6,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Tour_Edit_Disables_Locked_Fields_When_Bookings_Exist()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 10);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 10 });
         var customer = await ApiClient.CreateCustomer();
         _ = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
 
@@ -29,7 +29,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Booking_Edit_Disables_All_Fields_For_Terminal_States()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 20);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
         var cancelledCustomer = await ApiClient.CreateCustomer();
         var completedCustomer = await ApiClient.CreateCustomer();
 
@@ -49,7 +49,7 @@ public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Booking_Edit_Keeps_Editable_Fields_Enabled_For_Pending_Bookings()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(minCustomers: 1, maxCustomers: 20);
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
         var pendingCustomer = await ApiClient.CreateCustomer();
         var pendingBooking = await ApiClient.CreateBooking(tour.Id, pendingCustomer.Id);
 

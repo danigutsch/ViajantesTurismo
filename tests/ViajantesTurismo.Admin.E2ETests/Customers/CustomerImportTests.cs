@@ -2,6 +2,11 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.E2ETests.Customers;
 
+file static class CustomerImportRoutes
+{
+    public const string Import = "/customers/import";
+}
+
 /// <summary>
 /// E2E tests for the CSV customer import wizard.
 /// </summary>
@@ -14,7 +19,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";
 
         // Act
-        await NavigateTo("/customers/import");
+        await NavigateTo(CustomerImportRoutes.Import);
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
         // Assert
@@ -31,7 +36,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         var email = $"e2e-ui2-{Guid.NewGuid():N}@import.test";
 
         // Act
-        await NavigateTo("/customers/import");
+        await NavigateTo(CustomerImportRoutes.Import);
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
 
         // Assert
@@ -51,7 +56,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
                               CustomerImportCsvHelpers.BuildValidRow($"e2e-ui3-{Guid.NewGuid():N}@import.test");
 
         // Act
-        await NavigateTo("/customers/import");
+        await NavigateTo(CustomerImportRoutes.Import);
         await CustomerImportCsvHelpers.UploadCsv(Page, nonCanonicalCsv);
 
         // Assert
@@ -69,7 +74,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         var existingCustomer = await ApiClient.CreateCustomer();
 
         // Act
-        await NavigateTo("/customers/import");
+        await NavigateTo(CustomerImportRoutes.Import);
         await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(existingCustomer.Email));
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
@@ -110,7 +115,7 @@ public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTe
         var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
 
         // Act
-        await NavigateTo("/customers/import");
+        await NavigateTo(CustomerImportRoutes.Import);
         await CustomerImportCsvHelpers.UploadCsv(Page, csv);
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();

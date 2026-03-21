@@ -2,6 +2,8 @@ namespace ViajantesTurismo.Admin.E2ETests.Shared;
 
 public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
+    private const string CustomerDetailsTitle = "Customer Details";
+
     [Fact]
     public async Task Booking_Details_Should_Navigate_To_Related_Tour_And_Customer_Details()
     {
@@ -14,10 +16,10 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await NavigateTo($"/bookings/{booking.Id}");
         await FollowLinkAndExpectTitle(Page.Locator("a[href^='/tours/']").First, "Tour Details");
         await Page.GoBackAsync();
-        await FollowLinkAndExpectTitle(Page.Locator("a[href^='/customers/']").First, "Customer Details");
+        await FollowLinkAndExpectTitle(Page.Locator("a[href^='/customers/']").First, CustomerDetailsTitle);
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);
     }
 
     [Fact]
@@ -33,10 +35,10 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await FollowLinkAndExpectTitle(bookingRow.Locator("a[href^='/tours/']").First, "Tour Details");
         await Page.GoBackAsync();
         bookingRow = await BookingsList.GetBookingRow(booking.Id);
-        await FollowLinkAndExpectTitle(bookingRow.Locator("a[href^='/customers/']").First, "Customer Details");
+        await FollowLinkAndExpectTitle(bookingRow.Locator("a[href^='/customers/']").First, CustomerDetailsTitle);
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixtur
         await NavigateTo($"/customers/{customer.Id}");
 
         // Assert
-        await Expect(Page).ToHaveTitleAsync("Customer Details");
+        await Expect(Page).ToHaveTitleAsync(CustomerDetailsTitle);
         var customerBookingsTable = Page.Locator("table");
         await Expect(customerBookingsTable).ToBeVisibleAsync();
         await ExpectColumnVisibility(customerBookingsTable, hiddenHeader: "Customer", visibleHeader: "Tour");
