@@ -50,32 +50,14 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          global-json-file: global.json
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: .nvmrc
-
-      - name: Restore .NET dependencies
-        run: dotnet restore ViajantesTurismo.slnx
-
-      - name: Restore .NET local tools
-        run: dotnet tool restore
+      - name: Set up CI prerequisites
+        uses: ./.github/actions/setup-ci-prerequisites
 
       - name: Build solution
         run: dotnet build ViajantesTurismo.slnx --no-restore
 
       - name: Install Playwright browsers
         run: pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
-
-      - name: Trust HTTPS developer certificate
-        run: |
-          dotnet dev-certs https --trust || true
-          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust" >> "$GITHUB_ENV"
 
       - name: Run tests
         id: run-tests

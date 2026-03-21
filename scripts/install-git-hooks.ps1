@@ -1,18 +1,22 @@
 # Install git hooks for Windows/PowerShell
-# This script copies the repository git hooks to the .git/hooks directory
+# This script copies the repository git hooks to the configured hooks directory.
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 $hooks = @(
-    @{ Source = "scripts/pre-commit"; Destination = ".git/hooks/pre-commit" },
-    @{ Source = "scripts/commit-msg"; Destination = ".git/hooks/commit-msg" }
+    @{ Source = "scripts/pre-commit"; Name = "pre-commit" },
+    @{ Source = "scripts/commit-msg"; Name = "commit-msg" }
 )
 
-if (-Not (Test-Path ".git")) {
-    Write-Host "Error: Not a git repository (no .git directory found)" -ForegroundColor Red
+try {
+    $hooksDir = (& git rev-parse --git-path hooks).Trim()
+}
+catch {
+    Write-Host "Error: Not a git repository" -ForegroundColor Red
     exit 1
 }
 
-# Create hooks directory if it doesn't exist
-$hooksDir = ".git/hooks"
 if (-Not (Test-Path $hooksDir)) {
     New-Item -Path $hooksDir -ItemType Directory | Out-Null
 }
@@ -23,7 +27,8 @@ foreach ($hook in $hooks) {
         exit 1
     }
 
-    Copy-Item -Path $hook.Source -Destination $hook.Destination -Force
+    $destinationPath = Join-Path $hooksDir $hook.Name
+    Copy-Item -Path $hook.Source -Destination $destinationPath -Force
 }
 
 Write-Host "✓ Git hooks installed successfully" -ForegroundColor Green

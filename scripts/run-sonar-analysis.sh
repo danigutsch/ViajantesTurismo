@@ -51,6 +51,15 @@ trap cleanup EXIT
 
 dotnet build ViajantesTurismo.slnx --no-restore
 
+playwright_script="$(find tests -name playwright.ps1 -path '*/bin/Debug/*' | head -1)"
+
+if [[ -z "${playwright_script}" ]]; then
+    echo "Playwright install script was not found under tests/*/bin/Debug after build." >&2
+    exit 1
+fi
+
+pwsh "${playwright_script}" install --with-deps
+
 dotnet tool run dotnet-coverage collect \
     "dotnet test --solution ViajantesTurismo.slnx --no-build" \
     -f xml \
