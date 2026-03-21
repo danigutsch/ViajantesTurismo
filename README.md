@@ -239,7 +239,11 @@ See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration
 ## Continuous Integration
 
 Every pull request and push to `main` is validated by a GitHub Actions workflow
-(`.github/workflows/ci.yml`). The workflow runs two parallel jobs:
+(`.github/workflows/ci.yml`). Hosted code quality analysis runs in a separate
+workflow (`.github/workflows/sonar.yml`) following the same branch and pull-request
+triggers.
+
+The main CI workflow runs two parallel jobs:
 
 | Job | What it does |
 | --- | --- |
@@ -274,6 +278,15 @@ The workflow intentionally does this inside the job graph instead of using trigg
 so required checks still resolve cleanly. The change-detection logic lives in `scripts/detect-changes.sh`
 and defaults to running the full job if the diff cannot be evaluated reliably.
 When tests run, CI also publishes a `coverage-report` artifact containing an aggregated HTML report.
+The separate `SonarCloud` workflow restores the repo-pinned `.NET` tools, runs SonarScanner for
+`.NET`, collects cross-platform XML coverage with `dotnet-coverage`, and waits for the SonarCloud
+quality gate result before completing.
+
+To enable hosted analysis, configure these repository settings in GitHub:
+
+- Actions secret `SONAR_TOKEN`
+- Repository variable `SONAR_ORGANIZATION`
+- Repository variable `SONAR_PROJECT_KEY`
 
 ### Required status checks
 

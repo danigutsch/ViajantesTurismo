@@ -62,6 +62,44 @@ workflow YAML. If the script cannot determine the diff range reliably, it fails 
 3. `npm ci`
 4. `npm run lint:all`
 
+## SonarCloud Workflow
+
+Hosted code quality analysis is implemented in a separate workflow:
+`.github/workflows/sonar.yml`.
+
+This mirrors the specialized-workflow pattern used by BookWorm, where the main CI flow remains
+focused on build, test, and lint concerns while SonarCloud analysis runs in its own pipeline.
+
+### SonarCloud
+
+| Attribute | Value |
+| --- | --- |
+| Workflow file | `.github/workflows/sonar.yml` |
+| Primary job name | `SonarCloud` |
+| Runner | `ubuntu-latest` |
+
+**Steps:**
+
+1. Checkout repository with full history (`actions/checkout` with `fetch-depth: 0`)
+2. Detect whether the change set is documentation-only using `git diff`
+3. Set up .NET SDK from `global.json` (`actions/setup-dotnet`) when analysis work is required
+4. Set up Node.js from `.nvmrc` (`actions/setup-node`) when analysis work is required
+5. `dotnet restore ViajantesTurismo.slnx` when analysis work is required
+6. `dotnet tool restore` when analysis work is required
+7. Install Playwright browsers and OS dependencies when analysis work is required
+8. Trust HTTPS developer certificate and set `SSL_CERT_DIR` when analysis work is required
+9. Run `bash scripts/run-sonar-analysis.sh` when analysis work is required
+10. Upload the Sonar coverage input artifact (`TestResults/sonar-coverage.xml`) for troubleshooting
+
+The workflow uses the same docs-only detection strategy as the main CI workflow so that future
+required checks can still resolve cleanly without trigger-level `paths` filters.
+
+`scripts/run-sonar-analysis.sh` wraps the `begin` / `build` / `test with dotnet-coverage` /
+`end` pattern recommended by SonarCloud for `.NET` projects. This is separate from
+`scripts/run-tests-with-coverage.sh` because SonarCloud does not consume the repo's current
+Cobertura output directly; it expects a supported coverage format such as the Visual Studio XML
+format emitted by `dotnet-coverage -f xml`.
+
 ## Artifacts
 
 Test result artifacts are uploaded by the `build-and-test` job unconditionally (`if: always()`).
@@ -78,12 +116,12 @@ test infrastructure did not produce the expected outputs.
 The HTML coverage artifact is generated from those per-project Cobertura files with the repo's
 local `reportgenerator` tool manifest entry.
 
-Coverage reporting is currently GitHub-only: CI publishes Cobertura XML inside the test-results
-artifact and an aggregated HTML coverage artifact, but it does not yet publish coverage to an
-external service or expose a coverage badge. If the repository later needs pull-request-native
-coverage feedback, hosted status checks, or a stable badge source, the preferred next step is
-Codecov rather than Coveralls because it fits the existing Cobertura output and provides stronger
-GitHub pull request coverage workflows.
+Coverage now has two consumers:
+
+- The main CI workflow publishes Cobertura XML inside `test-results` plus an aggregated HTML
+  `coverage-report` artifact for direct inspection.
+- The SonarCloud workflow publishes a separate `sonar-coverage.xml` input file and sends hosted
+  analysis results to SonarCloud.
 
 Artifact scope is kept narrow — only test outputs that materially help diagnose failures are
 included. Do not broaden the upload glob without a clear reason.
@@ -108,6 +146,21 @@ bash scripts/run-tests-with-coverage.sh
 `scripts/run-tests-with-coverage.sh` is a post-build helper. It assumes the restore/build steps
 above have already completed and then runs tests, verifies Cobertura output exists, and generates
 the aggregated HTML coverage report.
+
+To reproduce the SonarCloud analysis flow locally after configuring the required environment
+variables, run:
+
+```bash
+export SONAR_TOKEN="..."
+export SONAR_ORGANIZATION="..."
+export SONAR_PROJECT_KEY="..."
+dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
+pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
+bash scripts/run-sonar-analysis.sh
+```
 
 For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), CI skips the
 build-and-test commands above but still records a successful `Build and Test` check.
@@ -143,6 +196,9 @@ Once branch protection is configured for `main`, require these exact job names:
 - `Lint`
 - `Dependency Review`
 
+If SonarCloud is later promoted to a merge gate, require the exact job name `SonarCloud` from
+`.github/workflows/sonar.yml`.
+
 These names match the `name:` fields in `.github/workflows/ci.yml` and
 `.github/workflows/dependency-review.yml`. Any rename of the jobs must be reflected in branch
 protection settings.
@@ -175,12 +231,21 @@ The workflow uses only official GitHub-maintained actions:
 | `actions/upload-artifact@v7` | Test result artifact upload |
 | `actions/dependency-review-action@v4` | PR dependency and license review |
 
-Before adding any third-party action, document the trust decision and update this table.
+The GitHub workflow surface still uses only official GitHub-maintained actions.
+SonarCloud integration is implemented through repo-pinned local `.NET` tools rather than an
+additional third-party GitHub Action:
 
-If hosted coverage reporting is added later, treat it as a separate trust decision. For this
-repository, Codecov is the preferred candidate over Coveralls because it works directly with the
-existing Cobertura reports and offers better pull request coverage checks, annotations, and badge
-support.
+- `dotnet-sonarscanner` `11.2.0`
+- `dotnet-coverage` `18.5.2`
+
+This keeps the GitHub Actions dependency surface narrow while still adopting the SonarCloud
+analysis model used in BookWorm's quality strategy.
+
+The SonarCloud workflow requires these GitHub repository settings:
+
+- Actions secret `SONAR_TOKEN`
+- Repository variable `SONAR_ORGANIZATION`
+- Repository variable `SONAR_PROJECT_KEY`
 
 ### Update process
 
@@ -255,7 +320,8 @@ The following items remain out of scope until a concrete need or prerequisite is
 - Scheduled devcontainer smoke validation
 - Multi-OS matrix (not required until a concrete cross-platform requirement appears)
 - Coverage thresholds (not enforced until baseline coverage trends are established)
-- Hosted coverage publishing and badges; if adopted, prefer Codecov over Coveralls
+- README badge wiring after the hosted quality path is implemented and stable
+- Promoting `SonarCloud` to a required branch-protection check after stable runs are observed
 
 ## Related Documentation
 

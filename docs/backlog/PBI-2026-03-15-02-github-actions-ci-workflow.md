@@ -8,13 +8,6 @@
 - **Priority:** High
 - **Status:** Completed
 - **Type:** Infrastructure / Developer Experience / Quality
-- **Target Area:** `.github/workflows/`, repository documentation
-- **Related Work:** PBI-2026-03-15-01 (canonical repo command/script layer)
-
-## Summary
-
-The repository has strong local guidance for building, testing, and running quality checks, but it does not yet have a
-repository-owned GitHub Actions CI workflow checked into `.github/workflows/`. That means pull requests and
 `main`-branch changes are not validated by a shared, repeatable automation contract before merge.
 
 This PBI adds a baseline CI workflow that runs on GitHub-hosted runners, provisions the repository's pinned .NET and
@@ -27,8 +20,9 @@ Branch protection is configured on `main`, and a representative pull request has
 required checks `Build and Test`, `Lint`, and `Dependency Review`; the dependency review gate is implemented by the
 separate `.github/workflows/dependency-review.yml` workflow described in `docs/CI_GOVERNANCE_ROLLOUT.md`. Any
 remaining CI enhancements should be treated as follow-up work, not blockers for the baseline rollout. Coverage is
-currently retained as GitHub Actions artifacts only; if the repository later needs a badge or PR-native coverage
-feedback, a hosted coverage service should be treated as follow-up work rather than part of the baseline rollout.
+published both as GitHub Actions artifacts and through a dedicated SonarCloud analysis workflow;
+future quality work should focus on policy tuning, badges, and deciding whether SonarCloud should
+become a required merge gate.
 
 ## Problem Statement
 
@@ -746,7 +740,8 @@ The implementation can be considered ready for review when all of the following 
 Potential follow-up items after the baseline workflow is stable:
 
 - coverage artifact/report generation refinement
-- hosted coverage publishing, badge support, and PR-native coverage checks; prefer Codecov over Coveralls if adopted
+- coverage badge wiring and threshold tuning after the hosted quality path is implemented
+- promoting SonarCloud to a required branch-protection check after stable baseline runs
 - branch protection guidance for required checks
 - `CODEOWNERS` protection for `.github/workflows/**` and related automation assets
 - Dependabot updates for GitHub Actions references and other CI-related dependency surfaces
