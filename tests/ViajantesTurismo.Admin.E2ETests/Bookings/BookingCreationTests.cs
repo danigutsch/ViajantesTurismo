@@ -32,10 +32,12 @@ public class BookingCreationTests(E2EFixture fixture) : E2ETestBase(fixture)
             .Filter(new LocatorFilterOptions { HasText = "Bike Type" }).First.Locator("select");
         await Expect(bikeTypeSelect).ToHaveValueAsync("EBike");
 
-        // Assert: no customer select exists because the details page pre-determines the principal customer.
-        var customerFields = bookingForm.Locator("div.mb-3")
-            .Filter(new LocatorFilterOptions { HasText = "Customer" });
-        await Expect(customerFields).ToHaveCountAsync(0);
+        // Assert: principal customer selector is not rendered on customer details page.
+        var principalCustomerField = bookingForm.Locator("label", new LocatorLocatorOptions
+        {
+            HasText = "Principal Customer"
+        });
+        await Expect(principalCustomerField).ToHaveCountAsync(0);
 
         // Select the owned test tour (label includes dynamic date, so find the matching option by name).
         var tourSelect = bookingForm.Locator("div.mb-3")
