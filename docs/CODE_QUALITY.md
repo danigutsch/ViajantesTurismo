@@ -197,6 +197,28 @@ Preferred patterns:
 
 Keep suppressions narrow and do not use guard clauses instead of domain validation.
 
+### Production Code Timing Policy
+
+Direct `Task.Delay(...)` usage in production code under `src/` is discouraged and should be treated as an architectural
+exception, not a normal implementation tool.
+
+Prefer one of the following instead:
+
+- explicit state transitions based on application or UI events
+- owned timers with clear lifecycle management when time-based behavior is truly required
+- abstractions that make time-dependent behavior deterministic and testable
+- framework-native mechanisms that express deferred UI behavior without arbitrary waits
+
+This policy is defined in [ADR-019: No Direct Task.Delay in Production Code](adr/20260321-no-task-delay-in-production-code.md).
+Repository-owned automated enforcement is tracked in
+[PBI-2026-03-21-01](backlog/PBI-2026-03-21-01-task-delay-production-code-guard.md).
+
+Scope notes:
+
+- applies to production code under `src/`
+- does not automatically apply to test projects under `tests/`
+- any temporary production exception should be documented with rationale and a removal plan
+
 ### Commands
 
 **Format all .NET code:**
