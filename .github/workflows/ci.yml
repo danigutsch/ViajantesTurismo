@@ -17,12 +17,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      build_required: ${{ steps.change-scope.outputs.build_required }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect docs-only changes
+        id: change-scope
+        shell: bash
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_AFTER_SHA: ${{ github.event.after }}
+        run: bash scripts/detect-changes.sh
+
   build-and-test:
     name: Build and Test
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v5
@@ -49,12 +75,14 @@ jobs:
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust" >> "$GITHUB_ENV"
 
       - name: Run tests
+        id: run-tests
         run: dotnet test --solution ViajantesTurismo.slnx --no-build
 
       - name: Upload test results
         uses: actions/upload-artifact@v7
-        if: always()
+        if: ${{ always() && steps.run-tests.outcome != 'skipped' }}
         with:
+          if-no-files-found: error
           name: test-results
           path: "**/TestResults/**"
           retention-days: 7

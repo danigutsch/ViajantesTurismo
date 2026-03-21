@@ -243,7 +243,7 @@ Every pull request and push to `main` is validated by a GitHub Actions workflow
 
 | Job | What it does |
 | --- | --- |
-| **Build and Test** | Provisions .NET and Node, restores, builds, installs Playwright browsers, trusts HTTPS dev cert, runs all tests, uploads test result artifacts |
+| **Build and Test** | Detects docs-only changes, skips expensive build/test steps when only `docs/**`, `README.md`, or `CONTRIBUTING.md` changed, otherwise provisions .NET and Node, restores, builds, installs Playwright browsers, trusts HTTPS dev cert, runs all tests, and uploads test result artifacts |
 | **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
 
 ### Reproducing CI locally
@@ -263,6 +263,12 @@ dotnet test --solution ViajantesTurismo.slnx --no-build
 npm ci
 npm run lint:all
 ```
+
+For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), the `Build and Test`
+job records a passing check but skips the restore, build, Playwright, and test commands above.
+The workflow intentionally does this inside the job graph instead of using trigger-level path filters,
+so required checks still resolve cleanly. The change-detection logic lives in `scripts/detect-changes.sh`
+and defaults to running the full job if the diff cannot be evaluated reliably.
 
 ### Required status checks
 

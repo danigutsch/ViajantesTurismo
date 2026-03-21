@@ -19,16 +19,26 @@ The CI workflow runs on every pull request targeting `main`, every push to `main
 **Steps:**
 
 1. Checkout repository (`actions/checkout`)
-2. Set up .NET SDK from `global.json` (`actions/setup-dotnet`)
-3. Set up Node.js from `.nvmrc` (`actions/setup-node`)
-4. `dotnet restore ViajantesTurismo.slnx`
-5. `dotnet build ViajantesTurismo.slnx --no-restore`
-6. Install Playwright browsers and OS dependencies (`playwright.ps1 install --with-deps`, located dynamically via `find`)
-7. Trust HTTPS developer certificate and set `SSL_CERT_DIR`
-8. `dotnet test --solution ViajantesTurismo.slnx --no-build`
-9. Upload test result artifacts (`actions/upload-artifact`, runs on `always()`)
+2. Detect whether the change set is documentation-only using `git diff`
+3. Set up .NET SDK from `global.json` (`actions/setup-dotnet`) when build/test work is required
+4. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required
+5. `dotnet restore ViajantesTurismo.slnx` when build/test work is required
+6. `dotnet build ViajantesTurismo.slnx --no-restore` when build/test work is required
+7. Install Playwright browsers and OS dependencies (`playwright.ps1 install --with-deps`, located dynamically via `find`) when build/test work is required
+8. Trust HTTPS developer certificate and set `SSL_CERT_DIR` when build/test work is required
+9. `dotnet test --solution ViajantesTurismo.slnx --no-build` when build/test work is required
+10. Upload test result artifacts (`actions/upload-artifact`, runs on `always()` after the test step executes) when tests ran
 
-> **Note:** Step 7 works around a [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391)
+For pull requests and pushes that only modify `docs/**`, `README.md`, or `CONTRIBUTING.md`,
+the job still runs and reports a successful `Build and Test` check, but it skips the expensive
+restore, build, Playwright, and test steps. This avoids the "Pending required check" problem
+caused by trigger-level `paths` or `paths-ignore` filters.
+
+The change classification logic is implemented in `scripts/detect-changes.sh`, not inline in the
+workflow YAML. If the script cannot determine the diff range reliably, it fails open by setting
+`build_required=true` so CI prefers extra work over a false skip.
+
+> **Note:** Step 8 works around a [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391)
 > where `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-latest` in SDK 10.0.103+.
 > The step uses `|| true` to tolerate the non-zero exit and then sets
 > `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP clients in
@@ -59,6 +69,8 @@ Test result artifacts are uploaded by the `build-and-test` job unconditionally (
 
 The artifact includes per-project `TestResults` folders, which contain `.trx` result files and
 `coverage.cobertura.xml` when coverage collection is enabled.
+If the test step ran, missing result files are treated as an error because that indicates the
+test infrastructure did not produce the expected outputs.
 
 Artifact scope is kept narrow — only test outputs that materially help diagnose failures are
 included. Do not broaden the upload glob without a clear reason.
@@ -78,6 +90,9 @@ dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 dotnet test --solution ViajantesTurismo.slnx --no-build
 ```
+
+For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), CI skips the
+build-and-test commands above but still records a successful `Build and Test` check.
 
 ### Lint job
 
@@ -205,18 +220,8 @@ must be reflected in branch protection settings.
 
 ## Next Required Work
 
-The following items are prioritized for near-term implementation:
-
-1. **Branch protection rules** — Configure required status checks on `main` as documented in the
-   [Branch Protection Rules](#branch-protection-rules) section above. This is a manual GitHub
-   settings step.
-2. **Path-based workflow optimization** — Investigate adding `paths-ignore` filters to skip the
-   `build-and-test` job on doc-only changes. **Caveat:** If the CI workflow is skipped via
-   `paths-ignore`, GitHub leaves the associated status checks in a "Pending" state, which blocks
-   PRs that require those checks. This conflicts with branch protection. Options to resolve:
-   - Use a conditional step (e.g., `dorny/paths-filter`) inside the job instead of trigger-level
-     path filters (the job still runs but skips expensive steps).
-   - Accept that all PRs run the full CI workflow until a more sophisticated solution is needed.
+The near-term required items from the initial rollout are complete. Monitor the workflow in
+normal use and move deferred items into scope only when there is a concrete operational need.
 
 ## Deferred Work
 
