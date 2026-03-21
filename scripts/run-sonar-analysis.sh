@@ -26,6 +26,8 @@ if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
 fi
 
 coverage_report="TestResults/sonar-coverage.xml"
+coverage_reports_file="TestResults/coverage-reports.txt"
+sonar_coverage_dir="TestResults/SonarCoverage"
 
 mkdir -p TestResults
 
@@ -33,7 +35,7 @@ dotnet tool run dotnet-sonarscanner begin \
     "/o:${sonar_organization}" \
     "/k:${sonar_project_key}" \
     "/d:sonar.token=${sonar_token}" \
-    "/d:sonar.cs.vscoveragexml.reportsPaths=${coverage_report}" \
+    "/d:sonar.coverageReportPaths=${coverage_report}" \
     "/d:sonar.qualitygate.wait=true" \
     "/d:sonar.qualitygate.timeout=300"
 
@@ -60,7 +62,15 @@ fi
 
 pwsh "${playwright_script}" install --with-deps
 
-dotnet tool run dotnet-coverage collect \
-    "dotnet test --solution ViajantesTurismo.slnx --no-build" \
-    -f xml \
-    -o "${coverage_report}"
+bash scripts/collect-test-coverage.sh "${coverage_reports_file}"
+
+coverage_reports="$(< "${coverage_reports_file}")"
+
+rm -rf "${sonar_coverage_dir}"
+
+dotnet tool run reportgenerator \
+    "-reports:${coverage_reports}" \
+    "-targetdir:${sonar_coverage_dir}" \
+    "-reporttypes:SonarQube"
+
+cp "${sonar_coverage_dir}/SonarQube.xml" "${coverage_report}"
