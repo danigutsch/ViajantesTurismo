@@ -28,7 +28,7 @@
 }
 
 .btn-action-view:hover {
-    background-color: #17a2b8;
+    background-color: #117a8b;
     color: white;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .btn-action-edit:hover {
-    background-color: #007bff;
+    background-color: #0056b3;
     color: white;
 }
 
@@ -50,7 +50,7 @@
 }
 
 .btn-action-confirm:hover {
-    background-color: #28a745;
+    background-color: #1e7e34;
     color: white;
 }
 
@@ -73,7 +73,7 @@
 
 .btn-action-cancel:hover {
     background-color: #ffc107;
-    color: #856404;
+    color: #533f03;
 }
 
 .btn-action-delete {
