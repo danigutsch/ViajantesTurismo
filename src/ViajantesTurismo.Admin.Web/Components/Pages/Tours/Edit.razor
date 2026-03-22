@@ -1,4 +1,5 @@
 @page "/edittour/{id:guid}"
+@implements IAsyncDisposable
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Helpers
@@ -240,11 +241,7 @@ Bike rental"/>
         _pendingRedirect = false;
         _redirectCancelled = false;
 
-        if (_redirectCts is not null)
-        {
-            await _redirectCts.CancelAsync();
-            _redirectCts = null;
-        }
+        await DisposeRedirectCancellation();
 
         try
         {
@@ -284,6 +281,10 @@ Bike rental"/>
             {
                 /* Cancelled by the user */
             }
+            finally
+            {
+                await DisposeRedirectCancellation();
+            }
         }
         catch (Exception)
         {
@@ -295,12 +296,29 @@ Bike rental"/>
         }
     }
 
-    private void CancelRedirect()
+    private async Task CancelRedirect()
     {
         _pendingRedirect = false;
         _redirectCancelled = true;
-        _redirectCts?.Cancel();
+        await DisposeRedirectCancellation();
         StateHasChanged();
+    }
+
+        public async ValueTask DisposeAsync()
+    {
+            await DisposeRedirectCancellation();
+    }
+
+    private async Task DisposeRedirectCancellation()
+    {
+        if (_redirectCts is null)
+        {
+            return;
+        }
+
+        await _redirectCts.CancelAsync();
+        _redirectCts.Dispose();
+        _redirectCts = null;
     }
 
     private void GoToDetails()

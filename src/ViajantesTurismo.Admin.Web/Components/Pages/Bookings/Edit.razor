@@ -1,4 +1,5 @@
 @page "/bookings/{id:guid}/edit"
+@implements IAsyncDisposable
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Helpers
 @using ViajantesTurismo.Admin.Web.Models
@@ -380,11 +381,7 @@ else
         _pendingRedirect = false;
         _redirectCancelled = false;
 
-        if (_redirectCts is not null)
-        {
-            await _redirectCts.CancelAsync();
-            _redirectCts = null;
-        }
+        await DisposeRedirectCancellation();
 
         try
         {
@@ -444,6 +441,10 @@ else
             {
                 /* Cancelled by the user */
             }
+            finally
+            {
+                await DisposeRedirectCancellation();
+            }
         }
         catch (Exception)
         {
@@ -455,12 +456,29 @@ else
         }
     }
 
-    private void CancelRedirect()
+    private async Task CancelRedirect()
     {
         _pendingRedirect = false;
         _redirectCancelled = true;
-        _redirectCts?.Cancel();
+        await DisposeRedirectCancellation();
         StateHasChanged();
+    }
+
+        public async ValueTask DisposeAsync()
+    {
+            await DisposeRedirectCancellation();
+    }
+
+    private async Task DisposeRedirectCancellation()
+    {
+        if (_redirectCts is null)
+        {
+            return;
+        }
+
+        await _redirectCts.CancelAsync();
+        _redirectCts.Dispose();
+        _redirectCts = null;
     }
 
     private void GoToBookings()
