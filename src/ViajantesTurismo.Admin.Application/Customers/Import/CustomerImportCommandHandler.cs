@@ -11,6 +11,14 @@ public sealed class CustomerImportCommandHandler(
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
 {
+    private enum ImportRowOutcome
+    {
+        Created,
+        OverwriteQueued,
+        Skipped,
+        Error,
+    }
+
     /// <summary>
     /// Parses the CSV content, maps valid rows to customers, and persists when not a dry run.
     /// </summary>
@@ -48,58 +56,97 @@ public sealed class CustomerImportCommandHandler(
                 continue;
             }
 
-            var customerResult = RowToCustomerMapper.MapCustomer(document, row, timeProvider);
-            if (customerResult.IsFailure)
+            var outcome = await ProcessImportRow(
+                document,
+                row,
+                conflictResolutions,
+                customersToCreate,
+                customersToOverwrite,
+                ct);
+
+            if (outcome is ImportRowOutcome.Error)
             {
                 errorCount++;
-                continue;
             }
-
-            var customer = customerResult.Value;
-            var emailAlreadyExists = await customerStore.EmailExists(customer.ContactInfo.Email, ct);
-            if (emailAlreadyExists)
-            {
-                if (TryResolveConflict(conflictResolutions, customer.ContactInfo.Email, out var resolution))
-                {
-                    if (resolution.SkipsImport)
-                    {
-                        continue;
-                    }
-
-                    var existingCustomer = await customerStore.GetByEmail(customer.ContactInfo.Email, ct);
-                    if (existingCustomer is null)
-                    {
-                        errorCount++;
-                        continue;
-                    }
-
-                    customersToOverwrite.Add(new CustomerOverwritePair(existingCustomer, customer));
-                    continue;
-                }
-
-                errorCount++;
-                continue;
-            }
-
-            customersToCreate.Add(customer);
         }
 
-        if (!command.DryRun && (customersToCreate.Count > 0 || customersToOverwrite.Count > 0))
-        {
-            foreach (var customer in customersToCreate)
-            {
-                customerStore.Add(customer);
-            }
-
-            foreach (var pair in customersToOverwrite)
-            {
-                ApplyOverwrite(pair.ExistingCustomer, pair.IncomingCustomer);
-            }
-
-            await unitOfWork.SaveEntities(ct);
-        }
+        await PersistImport(command, customersToCreate, customersToOverwrite, ct);
 
         return new ImportResult(customersToCreate.Count + customersToOverwrite.Count, errorCount);
+    }
+
+    private async Task<ImportRowOutcome> ProcessImportRow(
+        IImportDocument document,
+        IImportRow row,
+        IReadOnlyDictionary<string, string>? conflictResolutions,
+        List<Customer> customersToCreate,
+        List<CustomerOverwritePair> customersToOverwrite,
+        CancellationToken ct)
+    {
+        var customerResult = RowToCustomerMapper.MapCustomer(document, row, timeProvider);
+        if (customerResult.IsFailure)
+        {
+            return ImportRowOutcome.Error;
+        }
+
+        var customer = customerResult.Value;
+        if (!await customerStore.EmailExists(customer.ContactInfo.Email, ct))
+        {
+            customersToCreate.Add(customer);
+            return ImportRowOutcome.Created;
+        }
+
+        return await ResolveExistingCustomer(customer, conflictResolutions, customersToOverwrite, ct);
+    }
+
+    private async Task<ImportRowOutcome> ResolveExistingCustomer(
+        Customer customer,
+        IReadOnlyDictionary<string, string>? conflictResolutions,
+        List<CustomerOverwritePair> customersToOverwrite,
+        CancellationToken ct)
+    {
+        if (!TryResolveConflict(conflictResolutions, customer.ContactInfo.Email, out var resolution))
+        {
+            return ImportRowOutcome.Error;
+        }
+
+        if (resolution.SkipsImport)
+        {
+            return ImportRowOutcome.Skipped;
+        }
+
+        var existingCustomer = await customerStore.GetByEmail(customer.ContactInfo.Email, ct);
+        if (existingCustomer is null)
+        {
+            return ImportRowOutcome.Error;
+        }
+
+        customersToOverwrite.Add(new CustomerOverwritePair(existingCustomer, customer));
+        return ImportRowOutcome.OverwriteQueued;
+    }
+
+    private async Task PersistImport(
+        CustomerImportCommand command,
+        List<Customer> customersToCreate,
+        List<CustomerOverwritePair> customersToOverwrite,
+        CancellationToken ct)
+    {
+        if (command.DryRun || (customersToCreate.Count == 0 && customersToOverwrite.Count == 0))
+        {
+            return;
+        }
+
+        foreach (var customer in customersToCreate)
+        {
+            customerStore.Add(customer);
+        }
+
+        foreach (var pair in customersToOverwrite)
+        {
+            ApplyOverwrite(pair.ExistingCustomer, pair.IncomingCustomer);
+        }
+
+        await unitOfWork.SaveEntities(ct);
     }
 
     private static bool TryResolveConflict(

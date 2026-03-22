@@ -493,21 +493,22 @@ else
         StateHasChanged();
     }
 
-        public async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-            await DisposeRedirectCancellation();
+        await DisposeRedirectCancellation();
     }
 
     private async Task DisposeRedirectCancellation()
     {
-        if (_redirectCts is null)
+        var redirectCts = _redirectCts;
+        if (redirectCts is null)
         {
             return;
         }
 
-        await _redirectCts.CancelAsync();
-        _redirectCts.Dispose();
         _redirectCts = null;
+        await redirectCts.CancelAsync();
+        redirectCts.Dispose();
     }
 
     private void GoToDetails()
