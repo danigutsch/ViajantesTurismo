@@ -104,19 +104,18 @@ public static class RowToCustomerMapper
         var occupation = GetRequired(document, row, "Occupation", errors);
 
         DateTime birthDate = default;
-        if (!string.IsNullOrWhiteSpace(birthDateText))
+        if (!string.IsNullOrWhiteSpace(birthDateText)
+            && !DateTime.TryParseExact(
+                birthDateText,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out birthDate))
         {
-            if (DateTime.TryParse(birthDateText, provider: null, DateTimeStyles.AssumeUniversal, out birthDate))
-            {
-                birthDate = DateTime.SpecifyKind(birthDate, DateTimeKind.Utc);
-            }
-            else
-            {
-                errors.Add(Result.Invalid(
-                    detail: "BirthDate has invalid format.",
-                    field: "BirthDate",
-                    message: "BirthDate has invalid format."));
-            }
+            errors.Add(Result.Invalid(
+                detail: "BirthDate has invalid format.",
+                field: "BirthDate",
+                message: "BirthDate has invalid format."));
         }
 
         if (errors.HasErrors)
