@@ -270,7 +270,7 @@ public sealed class Booking : Entity<Guid>
             BookingStatus.Cancelled or BookingStatus.Completed => BookingErrors.InvalidStatusTransition(Status,
                 BookingStatus.Confirmed),
             BookingStatus.Pending => ConfirmInternal(),
-            _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
+            _ => throw new InvalidOperationException($"Invalid booking status: {Status}")
         };
 
         Result ConfirmInternal()
@@ -291,7 +291,7 @@ public sealed class Booking : Entity<Guid>
             BookingStatus.Cancelled => Result.Ok(),
             BookingStatus.Completed => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Cancelled),
             BookingStatus.Pending or BookingStatus.Confirmed => CancelInternal(),
-            _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
+            _ => throw new InvalidOperationException($"Invalid booking status: {Status}")
         };
 
         Result CancelInternal()
@@ -313,7 +313,7 @@ public sealed class Booking : Entity<Guid>
             BookingStatus.Cancelled => BookingErrors.InvalidStatusTransition(Status, BookingStatus.Completed),
             BookingStatus.Pending => BookingErrors.CannotCompleteWithoutConfirmation(),
             BookingStatus.Confirmed => CompleteInternal(),
-            _ => throw new ArgumentOutOfRangeException(nameof(Status), Status, $"Invalid booking status: {Status}")
+            _ => throw new InvalidOperationException($"Invalid booking status: {Status}")
         };
 
         Result CompleteInternal()

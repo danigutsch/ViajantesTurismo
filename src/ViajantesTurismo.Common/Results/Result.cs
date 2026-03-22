@@ -29,6 +29,11 @@ public readonly struct Result : IEquatable<Result>
     public bool IsFailure => !IsSuccess;
 
     /// <summary>
+    /// Gets a value indicating whether the result represents a not found error.
+    /// </summary>
+    public bool IsNotFound => Status == ResultStatus.NotFound;
+
+    /// <summary>
     /// Gets a value indicating whether the result represents a conflict.
     /// </summary>
     public bool IsConflict => Status == ResultStatus.Conflict;
@@ -257,6 +262,11 @@ public readonly struct Result<T> : IEquatable<Result<T>>
     [MemberNotNullWhen(false, nameof(Value))]
     [MemberNotNullWhen(false, nameof(_value))]
     public bool IsFailure => !IsSuccess;
+
+    /// <summary>
+    /// Gets a value indicating whether the result represents a not found error.
+    /// </summary>
+    public bool IsNotFound => Status == ResultStatus.NotFound;
 
     /// <summary>
     /// Gets a value indicating whether the result represents a conflict.

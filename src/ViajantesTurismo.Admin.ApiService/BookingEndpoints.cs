@@ -309,11 +309,17 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
-                : result.IsConflict
-                    ? result.ToConflict()
-                    : result.ToValidationProblem();
+            if (result.IsNotFound)
+            {
+                return result.ToNotFound();
+            }
+
+            if (result.IsConflict)
+            {
+                return result.ToConflict();
+            }
+
+            return result.ToValidationProblem();
         }
 
         var updatedBooking = await queryService.GetBookingById(id, ct);
