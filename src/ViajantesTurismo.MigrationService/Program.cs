@@ -14,4 +14,4 @@ builder.AddSeeding();
 builder.Services.AddHostedService<SeederWorker>();
 
 var host = builder.Build();
-host.Run();
+await host.RunAsync();

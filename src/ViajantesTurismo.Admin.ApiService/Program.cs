@@ -37,4 +37,4 @@ app.MapBookingEndpoints();
 
 app.MapDefaultEndpoints();
 
-app.Run();
+await app.RunAsync();
