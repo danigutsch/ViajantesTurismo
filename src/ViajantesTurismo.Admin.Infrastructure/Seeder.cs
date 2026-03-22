@@ -8,6 +8,14 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 
 internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
 {
+    private const string BreakfastService = "Breakfast";
+    private const string BrazilianNationality = "Brazilian";
+    private const string FemaleGender = "Female";
+    private const string HotelService = "Hotel";
+    private const string MaleGender = "Male";
+
+    private static DateTime UtcDate(int year, int month, int day) => new(year, month, day, 0, 0, 0, DateTimeKind.Utc);
+
     private static readonly Tour[] Tours =
     [
         Tour.Create(
@@ -22,7 +30,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             Currency.Real,
             6,
             15,
-            ["Hotel", "Breakfast", "City Tour"]
+            [HotelService, BreakfastService, "City Tour"]
         ).Value,
         Tour.Create(
             "HIST002",
@@ -36,7 +44,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             Currency.Euro,
             8,
             20,
-            ["Hotel", "Breakfast", "Museum Tickets"]
+            [HotelService, BreakfastService, "Museum Tickets"]
         ).Value,
         Tour.Create(
             "CULT001",
@@ -50,7 +58,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             Currency.UsDollar,
             4,
             12,
-            ["Hotel", "Breakfast", "Cultural Show"]
+            [HotelService, BreakfastService, "Cultural Show"]
         ).Value,
         Tour.Create(
             "NATR001",
@@ -64,7 +72,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             Currency.Real,
             5,
             18,
-            ["Hotel", "Breakfast", "Hiking Tour"]
+            [HotelService, BreakfastService, "Hiking Tour"]
         ).Value,
         Tour.Create(
             "FOWI003",
@@ -78,14 +86,14 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             Currency.Euro,
             6,
             16,
-            ["Hotel", "Breakfast", "Wine Tasting"]
+            [HotelService, BreakfastService, "Wine Tasting"]
         ).Value
     ];
 
     private static readonly Customer[] Customers =
     [
         new(
-            PersonalInfo.Create("Alice", "Smith", "Female", new DateTime(1990, 1, 1).ToUniversalTime(), "Brazilian", "Engineer", TimeProvider.System).Value,
+            PersonalInfo.Create("Alice", "Smith", FemaleGender, UtcDate(1990, 1, 1), BrazilianNationality, "Engineer", TimeProvider.System).Value,
             IdentificationInfo.Create("123456789", "Brazilian").Value,
             ContactInfo.Create("alice@example.com", "+5511999999999", "@alice", "alice.fb").Value,
             Address.Create("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "Brazil").Value,
@@ -95,7 +103,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Peanuts", null).Value
         ),
         new(
-            PersonalInfo.Create("Bob", "Johnson", "Male", new DateTime(1985, 5, 15).ToUniversalTime(), "American", "Teacher", TimeProvider.System).Value,
+            PersonalInfo.Create("Bob", "Johnson", MaleGender, UtcDate(1985, 5, 15), "American", "Teacher", TimeProvider.System).Value,
             IdentificationInfo.Create("987654321", "American").Value,
             ContactInfo.Create("bob@example.com", "+15551234567", null, "bob.johnson").Value,
             Address.Create("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "USA").Value,
@@ -105,7 +113,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Carla", "Santos", "Female", new DateTime(1995, 10, 20).ToUniversalTime(), "Portuguese", "Doctor", TimeProvider.System).Value,
+            PersonalInfo.Create("Carla", "Santos", FemaleGender, UtcDate(1995, 10, 20), "Portuguese", "Doctor", TimeProvider.System).Value,
             IdentificationInfo.Create("456789123", "Portuguese").Value,
             ContactInfo.Create("carla@example.com", "+351912345678", "@carla_santos", null).Value,
             Address.Create("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "Portugal").Value,
@@ -115,7 +123,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Shellfish", null).Value
         ),
         new(
-            PersonalInfo.Create("David", "Lee", "Male", new DateTime(1980, 3, 10).ToUniversalTime(), "Korean", "Chef", TimeProvider.System).Value,
+            PersonalInfo.Create("David", "Lee", MaleGender, UtcDate(1980, 3, 10), "Korean", "Chef", TimeProvider.System).Value,
             IdentificationInfo.Create("789123456", "Korean").Value,
             ContactInfo.Create("david@example.com", "+821012345678", null, "david.lee").Value,
             Address.Create("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea").Value,
@@ -125,7 +133,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Dairy", null).Value
         ),
         new(
-            PersonalInfo.Create("Elena", "Rodriguez", "Female", new DateTime(1992, 7, 5).ToUniversalTime(), "Spanish", "Artist", TimeProvider.System).Value,
+            PersonalInfo.Create("Elena", "Rodriguez", FemaleGender, UtcDate(1992, 7, 5), "Spanish", "Artist", TimeProvider.System).Value,
             IdentificationInfo.Create("321654987", "Spanish").Value,
             ContactInfo.Create("elena@example.com", "+34612345678", "@elena_art", null).Value,
             Address.Create("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "Spain").Value,
@@ -135,7 +143,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Pollen", null).Value
         ),
         new(
-            PersonalInfo.Create("Frank", "Muller", "Male", new DateTime(1975, 12, 25).ToUniversalTime(), "German", "Mechanic", TimeProvider.System).Value,
+            PersonalInfo.Create("Frank", "Muller", MaleGender, UtcDate(1975, 12, 25), "German", "Mechanic", TimeProvider.System).Value,
             IdentificationInfo.Create("654987321", "German").Value,
             ContactInfo.Create("frank@example.com", "+491512345678", null, "frank.muller").Value,
             Address.Create("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "Germany").Value,
@@ -145,7 +153,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Gina", "Patel", "Female", new DateTime(1988, 9, 30).ToUniversalTime(), "Indian", "Accountant", TimeProvider.System).Value,
+            PersonalInfo.Create("Gina", "Patel", FemaleGender, UtcDate(1988, 9, 30), "Indian", "Accountant", TimeProvider.System).Value,
             IdentificationInfo.Create("147258369", "Indian").Value,
             ContactInfo.Create("gina@example.com", "+919876543210", "@gina_patel", null).Value,
             Address.Create("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India").Value,
@@ -155,7 +163,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Nuts", null).Value
         ),
         new(
-            PersonalInfo.Create("Hans", "Nielsen", "Male", new DateTime(1998, 4, 14).ToUniversalTime(), "Danish", "Student", TimeProvider.System).Value,
+            PersonalInfo.Create("Hans", "Nielsen", MaleGender, UtcDate(1998, 4, 14), "Danish", "Student", TimeProvider.System).Value,
             IdentificationInfo.Create("963852741", "Danish").Value,
             ContactInfo.Create("hans@example.com", "+4520123456", null, "hans.nielsen").Value,
             Address.Create("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "Denmark").Value,
@@ -165,7 +173,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Gluten", null).Value
         ),
         new(
-            PersonalInfo.Create("Irina", "Petrov", "Female", new DateTime(1983, 11, 8).ToUniversalTime(), "Russian", "Scientist", TimeProvider.System).Value,
+            PersonalInfo.Create("Irina", "Petrov", FemaleGender, UtcDate(1983, 11, 8), "Russian", "Scientist", TimeProvider.System).Value,
             IdentificationInfo.Create("852741963", "Russian").Value,
             ContactInfo.Create("irina@example.com", "+79123456789", "@irina_petrov", null).Value,
             Address.Create("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "Russia").Value,
@@ -175,7 +183,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Jack", "Brown", "Male", new DateTime(1991, 6, 22).ToUniversalTime(), "Australian", "Photographer", TimeProvider.System).Value,
+            PersonalInfo.Create("Jack", "Brown", MaleGender, UtcDate(1991, 6, 22), "Australian", "Photographer", TimeProvider.System).Value,
             IdentificationInfo.Create("741963852", "Australian").Value,
             ContactInfo.Create("jack@example.com", "+61412345678", null, "jack.brown").Value,
             Address.Create("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia").Value,
@@ -185,7 +193,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Seafood", null).Value
         ),
         new(
-            PersonalInfo.Create("Karen", "Tanaka", "Female", new DateTime(1987, 2, 14).ToUniversalTime(), "Japanese", "Architect", TimeProvider.System).Value,
+            PersonalInfo.Create("Karen", "Tanaka", FemaleGender, UtcDate(1987, 2, 14), "Japanese", "Architect", TimeProvider.System).Value,
             IdentificationInfo.Create("159357486", "Japanese").Value,
             ContactInfo.Create("karen@example.com", "+81901234567", "@karen_tanaka", null).Value,
             Address.Create("Shibuya 1-2-3", null, "Shibuya-ku", "150-0002", "Tokyo", "Tokyo", "Japan").Value,
@@ -195,7 +203,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Leo", "Costa", "Male", new DateTime(1993, 8, 3).ToUniversalTime(), "Brazilian", "Software Developer", TimeProvider.System).Value,
+            PersonalInfo.Create("Leo", "Costa", MaleGender, UtcDate(1993, 8, 3), BrazilianNationality, "Software Developer", TimeProvider.System).Value,
             IdentificationInfo.Create("264835791", "Brazilian").Value,
             ContactInfo.Create("leo@example.com", "+5521999887766", null, "leo.costa").Value,
             Address.Create("Av. Paulista, 1000", "Sala 10", "Bela Vista", "01310-100", "São Paulo", "SP", "Brazil").Value,
@@ -205,7 +213,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Latex", null).Value
         ),
         new(
-            PersonalInfo.Create("Maria", "Gonzalez", "Female", new DateTime(1989, 12, 1).ToUniversalTime(), "Mexican", "Journalist", TimeProvider.System).Value,
+            PersonalInfo.Create("Maria", "Gonzalez", FemaleGender, UtcDate(1989, 12, 1), "Mexican", "Journalist", TimeProvider.System).Value,
             IdentificationInfo.Create("375924681", "Mexican").Value,
             ContactInfo.Create("maria@example.com", "+521234567890", "@maria_g", null).Value,
             Address.Create("Reforma 222", null, "Juárez", "06600", "Mexico City", "CDMX", "Mexico").Value,
@@ -215,7 +223,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create("Penicillin", null).Value
         ),
         new(
-            PersonalInfo.Create("Nora", "Eriksson", "Female", new DateTime(1996, 5, 18).ToUniversalTime(), "Swedish", "Nurse", TimeProvider.System).Value,
+            PersonalInfo.Create("Nora", "Eriksson", FemaleGender, UtcDate(1996, 5, 18), "Swedish", "Nurse", TimeProvider.System).Value,
             IdentificationInfo.Create("486135792", "Swedish").Value,
             ContactInfo.Create("nora@example.com", "+46701234567", null, "nora.eriksson").Value,
             Address.Create("Kungsgatan 44", null, "Norrmalm", "111 35", "Stockholm", "Stockholm", "Sweden").Value,
@@ -225,7 +233,7 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             MedicalInfo.Create(null, null).Value
         ),
         new(
-            PersonalInfo.Create("Oscar", "Fischer", "Male", new DateTime(1982, 9, 27).ToUniversalTime(), "Austrian", "Musician", TimeProvider.System).Value,
+            PersonalInfo.Create("Oscar", "Fischer", MaleGender, UtcDate(1982, 9, 27), "Austrian", "Musician", TimeProvider.System).Value,
             IdentificationInfo.Create("597246813", "Austrian").Value,
             ContactInfo.Create("oscar@example.com", "+43664123456", "@oscar_music", null).Value,
             Address.Create("Mariahilfer Straße, 88", null, "Mariahilf", "1060", "Vienna", "Vienna", "Austria").Value,
