@@ -28,4 +28,4 @@ builder.AddProject<ViajantesTurismo_Admin_Web>(ResourceNames.WebApp)
     .WithReference(apiService)
     .WaitFor(apiService);
 
-builder.Build().Run();
+await builder.Build().RunAsync();
