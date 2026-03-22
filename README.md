@@ -119,6 +119,8 @@ This script will:
 - ✅ Verify .NET SDK version (from `global.json`)
 - ✅ Restore .NET dependencies (`dotnet restore`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
+- ✅ Verify PowerShell availability for Playwright browser installation
+- ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
 - ✅ Install npm packages (markdownlint-cli, shellcheck, shfmt)
 - ✅ Install git pre-commit hook for automatic code quality checks
@@ -149,15 +151,34 @@ cd ViajantesTurismo
 dotnet restore
 dotnet tool restore
 
-# 4. Install Node.js dependencies (optional)
+# 4. Build once so the generated Playwright installer exists
+dotnet build ViajantesTurismo.slnx --no-restore
+
+# 5. Install Playwright browsers (requires pwsh on Linux/macOS)
+bash scripts/install-playwright.sh
+
+# 6. Install Node.js dependencies (optional)
 npm install
 
-# 5. Install PowerShell linting (optional, Windows only)
+# 7. Install PowerShell linting (optional, Windows only)
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
-# 6. Install git hooks (optional)
+# 8. Install git hooks (optional)
 .\scripts\install-git-hooks.ps1   # Windows (PowerShell)
 bash scripts/install-git-hooks.sh # Unix/Linux/macOS (Bash)
+```
+
+On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS
+trust may also require `SSL_CERT_DIR` to include `$HOME/.aspnet/dev-certs/trust`.
+The setup scripts check both conditions.
+
+On Linux distributions where `bash scripts/install-playwright.sh` skips
+`install --with-deps` (for example Ubuntu 25.10), browser download alone is not
+enough. Install the runtime libraries manually before running E2E tests:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y libnspr4 libnss3 libasound2t64
 ```
 
 See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
@@ -269,7 +290,7 @@ The CI commands map directly to local commands:
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
 dotnet build ViajantesTurismo.slnx --no-restore
-pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+bash scripts/install-playwright.sh
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-tests-with-coverage.sh

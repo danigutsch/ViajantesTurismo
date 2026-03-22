@@ -25,7 +25,8 @@ The CI workflow runs on every pull request targeting `main`, every push to `main
 5. `dotnet restore ViajantesTurismo.slnx` when build/test work is required
 6. `dotnet tool restore` when build/test work is required
 7. `dotnet build ViajantesTurismo.slnx --no-restore` when build/test work is required
-8. Install Playwright browsers and OS dependencies (`playwright.ps1 install --with-deps`, located dynamically via `find`) when build/test work is required
+8. Install Playwright browsers via `bash scripts/install-playwright.sh` when build/test work is required; on supported Ubuntu CI images it also installs
+ OS dependencies
 9. Trust HTTPS developer certificate and set `SSL_CERT_DIR` when build/test work is required
 10. Run `bash scripts/run-tests-with-coverage.sh` when build/test work is required;
   this helper runs the coverage-enabled test command, verifies Cobertura output exists,
@@ -147,7 +148,7 @@ All CI commands map directly to local developer commands.
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
 dotnet build ViajantesTurismo.slnx --no-restore
-pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+bash scripts/install-playwright.sh
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-tests-with-coverage.sh
@@ -166,7 +167,7 @@ export SONAR_ORGANIZATION="..."
 export SONAR_PROJECT_KEY="..."
 dotnet restore ViajantesTurismo.slnx
 dotnet tool restore
-pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+bash scripts/install-playwright.sh
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-sonar-analysis.sh

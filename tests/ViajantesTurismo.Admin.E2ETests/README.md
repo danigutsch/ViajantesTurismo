@@ -12,6 +12,24 @@ dotnet build
 pwsh bin/Debug/net10.0/playwright.ps1 install
 ```
 
+On supported Ubuntu versions in CI, the repository wrapper installs browser OS dependencies too:
+
+```bash
+bash scripts/install-playwright.sh
+```
+
+On unsupported Linux distributions such as Ubuntu 25.10, do not use
+`install --with-deps`; Playwright falls back to an older Ubuntu dependency set
+that may request unavailable packages.
+
+On those distributions, install the browser runtime packages manually before
+running the tests:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y libnspr4 libnss3 libasound2t64
+```
+
 ## Running
 
 ```powershell

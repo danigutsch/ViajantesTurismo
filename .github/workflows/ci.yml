@@ -60,7 +60,7 @@ jobs:
 
       - name: Install Playwright browsers
         id: install-playwright
-        run: pwsh $(find tests -name playwright.ps1 -path "*/bin/Debug/*" | head -1) install --with-deps
+        run: bash scripts/install-playwright.sh
 
       - name: Run tests
         id: run-tests

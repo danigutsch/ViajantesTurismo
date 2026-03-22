@@ -3,10 +3,18 @@
 set -e
 
 commit_message_file="$1"
+repo_root="$(git rev-parse --show-toplevel)"
+local_node_bin="${repo_root}/node_modules/.bin"
+export PATH="${local_node_bin}:${PATH}"
 
 if [[ -z "${commit_message_file}" ]]; then
     echo "commit-msg hook requires the commit message file path" >&2
     exit 1
 fi
 
-npx commitlint --edit "${commit_message_file}"
+if ! command -v commitlint > /dev/null 2>&1; then
+    echo "Required tool 'commitlint' was not found. Run 'npm install' and try again." >&2
+    exit 1
+fi
+
+commitlint --edit "${commit_message_file}"
