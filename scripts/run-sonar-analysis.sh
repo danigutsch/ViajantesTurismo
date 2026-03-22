@@ -60,7 +60,7 @@ if [[ -z "${playwright_script}" ]]; then
     exit 1
 fi
 
-pwsh "${playwright_script}" install --with-deps
+bash scripts/install-playwright.sh "${playwright_script}"
 
 bash scripts/collect-test-coverage.sh "${coverage_reports_file}"
 

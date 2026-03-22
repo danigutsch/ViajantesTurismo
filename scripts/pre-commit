@@ -3,6 +3,20 @@
 
 set -e
 
+REPO_ROOT=$(git rev-parse --show-toplevel)
+LOCAL_NODE_BIN="${REPO_ROOT}/node_modules/.bin"
+PATH="${LOCAL_NODE_BIN}:${PATH}"
+
+require_tool() {
+    if command -v "$1" > /dev/null 2>&1; then
+        return 0
+    fi
+
+    printf "%b" "${RED}✗ Required tool '$1' was not found.${NC}\n" >&2
+    printf "%b" "${YELLOW}Run 'npm install' in ${REPO_ROOT} and try the commit again.${NC}\n" >&2
+    exit 1
+}
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -14,9 +28,10 @@ echo "Checking markdown files..."
 CHANGED_MD_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)
 
 if test -n "${CHANGED_MD_FILES}"; then
+    require_tool markdownlint
     printf "%b" "${YELLOW}Auto-fixing markdown files...${NC}\n"
     for file in ${CHANGED_MD_FILES}; do
-        npx markdownlint-cli "${file}" --config .markdownlint.json --fix
+        markdownlint "${file}" --config .markdownlint.json --fix
         git add "${file}"
     done
     printf "%b" "${GREEN}✓ Markdown files auto-fixed and re-staged${NC}\n"
@@ -27,9 +42,10 @@ echo "Checking feature files..."
 CHANGED_FEATURE_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.feature$' || true)
 
 if test -n "${CHANGED_FEATURE_FILES}"; then
+    require_tool gherkin-lint
     printf "%b" "${YELLOW}Linting Gherkin feature files...${NC}\n"
     for file in ${CHANGED_FEATURE_FILES}; do
-        if ! npx gherkin-lint "${file}"; then
+        if ! gherkin-lint "${file}"; then
             printf "%b" "${RED}✗ Gherkin lint errors in ${file}${NC}\n"
             printf "%b" "${YELLOW}Fix errors manually and re-stage the file${NC}\n"
             exit 1
@@ -43,9 +59,10 @@ echo "Checking JSON files..."
 CHANGED_JSON_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.json$' || true)
 
 if test -n "${CHANGED_JSON_FILES}"; then
+    require_tool eslint
     printf "%b" "${YELLOW}Auto-fixing JSON files...${NC}\n"
     for file in ${CHANGED_JSON_FILES}; do
-        npx eslint "${file}" --fix
+        eslint "${file}" --fix
         git add "${file}"
     done
     printf "%b" "${GREEN}✓ JSON files auto-fixed and re-staged${NC}\n"
@@ -56,11 +73,12 @@ echo "Checking shell scripts..."
 CHANGED_SH_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(sh|bash)$|scripts/(pre-commit|post-commit|prepare-commit-msg)$' || true)
 
 if test -n "${CHANGED_SH_FILES}"; then
+    require_tool shellcheck
     printf "%b" "${YELLOW}Linting and formatting shell scripts...${NC}\n"
 
     # ShellCheck for linting (with .shellcheckrc config)
     for file in ${CHANGED_SH_FILES}; do
-        if ! npx shellcheck "${file}"; then
+        if ! shellcheck "${file}"; then
             printf "%b" "${RED}✗ ShellCheck errors in ${file}${NC}\n"
             exit 1
         fi
