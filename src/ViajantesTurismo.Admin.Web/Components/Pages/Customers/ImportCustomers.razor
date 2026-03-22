@@ -466,6 +466,10 @@
     private enum PageStep { FileSelection, HeaderMapping, Preview, DuplicateResolution }
     private enum ConflictFieldSource { Existing, Incoming }
     private sealed record ImportSummaryCounts(int CreatedCount, int UpdatedCount, int SkippedCount, int FailedCount);
+    private sealed record MixedConflictRow(
+        string[] Values,
+        Dictionary<string, ConflictFieldSource> FieldSelections,
+        Dictionary<string, string> ExistingValues);
 
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
     private const int MaxPreviewRows = 5;
@@ -869,51 +873,74 @@
         foreach (var line in lines.Skip(1))
         {
             var values = line.Split(',').Select(v => v.Trim().Trim('"')).ToArray();
-            if (emailIndex >= values.Length)
+            if (!TryGetMixedConflictRow(values, emailIndex, out var conflictRow))
             {
                 outputLines.Add(line);
                 continue;
             }
 
-            var email = values[emailIndex];
-            if (!_conflictDecisions.TryGetValue(email, out var decision) || !decision.Equals("mixed", StringComparison.OrdinalIgnoreCase))
-            {
-                outputLines.Add(line);
-                continue;
-            }
-
-            if (!_mixedFieldSelectionsByEmail.TryGetValue(email, out var fieldSelections)
-                || !_existingConflictValuesByEmail.TryGetValue(email, out var existingValues))
-            {
-                outputLines.Add(line);
-                continue;
-            }
-
-            var mergedValues = headers.Select((_, i) => i < values.Length ? values[i] : string.Empty).ToArray();
-            foreach (var (fieldName, source) in fieldSelections)
-            {
-                if (source != ConflictFieldSource.Existing)
-                {
-                    continue;
-                }
-
-                if (!headerIndexes.TryGetValue(fieldName, out var fieldIndex))
-                {
-                    continue;
-                }
-
-                if (!existingValues.TryGetValue(fieldName, out var existingValue))
-                {
-                    continue;
-                }
-
-                mergedValues[fieldIndex] = existingValue;
-            }
+            var mergedValues = BuildMergedValues(headers, headerIndexes, conflictRow);
 
             outputLines.Add(string.Join(",", mergedValues.Select(EscapeCsvValue)));
         }
 
         return Encoding.UTF8.GetBytes(string.Join("\n", outputLines));
+    }
+
+    private bool TryGetMixedConflictRow(string[] values, int emailIndex, out MixedConflictRow conflictRow)
+    {
+        conflictRow = null!;
+
+        if (emailIndex >= values.Length)
+        {
+            return false;
+        }
+
+        var email = values[emailIndex];
+        if (!_conflictDecisions.TryGetValue(email, out var decision)
+            || !decision.Equals("mixed", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!_mixedFieldSelectionsByEmail.TryGetValue(email, out var fieldSelections)
+            || !_existingConflictValuesByEmail.TryGetValue(email, out var existingValues))
+        {
+            return false;
+        }
+
+        conflictRow = new MixedConflictRow(values, fieldSelections, existingValues);
+        return true;
+    }
+
+    private static string[] BuildMergedValues(
+        IReadOnlyList<string> headers,
+        IReadOnlyDictionary<string, int> headerIndexes,
+        MixedConflictRow conflictRow)
+    {
+        var mergedValues = headers.Select((_, i) => i < conflictRow.Values.Length ? conflictRow.Values[i] : string.Empty).ToArray();
+
+        foreach (var (fieldName, source) in conflictRow.FieldSelections)
+        {
+            if (source != ConflictFieldSource.Existing)
+            {
+                continue;
+            }
+
+            if (!headerIndexes.TryGetValue(fieldName, out var fieldIndex))
+            {
+                continue;
+            }
+
+            if (!conflictRow.ExistingValues.TryGetValue(fieldName, out var existingValue))
+            {
+                continue;
+            }
+
+            mergedValues[fieldIndex] = existingValue;
+        }
+
+        return mergedValues;
     }
 
     private static string EscapeCsvValue(string value)
