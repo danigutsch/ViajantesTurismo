@@ -6,14 +6,18 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("I am authenticated as a tour operator")]
     public static void GivenIAmAuthenticatedAsATourOperator()
     {
+        Assert.True(true);
     }
 
     [Given("a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
         tourContext.Tour = EntityBuilders.BuildTour();
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None));
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
@@ -23,8 +27,11 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenAConfirmedBookingExists()
     {
         tourContext.Tour = EntityBuilders.BuildTour();
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None));
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -35,8 +42,11 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenACancelledBookingExists()
     {
         tourContext.Tour = EntityBuilders.BuildTour();
-        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, null);
+        var addResult = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None));
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
@@ -48,8 +58,11 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void GivenACompletedBookingExists()
     {
         tourContext.Tour = EntityBuilders.BuildTour();
-        var addResult = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, null);
+        var addResult = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None));
         Assert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
@@ -173,8 +186,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Then("the operation should fail")]
     public void ThenTheOperationShouldFail()
     {
-        Assert.NotNull(bookingContext.BookingOperationResult);
-        Assert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
+        ThenTheRemovalShouldFail();
     }
 
     [Then("the booking should be removed successfully")]

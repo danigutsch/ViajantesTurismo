@@ -10,7 +10,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Given(@"^a tour exists with identifier ""([^""]+)""$")]
     public void GivenATourExistsWithIdentifier(string identifier)
     {
-        var tour = Tour.Create(
+        var tour = Tour.Create(new TourDefinition(
             identifier,
             "Existing Tour",
             DateTime.UtcNow.AddMonths(1),
@@ -22,7 +22,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             Currency.UsDollar,
             4,
             12,
-            ["Accommodation", "Meals"]).Value;
+            ["Accommodation", "Meals"])).Value;
 
         tourContext.TourStore.AddExistingTour(tour);
     }
@@ -48,7 +48,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
         tourContext.CommandResult = result;
     }
 
-    [Then(@"I should be informed that the tour identifier must be unique")]
+    [Then("I should be informed that the tour identifier must be unique")]
     public void ThenIShouldBeInformedThatTheTourIdentifierMustBeUnique()
     {
         Assert.NotNull(tourContext.CommandResult);
@@ -79,19 +79,19 @@ public sealed class TourManagementSteps(TourContext tourContext)
     public void GivenAnExistingTourWithServices(string servicesString)
     {
         var services = servicesString.Split(", ");
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            basePrice: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: services).Value;
+        tourContext.Tour = Tour.Create(new TourDefinition(
+            "TEST2024",
+            "Test Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            2000.00m,
+            500.00m,
+            100.00m,
+            200.00m,
+            Currency.UsDollar,
+            4,
+            12,
+            services)).Value;
     }
 
     [Given(@"I have tour details with identifier ""(.*)"" and name ""(.*)""")]
@@ -198,7 +198,9 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [When("I create the tour")]
     public void WhenICreateTheTour()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(startDate: tourContext.StartDate, endDate: tourContext.EndDate);
+        tourContext.Tour = EntityBuilders.BuildTour(
+            startDate: tourContext.StartDate,
+            endDate: tourContext.EndDate);
     }
 
     [When("I try to create the tour")]
@@ -209,19 +211,19 @@ public sealed class TourManagementSteps(TourContext tourContext)
             ? tourContext.IncludedServices
             : ["Hotel", "Breakfast"];
 
-        var result = Tour.Create(
-            identifier: tourContext.Identifier,
-            name: tourContext.Name,
-            startDate: tourContext.StartDate,
-            endDate: tourContext.EndDate,
-            basePrice: tourContext.BasePrice,
-            singleRoomSupplementPrice: tourContext.SingleRoomSupplementPrice,
-            regularBikePrice: tourContext.RegularBikePrice,
-            eBikePrice: tourContext.EBikePrice,
-            currency: Currency.UsDollar,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: services);
+        var result = Tour.Create(new TourDefinition(
+            tourContext.Identifier,
+            tourContext.Name,
+            tourContext.StartDate,
+            tourContext.EndDate,
+            tourContext.BasePrice,
+            tourContext.SingleRoomSupplementPrice,
+            tourContext.RegularBikePrice,
+            tourContext.EBikePrice,
+            Currency.UsDollar,
+            4,
+            12,
+            [.. services]));
 
         tourContext.CreationResult = result;
 

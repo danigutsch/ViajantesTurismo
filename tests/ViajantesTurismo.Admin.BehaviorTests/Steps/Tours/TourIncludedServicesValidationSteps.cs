@@ -22,19 +22,19 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
         var eBikePrice = decimal.Parse(data["EBikePrice"], CultureInfo.InvariantCulture);
         var currency = ParseCurrency(data["Currency"]);
 
-        tourContext.Tour = Tour.Create(
-            identifier: data["Identifier"],
-            name: data["Name"],
-            startDate: startDate,
-            endDate: endDate,
-            basePrice: price,
-            singleRoomSupplementPrice: singleRoomSupplementPrice,
-            regularBikePrice: regularBikePrice,
-            eBikePrice: eBikePrice,
-            currency: currency,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: DefaultService).Value;
+        tourContext.Tour = Tour.Create(new TourDefinition(
+            data["Identifier"],
+            data["Name"],
+            startDate,
+            endDate,
+            price,
+            singleRoomSupplementPrice,
+            regularBikePrice,
+            eBikePrice,
+            currency,
+            4,
+            12,
+            DefaultService)).Value;
     }
 
     [When("I update the tour's included services with:")]

@@ -10,19 +10,19 @@ public sealed class EntityIdGenerationTests
     public void Tour_Create_Should_Generate_UuidV7_Id()
     {
         // Act
-        var result = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            basePrice: 2000m,
-            singleRoomSupplementPrice: 500m,
-            regularBikePrice: 100m,
-            eBikePrice: 200m,
-            currency: Currency.UsDollar,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: ["Hotel", "Breakfast"]);
+        var result = Tour.Create(new TourDefinition(
+            "TEST2024",
+            "Test Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            2000m,
+            500m,
+            100m,
+            200m,
+            Currency.UsDollar,
+            4,
+            12,
+            ["Hotel", "Breakfast"]));
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -50,8 +50,7 @@ public sealed class EntityIdGenerationTests
         var result = Booking.Create(
             tourId: Guid.CreateVersion7(),
             basePrice: 2000m,
-            roomType: RoomType.DoubleOccupancy,
-            roomAdditionalCost: 0m,
+            room: new BookingRoom(RoomType.DoubleOccupancy, 0m),
             principalCustomer: principalResult.Value,
             companionCustomer: null,
             discount: discountResult.Value,

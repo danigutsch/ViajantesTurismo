@@ -8,27 +8,33 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [Given(@"a tour exists with identifier ""(.*)"" and has (\d+) booking")]
     public void GivenATourExistsWithIdentifierAndHasBooking(string identifier, int bookingCount)
     {
-        tourContext.Tour = EntityBuilders.BuildTour(identifier: identifier);
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Identifier: identifier));
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
         for (var i = 0; i < bookingCount; i++)
         {
-            tourContext.Tour.AddBooking(
-                Guid.CreateVersion7(), BikeType.Regular, null, null,
-                RoomType.DoubleOccupancy, DiscountType.None, 0m, null, null);
+            tourContext.Tour.AddBooking(new TourBookingRequest(
+                Guid.CreateVersion7(),
+                BikeType.Regular,
+                RoomType.DoubleOccupancy,
+                DiscountType.None));
         }
     }
 
     [Given(@"a tour exists with identifier ""(.*)"" and name ""(.*)""")]
     public void GivenATourExistsWithIdentifierAndName(string identifier, string name)
     {
-        tourContext.Tour = EntityBuilders.BuildTour(identifier: identifier, name: name);
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(
+            Identifier: identifier,
+            Name: name));
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
     }
 
     [Given(@"another tour exists with identifier ""(.*)""")]
     public void GivenAnotherTourExistsWithIdentifier(string identifier)
     {
-        var anotherTour = EntityBuilders.BuildTour(identifier: identifier, name: "Another Tour");
+        var anotherTour = EntityBuilders.BuildTour(new TourOptions(
+            Identifier: identifier,
+            Name: "Another Tour"));
         tourContext.TourStore.AddExistingTour(anotherTour);
     }
 
@@ -56,22 +62,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [When(@"I update the tour details to identifier ""(.*)"" and name ""(.*)""")]
     public async Task WhenIUpdateTheTourDetailsToIdentifierAndName(string identifier, string name)
     {
-        var command = new UpdateTourCommand(
-            tourContext.Tour.Id,
-            identifier,
-            name,
-            tourContext.Tour.Schedule.StartDate,
-            tourContext.Tour.Schedule.EndDate,
-            tourContext.Tour.Pricing.BasePrice,
-            tourContext.Tour.Pricing.SingleRoomSupplementPrice,
-            tourContext.Tour.Pricing.RegularBikePrice,
-            tourContext.Tour.Pricing.EBikePrice,
-            tourContext.Tour.Pricing.Currency,
-            [.. tourContext.Tour.IncludedServices],
-            tourContext.Tour.Capacity.MinCustomers,
-            tourContext.Tour.Capacity.MaxCustomers);
-
-        tourContext.UpdateResult = await tourContext.UpdateTourCommandHandler.Handle(command, CancellationToken.None);
+        await WhenITryToUpdateTheTourDetailsToIdentifierAndName(identifier, name);
     }
 
     [When(@"I update the tour details to identifier with (.*) characters and name ""(.*)""")]

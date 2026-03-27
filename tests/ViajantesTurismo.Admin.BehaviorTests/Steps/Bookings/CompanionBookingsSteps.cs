@@ -6,112 +6,84 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     [Given("a principal customer exists")]
     public static void GivenAPrincipalCustomerExists()
     {
+        Assert.True(true);
     }
 
     [Given("a companion customer exists")]
     public static void GivenACompanionCustomerExists()
     {
+        Assert.True(true);
     }
 
     [When(
         @"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on regular bike in double room")]
-    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnRegularBikeInDoubleRoom(
-        int principalId, int companionId)
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnRegularBikeInDoubleRoom(int principalId, int companionId)
     {
         var principalGuid = Guid.CreateVersion7();
         var companionGuid = principalId == companionId ? principalGuid : Guid.CreateVersion7();
 
-        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(
+        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             principalGuid,
             BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None,
             companionGuid,
+            BikeType.Regular));
+    }
+
+    [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on e-bike in double room")]
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId, int companionId)
+    {
+        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            0m,
-            null,
-            null);
+            Guid.CreateVersion7(),
+            BikeType.EBike));
     }
 
-    [When(
-        @"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on e-bike in double room")]
-    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnEBikeInDoubleRoom(
-        int principalId, int companionId)
+    [When(@"I add a booking with principal customer (\d+) on e-bike and companion customer (\d+) on e-bike in double room")]
+    public void WhenIAddABookingWithPrincipalCustomerDOnEBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId, int companionId)
     {
-        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(
-            Guid.CreateVersion7(),
-            BikeType.Regular,
+        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.EBike,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            0m,
-            null,
-            null);
-    }
-
-    [When(
-        @"I add a booking with principal customer (\d+) on e-bike and companion customer (\d+) on e-bike in double room")]
-    public void WhenIAddABookingWithPrincipalCustomerDOnEBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId,
-        int companionId)
-    {
-        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(
             Guid.CreateVersion7(),
-            BikeType.EBike,
-            Guid.CreateVersion7(),
-            BikeType.EBike,
-            RoomType.DoubleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+            BikeType.EBike));
     }
 
     [When(@"I add a booking with principal customer (\d+) on regular bike without companion in single room")]
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeWithoutCompanionInSingleRoom(int principalId)
     {
-        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(
+        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.SingleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+            DiscountType.None));
     }
 
-    [When(
-        @"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) with no bike type in double room")]
-    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDWithNoBikeTypeInDoubleRoom(
-        int principalId, int companionId)
+    [When(@"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) with no bike type in double room")]
+    public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDWithNoBikeTypeInDoubleRoom(int principalId, int companionId)
     {
-        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(
+        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            Guid.CreateVersion7(),
-            null,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            0m,
-            null,
-            null);
+            Guid.CreateVersion7()));
     }
 
     [When(@"I add a booking with principal customer (\d+) with no bike type without companion in single room")]
     public void WhenIAddABookingWithPrincipalCustomerDWithNoBikeTypeWithoutCompanionInSingleRoom(int principalId)
     {
-        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(
+        bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.None,
-            null,
-            null,
             RoomType.SingleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+            DiscountType.None));
     }
 
     [Then("the booking should have a companion customer")]

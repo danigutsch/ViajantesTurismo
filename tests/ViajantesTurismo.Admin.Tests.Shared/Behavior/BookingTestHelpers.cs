@@ -23,43 +23,48 @@ public static class BookingTestHelpers
         string? notes = null,
         string? specialRequests = null)
     {
-        return tour.AddBooking(
+        return tour.AddBooking(new TourBookingRequest(
             customerId ?? Guid.CreateVersion7(),
             bikeType,
-            null,
-            null,
             roomType,
             discountType,
-            discountPercentage,
-            notes,
-            specialRequests);
+            discountAmount: discountPercentage,
+            discountReason: notes,
+            notes: specialRequests));
+    }
+
+    /// <summary>
+    /// Creates a single-customer booking with default values.
+    /// </summary>
+    public static Result<Booking> AddSingleCustomerBooking(Tour tour, SingleBookingOptions? options)
+    {
+        options ??= new SingleBookingOptions();
+        var discount = options.Discount ?? BookingDiscountDefinition.None;
+
+        return tour.AddBooking(TourBookingRequest.CreateSingle(
+            options.CustomerId ?? Guid.CreateVersion7(),
+            options.BikeType,
+            options.RoomType,
+            discount,
+            options.SpecialRequests));
     }
 
     /// <summary>
     /// Creates a double-customer booking (principal + companion) with default values.
     /// </summary>
-    public static Result<Booking> AddDoubleCustomerBooking(
-        Tour tour,
-        Guid? principalCustomerId = null,
-        Guid? companionCustomerId = null,
-        BikeType principalBikeType = BikeType.Regular,
-        BikeType companionBikeType = BikeType.Regular,
-        RoomType roomType = RoomType.DoubleOccupancy,
-        DiscountType discountType = DiscountType.None,
-        decimal discountPercentage = 0m,
-        string? notes = null,
-        string? specialRequests = null)
+    public static Result<Booking> AddDoubleCustomerBooking(Tour tour, DoubleBookingOptions? options)
     {
-        return tour.AddBooking(
-            principalCustomerId ?? Guid.CreateVersion7(),
-            principalBikeType,
-            companionCustomerId ?? Guid.CreateVersion7(),
-            companionBikeType,
-            roomType,
-            discountType,
-            discountPercentage,
-            notes,
-            specialRequests);
+        options ??= new DoubleBookingOptions();
+        var discount = options.Discount ?? BookingDiscountDefinition.None;
+
+        return tour.AddBooking(TourBookingRequest.CreateDouble(
+            options.PrincipalCustomerId ?? Guid.CreateVersion7(),
+            options.PrincipalBikeType,
+            options.CompanionCustomerId ?? Guid.CreateVersion7(),
+            options.CompanionBikeType,
+            options.RoomType,
+            discount,
+            options.SpecialRequests));
     }
 
     /// <summary>
@@ -72,10 +77,12 @@ public static class BookingTestHelpers
 
         for (var i = 0; i < count; i++)
         {
-            var customer = EntityBuilders.BuildCustomer(firstName: $"{namePrefix}{i}", lastName: $"Test{i}");
+            var customer = EntityBuilders.BuildCustomer(new CustomerOptions(
+                FirstName: $"{namePrefix}{i}",
+                LastName: $"Test{i}"));
             customers.Add(customer);
 
-            var bookingResult = AddSingleCustomerBooking(tour, customer.Id);
+            var bookingResult = AddSingleCustomerBooking(tour, new SingleBookingOptions(CustomerId: customer.Id));
             if (bookingResult.IsSuccess)
             {
                 bookingResult.Value.Confirm();
@@ -99,12 +106,18 @@ public static class BookingTestHelpers
 
         for (var i = 0; i < count; i++)
         {
-            var principal = EntityBuilders.BuildCustomer(firstName: $"{principalPrefix}{i}", lastName: $"Test{i}");
-            var companion = EntityBuilders.BuildCustomer(firstName: $"{companionPrefix}{i}", lastName: $"Test{i}");
+            var principal = EntityBuilders.BuildCustomer(new CustomerOptions(
+                FirstName: $"{principalPrefix}{i}",
+                LastName: $"Test{i}"));
+            var companion = EntityBuilders.BuildCustomer(new CustomerOptions(
+                FirstName: $"{companionPrefix}{i}",
+                LastName: $"Test{i}"));
             customers.Add(principal);
             customers.Add(companion);
 
-            var bookingResult = AddDoubleCustomerBooking(tour, principal.Id, companion.Id);
+            var bookingResult = AddDoubleCustomerBooking(tour, new DoubleBookingOptions(
+                PrincipalCustomerId: principal.Id,
+                CompanionCustomerId: companion.Id));
             if (bookingResult.IsSuccess)
             {
                 bookingResult.Value.Confirm();
@@ -123,10 +136,12 @@ public static class BookingTestHelpers
 
         for (var i = 0; i < count; i++)
         {
-            var customer = EntityBuilders.BuildCustomer(firstName: $"{namePrefix}{i}", lastName: $"Test{i}");
+            var customer = EntityBuilders.BuildCustomer(new CustomerOptions(
+                FirstName: $"{namePrefix}{i}",
+                LastName: $"Test{i}"));
             customers.Add(customer);
 
-            AddSingleCustomerBooking(tour, customer.Id);
+            AddSingleCustomerBooking(tour, new SingleBookingOptions(CustomerId: customer.Id));
             // Bookings are pending by default, no need to confirm
         }
 
@@ -142,10 +157,12 @@ public static class BookingTestHelpers
 
         for (var i = 0; i < count; i++)
         {
-            var customer = EntityBuilders.BuildCustomer(firstName: $"{namePrefix}{i}", lastName: $"Test{i}");
+            var customer = EntityBuilders.BuildCustomer(new CustomerOptions(
+                FirstName: $"{namePrefix}{i}",
+                LastName: $"Test{i}"));
             customers.Add(customer);
 
-            var bookingResult = AddSingleCustomerBooking(tour, customer.Id);
+            var bookingResult = AddSingleCustomerBooking(tour, new SingleBookingOptions(CustomerId: customer.Id));
             if (bookingResult.IsSuccess)
             {
                 bookingResult.Value.Cancel();

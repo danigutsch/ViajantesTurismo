@@ -3,15 +3,23 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 [Binding]
 public sealed class TourUpdateCurrencySteps(TourContext tourContext)
 {
+    private void UpdateCurrency(string currencyCode)
+    {
+        var currency = EntityBuilders.ParseCurrency(currencyCode);
+        tourContext.UpdateResult = tourContext.Tour.UpdateCurrency(currency);
+    }
+
     [Given(@"a tour exists with currency ""(.*)"" and has (\d+) booking")]
     public void GivenATourExistsWithCurrencyAndHasBooking(string currencyCode, int bookingCount)
     {
         GivenATourExistsWithCurrency(currencyCode);
         for (var i = 0; i < bookingCount; i++)
         {
-            tourContext.Tour.AddBooking(
-                Guid.CreateVersion7(), BikeType.Regular, null, null,
-                RoomType.DoubleOccupancy, DiscountType.None, 0m, null, null);
+            tourContext.Tour.AddBooking(new TourBookingRequest(
+                Guid.CreateVersion7(),
+                BikeType.Regular,
+                RoomType.DoubleOccupancy,
+                DiscountType.None));
         }
     }
 
@@ -19,26 +27,25 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     public void GivenATourExistsWithCurrency(string currencyCode)
     {
         var currency = EntityBuilders.ParseCurrency(currencyCode);
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            basePrice: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: currency,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: ["Hotel", "Breakfast"]).Value;
+        tourContext.Tour = Tour.Create(new TourDefinition(
+            "TEST2024",
+            "Test Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            2000.00m,
+            500.00m,
+            100.00m,
+            200.00m,
+            currency,
+            4,
+            12,
+            ["Hotel", "Breakfast"])).Value;
     }
 
     [When(@"I update the currency to ""(.*)""")]
     public void WhenIUpdateTheCurrencyTo(string currencyCode)
     {
-        var currency = EntityBuilders.ParseCurrency(currencyCode);
-        tourContext.UpdateResult = tourContext.Tour.UpdateCurrency(currency);
+        UpdateCurrency(currencyCode);
     }
 
     [Then(@"the tour should have currency ""(.*)""")]
@@ -51,8 +58,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     [When(@"I try to update the currency to ""(.*)""")]
     public void WhenITryToUpdateTheCurrencyTo(string currencyCode)
     {
-        var currency = EntityBuilders.ParseCurrency(currencyCode);
-        tourContext.UpdateResult = tourContext.Tour.UpdateCurrency(currency);
+        UpdateCurrency(currencyCode);
     }
 
     [Then("the currency update should fail")]

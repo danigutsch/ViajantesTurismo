@@ -9,52 +9,42 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Given(@"a tour exists with base price (\d+), single room supplement (\d+), regular bike price (\d+), and e-bike price (\d+)")]
     public void GivenATourExistsWithPricing(decimal basePrice, decimal singleRoomSupplement, decimal regularBikePrice, decimal eBikePrice)
     {
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            basePrice: basePrice,
-            singleRoomSupplementPrice: singleRoomSupplement,
-            regularBikePrice: regularBikePrice,
-            eBikePrice: eBikePrice,
-            currency: Currency.UsDollar,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: ["Hotel", "Breakfast"]).Value;
+        tourContext.Tour = Tour.Create(new TourDefinition(
+            "TEST2024",
+            "Test Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice,
+            singleRoomSupplement,
+            regularBikePrice,
+            eBikePrice,
+            Currency.UsDollar,
+            4,
+            12,
+            ["Hotel", "Breakfast"])).Value;
     }
 
     [When(@"I create a booking with principal customer (\d+), regular bike, single room, and no discount")]
     public void WhenICreateABookingWithNoDiscount(int principalCustomerId)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+            DiscountType.None));
 
         bookingContext.BookingCreationResult = result;
     }
 
-    [When(
-        @"I create a booking with principal customer (\d+), regular bike, single room, and (\d+(?:\.\d+)?)% discount")]
+    [When(@"I create a booking with principal customer (\d+), regular bike, single room, and (\d+(?:\.\d+)?)% discount")]
     public void WhenICreateABookingWithPercentageDiscount(int principalCustomerId, decimal discountPercentage)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
-            discountPercentage,
-            null,
-            null);
+            discountAmount: discountPercentage));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -62,54 +52,41 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [When(@"I create a booking with principal customer (\d+), regular bike, double room, and (\d+) absolute discount")]
     public void WhenICreateABookingWithAbsoluteDiscount(int principalCustomerId, decimal discountAmount)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.SingleOccupancy,
             DiscountType.Absolute,
-            discountAmount,
-            null,
-            null);
+            discountAmount: discountAmount));
 
         bookingContext.BookingCreationResult = result;
     }
 
-    [When(
-        @"I create a booking with principal customer (\d+), regular bike, single room, (\d+)% discount, and reason ""(.*)""")]
-    public void WhenICreateABookingWithDiscountAndReason(int principalCustomerId, decimal discountPercentage,
-        string reason)
+    [When(@"I create a booking with principal customer (\d+), regular bike, single room, (\d+)% discount, and reason ""(.*)""")]
+    public void WhenICreateABookingWithDiscountAndReason(int principalCustomerId, decimal discountPercentage, string reason)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
-            discountPercentage,
-            reason,
-            null);
+            discountAmount: discountPercentage,
+            discountReason: reason));
 
         bookingContext.BookingCreationResult = result;
     }
 
-    [When(
-        @"I create a booking with principal customer (\d+) regular bike, companion customer (\d+) e-bike, double room, and (\d+)% discount")]
-    public void WhenICreateABookingWithCompanionAndDiscount(int principalCustomerId, int companionCustomerId,
-        decimal discountPercentage)
+    [When(@"I create a booking with principal customer (\d+) regular bike, companion customer (\d+) e-bike, double room, and (\d+)% discount")]
+    public void WhenICreateABookingWithCompanionAndDiscount(int principalCustomerId, int companionCustomerId, decimal discountPercentage)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.Percentage,
             Guid.CreateVersion7(),
             BikeType.EBike,
-            RoomType.DoubleOccupancy,
-            DiscountType.Percentage,
-            discountPercentage,
-            null,
-            null);
+            discountPercentage));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -118,16 +95,12 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [When(@"I create a booking with principal customer (\d+), regular bike, single room, and -(\d+)% discount")]
     public void WhenICreateABookingWithNegativeDiscount(int principalCustomerId, decimal discountPercentage)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
-            -discountPercentage,
-            null,
-            null);
+            discountAmount: -discountPercentage));
 
         bookingContext.BookingCreationResult = result;
     }
@@ -135,40 +108,32 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [When(@"I create a booking with principal customer (\d+), regular bike, single room, and (\d+) absolute discount")]
     public void WhenICreateABookingWithInvalidAbsoluteDiscount(int principalCustomerId, decimal discountAmount)
     {
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
             DiscountType.Absolute,
-            discountAmount,
-            null,
-            null);
+            discountAmount: discountAmount));
 
         bookingContext.BookingCreationResult = result;
     }
 
 
-    [When(
-        @"I create a booking with base price (\d+), room cost (\d+), principal bike (\d+), companion bike (\d+), and (\d+)% discount")]
-    public void WhenICreateABookingWithSpecificPricing(decimal basePrice, decimal roomCost, decimal bike1,
-        decimal bike2, decimal discount)
+    [When(@"I create a booking with base price (\d+), room cost (\d+), principal bike (\d+), companion bike (\d+), and (\d+)% discount")]
+    public void WhenICreateABookingWithSpecificPricing(decimal basePrice, decimal roomCost, decimal bike1, decimal bike2, decimal discount)
     {
         const RoomType roomType = RoomType.DoubleOccupancy;
         var companionId = bike2 > 0 ? (Guid?)Guid.CreateVersion7() : null;
         var companionBikeType = bike2 > 0 ? (BikeType?)BikeType.EBike : null;
 
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
-            companionId,
-            companionBikeType,
             roomType,
             DiscountType.Percentage,
-            discount,
-            null,
-            null);
+            companionId,
+            companionBikeType,
+            discount));
 
         bookingContext.BookingCreationResult = result;
     }

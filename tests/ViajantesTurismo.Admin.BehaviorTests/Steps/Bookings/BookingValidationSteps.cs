@@ -6,11 +6,73 @@ public sealed class BookingValidationSteps(
     TourContext tourContext,
     CustomerContext customerContext)
 {
+    private static Result<Booking> CreateBookingWithBasePrice(decimal basePrice)
+    {
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        return Booking.Create(
+            Guid.CreateVersion7(),
+            basePrice,
+            new BookingRoom(RoomType.SingleOccupancy, 0m),
+            principal,
+            null,
+            Discount.Create(DiscountType.None, 0m, null).Value,
+            null);
+    }
+
+    private static Result<Booking> CreateBookingWithRoomCost(decimal basePrice, decimal roomCost)
+    {
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        return Booking.Create(
+            Guid.CreateVersion7(),
+            basePrice,
+            new BookingRoom(RoomType.DoubleOccupancy, roomCost),
+            principal,
+            null,
+            Discount.Create(DiscountType.None, 0m, null).Value,
+            null);
+    }
+
+    private static Result<Booking> CreateBookingWithInvalidRoomType(int invalidRoomType)
+    {
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        return Booking.Create(
+            Guid.CreateVersion7(),
+            2000m,
+            new BookingRoom((RoomType)invalidRoomType, 0m),
+            principal,
+            null,
+            Discount.Create(DiscountType.None, 0m, null).Value,
+            null);
+    }
+
+    private static Result<Booking> CreateBookingWithNotes(int characterCount)
+    {
+        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
+        var notes = new string('x', characterCount);
+        return Booking.Create(
+            Guid.CreateVersion7(),
+            1000m,
+            new BookingRoom(RoomType.SingleOccupancy, 0m),
+            principal,
+            null,
+            Discount.Create(DiscountType.None, 0m, null).Value,
+            notes);
+    }
+
+    private void AssertBookingCreationFailed()
+    {
+        Assert.NotNull(bookingContext.BookingCreationResult);
+        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+    }
+
     [When("I try to add a booking to tour with invalid room type (.*)")]
     public void WhenITryToAddABookingToTourWithInvalidRoomType(int invalidRoomType)
     {
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, (RoomType)invalidRoomType,
-            DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            (RoomType)invalidRoomType,
+            DiscountType.None));
         bookingContext.BookingCreationResult = result;
     }
 
@@ -149,38 +211,25 @@ public sealed class BookingValidationSteps(
     [When(@"I attempt to create a booking with base price (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithBasePrice(decimal basePrice)
     {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.SingleOccupancy, 0m, principal, null,
-            Discount.Create(DiscountType.None, 0m, null).Value, null);
-        bookingContext.BookingCreationResult = result;
+        bookingContext.BookingCreationResult = CreateBookingWithBasePrice(basePrice);
     }
 
     [When(@"I attempt to create a booking with base price (-?\d+) and room cost (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var result = Booking.Create(Guid.CreateVersion7(), basePrice, RoomType.DoubleOccupancy, roomCost, principal, null,
-            Discount.Create(DiscountType.None, 0m, null).Value, null);
-        bookingContext.BookingCreationResult = result;
+        bookingContext.BookingCreationResult = CreateBookingWithRoomCost(basePrice, roomCost);
     }
 
     [When(@"I attempt to create a booking with invalid room type (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithInvalidRoomType(int invalidRoomType)
     {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var result = Booking.Create(Guid.CreateVersion7(), 2000m, (RoomType)invalidRoomType, 0m, principal, null,
-            Discount.Create(DiscountType.None, 0m, null).Value, null);
-        bookingContext.BookingCreationResult = result;
+        bookingContext.BookingCreationResult = CreateBookingWithInvalidRoomType(invalidRoomType);
     }
 
     [When(@"I attempt to create a booking with notes of (\d+) characters")]
     public void WhenIAttemptToCreateABookingWithNotesOfCharacters(int characterCount)
     {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var notes = new string('x', characterCount);
-        var result = Booking.Create(Guid.CreateVersion7(), 1000m, RoomType.SingleOccupancy, 0m, principal, null,
-            Discount.Create(DiscountType.None, 0m, null).Value, notes);
-        bookingContext.BookingCreationResult = result;
+        bookingContext.BookingCreationResult = CreateBookingWithNotes(characterCount);
     }
 
     [Then("I should be informed that the room type is invalid")]
@@ -195,28 +244,24 @@ public sealed class BookingValidationSteps(
     [Then("I should be informed that the cost exceeds our maximum rate")]
     public void ThenIShouldBeInformedThatTheCostExceedsOurMaximumRate()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        AssertBookingCreationFailed();
     }
 
     [Then("I should be informed that the base price must be positive")]
     public void ThenIShouldBeInformedThatTheBasePriceMustBePositive()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        AssertBookingCreationFailed();
     }
 
     [Then("I should be informed that room costs must be non-negative")]
     public void ThenIShouldBeInformedThatRoomCostsMustBeNonNegative()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        AssertBookingCreationFailed();
     }
 
     [Then("I should not be able to create the booking")]
     public void ThenIShouldNotBeAbleToCreateTheBooking()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure, "Expected booking creation to fail, but it succeeded.");
+        AssertBookingCreationFailed();
     }
 }

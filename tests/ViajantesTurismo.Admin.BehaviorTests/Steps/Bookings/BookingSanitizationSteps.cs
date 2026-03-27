@@ -6,8 +6,12 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [When(@"I add a booking with notes ""(.*)""")]
     public void WhenIAddABookingWithNotes(string notes)
     {
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, notes);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None,
+            notes: notes));
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -16,8 +20,12 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     public void WhenIAddABookingWithNotesExceedingCharacters()
     {
         var longNotes = new string('A', 2001);
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, longNotes);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None,
+            notes: longNotes));
         if (result.IsSuccess)
         {
             bookingContext.Booking = result.Value;
@@ -31,8 +39,11 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     [When("I add a booking with null notes")]
     public void WhenIAddABookingWithNullNotes()
     {
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None));
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }

@@ -44,16 +44,20 @@ public sealed class CreateBookingCommandHandler(
             }
         }
 
-        var result = tour.AddBooking(
-            command.PrincipalCustomerId,
-            BookingMapper.MapToBikeType(command.PrincipalBikeType),
-            command.CompanionCustomerId,
-            command.CompanionBikeType.HasValue ? BookingMapper.MapToBikeType(command.CompanionBikeType.Value) : null,
+        var result = tour.AddBooking(new TourBookingRequest(
+            new BookingTravelers(
+                command.PrincipalCustomerId,
+                BookingMapper.MapToBikeType(command.PrincipalBikeType),
+                command.CompanionCustomerId,
+                command.CompanionBikeType.HasValue
+                    ? BookingMapper.MapToBikeType(command.CompanionBikeType.Value)
+                    : null),
             BookingMapper.MapToRoomType(command.RoomType),
-            BookingMapper.MapToDiscountType(command.DiscountType),
-            command.DiscountAmount,
-            command.DiscountReason,
-            command.Notes);
+            new BookingDiscountDefinition(
+                BookingMapper.MapToDiscountType(command.DiscountType),
+                command.DiscountAmount,
+                command.DiscountReason),
+            command.Notes));
 
         if (!result.IsSuccess)
         {
