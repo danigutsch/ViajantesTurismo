@@ -99,16 +99,16 @@ function Test-AspNetCoreDevelopmentCertificateTrust {
 }
 
 function Test-PowerShellAndPlaywrightPrerequisites {
-    Write-Host "`n🔍 Checking PowerShell and Playwright prerequisites..." -ForegroundColor Yellow
+    Write-Host "`n🔍 Checking pwsh (PowerShell 7+) and Playwright prerequisites..." -ForegroundColor Yellow
     $pwshCommand = Get-Command pwsh -ErrorAction SilentlyContinue
     if ($pwshCommand) {
-        Write-Host "   ✅ PowerShell installed: $($pwshCommand.Source)" -ForegroundColor Green
+        Write-Host "   ✅ pwsh (PowerShell 7+) installed: $($pwshCommand.Source)" -ForegroundColor Green
         Write-Host "   ✅ Playwright browser installation can use scripts/install-playwright.sh after build" -ForegroundColor Green
         Write-Host "   💡 After dotnet build, install Playwright browsers with: bash scripts/install-playwright.sh" -ForegroundColor Cyan
     }
     else {
-        Write-Host "   ⚠️ PowerShell not available - PowerShell script linting and Playwright browser installation will be skipped" -ForegroundColor Yellow
-        Write-Host "   💡 Install from: https://github.com/PowerShell/PowerShell" -ForegroundColor Cyan
+        Write-Host "   ⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped" -ForegroundColor Yellow
+        Write-Host "   💡 Install pwsh (PowerShell 7+) from: https://github.com/PowerShell/PowerShell" -ForegroundColor Cyan
         return
     }
 
