@@ -41,7 +41,35 @@ print_header() {
 
 check_dotnet_sdk_version() {
     printf "%b" "${YELLOW}📦 Checking .NET SDK...${NC}\n"
-    REQUIRED_VERSION=$(grep -oP '(?<="version": ")[^"]*' global.json)
+
+    if [[ ! -f "global.json" ]]; then
+        printf "%b" "   ${RED}❌ global.json not found in the current directory${NC}\n"
+        exit 1
+    fi
+
+    # Prefer jq for parsing global.json when available; otherwise fall back to python3.
+    if command -v jq >/dev/null 2>&1; then
+        REQUIRED_VERSION=$(jq -r '.sdk.version' global.json 2>/dev/null || echo "")
+    else
+        REQUIRED_VERSION=$(python3 - <<'EOF' 2>/dev/null || echo ""
+import json
+import sys
+
+try:
+    with open("global.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+    print(data.get("sdk", {}).get("version", ""))
+except Exception:
+    sys.exit(1)
+EOF
+)
+    fi
+
+    if [[ -z "${REQUIRED_VERSION}" ]]; then
+        printf "%b" "   ${RED}❌ Unable to determine required .NET SDK version from global.json${NC}\n"
+        exit 1
+    fi
+
     INSTALLED_SDK=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
 
     if [[ "${INSTALLED_SDK}" != "${NOT_FOUND}" ]]; then
