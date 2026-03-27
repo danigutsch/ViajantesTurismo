@@ -17,19 +17,19 @@ public sealed class TourCapacityManagementSteps(
     [Given("a tour exists with minimum (.*) and maximum (.*) customers")]
     public void GivenATourExistsWithMinimumAndMaximumCustomers(int minCustomers, int maxCustomers)
     {
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            basePrice: 2000.00m,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            minCustomers: minCustomers,
-            maxCustomers: maxCustomers,
-            includedServices: ["Hotel", "Breakfast"]).Value;
+        tourContext.Tour = Tour.Create(new TourDefinition(
+            "TEST2024",
+            "Test Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            2000.00m,
+            500.00m,
+            100.00m,
+            200.00m,
+            Currency.UsDollar,
+            minCustomers,
+            maxCustomers,
+            ["Hotel", "Breakfast"])).Value;
     }
 
     [Given("the tour has (.*) confirmed bookings? with (.*) customers? each")]
@@ -75,8 +75,9 @@ public sealed class TourCapacityManagementSteps(
     [Given("a fourth customer exists")]
     public void GivenAFourthCustomerExists()
     {
-        var customer =
-            EntityBuilders.BuildCustomer(firstName: $"AdditionalCustomer{customerContext.Customers.Count}", "Test");
+        var customer = EntityBuilders.BuildCustomer(new CustomerOptions(
+            FirstName: $"AdditionalCustomer{customerContext.Customers.Count}",
+            LastName: "Test"));
         customerContext.Customers.Add(customer);
     }
 
@@ -84,19 +85,19 @@ public sealed class TourCapacityManagementSteps(
     [When("I try to create a tour with minimum (.*) and maximum (.*) customers")]
     public void WhenICreateATourWithMinimumAndMaximumCustomers(int minCustomers, int maxCustomers)
     {
-        var result = Tour.Create(
-            identifier: tourContext.Identifier,
-            name: tourContext.Name,
-            startDate: tourContext.StartDate,
-            endDate: tourContext.EndDate,
-            basePrice: tourContext.BasePrice,
-            singleRoomSupplementPrice: tourContext.SingleRoomSupplementPrice,
-            regularBikePrice: tourContext.RegularBikePrice,
-            eBikePrice: tourContext.EBikePrice,
-            currency: Currency.UsDollar,
-            minCustomers: minCustomers,
-            maxCustomers: maxCustomers,
-            includedServices: ["Hotel", "Breakfast"]);
+        var result = Tour.Create(new TourDefinition(
+            tourContext.Identifier,
+            tourContext.Name,
+            tourContext.StartDate,
+            tourContext.EndDate,
+            tourContext.BasePrice,
+            tourContext.SingleRoomSupplementPrice,
+            tourContext.RegularBikePrice,
+            tourContext.EBikePrice,
+            Currency.UsDollar,
+            minCustomers,
+            maxCustomers,
+            ["Hotel", "Breakfast"]));
 
         tourContext.CreationResult = result;
 
@@ -116,8 +117,7 @@ public sealed class TourCapacityManagementSteps(
     [When("I try to update the capacity to minimum (.*) and maximum (.*)")]
     public void WhenITryToUpdateTheCapacityToMinimumAndMaximum(int minCustomers, int maxCustomers)
     {
-        var result = tourContext.Tour.UpdateCapacity(minCustomers, maxCustomers);
-        tourContext.CapacityUpdateResult = result;
+        WhenIUpdateTheCapacityToMinimumAndMaximum(minCustomers, maxCustomers);
     }
 
     [When("I try to add a booking for the third customer")]
@@ -125,16 +125,11 @@ public sealed class TourCapacityManagementSteps(
     {
         var customer = customerContext.Customers.ElementAt(2);
 
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             customer.Id,
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+            DiscountType.None));
 
         Assert.True(result.IsSuccess);
         result.Value.Confirm();
@@ -147,23 +142,19 @@ public sealed class TourCapacityManagementSteps(
     {
         if (customerContext.Customers.Count < 4)
         {
-            var newCustomer =
-                EntityBuilders.BuildCustomer(firstName: $"AdditionalCustomer{customerContext.Customers.Count}", lastName: "Test");
+            var newCustomer = EntityBuilders.BuildCustomer(new CustomerOptions(
+                FirstName: $"AdditionalCustomer{customerContext.Customers.Count}",
+                LastName: "Test"));
             customerContext.Customers.Add(newCustomer);
         }
 
         var customer = customerContext.Customers.ElementAt(3);
 
-        var result = tourContext.Tour.AddBooking(
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             customer.Id,
             BikeType.Regular,
-            null,
-            null,
             RoomType.DoubleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+            DiscountType.None));
 
         bookingContext.BookingCreationResult = result;
     }

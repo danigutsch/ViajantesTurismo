@@ -28,19 +28,18 @@ public sealed class CreateTourCommandHandler(
 
         var currency = TourMapper.MapToCurrency(command.Currency);
 
-        var tourResult = Tour.Create(
+        var tourResult = Tour.Create(new TourDefinition(
             command.Identifier,
             command.Name,
-            command.StartDate,
-            command.EndDate,
-            command.Price,
-            command.SingleRoomSupplementPrice,
-            command.RegularBikePrice,
-            command.EBikePrice,
-            currency,
-            command.MinCustomers,
-            command.MaxCustomers,
-            [.. command.IncludedServices]);
+            new TourScheduleDefinition(command.StartDate, command.EndDate),
+            new TourPricingDefinition(
+                command.Price,
+                command.SingleRoomSupplementPrice,
+                command.RegularBikePrice,
+                command.EBikePrice,
+                currency),
+            new TourCapacityDefinition(command.MinCustomers, command.MaxCustomers),
+            [.. command.IncludedServices]));
 
         if (!tourResult.IsSuccess)
         {

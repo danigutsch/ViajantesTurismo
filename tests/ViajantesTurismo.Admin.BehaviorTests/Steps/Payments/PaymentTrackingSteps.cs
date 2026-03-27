@@ -160,13 +160,13 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var payments = bookingContext.Booking.Payments.ToList();
 
         Assert.Equal(100m, payments[0].Amount);
-        Assert.Equal(new DateTime(2025, 3, 15), payments[0].PaymentDate);
+        Assert.Equal(new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc), payments[0].PaymentDate);
 
         Assert.Equal(200m, payments[1].Amount);
-        Assert.Equal(new DateTime(2025, 1, 15), payments[1].PaymentDate);
+        Assert.Equal(new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc), payments[1].PaymentDate);
 
         Assert.Equal(150m, payments[2].Amount);
-        Assert.Equal(new DateTime(2025, 2, 15), payments[2].PaymentDate);
+        Assert.Equal(new DateTime(2025, 2, 15, 0, 0, 0, DateTimeKind.Utc), payments[2].PaymentDate);
     }
 
     [Then("all payments should have the same payment date")]
@@ -192,8 +192,11 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void GivenAnotherTourExistsWithAPendingBookingForPaymentTests()
     {
         tourContext.Tour = EntityBuilders.BuildTour(basePrice: 900.00m);
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.None, 0m, null, null);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None));
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
@@ -217,8 +220,13 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void GivenTheBookingHasADiscountApplied(decimal discountPercentage)
     {
         tourContext.Tour = EntityBuilders.BuildTour(basePrice: 900.00m);
-        var result = tourContext.Tour.AddBooking(Guid.CreateVersion7(), BikeType.Regular, null, null, RoomType.DoubleOccupancy,
-            DiscountType.Percentage, discountPercentage, "Test discount", null);
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.Percentage,
+            discountAmount: discountPercentage,
+            discountReason: "Test discount"));
         Assert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }

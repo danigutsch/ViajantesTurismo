@@ -22,8 +22,7 @@ public sealed class Booking : Entity<Guid>
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
     /// <param name="basePrice">The base price for double occupancy (not per person).</param>
-    /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The single room supplement (0 for double occupancy).</param>
+    /// <param name="room">The room selection and associated room cost for the booking.</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="discount">The discount applied to this booking.</param>
@@ -31,8 +30,7 @@ public sealed class Booking : Entity<Guid>
     private Booking(
         Guid tourId,
         decimal basePrice,
-        RoomType roomType,
-        decimal roomAdditionalCost,
+        BookingRoom room,
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer,
         Discount discount,
@@ -41,8 +39,8 @@ public sealed class Booking : Entity<Guid>
     {
         TourId = tourId;
         BasePrice = basePrice;
-        RoomType = roomType;
-        RoomAdditionalCost = roomAdditionalCost;
+        RoomType = room.RoomType;
+        RoomAdditionalCost = room.AdditionalCost;
         PrincipalCustomer = principalCustomer;
         CompanionCustomer = companionCustomer;
         Discount = discount;
@@ -174,8 +172,7 @@ public sealed class Booking : Entity<Guid>
     /// </summary>
     /// <param name="tourId">The ID of the tour that was booked.</param>
     /// <param name="basePrice">The base price for double occupancy (not per person).</param>
-    /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="roomAdditionalCost">The single room supplement (0 for double occupancy).</param>
+    /// <param name="room">The room selection and associated room cost for the booking.</param>
     /// <param name="principalCustomer">The principal customer's booking details.</param>
     /// <param name="companionCustomer">The companion customer's booking details, if any.</param>
     /// <param name="discount">The discount applied to this booking.</param>
@@ -184,8 +181,7 @@ public sealed class Booking : Entity<Guid>
     public static Result<Booking> Create(
         Guid tourId,
         decimal basePrice,
-        RoomType roomType,
-        decimal roomAdditionalCost,
+        BookingRoom room,
         BookingCustomer principalCustomer,
         BookingCustomer? companionCustomer,
         Discount discount,
@@ -195,7 +191,8 @@ public sealed class Booking : Entity<Guid>
         ArgumentNullException.ThrowIfNull(discount);
 
         basePrice = NumericSanitizer.SanitizePrice(basePrice);
-        roomAdditionalCost = NumericSanitizer.SanitizePrice(roomAdditionalCost);
+        var roomType = room.RoomType;
+        var roomAdditionalCost = NumericSanitizer.SanitizePrice(room.AdditionalCost);
         notes = StringSanitizer.SanitizeNotes(notes);
 
         var errors = new ValidationErrors();
@@ -253,7 +250,7 @@ public sealed class Booking : Entity<Guid>
             return DiscountErrors.FinalPriceNotPositive(finalPrice).ConvertError<Booking>();
         }
 
-        return new Booking(tourId, basePrice, roomType, roomAdditionalCost, principalCustomer, companionCustomer,
+        return new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
             discount, notes);
     }
 

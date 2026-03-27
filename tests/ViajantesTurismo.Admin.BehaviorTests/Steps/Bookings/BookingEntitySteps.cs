@@ -3,6 +3,20 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Bookings;
 [Binding]
 public sealed class BookingEntitySteps(BookingContext bookingContext)
 {
+    private static Result<Booking> CreateBookingWithNotes(int length)
+    {
+        var principal = CreatePrincipalCustomer();
+        var notes = new string('x', length);
+        return Booking.Create(
+            Guid.CreateVersion7(),
+            1000m,
+            new BookingRoom(RoomType.SingleOccupancy, 0m),
+            principal,
+            null,
+            Discount.Create(DiscountType.None, 0m, null).Value,
+            notes);
+    }
+
     private static BookingCustomer CreatePrincipalCustomer(decimal bikePrice = 100m, BikeType bikeType = BikeType.Regular)
     {
         var result = BookingCustomer.Create(Guid.CreateVersion7(), bikeType, bikePrice);
@@ -23,8 +37,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
-            room,
-            roomCost,
+            new BookingRoom(room, roomCost),
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
@@ -44,8 +57,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
-            room,
-            roomCost,
+            new BookingRoom(room, roomCost),
             principal,
             companion,
             Discount.Create(DiscountType.None, 0m, null).Value,
@@ -62,8 +74,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
-            RoomType.SingleOccupancy,
-            0m,
+            new BookingRoom(RoomType.SingleOccupancy, 0m),
             principal,
             null,
             Discount.Create(
@@ -83,8 +94,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
-            RoomType.DoubleOccupancy,
-            roomCost,
+            new BookingRoom(RoomType.DoubleOccupancy, roomCost),
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
@@ -97,39 +107,14 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [When("I try to create a booking with notes of (.*) characters")]
     public void WhenITryToCreateABookingWithNotesOfCharacters(int length)
     {
-        var principal = CreatePrincipalCustomer();
-        var notes = new string('x', length);
-        var result = Booking.Create(
-            Guid.CreateVersion7(),
-            1000m,
-            RoomType.SingleOccupancy,
-            0m,
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            notes);
-
-        bookingContext.BookingCreationResult = result;
+        bookingContext.BookingCreationResult = CreateBookingWithNotes(length);
         bookingContext.Action = null!;
     }
 
     [When("I create a booking with notes of (.*) characters")]
     public void WhenICreateABookingWithNotesOfCharacters(int length)
     {
-        var principal = CreatePrincipalCustomer();
-        var notes = new string('x', length);
-        var result = Booking.Create(
-            Guid.CreateVersion7(),
-            1000m,
-            RoomType.SingleOccupancy,
-            0m,
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            notes);
-
-        bookingContext.BookingCreationResult = result;
-        bookingContext.Action = null!;
+        WhenITryToCreateABookingWithNotesOfCharacters(length);
     }
 
     [When(@"I create a booking with notes ""(.*)""")]
@@ -138,8 +123,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var principal = CreatePrincipalCustomer();
         var result = Booking.Create(Guid.CreateVersion7(),
             1000m,
-            RoomType.SingleOccupancy,
-            0m,
+            new BookingRoom(RoomType.SingleOccupancy, 0m),
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,
@@ -156,8 +140,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,
-            (RoomType)invalidRoomType,
-            0m,
+            new BookingRoom((RoomType)invalidRoomType, 0m),
             principal,
             null,
             Discount.Create(DiscountType.None, 0m, null).Value,

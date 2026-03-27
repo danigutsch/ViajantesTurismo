@@ -39,6 +39,16 @@ public sealed class Tour : Entity<Guid>
     }
 
     /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
+    /// </summary>
+    [UsedImplicitly]
+#pragma warning disable CS8618
+    private Tour()
+    {
+    }
+#pragma warning restore CS8618
+
+    /// <summary>
     /// Gets the unique business identifier for the tour.
     /// </summary>
     public string Identifier { get; private set; }
@@ -99,36 +109,15 @@ public sealed class Tour : Entity<Guid>
     /// <summary>
     /// Creates a new instance of the <see cref="Tour"/> class with validation.
     /// </summary>
-    /// <param name="identifier">The unique business identifier for the tour (e.g. "CUBA2024").</param>
-    /// <param name="name">The descriptive name of the tour.</param>
-    /// <param name="startDate">The start date of the tour.</param>
-    /// <param name="endDate">The end date of the tour.</param>
-    /// <param name="basePrice">The base price for double occupancy.</param>
-    /// <param name="singleRoomSupplementPrice">The supplement price for single room occupancy.</param>
-    /// <param name="regularBikePrice">The price for renting a regular bike.</param>
-    /// <param name="eBikePrice">The price for renting an e-bike.</param>
-    /// <param name="currency">The currency for all prices.</param>
-    /// <param name="minCustomers">The minimum number of customers required.</param>
-    /// <param name="maxCustomers">The maximum number of customers allowed.</param>
-    /// <param name="includedServices">The collection of services included in the tour package.</param>
+    /// <param name="definition">The values used to create the tour.</param>
     /// <returns>A Result containing the Tour if validation succeeds, or an error if validation fails.</returns>
-    public static Result<Tour> Create(
-        string identifier,
-        string name,
-        DateTime startDate,
-        DateTime endDate,
-        decimal basePrice,
-        decimal singleRoomSupplementPrice,
-        decimal regularBikePrice,
-        decimal eBikePrice,
-        Currency currency,
-        int minCustomers,
-        int maxCustomers,
-        IEnumerable<string> includedServices)
+    public static Result<Tour> Create(TourDefinition definition)
     {
-        identifier = StringSanitizer.Sanitize(identifier);
-        name = StringSanitizer.Sanitize(name);
-        var sanitizedServices = StringSanitizer.SanitizeCollection(includedServices);
+        ArgumentNullException.ThrowIfNull(definition);
+
+        var identifier = StringSanitizer.Sanitize(definition.Identifier);
+        var name = StringSanitizer.Sanitize(definition.Name);
+        var sanitizedServices = StringSanitizer.SanitizeCollection(definition.IncludedServices);
 
         var errors = new ValidationErrors();
 
@@ -150,7 +139,7 @@ public sealed class Tour : Entity<Guid>
             errors.Add(TourErrors.NameTooLong(ContractConstants.MaxNameLength, name.Length));
         }
 
-        var scheduleResult = DateRange.Create(startDate, endDate);
+        var scheduleResult = DateRange.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
         if (scheduleResult.IsFailure)
         {
             errors.Add(scheduleResult);
@@ -161,14 +150,18 @@ public sealed class Tour : Entity<Guid>
                 scheduleResult.Value.DurationDays));
         }
 
-        var pricingResult =
-            TourPricing.Create(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
+        var pricingResult = TourPricing.Create(
+            definition.Pricing.BasePrice,
+            definition.Pricing.SingleRoomSupplementPrice,
+            definition.Pricing.RegularBikePrice,
+            definition.Pricing.EBikePrice,
+            definition.Pricing.Currency);
         if (pricingResult.IsFailure)
         {
             errors.Add(pricingResult);
         }
 
-        var capacityResult = TourCapacity.Create(minCustomers, maxCustomers);
+        var capacityResult = TourCapacity.Create(definition.Capacity.MinCustomers, definition.Capacity.MaxCustomers);
         if (capacityResult.IsFailure)
         {
             errors.Add(capacityResult);
@@ -384,63 +377,48 @@ public sealed class Tour : Entity<Guid>
     /// Adds a new booking to this tour.
     /// Validates that BikeType.None is not used per US-11 requirement (None is a placeholder value, not a valid booking choice).
     /// </summary>
-    /// <param name="principalCustomerId">The ID of the principal customer making the booking.</param>
-    /// <param name="principalBikeType">The bike type selected by the principal customer.</param>
-    /// <param name="companionCustomerId">The ID of the companion customer, if any.</param>
-    /// <param name="companionBikeType">The bike type selected by the companion, if any.</param>
-    /// <param name="roomType">The room type for the booking.</param>
-    /// <param name="discountType">The type of discount to apply (None, Percentage, or Absolute).</param>
-    /// <param name="discountAmount">The discount amount.</param>
-    /// <param name="discountReason">Optional reason for the discount.</param>
-    /// <param name="notes">Optional notes about the booking.</param>
+    /// <param name="request">The booking details to validate and add.</param>
     /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
-    public Result<Booking> AddBooking(
-        Guid principalCustomerId,
-        BikeType principalBikeType,
-        Guid? companionCustomerId,
-        BikeType? companionBikeType,
-        RoomType roomType,
-        DiscountType discountType,
-        decimal discountAmount,
-        string? discountReason,
-        string? notes)
+    public Result<Booking> AddBooking(TourBookingRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         if (IsFullyBooked)
         {
             return TourErrors.TourFullyBooked(Capacity.MaxCustomers, CurrentCustomerCount).ConvertError<Booking>();
         }
 
-        var principalValidation = ValidatePrincipalBikeType(principalBikeType);
+        var principalValidation = ValidatePrincipalBikeType(request.Travelers.PrincipalBikeType);
         if (principalValidation.IsFailure)
         {
             return principalValidation.ConvertError<Booking>();
         }
 
-        var companionValidation = ValidateCompanionBikeType(companionCustomerId, companionBikeType);
+        var companionValidation = ValidateCompanionBikeType(request.Travelers.CompanionCustomerId, request.Travelers.CompanionBikeType);
         if (companionValidation.IsFailure)
         {
             return companionValidation.ConvertError<Booking>();
         }
 
-        if (!Enum.IsDefined(roomType))
+        if (!Enum.IsDefined(request.RoomType))
         {
-            return BookingErrors.InvalidRoomType(roomType).ConvertError<Booking>();
+            return BookingErrors.InvalidRoomType(request.RoomType).ConvertError<Booking>();
         }
 
-        if (roomType == RoomType.SingleOccupancy && companionCustomerId.HasValue)
+        if (request is { RoomType: RoomType.SingleOccupancy, Travelers.CompanionCustomerId: not null })
         {
             return BookingErrors.SingleRoomCannotHaveCompanion().ConvertError<Booking>();
         }
 
-        var principalBikePrice = GetBikePrice(principalBikeType);
+        var principalBikePrice = GetBikePrice(request.Travelers.PrincipalBikeType);
         var principalCustomerResult =
-            BookingCustomer.Create(principalCustomerId, principalBikeType, principalBikePrice);
+            BookingCustomer.Create(request.Travelers.PrincipalCustomerId, request.Travelers.PrincipalBikeType, principalBikePrice);
         if (principalCustomerResult.IsFailure)
         {
             return principalCustomerResult.ConvertError<BookingCustomer, Booking>();
         }
 
-        var companionCustomerResult = CreateCompanionCustomer(companionCustomerId, companionBikeType);
+        var companionCustomerResult = CreateCompanionCustomer(request.Travelers.CompanionCustomerId, request.Travelers.CompanionBikeType);
         if (companionCustomerResult is { IsFailure: true })
         {
             return companionCustomerResult.Value.ConvertError<BookingCustomer, Booking>();
@@ -448,9 +426,9 @@ public sealed class Tour : Entity<Guid>
 
         var companionCustomer = companionCustomerResult?.Value;
 
-        var roomAdditionalCost = CalculateRoomAdditionalCost(roomType);
+        var roomAdditionalCost = CalculateRoomAdditionalCost(request.RoomType);
 
-        var discountResult = Discount.Create(discountType, discountAmount, discountReason);
+        var discountResult = Discount.Create(request.Discount.Type, request.Discount.Amount, request.Discount.Reason);
         if (discountResult.IsFailure)
         {
             return discountResult.ConvertError<Discount, Booking>();
@@ -459,12 +437,11 @@ public sealed class Tour : Entity<Guid>
         var result = Booking.Create(
             Id,
             Pricing.BasePrice,
-            roomType,
-            roomAdditionalCost,
+            new BookingRoom(request.RoomType, roomAdditionalCost),
             principalCustomerResult.Value,
             companionCustomer,
             discountResult.Value,
-            notes);
+            request.Notes);
 
         if (result.IsFailure)
         {
@@ -824,12 +801,4 @@ public sealed class Tour : Entity<Guid>
         return Result.Ok();
     }
 
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
-    /// </summary>
-    [UsedImplicitly]
-#pragma warning disable CS8618
-    private Tour()
-    {
-    }
 }

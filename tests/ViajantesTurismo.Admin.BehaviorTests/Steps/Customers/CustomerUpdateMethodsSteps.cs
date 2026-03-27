@@ -6,19 +6,21 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Given(@"a customer exists with personal info ""(.*)"" ""(.*)""")]
     public void GivenACustomerExistsWithPersonalInfo(string firstName, string lastName)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(firstName: firstName, lastName: lastName);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(
+            FirstName: firstName,
+            LastName: lastName));
     }
 
     [Given(@"a customer exists with passport ""(.*)""")]
     public void GivenACustomerExistsWithPassport(string passport)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(passportNumber: passport);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(PassportNumber: passport));
     }
 
     [Given(@"a customer exists with email ""(.*)""")]
     public void GivenACustomerExistsWithEmail(string email)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(email: email);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(Email: email));
         customerContext.Customers.Add(customerContext.Customer);
         customerContext.CustomerStore.AddExistingCustomer(customerContext.Customer);
     }
@@ -26,32 +28,32 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Given(@"a customer exists with city ""(.*)""")]
     public void GivenACustomerExistsWithCity(string city)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(city: city);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(City: city));
     }
 
     [Given("a customer exists with height (.*)")]
     public void GivenACustomerExistsWithHeight(int height)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(heightCentimeters: height);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(HeightCentimeters: height));
     }
 
     [Given(@"a customer exists with bed type ""(.*)""")]
     public void GivenACustomerExistsWithBedType(string bedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(bedType + "Bed");
-        customerContext.Customer = EntityBuilders.BuildCustomer(preferredBed: bedTypeEnum);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(PreferredBed: bedTypeEnum));
     }
 
     [Given(@"a customer exists with emergency contact ""(.*)""")]
     public void GivenACustomerExistsWithEmergencyContact(string name)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(emergencyContactName: name);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(EmergencyContactName: name));
     }
 
     [Given(@"a customer exists with allergies ""(.*)""")]
     public void GivenACustomerExistsWithAllergies(string allergies)
     {
-        customerContext.Customer = EntityBuilders.BuildCustomer(allergies: allergies);
+        customerContext.Customer = EntityBuilders.BuildCustomer(new CustomerOptions(Allergies: allergies));
     }
 
     [When(@"I update the personal info to ""(.*)"" ""(.*)""")]

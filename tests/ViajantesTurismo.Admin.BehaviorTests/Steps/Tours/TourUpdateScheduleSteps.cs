@@ -22,9 +22,7 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     [When(@"I update the tour schedule to start ""(.*)"" and end ""(.*)""")]
     public void WhenIUpdateTheTourScheduleToStartAndEnd(string startDateString, string endDateString)
     {
-        var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.UpdateResult = tourContext.Tour.UpdateSchedule(startDate, endDate);
+        WhenITryToUpdateTheTourScheduleToStartAndEnd(startDateString, endDateString);
     }
 
     [Then("the tour schedule update should succeed")]

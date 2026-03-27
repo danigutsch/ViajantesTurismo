@@ -21,7 +21,7 @@ public sealed class UpdateCustomerCommandHandlerTests
     public async Task Handle_Succeeds_For_Valid_Update()
     {
         // Arrange
-        var existing = EntityBuilders.BuildCustomer(email: "original@example.com");
+        var existing = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "original@example.com"));
         _store.Seed(existing);
 
         var command = new UpdateCustomerCommand(
@@ -113,8 +113,8 @@ public sealed class UpdateCustomerCommandHandlerTests
     public async Task Handle_Returns_Invalid_For_Duplicate_Email()
     {
         // Arrange
-        var existing1 = EntityBuilders.BuildCustomer(email: "a@example.com");
-        var existing2 = EntityBuilders.BuildCustomer(email: "dup@example.com");
+        var existing1 = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "a@example.com"));
+        var existing2 = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "dup@example.com"));
         _store.Seed(existing1);
         _store.Seed(existing2);
 

@@ -26,103 +26,97 @@ public static class EntityBuilders
         int? maxCustomers = null,
         string[]? includedServices = null)
     {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(1);
-        var end = endDate ?? start.AddDays(7);
+        return BuildTour(new TourOptions(
+            identifier,
+            name,
+            new TourScheduleOptions(startDate, endDate),
+            new TourPricingOptions(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency),
+            new TourCapacityOptions(minCustomers, maxCustomers),
+            includedServices));
+    }
 
-        return Tour.Create(
-            identifier: identifier ?? "TEST2024",
-            name: name ?? "Test Tour",
-            startDate: start,
-            endDate: end,
-            basePrice: basePrice ?? 2000.00m,
-            singleRoomSupplementPrice: singleRoomSupplementPrice ?? 500.00m,
-            regularBikePrice: regularBikePrice ?? 100.00m,
-            eBikePrice: eBikePrice ?? 200.00m,
-            currency: currency ?? Currency.UsDollar,
-            minCustomers: minCustomers ?? 4,
-            maxCustomers: maxCustomers ?? 12,
-            includedServices: includedServices ?? ["Hotel", "Breakfast"]).Value;
+    /// <summary>
+    /// Builds a Tour entity with default or custom values.
+    /// </summary>
+    public static Tour BuildTour(TourOptions? options)
+    {
+        options ??= new TourOptions();
+        var scheduleOptions = options.Schedule ?? new TourScheduleOptions();
+        var pricingOptions = options.Pricing ?? new TourPricingOptions();
+        var capacityOptions = options.Capacity ?? new TourCapacityOptions();
+
+        var start = scheduleOptions.StartDate ?? DateTime.UtcNow.AddMonths(1);
+
+        return Tour.Create(new TourDefinition(
+            options.Identifier ?? "TEST2024",
+            options.Name ?? "Test Tour",
+            new TourScheduleDefinition(
+                start,
+                scheduleOptions.EndDate ?? start.AddDays(7)),
+            new TourPricingDefinition(
+                pricingOptions.BasePrice ?? 2000.00m,
+                pricingOptions.SingleRoomSupplementPrice ?? 500.00m,
+                pricingOptions.RegularBikePrice ?? 100.00m,
+                pricingOptions.EBikePrice ?? 200.00m,
+                pricingOptions.Currency ?? Currency.UsDollar),
+            new TourCapacityDefinition(
+                capacityOptions.MinCustomers ?? 4,
+                capacityOptions.MaxCustomers ?? 12),
+            options.IncludedServices ?? ["Hotel", "Breakfast"])).Value;
     }
 
     /// <summary>
     /// Builds a Customer entity with default or custom values.
     /// </summary>
-    public static Customer BuildCustomer(
-        string? firstName = null,
-        string? lastName = null,
-        string? gender = null,
-        DateTime? birthDate = null,
-        string? nationality = null,
-        string? occupation = null,
-        string? passportNumber = null,
-        string? passportCountry = null,
-        string? email = null,
-        string? mobile = null,
-        string? instagram = null,
-        string? facebook = null,
-        string? street = null,
-        string? complement = null,
-        string? neighborhood = null,
-        string? postalCode = null,
-        string? city = null,
-        string? state = null,
-        string? country = null,
-        int? weightKg = null,
-        int? heightCentimeters = null,
-        BikeType? preferredBike = null,
-        RoomType? preferredRoom = null,
-        BedType? preferredBed = null,
-        Guid? companionId = null,
-        string? emergencyContactName = null,
-        string? emergencyContactMobile = null,
-        string? allergies = null,
-        string? medicalAdditionalInfo = null)
+    public static Customer BuildCustomer(CustomerOptions? options)
     {
+        options ??= new CustomerOptions();
+
         var personalInfo = PersonalInfo.Create(
-            firstName ?? "John",
-            lastName ?? "Doe",
-            gender ?? "Male",
-            birthDate ?? DateTime.UtcNow.AddYears(-30),
-            nationality ?? "USA",
-            occupation ?? "Engineer",
+            options.FirstName ?? "John",
+            options.LastName ?? "Doe",
+            options.Gender ?? "Male",
+            options.BirthDate ?? DateTime.UtcNow.AddYears(-30),
+            options.Nationality ?? "USA",
+            options.Occupation ?? "Engineer",
             TimeProvider.System).Value;
 
         var identificationInfo = IdentificationInfo.Create(
-            passportNumber ?? "A12345678",
-            passportCountry ?? "USA").Value;
+            options.PassportNumber ?? "A12345678",
+            options.PassportCountry ?? "USA").Value;
 
         var contactInfo = ContactInfo.Create(
-            email ?? "test@example.com",
-            mobile ?? "+1234567890",
-            instagram,
-            facebook).Value;
+            options.Email ?? "test@example.com",
+            options.Mobile ?? "+1234567890",
+            options.Instagram,
+            options.Facebook).Value;
 
         var address = Address.Create(
-            street ?? "123 Main St",
-            complement,
-            neighborhood ?? "Downtown",
-            postalCode ?? "10001",
-            city ?? "New York",
-            state ?? "NY",
-            country ?? "USA").Value;
+            options.Street ?? "123 Main St",
+            options.Complement,
+            options.Neighborhood ?? "Downtown",
+            options.PostalCode ?? "10001",
+            options.City ?? "New York",
+            options.State ?? "NY",
+            options.Country ?? "USA").Value;
 
         var physicalInfo = PhysicalInfo.Create(
-            weightKg ?? 75,
-            heightCentimeters ?? 175,
-            preferredBike ?? BikeType.Regular).Value;
+            options.WeightKg ?? 75,
+            options.HeightCentimeters ?? 175,
+            options.PreferredBike ?? BikeType.Regular).Value;
 
         var accommodationPreferences = AccommodationPreferences.Create(
-            preferredRoom ?? RoomType.DoubleOccupancy,
-            preferredBed ?? BedType.SingleBed,
-            companionId).Value;
+            options.PreferredRoom ?? RoomType.DoubleOccupancy,
+            options.PreferredBed ?? BedType.SingleBed,
+            options.CompanionId).Value;
 
         var emergencyContact = EmergencyContact.Create(
-            emergencyContactName ?? "Emergency Contact",
-            emergencyContactMobile ?? "+9876543210").Value;
+            options.EmergencyContactName ?? "Emergency Contact",
+            options.EmergencyContactMobile ?? "+9876543210").Value;
 
         var medicalInfo = MedicalInfo.Create(
-            allergies ?? "None",
-            medicalAdditionalInfo ?? "None").Value;
+            options.Allergies ?? "None",
+            options.MedicalAdditionalInfo ?? "None").Value;
 
         return new Customer(
             personalInfo,

@@ -18,76 +18,41 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
 
     private static readonly Tour[] Tours =
     [
-        Tour.Create(
+        Tour.Create(new TourDefinition(
             "CITY001",
             "City Highlights",
-            DateTime.UtcNow.AddDays(1),
-            DateTime.UtcNow.AddDays(7),
-            1500m,
-            300m,
-            100m,
-            200m,
-            Currency.Real,
-            6,
-            15,
-            [HotelService, BreakfastService, "City Tour"]
-        ).Value,
-        Tour.Create(
+            new TourScheduleDefinition(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(7)),
+            new TourPricingDefinition(1500m, 300m, 100m, 200m, Currency.Real),
+            new TourCapacityDefinition(6, 15),
+            [HotelService, BreakfastService, "City Tour"])).Value,
+        Tour.Create(new TourDefinition(
             "HIST002",
             "Historical Landmarks",
-            DateTime.UtcNow.AddDays(4),
-            DateTime.UtcNow.AddDays(10),
-            2000m,
-            400m,
-            150m,
-            250m,
-            Currency.Euro,
-            8,
-            20,
-            [HotelService, BreakfastService, "Museum Tickets"]
-        ).Value,
-        Tour.Create(
+            new TourScheduleDefinition(DateTime.UtcNow.AddDays(4), DateTime.UtcNow.AddDays(10)),
+            new TourPricingDefinition(2000m, 400m, 150m, 250m, Currency.Euro),
+            new TourCapacityDefinition(8, 20),
+            [HotelService, BreakfastService, "Museum Tickets"])).Value,
+        Tour.Create(new TourDefinition(
             "CULT001",
             "Cultural Experience",
-            DateTime.UtcNow.AddDays(7),
-            DateTime.UtcNow.AddDays(13),
-            1800m,
-            350m,
-            120m,
-            220m,
-            Currency.UsDollar,
-            4,
-            12,
-            [HotelService, BreakfastService, "Cultural Show"]
-        ).Value,
-        Tour.Create(
+            new TourScheduleDefinition(DateTime.UtcNow.AddDays(7), DateTime.UtcNow.AddDays(13)),
+            new TourPricingDefinition(1800m, 350m, 120m, 220m, Currency.UsDollar),
+            new TourCapacityDefinition(4, 12),
+            [HotelService, BreakfastService, "Cultural Show"])).Value,
+        Tour.Create(new TourDefinition(
             "NATR001",
             "Nature and Adventure",
-            DateTime.UtcNow.AddDays(11),
-            DateTime.UtcNow.AddDays(17),
-            2200m,
-            450m,
-            180m,
-            280m,
-            Currency.Real,
-            5,
-            18,
-            [HotelService, BreakfastService, "Hiking Tour"]
-        ).Value,
-        Tour.Create(
+            new TourScheduleDefinition(DateTime.UtcNow.AddDays(11), DateTime.UtcNow.AddDays(17)),
+            new TourPricingDefinition(2200m, 450m, 180m, 280m, Currency.Real),
+            new TourCapacityDefinition(5, 18),
+            [HotelService, BreakfastService, "Hiking Tour"])).Value,
+        Tour.Create(new TourDefinition(
             "FOWI003",
             "Food and Wine Tour",
-            DateTime.UtcNow.AddDays(16),
-            DateTime.UtcNow.AddDays(22),
-            2500m,
-            500m,
-            200m,
-            300m,
-            Currency.Euro,
-            6,
-            16,
-            [HotelService, BreakfastService, "Wine Tasting"]
-        ).Value
+            new TourScheduleDefinition(DateTime.UtcNow.AddDays(16), DateTime.UtcNow.AddDays(22)),
+            new TourPricingDefinition(2500m, 500m, 200m, 300m, Currency.Euro),
+            new TourCapacityDefinition(6, 16),
+            [HotelService, BreakfastService, "Wine Tasting"])).Value
     ];
 
     private static readonly Customer[] Customers =
@@ -275,20 +240,18 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             return;
         }
 
-        var toursToAdd = Tours.Select(t => Tour.Create(
+        var toursToAdd = Tours.Select(t => Tour.Create(new TourDefinition(
             t.Identifier,
             t.Name,
-            t.Schedule.StartDate,
-            t.Schedule.EndDate,
-            t.Pricing.BasePrice,
-            t.Pricing.SingleRoomSupplementPrice,
-            t.Pricing.RegularBikePrice,
-            t.Pricing.EBikePrice,
-            t.Pricing.Currency,
-            t.Capacity.MinCustomers,
-            t.Capacity.MaxCustomers,
-            t.IncludedServices
-        ).Value);
+            new TourScheduleDefinition(t.Schedule.StartDate, t.Schedule.EndDate),
+            new TourPricingDefinition(
+                t.Pricing.BasePrice,
+                t.Pricing.SingleRoomSupplementPrice,
+                t.Pricing.RegularBikePrice,
+                t.Pricing.EBikePrice,
+                t.Pricing.Currency),
+            new TourCapacityDefinition(t.Capacity.MinCustomers, t.Capacity.MaxCustomers),
+            t.IncludedServices)).Value);
 
         dbContext.Tours.AddRange(toursToAdd);
 
@@ -324,113 +287,62 @@ internal sealed class Seeder(AdminWriteDbContext dbContext) : ISeeder
             return;
         }
 
-        var booking1 = tours[0].AddBooking(
+        var booking1 = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[0].Id,
             customers[0].PhysicalInfo.BikeType,
-            null,
-            null,
             customers[0].AccommodationPreferences.RoomType,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Early bird discount applied"
-        ).Value;
-        var booking2 = tours[1].AddBooking(customers[1].Id,
+            notes: "Early bird discount applied")).Value;
+        var booking2 = tours[1].AddBooking(TourBookingRequest.CreateDouble(
+            customers[1].Id,
             customers[1].PhysicalInfo.BikeType,
-            customers[0].Id, customers[0].PhysicalInfo.BikeType,
+            customers[0].Id,
+            customers[0].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Traveling together as a couple"
-        ).Value;
-        var booking3 = tours[2].AddBooking(
+            notes: "Traveling together as a couple")).Value;
+        var booking3 = tours[2].AddBooking(TourBookingRequest.CreateSingle(
             customers[2].Id,
             customers[2].PhysicalInfo.BikeType,
-            companionCustomerId: null,
-            companionBikeType: null,
             customers[2].AccommodationPreferences.RoomType,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Pending with partial payment, awaiting full payment"
-        ).Value;
-        var booking4 = tours[3].AddBooking(customers[3].Id,
+            notes: "Pending with partial payment, awaiting full payment")).Value;
+        var booking4 = tours[3].AddBooking(TourBookingRequest.CreateDouble(
+            customers[3].Id,
             customers[3].PhysicalInfo.BikeType,
             customers[4].Id,
             customers[4].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Upgraded to premium accommodation"
-        ).Value;
-        var booking5 = tours[4].AddBooking(
+            notes: "Upgraded to premium accommodation")).Value;
+        var booking5 = tours[4].AddBooking(TourBookingRequest.CreateSingle(
             customers[5].Id,
             customers[5].PhysicalInfo.BikeType,
-            companionCustomerId: null,
-            companionBikeType: null,
             customers[5].AccommodationPreferences.RoomType,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Excellent tour experience"
-        ).Value;
-        var booking6 = tours[0].AddBooking(
+            notes: "Excellent tour experience")).Value;
+        var booking6 = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[6].Id,
             customers[6].PhysicalInfo.BikeType,
-            companionCustomerId: null,
-            companionBikeType: null,
             customers[6].AccommodationPreferences.RoomType,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Cancelled due to personal reasons"
-        ).Value;
-        var booking7 = tours[1].AddBooking(
+            notes: "Cancelled due to personal reasons")).Value;
+        var booking7 = tours[1].AddBooking(TourBookingRequest.CreateDouble(
             customers[7].Id,
             customers[7].PhysicalInfo.BikeType,
             customers[8].Id,
             customers[8].PhysicalInfo.BikeType,
             RoomType.DoubleOccupancy,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Special dietary requirements noted"
-        ).Value;
-        tours[3].AddBooking(
+            notes: "Special dietary requirements noted")).Value;
+        tours[3].AddBooking(TourBookingRequest.CreateSingle(
             customers[9].Id,
             customers[9].PhysicalInfo.BikeType,
-            companionCustomerId: null,
-            companionBikeType: null,
             customers[9].AccommodationPreferences.RoomType,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Interested in photography opportunities"
-        );
-        var booking9 = tours[0].AddBooking(
+            notes: "Interested in photography opportunities"));
+        var booking9 = tours[0].AddBooking(TourBookingRequest.CreateSingle(
             customers[4].Id,
             customers[4].PhysicalInfo.BikeType,
-            companionCustomerId: null,
-            companionBikeType: null,
             RoomType.SingleOccupancy,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Solo traveler, single room supplement included"
-        ).Value;
-        var booking10 = tours[4].AddBooking(
+            notes: "Solo traveler, single room supplement included")).Value;
+        var booking10 = tours[4].AddBooking(TourBookingRequest.CreateSingle(
             customers[8].Id,
             customers[8].PhysicalInfo.BikeType,
-            companionCustomerId: null,
-            companionBikeType: null,
             customers[8].AccommodationPreferences.RoomType,
-            DiscountType.None,
-            discountAmount: 0m,
-            discountReason: null,
-            "Payment pending bank transfer"
-        ).Value;
+            notes: "Payment pending bank transfer")).Value;
 
         dbContext.SaveChanges();
 

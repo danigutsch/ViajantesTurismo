@@ -8,19 +8,19 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
     [Given("a tour exists with base price (.*)")]
     public void GivenATourExistsWithBasePrice(decimal basePrice)
     {
-        tourContext.Tour = Tour.Create(
-            identifier: "TEST2024",
-            name: "Test Tour",
-            startDate: DateTime.UtcNow.AddMonths(1),
-            endDate: DateTime.UtcNow.AddMonths(1).AddDays(7),
-            basePrice: basePrice,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: Currency.UsDollar,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: ["Hotel", "Breakfast"]).Value;
+        tourContext.Tour = Tour.Create(new TourDefinition(
+            "TEST2024",
+            "Test Tour",
+            DateTime.UtcNow.AddMonths(1),
+            DateTime.UtcNow.AddMonths(1).AddDays(7),
+            basePrice,
+            500.00m,
+            100.00m,
+            200.00m,
+            Currency.UsDollar,
+            4,
+            12,
+            ["Hotel", "Breakfast"])).Value;
     }
 
     [When("I update the base price to (.*)")]

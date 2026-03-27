@@ -1,48 +1,14 @@
-using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Tests.Shared.Behavior;
 using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
 public class TourUpdateGuardTests
 {
-    private static Tour CreateTour(
-        string identifier = "TEST2024",
-        decimal basePrice = 2000.00m,
-        Currency? currency = null,
-        DateTime? startDate = null,
-        DateTime? endDate = null)
-    {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(1);
-        var end = endDate ?? start.AddDays(7);
-
-        return Tour.Create(
-            identifier: identifier,
-            name: "Test Tour",
-            startDate: start,
-            endDate: end,
-            basePrice: basePrice,
-            singleRoomSupplementPrice: 500.00m,
-            regularBikePrice: 100.00m,
-            eBikePrice: 200.00m,
-            currency: currency ?? Currency.UsDollar,
-            minCustomers: 4,
-            maxCustomers: 12,
-            includedServices: ["Hotel", "Breakfast"]).Value;
-    }
-
     private static void AddBookingToTour(Tour tour)
     {
-        var result = tour.AddBooking(
-            Guid.CreateVersion7(),
-            BikeType.Regular,
-            null,
-            null,
-            RoomType.DoubleOccupancy,
-            DiscountType.None,
-            0m,
-            null,
-            null);
+        var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
 
         Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
     }
@@ -51,7 +17,7 @@ public class TourUpdateGuardTests
     public void Update_Details_Without_Bookings_Should_Succeed()
     {
         // Arrange
-        var tour = CreateTour();
+        var tour = EntityBuilders.BuildTour();
 
         // Act
         var result = tour.UpdateDetails("NEWID", "New Name");
@@ -66,7 +32,7 @@ public class TourUpdateGuardTests
     public void Update_Details_With_Bookings_Should_Fail()
     {
         // Arrange
-        var tour = CreateTour(identifier: "ORIG2024");
+        var tour = EntityBuilders.BuildTour(identifier: "ORIG2024");
         AddBookingToTour(tour);
 
         // Act — change the identifier
@@ -81,7 +47,7 @@ public class TourUpdateGuardTests
     public void Update_Details_With_Bookings_Same_Identifier_Should_Succeed()
     {
         // Arrange
-        var tour = CreateTour(identifier: "KEEP2024");
+        var tour = EntityBuilders.BuildTour(identifier: "KEEP2024");
         AddBookingToTour(tour);
 
         // Act — keep the same identifier, change only the name
@@ -97,7 +63,7 @@ public class TourUpdateGuardTests
     public void Update_Currency_Without_Bookings_Should_Succeed()
     {
         // Arrange
-        var tour = CreateTour(currency: Currency.UsDollar);
+        var tour = EntityBuilders.BuildTour(currency: Currency.UsDollar);
 
         // Act
         var result = tour.UpdateCurrency(Currency.Euro);
@@ -111,7 +77,7 @@ public class TourUpdateGuardTests
     public void Update_Currency_With_Bookings_Should_Fail()
     {
         // Arrange
-        var tour = CreateTour(currency: Currency.UsDollar);
+        var tour = EntityBuilders.BuildTour(currency: Currency.UsDollar);
         AddBookingToTour(tour);
 
         // Act
