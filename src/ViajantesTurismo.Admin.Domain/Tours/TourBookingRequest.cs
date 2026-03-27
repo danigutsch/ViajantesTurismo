@@ -83,7 +83,7 @@ public sealed record TourBookingRequest(
         Guid principalCustomerId,
         BikeType principalBikeType,
         Guid companionCustomerId,
-        BikeType? companionBikeType,
+        BikeType companionBikeType,
         RoomType roomType,
         BookingDiscountDefinition? discount = null,
         string? notes = null)
