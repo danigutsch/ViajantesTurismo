@@ -2,7 +2,7 @@
 // CI/CD: Add 'npm run lint:json' to pipeline when implemented
 
 import jsoncPlugin from 'eslint-plugin-jsonc';
-import jsoncParser from 'jsonc-eslint-parser';
+import * as jsoncParser from 'jsonc-eslint-parser';
 
 export default [
     {
