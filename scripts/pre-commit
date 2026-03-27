@@ -70,7 +70,7 @@ fi
 
 # Bash/Shell script linting and auto-fix
 echo "Checking shell scripts..."
-CHANGED_SH_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(sh|bash)$|scripts/(pre-commit|post-commit|prepare-commit-msg)$' || true)
+CHANGED_SH_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(sh|bash)$|scripts/(pre-commit|post-commit|prepare-commit-msg|commit-msg)$' || true)
 
 if test -n "${CHANGED_SH_FILES}"; then
     require_tool shellcheck
