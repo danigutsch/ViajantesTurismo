@@ -117,16 +117,16 @@ check_aspnet_core_development_certificate_trust() {
 }
 
 check_powershell() {
-    printf "\n%b" "${YELLOW}🔍 Checking PowerShell and Playwright prerequisites...${NC}\n"
+    printf "\n%b" "${YELLOW}🔍 Checking pwsh (PowerShell 7+) and Playwright prerequisites...${NC}\n"
     if command -v pwsh > /dev/null 2>&1; then
-        printf "%b" "   ${GREEN}✅ PowerShell installed${NC}\n"
+        printf "%b" "   ${GREEN}✅ pwsh (PowerShell 7+) installed${NC}\n"
         printf "%b" "   ${GREEN}✅ Playwright browser installation can use scripts/install-playwright.sh after build${NC}\n"
         printf "%b" "   ${CYAN}💡 To install PSScriptAnalyzer:${NC}\n"
         printf "%b" "   ${CYAN}   pwsh -Command 'Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force'${NC}\n"
         printf "%b" "   ${CYAN}💡 After dotnet build, install Playwright browsers with: bash scripts/install-playwright.sh${NC}\n"
     else
-        printf "%b" "   ${YELLOW}⚠️ PowerShell not available - PowerShell script linting and Playwright browser installation will be skipped${NC}\n"
-        printf "%b" "   ${CYAN}💡 Install from: https://github.com/PowerShell/PowerShell${NC}\n"
+        printf "%b" "   ${YELLOW}⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped${NC}\n"
+        printf "%b" "   ${CYAN}💡 Install pwsh (PowerShell 7+) from: https://github.com/PowerShell/PowerShell${NC}\n"
     fi
 }
 
