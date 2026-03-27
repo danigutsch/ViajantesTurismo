@@ -13,30 +13,7 @@ public static class BookingTestHelpers
     /// <summary>
     /// Creates a single-customer booking with default values.
     /// </summary>
-    public static Result<Booking> AddSingleCustomerBooking(
-        Tour tour,
-        Guid? customerId = null,
-        BikeType bikeType = BikeType.Regular,
-        RoomType roomType = RoomType.DoubleOccupancy,
-        DiscountType discountType = DiscountType.None,
-        decimal discountPercentage = 0m,
-        string? notes = null,
-        string? specialRequests = null)
-    {
-        return tour.AddBooking(new TourBookingRequest(
-            customerId ?? Guid.CreateVersion7(),
-            bikeType,
-            roomType,
-            discountType,
-            discountAmount: discountPercentage,
-            discountReason: notes,
-            notes: specialRequests));
-    }
-
-    /// <summary>
-    /// Creates a single-customer booking with default values.
-    /// </summary>
-    public static Result<Booking> AddSingleCustomerBooking(Tour tour, SingleBookingOptions? options)
+    public static Result<Booking> AddSingleCustomerBooking(Tour tour, SingleBookingOptions? options = null)
     {
         options ??= new SingleBookingOptions();
         var discount = options.Discount ?? BookingDiscountDefinition.None;
