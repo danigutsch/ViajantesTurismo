@@ -22,6 +22,15 @@ public sealed class IdentificationInfo
         IdNationality = idNationality;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private IdentificationInfo()
+    {
+    }
+
     /// <summary>National ID.</summary>
     public string NationalId { get; private set; }
 
@@ -65,14 +74,5 @@ public sealed class IdentificationInfo
         }
 
         return new IdentificationInfo(sanitizedNationalId, sanitizedIdNationality);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private IdentificationInfo()
-    {
     }
 }

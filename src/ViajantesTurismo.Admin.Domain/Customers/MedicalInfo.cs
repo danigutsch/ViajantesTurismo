@@ -22,6 +22,15 @@ public sealed class MedicalInfo
         AdditionalInfo = additionalInfo;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private MedicalInfo()
+    {
+    }
+
     /// <summary>Allergies.</summary>
     public string? Allergies { get; private set; }
 
@@ -59,14 +68,5 @@ public sealed class MedicalInfo
         }
 
         return new MedicalInfo(sanitizedAllergies, sanitizedAdditionalInfo);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private MedicalInfo()
-    {
     }
 }

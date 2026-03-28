@@ -32,6 +32,15 @@ public sealed class Address
         Country = country;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private Address()
+    {
+    }
+
     /// <summary>Street address and number.</summary>
     public string Street { get; private set; }
 
@@ -142,14 +151,5 @@ public sealed class Address
         }
 
         return new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, sanitizedCountry!);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private Address()
-    {
     }
 }

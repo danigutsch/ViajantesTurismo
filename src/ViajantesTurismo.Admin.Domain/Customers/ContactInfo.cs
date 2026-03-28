@@ -20,6 +20,15 @@ public sealed partial class ContactInfo
         Facebook = facebook;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private ContactInfo()
+    {
+    }
+
     /// <summary>Email address.</summary>
     public string Email { get; private set; }
 
@@ -99,14 +108,5 @@ public sealed partial class ContactInfo
         }
 
         return new ContactInfo(email, mobile, instagram, facebook);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private ContactInfo()
-    {
     }
 }

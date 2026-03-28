@@ -21,6 +21,15 @@ public sealed class AccommodationPreferences
         CompanionId = companionId;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private AccommodationPreferences()
+    {
+    }
+
     /// <summary>Room type.</summary>
     public RoomType RoomType { get; private set; }
 
@@ -40,14 +49,5 @@ public sealed class AccommodationPreferences
     public static Result<AccommodationPreferences> Create(RoomType roomType, BedType bedType, Guid? companionId)
     {
         return new AccommodationPreferences(roomType, bedType, companionId);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private AccommodationPreferences()
-    {
     }
 }

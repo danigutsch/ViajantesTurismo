@@ -22,6 +22,15 @@ public sealed class EmergencyContact
         Mobile = mobile;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private EmergencyContact()
+    {
+    }
+
     /// <summary>Emergency contact name.</summary>
     public string Name { get; private set; }
 
@@ -65,14 +74,5 @@ public sealed class EmergencyContact
         }
 
         return new EmergencyContact(sanitizedName!, sanitizedMobile!);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private EmergencyContact()
-    {
     }
 }
