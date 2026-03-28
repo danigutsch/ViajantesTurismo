@@ -13,6 +13,7 @@ public sealed class CustomerImportWorkflowService(
     CustomerImportCommandHandler commandHandler
 )
 {
+    private const string EmailFieldName = "Email";
     private const string OutcomeCreated = "created";
     private const string OutcomeUpdated = "updated";
 
@@ -117,14 +118,14 @@ public sealed class CustomerImportWorkflowService(
             var lineNumber = rowIndex + 2;
             var row = document.Rows[rowIndex];
 
-            row.TryGetByHeader(document.Headers, "Email", out var rowEmail);
+            row.TryGetByHeader(document.Headers, EmailFieldName, out var rowEmail);
             var normalizedEmail = rowEmail?.Trim();
 
             if (duplicateEmailLines.Contains(lineNumber))
             {
                 errorRows.Add(new ImportErrorRowDto(
                     lineNumber,
-                    "Email",
+                    EmailFieldName,
                     "Duplicate email found in file.",
                     normalizedEmail));
                 continue;
@@ -157,7 +158,7 @@ public sealed class CustomerImportWorkflowService(
 
                 errorRows.Add(new ImportErrorRowDto(
                     lineNumber,
-                    "Email",
+                    EmailFieldName,
                     "Conflict requires resolution.",
                     email));
                 continue;
@@ -258,7 +259,7 @@ public sealed class CustomerImportWorkflowService(
             }
 
             var row = document.Rows[rowIndex];
-            if (!row.TryGetByHeader(document.Headers, "Email", out var email) || string.IsNullOrWhiteSpace(email))
+            if (!row.TryGetByHeader(document.Headers, EmailFieldName, out var email) || string.IsNullOrWhiteSpace(email))
             {
                 continue;
             }
