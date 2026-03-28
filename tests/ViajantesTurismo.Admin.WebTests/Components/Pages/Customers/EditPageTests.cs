@@ -201,6 +201,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -230,6 +231,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
