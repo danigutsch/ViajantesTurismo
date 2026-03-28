@@ -21,11 +21,9 @@ public static class DuplicateDetector
         var seenEmails = new HashSet<string>(StringComparer.Ordinal);
         var duplicateLineNumbers = new List<int>();
 
-        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
+        foreach (var (row, lineNumber) in document.Rows.Select((row, index) => (row, index + 2)))
         {
-            var row = document.Rows[rowIndex];
-
-            if (!row.TryGetByHeader(document.Headers, "Email", out var email) || string.IsNullOrWhiteSpace(email))
+            if (!row.TryGetByHeader(document.Headers, ImportHeaders.Email, out var email) || string.IsNullOrWhiteSpace(email))
             {
                 continue;
             }
@@ -33,7 +31,7 @@ public static class DuplicateDetector
             var normalizedEmail = StringSanitizer.NormalizeKey(email);
             if (!seenEmails.Add(normalizedEmail))
             {
-                duplicateLineNumbers.Add(rowIndex + 2);
+                duplicateLineNumbers.Add(lineNumber);
             }
         }
 
@@ -53,12 +51,10 @@ public static class DuplicateDetector
         var seenNames = new HashSet<string>(StringComparer.Ordinal);
         var duplicateLineNumbers = new List<int>();
 
-        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
+        foreach (var (row, lineNumber) in document.Rows.Select((row, index) => (row, index + 2)))
         {
-            var row = document.Rows[rowIndex];
-
-            if (!row.TryGetByHeader(document.Headers, "FirstName", out var firstName)
-                || !row.TryGetByHeader(document.Headers, "LastName", out var lastName)
+            if (!row.TryGetByHeader(document.Headers, ImportHeaders.FirstName, out var firstName)
+                || !row.TryGetByHeader(document.Headers, ImportHeaders.LastName, out var lastName)
                 || string.IsNullOrWhiteSpace(firstName)
                 || string.IsNullOrWhiteSpace(lastName))
             {
@@ -68,7 +64,7 @@ public static class DuplicateDetector
             var normalizedName = StringSanitizer.NormalizeKeyRemovingDiacritics($"{firstName} {lastName}");
             if (!seenNames.Add(normalizedName))
             {
-                duplicateLineNumbers.Add(rowIndex + 2);
+                duplicateLineNumbers.Add(lineNumber);
             }
         }
 
@@ -93,11 +89,9 @@ public static class DuplicateDetector
 
         var duplicateLineNumbers = new List<int>();
 
-        for (var rowIndex = 0; rowIndex < document.Rows.Count; rowIndex++)
+        foreach (var (row, lineNumber) in document.Rows.Select((row, index) => (row, index + 2)))
         {
-            var row = document.Rows[rowIndex];
-
-            if (!row.TryGetByHeader(document.Headers, "Email", out var email) || string.IsNullOrWhiteSpace(email))
+            if (!row.TryGetByHeader(document.Headers, ImportHeaders.Email, out var email) || string.IsNullOrWhiteSpace(email))
             {
                 continue;
             }
@@ -106,7 +100,7 @@ public static class DuplicateDetector
 
             if (await customerStore.EmailExists(sanitizedEmail, ct))
             {
-                duplicateLineNumbers.Add(rowIndex + 2);
+                duplicateLineNumbers.Add(lineNumber);
             }
         }
 

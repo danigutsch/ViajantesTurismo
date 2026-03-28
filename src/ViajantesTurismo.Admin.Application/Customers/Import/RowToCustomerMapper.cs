@@ -96,12 +96,12 @@ public static class RowToCustomerMapper
     {
         var errors = new ValidationErrors();
 
-        var firstName = GetRequired(document, row, "FirstName", errors);
-        var lastName = GetRequired(document, row, "LastName", errors);
-        var gender = GetRequired(document, row, "Gender", errors);
-        var birthDateText = GetRequired(document, row, "BirthDate", errors);
-        var nationality = GetRequired(document, row, "Nationality", errors);
-        var occupation = GetRequired(document, row, "Occupation", errors);
+        var firstName = GetRequired(document, row, ImportHeaders.FirstName, errors);
+        var lastName = GetRequired(document, row, ImportHeaders.LastName, errors);
+        var gender = GetRequired(document, row, ImportHeaders.Gender, errors);
+        var birthDateText = GetRequired(document, row, ImportHeaders.BirthDate, errors);
+        var nationality = GetRequired(document, row, ImportHeaders.Nationality, errors);
+        var occupation = GetRequired(document, row, ImportHeaders.Occupation, errors);
 
         DateTime birthDate = default;
         if (!string.IsNullOrWhiteSpace(birthDateText)
@@ -114,7 +114,7 @@ public static class RowToCustomerMapper
         {
             errors.Add(Result.Invalid(
                 detail: "BirthDate has invalid format.",
-                field: "BirthDate",
+                field: ImportHeaders.BirthDate,
                 message: "BirthDate has invalid format."));
         }
 
@@ -136,8 +136,8 @@ public static class RowToCustomerMapper
     private static Result<IdentificationInfo> MapIdentificationInfo(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
-        var nationalId = GetRequired(document, row, "NationalId", errors);
-        var idNationality = GetRequired(document, row, "IdNationality", errors);
+        var nationalId = GetRequired(document, row, ImportHeaders.NationalId, errors);
+        var idNationality = GetRequired(document, row, ImportHeaders.IdNationality, errors);
 
         if (errors.HasErrors)
         {
@@ -150,11 +150,11 @@ public static class RowToCustomerMapper
     private static Result<ContactInfo> MapContactInfo(IImportDocument document, IImportRow row)
     {
         var errors = new ValidationErrors();
-        var email = GetRequired(document, row, "Email", errors);
-        var mobile = GetRequired(document, row, "Mobile", errors);
+        var email = GetRequired(document, row, ImportHeaders.Email, errors);
+        var mobile = GetRequired(document, row, ImportHeaders.Mobile, errors);
 
-        row.TryGetByHeader(document.Headers, "Instagram", out var instagram);
-        row.TryGetByHeader(document.Headers, "Facebook", out var facebook);
+        row.TryGetByHeader(document.Headers, ImportHeaders.Instagram, out var instagram);
+        row.TryGetByHeader(document.Headers, ImportHeaders.Facebook, out var facebook);
 
         if (errors.HasErrors)
         {
@@ -168,13 +168,13 @@ public static class RowToCustomerMapper
     {
         var errors = new ValidationErrors();
 
-        var street = GetRequired(document, row, "Street", errors);
-        row.TryGetByHeader(document.Headers, "Complement", out var complement);
-        var neighborhood = GetRequired(document, row, "Neighborhood", errors);
-        var postalCode = GetRequired(document, row, "PostalCode", errors);
-        var city = GetRequired(document, row, "City", errors);
-        var state = GetRequired(document, row, "State", errors);
-        var country = GetRequired(document, row, "Country", errors);
+        var street = GetRequired(document, row, ImportHeaders.Street, errors);
+        row.TryGetByHeader(document.Headers, ImportHeaders.Complement, out var complement);
+        var neighborhood = GetRequired(document, row, ImportHeaders.Neighborhood, errors);
+        var postalCode = GetRequired(document, row, ImportHeaders.PostalCode, errors);
+        var city = GetRequired(document, row, ImportHeaders.City, errors);
+        var state = GetRequired(document, row, ImportHeaders.State, errors);
+        var country = GetRequired(document, row, ImportHeaders.Country, errors);
 
         if (errors.HasErrors)
         {
@@ -188,9 +188,9 @@ public static class RowToCustomerMapper
     {
         var errors = new ValidationErrors();
 
-        var weightKgText = GetRequired(document, row, "WeightKg", errors);
-        var heightCentimetersText = GetRequired(document, row, "HeightCentimeters", errors);
-        var bikeTypeText = GetRequired(document, row, "BikeType", errors);
+        var weightKgText = GetRequired(document, row, ImportHeaders.WeightKg, errors);
+        var heightCentimetersText = GetRequired(document, row, ImportHeaders.HeightCentimeters, errors);
+        var bikeTypeText = GetRequired(document, row, ImportHeaders.BikeType, errors);
 
         decimal weightKg = 0;
         if (!string.IsNullOrWhiteSpace(weightKgText)
@@ -198,7 +198,7 @@ public static class RowToCustomerMapper
         {
             errors.Add(Result.Invalid(
                 detail: "WeightKg has invalid format.",
-                field: "WeightKg",
+                field: ImportHeaders.WeightKg,
                 message: "WeightKg has invalid format."));
         }
 
@@ -208,7 +208,7 @@ public static class RowToCustomerMapper
         {
             errors.Add(Result.Invalid(
                 detail: "HeightCentimeters has invalid format.",
-                field: "HeightCentimeters",
+                field: ImportHeaders.HeightCentimeters,
                 message: "HeightCentimeters has invalid format."));
         }
 
@@ -218,7 +218,7 @@ public static class RowToCustomerMapper
         {
             errors.Add(Result.Invalid(
                 detail: "BikeType has invalid format.",
-                field: "BikeType",
+                field: ImportHeaders.BikeType,
                 message: "BikeType has invalid format."));
         }
 
@@ -234,9 +234,9 @@ public static class RowToCustomerMapper
     {
         var errors = new ValidationErrors();
 
-        var roomTypeText = GetRequired(document, row, "RoomType", errors);
-        var bedTypeText = GetRequired(document, row, "BedType", errors);
-        row.TryGetByHeader(document.Headers, "CompanionId", out var companionIdText);
+        var roomTypeText = GetRequired(document, row, ImportHeaders.RoomType, errors);
+        var bedTypeText = GetRequired(document, row, ImportHeaders.BedType, errors);
+        row.TryGetByHeader(document.Headers, ImportHeaders.CompanionId, out var companionIdText);
 
         RoomType roomType = default;
         if (!string.IsNullOrWhiteSpace(roomTypeText)
@@ -244,7 +244,7 @@ public static class RowToCustomerMapper
         {
             errors.Add(Result.Invalid(
                 detail: "RoomType has invalid format.",
-                field: "RoomType",
+                field: ImportHeaders.RoomType,
                 message: "RoomType has invalid format."));
         }
 
@@ -254,7 +254,7 @@ public static class RowToCustomerMapper
         {
             errors.Add(Result.Invalid(
                 detail: "BedType has invalid format.",
-                field: "BedType",
+                field: ImportHeaders.BedType,
                 message: "BedType has invalid format."));
         }
 
@@ -269,7 +269,7 @@ public static class RowToCustomerMapper
             {
                 errors.Add(Result.Invalid(
                     detail: "CompanionId has invalid format.",
-                    field: "CompanionId",
+                    field: ImportHeaders.CompanionId,
                     message: "CompanionId has invalid format."));
             }
         }
@@ -286,8 +286,8 @@ public static class RowToCustomerMapper
     {
         var errors = new ValidationErrors();
 
-        var emergencyContactName = GetRequired(document, row, "EmergencyContactName", errors);
-        var emergencyContactMobile = GetRequired(document, row, "EmergencyContactMobile", errors);
+        var emergencyContactName = GetRequired(document, row, ImportHeaders.EmergencyContactName, errors);
+        var emergencyContactMobile = GetRequired(document, row, ImportHeaders.EmergencyContactMobile, errors);
 
         if (errors.HasErrors)
         {
@@ -299,8 +299,8 @@ public static class RowToCustomerMapper
 
     private static Result<MedicalInfo> MapMedicalInfo(IImportDocument document, IImportRow row)
     {
-        row.TryGetByHeader(document.Headers, "Allergies", out var allergies);
-        row.TryGetByHeader(document.Headers, "AdditionalInfo", out var additionalInfo);
+        row.TryGetByHeader(document.Headers, ImportHeaders.Allergies, out var allergies);
+        row.TryGetByHeader(document.Headers, ImportHeaders.AdditionalInfo, out var additionalInfo);
         return MedicalInfo.Create(allergies, additionalInfo);
     }
 
