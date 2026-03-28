@@ -1,0 +1,17 @@
+[
+  {
+    "name": "dependencies",
+    "color": "0366d6",
+    "description": "Pull requests and issues related to dependency updates"
+  },
+  {
+    "name": ".net",
+    "color": "512bd4",
+    "description": ".NET and NuGet dependency updates"
+  },
+  {
+    "name": "ci",
+    "color": "1d76db",
+    "description": "Continuous integration and workflow changes"
+  }
+]
