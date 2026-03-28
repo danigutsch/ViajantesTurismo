@@ -32,8 +32,8 @@ public class CustomerBookingEditFormTests : BunitContext
         // Arrange
         var tours = new List<GetTourDto>
         {
-            BuildTourDto(name: "Tour A", startDate: new DateTime(2025, 6, 1)),
-            BuildTourDto(name: "Tour B", startDate: new DateTime(2025, 7, 1))
+            BuildTourDto(name: "Tour A", startDate: new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Unspecified)),
+            BuildTourDto(name: "Tour B", startDate: new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Unspecified))
         };
         var model = new BookingFormModel { TourId = tours[0].Id };
         GetCustomerDto[] customers = [];

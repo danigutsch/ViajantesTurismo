@@ -70,7 +70,7 @@ public sealed class DetailsPageTests : BunitContext
             FirstName = "Jane",
             LastName = "Smith",
             Gender = "Female",
-            BirthDate = new DateTime(1990, 5, 15),
+            BirthDate = new DateTime(1990, 5, 15, 0, 0, 0, DateTimeKind.Unspecified),
             Nationality = "Canada",
             Occupation = "Software Developer"
         };

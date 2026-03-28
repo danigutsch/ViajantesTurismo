@@ -21,8 +21,8 @@ public class IndexPageTests : BunitContext
         var tour = BuildTourDto(
             identifier: "TOUR-2024-001",
             name: "Amazing Bike Tour",
-            startDate: new DateTime(2024, 6, 1),
-            endDate: new DateTime(2024, 6, 15)
+            startDate: new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified),
+            endDate: new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified)
         );
         _fakeToursApi.AddTour(tour);
 

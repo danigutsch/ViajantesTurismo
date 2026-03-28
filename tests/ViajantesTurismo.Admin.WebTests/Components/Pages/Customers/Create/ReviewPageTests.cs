@@ -30,7 +30,7 @@ public sealed class ReviewPageTests : BunitContext
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
-        cut.WaitForAssertion(() =>
+        await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
             Assert.Contains("We couldn't create the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
@@ -44,7 +44,7 @@ public sealed class ReviewPageTests : BunitContext
         {
             FirstName = "Ana",
             LastName = "Silva",
-            BirthDate = new DateTime(1990, 5, 1),
+            BirthDate = new DateTime(1990, 5, 1, 0, 0, 0, DateTimeKind.Unspecified),
             Gender = "Female",
             Nationality = "Brazilian",
             Occupation = "Designer"

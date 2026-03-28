@@ -127,7 +127,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
                 FirstName = "Existing",
                 LastName = "Customer",
                 Gender = "Female",
-                BirthDate = new DateTime(1990, 1, 1),
+                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
                 Nationality = "Brazilian",
                 Occupation = "Engineer"
             },
