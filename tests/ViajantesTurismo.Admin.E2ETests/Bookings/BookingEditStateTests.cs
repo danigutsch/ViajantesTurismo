@@ -6,8 +6,12 @@ public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Cancelled_Booking_Edit_Hides_Payment_And_Action_Buttons()
     {
         // Arrange
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
+        var customer = await ApiClient.CreateCustomer();
+        var booking = await ApiClient.CreateCancelledBooking(tour.Id, customer.Id);
+
         // Act
-        await NavigateToBookingEditForRow(".badge:has-text('Cancelled')");
+        await BookingWorkflow.NavigateToEdit(booking.Id);
 
         // Assert
         await ExpectWarningContains("cancelled", "cannot be modified");
@@ -23,8 +27,12 @@ public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
     public async Task Confirmed_Booking_Edit_Shows_Action_Buttons_And_Payment_Section()
     {
         // Arrange
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
+        var customer = await ApiClient.CreateCustomer();
+        var booking = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
+
         // Act
-        await NavigateToBookingEditForRow(".booking-status-badge.bg-success");
+        await BookingWorkflow.NavigateToEdit(booking.Id);
 
         // Assert
         await Expect(Page.Locator(".alert-warning")).Not.ToBeVisibleAsync();
@@ -36,17 +44,6 @@ public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetButton("Delete Booking")).ToBeVisibleAsync();
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
         await ExpectPaymentsSummaryVisible();
-    }
-
-    private async Task NavigateToBookingEditForRow(string rowBadgeSelector)
-    {
-        await NavigateTo("/bookings");
-
-        var bookingRow = Page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { Has = Page.Locator(rowBadgeSelector) }).First;
-
-        await bookingRow.GetLink("Edit").ClickAsync();
-        await Expect(Page).ToHaveTitleAsync("Edit Booking");
     }
 
     private async Task ExpectWarningContains(params string[] expectedTexts)
