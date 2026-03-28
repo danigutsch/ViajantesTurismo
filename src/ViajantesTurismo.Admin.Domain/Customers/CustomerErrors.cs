@@ -7,6 +7,8 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public static class CustomerErrors
 {
+    private const string Mobile = "Mobile";
+
     /// <summary>
     /// Indicates that the first name is empty.
     /// </summary>
@@ -130,7 +132,7 @@ public static class CustomerErrors
     /// <returns>A Result representing the error.</returns>
     public static Result<ContactInfo> EmptyMobile() => Result<ContactInfo>.Invalid(
         detail: "Mobile is required.",
-        field: "Mobile",
+        field: Mobile,
         message: "Mobile is required.");
 
     /// <summary>
@@ -139,7 +141,7 @@ public static class CustomerErrors
     /// <returns>A Result representing the error.</returns>
     public static Result<ContactInfo> MobileTooLong() => Result<ContactInfo>.Invalid(
         detail: "Mobile cannot exceed 64 characters.",
-        field: "Mobile",
+        field: Mobile,
         message: "Mobile cannot exceed 64 characters.");
 
     /// <summary>
@@ -337,7 +339,7 @@ public static class CustomerErrors
     /// <returns>A Result representing the error.</returns>
     public static Result<EmergencyContact> EmptyEmergencyContactMobile() => Result<EmergencyContact>.Invalid(
         detail: "Emergency contact mobile is required.",
-        field: "Mobile",
+        field: Mobile,
         message: "Emergency contact mobile is required.");
 
     /// <summary>
@@ -346,7 +348,7 @@ public static class CustomerErrors
     /// <returns>A Result representing the error.</returns>
     public static Result<EmergencyContact> EmergencyContactMobileTooLong() => Result<EmergencyContact>.Invalid(
         detail: "Emergency contact mobile cannot exceed 64 characters.",
-        field: "Mobile",
+        field: Mobile,
         message: "Emergency contact mobile cannot exceed 64 characters.");
 
     /// <summary>
@@ -407,7 +409,7 @@ public static class CustomerErrors
     /// <returns>A Result representing the error.</returns>
     public static Result<ContactInfo> InvalidPhoneFormat() => Result<ContactInfo>.Invalid(
         detail: "Mobile phone must contain only digits, spaces, hyphens, parentheses, or plus sign.",
-        field: "Mobile",
+        field: Mobile,
         message: "Mobile phone must contain only digits, spaces, hyphens, parentheses, or plus sign.");
 
     /// <summary>
