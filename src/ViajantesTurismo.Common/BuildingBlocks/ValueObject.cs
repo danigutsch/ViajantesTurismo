@@ -15,13 +15,13 @@ namespace ViajantesTurismo.Common.BuildingBlocks;
 /// <item><description>Immutable: Once created, their state cannot be changed.</description></item>
 /// <item><description>Equality by value: Two instances are equal if their properties are equal.</description></item>
 /// <item><description>No identity: Unlike entities, they don't have a unique identifier.</description></item>
-/// <item><description>Side-effect free: Operations on value objects should return new instances.</description></item>
+/// <item><description>Pure functions: Operations on value objects should return new instances.</description></item>
 /// </list>
 /// <para>
 /// <strong>Examples:</strong> Address, Money, DateRange, ContactInfo, PhysicalInfo
 /// </para>
 /// </remarks>
-public abstract class ValueObject : IEquatable<ValueObject>
+public abstract class ValueObject : IEquatable<ValueObject>, IEqualityComparer<ValueObject>
 {
     /// <inheritdoc />
     public bool Equals(ValueObject? other)
@@ -44,6 +44,12 @@ public abstract class ValueObject : IEquatable<ValueObject>
         return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
     }
 
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        return obj is ValueObject other && Equals(other);
+    }
+
     /// <summary>
     /// Gets the atomic values that define this value object for equality comparison.
     /// </summary>
@@ -53,12 +59,6 @@ public abstract class ValueObject : IEquatable<ValueObject>
     /// that should be used for equality comparison. The order matters.
     /// </remarks>
     protected abstract IEnumerable<object?> GetEqualityComponents();
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj)
-    {
-        return obj is ValueObject other && Equals(other);
-    }
 
     /// <inheritdoc />
     public override int GetHashCode()
@@ -99,4 +99,18 @@ public abstract class ValueObject : IEquatable<ValueObject>
     {
         return !(left == right);
     }
+
+    /// <inheritdoc/>
+    public bool Equals(ValueObject? x, ValueObject? y)
+    {
+        if (x is null || y is null)
+        {
+            return false;
+        }
+
+        return x.Equals(y);
+    }
+
+    /// <inheritdoc/>
+    public int GetHashCode(ValueObject obj) => HashCode.Combine(GetEqualityComponents());
 }
