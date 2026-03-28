@@ -37,9 +37,13 @@ NC='\033[0m' # No Color
 print_header() {
     printf "\n%b" "${CYAN}🚀 ViajantesTurismo Development Setup${NC}\n"
     printf "%b" "${CYAN}====================================${NC}\n\n"
+    return 0
 }
 
 check_dotnet_sdk_version() {
+    local installed_sdk
+    local required_version
+
     printf "%b" "${YELLOW}📦 Checking .NET SDK...${NC}\n"
 
     if [[ ! -f "global.json" ]]; then
@@ -49,9 +53,9 @@ check_dotnet_sdk_version() {
 
     # Prefer jq for parsing global.json when available; otherwise fall back to python3.
     if command -v jq >/dev/null 2>&1; then
-        REQUIRED_VERSION=$(jq -r '.sdk.version' global.json 2>/dev/null || echo "")
+        required_version=$(jq -r '.sdk.version' global.json 2>/dev/null || echo "")
     else
-        REQUIRED_VERSION=$(python3 - <<'EOF' 2>/dev/null || echo ""
+        required_version=$(python3 - <<'EOF' 2>/dev/null || echo ""
 import json
 import sys
 
@@ -65,24 +69,26 @@ EOF
 )
     fi
 
-    if [[ -z "${REQUIRED_VERSION}" ]]; then
+    if [[ -z "${required_version}" ]]; then
         printf "%b" "   ${RED}❌ Unable to determine required .NET SDK version from global.json${NC}\n"
         exit 1
     fi
 
-    INSTALLED_SDK=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
+    installed_sdk=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
 
-    if [[ "${INSTALLED_SDK}" != "${NOT_FOUND}" ]]; then
-        printf "%b" "   ${GREEN}✅ .NET SDK installed: ${INSTALLED_SDK}${NC}\n"
-        if [[ "${INSTALLED_SDK}" != "${REQUIRED_VERSION}" ]]; then
-            printf "%b" "   ${YELLOW}⚠️ Required version: ${REQUIRED_VERSION}${NC}\n"
+    if [[ "${installed_sdk}" != "${NOT_FOUND}" ]]; then
+        printf "%b" "   ${GREEN}✅ .NET SDK installed: ${installed_sdk}${NC}\n"
+        if [[ "${installed_sdk}" != "${required_version}" ]]; then
+            printf "%b" "   ${YELLOW}⚠️ Required version: ${required_version}${NC}\n"
             printf "%b" "   ${CYAN}💡 Download from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
         fi
     else
         printf "%b" "   ${RED}❌ .NET SDK not found${NC}\n"
-        printf "%b" "   ${CYAN}💡 Download .NET ${REQUIRED_VERSION} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
+        printf "%b" "   ${CYAN}💡 Download .NET ${required_version} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
         exit 1
     fi
+
+    return 0
 }
 
 restore_dotnet_dependencies() {
@@ -93,6 +99,8 @@ restore_dotnet_dependencies() {
         printf "%b" "   ${RED}❌ Failed to restore .NET dependencies${NC}\n"
         exit 1
     fi
+
+    return 0
 }
 
 restore_dotnet_local_tools() {
@@ -103,6 +111,8 @@ restore_dotnet_local_tools() {
     else
         printf "%b" "   ${YELLOW}⚠️ Failed to restore .NET tools${NC}\n"
     fi
+
+    return 0
 }
 
 check_aspnet_core_development_certificate_trust() {
@@ -142,6 +152,8 @@ check_aspnet_core_development_certificate_trust() {
             printf "%b" "   ${CYAN}   Then restart your shell before running Aspire or E2E tests.${NC}\n"
             ;;
     esac
+
+    return 0
 }
 
 check_powershell() {
@@ -156,6 +168,8 @@ check_powershell() {
         printf "%b" "   ${YELLOW}⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped${NC}\n"
         printf "%b" "   ${CYAN}💡 Install pwsh (PowerShell 7+) from: https://github.com/PowerShell/PowerShell${NC}\n"
     fi
+
+    return 0
 }
 
 check_nodejs_and_npm() {
@@ -164,7 +178,7 @@ check_nodejs_and_npm() {
     local required_node_version
 
     if [[ "${SKIP_NPM}" = true ]]; then
-        return
+        return 0
     fi
 
     printf "\n%b" "${YELLOW}📦 Checking Node.js and npm...${NC}\n"
@@ -221,11 +235,13 @@ check_nodejs_and_npm() {
         fi
         printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
     fi
+
+    return 0
 }
 
 install_pre_commit_hook() {
     if [[ "${SKIP_GIT_HOOK}" = true ]]; then
-        return
+        return 0
     fi
 
     printf "\n%b" "${YELLOW}🪝 Setting up git hooks...${NC}\n"
@@ -242,6 +258,8 @@ install_pre_commit_hook() {
     else
         printf "%b" "   ${YELLOW}⚠️ Not a git repository - skipping hook installation${NC}\n"
     fi
+
+    return 0
 }
 
 print_summary() {
@@ -255,6 +273,7 @@ print_summary() {
     printf "%b" "  4. Check markdown: ${NC}npm run lint:md\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
     printf "\n"
+    return 0
 }
 
 print_header

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 print_linux_dependency_guidance() {
-        cat >&2 <<'EOF'
+    cat >&2 <<'EOF'
 If browser launch still fails on Linux after browser download, install the required runtime libraries manually.
 
 Ubuntu example:
@@ -13,6 +13,8 @@ Ubuntu example:
 Then rerun:
     bash scripts/install-playwright.sh
 EOF
+
+    return 0
 }
 
 playwright_script="${1:-}"
