@@ -13,7 +13,7 @@ dotnet restore ViajantesTurismo.slnx
 
 # Install npm packages
 echo "📦 Installing npm packages..."
-if ! npm ci --prefer-offline; then
+if ! npm ci --ignore-scripts --prefer-offline; then
     echo "❌ npm installation failed" >&2
     exit 1
 fi
