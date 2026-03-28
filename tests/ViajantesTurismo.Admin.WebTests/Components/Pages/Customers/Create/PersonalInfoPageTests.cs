@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
 using ViajantesTurismo.Admin.Web;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers.Create;
+using ViajantesTurismo.Admin.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.WebTests.Components.Pages.Customers.Create;
 
@@ -14,15 +13,8 @@ public sealed class PersonalInfoPageTests : BunitContext
 {
     public PersonalInfoPageTests()
     {
-        // Create a temp directory with an empty countries.json to satisfy CountryService
-        var webRoot = Path.Combine(Path.GetTempPath(), "PersonalInfoPageTests");
-        var dataDir = Path.Combine(webRoot, "data");
-        Directory.CreateDirectory(dataDir);
-        File.WriteAllText(Path.Combine(dataDir, "countries.json"), "{}");
-
         Services.AddSingleton<CustomerCreationState>();
-        Services.AddSingleton<IWebHostEnvironment>(new StubWebHostEnvironment { WebRootPath = webRoot });
-        Services.AddSingleton<CountryService>();
+        Services.AddSingleton<CountryService>(new FakeCountryService());
     }
 
     [Fact]
@@ -60,19 +52,5 @@ public sealed class PersonalInfoPageTests : BunitContext
         Assert.NotNull(cut.Find("select#gender"));
         Assert.NotNull(cut.Find("#nationality"));
         Assert.NotNull(cut.Find("input#occupation"));
-    }
-
-    /// <summary>
-    /// Minimal IWebHostEnvironment stub for CountryService.
-    /// CountryService catches FileNotFoundException when countries.json is missing.
-    /// </summary>
-    private sealed class StubWebHostEnvironment : IWebHostEnvironment
-    {
-        public string WebRootPath { get; set; } = Path.GetTempPath();
-        public IFileProvider WebRootFileProvider { get; set; } = null!;
-        public string ApplicationName { get; set; } = "TestApp";
-        public IFileProvider ContentRootFileProvider { get; set; } = null!;
-        public string ContentRootPath { get; set; } = Path.GetTempPath();
-        public string EnvironmentName { get; set; } = "Testing";
     }
 }

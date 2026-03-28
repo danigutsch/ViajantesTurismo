@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.Web.Services;
 /// Initializes a new instance of the <see cref="CountryService"/> class.
 /// </remarks>
 /// <param name="hostEnvironment">The web host environment.</param>
-internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
+internal class CountryService(IWebHostEnvironment hostEnvironment)
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
@@ -35,7 +35,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment)
     /// Gets the list of countries asynchronously.
     /// </summary>
     /// <returns>A list of country information.</returns>
-    public async Task<CountryInfo[]> GetCountries(CancellationToken ct)
+    public virtual async Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
         if (_countries is not null)
         {

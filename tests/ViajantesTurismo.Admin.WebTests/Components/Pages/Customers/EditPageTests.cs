@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Hosting;
 using ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 using ViajantesTurismo.Admin.WebTests.Infrastructure;
 
@@ -12,9 +11,7 @@ public class EditPageTests : BunitContext
     public EditPageTests()
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
-        var webHostEnvironment = new MockWebHostEnvironment();
-        Services.AddSingleton<IWebHostEnvironment>(webHostEnvironment);
-        Services.AddSingleton(new CountryService(webHostEnvironment));
+        Services.AddSingleton<CountryService>(new FakeCountryService());
     }
 
     [Fact]
@@ -88,6 +85,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -113,6 +111,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -137,6 +136,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -159,6 +159,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -179,6 +180,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -258,6 +260,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -279,6 +282,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -301,6 +305,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -323,6 +328,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -343,6 +349,7 @@ public class EditPageTests : BunitContext
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customer.Id));
         await cut.InvokeAsync(() => Task.CompletedTask);
+        await cut.WaitForStateAsync(() => cut.Markup.Contains("Update Customer", StringComparison.Ordinal));
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
