@@ -75,9 +75,11 @@ internal static class ToursEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.Conflict
-                ? result.ToConflict()
-                : result.ToValidationProblem();
+            return result.Status switch
+            {
+                ResultStatus.Conflict => result.ToConflict(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         var tourId = result.Value;
@@ -100,12 +102,10 @@ internal static class ToursEndpoints
         CancellationToken ct)
     {
         var tourDto = await queryService.GetTourById(id, ct);
-        if (tourDto is null)
-        {
-            return TourErrors.TourNotFound(id).ToNotFound();
-        }
 
-        return TypedResults.Ok(tourDto);
+        return tourDto is null
+            ? TourErrors.TourNotFound(id).ToNotFound()
+            : TypedResults.Ok(tourDto);
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateTour(

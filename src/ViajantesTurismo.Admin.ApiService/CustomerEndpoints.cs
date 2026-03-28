@@ -64,12 +64,10 @@ internal static class CustomerEndpoints
         CancellationToken ct)
     {
         var customerDto = await queryService.GetCustomerDetailsById(id, ct);
-        if (customerDto is null)
-        {
-            return CustomerErrors.CustomerNotFound(id).ToNotFound();
-        }
 
-        return TypedResults.Ok(customerDto);
+        return customerDto is null
+            ? CustomerErrors.CustomerNotFound(id).ToNotFound()
+            : TypedResults.Ok(customerDto);
     }
 
     private static async Task<Results<Created<GetCustomerDto>, ValidationProblem, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>
@@ -95,12 +93,15 @@ internal static class CustomerEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.Conflict
-                ? result.ToConflict()
-                : result.ToValidationProblem();
+            return result.Status switch
+            {
+                ResultStatus.Conflict => result.ToConflict(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         var customerDto = await queryService.GetCustomerDetailsById(result.Value, ct);
+
         if (customerDto is null)
         {
             return CustomerErrors.CustomerNotFound(result.Value).ToNotFound();

@@ -164,9 +164,11 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
-                : result.ToValidationProblem();
+            return result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         var bookingDto = await queryService.GetBookingById(result.Value, ct);
@@ -193,14 +195,12 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            if (result.Status == ResultStatus.NotFound)
+            return result.Status switch
             {
-                return result.ToNotFound();
-            }
-
-            return result.Status == ResultStatus.Conflict
-                ? result.ToConflict()
-                : result.ToValidationProblem();
+                ResultStatus.NotFound => result.ToNotFound(),
+                ResultStatus.Conflict => result.ToConflict(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         var updatedBooking = await queryService.GetBookingById(id, ct);
@@ -242,9 +242,11 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
-                : result.ToConflict();
+            return result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                _ => result.ToConflict()
+            };
         }
 
         var updatedBooking = await queryService.GetBookingById(id, ct);
@@ -264,9 +266,11 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
-                : result.ToConflict();
+            return result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                _ => result.ToConflict()
+            };
         }
 
         var updatedBooking = await queryService.GetBookingById(id, ct);
@@ -344,9 +348,11 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            return result.Status == ResultStatus.NotFound
-                ? result.ToNotFound()
-                : result.ToValidationProblem();
+            return result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         var paymentId = result.Value;
@@ -377,14 +383,12 @@ internal static class BookingEndpoints
 
         if (result.IsFailure)
         {
-            if (result.Status == ResultStatus.NotFound)
+            return result.Status switch
             {
-                return result.ToNotFound();
-            }
-
-            return result.Status == ResultStatus.Conflict
-                ? result.ToConflict()
-                : result.ToValidationProblem();
+                ResultStatus.NotFound => result.ToNotFound(),
+                ResultStatus.Conflict => result.ToConflict(),
+                _ => result.ToValidationProblem()
+            };
         }
 
         var updatedBooking = await queryService.GetBookingById(id, ct);

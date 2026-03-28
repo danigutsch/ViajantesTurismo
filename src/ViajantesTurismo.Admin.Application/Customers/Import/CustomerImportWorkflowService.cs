@@ -145,23 +145,21 @@ public sealed class CustomerImportWorkflowService(
             if (emailExists)
             {
                 var decision = ResolveDecision(conflictResolutions, email);
-                if (decision == ConflictDecision.Skip)
+                switch (decision)
                 {
-                    continue;
+                    case ConflictDecision.Skip:
+                        continue;
+                    case ConflictDecision.Update:
+                        successCandidates.Add(new ImportSuccessCandidate(email, OutcomeUpdated));
+                        continue;
+                    default:
+                        errorRows.Add(new ImportErrorRowDto(
+                            lineNumber,
+                            EmailFieldName,
+                            "Conflict requires resolution.",
+                            email));
+                        continue;
                 }
-
-                if (decision == ConflictDecision.Update)
-                {
-                    successCandidates.Add(new ImportSuccessCandidate(email, OutcomeUpdated));
-                    continue;
-                }
-
-                errorRows.Add(new ImportErrorRowDto(
-                    lineNumber,
-                    EmailFieldName,
-                    "Conflict requires resolution.",
-                    email));
-                continue;
             }
 
             successCandidates.Add(new ImportSuccessCandidate(email, OutcomeCreated));
@@ -200,13 +198,12 @@ public sealed class CustomerImportWorkflowService(
             return ConflictDecision.Unresolved;
         }
 
-        if (match.Value.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
-            || match.Value.Equals("mixed", StringComparison.OrdinalIgnoreCase))
-        {
-            return ConflictDecision.Update;
-        }
+        var shouldUpdate = match.Value.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
+            || match.Value.Equals("mixed", StringComparison.OrdinalIgnoreCase);
 
-        return ConflictDecision.Skip;
+        return shouldUpdate
+            ? ConflictDecision.Update
+            : ConflictDecision.Skip;
     }
 
     private sealed record ImportSuccessCandidate(string Email, string Outcome);
