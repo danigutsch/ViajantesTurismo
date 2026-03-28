@@ -171,8 +171,8 @@ public sealed class ToastNotificationTests : BunitContext
         var closeButton = cut.Find(".toast-header .btn-close");
         closeButton.Click();
 
-        // Assert - wait for toast to be removed
-        cut.WaitForState(() => cut.FindAll(".toast").Count == 0);
+        // Assert
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".toast")));
     }
 
     [Fact]
@@ -219,7 +219,7 @@ public sealed class ToastNotificationTests : BunitContext
         var cut = Render<ToastNotification>();
         cut.InvokeAsync(() => cut.Instance.ShowSuccess("Message"));
 
-        // Assert - wait for toast to auto-dismiss (default 5000ms)
-        cut.WaitForState(() => cut.FindAll(".toast").Count == 0, TimeSpan.FromSeconds(6));
+        // Assert
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".toast")), TimeSpan.FromSeconds(6));
     }
 }

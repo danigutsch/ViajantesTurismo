@@ -223,8 +223,8 @@ public sealed class ConfirmDialogTests : BunitContext
         var confirmButton = cut.Find(".modal-footer .btn-primary");
         confirmButton.Click();
 
-        // Assert - wait for modal to be removed from DOM
-        cut.WaitForState(() => cut.FindAll(".modal").Count == 0);
+        // Assert
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".modal")));
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public sealed class ConfirmDialogTests : BunitContext
         var cancelButton = cut.Find(".modal-footer .btn-secondary");
         cancelButton.Click();
 
-        // Assert - wait for modal to be removed from DOM
-        cut.WaitForState(() => cut.FindAll(".modal").Count == 0);
+        // Assert
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".modal")));
     }
 }

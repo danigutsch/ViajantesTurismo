@@ -199,13 +199,11 @@ public class AddPageTests : BunitContext
         await cut.InvokeAsync(() => form.Submit());
 
         // Assert
-        await cut.WaitForStateAsync(() =>
-        {
-            var button = cut.Find("button[type='submit']");
-            return button.TextContent.Contains("Creating...", StringComparison.Ordinal) || cut.FindAll(".alert-success").Count > 0;
-        }, TimeSpan.FromSeconds(2));
-
-        await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
+        await cut.WaitForAssertionAsync(() =>
+            Assert.True(
+                cut.Find("button[type='submit']").TextContent.Contains("Creating...", StringComparison.Ordinal)
+                || cut.FindAll(".alert-success").Count > 0),
+            TimeSpan.FromSeconds(2));
     }
 
     [Fact]

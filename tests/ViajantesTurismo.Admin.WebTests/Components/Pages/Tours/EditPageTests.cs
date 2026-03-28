@@ -200,13 +200,11 @@ public class EditPageTests : BunitContext
         await cut.InvokeAsync(() => cut.Find("form").Submit());
 
         // Assert
-        await cut.WaitForStateAsync(() =>
-        {
-            var button = cut.Find("button[type='submit']");
-            return button.TextContent.Contains("Updating...", StringComparison.Ordinal) || cut.FindAll(".alert-success").Count > 0;
-        }, TimeSpan.FromSeconds(2));
-
-        await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
+        await cut.WaitForAssertionAsync(() =>
+            Assert.True(
+                cut.Find("button[type='submit']").TextContent.Contains("Updating...", StringComparison.Ordinal)
+                || cut.FindAll(".alert-success").Count > 0),
+            TimeSpan.FromSeconds(2));
     }
 
     [Fact]
@@ -326,8 +324,8 @@ public class EditPageTests : BunitContext
         {
             Identifier = "CUBA2024",
             Name = "Cuba Adventure",
-            StartDate = new DateTime(2024, 6, 1),
-            EndDate = new DateTime(2024, 6, 15),
+            StartDate = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified),
+            EndDate = new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified),
             Currency = CurrencyDto.Euro,
             Price = 1500.00m,
             SingleRoomSupplementPrice = 200.00m,
@@ -348,8 +346,8 @@ public class EditPageTests : BunitContext
         var tour = BuildTourDto(
             identifier: "CUBA2024",
             name: "Cuba Adventure",
-            startDate: new DateTime(2024, 6, 1),
-            endDate: new DateTime(2024, 6, 15),
+            startDate: new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified),
+            endDate: new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified),
             currency: CurrencyDto.Euro,
             price: 1500.00m,
             singleRoomSupplementPrice: 200.00m,
