@@ -27,7 +27,10 @@ public class EditPageTests : BunitContext
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, customerId));
 
         // Assert
-        cut.WaitForState(() => cut.Markup.Contains("Loading", StringComparison.Ordinal) || cut.Markup.Contains("Customer not found", StringComparison.Ordinal), timeout: TimeSpan.FromSeconds(2));
+        cut.WaitForAssertion(() =>
+            Assert.True(
+                cut.Markup.Contains("Loading...", StringComparison.Ordinal)
+                || cut.Markup.Contains("Customer not found.", StringComparison.Ordinal)));
     }
 
     [Fact]
