@@ -3,11 +3,17 @@
 set -euo pipefail
 
 set_build_required() {
-    echo "build_required=$1" >> "${GITHUB_OUTPUT}"
+    local build_required_value="$1"
+
+    echo "build_required=${build_required_value}" >> "${GITHUB_OUTPUT}"
+
+    return 0
 }
 
 require_build() {
-    echo "$1"
+    local message="$1"
+
+    echo "${message}"
     set_build_required true
     exit 0
 }

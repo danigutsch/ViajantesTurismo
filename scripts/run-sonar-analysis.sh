@@ -40,16 +40,16 @@ dotnet tool run dotnet-sonarscanner begin \
     "/d:sonar.qualitygate.timeout=300"
 
 cleanup() {
-    exit_code=$?
+    local exit_code="$1"
 
     if [[ ${exit_code} -eq 0 ]]; then
-        dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
+        dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}" || return $?
     fi
 
-    exit "${exit_code}"
+    return "${exit_code}"
 }
 
-trap cleanup EXIT
+trap 'cleanup $?' EXIT
 
 dotnet build ViajantesTurismo.slnx --no-restore
 
