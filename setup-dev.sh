@@ -204,7 +204,7 @@ check_nodejs_and_npm() {
 
         if [[ "${install_linters}" = "y" ]] || [[ "${install_linters}" = "Y" ]]; then
             printf "\n%b" "${YELLOW}📦 Installing npm dependencies...${NC}\n"
-            if npm install > /dev/null 2>&1; then
+            if npm ci --ignore-scripts > /dev/null 2>&1; then
                 printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt, gherkin-lint, ESLint)${NC}\n"
             else
                 printf "%b" "   ${RED}❌ Failed to install npm dependencies${NC}\n"
@@ -212,7 +212,7 @@ check_nodejs_and_npm() {
             fi
         else
             printf "%b" "   ${YELLOW}⏭️ Skipping linter installation${NC}\n"
-            printf "%b" "   ${CYAN}💡 Install later with: npm install${NC}\n"
+            printf "%b" "   ${CYAN}💡 Install later with: npm ci --ignore-scripts${NC}\n"
         fi
     else
         printf "%b" "   ${YELLOW}⚠️ Node.js not found - code quality linters will not be available${NC}\n"
