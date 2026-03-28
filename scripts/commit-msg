@@ -7,8 +7,32 @@ repo_root="$(git rev-parse --show-toplevel)"
 local_node_bin="${repo_root}/node_modules/.bin"
 export PATH="${local_node_bin}:${PATH}"
 
+ensure_node_runtime() {
+    if command -v node > /dev/null 2>&1; then
+        return 0
+    fi
+
+    if command -v fnm > /dev/null 2>&1; then
+        local fnm_environment
+        fnm_environment="$(fnm env --shell bash)" || return 0
+        eval "${fnm_environment}"
+    fi
+
+    command -v node > /dev/null 2>&1 || true
+
+    return 0
+}
+
 if [[ -z "${commit_message_file}" ]]; then
     echo "commit-msg hook requires the commit message file path" >&2
+    exit 1
+fi
+
+ensure_node_runtime
+
+if ! command -v node > /dev/null 2>&1; then
+    echo "Required tool 'node' was not found. Git hooks run in a non-interactive shell, so shell-managed Node.js installations must be initialized explicitly." >&2
+    echo "If you use fnm, make sure it is installed and accessible on PATH for Git processes, or run bash setup-dev.sh after installing Node.js 24." >&2
     exit 1
 fi
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Pre-commit hook to lint and auto-fix markdown, bash, PowerShell, and .NET code
 
 set -e
@@ -7,12 +7,57 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 LOCAL_NODE_BIN="${REPO_ROOT}/node_modules/.bin"
 PATH="${LOCAL_NODE_BIN}:${PATH}"
 
+ensure_node_runtime() {
+    if command -v node > /dev/null 2>&1; then
+        return 0
+    fi
+
+    if command -v fnm > /dev/null 2>&1; then
+        local fnm_environment
+        fnm_environment="$(fnm env --shell bash)" || return 0
+        eval "${fnm_environment}"
+    fi
+
+    command -v node > /dev/null 2>&1 || true
+
+    return 0
+}
+
+if [[ -x "${HOME}/.dotnet/dotnet" ]]; then
+    DOTNET_ROOT="${HOME}/.dotnet"
+    PATH="${DOTNET_ROOT}:${PATH}"
+    export DOTNET_ROOT
+fi
+
+if [[ -d "/usr/share/dotnet" ]]; then
+    PATH="/usr/share/dotnet:${PATH}"
+fi
+
+if [[ -d "/usr/local/share/dotnet" ]]; then
+    PATH="/usr/local/share/dotnet:${PATH}"
+fi
+
+ensure_node_runtime > /dev/null 2>&1
+
 require_tool() {
     if command -v "$1" > /dev/null 2>&1; then
         return 0
     fi
 
+    if [[ "$1" != "node" ]]; then
+        ensure_node_runtime
+
+        if command -v "$1" > /dev/null 2>&1; then
+            return 0
+        fi
+    fi
+
     printf "%b" "${RED}✗ Required tool '$1' was not found.${NC}\n" >&2
+
+    if [[ "$1" != "node" ]] && ! command -v node > /dev/null 2>&1; then
+        printf "%b" "${YELLOW}Git hooks run in a non-interactive shell. If you use fnm, ensure it is installed and available on PATH for Git processes.${NC}\n" >&2
+    fi
+
     printf "%b" "${YELLOW}Run 'npm install' in ${REPO_ROOT} and try the commit again.${NC}\n" >&2
     exit 1
 }
@@ -119,6 +164,7 @@ echo "Checking .NET code formatting..."
 CHANGED_CS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.cs$' || true)
 
 if test -n "${CHANGED_CS_FILES}"; then
+    require_tool dotnet
     printf "%b" "${YELLOW}Auto-fixing .NET code formatting...${NC}\n"
 
     if dotnet format whitespace --verbosity quiet; then
