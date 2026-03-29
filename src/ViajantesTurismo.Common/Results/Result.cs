@@ -233,7 +233,7 @@ public readonly struct Result : IEquatable<Result>
 /// Used instead of exceptions for business rule validation.
 /// </summary>
 /// <typeparam name="T">The type of the value returned on success.</typeparam>
-[SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
+[SuppressMessage(SuppressConstants.CategoryDesign, SuppressConstants.CheckIdCA1000,
     Justification = "Result<T> exposes static factory methods for discoverability and fluent usage; external factory would reduce ergonomics and clarity.")]
 public readonly struct Result<T> : IEquatable<Result<T>>
     where T : notnull
