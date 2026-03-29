@@ -1,7 +1,9 @@
 # ViajantesTurismo 🚴‍♂️🌍
 
 [![CI](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/ci.yml)
+[![Secret Scan](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/secret-scan.yml/badge.svg?branch=main)](https://github.com/danigutsch/ViajantesTurismo/actions/workflows/secret-scan.yml)
 [![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=danigutsch_ViajantesTurismo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=danigutsch_ViajantesTurismo)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=danigutsch_ViajantesTurismo&metric=coverage)](https://sonarcloud.io/summary/new_code?id=danigutsch_ViajantesTurismo)
 [![License](https://img.shields.io/github/license/danigutsch/ViajantesTurismo)](https://github.com/danigutsch/ViajantesTurismo/blob/main/LICENSE.txt)
 
 A modern tourism agency application specialising in group bike tours around the world.
@@ -273,6 +275,11 @@ workflow definitions change, and a supplemental devcontainer smoke workflow
 runs on a weekly schedule, on demand, and when devcontainer/bootstrap files change to catch
 environment drift in the repository's containerized development path.
 
+In addition to the main CI workflow, a separate `Secret Scan` workflow runs on pull requests and
+pushes to `main`. Unlike the path-scoped governance workflows, this check is intended to be part of
+the merge gate because it is fast, broadly applicable, and designed to catch accidental secret
+exposure before merge.
+
 SonarCloud `Automatic Analysis` must remain disabled for this repository because
 hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
 the SonarCloud job to fail with a duplicate-analysis error.
@@ -336,6 +343,7 @@ Once branch protection is configured, require these job names:
 - `Build and Test`
 - `Lint`
 - `Dependency Review`
+- `Secret Scan`
 - `SonarCloud`
 
 See [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_ROLLOUT.md) for the action versioning policy and
