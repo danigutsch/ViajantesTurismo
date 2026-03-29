@@ -33,10 +33,20 @@ on:
       - scripts/run-devcontainer-smoke.sh
   schedule:
     - cron: '0 6 * * 1'
+    - cron: '0 6 1 * *'
   workflow_dispatch:
+    inputs:
+      validation_mode:
+        description: Validation level to run inside the devcontainer
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - full
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.event_name == 'schedule' && github.event.schedule || github.event_name == 'workflow_dispatch' && inputs.validation_mode || 'default' }}
   cancel-in-progress: true
 
 permissions:
@@ -46,7 +56,7 @@ jobs:
   devcontainer-smoke:
     name: Devcontainer Smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -56,9 +66,36 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Run devcontainer smoke script
+      - name: Select devcontainer validation mode
+        id: validation-mode
         shell: bash
-        run: bash scripts/run-devcontainer-smoke.sh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule || '' }}
+          DISPATCH_MODE: ${{ inputs.validation_mode || 'smoke' }}
+        run: |
+          set -euo pipefail
+
+          mode="smoke"
+
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            mode="${DISPATCH_MODE}"
+          elif [[ "${EVENT_NAME}" == "schedule" && "${EVENT_SCHEDULE}" == '0 6 1 * *' ]]; then
+            mode="full"
+          fi
+
+          echo "mode=${mode}" >> "$GITHUB_OUTPUT"
+
+      - name: Run devcontainer validation script
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ steps.validation-mode.outputs.mode }}" == "full" ]]; then
+            bash scripts/run-devcontainer-smoke.sh --run-tests
+          else
+            bash scripts/run-devcontainer-smoke.sh
+          fi
 
       - name: Upload devcontainer smoke logs
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
