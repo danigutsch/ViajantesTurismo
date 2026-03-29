@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.WebTests.Infrastructure;
 /// <summary>
 /// In-memory fake that returns countries synchronously, avoiding real file I/O.
 /// </summary>
-internal sealed class FakeCountryService() : CountryService(null!)
+internal sealed class FakeCountryService : ICountryService
 {
     private static readonly CountryInfo[] DefaultCountries =
     [
@@ -20,7 +20,7 @@ internal sealed class FakeCountryService() : CountryService(null!)
     ];
 
     /// <inheritdoc />
-    public override Task<CountryInfo[]> GetCountries(CancellationToken ct)
+    public Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
         return Task.FromResult(DefaultCountries);
     }
