@@ -5,20 +5,26 @@ local commands used to reproduce common failures.
 
 ## Artifacts
 
-Test result artifacts are uploaded by the `build-and-test` job unconditionally
-(`if: always()`).
+When the validation path of the `build-and-test` job runs, the `test-results`,
+`coverage-report`, and `sonar-coverage` artifacts are uploaded with `if: always()` so
+they are preserved regardless of test success or failure. For documentation-only changes
+that take the lightweight docs-only path, these artifacts are not produced or uploaded.
+The focused `build-test-diagnostics` artifact is uploaded only when the job fails.
 
 | Artifact name | Contents | Retention |
 | --- | --- | --- |
 | `test-results` | `**/TestResults/**` from all test projects | 7 days |
 | `coverage-report` | Aggregated HTML report under `TestResults/CoverageReport/**` | 7 days |
+| `sonar-coverage` | Aggregated SonarCloud coverage input at `TestResults/sonar-coverage.xml` | 7 days |
 | `build-test-diagnostics` | Focused summary file under `TestResults/ci-diagnostics/**` when build/test fails | 7 days |
 
 The artifact includes per-project `TestResults` folders, which contain `.trx` result files
 and `coverage.cobertura.xml` when coverage collection is enabled.
 
-If the test step ran, missing result files are treated as an error because that indicates
-the test infrastructure did not produce the expected outputs.
+For local validation, missing result files are treated as an error because that indicates
+the test infrastructure did not produce the expected outputs. In CI, artifact upload is
+best-effort (`if-no-files-found: ignore`), so missing result files do not by themselves
+fail the workflow but should still be investigated.
 
 The HTML coverage artifact is generated from those per-project Cobertura files with the
 repo's local `reportgenerator` tool manifest entry.
