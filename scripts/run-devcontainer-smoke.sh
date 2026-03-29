@@ -7,6 +7,7 @@ workspace_folder="${repo_root}"
 log_dir="${DEVCONTAINER_SMOKE_LOG_DIR:-${repo_root}/TestResults/devcontainer-smoke}"
 devcontainer_cli_version="${DEVCONTAINER_CLI_VERSION:-0.84.1}"
 keep_container="${DEVCONTAINER_SMOKE_KEEP_CONTAINER:-0}"
+run_tests="${DEVCONTAINER_SMOKE_RUN_TESTS:-0}"
 container_id=""
 
 print_step() {
@@ -39,6 +40,7 @@ write_metadata() {
 workspace_folder=${workspace_folder}
 log_dir=${log_dir}
 devcontainer_cli_version=${devcontainer_cli_version}
+run_tests=${run_tests}
 container_id=${container_id}
 EOF
 }
@@ -67,16 +69,40 @@ cleanup() {
 main() {
     local up_log_path="${log_dir}/devcontainer-up.log"
     local verify_log_path="${log_dir}/devcontainer-verify.log"
+    local test_log_path="${log_dir}/devcontainer-test.log"
     local metadata_path="${log_dir}/metadata.txt"
     local up_exit_code="0"
+    local workspace_folder_override=""
 
-    if [[ $# -gt 1 ]]; then
-        printf "Usage: %s [workspace-folder]\n" "$0" >&2
-        exit 1
-    fi
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --run-tests)
+                run_tests="1"
+                ;;
+            --help|-h)
+                printf "Usage: %s [--run-tests] [workspace-folder]\n" "$0"
+                exit 0
+                ;;
+            --*)
+                printf "Unknown option '%s'.\n" "$1" >&2
+                printf "Usage: %s [--run-tests] [workspace-folder]\n" "$0" >&2
+                exit 1
+                ;;
+            *)
+                if [[ -n "${workspace_folder_override}" ]]; then
+                    printf "Usage: %s [--run-tests] [workspace-folder]\n" "$0" >&2
+                    exit 1
+                fi
 
-    if [[ $# -eq 1 ]]; then
-        workspace_folder="$(cd -- "$1" && pwd)"
+                workspace_folder_override="$1"
+                ;;
+        esac
+
+        shift
+    done
+
+    if [[ -n "${workspace_folder_override}" ]]; then
+        workspace_folder="$(cd -- "${workspace_folder_override}" && pwd)"
     fi
 
     if [[ ! -f "${workspace_folder}/.devcontainer/devcontainer.json" ]]; then
@@ -121,6 +147,14 @@ main() {
         git --version
         docker version --format "{{.Server.Version}}"
     ' 2>&1 | tee "${verify_log_path}"
+
+    if [[ "${run_tests}" == "1" ]]; then
+        print_step "Running test suite inside the devcontainer"
+        run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
+            set -euo pipefail
+            dotnet test --solution ViajantesTurismo.slnx --no-build
+        ' 2>&1 | tee "${test_log_path}"
+    fi
 
     print_step "Devcontainer smoke validation completed successfully"
     printf "Logs written to '%s'.\n" "${log_dir}"
