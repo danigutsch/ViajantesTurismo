@@ -267,7 +267,9 @@ Every pull request and push to `main` is validated by a GitHub Actions workflow
 (`.github/workflows/ci.yml`). Hosted SonarCloud analysis is executed inside the same validation
 workflow so build, Playwright setup, test execution, coverage generation, and code quality
 analysis happen in a single pipeline instead of two duplicated pipelines. A supplemental
-devcontainer smoke workflow (`.github/workflows/devcontainer-smoke.yml`)
+workflow lint check (`.github/workflows/actionlint.yml`) validates GitHub Actions files when
+workflow definitions change, and a supplemental devcontainer smoke workflow
+(`.github/workflows/devcontainer-smoke.yml`)
 runs on a weekly schedule, on demand, and when devcontainer/bootstrap files change to catch
 environment drift in the repository's containerized development path.
 
@@ -282,6 +284,9 @@ The main CI workflow runs three relevant jobs:
 | **Build and Test** | Detects docs-only changes, skips expensive validation work when only `docs/**`, `README.md`, or `CONTRIBUTING.md` changed, otherwise provisions .NET and Node, restores, builds, installs Playwright browsers, runs tests, collects coverage, performs SonarCloud analysis, and uploads diagnostics and coverage artifacts |
 | **SonarCloud** | Publishes a separate required status check that reflects the SonarCloud analysis performed inside `Build and Test` |
 | **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
+
+Workflow concurrency cancels stale runs for pull requests and other non-`main` refs, but it keeps
+in-flight `main` validations running so the protected branch retains a stable post-merge record.
 
 ### Reproducing CI locally
 
@@ -312,7 +317,8 @@ so required checks still resolve cleanly. The change-detection logic lives in `s
 and defaults to running the full job if the diff cannot be evaluated reliably.
 When tests run, CI also publishes a `coverage-report` artifact containing an aggregated HTML report
 and a `sonar-coverage` artifact containing the SonarQube XML input generated during the same
-validation run.
+validation run. Coverage-related uploads are best-effort so an early build/test failure does not
+create a second "artifact missing" failure that obscures the real problem.
 The `Devcontainer Smoke` workflow brings up the repository devcontainer with the pinned
 `@devcontainers/cli`, executes the configured lifecycle scripts, verifies .NET, Node, Git, and
 Docker access inside the container, and uploads logs on failure.
