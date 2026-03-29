@@ -11,6 +11,7 @@ Requirements:
 - Use Conventional Commits: `<type>[optional scope]: <description>`.
 - Allowed types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
 - Keep the header at or under 100 characters.
+- If a body is included, wrap every body line to 100 characters or less.
 - If a body adds value, insert one blank line after the header before the body.
 - Prefer one message that captures the primary intent of the change. Do not stack multiple headers.
 
