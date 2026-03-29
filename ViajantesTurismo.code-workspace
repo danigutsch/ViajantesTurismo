@@ -40,6 +40,16 @@
 			"source.fixAll.markdownlint": "explicit",
 			"source.organizeImports": "explicit"
 		},
+		"github.copilot.chat.commitMessageGeneration.instructions": [
+			{
+				"text": "Use Conventional Commits in the form `<type>[optional scope]: <description>`. Allowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test. Keep the header at or under 100 characters. If a body adds value, insert a blank line after the header before the body."
+			}
+		],
+		"github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+			{
+				"text": "Follow `docs/pull_request_template.md` when drafting pull request descriptions. Use the sections `Summary`, `Changes`, `Validation`, and `Checklist`. Preserve the checklist items, record which validation steps actually ran, and mark items that were not run with a brief reason."
+			}
+		],
 		"chat.tools.terminal.autoApprove": {
 			"dotnet test": true
 		}

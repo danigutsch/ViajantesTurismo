@@ -2,66 +2,49 @@
 
 Repository-wide agent instructions for ViajantesTurismo.
 
-This file is intended to be concise, actionable, and tool-agnostic for agents that support `AGENTS.md`.
-For scoped rules, use nested `AGENTS.md` files and `.github/instructions/*.instructions.md`.
+This file is intended to stay concise and cover only repository-wide guidance.
+Use nested `AGENTS.md` files and `.github/instructions/*.instructions.md` for scoped rules.
 
 ## Scope and precedence
 
 - Applies to the entire repository.
-- Scoped `AGENTS.md` files exist for:
-    - `tests/AGENTS.md`
+- More specific `AGENTS.md` files and `.github/instructions/*.instructions.md` files override this file for their scope.
+- Current scoped guidance includes:
     - `src/ViajantesTurismo.Admin.Domain/AGENTS.md`
-- Use specialized instruction files for scoped rules:
+    - `tests/AGENTS.md`
     - `.github/instructions/backend-domain.instructions.md`
     - `.github/instructions/tests.instructions.md`
-- If instruction files conflict, follow the most specific instruction for the files being edited
-    (nearest nested `AGENTS.md` first, then root `AGENTS.md`).
+    - `.github/instructions/integration-tests.instructions.md`
 
-## Project guidelines
-
-### Code style
+## Repository-wide coding rules
 
 - Follow `docs/CODING_GUIDELINES.md` and `.editorconfig`.
 - Use file-scoped namespaces, 4-space indentation, nullable reference types, and XML docs on public APIs.
-- Do not append the `Async` suffix to method names; use intention-revealing names
-    without the suffix, including for asynchronous methods.
+- Do not append the `Async` suffix to method names.
 - Treat warnings as errors (`Directory.Build.props`).
 
-### Architecture
+## Architecture
 
 - Respect Clean Architecture boundaries:
     - Domain: `src/ViajantesTurismo.Admin.Domain`
     - Application: `src/ViajantesTurismo.Admin.Application`
     - Infrastructure: `src/ViajantesTurismo.Admin.Infrastructure`
     - API: `src/ViajantesTurismo.Admin.ApiService`
-- Keep domain logic in aggregates/value objects.
-- Use `Result` / `Result<T>` for expected validation failures.
-- Enforce aggregate boundaries (for example, booking lifecycle flows through `Tour`).
-- Use `ContractConstants` (`src/ViajantesTurismo.Admin.Contracts/ContractConstants.cs`) for shared limits.
+- Keep business rules in the Domain layer; do not move them into API or infrastructure code.
 
-### Build and test
+## Build and validation
 
 - Setup: `setup-dev.ps1` (Windows) or `setup-dev.sh` (Unix).
 - Build: `dotnet build ViajantesTurismo.slnx`.
 - Run app: `dotnet run --project src/ViajantesTurismo.AppHost`.
 - Run tests: `dotnet test --solution ViajantesTurismo.slnx`.
 - Single test project: `dotnet test --project <path-to-csproj>`.
-- Tests should be independent and not rely on pre-seeded data where avoidable.
-- This repo uses xUnit v3 + Microsoft.Testing.Platform (MTP):
-    - Prefer `--filter-class`, `--filter-method`, `--filter-namespace`, `--filter-trait`.
-    - Do not use legacy VSTest `--filter "FullyQualifiedName~..."` syntax.
-    - Put test-host arguments after `--` when required.
-
-### Quality checks
-
+- This repo uses xUnit v3 + Microsoft.Testing.Platform (MTP);
+    prefer `--filter-class`, `--filter-method`, `--filter-namespace`, and `--filter-trait`
+    over legacy VSTest filters.
+- Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`.
-- Docs/scripts/spec quality checks:
-    - `npm run lint:all`
-    - `npm run lint:all:fix`
-- Linting is separate from build.
-- When generating or suggesting commit messages, use Conventional Commits in the form
-    `<type>[optional scope]: <description>`.
-- Allowed commit types: `feat`, `fix`, `docs`, `ci`, `build`, `test`, `refactor`, `perf`, `style`, `chore`, `revert`.
+- Docs/scripts/spec quality checks: `npm run lint:all`, `npm run lint:all:fix`.
 
 ## Aspire operations
 
