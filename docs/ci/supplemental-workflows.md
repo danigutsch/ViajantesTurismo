@@ -105,16 +105,14 @@ pushes that touch devcontainer and bootstrap inputs such as `.devcontainer/**`, 
 
 1. Checkout repository (`actions/checkout`).
 2. Set up Node.js from `.nvmrc` (`actions/setup-node`).
-3. Run `devcontainer up` via the pinned `@devcontainers/cli` package to build and start the
-   repository devcontainer.
-4. Allow the configured `onCreateCommand`, `postCreateCommand`, and `postStartCommand`
-   lifecycle hooks to execute as part of container creation.
-5. Run `devcontainer exec` to verify .NET, Node.js, Git, and Docker access inside the
-   container.
-6. Parse the started container ID from the `devcontainer up` log and remove the container
-   with `docker rm -f` during cleanup.
-7. Upload `devcontainer-smoke-logs` when the workflow fails.
+3. Run `bash scripts/run-devcontainer-smoke.sh`.
+4. Let the shared script build the devcontainer, run lifecycle hooks, verify .NET, Node.js,
+   Git, and Docker access, and remove the temporary container during cleanup.
+5. Upload `devcontainer-smoke-logs` when the workflow fails.
 
 This workflow is intentionally supplemental rather than required. It is meant to catch
 environment drift in the repository's containerized developer path without expanding the
 required pull-request gate for ordinary application changes.
+
+Because the workflow now uses the same script contributors can run locally, failures are
+more reproducible and devcontainer changes only need to update one smoke-validation path.

@@ -15,6 +15,7 @@ on:
       - Directory.Packages.props
       - ViajantesTurismo.slnx
       - scripts/install-git-hooks.sh
+      - scripts/run-devcontainer-smoke.sh
   push:
     branches:
       - main
@@ -29,6 +30,7 @@ on:
       - Directory.Packages.props
       - ViajantesTurismo.slnx
       - scripts/install-git-hooks.sh
+      - scripts/run-devcontainer-smoke.sh
   schedule:
     - cron: '0 6 * * 1'
   workflow_dispatch:
@@ -54,47 +56,9 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Create devcontainer smoke log directory
+      - name: Run devcontainer smoke script
         shell: bash
-        run: mkdir -p TestResults/devcontainer-smoke
-
-      - name: Build and start devcontainer
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm exec --yes --package @devcontainers/cli@0.84.1 -- \
-            devcontainer up --workspace-folder . --log-level trace \
-            2>&1 | tee TestResults/devcontainer-smoke/devcontainer-up.log
-
-          container_id="$(grep -aEo '"containerId":"[^"]+' TestResults/devcontainer-smoke/devcontainer-up.log | tail -1 | cut -d'"' -f4)"
-          if [[ -z "${container_id}" ]]; then
-            echo "Failed to determine devcontainer container ID from devcontainer-up.log." >&2
-            exit 1
-          fi
-
-          echo "DEVCONTAINER_CONTAINER_ID=${container_id}" >> "$GITHUB_ENV"
-
-      - name: Verify container toolchain and Docker access
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm exec --yes --package @devcontainers/cli@0.84.1 -- \
-            devcontainer exec --workspace-folder . bash -lc '
-              set -euo pipefail
-              dotnet --version
-              node --version
-              git --version
-              docker version --format "{{.Server.Version}}"
-            ' 2>&1 | tee TestResults/devcontainer-smoke/devcontainer-verify.log
-
-      - name: Stop devcontainer
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -n "${DEVCONTAINER_CONTAINER_ID:-}" ]]; then
-            docker rm -f "${DEVCONTAINER_CONTAINER_ID}"
-          fi
+        run: bash scripts/run-devcontainer-smoke.sh
 
       - name: Upload devcontainer smoke logs
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
