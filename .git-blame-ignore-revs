@@ -1,0 +1,11 @@
+# Add one commit SHA per line for revisions that are clearly mechanical and do not
+# change behavior.
+#
+# Good candidates include formatting-only commits, markdown rewraps, generated-file
+# refreshes, or whitespace normalization.
+#
+# Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# This file intentionally starts empty. The current history review did not surface a
+# recent commit that was clearly behavior-free enough to ignore safely.
