@@ -2,8 +2,16 @@ name: CI
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
     branches:
       - main
+  merge_group:
+    types:
+      - checks_requested
   push:
     branches:
       - main
@@ -45,33 +53,41 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
+    env:
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
 
-      - name: Build solution
-        id: build-solution
-        run: dotnet build ViajantesTurismo.slnx --no-restore
+      - name: Cache SonarCloud packages
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonarcloud-cache-v1
+          restore-keys: |
+            ${{ runner.os }}-sonarcloud-cache-
 
-      - name: Install Playwright browsers
-        id: install-playwright
-        run: bash scripts/install-playwright.sh
-
-      - name: Run tests
-        id: run-tests
-        run: bash scripts/run-tests-with-coverage.sh
+      - name: Run build, tests, coverage, and SonarCloud analysis
+        id: run-validation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: bash scripts/run-sonar-analysis.sh
 
       - name: Capture build and test diagnostics
         if: ${{ failure() }}
         env:
-          BUILD_OUTCOME: ${{ steps.build-solution.outcome }}
-          PLAYWRIGHT_OUTCOME: ${{ steps.install-playwright.outcome }}
-          TEST_OUTCOME: ${{ steps.run-tests.outcome }}
+          BUILD_OUTCOME: ${{ steps.run-validation.outcome }}
+          PLAYWRIGHT_OUTCOME: included-in-validation
+          TEST_OUTCOME: included-in-validation
         run: |
           bash scripts/collect-ci-build-test-diagnostics.sh \
             "$BUILD_OUTCOME" \
@@ -89,7 +105,7 @@ jobs:
 
       - name: Upload test results
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        if: ${{ always() && steps.run-tests.outcome != 'skipped' }}
+        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
         with:
           if-no-files-found: error
           name: test-results
@@ -98,12 +114,47 @@ jobs:
 
       - name: Upload coverage report
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        if: ${{ always() && steps.run-tests.outcome != 'skipped' }}
+        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
         with:
           if-no-files-found: error
           name: coverage-report
           path: "TestResults/CoverageReport/**"
           retention-days: 7
+
+      - name: Upload Sonar coverage input
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+        with:
+          if-no-files-found: error
+          name: sonar-coverage
+          path: TestResults/sonar-coverage.xml
+          retention-days: 7
+
+  sonarcloud:
+    name: SonarCloud
+    needs:
+      - detect-changes
+      - build-and-test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Report SonarCloud status
+        shell: bash
+        run: |
+          if [[ "${{ needs.detect-changes.outputs.build_required }}" != "true" ]]; then
+              echo "SonarCloud analysis was skipped because only documentation changes were detected."
+              exit 0
+          fi
+
+          if [[ "${{ needs.build-and-test.result }}" == "success" ]]; then
+              echo "SonarCloud analysis completed successfully within the Build and Test job."
+              exit 0
+          fi
+
+          echo "SonarCloud analysis failed within the Build and Test job." >&2
+          exit 1
 
   lint:
     name: Lint
