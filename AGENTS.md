@@ -119,6 +119,13 @@ Always prefer official docs:
 2. `https://learn.microsoft.com/dotnet/aspire`
 3. `https://nuget.org` (for integration package details)
 
+## Problem-solving behavior
+
+- When hitting a dead end or encountering an unfamiliar rule, tool, or error, **do not assume the cause**.
+- Research online (official docs, source code, community forums) before proposing a fix.
+- Never make speculative changes to code without understanding the actual rule logic or root cause.
+- Ask clarifying questions when unsure rather than guessing.
+
 ## Key references
 
 - `README.md`
