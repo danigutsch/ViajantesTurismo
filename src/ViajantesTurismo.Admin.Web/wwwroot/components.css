@@ -23,34 +23,34 @@
 /* Action button variants with icons - consistent across tables */
 .btn-action-view {
     background-color: transparent;
-    border-color: #17a2b8;
-    color: #17a2b8;
+    border-color: #087990;
+    color: #087990;
 }
 
 .btn-action-view:hover {
-    background-color: #117a8b;
+    background-color: #065d72;
     color: white;
 }
 
 .btn-action-edit {
     background-color: transparent;
-    border-color: #007bff;
-    color: #007bff;
+    border-color: #0a58ca;
+    color: #0a58ca;
 }
 
 .btn-action-edit:hover {
-    background-color: #0056b3;
+    background-color: #084298;
     color: white;
 }
 
 .btn-action-confirm {
     background-color: transparent;
-    border-color: #28a745;
-    color: #28a745;
+    border-color: #146c43;
+    color: #146c43;
 }
 
 .btn-action-confirm:hover {
-    background-color: #1e7e34;
+    background-color: #0f5132;
     color: white;
 }
 
