@@ -18,7 +18,7 @@ check rather than the default gate for every change.
 
 Branch protection is configured on `main`, and a representative pull request has completed successfully with the
 required checks `Build and Test`, `Lint`, `Dependency Review`, and `SonarCloud`; the dependency review gate is implemented by the
-separate `.github/workflows/dependency-review.yml` workflow described in `docs/CI_GOVERNANCE_ROLLOUT.md`. Any
+separate `.github/workflows/dependency-review.yml` workflow described in `docs/ci/overview.md`. Any
 remaining CI enhancements should be treated as follow-up work, not blockers for the baseline rollout. Coverage is
 published both as GitHub Actions artifacts and through a dedicated SonarCloud analysis workflow;
 planned follow-up work should focus on policy tuning, scheduled supplemental validation, future
