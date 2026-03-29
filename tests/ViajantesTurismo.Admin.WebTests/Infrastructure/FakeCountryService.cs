@@ -22,6 +22,6 @@ internal sealed class FakeCountryService : ICountryService
     /// <inheritdoc />
     public Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
-        return Task.FromResult(DefaultCountries);
+        return Task.FromResult(DefaultCountries.ToArray());
     }
 }

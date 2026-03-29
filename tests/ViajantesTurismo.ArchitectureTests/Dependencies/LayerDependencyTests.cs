@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using ArchUnitNET.Domain;
 using ArchUnitNET.Fluent.Syntax.Elements.Types;
+using ArchUnitNET.xUnitV3;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
@@ -27,7 +28,7 @@ public sealed class LayerDependencyTests
             .AndShould().NotDependOnAny(ApiTypes)
             .Because("the domain layer must stay persistence and transport agnostic");
 
-        Assert.True(rule.HasNoViolations(Architecture), rule.Description);
+        ArchRuleAssert.CheckRule(Architecture, rule);
     }
 
     [Fact]
@@ -38,7 +39,7 @@ public sealed class LayerDependencyTests
             .AndShould().NotDependOnAny(InfrastructureTypes)
             .Because("application services orchestrate domain logic and should not reference adapters");
 
-        Assert.True(rule.HasNoViolations(Architecture), rule.Description);
+        ArchRuleAssert.CheckRule(Architecture, rule);
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public sealed class LayerDependencyTests
             .Should().NotDependOnAny(ApiTypes)
             .Because("infrastructure should expose persistence and integration adapters independently of transport");
 
-        Assert.True(rule.HasNoViolations(Architecture), rule.Description);
+        ArchRuleAssert.CheckRule(Architecture, rule);
     }
 
     private static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
