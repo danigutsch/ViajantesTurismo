@@ -280,6 +280,10 @@ pushes to `main`. Unlike the path-scoped governance workflows, this check is int
 the merge gate because it is fast, broadly applicable, and designed to catch accidental secret
 exposure before merge.
 
+For pull requests from forks, `Secret Scan` still runs the Gitleaks scan and fails on detected
+secrets, but it skips GitHub code-scanning SARIF upload when the token cannot write
+`security-events`. In that case, the workflow uploads the SARIF file as a regular artifact instead.
+
 SonarCloud `Automatic Analysis` must remain disabled for this repository because
 hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
 the SonarCloud job to fail with a duplicate-analysis error.
@@ -291,7 +295,7 @@ The main CI workflow runs three relevant jobs:
 
 | Job | What it does |
 | --- | --- |
-| **Build and Test** | Detects docs-only changes, skips expensive validation work when only `docs/**`, `README.md`, or `CONTRIBUTING.md` changed, otherwise provisions .NET and Node, restores, builds, installs Playwright browsers, runs tests, collects coverage, performs SonarCloud analysis, and uploads diagnostics and coverage artifacts |
+| **Build and Test** | Always runs; for docs-only changes it records a successful check via a lightweight docs-only step and skips expensive validation work, otherwise it provisions .NET and Node, restores, builds, installs Playwright browsers, runs tests, collects coverage, performs SonarCloud analysis, and uploads diagnostics and coverage artifacts |
 | **SonarCloud** | Publishes a separate required status check that reflects the SonarCloud analysis performed inside `Build and Test` |
 | **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
 
@@ -321,7 +325,8 @@ npm run lint:all
 build steps above, not as a standalone replacement for the full CI sequence.
 
 For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), the `Build and Test`
-job records a passing check but skips the restore, build, Playwright, and test commands above.
+job records a passing check through a lightweight docs-only step but skips the restore, build,
+Playwright, and test commands above.
 The workflow intentionally does this inside the job graph instead of using trigger-level path filters,
 so required checks still resolve cleanly. The change-detection logic lives in `scripts/detect-changes.sh`
 and defaults to running the full job if the diff cannot be evaluated reliably.

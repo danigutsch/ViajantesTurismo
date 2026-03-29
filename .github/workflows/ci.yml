@@ -49,7 +49,6 @@ jobs:
   build-and-test:
     name: Build and Test
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,16 +57,26 @@ jobs:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
+      - name: Skip expensive validation for docs-only changes
+        if: ${{ needs.detect-changes.outputs.build_required != 'true' }}
+        shell: bash
+        run: |
+          echo "Only documentation changes were detected."
+          echo "Build, test, coverage, and SonarCloud analysis are intentionally skipped."
+
       - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
 
       - name: Cache SonarCloud packages
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ~/.sonar/cache
@@ -76,6 +85,7 @@ jobs:
             ${{ runner.os }}-sonarcloud-cache-
 
       - name: Run build, tests, coverage, and SonarCloud analysis
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
         id: run-validation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
