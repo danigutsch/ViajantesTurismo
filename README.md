@@ -284,6 +284,9 @@ SonarCloud `Automatic Analysis` must remain disabled for this repository because
 hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
 the SonarCloud job to fail with a duplicate-analysis error.
 
+The SonarCloud quality gate already carries the repository's current coverage threshold policy,
+including the existing 80% coverage gate.
+
 The main CI workflow runs three relevant jobs:
 
 | Job | What it does |

@@ -35,11 +35,12 @@ jobs:
         shell: bash
         run: |
           archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          checksums="actionlint_${ACTIONLINT_VERSION}_checksums.txt"
           base_url="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
 
           curl -fsSLo "$archive" "$base_url/$archive"
-          curl -fsSLo checksums.txt "$base_url/checksums.txt"
-          grep "  $archive$" checksums.txt | sha256sum --check --status
+          curl -fsSLo "$checksums" "$base_url/$checksums"
+          grep "  $archive$" "$checksums" | sha256sum --check --status
           tar -xzf "$archive" actionlint
           sudo install actionlint /usr/local/bin/actionlint
 
