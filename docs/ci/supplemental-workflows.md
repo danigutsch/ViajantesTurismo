@@ -88,9 +88,10 @@ check name instead of stalling on a missing governance result.
 ## Devcontainer smoke workflow
 
 A separate workflow (`.github/workflows/devcontainer-smoke.yml`) runs supplemental
-devcontainer validation on a weekly schedule, on manual dispatch, and for pull requests or
-pushes that touch devcontainer and bootstrap inputs such as `.devcontainer/**`, `.nvmrc`,
-`global.json`, or dependency manifests for npm and NuGet packages.
+devcontainer validation on a weekly schedule, on a monthly deeper-validation schedule, on
+manual dispatch, and for pull requests or pushes that touch devcontainer and bootstrap inputs
+such as `.devcontainer/**`, `.nvmrc`, `global.json`, or dependency manifests for npm and
+NuGet packages.
 
 ### Devcontainer Smoke
 
@@ -105,10 +106,15 @@ pushes that touch devcontainer and bootstrap inputs such as `.devcontainer/**`, 
 
 1. Checkout repository (`actions/checkout`).
 2. Set up Node.js from `.nvmrc` (`actions/setup-node`).
-3. Run `bash scripts/run-devcontainer-smoke.sh`.
-4. Let the shared script build the devcontainer, run lifecycle hooks, verify .NET, Node.js,
-   Git, and Docker access, and remove the temporary container during cleanup.
-5. Upload `devcontainer-smoke-logs` when the workflow fails.
+3. Choose a validation mode.
+    - Weekly schedule, pull requests, and pushes use the default smoke path.
+    - Monthly schedule and manual full runs use the deeper mode.
+4. Run `bash scripts/run-devcontainer-smoke.sh` for smoke validation or
+   `bash scripts/run-devcontainer-smoke.sh --run-tests` for the deeper mode.
+5. Let the shared script build the devcontainer, run lifecycle hooks, verify .NET, Node.js,
+   Git, and Docker access, and optionally run `dotnet test --solution ViajantesTurismo.slnx`
+   inside the container before cleanup.
+6. Upload `devcontainer-smoke-logs` when the workflow fails.
 
 This workflow is intentionally supplemental rather than required. It is meant to catch
 environment drift in the repository's containerized developer path without expanding the
@@ -116,3 +122,5 @@ required pull-request gate for ordinary application changes.
 
 Because the workflow now uses the same script contributors can run locally, failures are
 more reproducible and devcontainer changes only need to update one smoke-validation path.
+The weekly cadence keeps the low-cost baseline fresh, while the monthly full run checks that
+the complete in-container test suite still works without paying that cost every week.
