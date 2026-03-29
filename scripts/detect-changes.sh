@@ -15,7 +15,8 @@ require_build() {
 
     echo "${message}"
     set_build_required true
-    exit 0
+
+    return 0
 }
 
 if [[ -z "${GITHUB_OUTPUT:-}" ]]; then
@@ -26,21 +27,25 @@ fi
 if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" ]]; then
     if [[ -z "${GITHUB_BASE_SHA:-}" || -z "${GITHUB_HEAD_SHA:-}" ]]; then
         require_build "Build and test will run because pull request SHAs are unavailable."
+        exit 0
     fi
 
     diff_range="${GITHUB_BASE_SHA}...${GITHUB_HEAD_SHA}"
 elif [[ "${GITHUB_EVENT_NAME:-}" == "push" ]]; then
     if [[ "${GITHUB_BEFORE_SHA:-}" == "0000000000000000000000000000000000000000" ]]; then
         require_build "Build and test will run for the first push on a branch."
+        exit 0
     fi
 
     if [[ -z "${GITHUB_BEFORE_SHA:-}" || -z "${GITHUB_AFTER_SHA:-}" ]]; then
         require_build "Build and test will run because push SHAs are unavailable."
+        exit 0
     fi
 
     diff_range="${GITHUB_BEFORE_SHA}..${GITHUB_AFTER_SHA}"
 else
     require_build "Build and test will run for event '${GITHUB_EVENT_NAME:-unknown}'."
+    exit 0
 fi
 
 build_required=false
@@ -48,6 +53,7 @@ changed_files=""
 
 if ! changed_files="$(git diff --name-only "${diff_range}")"; then
     require_build "Build and test will run because the change range '${diff_range}' could not be evaluated."
+    exit 0
 fi
 
 while IFS= read -r file; do
