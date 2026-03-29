@@ -36,6 +36,7 @@ dotnet tool run dotnet-sonarscanner begin \
     "/k:${sonar_project_key}" \
     "/d:sonar.token=${sonar_token}" \
     "/d:sonar.coverageReportPaths=${coverage_report}" \
+    "/d:sonar.exclusions=**/Migrations/**" \
     "/d:sonar.qualitygate.wait=true" \
     "/d:sonar.qualitygate.timeout=300"
 
