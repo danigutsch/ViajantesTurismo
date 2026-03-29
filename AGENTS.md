@@ -42,6 +42,8 @@ Use nested `AGENTS.md` files and `.github/instructions/*.instructions.md` for sc
 - This repo uses xUnit v3 + Microsoft.Testing.Platform (MTP);
     prefer `--filter-class`, `--filter-method`, `--filter-namespace`, and `--filter-trait`
     over legacy VSTest filters.
+- Commit messages must pass `commitlint`; use Conventional Commits, keep the header at or under
+    100 characters, and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`.
 - Docs/scripts/spec quality checks: `npm run lint:all`, `npm run lint:all:fix`.

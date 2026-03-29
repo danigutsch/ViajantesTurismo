@@ -28,6 +28,8 @@
 - This repo uses xUnit v3 with Microsoft.Testing.Platform (MTP);
     prefer `--filter-class`, `--filter-method`, `--filter-namespace`, and `--filter-trait`
     over legacy VSTest filters.
+- Commit messages must pass `commitlint`; use Conventional Commits, keep the header at or under
+    100 characters, and wrap every body line to 100 characters or less.
 - Use `dotnet format` for .NET formatting.
 - Use `npm run lint:all` or `npm run lint:all:fix` when touching markdown, shell, JSON, or Gherkin files.
 
