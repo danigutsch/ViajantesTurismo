@@ -462,8 +462,8 @@ See [Test Guidelines](TEST_GUIDELINES.md#bdd-coverage--ci) for coverage goals an
 
 ## Related Documentation
 
-- [CI Governance Rollout](CI_GOVERNANCE_ROLLOUT.md) - GitHub Actions workflow jobs, artifacts, failure reproduction,
-  and action trust policy
+- [CI Overview](ci/overview.md) - GitHub Actions workflow structure, required checks, and
+  links to maintainer-facing CI operations docs
 - [Test Guidelines](TEST_GUIDELINES.md) - Testing strategy and coverage goals
 - [BDD Guide](../tests/BDD_GUIDE.md) - Behavior-driven development patterns
 - [Coding Guidelines](CODING_GUIDELINES.md) - .NET coding standards

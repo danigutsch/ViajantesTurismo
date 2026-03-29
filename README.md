@@ -238,8 +238,8 @@ npm run lint:all
 ```
 
 For CI internals and maintainer-facing policy — including workflow structure, docs-only
-optimizations, artifact behavior, permissions, fork PR handling, branch protection, and SonarCloud
-operational details — see [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_ROLLOUT.md).
+optimizations, artifact behavior, permissions, fork PR handling, branch protection, and
+SonarCloud operational details — see [docs/ci/overview.md](docs/ci/overview.md).
 
 ## API Endpoints
 
