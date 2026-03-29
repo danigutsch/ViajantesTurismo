@@ -3,6 +3,9 @@
 This directory contains the configuration for developing ViajantesTurismo in a containerized environment using
  VS Code Dev Containers.
 
+For contributor-facing usage guidance and the current GitHub Codespaces support stance,
+see [../docs/DEVCONTAINER_AND_CODESPACES.md](../docs/DEVCONTAINER_AND_CODESPACES.md).
+
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running
@@ -81,6 +84,23 @@ No additional database containers are configured in the dev container - Aspire h
 
    ```bash
    dotnet test
+   ```
+
+5. **Run the Shared Smoke Validation (Optional)**:
+
+   ```bash
+   bash scripts/run-devcontainer-smoke.sh
+   ```
+
+   This runs the same non-interactive devcontainer smoke path used by
+   `.github/workflows/devcontainer-smoke.yml` and writes logs to
+   `TestResults/devcontainer-smoke`.
+
+   If you also want the temporary container to run the full solution test suite,
+   use:
+
+   ```bash
+   bash scripts/run-devcontainer-smoke.sh --run-tests
    ```
 
 ## Port Forwarding
