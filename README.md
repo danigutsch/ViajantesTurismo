@@ -231,131 +231,43 @@ dotnet test --solution ViajantesTurismo.slnx
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 ```
 
-**With Code Coverage:**
-
-```powershell
-dotnet test --solution ViajantesTurismo.slnx -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings coverage.settings.xml
-```
-
-With **xUnit v3 + Microsoft.Testing.Platform (MTP)**, a solution-level test run writes one
-`coverage.cobertura.xml` file **per test project** into that project's `TestResults` folder.
-It does **not** produce a single root-level coverage file.
-
-To generate one human-readable HTML report from all test projects, aggregate those per-project
-Cobertura files with `reportgenerator`:
-
-```powershell
-reportgenerator -reports:"tests/**/TestResults/**/coverage.cobertura.xml" -targetdir:"TestResults/CoverageReport" -reporttypes:"Html"
-```
-
-Open `TestResults/CoverageReport/index.html` after generation.
-
-**MTP/xUnit v3 note:** When passing test-host options (coverage, Playwright launch options, etc.), place them **after**
- `--`.
-For project-specific runs, prefer `--project <path-to-csproj>` instead of positional project paths.
-
 **Run All Quality Checks:**
 
 ```powershell
 npm run lint:all
 ```
 
-See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration and usage, and
-[docs/TEST_GUIDELINES.md](docs/TEST_GUIDELINES.md) for testing strategy and patterns.
+See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for tool configuration and linting usage,
+[docs/TEST_GUIDELINES.md](docs/TEST_GUIDELINES.md) for testing strategy and patterns, and
+[tests/README.md](tests/README.md) for coverage collection, MTP filtering, and test-project
+specific guidance.
 
 ## Continuous Integration
 
-Every pull request and push to `main` is validated by a GitHub Actions workflow
-(`.github/workflows/ci.yml`). Hosted SonarCloud analysis is executed inside the same validation
-workflow so build, Playwright setup, test execution, coverage generation, and code quality
-analysis happen in a single pipeline instead of two duplicated pipelines. A supplemental
-workflow lint check (`.github/workflows/actionlint.yml`) validates GitHub Actions files when
-workflow definitions change, and a supplemental devcontainer smoke workflow
-(`.github/workflows/devcontainer-smoke.yml`)
-runs on a weekly schedule, on demand, and when devcontainer/bootstrap files change to catch
-environment drift in the repository's containerized development path.
+Every pull request and push to `main` is validated by GitHub Actions. The main validation workflow
+is `.github/workflows/ci.yml`, with additional governance workflows for dependency review, secret
+scanning, workflow linting, and supplemental devcontainer checks.
 
-In addition to the main CI workflow, a separate `Secret Scan` workflow runs on pull requests and
-pushes to `main`. Unlike the path-scoped governance workflows, this check is intended to be part of
-the merge gate because it is fast, broadly applicable, and designed to catch accidental secret
-exposure before merge.
+The required checks on `main` are:
 
-For pull requests from forks, `Secret Scan` still runs the Gitleaks scan and fails on detected
-secrets, but it skips GitHub code-scanning SARIF upload when the token cannot write
-`security-events`. In that case, the workflow uploads the SARIF file as a regular artifact instead.
-
-SonarCloud `Automatic Analysis` must remain disabled for this repository because
-hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
-the SonarCloud job to fail with a duplicate-analysis error.
-
-The SonarCloud quality gate already carries the repository's current coverage threshold policy,
-including the existing 80% coverage gate.
-
-The main CI workflow runs three relevant jobs:
-
-| Job | What it does |
-| --- | --- |
-| **Build and Test** | Always runs; for docs-only changes it records a successful check via a lightweight docs-only step and skips expensive validation work, otherwise it provisions .NET and Node, restores, builds, installs Playwright browsers, runs tests, collects coverage, performs SonarCloud analysis, and uploads diagnostics and coverage artifacts |
-| **SonarCloud** | Publishes a separate required status check that reflects the SonarCloud analysis performed inside `Build and Test` |
-| **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
-
-Workflow concurrency cancels stale runs for pull requests and other non-`main` refs, but it keeps
-in-flight `main` validations running so the protected branch retains a stable post-merge record.
-
-### Reproducing CI locally
-
-The CI commands map directly to local commands:
-
-```powershell
-# Build and test (mirrors the Build and Test job)
-dotnet restore ViajantesTurismo.slnx
-dotnet tool restore
-dotnet build ViajantesTurismo.slnx --no-restore
-bash scripts/install-playwright.sh
-dotnet dev-certs https --trust || true
-export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
-bash scripts/run-tests-with-coverage.sh
-
-# Lint (mirrors the Lint job)
-npm ci --ignore-scripts
-npm run lint:all
-```
-
-`scripts/run-tests-with-coverage.sh` is a post-build helper: run it after the explicit restore and
-build steps above, not as a standalone replacement for the full CI sequence.
-
-For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), the `Build and Test`
-job records a passing check through a lightweight docs-only step but skips the restore, build,
-Playwright, and test commands above.
-The workflow intentionally does this inside the job graph instead of using trigger-level path filters,
-so required checks still resolve cleanly. The change-detection logic lives in `scripts/detect-changes.sh`
-and defaults to running the full job if the diff cannot be evaluated reliably.
-When tests run, CI also publishes a `coverage-report` artifact containing an aggregated HTML report
-and a `sonar-coverage` artifact containing the SonarQube XML input generated during the same
-validation run. Coverage-related uploads are best-effort so an early build/test failure does not
-create a second "artifact missing" failure that obscures the real problem.
-The `Devcontainer Smoke` workflow brings up the repository devcontainer with the pinned
-`@devcontainers/cli`, executes the configured lifecycle scripts, verifies .NET, Node, Git, and
-Docker access inside the container, and uploads logs on failure.
-
-To enable hosted analysis, configure these repository settings in GitHub:
-
-- Actions secret `SONAR_TOKEN`
-- Repository variable `SONAR_ORGANIZATION`
-- Repository variable `SONAR_PROJECT_KEY`
-
-### Required status checks
-
-Once branch protection is configured, require these job names:
-
-- `Build and Test`
-- `Lint`
+- `Build and Test` — build, tests, coverage, and integrated SonarCloud analysis; docs-only changes
+    use a lightweight success path
+- `Lint` — repository lint suite (`npm run lint:all`)
 - `Dependency Review`
 - `Secret Scan`
 - `SonarCloud`
 
-See [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_ROLLOUT.md) for the action versioning policy and
-governance details.
+To reproduce the core checks locally, run:
+
+```powershell
+dotnet build ViajantesTurismo.slnx
+dotnet test --solution ViajantesTurismo.slnx
+npm run lint:all
+```
+
+For CI internals and maintainer-facing policy — including workflow structure, docs-only
+optimizations, artifact behavior, permissions, fork PR handling, branch protection, and SonarCloud
+operational details — see [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_ROLLOUT.md).
 
 ## API Endpoints
 
@@ -394,18 +306,9 @@ Key patterns:
 - **Aggregate Roots**: Tour manages all Booking operations
 - **AOT Compatibility**: Library projects prepared for Native AOT with trim analyzers enabled
 
-### Native AOT Readiness
-
-The solution is prepared for Native AOT compilation:
-
-- **Library projects**: `IsAotCompatible=true` with no trim warnings
-- **API project**: Uses `CreateSlimBuilder`, JSON source generators, and Request Delegate Generator
-- **EF Core**: Compiled models generated for performance
-- **Blocked**: Full AOT publishing blocked by EF Core reflection requirements (tracked in PBI-003)
-
-See [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#native-aot-compatibility) for AOT development guidelines.
-
-See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for detailed architectural decisions.
+See [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#native-aot-compatibility) for Native
+AOT guidance and [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for the deeper
+architecture record.
 
 ## Development
 
@@ -423,15 +326,11 @@ dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Admin.Infr
 
 # Update database (run from repository root)
 dotnet ef database update --project src/ViajantesTurismo.Admin.Infrastructure --startup-project src/ViajantesTurismo.MigrationService
-
-# Alternative: Navigate to Infrastructure project directory
-cd src/ViajantesTurismo.Admin.Infrastructure
-dotnet ef migrations add MigrationName --startup-project ../ViajantesTurismo.MigrationService
-dotnet ef database update --startup-project ../ViajantesTurismo.MigrationService
 ```
 
-**Note:** Always use `ViajantesTurismo.MigrationService` as the startup project for EF Core commands. Migrations are
-stored in `ViajantesTurismo.Admin.Infrastructure/Migrations/`.
+Always use `ViajantesTurismo.MigrationService` as the startup project for EF Core commands. For
+additional migration and seeding guidance, see
+[src/ViajantesTurismo.MigrationService/README.md](src/ViajantesTurismo.MigrationService/README.md).
 
 ## Contributing
 
