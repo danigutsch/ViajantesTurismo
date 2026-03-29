@@ -28,6 +28,7 @@ fi
 coverage_report="TestResults/sonar-coverage.xml"
 coverage_reports_file="TestResults/coverage-reports.txt"
 sonar_coverage_dir="TestResults/SonarCoverage"
+coverage_html_dir="TestResults/CoverageReport"
 
 mkdir -p TestResults
 
@@ -72,10 +73,13 @@ bash scripts/collect-test-coverage.sh "${coverage_reports_file}"
 coverage_reports="$(< "${coverage_reports_file}")"
 
 rm -rf "${sonar_coverage_dir}"
+rm -rf "${coverage_html_dir}"
 
 dotnet tool run reportgenerator \
     "-reports:${coverage_reports}" \
-    "-targetdir:${sonar_coverage_dir}" \
-    "-reporttypes:SonarQube"
+    "-targetdir:${coverage_html_dir}" \
+    "-reporttypes:Html;SonarQube"
 
-cp "${sonar_coverage_dir}/SonarQube.xml" "${coverage_report}"
+mkdir -p "${sonar_coverage_dir}"
+cp "${coverage_html_dir}/SonarQube.xml" "${coverage_report}"
+cp "${coverage_html_dir}/SonarQube.xml" "${sonar_coverage_dir}/SonarQube.xml"

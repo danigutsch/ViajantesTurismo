@@ -264,9 +264,10 @@ See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for detailed tool configuration
 ## Continuous Integration
 
 Every pull request and push to `main` is validated by a GitHub Actions workflow
-(`.github/workflows/ci.yml`). Hosted code quality analysis runs in a separate
-workflow (`.github/workflows/sonar.yml`) following the same branch and pull-request
-triggers. A supplemental devcontainer smoke workflow (`.github/workflows/devcontainer-smoke.yml`)
+(`.github/workflows/ci.yml`). Hosted SonarCloud analysis is executed inside the same validation
+workflow so build, Playwright setup, test execution, coverage generation, and code quality
+analysis happen in a single pipeline instead of two duplicated pipelines. A supplemental
+devcontainer smoke workflow (`.github/workflows/devcontainer-smoke.yml`)
 runs on a weekly schedule, on demand, and when devcontainer/bootstrap files change to catch
 environment drift in the repository's containerized development path.
 
@@ -274,11 +275,12 @@ SonarCloud `Automatic Analysis` must remain disabled for this repository because
 hosted analysis is performed by the GitHub Actions workflow. Enabling both causes
 the SonarCloud job to fail with a duplicate-analysis error.
 
-The main CI workflow runs two parallel jobs:
+The main CI workflow runs three relevant jobs:
 
 | Job | What it does |
 | --- | --- |
-| **Build and Test** | Detects docs-only changes, skips expensive build/test steps when only `docs/**`, `README.md`, or `CONTRIBUTING.md` changed, otherwise provisions .NET and Node, restores, builds, installs Playwright browsers, trusts HTTPS dev cert, runs all tests, and uploads test result artifacts |
+| **Build and Test** | Detects docs-only changes, skips expensive validation work when only `docs/**`, `README.md`, or `CONTRIBUTING.md` changed, otherwise provisions .NET and Node, restores, builds, installs Playwright browsers, runs tests, collects coverage, performs SonarCloud analysis, and uploads diagnostics and coverage artifacts |
+| **SonarCloud** | Publishes a separate required status check that reflects the SonarCloud analysis performed inside `Build and Test` |
 | **Lint** | Provisions Node, installs npm dependencies, runs `npm run lint:all` |
 
 ### Reproducing CI locally
@@ -308,10 +310,9 @@ job records a passing check but skips the restore, build, Playwright, and test c
 The workflow intentionally does this inside the job graph instead of using trigger-level path filters,
 so required checks still resolve cleanly. The change-detection logic lives in `scripts/detect-changes.sh`
 and defaults to running the full job if the diff cannot be evaluated reliably.
-When tests run, CI also publishes a `coverage-report` artifact containing an aggregated HTML report.
-The separate `SonarCloud` workflow restores the repo-pinned `.NET` tools, runs SonarScanner for
-`.NET`, collects cross-platform XML coverage with `dotnet-coverage`, and waits for the SonarCloud
-quality gate result before completing.
+When tests run, CI also publishes a `coverage-report` artifact containing an aggregated HTML report
+and a `sonar-coverage` artifact containing the SonarQube XML input generated during the same
+validation run.
 The `Devcontainer Smoke` workflow brings up the repository devcontainer with the pinned
 `@devcontainers/cli`, executes the configured lifecycle scripts, verifies .NET, Node, Git, and
 Docker access inside the container, and uploads logs on failure.
