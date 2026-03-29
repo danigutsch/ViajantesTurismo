@@ -18,17 +18,17 @@ internal static class CustomerImportEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.MapPost("/customers/import", ImportCustomers)
-        .WithGroupName("Customers")
-        .WithTags("Customers")
-        .WithName("ImportCustomers")
-        .WithDescription("Imports customers from a CSV file.")
-        .WithSummary("Imports customers from a CSV file.")
-        .DisableAntiforgery();
-
-        app.MapPost("/customers/import/commit", CommitImportWithResolutions)
+        var importGroup = app.MapGroup("/customers/import")
             .WithGroupName("Customers")
-            .WithTags("Customers")
+            .WithTags("Customers");
+
+        importGroup.MapPost("/", ImportCustomers)
+            .WithName("ImportCustomers")
+            .WithDescription("Imports customers from a CSV file.")
+            .WithSummary("Imports customers from a CSV file.")
+            .DisableAntiforgery();
+
+        importGroup.MapPost("/commit", CommitImportWithResolutions)
             .WithName("CommitImportWithResolutions")
             .WithDescription("Commits customer import applying conflict resolutions.")
             .WithSummary("Commits customer import applying conflict resolutions.")
