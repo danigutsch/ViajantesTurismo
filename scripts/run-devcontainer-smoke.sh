@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "${script_dir}/.." && pwd)"
+workspace_folder="${repo_root}"
+log_dir="${DEVCONTAINER_SMOKE_LOG_DIR:-${repo_root}/TestResults/devcontainer-smoke}"
+devcontainer_cli_version="${DEVCONTAINER_CLI_VERSION:-0.84.1}"
+keep_container="${DEVCONTAINER_SMOKE_KEEP_CONTAINER:-0}"
+container_id=""
+
+print_step() {
+    printf "\n==> %s\n" "$1"
+}
+
+require_command() {
+    local command_name="$1"
+
+    if ! command -v "${command_name}" >/dev/null 2>&1; then
+        printf "Required command '%s' was not found on PATH.\n" "${command_name}" >&2
+        exit 1
+    fi
+}
+
+run_devcontainer_cli() {
+    npm exec --yes --package "@devcontainers/cli@${devcontainer_cli_version}" -- "$@"
+}
+
+extract_container_id() {
+    local up_log_path="$1"
+
+    grep -aoE '"containerId":"[^"]+' "${up_log_path}" | tail -1 | cut -d'"' -f4 || true
+}
+
+write_metadata() {
+    local metadata_path="$1"
+
+    cat >"${metadata_path}" <<EOF
+workspace_folder=${workspace_folder}
+log_dir=${log_dir}
+devcontainer_cli_version=${devcontainer_cli_version}
+container_id=${container_id}
+EOF
+}
+
+cleanup() {
+    local exit_code="$1"
+
+    trap - EXIT
+
+    if [[ -n "${container_id}" ]]; then
+        if [[ "${keep_container}" == "1" ]]; then
+            printf "Keeping devcontainer '%s' because DEVCONTAINER_SMOKE_KEEP_CONTAINER=1.\n" "${container_id}"
+        else
+            print_step "Cleaning up devcontainer ${container_id}"
+            docker rm -f "${container_id}" >/dev/null 2>&1 || true
+        fi
+    fi
+
+    if [[ "${exit_code}" -ne 0 ]]; then
+        printf "Devcontainer smoke validation failed. Inspect logs under '%s'.\n" "${log_dir}" >&2
+    fi
+
+    exit "${exit_code}"
+}
+
+main() {
+    local up_log_path="${log_dir}/devcontainer-up.log"
+    local verify_log_path="${log_dir}/devcontainer-verify.log"
+    local metadata_path="${log_dir}/metadata.txt"
+    local up_exit_code="0"
+
+    if [[ $# -gt 1 ]]; then
+        printf "Usage: %s [workspace-folder]\n" "$0" >&2
+        exit 1
+    fi
+
+    if [[ $# -eq 1 ]]; then
+        workspace_folder="$(cd -- "$1" && pwd)"
+    fi
+
+    if [[ ! -f "${workspace_folder}/.devcontainer/devcontainer.json" ]]; then
+        printf "Could not find .devcontainer/devcontainer.json under '%s'.\n" "${workspace_folder}" >&2
+        exit 1
+    fi
+
+    require_command docker
+    require_command npm
+
+    mkdir -p "${log_dir}"
+
+    trap 'cleanup "$?"' EXIT
+
+    print_step "Building and starting the devcontainer"
+    set +e
+    run_devcontainer_cli devcontainer up --workspace-folder "${workspace_folder}" --log-level trace \
+        2>&1 | tee "${up_log_path}"
+    up_exit_code="${PIPESTATUS[0]}"
+    set -e
+
+    container_id="$(extract_container_id "${up_log_path}")"
+    if [[ -n "${container_id}" ]]; then
+        write_metadata "${metadata_path}"
+    fi
+
+    if [[ "${up_exit_code}" -ne 0 ]]; then
+        printf "devcontainer up failed. Inspect '%s' for details.\n" "${up_log_path}" >&2
+        return "${up_exit_code}"
+    fi
+
+    if [[ -z "${container_id}" ]]; then
+        printf "Failed to determine the devcontainer container ID from '%s'.\n" "${up_log_path}" >&2
+        return 1
+    fi
+
+    print_step "Verifying toolchains inside the devcontainer"
+    run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
+        set -euo pipefail
+        dotnet --version
+        node --version
+        git --version
+        docker version --format "{{.Server.Version}}"
+    ' 2>&1 | tee "${verify_log_path}"
+
+    print_step "Devcontainer smoke validation completed successfully"
+    printf "Logs written to '%s'.\n" "${log_dir}"
+}
+
+main "$@"
