@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ViajantesTurismo.Common.BuildingBlocks;
 
 /// <summary>
@@ -21,7 +23,9 @@ namespace ViajantesTurismo.Common.BuildingBlocks;
 /// <strong>Examples:</strong> Address, Money, DateRange, ContactInfo, PhysicalInfo
 /// </para>
 /// </remarks>
-public abstract class ValueObject : IEquatable<ValueObject>, IEqualityComparer<ValueObject>
+[SuppressMessage(SuppressConstants.CategoryDesign, SuppressConstants.CheckIdS4035,
+    Justification = "Abstract ValueObject uses Template Method pattern via GetEqualityComponents(); derived classes control equality by overriding that method, not Equals itself.")]
+public abstract class ValueObject : IEquatable<ValueObject>
 {
     /// <inheritdoc />
     public bool Equals(ValueObject? other)
@@ -99,18 +103,4 @@ public abstract class ValueObject : IEquatable<ValueObject>, IEqualityComparer<V
     {
         return !(left == right);
     }
-
-    /// <inheritdoc/>
-    public bool Equals(ValueObject? x, ValueObject? y)
-    {
-        if (x is null || y is null)
-        {
-            return false;
-        }
-
-        return x.Equals(y);
-    }
-
-    /// <inheritdoc/>
-    public int GetHashCode(ValueObject obj) => HashCode.Combine(GetEqualityComponents());
 }
