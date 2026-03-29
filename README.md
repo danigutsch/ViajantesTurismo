@@ -10,58 +10,30 @@ A modern tourism agency application specialising in group bike tours around the 
 
 ## Overview
 
-ViajantesTurismo is a comprehensive platform designed for managing and selling group bike tours globally. The
-application enables customers to browse, book, and manage their cycling adventures while providing tour operators with
-powerful tools to create and manage tour packages.
+ViajantesTurismo is a platform for operating and selling group bike tours. It combines an
+admin API, a Blazor frontend, and supporting services so teams can manage tours,
+travellers, bookings, and payments in one place.
 
 ## Features
 
-- **Tour Management**: Create and manage bike tour packages with detailed itineraries
-- **Customer Management**: Comprehensive customer profiles with personal information, accommodation preferences,
-  and medical details
-- **Booking Management**:
-    - Create bookings with room type selection and optional companion
-    - Bike type selection with customer preference pre-population
-    - Discount support with audit trail
-    - Automatic total price calculation
-    - Domain-driven operations: Confirm, Cancel, Complete bookings
-    - Update booking notes, discount, and details after creation
-    - Payment tracking with multiple payment methods and automatic status updates
-- **Multiple Currency Support**: Handle pricing in Brazilian Real (BRL), Euro (EUR), and US Dollar (USD) with proper
-  formatting and display in the web frontend
-- **Flexible Pricing**:
-    - Base tour pricing for double occupancy (not per person)
-    - Single room supplement for solo travellers
-    - Bike rental pricing options
-    - Discount system with percentage or absolute amount of support
-    - Calculated total price (transparent, consistent)
-        - Payment tracking with configurable payment methods
-- **Service Packages**: Customisable included services (hotels, meals, guided tours, etc.)
-- **RESTful API**: Modern API-first architecture with behaviour-driven endpoints
-- **Blazor Web Frontend**: Modern UI with client-side navigation and currency-aware input fields
+- **Tours and services**: Create tour packages, itineraries, and included service bundles.
+- **Customer profiles**: Store traveller details, preferences, and operational notes.
+- **Booking lifecycle**: Create bookings, choose room and bike options, apply discounts,
+    and move reservations through confirm, cancel, and complete flows.
+- **Pricing and payments**: Support BRL, EUR, and USD pricing, room supplements, bike
+    rental options, and payment status tracking.
+- **Admin surfaces**: Work through a resource-oriented API and a Blazor-based web
+    frontend.
 
 ## Technology Stack
 
-### Frameworks & Runtime
-
-- **.NET 10** - Modern cross-platform framework
-- **ASP.NET Core** - Web API with Native AOT preparation
-- **Blazor Server** - Web frontend with client-side routing
-- **.NET Aspire** - Cloud-native orchestration and observability
-
-### Data & Persistence
-
-- **Entity Framework Core** - ORM with compiled models for AOT
-- **PostgreSQL** - Primary database
-
-### Testing
-
-- **xUnit v3** - Unit, integration, behavior, and E2E testing framework
-- **Microsoft.Testing.Platform (MTP)** - Test host/runner integration with built-in coverage support
-
-### API & Documentation
-
-- **OpenAPI** - API documentation and exploration
+- **Application**: .NET 10, ASP.NET Core, Blazor Server, and .NET Aspire for the API,
+    admin UI, orchestration, and observability.
+- **Persistence**: Entity Framework Core with PostgreSQL for relational storage and
+    migrations.
+- **Quality**: xUnit v3 and Microsoft.Testing.Platform for unit, integration, behavior,
+    and end-to-end testing.
+- **Contracts**: OpenAPI for endpoint discovery and API exploration.
 
 ## Project Structure
 
@@ -271,16 +243,15 @@ operational details — see [docs/CI_GOVERNANCE_ROLLOUT.md](docs/CI_GOVERNANCE_R
 
 ## API Endpoints
 
-The API provides RESTful endpoints for managing tours, customers, and bookings.
+The Admin API exposes resource-oriented endpoints for tours, customers, bookings, and
+payments. When the application is running, OpenAPI is available at `/openapi/v1.json`.
 
-**Key endpoints:**
+Primary endpoint groups include:
 
-- **Tours**: CRUD operations for tour packages
-- **Customers**: Customer profile management
-- **Bookings**: Domain-driven booking lifecycle (create, confirm, cancel, complete)
-- **Payments**: Payment recording and tracking
-
-See the OpenAPI documentation at `/openapi/v1.json` when running the application.
+- **Tours**: Tour packages, itineraries, and pricing data
+- **Customers**: Traveller profiles and preferences
+- **Bookings**: Creation plus confirm, cancel, and complete operations
+- **Payments**: Payment recording and status tracking
 
 For detailed business rules and domain operations, see:
 
