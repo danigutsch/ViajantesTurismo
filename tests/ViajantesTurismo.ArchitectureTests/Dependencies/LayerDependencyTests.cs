@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using ArchUnitNET.Domain;
 using ArchUnitNET.Fluent.Syntax.Elements.Types;
-using ArchUnitNET.xUnitV3;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
@@ -22,31 +21,34 @@ public sealed class LayerDependencyTests
     [Fact]
     public void Domain_Should_Not_Depend_On_Application_Infrastructure_Or_Api()
     {
-        Types().That().Are(DomainTypes)
+        var rule = Types().That().Are(DomainTypes)
             .Should().NotDependOnAny(ApplicationTypes)
             .AndShould().NotDependOnAny(InfrastructureTypes)
             .AndShould().NotDependOnAny(ApiTypes)
-            .Because("the domain layer must stay persistence and transport agnostic")
-            .Check(Architecture);
+            .Because("the domain layer must stay persistence and transport agnostic");
+
+        Assert.True(rule.HasNoViolations(Architecture), rule.Description);
     }
 
     [Fact]
     public void Application_Should_Not_Depend_On_Infrastructure_Or_Api()
     {
-        Types().That().Are(ApplicationTypes)
+        var rule = Types().That().Are(ApplicationTypes)
             .Should().NotDependOnAny(ApiTypes)
             .AndShould().NotDependOnAny(InfrastructureTypes)
-            .Because("application services orchestrate domain logic and should not reference adapters")
-            .Check(Architecture);
+            .Because("application services orchestrate domain logic and should not reference adapters");
+
+        Assert.True(rule.HasNoViolations(Architecture), rule.Description);
     }
 
     [Fact]
     public void Infrastructure_Should_Not_Depend_On_Api()
     {
-        Types().That().Are(InfrastructureTypes)
+        var rule = Types().That().Are(InfrastructureTypes)
             .Should().NotDependOnAny(ApiTypes)
-            .Because("infrastructure should expose persistence and integration adapters independently of transport")
-            .Check(Architecture);
+            .Because("infrastructure should expose persistence and integration adapters independently of transport");
+
+        Assert.True(rule.HasNoViolations(Architecture), rule.Description);
     }
 
     private static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
