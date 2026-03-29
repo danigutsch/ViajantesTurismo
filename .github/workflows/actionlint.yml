@@ -1,0 +1,47 @@
+name: Actionlint
+
+'on':
+  pull_request:
+    paths:
+      - .github/workflows/**
+      - .github/actions/**
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/**
+      - .github/actions/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: Actionlint
+    runs-on: ubuntu-latest
+    env:
+      ACTIONLINT_VERSION: 1.7.9
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes shellcheck
+
+      - name: Install actionlint
+        shell: bash
+        run: |
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          base_url="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
+
+          curl -fsSLo "$archive" "$base_url/$archive"
+          curl -fsSLo checksums.txt "$base_url/checksums.txt"
+          grep "  $archive$" checksums.txt | sha256sum --check --status
+          tar -xzf "$archive" actionlint
+          sudo install actionlint /usr/local/bin/actionlint
+
+      - name: Lint GitHub Actions workflows
+        run: actionlint -color

@@ -19,7 +19,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   detect-changes:
@@ -107,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
         with:
-          if-no-files-found: error
+          if-no-files-found: ignore
           name: test-results
           path: "**/TestResults/**"
           retention-days: 7
@@ -116,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
         with:
-          if-no-files-found: error
+          if-no-files-found: ignore
           name: coverage-report
           path: "TestResults/CoverageReport/**"
           retention-days: 7
@@ -125,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
         with:
-          if-no-files-found: error
+          if-no-files-found: ignore
           name: sonar-coverage
           path: TestResults/sonar-coverage.xml
           retention-days: 7
