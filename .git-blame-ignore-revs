@@ -7,5 +7,10 @@
 # Enable locally with:
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
 #
-# This file intentionally starts empty. The current history review did not surface a
-# recent commit that was clearly behavior-free enough to ignore safely.
+# Verified mechanical revisions:
+# - markdown table/alignment formatting only
+# - constructor line wrapping / readability formatting only
+
+11b039117563de745b942bf9639642ce68870c45
+6a19ce3ced4de43febff1b7aa37a8a07ceedb240
+f0b7f6759f4278c3da26fbb110cf6dafcb82e586
