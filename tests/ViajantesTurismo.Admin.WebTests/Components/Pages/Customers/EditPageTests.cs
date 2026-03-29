@@ -11,7 +11,7 @@ public class EditPageTests : BunitContext
     public EditPageTests()
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
-        Services.AddSingleton<CountryService>(new FakeCountryService());
+        Services.AddSingleton<ICountryService>(new FakeCountryService());
     }
 
     [Fact]

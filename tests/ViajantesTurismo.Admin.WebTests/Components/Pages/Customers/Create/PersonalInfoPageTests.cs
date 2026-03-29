@@ -14,7 +14,7 @@ public sealed class PersonalInfoPageTests : BunitContext
     public PersonalInfoPageTests()
     {
         Services.AddSingleton<CustomerCreationState>();
-        Services.AddSingleton<CountryService>(new FakeCountryService());
+        Services.AddSingleton<ICountryService>(new FakeCountryService());
     }
 
     [Fact]
