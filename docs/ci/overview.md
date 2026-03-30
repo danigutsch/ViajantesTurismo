@@ -62,8 +62,8 @@ The current follow-up themes are:
 
 - review which SonarCloud settings should remain in-repo versus move to the SonarCloud UI
   when plan capabilities allow it
-- consider Codespaces prebuilds only if startup cost or repeated use justifies the
-  extra maintenance
+- consider container startup optimizations only if repeated use or startup cost justifies
+  the extra maintenance
 - keep supplemental, non-required workflows under review if merge queue becomes part of
   the normal merge path
 - consider multi-OS expansion only when a concrete cross-platform requirement appears

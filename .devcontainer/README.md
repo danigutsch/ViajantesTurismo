@@ -3,8 +3,7 @@
 This directory contains the configuration for developing ViajantesTurismo in a containerized environment using
  VS Code Dev Containers.
 
-For contributor-facing usage guidance and the current GitHub Codespaces support stance,
-see [../docs/DEVCONTAINER_AND_CODESPACES.md](../docs/DEVCONTAINER_AND_CODESPACES.md).
+For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DEVCONTAINERS.md).
 
 ## Prerequisites
 
