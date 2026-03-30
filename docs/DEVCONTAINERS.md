@@ -113,6 +113,8 @@ The GitHub Actions workflow uses the same option surface:
 - weekly schedule, pull requests, and pushes run the regular smoke path
 - the monthly schedule runs `--run-tests` to validate the full in-container test suite
 - manual dispatch lets you choose either mode
+- the workflow also enables npm caching for the Node-based Dev Container CLI path to reduce
+  repeat package download churn without weakening validation
 
 Recommended follow-up validation while iterating:
 
