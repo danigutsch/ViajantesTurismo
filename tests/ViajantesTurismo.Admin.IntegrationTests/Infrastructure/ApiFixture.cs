@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +60,8 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
     protected override IHost CreateHost(IHostBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
+
+        builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls("http://127.0.0.1:0"));
 
         builder.ConfigureHostConfiguration(config =>
         {
