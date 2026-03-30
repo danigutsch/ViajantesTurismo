@@ -157,6 +157,13 @@ sudo apt-get install -y libnspr4 libnss3 libasound2t64
 
 See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
 
+### Optional: Dev Containers
+
+If you prefer a containerized development environment, the repository includes a
+VS Code Dev Container configuration. For prerequisites, lifecycle behavior, the shared
+local smoke command, and the minimum validation checklist, see
+[docs/DEVCONTAINERS.md](docs/DEVCONTAINERS.md).
+
 ### Running the Application
 
 ```powershell
