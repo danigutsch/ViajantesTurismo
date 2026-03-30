@@ -11,8 +11,9 @@
       "version": "latest",
       "ppa": true
     },
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
+      "enableNonRootDocker": true,
       "dockerDashComposeVersion": "latest"
     }
   },

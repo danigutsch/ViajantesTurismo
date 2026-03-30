@@ -69,6 +69,7 @@ cleanup() {
 main() {
     local up_log_path="${log_dir}/devcontainer-up.log"
     local verify_log_path="${log_dir}/devcontainer-verify.log"
+    local playwright_log_path="${log_dir}/devcontainer-playwright.log"
     local test_log_path="${log_dir}/devcontainer-test.log"
     local metadata_path="${log_dir}/metadata.txt"
     local up_exit_code="0"
@@ -149,6 +150,12 @@ main() {
     ' 2>&1 | tee "${verify_log_path}"
 
     if [[ "${run_tests}" == "1" ]]; then
+        print_step "Installing Playwright browsers inside the devcontainer"
+        run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
+            set -euo pipefail
+            bash scripts/install-playwright.sh
+        ' 2>&1 | tee "${playwright_log_path}"
+
         print_step "Running test suite inside the devcontainer"
         run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
