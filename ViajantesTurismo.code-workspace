@@ -42,7 +42,7 @@
 		},
 		"github.copilot.chat.commitMessageGeneration.instructions": [
 			{
-				"text": "Use Conventional Commits in the form `<type>[optional scope]: <description>`. Allowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test. Keep the header at or under 100 characters. If a body adds value, insert a blank line after the header before the body."
+				"text": "Use Conventional Commits in the form `<type>[optional scope]: <description>`. Allowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test. Keep the header at or under 100 characters. Prefer a header-only message unless extra context materially helps. If a body is included, insert a blank line after the header, wrap every body line to 100 characters or less including bullet items, and use hanging indentation for wrapped bullets."
 			}
 		],
 		"github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
