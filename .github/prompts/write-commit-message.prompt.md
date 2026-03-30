@@ -11,8 +11,11 @@ Requirements:
 - Use Conventional Commits: `<type>[optional scope]: <description>`.
 - Allowed types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
 - Keep the header at or under 100 characters.
+- Prefer a header-only message when the header already captures the change clearly.
 - If a body is included, wrap every body line to 100 characters or less.
 - If a body adds value, insert one blank line after the header before the body.
+- If using bullets in the body, wrap long bullets with hanging indentation.
+- Avoid bodies that only restate the diff file-by-file without adding useful context.
 - Prefer one message that captures the primary intent of the change. Do not stack multiple headers.
 
 Useful references:
