@@ -56,24 +56,9 @@ The near-term required governance work of consolidating duplicated validation an
 SonarCloud execution is complete. The next step is to monitor the merged workflow set in
 normal use and adjust only when there is a concrete operational reason.
 
-## Planned follow-up work
-
-The current follow-up themes are:
-
-- review which SonarCloud settings should remain in-repo versus move to the SonarCloud UI
-  when plan capabilities allow it
-- consider container startup optimizations only if repeated use or startup cost justifies
-  the extra maintenance
-- keep supplemental, non-required workflows under review if merge queue becomes part of
-  the normal merge path
-- consider multi-OS expansion only when a concrete cross-platform requirement appears
-
 ## Related documentation
 
 - [README — Continuous Integration](../../README.md#continuous-integration) —
   contributor-facing CI summary
 - [Code Quality Tools](../CODE_QUALITY.md) — local linting and formatting tools
-- [Original CI delivery PBI](../backlog/PBI-2026-03-15-02-github-actions-ci-workflow.md)
   — baseline rollout record
-- [CI governance follow-up PBI](../backlog/PBI-2026-03-29-03-ci-governance-follow-up-improvements.md)
-  — planned improvements after the baseline rollout
