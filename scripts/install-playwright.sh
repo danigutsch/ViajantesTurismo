@@ -21,11 +21,23 @@ main() {
     local playwright_script="${1:-}"
 
     if [[ -z "${playwright_script}" ]]; then
-        playwright_script="$(find tests -name playwright.ps1 -path '*/bin/Debug/*' | head -1)"
+        local -a search_roots=()
+
+        if [[ -d ".build" ]]; then
+            search_roots+=(".build")
+        fi
+
+        if [[ -d "tests" ]]; then
+            search_roots+=("tests")
+        fi
+
+        if [[ "${#search_roots[@]}" -gt 0 ]]; then
+            playwright_script="$(find "${search_roots[@]}" -type f -name playwright.ps1 | head -1)"
+        fi
     fi
 
     if [[ -z "${playwright_script}" ]]; then
-        echo "Playwright install script was not found under tests/*/bin/Debug after build." >&2
+        echo "Playwright install script was not found in the build output after build verification." >&2
         return 1
     fi
 
