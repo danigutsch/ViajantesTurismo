@@ -1,6 +1,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Helpers
+
 @if (Bookings == null || !Bookings.Any())
 {
     <div class="alert alert-info" role="alert">
@@ -70,10 +71,10 @@ else
 
         <TemplateColumn Title="Actions">
             <div class="btn-group" role="group">
-                <NavLink href="@($"/bookings/{context.Id}")" class="btn btn-sm btn-info" title="View Booking">
+                <NavLink href="@($"/bookings/{context.Id}" as string)" class="btn btn-sm btn-info" title="View Booking">
                     <i class="bi bi-eye"></i> View
                 </NavLink>
-                <NavLink href="@($"/bookings/{context.Id}/edit")" class="btn btn-sm btn-primary" title="Edit Booking">
+                <NavLink href="@($"/bookings/{context.Id}/edit" as string)" class="btn btn-sm btn-primary" title="Edit Booking">
                     <i class="bi bi-pencil"></i> Edit
                 </NavLink>
             </div>
