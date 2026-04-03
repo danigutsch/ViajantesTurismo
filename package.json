@@ -7,8 +7,8 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.json",
-    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.json --fix",
+    "lint:md": "markdownlint \"**/*.md\" --ignore node_modules --ignore \"**/bin/**\" --ignore \"**/obj/**\" --ignore \"**/TestResults/**\" --config .markdownlint.json",
+    "lint:md:fix": "markdownlint \"**/*.md\" --ignore node_modules --ignore \"**/bin/**\" --ignore \"**/obj/**\" --ignore \"**/TestResults/**\" --config .markdownlint.json --fix",
     "lint:sh": "shellcheck **/*.sh",
     "format:sh": "shfmt -w -i 2 **/*.sh",
     "lint:json": "eslint **/*.json",
