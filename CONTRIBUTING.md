@@ -68,7 +68,7 @@ documents **GPG signing** as the recommended contributor path.
   commit can remain marked verified later even if the key is rotated, revoked, or
   expires.
 - For branch-protection behavior and merge-method caveats, see
-  `docs/ci/governance.md`.
+  [docs/ci/governance.md](docs/ci/governance.md).
 
 ## Pull Requests
 
