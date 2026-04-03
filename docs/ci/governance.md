@@ -22,6 +22,38 @@ separate dependency review workflow, and the separate secret scanning workflow. 
 `Devcontainer Smoke` workflow remains supplemental and is not part of the required merge
 gate.
 
+## Signed commit policy
+
+The repository policy is to require verified signed commits for merges to the protected
+`main` branch.
+
+- Any signature type that GitHub marks as **verified** is acceptable for this policy.
+- The documented contributor path for this repository remains **GPG commit signing** so
+  setup and troubleshooting stay consistent.
+- Verified commit signatures strengthen authorship and change provenance, but they do
+  **not** replace code review, required status checks, or key lifecycle management.
+- GitHub's verification record is persistent. A commit that was verified when pushed can
+  remain marked verified later even if the key is rotated, revoked, or expires.
+
+### Merge and automation implications
+
+- GitHub's **Rebase and merge** path should not be used for protected branches that
+  require signed commits, because GitHub cannot preserve commit signature verification on
+  that merge path.
+- GitHub's **Squash and merge** path into a branch that requires signed commits only
+  works on GitHub when the person performing the squash merge is also the pull request
+  author. Other squash merges should be performed locally with a signed commit or avoided
+  in favor of a compatible merge path.
+- Dependabot and other bots are unaffected while they work on pull request branches, but
+  any commit that ultimately lands on `main` must still satisfy the signed-commit rule.
+- If vigilant mode is enabled for an author/committer combination, GitHub may allow
+  commits marked **Partially verified** on branches that require signed commits.
+
+### Enforcement note
+
+A maintainer with repository admin access must keep GitHub branch protection or ruleset
+settings aligned with this policy by enabling **Require signed commits** for `main`.
+
 ## Action versioning policy
 
 All external GitHub Actions used in repository workflows are pinned to immutable commit

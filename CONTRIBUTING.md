@@ -37,6 +37,39 @@ feat(api)!: remove legacy booking endpoint
 Git hooks install a `commit-msg` check that validates messages with `commitlint`.
 If you need to bypass hooks for an emergency, use `git commit --no-verify` and fix the history before merge.
 
+## Signed Commits
+
+Merges to the protected `main` branch are expected to use **verified signed commits**.
+Any signature type that GitHub marks as **Verified** is acceptable, but this repository
+documents **GPG signing** as the recommended contributor path.
+
+### Recommended one-time GPG setup
+
+1. Ensure you already have a GPG key and that the public key is added to your GitHub
+   account.
+2. Configure Git to use your signing key:
+
+   ```text
+   git config --global user.signingkey <your-gpg-key-id>
+   git config --global commit.gpgsign true
+   git config --global tag.gpgsign true
+   ```
+
+3. Create a signed commit and confirm GitHub shows the commit as **Verified**.
+
+### Troubleshooting verification failures
+
+- If GitHub shows **Unverified**, check that the commit email matches an email address
+  associated with your GitHub account and that the public GPG key is uploaded to the
+  same account.
+- If you created an unsigned commit by mistake, rewrite it with a signature before
+  merge, for example by amending or rebasing with signing enabled.
+- GitHub records verification when the signed commit is pushed. A previously verified
+  commit can remain marked verified later even if the key is rotated, revoked, or
+  expires.
+- For branch-protection behavior and merge-method caveats, see
+  `docs/ci/governance.md`.
+
 ## Pull Requests
 
 - Use the pull request template

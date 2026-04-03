@@ -245,6 +245,12 @@ Every pull request and push to `main` is validated by GitHub Actions. The main v
 is `.github/workflows/ci.yml`, with additional governance workflows for dependency review, secret
 scanning, workflow linting, and supplemental devcontainer checks.
 
+Protected-branch governance also expects verified signed commits for merges to `main`.
+This repository documents GPG as the recommended contributor signing path while still
+accepting other GitHub-verified signature types. See
+`CONTRIBUTING.md` and `docs/ci/governance.md` for the workflow details and merge-method
+constraints.
+
 The required checks on `main` are:
 
 - `Build and Test` — build, tests, coverage, and integrated SonarCloud analysis; docs-only changes
