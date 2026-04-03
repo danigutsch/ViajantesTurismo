@@ -16,6 +16,9 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 /// </summary>
 public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetime
 {
+    private const string LoopbackAddress = "http://127.0.0.1:0";
+    private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(30);
+
     private readonly DistributedApplication _app;
     private string? _databaseConnectionString;
 
@@ -38,7 +41,7 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
     {
         await _app.StartAsync();
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(ResourceStartupTimeout);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(Database.Resource.Name, cts.Token);
 
         var databaseConnectionString = await DatabaseServer.Resource.GetConnectionStringAsync(cts.Token) ?? throw new InvalidOperationException("Failed to get database connection string.");
@@ -61,7 +64,7 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls("http://127.0.0.1:0"));
+        builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls(LoopbackAddress));
 
         builder.ConfigureHostConfiguration(config =>
         {
@@ -75,10 +78,10 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
         return base.CreateHost(builder);
     }
 
-    public new async Task DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
         await _app.StopAsync();
-        await _app.DisposeAsync().ConfigureAwait(false);
+        await _app.DisposeAsync();
     }
 }

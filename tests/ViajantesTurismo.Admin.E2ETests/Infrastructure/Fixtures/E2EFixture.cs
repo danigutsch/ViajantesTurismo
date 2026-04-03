@@ -14,6 +14,9 @@ namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;
 
 public sealed class E2EFixture : IAsyncLifetime
 {
+    private const string LoopbackAddress = "http://127.0.0.1:0";
+    private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(60);
+
     private readonly DistributedApplication _app;
     private ApiFactory? _apiFactory;
     private string? _databaseConnectionString;
@@ -49,7 +52,7 @@ public sealed class E2EFixture : IAsyncLifetime
     {
         await _app.StartAsync();
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        using var cts = new CancellationTokenSource(ResourceStartupTimeout);
 
         await _app.ResourceNotifications
             .WaitForResourceHealthyAsync(Database.Resource.Name, cts.Token);
@@ -138,7 +141,7 @@ public sealed class E2EFixture : IAsyncLifetime
 
         protected override IHost CreateHost(IHostBuilder builder)
         {
-            builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls("http://127.0.0.1:0"));
+            builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls(LoopbackAddress));
             builder.ConfigureHostConfiguration(config =>
             {
                 config.AddInMemoryCollection([
@@ -167,7 +170,7 @@ public sealed class E2EFixture : IAsyncLifetime
 
         protected override IHost CreateHost(IHostBuilder builder)
         {
-            builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls("http://127.0.0.1:0"));
+            builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls(LoopbackAddress));
             builder.ConfigureHostConfiguration(config =>
             {
                 config.AddInMemoryCollection([
