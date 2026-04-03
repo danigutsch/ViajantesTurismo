@@ -17,7 +17,7 @@
       "rollForward": false
     },
     "dotnet-sonarscanner": {
-      "version": "11.2.0",
+      "version": "11.2.1",
       "commands": [
         "dotnet-sonarscanner"
       ],
@@ -31,7 +31,7 @@
       "rollForward": false
     },
     "aspire.cli": {
-      "version": "13.2.0",
+      "version": "13.2.1",
       "commands": [
         "aspire"
       ],
