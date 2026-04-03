@@ -173,7 +173,7 @@ See `.editorconfig` for complete formatting rules, naming conventions, and code 
 #### Build Configuration
 
 **`Directory.Build.props`** enforces strict code analysis at build time (warnings as errors, all analyzer categories
-enabled).
+enabled) and follows the latest built-in SDK analyzer wave with `AnalysisLevel=latest`.
 
 See `Directory.Build.props` for complete build configuration.
 
@@ -202,16 +202,29 @@ Keep suppressions narrow and do not use guard clauses instead of domain validati
 The repository uses a three-layer Sonar model:
 
 - **Build-time analyzer package**: `SonarAnalyzer.CSharp` is referenced centrally through
-  `Directory.Packages.props` and `Directory.Build.props` so all C# projects — including test
-  projects — get local Roslyn diagnostics during ordinary builds. Test projects set
-  `SonarQubeTestProject=true` in `tests/Directory.Build.props` so the hosted SonarCloud scanner
-  treats them accordingly, but the build-time Roslyn analyzer still runs. Low-signal rules for
-  BDD step-definition patterns are narrowly scoped via `.editorconfig` to avoid noisy failures
-  without disabling broader test analysis.
+  `Directory.Packages.props` and `Directory.Build.props` so C# projects across the repository,
+  including tests, get local Roslyn diagnostics during ordinary builds. Test projects still set
+  `SonarQubeTestProject=true` in `tests/Directory.Build.props` so hosted SonarCloud classifies
+  them as test scope. Low-signal rules for BDD step-definition patterns remain narrowly scoped via
+  `.editorconfig`.
 - **IDE connected mode**: VS Code uses the Sonar connected-mode settings in `.vscode/settings.json`
   to align local issue visibility with the hosted project configuration.
 - **Hosted quality gate**: CI still runs the repo-pinned `dotnet-sonarscanner` path described in
   `docs/ci/sonarcloud.md`.
+
+### NuGet audit and restore policy
+
+Package restore and vulnerability scanning are intentionally explicit instead of relying on SDK
+defaults that may drift between releases.
+
+- `NuGet.Config` owns the package source and audit source configuration and points both to the
+  repository-approved `nuget.org` V3 feed.
+- `Directory.Build.props` sets `NuGetAudit=true`, `NuGetAuditMode=all`, and
+  `NuGetAuditLevel=high` so transitive dependency auditing stays on, but restore failures focus on
+  high and critical advisories instead of every low-severity bulletin.
+- Local restores stay unlocked by default to keep everyday dependency maintenance practical.
+- CI restores run in locked mode and now also set `ContinuousIntegrationBuild=true` explicitly so
+  deterministic build behavior is owned by repository policy rather than ambient environment luck.
 
 ### Production Code Timing Policy
 
