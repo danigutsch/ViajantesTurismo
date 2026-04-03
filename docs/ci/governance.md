@@ -37,13 +37,11 @@ The repository policy is to require verified signed commits for merges to the pr
 
 ### Merge and automation implications
 
-- GitHub's **Rebase and merge** path should not be used for protected branches that
-  require signed commits, because GitHub cannot preserve commit signature verification on
-  that merge path.
-- GitHub's **Squash and merge** path is generally compatible with branches that require
-  signed commits because GitHub creates the resulting squash commit and marks it
-  **Verified** when that merge path is allowed. Maintainers should validate repository
-  settings and observed GitHub behavior if this policy or GitHub enforcement changes.
+- **Squash and merge** is not permitted in this repository.
+- **Rebase and merge** is not permitted for branches that require signed commits because
+  GitHub cannot preserve commit signature verification on that merge path.
+- **Create a merge commit** is the only permitted merge method. GitHub creates and signs
+  the resulting merge commit, which is marked **Verified** on `main`.
 - Dependabot and other bots are unaffected while they work on pull request branches, but
   any commit that ultimately lands on `main` must still satisfy the signed-commit rule.
 

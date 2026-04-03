@@ -40,6 +40,8 @@ If you need to bypass hooks for an emergency, use `git commit --no-verify` and f
 ## Signed Commits
 
 Merges to the protected `main` branch are required to use **verified signed commits**.
+The only permitted merge method is **Create a merge commit**; squash and rebase are not
+allowed. GitHub creates and signs the merge commit, marking it **Verified** on `main`.
 Any signature type that GitHub marks as **Verified** is acceptable, but this repository
 documents **GPG signing** as the recommended contributor path.
 
