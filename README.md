@@ -210,6 +210,24 @@ dotnet test --solution ViajantesTurismo.slnx
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 ```
 
+**NuGet lock files:**
+
+This repository commits `packages.lock.json` for its .NET projects so CI can use
+locked-mode restore and built-in NuGet caching. If you add, remove, or update a
+NuGet package or a project reference that affects package resolution, regenerate the
+lock files from the repository root before opening a pull request:
+
+```powershell
+dotnet restore ViajantesTurismo.slnx --force-evaluate
+```
+
+After updating the lock files, verify the solution still restores and builds cleanly:
+
+```powershell
+dotnet restore ViajantesTurismo.slnx --locked-mode
+dotnet build ViajantesTurismo.slnx --no-restore
+```
+
 **Run All Quality Checks:**
 
 ```powershell

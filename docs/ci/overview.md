@@ -61,4 +61,4 @@ normal use and adjust only when there is a concrete operational reason.
 - [README — Continuous Integration](../../README.md#continuous-integration) —
   contributor-facing CI summary
 - [Code Quality Tools](../CODE_QUALITY.md) — local linting and formatting tools
-  — baseline rollout record
+- [Main workflow](main-workflow.md) — maintainer-facing baseline CI rollout details

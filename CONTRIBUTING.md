@@ -53,4 +53,10 @@ Run the checks relevant to your changes:
 - Tests: `dotnet test --solution ViajantesTurismo.slnx`
 - Docs, scripts, specs: `npm run lint:all`
 
+If you change NuGet dependencies or project references that affect package
+resolution, regenerate and commit the affected `packages.lock.json` files:
+
+- Refresh lock files: `dotnet restore ViajantesTurismo.slnx --force-evaluate`
+- Verify locked restore: `dotnet restore ViajantesTurismo.slnx --locked-mode`
+
 See `docs/CODE_QUALITY.md` for the full local tooling reference.
