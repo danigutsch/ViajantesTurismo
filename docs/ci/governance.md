@@ -96,9 +96,9 @@ designated code owners. See `CODEOWNERS` for the current ownership mapping.
 | Ecosystem | Scope | Schedule | PR limit | Update shaping |
 | --- | --- | --- | --- | --- |
 | `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | All action updates grouped into one PR |
-| `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Weekly on Thursday at 05:00 UTC | 1 | All feature updates grouped into one PR |
-| `nuget` | .NET package dependencies | Weekly on Tuesday at 05:00 UTC | 3 | Minor and patch updates grouped, security updates grouped, cooldown enabled |
-| `npm` | Node.js dependencies | Weekly on Wednesday at 05:00 UTC | 2 | Minor and patch updates grouped, security updates grouped, cooldown enabled |
+| `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Monthly at 05:00 UTC | 1 | All feature updates grouped into one PR |
+| `nuget` | .NET package dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
+| `npm` | Node.js dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
 
 Dependabot PRs use conventional commit prefixes (`ci` for actions, `deps` for packages).
 
@@ -120,10 +120,11 @@ default one-PR-per-update behavior.
   ecosystem.
 - `groups` consolidate related updates so low-risk churn does not fan out into many
   small PRs.
-- `cooldown` delays fast-follow NuGet and npm version updates, with longer delays for
-  major changes than for minor or patch changes.
-- weekly schedules are staggered across ecosystems so update traffic does not land all at
-  once.
+- `cooldown` delays fast-follow NuGet and npm version updates, with deliberately longer
+  waits than before so newly published releases have more time to prove they are stable
+  and trustworthy before the bot proposes them here.
+- monthly schedules keep ordinary version drift reviewable instead of constantly landing
+  fresh upgrade PRs in the queue.
 
 Security updates remain intentionally prompt. Cooldown only affects version updates, not
 security updates, so vulnerable dependencies can still surface quickly when GitHub
