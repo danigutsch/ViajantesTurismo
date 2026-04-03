@@ -70,7 +70,8 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         var bookingHref = await createdBookingRow.First.GetLink("View").GetAttributeAsync("href");
         Assert.NotNull(bookingHref);
 
-        var bookingIdText = bookingHref.Split('/').Last();
+        var bookingHrefSegments = bookingHref.Split('/');
+        var bookingIdText = bookingHrefSegments[^1];
         Assert.True(Guid.TryParse(bookingIdText, out var bookingId));
 
         return bookingId;

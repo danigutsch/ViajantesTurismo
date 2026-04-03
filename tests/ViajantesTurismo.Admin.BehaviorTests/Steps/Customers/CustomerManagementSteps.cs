@@ -6,6 +6,9 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Customers;
 [Binding]
 public sealed class CustomerManagementSteps(CustomerContext context)
 {
+    private static readonly DateTime ValidBirthDate = new(1990, 5, 15, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime SanitizationBirthDate = new(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     [Given("I have valid identification information")]
     public void GivenIHaveValidIdentificationInformation()
     {
@@ -64,7 +67,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "Software Engineer",
             TimeProvider.System);
@@ -107,7 +110,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             firstName,
             lastName,
             "Male",
-            new DateTime(1990, 1, 1),
+            SanitizationBirthDate,
             "American",
             "Engineer",
             TimeProvider.System);

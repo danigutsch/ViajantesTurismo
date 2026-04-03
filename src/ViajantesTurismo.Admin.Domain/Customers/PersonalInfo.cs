@@ -21,6 +21,15 @@ public sealed class PersonalInfo
         Occupation = occupation;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private PersonalInfo()
+    {
+    }
+
     /// <summary>Full first name of the customer.</summary>
     public string FirstName { get; private set; }
 
@@ -148,14 +157,5 @@ public sealed class PersonalInfo
         }
 
         return age;
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private PersonalInfo()
-    {
     }
 }

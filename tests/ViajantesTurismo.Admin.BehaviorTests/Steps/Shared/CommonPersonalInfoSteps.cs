@@ -13,13 +13,15 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Shared;
 [Scope(Feature = "Customer Sanitization")]
 public sealed class CommonPersonalInfoSteps(CustomerContext context)
 {
+    private static readonly DateTime ValidBirthDate = new(1990, 5, 15, 0, 0, 0, DateTimeKind.Utc);
+
     [Given("I have valid personal information")]
     public void GivenIHaveValidPersonalInformation()
     {
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -55,7 +57,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = firstName;
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -67,7 +69,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = null!;
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -79,7 +81,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = new string('A', characterCount);
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -91,7 +93,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = firstName;
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -161,7 +163,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = firstName;
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -172,7 +174,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = null!;
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -183,7 +185,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = lastName;
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -194,7 +196,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = null!;
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -205,7 +207,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = null!;
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -217,7 +219,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = lastName;
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -229,7 +231,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = new string('B', characterCount);
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -241,7 +243,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = lastName;
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
         WhenICreateThePersonalInfo();
@@ -275,7 +277,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = gender;
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -286,7 +288,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = null!;
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -297,7 +299,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = nationality;
         context.Occupation = "Software Engineer";
     }
@@ -308,7 +310,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = null!;
         context.Occupation = "Software Engineer";
     }
@@ -319,7 +321,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = occupation;
     }
@@ -330,7 +332,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = null!;
     }
@@ -464,7 +466,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = new string('A', length);
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -475,7 +477,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = new string('A', length);
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -486,7 +488,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = new string('A', length);
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = "Software Engineer";
     }
@@ -497,7 +499,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = new string('A', length);
         context.Occupation = "Software Engineer";
     }
@@ -508,7 +510,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.FirstName = "John";
         context.LastName = "Smith";
         context.Gender = "Male";
-        context.BirthDate = new DateTime(1990, 5, 15);
+        context.BirthDate = ValidBirthDate;
         context.Nationality = "American";
         context.Occupation = new string('A', length);
     }
@@ -520,7 +522,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             null!,
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "Software Engineer",
             TimeProvider.System
@@ -534,7 +536,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "   ",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "Software Engineer",
             TimeProvider.System
@@ -548,7 +550,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             new string('A', length),
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "Software Engineer",
             TimeProvider.System
@@ -562,7 +564,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             new string('A', length),
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "Software Engineer",
             TimeProvider.System
@@ -576,7 +578,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             gender,
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "Software Engineer",
             TimeProvider.System
@@ -614,7 +616,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             null!,
             "Software Engineer",
             TimeProvider.System
@@ -628,7 +630,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "   ",
             "Software Engineer",
             TimeProvider.System
@@ -642,7 +644,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             new string('A', length),
             "Software Engineer",
             TimeProvider.System
@@ -656,7 +658,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             new string('A', length),
             "Software Engineer",
             TimeProvider.System
@@ -670,7 +672,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             nationality,
             "Software Engineer",
             TimeProvider.System
@@ -708,7 +710,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             null!,
             TimeProvider.System
@@ -722,7 +724,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             "   ",
             TimeProvider.System
@@ -736,7 +738,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             new string('A', length),
             TimeProvider.System
@@ -750,7 +752,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             new string('A', length),
             TimeProvider.System
@@ -764,7 +766,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
             "John",
             "Smith",
             "Male",
-            new DateTime(1990, 5, 15),
+            ValidBirthDate,
             "American",
             occupation,
             TimeProvider.System

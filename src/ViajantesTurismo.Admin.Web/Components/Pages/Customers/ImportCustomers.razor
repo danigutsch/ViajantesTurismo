@@ -241,7 +241,8 @@
     else if (_step == PageStep.Preview)
     {
         var mappedFields = _fieldMappings
-            .Where(m => GetEffectiveMappingValue(m.Field.Name, m.MatchedCsvHeader) is not null)
+            .Where(mapping => GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is not null)
+            .Select(mapping => mapping.Field)
             .ToList();
 
         <div class="card">
@@ -260,8 +261,8 @@
                                 @foreach (var mapping in mappedFields)
                                 {
                                     <th>
-                                        @mapping.Field.DisplayName
-                                        @if (mapping.Field.IsRequired)
+                                        @mapping.DisplayName
+                                        @if (mapping.IsRequired)
                                         {
                                             <span class="text-danger ms-1">*</span>
                                         }
@@ -273,12 +274,12 @@
                             @foreach (var row in _previewRows)
                             {
                                 var hasWarning = mappedFields
-                                    .Where(m => m.Field.IsRequired)
-                                    .Any(m => !row.TryGetValue(m.Field.Name, out var v) || string.IsNullOrEmpty(v));
+                                    .Where(field => field.IsRequired)
+                                    .Any(field => !row.TryGetValue(field.Name, out var value) || string.IsNullOrEmpty(value));
                                 <tr class="@(hasWarning ? "table-warning" : "")">
                                     @foreach (var mapping in mappedFields)
                                     {
-                                        <td>@row.GetValueOrDefault(mapping.Field.Name, "")</td>
+                                        <td>@row.GetValueOrDefault(mapping.Name, "")</td>
                                     }
                                 </tr>
                             }
@@ -328,38 +329,38 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var conflict in _conflicts)
+                        @foreach (var conflictEmail in _conflicts.Select(conflict => conflict.Email))
                         {
-                            var decision = _conflictDecisions.GetValueOrDefault(conflict.Email);
+                            var decision = _conflictDecisions.GetValueOrDefault(conflictEmail);
                             <tr>
-                                <td>@conflict.Email.ToLowerInvariant()</td>
+                                <td>@conflictEmail.ToLowerInvariant()</td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
                                         <button type="button"
                                                 class="btn @(decision == "keep" ? "btn-success" : "btn-outline-secondary")"
                                                 data-action="keep"
-                                                @onclick="@(() => SetConflictDecision(conflict.Email, "keep"))">
+                                                @onclick="@(() => SetConflictDecision(conflictEmail, "keep"))">
                                             Keep existing
                                         </button>
                                         <button type="button"
                                                 class="btn @(decision == "overwrite" ? "btn-warning" : "btn-outline-secondary")"
                                                 data-action="overwrite"
-                                                @onclick="@(() => SetConflictDecision(conflict.Email, "overwrite"))">
+                                                @onclick="@(() => SetConflictDecision(conflictEmail, "overwrite"))">
                                             Overwrite
                                         </button>
                                         <button type="button"
                                                 class="btn @(decision == "mixed" ? "btn-info" : "btn-outline-secondary")"
                                                 data-action="mixed"
-                                                @onclick="@(() => SetConflictDecision(conflict.Email, "mixed"))">
+                                                @onclick="@(() => SetConflictDecision(conflictEmail, "mixed"))">
                                             Mixed merge
                                         </button>
                                     </div>
 
                                     @if (decision == "mixed")
                                     {
-                                        var sourceSelections = GetOrInitializeMixedSelections(conflict.Email);
-                                        var incomingValues = GetIncomingConflictValues(conflict.Email);
-                                        var existingValues = GetExistingConflictValues(conflict.Email);
+                                        var sourceSelections = GetOrInitializeMixedSelections(conflictEmail);
+                                        var incomingValues = GetIncomingConflictValues(conflictEmail);
+                                        var existingValues = GetExistingConflictValues(conflictEmail);
 
                                         <div class="mt-3 border rounded p-2">
                                             <div class="small fw-semibold mb-2">Field-level merge (existing vs incoming)</div>
@@ -390,7 +391,7 @@
                                                                 <button type="button"
                                                                         class="btn btn-sm @(source == ConflictFieldSource.Existing ? "btn-success" : "btn-outline-secondary")"
                                                                         data-action="field-existing"
-                                                                        @onclick="@(() => SetFieldSource(conflict.Email, fieldName, ConflictFieldSource.Existing))">
+                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ConflictFieldSource.Existing))">
                                                                     Existing: @existingValue
                                                                 </button>
                                                             </td>
@@ -398,7 +399,7 @@
                                                                 <button type="button"
                                                                         class="btn btn-sm @(source == ConflictFieldSource.Incoming ? "btn-primary" : "btn-outline-secondary")"
                                                                         data-action="field-incoming"
-                                                                        @onclick="@(() => SetFieldSource(conflict.Email, fieldName, ConflictFieldSource.Incoming))">
+                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ConflictFieldSource.Incoming))">
                                                                     Incoming: @incomingValue
                                                                 </button>
                                                             </td>
@@ -751,9 +752,9 @@
         var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         var customers = await CustomersApi.GetCustomers(CancellationToken.None);
 
-        foreach (var conflict in conflicts)
+        foreach (var conflictEmail in conflicts.Select(conflict => conflict.Email))
         {
-            var existingSummary = customers.FirstOrDefault(c => c.Email.Equals(conflict.Email, StringComparison.OrdinalIgnoreCase));
+            var existingSummary = customers.FirstOrDefault(customer => customer.Email.Equals(conflictEmail, StringComparison.OrdinalIgnoreCase));
             if (existingSummary is null)
             {
                 continue;
@@ -765,7 +766,7 @@
                 continue;
             }
 
-            result[conflict.Email] = MapCustomerDetailsToFieldValues(details);
+            result[conflictEmail] = MapCustomerDetailsToFieldValues(details);
         }
 
         return result;

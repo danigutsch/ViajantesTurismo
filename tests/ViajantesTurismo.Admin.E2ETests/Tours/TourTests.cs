@@ -57,7 +57,8 @@ public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetByText("Guided Tour")).ToBeVisibleAsync();
 
         var detailUrl = Page.Url;
-        var tourId = detailUrl.Split('/').Last();
+        var detailUrlSegments = detailUrl.Split('/');
+        var tourId = detailUrlSegments[^1];
 
         // Act
         await NavigateTo("/tours");

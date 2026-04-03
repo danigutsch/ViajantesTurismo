@@ -327,7 +327,7 @@ Bike rental"/>
         Navigation.NavigateTo($"/tours/{Id}");
     }
 
-    private class TourFormModel : IValidatableObject
+    private sealed class TourFormModel : IValidatableObject
     {
         [Required, MaxLength(ContractConstants.MaxNameLength)]
         public string Identifier { get; set; } = string.Empty;

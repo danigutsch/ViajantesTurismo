@@ -600,7 +600,7 @@ else
         _model.DiscountReason = _booking.DiscountReason ?? string.Empty;
     }
 
-    private class BookingFormModel
+    private sealed class BookingFormModel
     {
         public string Notes { get; set; } = string.Empty;
         public BookingStatusDto Status { get; set; }

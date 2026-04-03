@@ -2,14 +2,19 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Tours;
 
 public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
+    private static DateTime UtcDate(int year, int month, int day)
+    {
+        return new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);
+    }
+
     [Fact]
     public async Task Can_Update_Tour()
     {
         // Arrange
         var tour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
 
-        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: $"{tour.Identifier}-UPDATED", name: "Cuba Updated", startDate: new DateTime(2026, 11, 10).ToUniversalTime(),
-            endDate: new DateTime(2026, 11, 20).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 2800.00m, singleRoomSupplement: 370.00m, regularBikePrice: 180.00m, eBikePrice: 280.00m,
+        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: $"{tour.Identifier}-UPDATED", name: "Cuba Updated", startDate: UtcDate(2026, 11, 10),
+            endDate: UtcDate(2026, 11, 20), currency: CurrencyDto.Real, basePrice: 2800.00m, singleRoomSupplement: 370.00m, regularBikePrice: 180.00m, eBikePrice: 280.00m,
             includedServices: ["Hotel", "Breakfast", "City Tour", "Dinner"]);
 
         // Act
@@ -34,8 +39,8 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         // Arrange
         const int invalidId = -1;
 
-        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: "INVALID", name: "Invalid Tour", startDate: new DateTime(2027, 1, 1).ToUniversalTime(),
-            endDate: new DateTime(2027, 1, 10).ToUniversalTime(), currency: CurrencyDto.Real, basePrice: 1000.00m, singleRoomSupplement: 100.00m, regularBikePrice: 50.00m, eBikePrice: 80.00m,
+        var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: "INVALID", name: "Invalid Tour", startDate: UtcDate(2027, 1, 1),
+            endDate: UtcDate(2027, 1, 10), currency: CurrencyDto.Real, basePrice: 1000.00m, singleRoomSupplement: 100.00m, regularBikePrice: 50.00m, eBikePrice: 80.00m,
             includedServices: ["None"]);
 
         // Act
@@ -54,8 +59,8 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
         var updateRequest = DtoBuilders.BuildUpdateTourDto(
             identifier: updatedIdentifier,
             name: "Updated Tour Name",
-            startDate: new DateTime(2026, 6, 1).ToUniversalTime(),
-            endDate: new DateTime(2026, 6, 15).ToUniversalTime(),
+            startDate: UtcDate(2026, 6, 1),
+            endDate: UtcDate(2026, 6, 15),
             currency: CurrencyDto.Euro,
             basePrice: 3000.00m,
             singleRoomSupplement: 400.00m,

@@ -95,7 +95,7 @@
         _ => ""
     };
 
-    private class ToastMessage
+    private sealed class ToastMessage
     {
         public int Id { get; init; }
         public required string Message { get; init; }

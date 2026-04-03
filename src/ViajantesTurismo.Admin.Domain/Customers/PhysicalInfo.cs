@@ -23,6 +23,15 @@ public sealed class PhysicalInfo
         BikeType = bikeType;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+#pragma warning disable CS8618
+    [UsedImplicitly]
+    private PhysicalInfo()
+    {
+    }
+
     /// <summary>Weight in kilograms.</summary>
     public decimal WeightKg { get; private set; }
 
@@ -59,14 +68,5 @@ public sealed class PhysicalInfo
         }
 
         return new PhysicalInfo(weightKg, heightCentimeters, bikeType);
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-#pragma warning disable CS8618
-    [UsedImplicitly]
-    private PhysicalInfo()
-    {
     }
 }
