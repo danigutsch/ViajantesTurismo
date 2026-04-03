@@ -197,6 +197,22 @@ Preferred patterns:
 
 Keep suppressions narrow and do not use guard clauses instead of domain validation.
 
+### Sonar analysis layers
+
+The repository uses a three-layer Sonar model:
+
+- **Build-time analyzer package**: `SonarAnalyzer.CSharp` is referenced centrally through
+  `Directory.Packages.props` and `Directory.Build.props` so production and shared C# projects
+  get local Roslyn diagnostics during ordinary builds.
+- **IDE connected mode**: VS Code uses the Sonar connected-mode settings in `.vscode/settings.json`
+  to align local issue visibility with the hosted project configuration.
+- **Hosted quality gate**: CI still runs the repo-pinned `dotnet-sonarscanner` path described in
+  `docs/ci/sonarcloud.md`.
+
+Test projects intentionally remove the `SonarAnalyzer.CSharp` package in `tests/Directory.Build.props`.
+This keeps the new local Sonar enforcement focused on production code and avoids turning test-only helper
+patterns into low-signal build failures.
+
 ### Production Code Timing Policy
 
 Direct `Task.Delay(...)` usage in production code under `src/` is discouraged and should be treated as an architectural

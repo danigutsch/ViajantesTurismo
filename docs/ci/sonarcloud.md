@@ -16,6 +16,16 @@ generate per-project Cobertura files, then converts that coverage into both HTML
 SonarQube XML formats with the repo-pinned `reportgenerator` tool before publishing
 `TestResults/sonar-coverage.xml` to the scanner.
 
+Local compile-time analysis is complementary rather than separate. The repository
+references `SonarAnalyzer.CSharp` as a centrally managed Roslyn analyzer package for
+production and shared C# projects, while test projects opt out in
+`tests/Directory.Build.props` to keep test-only patterns from becoming noisy failures.
+That means:
+
+- ordinary local `dotnet build` runs surface a focused subset of Sonar diagnostics early
+- VS Code connected mode stays aligned with the hosted project configuration
+- SonarCloud in CI remains the authoritative hosted quality gate and coverage owner
+
 SonarCloud `Automatic Analysis` must stay disabled for this project. The repository
 already runs hosted analysis through GitHub Actions, and enabling both modes causes
 duplicate-analysis errors.
