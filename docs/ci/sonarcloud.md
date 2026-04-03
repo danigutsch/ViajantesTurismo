@@ -18,13 +18,15 @@ SonarQube XML formats with the repo-pinned `reportgenerator` tool before publish
 
 Local compile-time analysis is complementary rather than separate. The repository
 references `SonarAnalyzer.CSharp` as a centrally managed Roslyn analyzer package for
-all C# projects, including test projects. Test projects set `SonarQubeTestProject=true`
-in `tests/Directory.Build.props` so the hosted SonarCloud scanner treats them accordingly,
-but the build-time Roslyn analyzer still runs on them. Low-signal rules for BDD
-step-definition patterns are narrowly scoped via `.editorconfig` to avoid noisy failures
-without disabling broader test analysis. That means:
+all C# projects, including tests. Test projects set `SonarQubeTestProject=true`
+in `tests/Directory.Build.props` so the hosted SonarCloud scanner still treats them as test
+scope. Low-signal rules for BDD step-definition patterns are narrowly scoped via `.editorconfig`
+to avoid noisy failures without disabling broader hosted test classification. That means:
 
-- ordinary local `dotnet build` runs surface a focused subset of Sonar diagnostics early
+- ordinary local `dotnet build` runs surface a focused subset of Sonar diagnostics early across
+  production, shared, and test code
+- ordinary local test-project builds participate in the same package-level Sonar analyzer layer
+  while remaining classified as tests in the hosted scanner
 - VS Code connected mode stays aligned with the hosted project configuration
 - SonarCloud in CI remains the authoritative hosted quality gate and coverage owner
 
