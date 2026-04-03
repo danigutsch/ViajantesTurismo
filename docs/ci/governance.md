@@ -27,7 +27,7 @@ gate.
 The repository policy is to require verified signed commits for merges to the protected
 `main` branch.
 
-- Any signature type that GitHub marks as **verified** is acceptable for this policy.
+- Any signature type that GitHub marks as **Verified** is acceptable for this policy.
 - The documented contributor path for this repository remains **GPG commit signing** so
   setup and troubleshooting stay consistent.
 - Verified commit signatures strengthen authorship and change provenance, but they do
