@@ -41,6 +41,6 @@
 </div>
 
 @code {
-    private string GetEnvironment() =>
+    private static string GetEnvironment() =>
         Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 }

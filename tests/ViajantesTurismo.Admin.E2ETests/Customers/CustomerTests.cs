@@ -122,7 +122,8 @@ public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetByText(emergencyContactName)).ToBeVisibleAsync();
 
         var detailUrl = Page.Url;
-        var customerId = detailUrl.Split('/').Last();
+        var detailUrlSegments = detailUrl.Split('/');
+        var customerId = detailUrlSegments[^1];
 
         // Act
         await NavigateTo($"/customers/{customerId}/edit");

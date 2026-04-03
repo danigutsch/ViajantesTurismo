@@ -516,7 +516,7 @@ else
         Navigation.NavigateTo($"/customers/{Id}");
     }
 
-    private class CustomerFormModel
+    private sealed class CustomerFormModel
     {
         public PersonalInfoFormModel PersonalInfo { get; set; } = new();
         public IdentificationInfoFormModel IdentificationInfo { get; set; } = new();

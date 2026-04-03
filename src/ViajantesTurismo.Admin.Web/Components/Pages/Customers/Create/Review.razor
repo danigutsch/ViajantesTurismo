@@ -249,7 +249,7 @@
 
             State.Reset();
 
-            var customerId = location.ToString().Split('/').Last();
+            var customerId = location.Segments[^1].Trim('/');
             Navigation.NavigateTo($"/customers/{customerId}");
         }
         catch (Exception)

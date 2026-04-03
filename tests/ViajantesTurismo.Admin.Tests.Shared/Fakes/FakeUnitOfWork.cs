@@ -6,7 +6,7 @@ public sealed class FakeUnitOfWork : IUnitOfWork
 {
     public int SaveEntitiesCallCount { get; private set; }
 
-    public Task SaveEntities(CancellationToken ct = default)
+    public Task SaveEntities(CancellationToken ct)
     {
         SaveEntitiesCallCount++;
         return Task.CompletedTask;

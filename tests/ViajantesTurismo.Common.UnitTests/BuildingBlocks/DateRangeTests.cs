@@ -9,8 +9,8 @@ public sealed class DateRangeTests
     public void Create_WithValidDates_ReturnsSuccessResult()
     {
         // Arrange
-        var startDate = new DateTime(2025, 6, 1);
-        var endDate = new DateTime(2025, 6, 10);
+        var startDate = UtcDate(2025, 6, 1);
+        var endDate = UtcDate(2025, 6, 10);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -26,8 +26,8 @@ public sealed class DateRangeTests
     public void Create_WithEndDateBeforeStartDate_ReturnsInvalidResult()
     {
         // Arrange
-        var startDate = new DateTime(2025, 6, 10);
-        var endDate = new DateTime(2025, 6, 1);
+        var startDate = UtcDate(2025, 6, 10);
+        var endDate = UtcDate(2025, 6, 1);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -47,7 +47,7 @@ public sealed class DateRangeTests
     public void Create_WithEndDateEqualToStartDate_ReturnsInvalidResult()
     {
         // Arrange
-        var date = new DateTime(2025, 6, 1);
+        var date = UtcDate(2025, 6, 1);
 
         // Act
         var result = DateRange.Create(date, date);
@@ -64,8 +64,8 @@ public sealed class DateRangeTests
     public void DurationDays_CalculatesCorrectDuration()
     {
         // Arrange
-        var startDate = new DateTime(2025, 6, 1);
-        var endDate = new DateTime(2025, 6, 8);
+        var startDate = UtcDate(2025, 6, 1);
+        var endDate = UtcDate(2025, 6, 8);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -79,8 +79,8 @@ public sealed class DateRangeTests
     public void DurationDays_WithSingleDay_ReturnsCorrectValue()
     {
         // Arrange
-        var startDate = new DateTime(2025, 6, 1, 0, 0, 0);
-        var endDate = new DateTime(2025, 6, 2, 0, 0, 0);
+        var startDate = UtcDate(2025, 6, 1, 0, 0, 0);
+        var endDate = UtcDate(2025, 6, 2, 0, 0, 0);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -94,8 +94,8 @@ public sealed class DateRangeTests
     public void DurationDays_WithPartialDays_ReturnsDecimalValue()
     {
         // Arrange
-        var startDate = new DateTime(2025, 6, 1, 10, 0, 0);
-        var endDate = new DateTime(2025, 6, 2, 14, 0, 0);
+        var startDate = UtcDate(2025, 6, 1, 10, 0, 0);
+        var endDate = UtcDate(2025, 6, 2, 14, 0, 0);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -109,8 +109,8 @@ public sealed class DateRangeTests
     public void Equality_WithSameDates_AreEqual()
     {
         // Arrange
-        var startDate = new DateTime(2025, 6, 1);
-        var endDate = new DateTime(2025, 6, 10);
+        var startDate = UtcDate(2025, 6, 1);
+        var endDate = UtcDate(2025, 6, 10);
         var range1 = DateRange.Create(startDate, endDate).Value;
         var range2 = DateRange.Create(startDate, endDate).Value;
 
@@ -124,8 +124,8 @@ public sealed class DateRangeTests
     public void Equality_WithDifferentDates_AreNotEqual()
     {
         // Arrange
-        var range1 = DateRange.Create(new DateTime(2025, 6, 1), new DateTime(2025, 6, 10)).Value;
-        var range2 = DateRange.Create(new DateTime(2025, 7, 1), new DateTime(2025, 7, 10)).Value;
+        var range1 = DateRange.Create(UtcDate(2025, 6, 1), UtcDate(2025, 6, 10)).Value;
+        var range2 = DateRange.Create(UtcDate(2025, 7, 1), UtcDate(2025, 7, 10)).Value;
 
         // Act
         // Assert
@@ -153,8 +153,8 @@ public sealed class DateRangeTests
     public void Create_WithLongDuration_CalculatesCorrectly()
     {
         // Arrange
-        var startDate = new DateTime(2025, 1, 1);
-        var endDate = new DateTime(2025, 12, 31);
+        var startDate = UtcDate(2025, 1, 1);
+        var endDate = UtcDate(2025, 12, 31);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -169,7 +169,7 @@ public sealed class DateRangeTests
     {
         // Arrange
         const int oneSecondDifference = 1;
-        var startDate = new DateTime(2025, 6, 1, 12, 0, 0);
+        var startDate = UtcDate(2025, 6, 1, 12, 0, 0);
         var endDate = startDate.AddSeconds(oneSecondDifference);
 
         // Act
@@ -179,5 +179,10 @@ public sealed class DateRangeTests
         Assert.True(result.IsSuccess);
         Assert.True(result.Value.DurationDays > 0);
         Assert.True(result.Value.DurationDays < 0.001);
+    }
+
+    private static DateTime UtcDate(int year, int month, int day, int hour = 0, int minute = 0, int second = 0)
+    {
+        return new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc);
     }
 }

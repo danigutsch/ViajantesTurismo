@@ -330,7 +330,7 @@ public static class DtoBuilders
             {
                 FirstName = first,
                 LastName = last,
-                BirthDate = new DateTime(1990, 1, 1).ToUniversalTime(),
+                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 Gender = "Male",
                 Nationality = "American",
                 Occupation = "Engineer"
@@ -516,7 +516,7 @@ public static class DtoBuilders
             {
                 FirstName = first,
                 LastName = last,
-                BirthDate = new DateTime(1990, 1, 1).ToUniversalTime(),
+                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 Gender = "Male",
                 Nationality = "American",
                 Occupation = occupation ?? "Engineer"

@@ -58,20 +58,12 @@ public sealed class NumericSanitizerTests
     [InlineData(10.994, 10.99)]
     [InlineData(10.995, 11.00)]
     [InlineData(10.996, 11.00)]
-    public void Sanitize_Price_Rounds_Correctly_For_Various_Inputs(decimal input, decimal expected)
-    {
-        var result = NumericSanitizer.SanitizePrice(input);
-
-        Assert.Equal(expected, result);
-    }
-
-    [Theory]
     [InlineData(1.001, 1.00)]
     [InlineData(1.004, 1.00)]
     [InlineData(1.005, 1.01)]
     [InlineData(1.006, 1.01)]
     [InlineData(1.009, 1.01)]
-    public void Sanitize_Price_Rounds_Third_Decimal_Place_Correctly(decimal input, decimal expected)
+    public void Sanitize_Price_Rounds_Correctly_For_Various_Inputs(decimal input, decimal expected)
     {
         var result = NumericSanitizer.SanitizePrice(input);
 
