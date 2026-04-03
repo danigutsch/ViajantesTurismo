@@ -12,9 +12,11 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 [Collection("Integration.Serial")]
 public abstract class AdminApiSerialTestBase(ApiFixture fixture) : IntegrationTestBase<ApiMarker>(fixture), IAsyncLifetime
 {
+    private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
+
     public async ValueTask InitializeAsync()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(DatabaseResetTimeout);
         await ClearDatabaseAsync(cts.Token);
 
         using var scope = fixture.Services.CreateScope();
@@ -24,7 +26,7 @@ public abstract class AdminApiSerialTestBase(ApiFixture fixture) : IntegrationTe
 
     public async ValueTask DisposeAsync()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(DatabaseResetTimeout);
         await ClearDatabaseAsync(cts.Token);
 
         GC.SuppressFinalize(this);

@@ -1,6 +1,4 @@
 using Microsoft.Playwright.Xunit.v3;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Pages;
-using ViajantesTurismo.Admin.E2ETests.Infrastructure.Workflows;
 
 namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
 
@@ -12,28 +10,24 @@ namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
 [Collection("E2E.Serial")]
 public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 {
+    private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
+
     protected HttpClient ApiClient => fixture.ApiClient;
 
-    private protected BookingsListPage BookingsList => new(Page, NavigateTo, ApiClient.GetAllBookings);
-
-    private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
-
-    private protected UiFeedbackAssertions UiFeedback => new(Page);
-
-    protected async Task ClearDatabase(CancellationToken cancellationToken) => await fixture.ClearDatabase(cancellationToken);
+    protected Task ClearDatabase(CancellationToken cancellationToken) => fixture.ClearDatabase(cancellationToken);
 
     public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(DatabaseResetTimeout);
         await fixture.ClearDatabase(cts.Token);
         await fixture.Seed(cts.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(DatabaseResetTimeout);
         await fixture.ClearDatabase(cts.Token);
 
         await base.DisposeAsync();
