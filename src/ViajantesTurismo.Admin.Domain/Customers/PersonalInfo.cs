@@ -29,6 +29,7 @@ public sealed class PersonalInfo
     private PersonalInfo()
     {
     }
+#pragma warning restore CS8618
 
     /// <summary>Full first name of the customer.</summary>
     public string FirstName { get; private set; }
