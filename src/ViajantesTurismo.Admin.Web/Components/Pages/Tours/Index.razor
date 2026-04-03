@@ -69,10 +69,10 @@ else
 
         <TemplateColumn Title="Actions">
             <div class="btn-group" role="group">
-                <NavLink href="@($"/tours/{context.Id}")" class="btn btn-sm btn-info">
+                <NavLink href="@GetTourDetailsUrl(context.Id)" class="btn btn-sm btn-info">
                     <i class="bi bi-eye"></i> View
                 </NavLink>
-                <NavLink href="@($"/edittour/{context.Id}")" class="btn btn-sm btn-primary">
+                <NavLink href="@GetTourEditUrl(context.Id)" class="btn btn-sm btn-primary">
                     <i class="bi bi-pencil"></i> Edit
                 </NavLink>
             </div>
@@ -101,6 +101,10 @@ else
     }
 
     private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
+
+    private static string GetTourDetailsUrl(Guid tourId) => $"/tours/{tourId}";
+
+    private static string GetTourEditUrl(Guid tourId) => $"/edittour/{tourId}";
 
     private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
 

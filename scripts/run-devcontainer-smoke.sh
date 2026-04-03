@@ -11,7 +11,10 @@ run_tests="${DEVCONTAINER_SMOKE_RUN_TESTS:-0}"
 container_id=""
 
 print_step() {
-    printf "\n==> %s\n" "$1"
+    local message="$1"
+
+    printf "\n==> %s\n" "${message}"
+    return 0
 }
 
 require_command() {
@@ -21,16 +24,22 @@ require_command() {
         printf "Required command '%s' was not found on PATH.\n" "${command_name}" >&2
         exit 1
     fi
+
+    return 0
 }
 
 run_devcontainer_cli() {
-    npm exec --yes --package "@devcontainers/cli@${devcontainer_cli_version}" -- "$@"
+    local args=("$@")
+
+    npm exec --yes --package "@devcontainers/cli@${devcontainer_cli_version}" -- "${args[@]}"
+    return 0
 }
 
 extract_container_id() {
     local up_log_path="$1"
 
     grep -aoE '"containerId":"[^"]+' "${up_log_path}" | tail -1 | cut -d'"' -f4 || true
+    return 0
 }
 
 write_metadata() {
@@ -43,6 +52,8 @@ devcontainer_cli_version=${devcontainer_cli_version}
 run_tests=${run_tests}
 container_id=${container_id}
 EOF
+
+    return 0
 }
 
 cleanup() {
@@ -74,9 +85,12 @@ main() {
     local metadata_path="${log_dir}/metadata.txt"
     local up_exit_code="0"
     local workspace_folder_override=""
+    local current_arg=""
 
     while [[ $# -gt 0 ]]; do
-        case "$1" in
+        current_arg="$1"
+
+        case "${current_arg}" in
             --run-tests)
                 run_tests="1"
                 ;;
@@ -85,7 +99,7 @@ main() {
                 exit 0
                 ;;
             --*)
-                printf "Unknown option '%s'.\n" "$1" >&2
+                printf "Unknown option '%s'.\n" "${current_arg}" >&2
                 printf "Usage: %s [--run-tests] [workspace-folder]\n" "$0" >&2
                 exit 1
                 ;;
@@ -95,7 +109,7 @@ main() {
                     exit 1
                 fi
 
-                workspace_folder_override="$1"
+                workspace_folder_override="${current_arg}"
                 ;;
         esac
 
@@ -165,6 +179,7 @@ main() {
 
     print_step "Devcontainer smoke validation completed successfully"
     printf "Logs written to '%s'.\n" "${log_dir}"
+    return 0
 }
 
 main "$@"

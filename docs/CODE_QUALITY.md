@@ -226,8 +226,6 @@ Prefer one of the following instead:
 - framework-native mechanisms that express deferred UI behavior without arbitrary waits
 
 This policy is defined in [ADR-019: No Direct Task.Delay in Production Code](adr/20260321-no-task-delay-in-production-code.md).
-Repository-owned automated enforcement is tracked in
-[PBI-2026-03-21-01](backlog/PBI-2026-03-21-01-task-delay-production-code-guard.md).
 
 Scope notes:
 
