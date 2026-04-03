@@ -202,8 +202,12 @@ Keep suppressions narrow and do not use guard clauses instead of domain validati
 The repository uses a three-layer Sonar model:
 
 - **Build-time analyzer package**: `SonarAnalyzer.CSharp` is referenced centrally through
-  `Directory.Packages.props` and `Directory.Build.props` so production and shared C# projects
-  get local Roslyn diagnostics during ordinary builds.
+  `Directory.Packages.props` and `Directory.Build.props` so all C# projects — including test
+  projects — get local Roslyn diagnostics during ordinary builds. Test projects set
+  `SonarQubeTestProject=true` in `tests/Directory.Build.props` so the hosted SonarCloud scanner
+  treats them accordingly, but the build-time Roslyn analyzer still runs. Low-signal rules for
+  BDD step-definition patterns are narrowly scoped via `.editorconfig` to avoid noisy failures
+  without disabling broader test analysis.
 - **IDE connected mode**: VS Code uses the Sonar connected-mode settings in `.vscode/settings.json`
   to align local issue visibility with the hosted project configuration.
 - **Hosted quality gate**: CI still runs the repo-pinned `dotnet-sonarscanner` path described in
