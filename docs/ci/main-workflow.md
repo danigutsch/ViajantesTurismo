@@ -28,10 +28,12 @@ protected branch keeps its post-merge validation history intact.
    `Build and Test` check resolves cleanly without starting the expensive validation
    path.
 3. Checkout repository (`actions/checkout`) when build/test work is required.
-4. Set up the .NET SDK from `global.json` (`actions/setup-dotnet`) when build/test work is
-   required.
+4. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
+  `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when build/test work
+  is required.
 5. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required.
-6. Run `dotnet restore ViajantesTurismo.slnx` when build/test work is required.
+6. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
+  required.
 7. Run `dotnet tool restore` when build/test work is required.
 8. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
 9. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
@@ -49,6 +51,11 @@ The `test-results`, `coverage-report`, and `sonar-coverage` uploads are intentio
 best-effort. If validation fails before those files exist, CI should report the actual
 build/test/Sonar failure instead of adding secondary artifact-missing noise. The focused
 diagnostics artifact remains strict because it is part of the failure-investigation path.
+
+NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
+that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
+keeps the dependency graph reproducible across pull requests and merge commits while giving
+the cache a stable key source.
 
 For pull requests and pushes that only modify `docs/**`, `README.md`, or
 `CONTRIBUTING.md`, the job still runs and reports a successful `Build and Test` check

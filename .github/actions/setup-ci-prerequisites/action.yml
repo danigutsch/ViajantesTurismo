@@ -22,10 +22,17 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Configure NuGet global-packages path
+      shell: bash
+      run: echo "NUGET_PACKAGES=$GITHUB_WORKSPACE/.nuget/packages" >> "$GITHUB_ENV"
+
     - name: Set up .NET SDK
       uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
       with:
         global-json-file: ${{ inputs.dotnet-global-json }}
+        cache: true
+        cache-dependency-path: |
+          **/packages.lock.json
 
     - name: Set up Node.js
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
@@ -36,7 +43,7 @@ runs:
       shell: bash
       env:
         SOLUTION_PATH: ${{ inputs.solution-path }}
-      run: dotnet restore "$SOLUTION_PATH"
+      run: dotnet restore "$SOLUTION_PATH" --locked-mode
 
     - name: Restore .NET local tools
       shell: bash
