@@ -249,8 +249,7 @@
 
             State.Reset();
 
-            var customerId = location.Segments[^1].Trim('/');
-            Navigation.NavigateTo($"/customers/{customerId}");
+            Navigation.NavigateTo(GetCustomerLocation(location));
         }
         catch (Exception)
         {
@@ -266,6 +265,15 @@
     {
         State.NavigateToStep(8);
         Navigation.NavigateTo("/customers/create/medical");
+    }
+
+    private static string GetCustomerLocation(Uri location)
+    {
+        ArgumentNullException.ThrowIfNull(location);
+
+        return location.IsAbsoluteUri
+            ? location.PathAndQuery
+            : location.OriginalString;
     }
 
 }
