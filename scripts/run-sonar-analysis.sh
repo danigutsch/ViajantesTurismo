@@ -45,9 +45,10 @@ cleanup() {
 
     if [[ ${exit_code} -eq 0 ]]; then
         dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
+        exit_code="$?"
     fi
 
-    return "${exit_code}"
+    exit "${exit_code}"
 }
 
 trap 'cleanup $?' EXIT
