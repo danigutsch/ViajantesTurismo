@@ -31,6 +31,7 @@ public sealed class PhysicalInfo
     private PhysicalInfo()
     {
     }
+#pragma warning restore CS8618
 
     /// <summary>Weight in kilograms.</summary>
     public decimal WeightKg { get; private set; }
