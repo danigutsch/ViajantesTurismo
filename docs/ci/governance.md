@@ -40,10 +40,10 @@ The repository policy is to require verified signed commits for merges to the pr
 - GitHub's **Rebase and merge** path should not be used for protected branches that
   require signed commits, because GitHub cannot preserve commit signature verification on
   that merge path.
-- GitHub's **Squash and merge** path into a branch that requires signed commits only
-  works on GitHub when the person performing the squash merge is also the pull request
-  author. Other squash merges should be performed locally with a signed commit or avoided
-  in favor of a compatible merge path.
+- GitHub's **Squash and merge** path is generally compatible with branches that require
+  signed commits because GitHub creates the resulting squash commit and marks it
+  **Verified** when that merge path is allowed. Maintainers should validate repository
+  settings and observed GitHub behavior if this policy or GitHub enforcement changes.
 - Dependabot and other bots are unaffected while they work on pull request branches, but
   any commit that ultimately lands on `main` must still satisfy the signed-commit rule.
 - If vigilant mode is enabled for an author/committer combination, GitHub may allow
