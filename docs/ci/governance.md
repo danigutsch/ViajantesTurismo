@@ -75,7 +75,7 @@ SonarCloud analysis model used in BookWorm's quality strategy.
 
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The
   configuration covers `github-actions`, `devcontainers`, `nuget`, and `npm`
-  ecosystems on staggered monthly and weekly schedules.
+  ecosystems on a deliberately cautious monthly schedule for routine version updates.
 - When Dependabot proposes an action update, review both the release notes and the
   resolved SHA, then verify the affected workflows still pass before merging.
 - When upgrading across major action versions, review the migration guidance before
