@@ -46,8 +46,6 @@ The repository policy is to require verified signed commits for merges to the pr
   settings and observed GitHub behavior if this policy or GitHub enforcement changes.
 - Dependabot and other bots are unaffected while they work on pull request branches, but
   any commit that ultimately lands on `main` must still satisfy the signed-commit rule.
-- If vigilant mode is enabled for an author/committer combination, GitHub may allow
-  commits marked **Partially verified** on branches that require signed commits.
 
 ### Enforcement note
 
