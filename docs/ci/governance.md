@@ -22,6 +22,34 @@ separate dependency review workflow, and the separate secret scanning workflow. 
 `Devcontainer Smoke` workflow remains supplemental and is not part of the required merge
 gate.
 
+## Signed commit policy
+
+The repository policy is to require verified signed commits for merges to the protected
+`main` branch.
+
+- Any signature type that GitHub marks as **Verified** is acceptable for this policy.
+- The documented contributor path for this repository remains **GPG commit signing** so
+  setup and troubleshooting stay consistent.
+- Verified commit signatures strengthen authorship and change provenance, but they do
+  **not** replace code review, required status checks, or key lifecycle management.
+- GitHub's verification record is persistent. A commit that was verified when pushed can
+  remain marked verified later even if the key is rotated, revoked, or expires.
+
+### Merge and automation implications
+
+- **Squash and merge** is not permitted in this repository.
+- **Rebase and merge** is not permitted for branches that require signed commits because
+  GitHub cannot preserve commit signature verification on that merge path.
+- **Create a merge commit** is the only permitted merge method. GitHub creates and signs
+  the resulting merge commit, which is marked **Verified** on `main`.
+- Dependabot and other bots are unaffected while they work on pull request branches, but
+  any commit that ultimately lands on `main` must still satisfy the signed-commit rule.
+
+### Enforcement note
+
+A maintainer with repository admin access must keep GitHub branch protection or ruleset
+settings aligned with this policy by enabling **Require signed commits** for `main`.
+
 ## Action versioning policy
 
 All external GitHub Actions used in repository workflows are pinned to immutable commit
