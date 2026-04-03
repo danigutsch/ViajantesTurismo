@@ -42,13 +42,9 @@ dotnet tool run dotnet-sonarscanner begin \
 
 cleanup() {
     local exit_code="$1"
-    local scanner_exit_code
 
     if [[ ${exit_code} -eq 0 ]]; then
-        if ! dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"; then
-            scanner_exit_code=$?
-            return "${scanner_exit_code}"
-        fi
+        dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
     fi
 
     return "${exit_code}"
