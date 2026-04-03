@@ -79,8 +79,8 @@ public sealed class DateRangeTests
     public void DurationDays_WithSingleDay_ReturnsCorrectValue()
     {
         // Arrange
-        var startDate = UtcDate(2025, 6, 1, 0, 0, 0);
-        var endDate = UtcDate(2025, 6, 2, 0, 0, 0);
+        var startDate = UtcDate(2025, 6, 1);
+        var endDate = UtcDate(2025, 6, 2);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -94,8 +94,8 @@ public sealed class DateRangeTests
     public void DurationDays_WithPartialDays_ReturnsDecimalValue()
     {
         // Arrange
-        var startDate = UtcDate(2025, 6, 1, 10, 0, 0);
-        var endDate = UtcDate(2025, 6, 2, 14, 0, 0);
+        var startDate = UtcDate(2025, 6, 1, 10);
+        var endDate = UtcDate(2025, 6, 2, 14);
 
         // Act
         var result = DateRange.Create(startDate, endDate);
@@ -169,7 +169,7 @@ public sealed class DateRangeTests
     {
         // Arrange
         const int oneSecondDifference = 1;
-        var startDate = UtcDate(2025, 6, 1, 12, 0, 0);
+        var startDate = UtcDate(2025, 6, 1, 12);
         var endDate = startDate.AddSeconds(oneSecondDifference);
 
         // Act
