@@ -258,11 +258,11 @@
                     <table class="table table-sm preview-table">
                         <thead>
                             <tr>
-                                @foreach (var mapping in mappedFields)
+                                @foreach (var field in mappedFields)
                                 {
                                     <th>
-                                        @mapping.DisplayName
-                                        @if (mapping.IsRequired)
+                                        @field.DisplayName
+                                        @if (field.IsRequired)
                                         {
                                             <span class="text-danger ms-1">*</span>
                                         }
