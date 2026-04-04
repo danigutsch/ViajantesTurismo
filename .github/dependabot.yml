@@ -85,7 +85,7 @@ updates:
   - package-ecosystem: devcontainers
     directory: /
     schedule:
-      interval: monthly
+      interval: quarterly
       time: "05:00"
       timezone: "UTC"
     open-pull-requests-limit: 1
@@ -96,6 +96,9 @@ updates:
     commit-message:
       prefix: deps
       include: scope
+    labels:
+      - dependencies
+      - ci
 
   - package-ecosystem: npm
     directory: /
@@ -123,3 +126,5 @@ updates:
     commit-message:
       prefix: deps
       include: scope
+    labels:
+      - dependencies
