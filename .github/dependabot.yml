@@ -8,7 +8,15 @@ updates:
       timezone: "UTC"
     open-pull-requests-limit: 1
     groups:
-      github-actions:
+      github-actions-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+      github-actions-security:
+        applies-to: security-updates
         patterns:
           - "*"
     commit-message:
@@ -17,6 +25,32 @@ updates:
     labels:
       - dependencies
       - ci
+
+  - package-ecosystem: dotnet-sdk
+    directory: /
+    schedule:
+      interval: monthly
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 1
+    cooldown:
+      semver-major-days: 90
+      semver-minor-days: 30
+      semver-patch-days: 14
+    groups:
+      dotnet-sdk-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: deps
+      include: scope
+    labels:
+      - dependencies
+      - .net
 
   - package-ecosystem: nuget
     directory: /
