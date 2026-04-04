@@ -25,6 +25,9 @@ Instructions for files under `.github/`.
 
 - Keep prompt files task-specific and reusable.
 - Keep customization content concise, deterministic, and repository-relevant.
+- Prefer the repository `AGENTS.md` hierarchy for durable repository guidance.
+- Do not reintroduce duplicate `.github/copilot-instructions.md` or broad `.github/instructions/*.instructions.md` files unless a genuinely narrower scoped
+ rule is required.
 
 ## References
 
