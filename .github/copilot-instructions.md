@@ -15,7 +15,7 @@
     - Infrastructure: `src/ViajantesTurismo.Admin.Infrastructure`
     - API: `src/ViajantesTurismo.Admin.ApiService`
 - Keep business rules in the Domain layer; do not move them into API or infrastructure code.
-- Use the scoped instruction files in `.github/instructions/` for domain and test-specific conventions.
+- Read the nearest `AGENTS.md` file for scoped guidance on specific areas of work (see **Scoped Agent Instructions** below).
 
 ## Build and Validation
 
@@ -38,6 +38,25 @@
 - Research unfamiliar rules or failures before changing code.
 - Prefer official docs and repository docs over guesses.
 - Keep changes small, validate them, and check for scoped instructions before adding new conventions.
+
+## Scoped Agent Instructions
+
+Read the nearest `AGENTS.md` file before working in each area:
+
+| Scope | File |
+| --- | --- |
+| Repository-wide guidance | [AGENTS.md](../AGENTS.md) |
+| .github files and automation assets | [.github/AGENTS.md](.github/AGENTS.md) |
+| AppHost orchestration | [src/ViajantesTurismo.AppHost/AGENTS.md](../src/ViajantesTurismo.AppHost/AGENTS.md) |
+| Application layer | [src/ViajantesTurismo.Admin.Application/AGENTS.md](../src/ViajantesTurismo.Admin.Application/AGENTS.md) |
+| Contracts layer | [src/ViajantesTurismo.Admin.Contracts/AGENTS.md](../src/ViajantesTurismo.Admin.Contracts/AGENTS.md) |
+| Domain entities, aggregates, value objects | [src/ViajantesTurismo.Admin.Domain/AGENTS.md](../src/ViajantesTurismo.Admin.Domain/AGENTS.md) |
+| Infrastructure layer | [src/ViajantesTurismo.Admin.Infrastructure/AGENTS.md](../src/ViajantesTurismo.Admin.Infrastructure/AGENTS.md) |
+| Web layer and Razor components | [src/ViajantesTurismo.Admin.Web/AGENTS.md](../src/ViajantesTurismo.Admin.Web/AGENTS.md) |
+| Test guidance (all tests) | [tests/AGENTS.md](../tests/AGENTS.md) |
+| BDD/Reqnroll behavior tests | [tests/ViajantesTurismo.Admin.BehaviorTests/AGENTS.md](../tests/ViajantesTurismo.Admin.BehaviorTests/AGENTS.md) |
+| Integration tests (API/infrastructure) | [tests/ViajantesTurismo.Admin.IntegrationTests/AGENTS.md](../tests/ViajantesTurismo.Admin.IntegrationTests/AGENTS.md) |
+| E2E tests (browser automation) | [tests/ViajantesTurismo.Admin.E2ETests/AGENTS.md](../tests/ViajantesTurismo.Admin.E2ETests/AGENTS.md) |
 
 ## Key References
 
