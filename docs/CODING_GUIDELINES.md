@@ -191,6 +191,8 @@ var booking = tour.AddBooking(
 ### Braces
 
 Always use braces for control flow statements (EditorConfig enforces).
+Keep the opening brace on the same line as the declaration or control-flow statement unless
+the local formatter or surrounding code in that file clearly requires a different layout.
 
 ### Type Declarations
 
