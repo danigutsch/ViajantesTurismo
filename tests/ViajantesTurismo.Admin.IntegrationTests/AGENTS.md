@@ -3,8 +3,6 @@
 Instructions for files under `tests/ViajantesTurismo.Admin.IntegrationTests/`.
 
 This file narrows the broader `tests/AGENTS.md` guidance for API integration test work.
-The companion instruction file `.github/instructions/integration-tests.instructions.md`
-documents the detailed conventions and should be read when creating or editing test files here.
 
 ## Scope and precedence
 
@@ -74,6 +72,5 @@ in the same file (parallel class first, serial class after).
 ## References
 
 - `tests/AGENTS.md`
-- `.github/instructions/integration-tests.instructions.md`
 - `tests/ViajantesTurismo.Admin.IntegrationTests/README.md`
 - `docs/TEST_GUIDELINES.md`

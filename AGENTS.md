@@ -3,18 +3,24 @@
 Repository-wide agent instructions for ViajantesTurismo.
 
 This file is intended to stay concise and cover only repository-wide guidance.
-Use nested `AGENTS.md` files and `.github/instructions/*.instructions.md` for scoped rules.
+Use nested `AGENTS.md` files for scoped rules.
 
 ## Scope and precedence
 
 - Applies to the entire repository.
-- More specific `AGENTS.md` files and `.github/instructions/*.instructions.md` files override this file for their scope.
+- More specific `AGENTS.md` files override this file for their scope.
 - Current scoped guidance includes:
+    - `.github/AGENTS.md`
+    - `src/ViajantesTurismo.Admin.Application/AGENTS.md`
+    - `src/ViajantesTurismo.Admin.Contracts/AGENTS.md`
     - `src/ViajantesTurismo.Admin.Domain/AGENTS.md`
+    - `src/ViajantesTurismo.Admin.Infrastructure/AGENTS.md`
+    - `src/ViajantesTurismo.Admin.Web/AGENTS.md`
+    - `src/ViajantesTurismo.AppHost/AGENTS.md`
     - `tests/AGENTS.md`
-    - `.github/instructions/backend-domain.instructions.md`
-    - `.github/instructions/tests.instructions.md`
-    - `.github/instructions/integration-tests.instructions.md`
+    - `tests/ViajantesTurismo.Admin.BehaviorTests/AGENTS.md`
+    - `tests/ViajantesTurismo.Admin.E2ETests/AGENTS.md`
+    - `tests/ViajantesTurismo.Admin.IntegrationTests/AGENTS.md`
 
 ## Repository-wide coding rules
 

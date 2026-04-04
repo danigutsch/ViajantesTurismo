@@ -29,4 +29,3 @@ Instructions for files under `.github/`.
 ## References
 
 - `AGENTS.md` (repository root)
-- `.github/copilot-instructions.md`
