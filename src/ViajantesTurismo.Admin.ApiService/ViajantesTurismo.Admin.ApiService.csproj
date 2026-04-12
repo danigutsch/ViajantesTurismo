@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
