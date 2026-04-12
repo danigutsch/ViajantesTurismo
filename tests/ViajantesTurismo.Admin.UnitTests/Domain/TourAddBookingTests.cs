@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class TourAddBookingTests
 {
     [Fact]
-    public void AddBooking_WhenTourIsFullyBooked_ReturnsConflict_And_DoesNotAddAnotherBooking()
+    public void AddBooking_When_Tour_Is_Fully_Booked_Returns_Conflict_And_Does_Not_Add_Another_Booking()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(minCustomers: 1, maxCustomers: 1);
@@ -31,7 +31,7 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenPrincipalBikeTypeIsInvalid_ReturnsInvalid()
+    public void AddBooking_When_Principal_Bike_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -53,7 +53,7 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenPrincipalBikeTypeIsNone_ReturnsInvalid()
+    public void AddBooking_When_Principal_Bike_Type_Is_None_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -75,7 +75,7 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenCompanionBikeTypeIsInvalid_ReturnsInvalid()
+    public void AddBooking_When_Companion_Bike_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -99,7 +99,7 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenCompanionBikeTypeIsMissing_ReturnsInvalid()
+    public void AddBooking_When_Companion_Bike_Type_Is_Missing_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -123,7 +123,7 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenRoomTypeIsInvalid_ReturnsInvalid()
+    public void AddBooking_When_Room_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -145,7 +145,7 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenSingleRoomHasCompanion_ReturnsInvalid()
+    public void AddBooking_When_Single_Room_Has_Companion_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -163,7 +163,28 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenDiscountIsInvalid_ReturnsInvalid()
+    public void AddBooking_When_Principal_And_Companion_Are_The_Same_Returns_Invalid()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour();
+        var customerId = Guid.CreateVersion7();
+        var request = CreateValidDoubleRequest(
+            principalCustomerId: customerId,
+            companionCustomerId: customerId);
+
+        // Act
+        var result = tour.AddBooking(request);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("cannot be the same person", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Empty(tour.Bookings);
+    }
+
+    [Fact]
+    public void AddBooking_When_Discount_Is_Invalid_Returns_Invalid()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -185,7 +206,53 @@ public class TourAddBookingTests
     }
 
     [Fact]
-    public void AddBooking_WhenRequestIsValid_AddsBookingToTour()
+    public void AddBooking_When_Absolute_Discount_Exceeds_Subtotal_Returns_Invalid()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour();
+        var request = TourBookingRequest.CreateSingle(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            new BookingDiscountDefinition(DiscountType.Absolute, 50_000m, "Manual approval"));
+
+        // Act
+        var result = tour.AddBooking(request);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("cannot exceed subtotal", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Empty(tour.Bookings);
+    }
+
+    [Fact]
+    public void AddBooking_When_Notes_Exceed_Maximum_Length_Returns_Invalid()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour();
+        var tooLongNotes = new string('n', 2001);
+        var request = TourBookingRequest.CreateSingle(
+            Guid.CreateVersion7(),
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            BookingDiscountDefinition.None,
+            tooLongNotes);
+
+        // Act
+        var result = tour.AddBooking(request);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains("Notes cannot exceed", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Empty(tour.Bookings);
+    }
+
+    [Fact]
+    public void AddBooking_When_Request_Is_Valid_Adds_Booking_To_Tour()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();

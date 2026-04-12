@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class BookingUpdateCompanionTests
 {
     [Fact]
-    public void UpdateCompanion_WhenBookingIsCancelled_ReturnsConflict_And_DoesNotAddCompanion()
+    public void UpdateCompanion_When_Booking_Is_Cancelled_Returns_Conflict_And_Does_Not_Add_Companion()
     {
         // Arrange
         var booking = CreateSingleBooking();
@@ -28,7 +28,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_WhenBookingIsCompleted_ReturnsConflict_And_DoesNotAddCompanion()
+    public void UpdateCompanion_When_Booking_Is_Completed_Returns_Conflict_And_Does_Not_Add_Companion()
     {
         // Arrange
         var booking = CreateSingleBooking();
@@ -48,7 +48,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_WhenCompanionMatchesPrincipal_ReturnsInvalid()
+    public void UpdateCompanion_When_Companion_Matches_Principal_Returns_Invalid()
     {
         // Arrange
         var booking = CreateSingleBooking();
@@ -69,7 +69,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_WhenSingleRoomBookingHasCompanion_ReturnsInvalid()
+    public void UpdateCompanion_When_Single_Room_Booking_Has_Companion_Returns_Invalid()
     {
         // Arrange
         var booking = CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
@@ -90,7 +90,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_WhenCompanionMatchesPrincipal_OnSingleRoom_ReturnsAggregatedValidationErrors()
+    public void UpdateCompanion_When_Companion_Matches_Principal_On_Single_Room_Returns_Aggregated_Validation_Errors()
     {
         // Arrange
         var booking = CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
@@ -117,7 +117,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_WhenDoubleRoomAndValidCompanion_Succeeds()
+    public void UpdateCompanion_When_Double_Room_And_Valid_Companion_Succeeds()
     {
         // Arrange
         var booking = CreateSingleBooking();
@@ -135,7 +135,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_WhenCompanionIsNull_RemovesExistingCompanion()
+    public void UpdateCompanion_When_Companion_Is_Null_Removes_Existing_Companion()
     {
         // Arrange
         var booking = CreateDoubleBooking();
