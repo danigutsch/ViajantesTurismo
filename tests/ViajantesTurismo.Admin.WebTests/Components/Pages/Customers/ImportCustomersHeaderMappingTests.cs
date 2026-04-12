@@ -87,8 +87,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("button.btn-primary")));
-        Assert.True(cut.Find("button.btn-primary").HasAttribute("disabled"));
+        cut.WaitForAssertion(() => Assert.NotNull(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview")));
+        Assert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -102,8 +102,8 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.FindComponent<InputFile>().UploadFiles(file);
 
         // Assert
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("button.btn-primary")));
-        Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled"));
+        cut.WaitForAssertion(() => Assert.NotNull(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview")));
+        Assert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".card-header")));
 
         // Act
-        cut.Find("button.btn-outline-secondary").Click();
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Choose different file").Click();
 
         // Assert
         Assert.Contains("Drop a CSV file here", cut.Markup, StringComparison.Ordinal);
@@ -157,9 +157,9 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange — only provide required fields via a single unknown column to test one-field scenario
         // Use canonical headers minus one required field, plus a custom column for that field
-        var requiredField = CustomerImportHeaderMatcher.Fields.First(f => f.IsRequired);
+        const string requiredFieldName = "FirstName";
         var otherRequiredHeaders = CustomerImportHeaderMatcher.Fields
-            .Where(f => f.IsRequired && f.Name != requiredField.Name)
+            .Where(f => f.IsRequired && f.Name != requiredFieldName)
             .Select(f => f.Name);
         var headers = string.Join(",", otherRequiredHeaders.Append("CustomCol"));
         var cut = Render<ImportCustomers>();
@@ -169,12 +169,12 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("select.form-select-sm")));
 
         // Import should be disabled before assignment
-        Assert.True(cut.Find("button.btn-primary").HasAttribute("disabled"));
+        Assert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
 
         // Act — assign CustomCol to the unmatched required field
-        cut.Find("select.form-select-sm").Change("CustomCol");
+        cut.Find($"select[data-field='{requiredFieldName}']").Change("CustomCol");
 
         // Assert — Import enabled now
-        Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled"));
+        Assert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 }

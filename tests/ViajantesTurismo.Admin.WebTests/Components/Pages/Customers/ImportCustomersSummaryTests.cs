@@ -23,9 +23,9 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(csvContent, fileName);
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
-        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
         return cut;
     }
 
@@ -33,9 +33,14 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     {
         _fakeCustomersApi.SetImportCustomersResult(result);
         var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
-        cut.Find("button.btn-primary").Click();
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Import complete.", cut.Markup, StringComparison.Ordinal));
         return cut;
+    }
+
+    private static AngleSharp.Dom.IElement FindSuccessSummaryRow(IRenderedComponent<ImportCustomers> cut, string email)
+    {
+        return ImportCustomersTestDomHelper.FindRowContainingText(cut, "[data-testid='summary-success-rows'] tbody tr", email);
     }
 
     [Fact]
@@ -46,12 +51,14 @@ public sealed class ImportCustomersSummaryTests : BunitContext
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(2, 1));
         var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
-        cut.Find("button.btn-primary").Click();
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
         // Act
-        cut.FindAll("button[data-action='keep']")[0].Click();
-        cut.FindAll("button[data-action='overwrite']")[1].Click();
+        ImportCustomersTestDomHelper.FindRowContainingText(cut, ".duplicate-resolution-table tbody tr", "a@example.com")
+            .QuerySelector("button[data-action='keep']")!.Click();
+        ImportCustomersTestDomHelper.FindRowContainingText(cut, ".duplicate-resolution-table tbody tr", "b@example.com")
+            .QuerySelector("button[data-action='overwrite']")!.Click();
         cut.Find("button[data-action='confirm-import']").Click();
 
         // Assert
@@ -79,10 +86,15 @@ public sealed class ImportCustomersSummaryTests : BunitContext
                     new ImportSuccessRowDto("updated@example.com", "updated", updatedId),
                 ]));
 
-        var links = cut.FindAll("a[data-action='view-customer']");
-        Assert.Equal(2, links.Count);
-        Assert.Contains($"/customers/{createdId}", links[0].GetAttribute("href"), StringComparison.OrdinalIgnoreCase);
-        Assert.Contains($"/customers/{updatedId}", links[1].GetAttribute("href"), StringComparison.OrdinalIgnoreCase);
+        var createdLink = FindSuccessSummaryRow(cut, "created@example.com")
+            .QuerySelector("a[data-action='view-customer']");
+        var updatedLink = FindSuccessSummaryRow(cut, "updated@example.com")
+            .QuerySelector("a[data-action='view-customer']");
+
+        Assert.NotNull(createdLink);
+        Assert.NotNull(updatedLink);
+        Assert.Contains($"/customers/{createdId}", createdLink.GetAttribute("href"), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains($"/customers/{updatedId}", updatedLink.GetAttribute("href"), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -110,7 +122,10 @@ public sealed class ImportCustomersSummaryTests : BunitContext
                 null,
                 [new ImportSuccessRowDto("created@example.com", "created", createdId)]));
 
-        var link = cut.Find("a[data-action='view-customer']");
+        var link = FindSuccessSummaryRow(cut, "created@example.com")
+            .QuerySelector("a[data-action='view-customer']");
+
+        Assert.NotNull(link);
         Assert.Equal($"/customers/{createdId}", link.GetAttribute("href"));
     }
 

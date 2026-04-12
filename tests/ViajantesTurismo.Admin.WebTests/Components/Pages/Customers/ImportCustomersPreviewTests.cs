@@ -23,9 +23,9 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(csvContent, fileName);
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
-        cut.Find("button.btn-primary").Click();
-        cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
         return cut;
     }
 
@@ -35,9 +35,9 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\n" + AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 
-        cut.Find("button.btn-primary").Click();
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
 
         cut.WaitForAssertion(() => Assert.Contains("Confirm Import", cut.Markup, StringComparison.Ordinal));
     }
@@ -96,7 +96,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     {
         var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
 
-        cut.Find("button.btn-outline-secondary").Click();
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Back to Mapping").Click();
 
         Assert.DoesNotContain("Confirm Import", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Source Column (CSV)", cut.Markup, StringComparison.Ordinal);
@@ -108,7 +108,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));
         var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
 
-        cut.Find("button.btn-primary").Click();
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
         cut.WaitForAssertion(() =>
             Assert.Contains("1 customer(s) imported successfully", cut.Markup, StringComparison.Ordinal));
