@@ -418,6 +418,41 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
+    public async Task Record_Payment_Button_Toggles_Payment_Form_Visibility()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
+        _fakeBookingsApi.AddBooking(booking);
+
+        var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
+
+        // Act
+        var showButton = cut.FindAll(ButtonSelector)
+            .First(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => showButton.Click());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.Contains("Record New Payment", cut.Markup, StringComparison.Ordinal);
+            Assert.NotEmpty(cut.FindAll("#amount"));
+        });
+
+        // Act
+        var hideButton = cut.FindAll(ButtonSelector)
+            .First(button => button.TextContent.Trim() == "Cancel");
+        await cut.InvokeAsync(() => hideButton.Click());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            Assert.DoesNotContain("Record New Payment", cut.Markup, StringComparison.Ordinal);
+            Assert.Contains(cut.FindAll(ButtonSelector), button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
+        });
+    }
+
+    [Fact]
     public void Page_Has_Correct_Title()
     {
         // Arrange
