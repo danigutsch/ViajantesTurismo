@@ -154,6 +154,29 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
+    public void Render_Summary_When_Error_Row_Field_And_Email_Are_Null_Shows_Dash_Placeholders()
+    {
+        var cut = ConfirmImportWithoutConflicts(
+            new ImportResultDto(
+                0,
+                1,
+                null,
+                null,
+                [new ImportErrorRowDto(3, null, "Unknown validation error")]));
+
+        var row = ImportCustomersTestDomHelper.FindRowContainingText(
+            cut,
+            "[data-testid='summary-error-rows'] tbody tr",
+            "Unknown validation error");
+        var cells = row.QuerySelectorAll("td").Select(cell => cell.TextContent.Trim()).ToArray();
+
+        Assert.Equal("3", cells[0]);
+        Assert.Equal("-", cells[1]);
+        Assert.Equal("Unknown validation error", cells[2]);
+        Assert.Equal("-", cells[3]);
+    }
+
+    [Fact]
     public void Download_Error_Report_When_Error_Rows_Exist_Exports_Current_Error_Rows()
     {
         var cut = ConfirmImportWithoutConflicts(
@@ -171,6 +194,33 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         Assert.NotNull(href);
         Assert.StartsWith("data:text/csv", href, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("import-errors.csv", download);
+    }
+
+    [Fact]
+    public void Download_Error_Report_When_Error_Row_Contains_Special_Characters_Escapes_Csv_Values()
+    {
+        var cut = ConfirmImportWithoutConflicts(
+            new ImportResultDto(
+                0,
+                2,
+                null,
+                null,
+                [
+                    new ImportErrorRowDto(3, null, "Unknown validation error"),
+                    new ImportErrorRowDto(4, "First,Name", "Value \"quoted\"\nand wrapped", "bad@example.com"),
+                ]));
+
+        var downloadLink = cut.Find("a[data-action='download-error-report']");
+        var href = downloadLink.GetAttribute("href");
+
+        Assert.NotNull(href);
+        var csvPayload = Uri.UnescapeDataString(href.Split(',', 2)[1]);
+
+        Assert.Contains("LineNumber,Field,Message,Email", csvPayload, StringComparison.Ordinal);
+        Assert.Contains("3,,Unknown validation error,", csvPayload, StringComparison.Ordinal);
+        Assert.Contains("\"First,Name", csvPayload, StringComparison.Ordinal);
+        Assert.Contains("\"Value \"\"quoted\"\"", csvPayload, StringComparison.Ordinal);
+        Assert.Contains("bad@example.com", csvPayload, StringComparison.Ordinal);
     }
 
     [Fact]
