@@ -314,125 +314,14 @@
     }
     else if (_state.Step == ImportCustomersWorkflowStep.DuplicateResolution)
     {
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Resolve Duplicates</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">The following @_state.ConflictStates.Count email(s) already exist in the database. Choose how to handle each conflict before completing the import.</p>
-                <table class="table table-sm duplicate-resolution-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Decision</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var conflictState in _state.ConflictStates)
-                        {
-                            var conflictEmail = conflictState.Email;
-                            var decision = conflictState.Decision;
-                            <tr>
-                                <td>@conflictEmail.ToLowerInvariant()</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button"
-                                                class="btn @(decision == "keep" ? "btn-success" : "btn-outline-secondary")"
-                                                data-action="keep"
-                                                @onclick="@(() => SetConflictDecision(conflictState, "keep"))">
-                                            Keep existing
-                                        </button>
-                                        <button type="button"
-                                                class="btn @(decision == "overwrite" ? "btn-warning" : "btn-outline-secondary")"
-                                                data-action="overwrite"
-                                                @onclick="@(() => SetConflictDecision(conflictState, "overwrite"))">
-                                            Overwrite
-                                        </button>
-                                        <button type="button"
-                                                class="btn @(decision == "mixed" ? "btn-info" : "btn-outline-secondary")"
-                                                data-action="mixed"
-                                                @onclick="@(() => SetConflictDecision(conflictState, "mixed"))">
-                                            Mixed merge
-                                        </button>
-                                    </div>
-
-                                    @if (decision == "mixed")
-                                    {
-                                        conflictState.EnsureMixedSelections(_state.FieldMappings);
-                                        var sourceSelections = conflictState.FieldSelections;
-
-                                        <div class="mt-3 border rounded p-2">
-                                            <div class="small fw-semibold mb-2">Field-level merge (existing vs incoming)</div>
-                                            <table class="table table-sm mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Field</th>
-                                                        <th>Existing</th>
-                                                        <th>Incoming</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach (var mapping in _state.FieldMappings)
-                                                    {
-                                                        if (mapping.MatchedCsvHeader is null && GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is null)
-                                                        {
-                                                            continue;
-                                                        }
-
-                                                        var fieldName = mapping.Field.Name;
-                                                        var source = sourceSelections.GetValueOrDefault(fieldName, ImportConflictFieldSource.Existing);
-                                                        var existingValue = conflictState.GetExistingValue(fieldName);
-                                                        var incomingValue = conflictState.GetIncomingValue(fieldName);
-
-                                                        <tr>
-                                                            <td>@mapping.Field.DisplayName</td>
-                                                            <td>
-                                                                <button type="button"
-                                                                        class="btn btn-sm @(source == ImportConflictFieldSource.Existing ? "btn-success" : "btn-outline-secondary")"
-                                                                        data-action="field-existing"
-                                                                        @onclick="@(() => SetFieldSource(conflictState, fieldName, ImportConflictFieldSource.Existing))">
-                                                                    Existing: @existingValue
-                                                                </button>
-                                                            </td>
-                                                            <td>
-                                                                <button type="button"
-                                                                        class="btn btn-sm @(source == ImportConflictFieldSource.Incoming ? "btn-primary" : "btn-outline-secondary")"
-                                                                        data-action="field-incoming"
-                                                                        @onclick="@(() => SetFieldSource(conflictState, fieldName, ImportConflictFieldSource.Incoming))">
-                                                                    Incoming: @incomingValue
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-primary"
-                            data-action="confirm-import"
-                            @onclick="HandleCommitWithResolutions"
-                            disabled="@(_state.ConflictStates.Count == 0 || _state.ConflictStates.Any(state => !state.IsResolved) || _state.Uploading)">
-                        @if (_state.Uploading)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                        }
-                        <i class="bi bi-check-lg"></i> Confirm Import
-                    </button>
-                    <button class="btn btn-outline-secondary"
-                            @onclick="@(() => _state.Step = ImportCustomersWorkflowStep.Preview)"
-                            disabled="@_state.Uploading">
-                        <i class="bi bi-arrow-left"></i> Back to Preview
-                    </button>
-                </div>
-            </div>
-        </div>
+        <ImportCustomersDuplicateResolution
+            Items="@GetDuplicateResolutionItems()"
+            VisibleFieldMappings="@GetVisibleConflictFieldMappings()"
+            Uploading="@_state.Uploading"
+            DecisionChanged="OnConflictDecisionChanged"
+            FieldSourceChanged="OnConflictFieldSourceChanged"
+            Confirm="HandleCommitWithResolutions"
+            Back="BackToPreview" />
     }
     else
     {
@@ -651,6 +540,52 @@
     private void SetConflictDecision(ImportCustomerConflictState conflictState, string decision)
     {
         conflictState.SetDecision(decision, _state.FieldMappings);
+    }
+
+    private IReadOnlyList<CustomerImportFieldMapping> GetVisibleConflictFieldMappings() =>
+        _state.FieldMappings
+            .Where(mapping => mapping.MatchedCsvHeader is not null || GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is not null)
+            .ToList()
+            .AsReadOnly();
+
+    private IReadOnlyList<ImportCustomersDuplicateResolutionItem> GetDuplicateResolutionItems() =>
+        _state.ConflictStates
+            .Select(conflictState => new ImportCustomersDuplicateResolutionItem
+            {
+                Email = conflictState.Email,
+                Decision = conflictState.Decision,
+                IsResolved = conflictState.IsResolved,
+                UseExistingFieldValues = conflictState.FieldSelections.ToDictionary(
+                    selection => selection.Key,
+                    selection => selection.Value == ImportConflictFieldSource.Existing,
+                    StringComparer.OrdinalIgnoreCase),
+                ExistingValues = new Dictionary<string, string>(conflictState.ExistingValues, StringComparer.OrdinalIgnoreCase),
+                IncomingValues = new Dictionary<string, string>(conflictState.IncomingValues, StringComparer.OrdinalIgnoreCase),
+            })
+            .ToList()
+            .AsReadOnly();
+
+    private Task OnConflictDecisionChanged((int ConflictIndex, string Decision) args)
+    {
+        var conflictState = _state.ConflictStates[args.ConflictIndex];
+        SetConflictDecision(conflictState, args.Decision);
+        return Task.CompletedTask;
+    }
+
+    private Task OnConflictFieldSourceChanged((int ConflictIndex, string FieldName, bool UseExisting) args)
+    {
+        var conflictState = _state.ConflictStates[args.ConflictIndex];
+        SetFieldSource(
+            conflictState,
+            args.FieldName,
+            args.UseExisting ? ImportConflictFieldSource.Existing : ImportConflictFieldSource.Incoming);
+        return Task.CompletedTask;
+    }
+
+    private Task BackToPreview()
+    {
+        _state.Step = ImportCustomersWorkflowStep.Preview;
+        return Task.CompletedTask;
     }
 
     private static void SetFieldSource(ImportCustomerConflictState conflictState, string fieldName, ImportConflictFieldSource source)
