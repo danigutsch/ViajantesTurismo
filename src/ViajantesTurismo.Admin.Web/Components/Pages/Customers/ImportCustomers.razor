@@ -1,5 +1,4 @@
 @page "/customers/import"
-@using System.Globalization
 @using System.Text
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Helpers
@@ -661,75 +660,9 @@
 
     private async Task InitializeConflictResolutionData(IReadOnlyList<ImportConflictDto> conflicts, byte[] mappedFileBytes)
     {
-        var incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
-        var existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(conflicts);
-        _state.ConflictStates = conflicts
-            .Select(conflict => new ImportCustomerConflictState(
-                conflict.Email,
-                incomingConflictValuesByEmail.GetValueOrDefault(conflict.Email),
-                existingConflictValuesByEmail.GetValueOrDefault(conflict.Email)))
-            .ToList()
-            .AsReadOnly();
-    }
-
-    private async Task<Dictionary<string, Dictionary<string, string>>> LoadExistingConflictValuesByEmail(IReadOnlyList<ImportConflictDto> conflicts)
-    {
-        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        var customers = await CustomersApi.GetCustomers(CancellationToken.None);
-
-        foreach (var conflictEmail in conflicts.Select(conflict => conflict.Email))
-        {
-            var existingSummary = customers.FirstOrDefault(customer => customer.Email.Equals(conflictEmail, StringComparison.OrdinalIgnoreCase));
-            if (existingSummary is null)
-            {
-                continue;
-            }
-
-            var details = await CustomersApi.GetCustomerById(existingSummary.Id, CancellationToken.None);
-            if (details is null)
-            {
-                continue;
-            }
-
-            result[conflictEmail] = MapCustomerDetailsToFieldValues(details);
-        }
-
-        return result;
-    }
-
-    private static Dictionary<string, string> MapCustomerDetailsToFieldValues(CustomerDetailsDto details)
-    {
-        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["FirstName"] = details.PersonalInfo.FirstName,
-            ["LastName"] = details.PersonalInfo.LastName,
-            ["Gender"] = details.PersonalInfo.Gender,
-            ["BirthDate"] = details.PersonalInfo.BirthDate.ToString("yyyy-MM-dd"),
-            ["Nationality"] = details.PersonalInfo.Nationality,
-            ["Occupation"] = details.PersonalInfo.Occupation,
-            ["NationalId"] = details.IdentificationInfo.NationalId,
-            ["IdNationality"] = details.IdentificationInfo.IdNationality,
-            ["Email"] = details.ContactInfo.Email,
-            ["Mobile"] = details.ContactInfo.Mobile,
-            ["Instagram"] = details.ContactInfo.Instagram ?? string.Empty,
-            ["Facebook"] = details.ContactInfo.Facebook ?? string.Empty,
-            ["Street"] = details.Address.Street,
-            ["Complement"] = details.Address.Complement ?? string.Empty,
-            ["Neighborhood"] = details.Address.Neighborhood ?? string.Empty,
-            ["PostalCode"] = details.Address.PostalCode,
-            ["City"] = details.Address.City,
-            ["State"] = details.Address.State,
-            ["Country"] = details.Address.Country,
-            ["WeightKg"] = details.PhysicalInfo.WeightKg.ToString(CultureInfo.InvariantCulture),
-            ["HeightCentimeters"] = details.PhysicalInfo.HeightCentimeters.ToString(CultureInfo.InvariantCulture),
-            ["BikeType"] = details.PhysicalInfo.BikeType.ToString(),
-            ["RoomType"] = details.AccommodationPreferences.RoomType.ToString(),
-            ["BedType"] = details.AccommodationPreferences.BedType.ToString(),
-            ["CompanionId"] = details.AccommodationPreferences.CompanionId?.ToString() ?? string.Empty,
-            ["EmergencyContactName"] = details.EmergencyContact.Name,
-            ["EmergencyContactMobile"] = details.EmergencyContact.Mobile,
-            ["Allergies"] = details.MedicalInfo.Allergies ?? string.Empty,
-            ["AdditionalInfo"] = details.MedicalInfo.AdditionalInfo ?? string.Empty,
-        };
+        _state.ConflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
+            CustomersApi,
+            conflicts,
+            mappedFileBytes);
     }
 }

@@ -56,7 +56,7 @@ internal static class ImportCustomersCsvProcessor
         }
 
         var headers = lines[0].Split(',').Select(h => h.Trim().Trim('"')).ToArray();
-        var emailIndex = Array.FindIndex(headers, h => h.Equals("Email", StringComparison.OrdinalIgnoreCase));
+        var emailIndex = Array.FindIndex(headers, h => h.Equals(CustomerImportFieldNames.Email, StringComparison.OrdinalIgnoreCase));
         if (emailIndex < 0)
         {
             return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
@@ -105,7 +105,7 @@ internal static class ImportCustomersCsvProcessor
             .Select((name, index) => new { name, index })
             .ToDictionary(x => x.name, x => x.index, StringComparer.OrdinalIgnoreCase);
 
-        if (!headerIndexes.TryGetValue("Email", out var emailIndex))
+        if (!headerIndexes.TryGetValue(CustomerImportFieldNames.Email, out var emailIndex))
         {
             return mappedFileBytes;
         }
