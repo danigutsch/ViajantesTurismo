@@ -24,7 +24,7 @@ concurrency:
 jobs:
   detect-changes:
     name: Detect Changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:
@@ -49,7 +49,7 @@ jobs:
   build-and-test:
     name: Build and Test
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: read
@@ -75,6 +75,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Validate SonarCloud configuration
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        env:
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: bash scripts/validate-sonar-analysis-config.sh
 
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -169,7 +177,7 @@ jobs:
       - detect-changes
       - build-and-test
     if: ${{ always() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -191,7 +199,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:

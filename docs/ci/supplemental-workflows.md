@@ -27,7 +27,7 @@ A separate workflow (`.github/workflows/actionlint.yml`) runs Actionlint for cha
 | --- | --- |
 | Workflow file | `.github/workflows/actionlint.yml` |
 | Primary job name | `Actionlint` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 | Merge gate | Not required |
 
 **Steps:**
@@ -52,7 +52,7 @@ secret scanning using the pinned `gitleaks` release binary.
 | --- | --- |
 | Workflow file | `.github/workflows/secret-scan.yml` |
 | Primary job name | `Secret Scan` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 | Merge gate | Required |
 
 **Steps:**
@@ -99,7 +99,7 @@ NuGet packages.
 | --- | --- |
 | Workflow file | `.github/workflows/devcontainer-smoke.yml` |
 | Primary job name | `Devcontainer Smoke` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 | Merge gate | Not required |
 
 **Steps:**

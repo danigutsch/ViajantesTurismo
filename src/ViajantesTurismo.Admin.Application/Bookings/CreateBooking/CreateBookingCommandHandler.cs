@@ -26,7 +26,7 @@ public sealed class CreateBookingCommandHandler(
         var tour = await tourStore.GetById(command.TourId, ct);
         if (tour is null)
         {
-            return TourErrors.TourNotFound(command.TourId).ConvertError<Tour, Guid>();
+            return TourErrors.TourNotFound(command.TourId).ConvertError<Guid>();
         }
 
         var principalCustomer = await customerStore.GetById(command.PrincipalCustomerId, ct);

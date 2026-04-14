@@ -22,6 +22,11 @@ overview directly on the workflow run summary page. This follows GitHub's docume
 `GITHUB_STEP_SUMMARY` mechanism so readers can see the quality gate result, SonarCloud
 details link, and parse warnings without opening the full step log.
 
+Before the expensive validation path starts, the CI workflow runs
+`scripts/validate-sonar-analysis-config.sh` as a dedicated preflight. That step checks
+for the required GitHub secret and repository variables, emits a focused annotation, and
+writes an actionable summary when configuration is missing.
+
 Local compile-time analysis is complementary rather than separate. The repository
 references `SonarAnalyzer.CSharp` as a centrally managed Roslyn analyzer package for
 all C# projects, including tests. Test projects set `SonarQubeTestProject=true`
@@ -55,6 +60,34 @@ The integrated SonarCloud analysis path requires these GitHub repository setting
 
 Operationally, the SonarCloud project configuration is also the current source of truth
 for the existing 80% coverage threshold.
+
+If any of those settings are missing, CI now fails before restore/build work begins so
+the workflow error points directly at the missing configuration instead of an indirect
+Sonar script exit.
+
+## Local execution and secrets
+
+For local runs of `scripts/run-sonar-analysis.sh`, keep real credentials out of source control.
+The repository may document required variable names in `.env.example`, but contributors should not
+commit a real `.env` file.
+
+Recommended local pattern:
+
+1. copy `.env.example` to an ignored local file such as `.env.local` or load the values from your shell,
+2. export `SONAR_TOKEN`, `SONAR_ORGANIZATION`, and `SONAR_PROJECT_KEY` into the current shell,
+3. run `bash scripts/run-sonar-analysis.sh`.
+
+Example:
+
+```bash
+set -a
+source .env.local
+set +a
+bash scripts/run-sonar-analysis.sh
+```
+
+This keeps the committed repository limited to placeholders while still making the expected local
+configuration discoverable.
 
 ## Analysis exclusions
 

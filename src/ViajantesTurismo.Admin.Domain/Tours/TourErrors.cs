@@ -27,7 +27,7 @@ public static class TourErrors
     /// Indicates that the tour identifier is empty or whitespace.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> EmptyIdentifier() => Result<Tour>.Invalid(
+    public static Result EmptyIdentifier() => Result.Invalid(
         detail: "Tour identifier cannot be empty or whitespace.",
         field: "identifier",
         message: "Identifier is required.");
@@ -38,7 +38,7 @@ public static class TourErrors
     /// <param name="maxLength">The maximum allowed length.</param>
     /// <param name="actualLength">The actual length provided.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> IdentifierTooLong(int maxLength, int actualLength) => Result<Tour>.Invalid(
+    public static Result IdentifierTooLong(int maxLength, int actualLength) => Result.Invalid(
         detail: $"Tour identifier cannot exceed {maxLength} characters. Received: {actualLength} characters.",
         field: "identifier",
         message: $"Identifier cannot exceed {maxLength} characters.");
@@ -47,7 +47,7 @@ public static class TourErrors
     /// Indicates that the tour name is empty or whitespace.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> EmptyName() => Result<Tour>.Invalid(
+    public static Result EmptyName() => Result.Invalid(
         detail: "Tour name cannot be empty or whitespace.",
         field: "name",
         message: "Name is required.");
@@ -58,7 +58,7 @@ public static class TourErrors
     /// <param name="maxLength">The maximum allowed length.</param>
     /// <param name="actualLength">The actual length provided.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> NameTooLong(int maxLength, int actualLength) => Result<Tour>.Invalid(
+    public static Result NameTooLong(int maxLength, int actualLength) => Result.Invalid(
         detail: $"Tour name cannot exceed {maxLength} characters. Received: {actualLength} characters.",
         field: "name",
         message: $"Name cannot exceed {maxLength} characters.");
@@ -69,18 +69,7 @@ public static class TourErrors
     /// <param name="minimumDays">The minimum required duration in days.</param>
     /// <param name="actualDays">The actual duration provided.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> DurationTooShort(int minimumDays, double actualDays) => Result<Tour>.Invalid(
-        detail: $"Tour must be at least {minimumDays} days long. Received: {actualDays:F1} days.",
-        field: "schedule",
-        message: $"Duration must be at least {minimumDays} days.");
-
-    /// <summary>
-    /// Indicates that the tour duration is too short (non-generic version for update operations).
-    /// </summary>
-    /// <param name="minimumDays">The minimum required duration in days.</param>
-    /// <param name="actualDays">The actual duration provided.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result DurationTooShortUpdate(int minimumDays, double actualDays) => Result.Invalid(
+    public static Result DurationTooShort(int minimumDays, double actualDays) => Result.Invalid(
         detail: $"Tour must be at least {minimumDays} days long. Received: {actualDays:F1} days.",
         field: "schedule",
         message: $"Duration must be at least {minimumDays} days.");
@@ -91,7 +80,7 @@ public static class TourErrors
     /// <param name="priceType">The type of price (e.g., "Base price", "Single room supplement").</param>
     /// <param name="value">The invalid price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> InvalidPrice(string priceType, decimal value) => Result<Tour>.Invalid(
+    public static Result InvalidPrice(string priceType, decimal value) => Result.Invalid(
         detail: $"{priceType} must be greater than or equal to zero. Received: {value}.",
         field: "price",
         message: $"{priceType} must be greater than or equal to zero.");
@@ -103,7 +92,7 @@ public static class TourErrors
     /// <param name="maxPrice">The maximum allowed price.</param>
     /// <param name="value">The actual price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> PriceTooHigh(string priceType, decimal maxPrice, decimal value) => Result<Tour>.Invalid(
+    public static Result PriceTooHigh(string priceType, decimal maxPrice, decimal value) => Result.Invalid(
         detail: $"{priceType} cannot exceed {maxPrice}. Received: {value}.",
         field: "price",
         message: $"{priceType} cannot exceed {maxPrice}.");
@@ -113,8 +102,7 @@ public static class TourErrors
     /// </summary>
     /// <param name="id">The ID of the tour that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> TourNotFound(Guid id) =>
-        Result<Tour>.NotFound(detail: $"Tour with ID {id} was not found.");
+    public static Result TourNotFound(Guid id) => Result.NotFound(detail: $"Tour with ID {id} was not found.");
 
     /// <summary>
     /// Indicates that the principal customer and companion cannot be the same person.
@@ -130,7 +118,7 @@ public static class TourErrors
     /// </summary>
     /// <param name="value">The invalid value provided.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> InvalidMinCustomers(int value) => Result<Tour>.Invalid(
+    public static Result InvalidMinCustomers(int value) => Result.Invalid(
         detail: $"Minimum customers must be between 1 and 20. Received: {value}.",
         field: "minCustomers",
         message: "Minimum customers must be between 1 and 20.");
@@ -140,7 +128,7 @@ public static class TourErrors
     /// </summary>
     /// <param name="value">The invalid value provided.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> InvalidMaxCustomers(int value) => Result<Tour>.Invalid(
+    public static Result InvalidMaxCustomers(int value) => Result.Invalid(
         detail: $"Maximum customers must be between 1 and 20. Received: {value}.",
         field: "maxCustomers",
         message: "Maximum customers must be between 1 and 20.");
@@ -151,7 +139,7 @@ public static class TourErrors
     /// <param name="minCustomers">The minimum customers value.</param>
     /// <param name="maxCustomers">The maximum customers value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result<Tour> MaxCustomersLessThanMin(int minCustomers, int maxCustomers) => Result<Tour>.Invalid(
+    public static Result MaxCustomersLessThanMin(int minCustomers, int maxCustomers) => Result.Invalid(
         detail:
         $"Maximum customers ({maxCustomers}) must be greater than or equal to minimum customers ({minCustomers}).",
         field: "maxCustomers",

@@ -15,7 +15,7 @@ VS Code Dev Containers.
 
 The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
-- .NET 10 via `mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble`
+- .NET 10 via `mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble` (Ubuntu 24.04 LTS)
 - Node.js 24, Git, and Docker-in-Docker Dev Container Features
 - repository-specific VS Code extensions and default settings
 - lifecycle commands for one-time setup, dependency restore, and build verification

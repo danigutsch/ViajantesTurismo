@@ -19,7 +19,7 @@ protected branch keeps its post-merge validation history intact.
 | --- | --- |
 | Job key | `build-and-test` |
 | Job name | `Build and Test` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 
 **Steps:**
 
@@ -28,33 +28,41 @@ protected branch keeps its post-merge validation history intact.
    `Build and Test` check resolves cleanly without starting the expensive validation
    path.
 3. Checkout repository (`actions/checkout`) when build/test work is required.
-4. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
+4. Validate that the required SonarCloud secret and repository variables exist after
+  checkout and before the expensive validation path starts, because the validation
+  uses repository-local scripts.
+5. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
   `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when build/test work
   is required.
-5. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required.
-6. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
+6. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required.
+7. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
   required.
-7. Run `dotnet tool restore` when build/test work is required.
-8. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
-9. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
+8. Run `dotnet tool restore` when build/test work is required.
+9. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
+10. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
    wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
   `coverage conversion` / `end` flow and produces both HTML coverage output and the
   SonarQube XML coverage input.
-10. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
+11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
   quality gate status, SonarCloud link, and any parse warnings appear on the workflow
   run summary page without opening the full log.
-11. When validation work fails, create a focused diagnostic summary under
+12. When validation work fails, create a focused diagnostic summary under
     `TestResults/ci-diagnostics/`.
-12. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
+13. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
   artifact, and the raw Sonar analysis log artifact (`actions/upload-artifact`, runs on
   `always()` after the validation step executes) when validation ran.
-13. Upload the focused `build-test-diagnostics` artifact when the job fails.
+14. Upload the focused `build-test-diagnostics` artifact when the job fails.
 
 The `test-results`, `coverage-report`, `sonar-coverage`, and `sonar-analysis-log`
 uploads are intentionally best-effort. If validation fails before those files exist, CI
 should report the actual build/test/Sonar failure instead of adding secondary
 artifact-missing noise. The focused diagnostics artifact remains strict because it is
 part of the failure-investigation path.
+
+The SonarCloud configuration preflight intentionally runs after checkout but before
+restore, tool setup, and analysis because it relies on a repository-local script.
+This lets missing repository settings fail in a dedicated step with an actionable
+annotation instead of surfacing later as an opaque shell exit.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
@@ -73,7 +81,7 @@ open by setting `build_required=true` so CI prefers extra work over a false skip
 
 > **Note:** The CI setup path works around a
 > [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391) where
-> `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-latest` in SDK 10.0.103+
+> `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-24.04` in SDK 10.0.103+
 > builds. The setup action uses `|| true` to tolerate the non-zero exit and then sets
 > `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP
 > clients in the test run trust the per-user dev certificate.
@@ -84,7 +92,7 @@ open by setting `build_required=true` so CI prefers extra work over a false skip
 | --- | --- |
 | Job key | `sonarcloud` |
 | Job name | `SonarCloud` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 
 **Steps:**
 
@@ -102,7 +110,7 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 | --- | --- |
 | Job key | `lint` |
 | Job name | `Lint` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 
 **Steps:**
 

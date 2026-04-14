@@ -10,8 +10,8 @@ internal static class CsvErrors
     /// <summary>
     /// Result indicating that a required header is missing.
     /// </summary>
-    public static Result<CsvDocument> RequiredHeaderMissing(string headerName) =>
-        Result<CsvDocument>.Invalid(
+    public static Result RequiredHeaderMissing(string headerName) =>
+        Result.Invalid(
             detail: $"Required header '{headerName}' is missing.",
             field: "headers",
             message: "Required header missing."
@@ -20,8 +20,8 @@ internal static class CsvErrors
     /// <summary>
     /// Result indicating that all rows must have the same number of columns as there are headers.
     /// </summary>
-    public static Result<CsvDocument> RowsHaveInconsistentColumnCounts() =>
-        Result<CsvDocument>.Invalid(
+    public static Result RowsHaveInconsistentColumnCounts() =>
+        Result.Invalid(
             detail: "All rows must have the same number of columns as there are headers.",
             field: "rows",
             message: "Inconsistent column counts detected."
@@ -30,8 +30,8 @@ internal static class CsvErrors
     /// <summary>
     /// Result indicating that rows have inconsistent column counts and includes CSV line metadata.
     /// </summary>
-    public static Result<CsvDocument> RowsHaveInconsistentColumnCounts(int csvLineNumber) =>
-        Result<CsvDocument>.Invalid(
+    public static Result RowsHaveInconsistentColumnCounts(int csvLineNumber) =>
+        Result.Invalid(
             detail: $"All rows must have the same number of columns as there are headers (line {csvLineNumber}).",
             field: "rows",
             message: "Inconsistent column counts detected."
@@ -40,8 +40,8 @@ internal static class CsvErrors
     /// <summary>
     /// Result indicating that CSV headers must contain at least one column.
     /// </summary>
-    public static Result<CsvDocument> HeadersMustContainAtLeastOneColumn() =>
-        Result<CsvDocument>.Invalid(
+    public static Result HeadersMustContainAtLeastOneColumn() =>
+        Result.Invalid(
             detail: "Headers must contain at least one column.",
             field: "headers",
             message: "Missing headers."
@@ -50,8 +50,8 @@ internal static class CsvErrors
     /// <summary>
     /// Result indicating that header count must match row column count and includes CSV line metadata.
     /// </summary>
-    public static Result<CsvDocument> HeaderCountMustMatchRowColumnCount(int csvLineNumber) =>
-        Result<CsvDocument>.Invalid(
+    public static Result HeaderCountMustMatchRowColumnCount(int csvLineNumber) =>
+        Result.Invalid(
             detail: $"Header count must match row column count (line {csvLineNumber}).",
             field: "headers",
             message: "Header and row column counts do not match."
