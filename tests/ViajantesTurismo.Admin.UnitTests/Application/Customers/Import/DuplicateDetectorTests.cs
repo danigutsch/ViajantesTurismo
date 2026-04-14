@@ -1,4 +1,6 @@
+using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
@@ -50,27 +52,18 @@ public class DuplicateDetectorTests
     }
 
     [Fact]
-    public async Task FindDuplicateEmailLineNumbersAgainstDatabaseAsync_With_Matching_Email_Flags_Row()
+    public async Task FindDatabaseEmailConflicts_With_Matching_Email_Returns_Conflict()
     {
         // Arrange
-        var headers = new[] { "FirstName", "LastName", "Email" };
-        var rows = new[]
-        {
-            CsvRow.Parse("John,Doe,john.doe@example.com")
-        };
-
-        var documentResult = CsvDocument.Create(headers, rows);
-        var document = documentResult.Value;
+        const string csv = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
         var store = new FakeCustomerStore(["JOHN.DOE@EXAMPLE.COM"]);
+        var detector = new CustomerImportConflictDetector(store);
 
         // Act
-        var duplicateLineNumbers = await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabase(
-            document,
-            store,
-            CancellationToken.None);
+        var conflicts = await detector.FindDatabaseEmailConflicts(csv, CancellationToken.None);
 
         // Assert
-        var duplicateLineNumber = Assert.Single(duplicateLineNumbers);
-        Assert.Equal(2, duplicateLineNumber);
+        var conflict = Assert.Single(conflicts);
+        Assert.Equal(new ImportConflictDto("john.doe@example.com"), conflict);
     }
 }

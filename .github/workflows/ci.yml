@@ -63,6 +63,11 @@ jobs:
         run: |
           echo "Only documentation changes were detected."
           echo "Build, test, coverage, and SonarCloud analysis are intentionally skipped."
+          {
+            echo "## Build, test, coverage, and SonarCloud"
+            echo
+            echo "Only documentation changes were detected, so validation was skipped by design."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout repository
         if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
@@ -90,7 +95,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: bash scripts/run-sonar-analysis.sh
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          bash scripts/run-sonar-analysis.sh 2>&1 | tee TestResults/sonar-analysis.log
+
+      - name: Publish validation summary to GitHub
+        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+        env:
+          VALIDATION_OUTCOME: ${{ steps.run-validation.outcome }}
+        run: bash scripts/write-github-sonar-summary.sh "$VALIDATION_OUTCOME"
 
       - name: Capture build and test diagnostics
         if: ${{ failure() }}
@@ -138,6 +152,15 @@ jobs:
           if-no-files-found: ignore
           name: sonar-coverage
           path: TestResults/sonar-coverage.xml
+          retention-days: 7
+
+      - name: Upload Sonar analysis log
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: sonar-analysis-log
+          path: TestResults/sonar-analysis.log
           retention-days: 7
 
   sonarcloud:

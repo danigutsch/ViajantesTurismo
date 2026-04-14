@@ -10,6 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// </summary>
 public sealed class CustomerImportWorkflowService(
     ICustomerStore customerStore,
+    CustomerImportConflictDetector conflictDetector,
     CustomerImportCommandHandler commandHandler
 )
 {
@@ -25,7 +26,7 @@ public sealed class CustomerImportWorkflowService(
     /// <returns>Import summary with optional conflicts.</returns>
     public async Task<ImportResultDto> Import(string csvText, CancellationToken ct)
     {
-        var conflicts = await FindDatabaseEmailConflicts(csvText, ct);
+        var conflicts = await conflictDetector.FindDatabaseEmailConflicts(csvText, ct);
         if (conflicts.Count > 0)
         {
             return new ImportResultDto(0, 0, conflicts);
@@ -217,59 +218,5 @@ public sealed class CustomerImportWorkflowService(
         Unresolved,
         Skip,
         Update,
-    }
-
-    private async Task<IReadOnlyList<ImportConflictDto>> FindDatabaseEmailConflicts(
-        string csvText,
-        CancellationToken ct)
-    {
-        var documentResult = CsvDocument.Parse(csvText);
-        if (documentResult.IsFailure)
-        {
-            return [];
-        }
-
-        var document = documentResult.Value;
-        var conflictLineNumbers = new HashSet<int>(
-            DuplicateDetector.FindDuplicateEmailLineNumbers(document));
-
-        conflictLineNumbers.UnionWith(DuplicateDetector.FindDuplicateNameLineNumbers(document));
-        conflictLineNumbers.UnionWith(await DuplicateDetector.FindDuplicateEmailLineNumbersAgainstDatabase(
-            document,
-            customerStore,
-            ct));
-
-        if (conflictLineNumbers.Count == 0)
-        {
-            return [];
-        }
-
-        var seenEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var conflicts = new List<ImportConflictDto>();
-
-        foreach (var lineNumber in conflictLineNumbers.Order())
-        {
-            var rowIndex = lineNumber - 2;
-            if (rowIndex < 0 || rowIndex >= document.Rows.Count)
-            {
-                continue;
-            }
-
-            var row = document.Rows[rowIndex];
-            if (!row.TryGetByHeader(document.Headers, EmailFieldName, out var email) || string.IsNullOrWhiteSpace(email))
-            {
-                continue;
-            }
-
-            var normalized = email.Trim();
-            if (!seenEmails.Add(normalized))
-            {
-                continue;
-            }
-
-            conflicts.Add(new ImportConflictDto(normalized));
-        }
-
-        return conflicts;
     }
 }

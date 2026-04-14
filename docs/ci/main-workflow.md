@@ -38,19 +38,23 @@ protected branch keeps its post-merge validation history intact.
 8. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
 9. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
    wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
-   `coverage conversion` / `end` flow and produces both HTML coverage output and the
-   SonarQube XML coverage input.
-10. When validation work fails, create a focused diagnostic summary under
+  `coverage conversion` / `end` flow and produces both HTML coverage output and the
+  SonarQube XML coverage input.
+10. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
+  quality gate status, SonarCloud link, and any parse warnings appear on the workflow
+  run summary page without opening the full log.
+11. When validation work fails, create a focused diagnostic summary under
     `TestResults/ci-diagnostics/`.
-11. Upload test result artifacts, HTML coverage artifacts, and the Sonar coverage input
-    artifact (`actions/upload-artifact`, runs on `always()` after the validation step
-    executes) when validation ran.
-12. Upload the focused `build-test-diagnostics` artifact when the job fails.
+12. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
+  artifact, and the raw Sonar analysis log artifact (`actions/upload-artifact`, runs on
+  `always()` after the validation step executes) when validation ran.
+13. Upload the focused `build-test-diagnostics` artifact when the job fails.
 
-The `test-results`, `coverage-report`, and `sonar-coverage` uploads are intentionally
-best-effort. If validation fails before those files exist, CI should report the actual
-build/test/Sonar failure instead of adding secondary artifact-missing noise. The focused
-diagnostics artifact remains strict because it is part of the failure-investigation path.
+The `test-results`, `coverage-report`, `sonar-coverage`, and `sonar-analysis-log`
+uploads are intentionally best-effort. If validation fails before those files exist, CI
+should report the actual build/test/Sonar failure instead of adding secondary
+artifact-missing noise. The focused diagnostics artifact remains strict because it is
+part of the failure-investigation path.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This

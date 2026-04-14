@@ -198,9 +198,10 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [When("I create the tour")]
     public void WhenICreateTheTour()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(
-            startDate: tourContext.StartDate,
-            endDate: tourContext.EndDate);
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(
+            Schedule: new TourScheduleOptions(
+                StartDate: tourContext.StartDate,
+                EndDate: tourContext.EndDate)));
     }
 
     [When("I try to create the tour")]

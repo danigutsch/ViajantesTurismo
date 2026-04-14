@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Domain.Customers;
+namespace ViajantesTurismo.Admin.Domain.Shared;
 
 /// <summary>
 /// Represents types of bicycles available for tours.

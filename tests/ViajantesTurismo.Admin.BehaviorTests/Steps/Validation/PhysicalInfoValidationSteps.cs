@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.Domain.Shared;
+
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Validation;
 
 [Binding]

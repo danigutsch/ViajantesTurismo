@@ -14,7 +14,13 @@ without depending on SonarCloud UI features that may not be available on the cur
 repo's canonical coverage collection helper (`scripts/collect-test-coverage.sh`) to
 generate per-project Cobertura files, then converts that coverage into both HTML and
 SonarQube XML formats with the repo-pinned `reportgenerator` tool before publishing
-`TestResults/sonar-coverage.xml` to the scanner.
+`TestResults/sonar-coverage.xml` to the scanner. The CI workflow wraps that script with
+`tee` so the raw scanner output is preserved in `TestResults/sonar-analysis.log`.
+
+The CI workflow then uses GitHub Actions job summaries to publish a short validation
+overview directly on the workflow run summary page. This follows GitHub's documented
+`GITHUB_STEP_SUMMARY` mechanism so readers can see the quality gate result, SonarCloud
+details link, and parse warnings without opening the full step log.
 
 Local compile-time analysis is complementary rather than separate. The repository
 references `SonarAnalyzer.CSharp` as a centrally managed Roslyn analyzer package for
@@ -58,6 +64,8 @@ skip auto-generated code that should not be analyzed.
 | Pattern | Reason |
 | --- | --- |
 | `**/Migrations/**` | EF Core migration files are scaffolded by `dotnet ef` and should not be manually edited |
+| `.devcontainer/**` | Dev Container configuration uses JSONC comments that Sonar's JSON parser cannot read, causing noisy CI warnings |
+| `.vscode/**` | VS Code workspace settings and launch configuration use JSONC comments that Sonar's JSON parser cannot read, causing noisy CI warnings |
 
 To add further exclusions, append additional comma-separated glob patterns to the existing
 `sonar.exclusions` property in the script.

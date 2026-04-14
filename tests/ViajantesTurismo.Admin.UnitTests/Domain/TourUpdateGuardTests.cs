@@ -32,7 +32,7 @@ public class TourUpdateGuardTests
     public void Update_Details_With_Bookings_Should_Fail()
     {
         // Arrange
-        var tour = EntityBuilders.BuildTour(identifier: "ORIG2024");
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "ORIG2024"));
         AddBookingToTour(tour);
 
         // Act — change the identifier
@@ -47,7 +47,7 @@ public class TourUpdateGuardTests
     public void Update_Details_With_Bookings_Same_Identifier_Should_Succeed()
     {
         // Arrange
-        var tour = EntityBuilders.BuildTour(identifier: "KEEP2024");
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "KEEP2024"));
         AddBookingToTour(tour);
 
         // Act — keep the same identifier, change only the name
@@ -63,7 +63,7 @@ public class TourUpdateGuardTests
     public void Update_Currency_Without_Bookings_Should_Succeed()
     {
         // Arrange
-        var tour = EntityBuilders.BuildTour(currency: Currency.UsDollar);
+        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.UsDollar)));
 
         // Act
         var result = tour.UpdateCurrency(Currency.Euro);
@@ -77,7 +77,7 @@ public class TourUpdateGuardTests
     public void Update_Currency_With_Bookings_Should_Fail()
     {
         // Arrange
-        var tour = EntityBuilders.BuildTour(currency: Currency.UsDollar);
+        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.UsDollar)));
         AddBookingToTour(tour);
 
         // Act

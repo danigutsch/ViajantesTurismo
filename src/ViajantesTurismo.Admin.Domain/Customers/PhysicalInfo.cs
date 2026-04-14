@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Common.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 

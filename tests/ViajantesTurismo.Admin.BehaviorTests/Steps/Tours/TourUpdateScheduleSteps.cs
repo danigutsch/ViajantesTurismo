@@ -8,7 +8,7 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     {
         var startDate = DateTime.Parse(startDateString, CultureInfo.InvariantCulture).ToUniversalTime();
         var endDate = DateTime.Parse(endDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        tourContext.Tour = EntityBuilders.BuildTour(startDate: startDate, endDate: endDate);
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Schedule: new TourScheduleOptions(StartDate: startDate, EndDate: endDate)));
     }
 
     [When(@"I try to update the tour schedule to start ""(.*)"" and end ""(.*)""")]

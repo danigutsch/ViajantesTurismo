@@ -1,5 +1,7 @@
 using ViajantesTurismo.Common.Monies;
 
+using ViajantesTurismo.Admin.Domain.Shared;
+
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 
 [Binding]

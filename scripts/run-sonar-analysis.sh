@@ -5,6 +5,7 @@ set -euo pipefail
 sonar_token="${SONAR_TOKEN:-}"
 sonar_organization="${SONAR_ORGANIZATION:-}"
 sonar_project_key="${SONAR_PROJECT_KEY:-}"
+sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
 
 if [[ -z "${sonar_token}" ]]; then
     echo "Missing required environment variable: SONAR_TOKEN" >&2
@@ -36,7 +37,7 @@ dotnet tool run dotnet-sonarscanner begin \
     "/k:${sonar_project_key}" \
     "/d:sonar.token=${sonar_token}" \
     "/d:sonar.coverageReportPaths=${coverage_report}" \
-    "/d:sonar.exclusions=**/Migrations/**" \
+    "/d:sonar.exclusions=${sonar_exclusions}" \
     "/d:sonar.qualitygate.wait=true" \
     "/d:sonar.qualitygate.timeout=300"
 

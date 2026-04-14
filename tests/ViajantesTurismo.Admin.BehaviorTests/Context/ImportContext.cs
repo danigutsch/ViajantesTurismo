@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
@@ -41,8 +42,11 @@ public sealed class ImportContext
     public CustomerImportCommandHandler CreateHandler() =>
         new(CustomerStore, UnitOfWork, TimeProvider.System);
 
+    public CustomerImportConflictDetector CreateConflictDetector() =>
+        new(CustomerStore);
+
     public CustomerImportWorkflowService CreateWorkflowService() =>
-        new(CustomerStore, CreateHandler());
+        new(CustomerStore, CreateConflictDetector(), CreateHandler());
 
     public static string BuildValidCsv(int rowCount)
     {
