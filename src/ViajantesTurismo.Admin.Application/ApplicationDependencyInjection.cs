@@ -45,6 +45,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<UpdateBookingNotesCommandHandler>();
         builder.Services.AddScoped<CreateCustomerCommandHandler>();
         builder.Services.AddScoped<CustomerImportCommandHandler>();
+        builder.Services.AddScoped<CustomerImportConflictDetector>();
         builder.Services.AddScoped<CustomerImportWorkflowService>();
         builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<CreateTourCommandHandler>();
