@@ -309,6 +309,17 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I attempt to create another customer with email ""(.*)""")]
     public async Task WhenIAttemptToCreateAnotherCustomerWithEmail(string email)
     {
+        await CreateCustomerCommandForEmail(email);
+    }
+
+    [When(@"I create a customer with email ""(.*)""")]
+    public async Task WhenICreateACustomerWithEmail(string email)
+    {
+        await CreateCustomerCommandForEmail(email);
+    }
+
+    private async Task CreateCustomerCommandForEmail(string email)
+    {
         var command = new CreateCustomerCommand(
             PersonalInfo: new PersonalInfoDto
             {
@@ -366,85 +377,6 @@ public sealed class CustomerManagementSteps(CustomerContext context)
 
         context.CommandResult = await context.CommandHandler.Handle(command, CancellationToken.None);
     }
-
-    [When(@"I create a customer with email ""(.*)""")]
-    public async Task WhenICreateACustomerWithEmail(string email)
-    {
-        await CreateCustomerForCreation(email, useAlternateDefaults: true);
-    }
-
-    private async Task CreateCustomerForCreation(string email, bool useAlternateDefaults)
-    {
-        await CreateCustomerCommandForEmail(email, useAlternateDefaults);
-    }
-
-    private async Task CreateCustomerCommandForEmail(string email, bool useAlternateDefaults)
-    {
-        var occupation = useAlternateDefaults
-            ? GetAlternateDesignerOccupation()
-            : GetDefaultDesignerOccupation();
-
-        var command = new CreateCustomerCommand(
-            PersonalInfo: new PersonalInfoDto
-            {
-                FirstName = "Jane",
-                LastName = "Doe",
-                Gender = "Female",
-                BirthDate = DateTime.UtcNow.AddYears(-30),
-                Nationality = "American",
-                Occupation = occupation
-            },
-            IdentificationInfo: new IdentificationInfoDto
-            {
-                NationalId = "987654321",
-                IdNationality = "American"
-            },
-            ContactInfo: new ContactInfoDto
-            {
-                Email = email,
-                Mobile = "+1987654321",
-                Instagram = null,
-                Facebook = null
-            },
-            Address: new AddressDto
-            {
-                Street = "456 Oak St",
-                Complement = null,
-                Neighborhood = "Uptown",
-                PostalCode = "54321",
-                City = "City",
-                State = "State",
-                Country = "Country"
-            },
-            PhysicalInfo: new PhysicalInfoDto
-            {
-                WeightKg = 60m,
-                HeightCentimeters = 165,
-                BikeType = BikeTypeDto.Regular
-            },
-            AccommodationPreferences: new AccommodationPreferencesDto
-            {
-                RoomType = RoomTypeDto.DoubleOccupancy,
-                BedType = BedTypeDto.SingleBed,
-                CompanionId = null
-            },
-            EmergencyContact: new EmergencyContactDto
-            {
-                Name = "John Doe",
-                Mobile = "+1234567890"
-            },
-            MedicalInfo: new MedicalInfoDto
-            {
-                Allergies = null,
-                AdditionalInfo = null
-            });
-
-        context.CommandResult = await context.CommandHandler.Handle(command, CancellationToken.None);
-    }
-
-    private static string GetDefaultDesignerOccupation() => "Designer";
-
-    private static string GetAlternateDesignerOccupation() => "Designer";
 
     [Then("the customer creation should fail")]
     public void ThenTheCustomerCreationShouldFail()
