@@ -22,7 +22,7 @@ internal sealed class ImportCustomersWorkflowState
 
     internal IReadOnlyList<CustomerImportFieldMapping> FieldMappings { get; private set; } = [];
 
-    internal Dictionary<string, string?> UserMappings { get; private set; } = new Dictionary<string, string?>();
+    internal Dictionary<string, string?> UserMappings { get; private set; } = [];
 
     internal bool Uploading { get; set; }
 
@@ -44,7 +44,7 @@ internal sealed class ImportCustomersWorkflowState
         PendingFileBytes = fileBytes;
         CsvHeaders = csvHeaders;
         FieldMappings = fieldMappings;
-        UserMappings = new Dictionary<string, string?>();
+        UserMappings = [];
         PreviewRows = [];
         ConflictStates = [];
         Result = null;
@@ -69,7 +69,7 @@ internal sealed class ImportCustomersWorkflowState
         PendingFileBytes = [];
         CsvHeaders = [];
         FieldMappings = [];
-        UserMappings = new Dictionary<string, string?>();
+        UserMappings = [];
     }
 
     internal void ResetToFileSelection()
