@@ -5,7 +5,8 @@ namespace ViajantesTurismo.Common.Results;
 /// </summary>
 public static class ResultExtensions
 {
-    private const string? CannotConvertASuccessfulResultMessage = "Cannot convert a successful result. Only failed results can be converted.";
+    private const string CannotConvertASuccessfulResultMessage = "Cannot convert a successful result. Only failed results can be converted.";
+    private const string FailedResultMustContainErrorDetailsMessage = "Failed results must contain error details.";
 
     /// <summary>
     /// Converts a failed <see cref="Result"/> to <see cref="Result{TTarget}"/>.
@@ -16,25 +17,10 @@ public static class ResultExtensions
     /// <exception cref="InvalidOperationException">Thrown if the source result is successful.</exception>
     public static Result<TTarget> ConvertError<TTarget>(this Result source) where TTarget : notnull
     {
-        return source.IsSuccess
-            ? throw new InvalidOperationException(CannotConvertASuccessfulResultMessage)
-            : source.Status switch
-            {
-                ResultStatus.Ok => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Created => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Accepted => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.NoContent => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Invalid => Result<TTarget>.Invalid(source.ErrorDetails.Detail, source.ErrorDetails.ValidationErrors!),
-                ResultStatus.NotFound => Result<TTarget>.NotFound(source.ErrorDetails.Detail),
-                ResultStatus.Unauthorized => Result<TTarget>.Unauthorized(source.ErrorDetails.Detail),
-                ResultStatus.Forbidden => Result<TTarget>.Forbidden(source.ErrorDetails.Detail),
-                ResultStatus.Error => Result<TTarget>.Error(source.ErrorDetails.Detail),
-                ResultStatus.Conflict => Result<TTarget>.Conflict(source.ErrorDetails.Detail),
-                ResultStatus.CriticalError => Result<TTarget>.CriticalError(source.ErrorDetails.Detail),
-                ResultStatus.Unavailable => Result<TTarget>.Unavailable(source.ErrorDetails.Detail),
-                ResultStatus.Unknown => throw new InvalidOperationException($"Unsupported result status: {source.Status}"),
-                _ => throw new InvalidOperationException($"Unsupported result status: {source.Status}")
-            };
+        return ConvertFailureResult(
+            source.Status,
+            source.ErrorDetails,
+            CreateGenericFactories<TTarget>());
     }
 
     /// <summary>
@@ -46,25 +32,10 @@ public static class ResultExtensions
     /// <exception cref="InvalidOperationException">Thrown if the source result is successful.</exception>
     public static Result ConvertError<TSource>(this Result<TSource> source) where TSource : notnull
     {
-        return source.IsSuccess
-            ? throw new InvalidOperationException(CannotConvertASuccessfulResultMessage)
-            : source.Status switch
-            {
-                ResultStatus.Ok => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Created => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Accepted => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.NoContent => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Invalid => Result.Invalid(source.ErrorDetails.Detail, source.ErrorDetails.ValidationErrors!),
-                ResultStatus.NotFound => Result.NotFound(source.ErrorDetails.Detail),
-                ResultStatus.Unauthorized => Result.Unauthorized(source.ErrorDetails.Detail),
-                ResultStatus.Forbidden => Result.Forbidden(source.ErrorDetails.Detail),
-                ResultStatus.Error => Result.Error(source.ErrorDetails.Detail),
-                ResultStatus.Conflict => Result.Conflict(source.ErrorDetails.Detail),
-                ResultStatus.CriticalError => Result.CriticalError(source.ErrorDetails.Detail),
-                ResultStatus.Unavailable => Result.Unavailable(source.ErrorDetails.Detail),
-                ResultStatus.Unknown => throw new InvalidOperationException($"Unsupported result status: {source.Status}"),
-                _ => throw new InvalidOperationException($"Unsupported result status: {source.Status}")
-            };
+        return ConvertFailureResult(
+            source.Status,
+            source.ErrorDetails,
+            NonGenericFactories.Instance);
     }
 
     /// <summary>
@@ -79,24 +50,72 @@ public static class ResultExtensions
         where TSource : notnull
         where TTarget : notnull
     {
-        return source.IsSuccess
-            ? throw new InvalidOperationException(CannotConvertASuccessfulResultMessage)
-            : source.Status switch
-            {
-                ResultStatus.Ok => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Created => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Accepted => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.NoContent => throw new InvalidOperationException(CannotConvertASuccessfulResultMessage),
-                ResultStatus.Invalid => Result<TTarget>.Invalid(source.ErrorDetails.Detail, source.ErrorDetails.ValidationErrors!),
-                ResultStatus.NotFound => Result<TTarget>.NotFound(source.ErrorDetails.Detail),
-                ResultStatus.Unauthorized => Result<TTarget>.Unauthorized(source.ErrorDetails.Detail),
-                ResultStatus.Forbidden => Result<TTarget>.Forbidden(source.ErrorDetails.Detail),
-                ResultStatus.Error => Result<TTarget>.Error(source.ErrorDetails.Detail),
-                ResultStatus.Conflict => Result<TTarget>.Conflict(source.ErrorDetails.Detail),
-                ResultStatus.CriticalError => Result<TTarget>.CriticalError(source.ErrorDetails.Detail),
-                ResultStatus.Unavailable => Result<TTarget>.Unavailable(source.ErrorDetails.Detail),
-                ResultStatus.Unknown => throw new InvalidOperationException($"Unsupported result status: {source.Status}"),
-                _ => throw new InvalidOperationException($"Unsupported result status: {source.Status}")
-            };
+        return ConvertFailureResult(
+            source.Status,
+            source.ErrorDetails,
+            CreateGenericFactories<TTarget>());
+    }
+
+    private static FailureResultFactories<Result<TTarget>> CreateGenericFactories<TTarget>()
+        where TTarget : notnull =>
+        new(
+            Result<TTarget>.Invalid,
+            Result<TTarget>.NotFound,
+            Result<TTarget>.Unauthorized,
+            Result<TTarget>.Forbidden,
+            Result<TTarget>.Error,
+            Result<TTarget>.Conflict,
+            Result<TTarget>.CriticalError,
+            Result<TTarget>.Unavailable);
+
+    private static TResult ConvertFailureResult<TResult>(
+        ResultStatus status,
+        ResultError? errorDetails,
+        FailureResultFactories<TResult> factories)
+    {
+        if (status is ResultStatus.Ok or ResultStatus.Created or ResultStatus.Accepted or ResultStatus.NoContent)
+        {
+            throw new InvalidOperationException(CannotConvertASuccessfulResultMessage);
+        }
+
+        var details = errorDetails ?? throw new InvalidOperationException(FailedResultMustContainErrorDetailsMessage);
+
+        return status switch
+        {
+            ResultStatus.Invalid => factories.Invalid(details.Detail, details.ValidationErrors ?? throw new InvalidOperationException(FailedResultMustContainErrorDetailsMessage)),
+            ResultStatus.NotFound => factories.NotFound(details.Detail),
+            ResultStatus.Unauthorized => factories.Unauthorized(details.Detail),
+            ResultStatus.Forbidden => factories.Forbidden(details.Detail),
+            ResultStatus.Error => factories.Error(details.Detail),
+            ResultStatus.Conflict => factories.Conflict(details.Detail),
+            ResultStatus.CriticalError => factories.CriticalError(details.Detail),
+            ResultStatus.Unavailable => factories.Unavailable(details.Detail),
+            ResultStatus.Unknown => throw new InvalidOperationException($"Unsupported result status: {status}"),
+            _ => throw new InvalidOperationException($"Unsupported result status: {status}")
+        };
+    }
+
+    private readonly record struct FailureResultFactories<TResult>(
+        Func<string, Dictionary<string, string[]>, TResult> Invalid,
+        Func<string, TResult> NotFound,
+        Func<string, TResult> Unauthorized,
+        Func<string, TResult> Forbidden,
+        Func<string, TResult> Error,
+        Func<string, TResult> Conflict,
+        Func<string, TResult> CriticalError,
+        Func<string, TResult> Unavailable);
+
+    private static class NonGenericFactories
+    {
+        internal static FailureResultFactories<Result> Instance { get; } =
+            new(
+                Result.Invalid,
+                Result.NotFound,
+                Result.Unauthorized,
+                Result.Forbidden,
+                Result.Error,
+                Result.Conflict,
+                Result.CriticalError,
+                Result.Unavailable);
     }
 }

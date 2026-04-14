@@ -454,64 +454,44 @@ else
 
     private async Task HandleConfirm()
     {
-        try
-        {
-            await BookingsApi.ConfirmBooking(Id, CancellationToken.None);
-            await RefreshBookingAndSyncModel();
-            _toast.ShowSuccess("Booking confirmed successfully.");
-        }
-        catch (Exception)
-        {
-            _toast.ShowError(UserFacingErrorMessage.ForOperation("confirm the booking"));
-        }
+        await ExecuteBookingAction(
+            cancellationToken => BookingsApi.ConfirmBooking(Id, cancellationToken),
+            "Booking confirmed successfully.",
+            "confirm the booking");
     }
 
     private async Task HandleCancel()
     {
-        if (await _confirmDialog.ShowAsync("Are you sure you want to cancel this booking?", "Cancel Booking", "Yes, Cancel", "No", "btn-warning"))
-        {
-            try
-            {
-                await BookingsApi.CancelBooking(Id, CancellationToken.None);
-                await RefreshBookingAndSyncModel();
-                _toast.ShowSuccess("Booking cancelled successfully.");
-            }
-            catch (Exception)
-            {
-                _toast.ShowError(UserFacingErrorMessage.ForOperation("cancel the booking"));
-            }
-        }
+        await ExecuteConfirmedBookingAction(
+            "Are you sure you want to cancel this booking?",
+            "Cancel Booking",
+            "Yes, Cancel",
+            "btn-warning",
+            cancellationToken => BookingsApi.CancelBooking(Id, cancellationToken),
+            "Booking cancelled successfully.",
+            "cancel the booking");
     }
 
     private async Task HandleComplete()
     {
-        try
-        {
-            await BookingsApi.CompleteBooking(Id, CancellationToken.None);
-            await RefreshBookingAndSyncModel();
-            _toast.ShowSuccess("Booking completed successfully.");
-        }
-        catch (Exception)
-        {
-            _toast.ShowError(UserFacingErrorMessage.ForOperation("complete the booking"));
-        }
+        await ExecuteBookingAction(
+            cancellationToken => BookingsApi.CompleteBooking(Id, cancellationToken),
+            "Booking completed successfully.",
+            "complete the booking");
     }
 
     private async Task HandleDelete()
     {
-        if (await _confirmDialog.ShowAsync("Are you sure you want to delete this booking? This action cannot be undone.", "Delete Booking", "Yes, Delete", "No", "btn-danger"))
-        {
-            try
-            {
-                await BookingsApi.DeleteBooking(Id, CancellationToken.None);
-                _toast.ShowSuccess("Booking deleted successfully.");
-                Navigation.NavigateTo("/bookings");
-            }
-            catch (Exception)
-            {
-                _toast.ShowError(UserFacingErrorMessage.ForOperation("delete the booking"));
-            }
-        }
+        await ExecuteConfirmedBookingAction(
+            "Are you sure you want to delete this booking? This action cannot be undone.",
+            "Delete Booking",
+            "Yes, Delete",
+            "btn-danger",
+            cancellationToken => BookingsApi.DeleteBooking(Id, cancellationToken),
+            "Booking deleted successfully.",
+            "delete the booking",
+            refreshBooking: false,
+            onSuccess: () => Navigation.NavigateTo("/bookings"));
     }
 
     private void SyncModelFromBooking()
@@ -533,6 +513,49 @@ else
     {
         _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
         SyncModelFromBooking();
+    }
+
+    private async Task ExecuteBookingAction(
+        Func<CancellationToken, Task> action,
+        string successMessage,
+        string operationDescription,
+        bool refreshBooking = true,
+        Action? onSuccess = null)
+    {
+        try
+        {
+            await action(CancellationToken.None);
+            if (refreshBooking)
+            {
+                await RefreshBookingAndSyncModel();
+            }
+
+            _toast.ShowSuccess(successMessage);
+            onSuccess?.Invoke();
+        }
+        catch (Exception)
+        {
+            _toast.ShowError(UserFacingErrorMessage.ForOperation(operationDescription));
+        }
+    }
+
+    private async Task ExecuteConfirmedBookingAction(
+        string message,
+        string title,
+        string confirmText,
+        string confirmButtonCssClass,
+        Func<CancellationToken, Task> action,
+        string successMessage,
+        string operationDescription,
+        bool refreshBooking = true,
+        Action? onSuccess = null)
+    {
+        if (!await _confirmDialog.ShowAsync(message, title, confirmText, "No", confirmButtonCssClass))
+        {
+            return;
+        }
+
+        await ExecuteBookingAction(action, successMessage, operationDescription, refreshBooking, onSuccess);
     }
 
     private sealed class BookingFormModel
