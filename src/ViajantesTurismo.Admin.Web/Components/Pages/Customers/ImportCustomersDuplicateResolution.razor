@@ -1,0 +1,151 @@
+@using ViajantesTurismo.Admin.Web.Services
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Resolve Duplicates</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">The following @Items.Count email(s) already exist in the database. Choose how to handle each conflict before completing the import.</p>
+        <table class="table table-sm duplicate-resolution-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Decision</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var index = 0; index < Items.Count; index++)
+                {
+                    var conflictIndex = index;
+                    var item = Items[index];
+                    var conflictEmail = item.Email;
+                    var decision = item.Decision;
+                    <tr>
+                        <td>@conflictEmail.ToLowerInvariant()</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button"
+                                        class="btn @(decision == "keep" ? "btn-success" : "btn-outline-secondary")"
+                                        data-action="keep"
+                                        @onclick="@(() => OnDecisionChanged(conflictIndex, "keep"))">
+                                    Keep existing
+                                </button>
+                                <button type="button"
+                                        class="btn @(decision == "overwrite" ? "btn-warning" : "btn-outline-secondary")"
+                                        data-action="overwrite"
+                                        @onclick="@(() => OnDecisionChanged(conflictIndex, "overwrite"))">
+                                    Overwrite
+                                </button>
+                                <button type="button"
+                                        class="btn @(decision == "mixed" ? "btn-info" : "btn-outline-secondary")"
+                                        data-action="mixed"
+                                        @onclick="@(() => OnDecisionChanged(conflictIndex, "mixed"))">
+                                    Mixed merge
+                                </button>
+                            </div>
+
+                            @if (decision == "mixed")
+                            {
+                                var sourceSelections = item.UseExistingFieldSelections;
+
+                                <div class="mt-3 border rounded p-2">
+                                    <div class="small fw-semibold mb-2">Field-level merge (existing vs incoming)</div>
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Field</th>
+                                                <th>Existing</th>
+                                                <th>Incoming</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var field in VisibleFieldMappings.Select(mapping => mapping.Field))
+                                            {
+                                                var fieldName = field.Name;
+                                                var selectedFieldName = fieldName;
+                                                var useExisting = sourceSelections.GetValueOrDefault(fieldName, true);
+                                                var existingValue = item.ExistingValues.GetValueOrDefault(fieldName, string.Empty);
+                                                var incomingValue = item.IncomingValues.GetValueOrDefault(fieldName, string.Empty);
+
+                                                <tr>
+                                                    <td>@field.DisplayName</td>
+                                                    <td>
+                                                        <button type="button"
+                                                                class="btn btn-sm @(useExisting ? "btn-success" : "btn-outline-secondary")"
+                                                                data-action="field-existing"
+                                                                @onclick="@(() => OnFieldSourceChanged(conflictIndex, selectedFieldName, true))">
+                                                            Existing: @existingValue
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button"
+                                                                class="btn btn-sm @(!useExisting ? "btn-primary" : "btn-outline-secondary")"
+                                                                data-action="field-incoming"
+                                                                @onclick="@(() => OnFieldSourceChanged(conflictIndex, selectedFieldName, false))">
+                                                            Incoming: @incomingValue
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary"
+                    data-action="confirm-import"
+                    @onclick="OnConfirm"
+                    disabled="@(Items.Count == 0 || Items.Any(item => !item.IsResolved) || Uploading)">
+                @if (Uploading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                <i class="bi bi-check-lg"></i> Confirm Import
+            </button>
+            <button class="btn btn-outline-secondary"
+                    @onclick="OnBack"
+                    disabled="@Uploading">
+                <i class="bi bi-arrow-left"></i> Back to Preview
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ImportCustomersDuplicateResolutionItem> Items { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CustomerImportFieldMapping> VisibleFieldMappings { get; set; } = [];
+
+    [Parameter]
+    public bool Uploading { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<(int ConflictIndex, string Decision)> DecisionChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<(int ConflictIndex, string FieldName, bool UseExisting)> FieldSourceChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback Confirm { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback Back { get; set; }
+
+    private Task OnDecisionChanged(int conflictIndex, string decision) =>
+        DecisionChanged.InvokeAsync((conflictIndex, decision));
+
+    private Task OnFieldSourceChanged(int conflictIndex, string fieldName, bool useExisting) =>
+        FieldSourceChanged.InvokeAsync((conflictIndex, fieldName, useExisting));
+
+    private Task OnConfirm() => Confirm.InvokeAsync();
+
+    private Task OnBack() => Back.InvokeAsync();
+}

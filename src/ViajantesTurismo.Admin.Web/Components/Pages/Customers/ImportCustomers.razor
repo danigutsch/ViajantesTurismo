@@ -1,5 +1,4 @@
 @page "/customers/import"
-@using System.Globalization
 @using System.Text
 @using ViajantesTurismo.Admin.Contracts
 @using ViajantesTurismo.Admin.Web.Helpers
@@ -20,22 +19,22 @@
 
     <p class="text-muted">Upload a CSV file to bulk-import customers. The file must include the required columns.</p>
 
-    @if (_result is not null)
+    @if (_state.Result is not null)
     {
-        var summary = ImportCustomersCsvProcessor.BuildImportSummary(_result, _conflictDecisions);
-        var successRows = _result.SuccessRows ?? [];
-        var errorRows = _result.ErrorRows ?? [];
+        var summary = ImportCustomersCsvProcessor.BuildImportSummary(_state.Result, _state.ConflictStates);
+        var successRows = _state.Result.SuccessRows ?? [];
+        var errorRows = _state.Result.ErrorRows ?? [];
         var errorReportDataUri = ImportCustomersCsvProcessor.BuildErrorReportDataUri(errorRows);
 
-        <div class="alert @(_result.ErrorCount == 0 ? "alert-success" : "alert-warning") d-flex align-items-start gap-3">
-            <i class="bi @(_result.ErrorCount == 0 ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") fs-4"></i>
+        <div class="alert @(_state.Result.ErrorCount == 0 ? "alert-success" : "alert-warning") d-flex align-items-start gap-3">
+            <i class="bi @(_state.Result.ErrorCount == 0 ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") fs-4"></i>
             <div>
                 <strong>Import complete.</strong>
                 <ul class="mb-0 mt-1">
-                    <li>@_result.SuccessCount customer(s) imported successfully.</li>
-                    @if (_result.ErrorCount > 0)
+                    <li>@_state.Result.SuccessCount customer(s) imported successfully.</li>
+                    @if (_state.Result.ErrorCount > 0)
                     {
-                        <li>@_result.ErrorCount row(s) could not be imported due to errors.</li>
+                        <li>@_state.Result.ErrorCount row(s) could not be imported due to errors.</li>
                     }
                 </ul>
                 <ul class="mb-0 mt-2" data-testid="import-summary-counts">
@@ -123,7 +122,7 @@
 
                 <div class="mt-2 d-flex gap-2">
                     <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Import another file</button>
-                    @if (_pendingFileBytes.Length > 0)
+                    @if (_state.PendingFileBytes.Length > 0)
                     {
                         <button class="btn btn-sm btn-outline-secondary"
                                 data-action="retry-current-file"
@@ -136,21 +135,21 @@
             </div>
         </div>
     }
-    else if (_error is not null)
+    else if (_state.Error is not null)
     {
         <div class="alert alert-danger d-flex align-items-start gap-3">
             <i class="bi bi-x-circle-fill fs-4"></i>
             <div>
-                <strong>Import failed.</strong> @_error
+                <strong>Import failed.</strong> @_state.Error
                 <div class="mt-2">
                     <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Try again</button>
                 </div>
             </div>
         </div>
     }
-    else if (_step == PageStep.HeaderMapping)
+    else if (_state.Step == ImportCustomersWorkflowStep.HeaderMapping)
     {
-        var unmatchedRequired = _fieldMappings
+        var unmatchedRequired = _state.FieldMappings
             .Where(m => m.Field.IsRequired && !AllRequiredFieldsMapped(m.Field.Name))
             .ToArray();
         var allRequiredMatched = unmatchedRequired.Length == 0;
@@ -158,8 +157,8 @@
         <div class="card">
             <div class="card-header d-flex align-items-center gap-2">
                 <i class="bi bi-file-earmark-text"></i>
-                <strong>@_pendingFileName</strong>
-                <span class="badge bg-secondary">@_csvHeaders.Count column(s) detected</span>
+                <strong>@_state.PendingFileName</strong>
+                <span class="badge bg-secondary">@_state.CsvHeaders.Count column(s) detected</span>
             </div>
             <div class="card-body">
                 @if (allRequiredMatched)
@@ -186,7 +185,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var mapping in _fieldMappings)
+                        @foreach (var mapping in _state.FieldMappings)
                         {
                             var fieldName = mapping.Field.Name;
                             var effective = GetEffectiveMappingValue(fieldName, mapping.MatchedCsvHeader);
@@ -207,7 +206,7 @@
                                             data-field="@fieldName"
                                             @onchange="@(e => OnFieldMapped(fieldName, e.Value?.ToString()))">
                                         <option value="">(none)</option>
-                                        @foreach (var header in _csvHeaders)
+                                        @foreach (var header in _state.CsvHeaders)
                                         {
                                             <option value="@header" selected="@(header == effective)">@header</option>
                                         }
@@ -218,29 +217,29 @@
                     </tbody>
                 </table>
 
-                @if (_validationError is not null)
+                @if (_state.ValidationError is not null)
                 {
                     <div class="alert alert-danger mt-3 mb-0">
-                        <i class="bi bi-exclamation-circle"></i> @_validationError
+                        <i class="bi bi-exclamation-circle"></i> @_state.ValidationError
                     </div>
                 }
 
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-primary"
                             @onclick="ShowPreview"
-                            disabled="@(!AllRequiredFieldsMapped() || _uploading)">
+                            disabled="@(!AllRequiredFieldsMapped() || _state.Uploading)">
                         <i class="bi bi-eye"></i> Preview
                     </button>
-                    <button class="btn btn-outline-secondary" @onclick="Reset" disabled="@_uploading">
+                    <button class="btn btn-outline-secondary" @onclick="Reset" disabled="@_state.Uploading">
                         <i class="bi bi-arrow-left"></i> Choose different file
                     </button>
                 </div>
             </div>
         </div>
     }
-    else if (_step == PageStep.Preview)
+    else if (_state.Step == ImportCustomersWorkflowStep.Preview)
     {
-        var mappedFields = _fieldMappings
+        var mappedFields = _state.FieldMappings
             .Where(mapping => GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is not null)
             .Select(mapping => mapping.Field)
             .ToList();
@@ -248,8 +247,8 @@
         <div class="card">
             <div class="card-header d-flex align-items-center gap-2">
                 <i class="bi bi-table"></i>
-                <strong>@_pendingFileName</strong>
-                <span class="badge bg-secondary">@_previewRows.Count of max @MaxPreviewRows row(s) shown</span>
+                <strong>@_state.PendingFileName</strong>
+                <span class="badge bg-secondary">@_state.PreviewRows.Count of max @MaxPreviewRows row(s) shown</span>
             </div>
             <div class="card-body">
                 <p class="text-muted small">Review the extracted data below. Rows with missing required values are highlighted.</p>
@@ -271,7 +270,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var row in _previewRows)
+                            @foreach (var row in _state.PreviewRows)
                             {
                                 var hasWarning = mappedFields
                                     .Where(field => field.IsRequired)
@@ -287,162 +286,51 @@
                     </table>
                 </div>
 
-                @if (_validationError is not null)
+                @if (_state.ValidationError is not null)
                 {
                     <div class="alert alert-danger mt-3 mb-0">
-                        <i class="bi bi-exclamation-circle"></i> @_validationError
+                        <i class="bi bi-exclamation-circle"></i> @_state.ValidationError
                     </div>
                 }
 
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-primary"
                             @onclick="HandleImport"
-                            disabled="@_uploading">
-                        @if (_uploading)
+                            disabled="@_state.Uploading">
+                        @if (_state.Uploading)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
                         }
                         <i class="bi bi-check-lg"></i> Confirm Import
                     </button>
                     <button class="btn btn-outline-secondary"
-                            @onclick="@(() => _step = PageStep.HeaderMapping)"
-                            disabled="@_uploading">
+                            @onclick="@(() => _state.Step = ImportCustomersWorkflowStep.HeaderMapping)"
+                            disabled="@_state.Uploading">
                         <i class="bi bi-arrow-left"></i> Back to Mapping
                     </button>
                 </div>
             </div>
         </div>
     }
-    else if (_step == PageStep.DuplicateResolution)
+    else if (_state.Step == ImportCustomersWorkflowStep.DuplicateResolution)
     {
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Resolve Duplicates</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">The following @_conflicts.Count email(s) already exist in the database. Choose how to handle each conflict before completing the import.</p>
-                <table class="table table-sm duplicate-resolution-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Decision</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var conflictEmail in _conflicts.Select(conflict => conflict.Email))
-                        {
-                            var decision = _conflictDecisions.GetValueOrDefault(conflictEmail);
-                            <tr>
-                                <td>@conflictEmail.ToLowerInvariant()</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button"
-                                                class="btn @(decision == "keep" ? "btn-success" : "btn-outline-secondary")"
-                                                data-action="keep"
-                                                @onclick="@(() => SetConflictDecision(conflictEmail, "keep"))">
-                                            Keep existing
-                                        </button>
-                                        <button type="button"
-                                                class="btn @(decision == "overwrite" ? "btn-warning" : "btn-outline-secondary")"
-                                                data-action="overwrite"
-                                                @onclick="@(() => SetConflictDecision(conflictEmail, "overwrite"))">
-                                            Overwrite
-                                        </button>
-                                        <button type="button"
-                                                class="btn @(decision == "mixed" ? "btn-info" : "btn-outline-secondary")"
-                                                data-action="mixed"
-                                                @onclick="@(() => SetConflictDecision(conflictEmail, "mixed"))">
-                                            Mixed merge
-                                        </button>
-                                    </div>
-
-                                    @if (decision == "mixed")
-                                    {
-                                        var sourceSelections = GetOrInitializeMixedSelections(conflictEmail);
-                                        var incomingValues = GetIncomingConflictValues(conflictEmail);
-                                        var existingValues = GetExistingConflictValues(conflictEmail);
-
-                                        <div class="mt-3 border rounded p-2">
-                                            <div class="small fw-semibold mb-2">Field-level merge (existing vs incoming)</div>
-                                            <table class="table table-sm mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Field</th>
-                                                        <th>Existing</th>
-                                                        <th>Incoming</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach (var mapping in _fieldMappings)
-                                                    {
-                                                        if (mapping.MatchedCsvHeader is null && GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is null)
-                                                        {
-                                                            continue;
-                                                        }
-
-                                                        var fieldName = mapping.Field.Name;
-                                                        var source = sourceSelections.GetValueOrDefault(fieldName, ImportConflictFieldSource.Existing);
-                                                        var existingValue = existingValues.GetValueOrDefault(fieldName, "");
-                                                        var incomingValue = incomingValues.GetValueOrDefault(fieldName, "");
-
-                                                        <tr>
-                                                            <td>@mapping.Field.DisplayName</td>
-                                                            <td>
-                                                                <button type="button"
-                                                                        class="btn btn-sm @(source == ImportConflictFieldSource.Existing ? "btn-success" : "btn-outline-secondary")"
-                                                                        data-action="field-existing"
-                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ImportConflictFieldSource.Existing))">
-                                                                    Existing: @existingValue
-                                                                </button>
-                                                            </td>
-                                                            <td>
-                                                                <button type="button"
-                                                                        class="btn btn-sm @(source == ImportConflictFieldSource.Incoming ? "btn-primary" : "btn-outline-secondary")"
-                                                                        data-action="field-incoming"
-                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ImportConflictFieldSource.Incoming))">
-                                                                    Incoming: @incomingValue
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-primary"
-                            data-action="confirm-import"
-                            @onclick="HandleCommitWithResolutions"
-                            disabled="@(_conflictDecisions.Count < _conflicts.Count || _uploading)">
-                        @if (_uploading)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                        }
-                        <i class="bi bi-check-lg"></i> Confirm Import
-                    </button>
-                    <button class="btn btn-outline-secondary"
-                            @onclick="@(() => _step = PageStep.Preview)"
-                            disabled="@_uploading">
-                        <i class="bi bi-arrow-left"></i> Back to Preview
-                    </button>
-                </div>
-            </div>
-        </div>
+        <ImportCustomersDuplicateResolution
+            Items="@GetDuplicateResolutionItems()"
+            VisibleFieldMappings="@GetVisibleConflictFieldMappings()"
+            Uploading="@_state.Uploading"
+            DecisionChanged="OnConflictDecisionChanged"
+            FieldSourceChanged="OnConflictFieldSourceChanged"
+            Confirm="HandleCommitWithResolutions"
+            Back="BackToPreview" />
     }
     else
     {
         <div class="card">
             <div class="card-body">
-                <div class="border border-2 rounded-3 p-5 text-center position-relative @(_dragging > 0 ? "border-primary bg-primary bg-opacity-10" : "border-secondary")"
-                     style="border-style: dashed !important;"
-                     @ondragenter="@(() => _dragging++)"
-                     @ondragleave="@(() => _dragging--)">
+                <div class="border border-2 rounded-3 p-5 text-center position-relative @(_state.Dragging > 0 ? "border-primary bg-primary bg-opacity-10" : "border-secondary")"
+                    style="border-style: dashed !important;"
+                    @ondragenter="@(() => _state.Dragging++)"
+                    @ondragleave="@(() => _state.Dragging--)">
                     <i class="bi bi-file-earmark-arrow-up fs-1 text-muted d-block mb-2"></i>
                     <p class="mb-1 fw-semibold">Drop a CSV file here</p>
                     <p class="text-muted small mb-0">or click to browse &mdash; max 5 MB</p>
@@ -452,10 +340,10 @@
                                style="cursor: pointer;" />
                 </div>
 
-                @if (_validationError is not null)
+                @if (_state.ValidationError is not null)
                 {
                     <div class="alert alert-danger mt-3 mb-0">
-                        <i class="bi bi-exclamation-circle"></i> @_validationError
+                        <i class="bi bi-exclamation-circle"></i> @_state.ValidationError
                     </div>
                 }
             </div>
@@ -464,317 +352,250 @@
 </div>
 
 @code {
-    private enum PageStep { FileSelection, HeaderMapping, Preview, DuplicateResolution }
-
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
     private const int MaxPreviewRows = 5;
-
-    // File selection
-    private int _dragging;
-    private string? _validationError;
-    private PageStep _step = PageStep.FileSelection;
-
-    // Header mapping
-    private string _pendingFileName = "";
-    private byte[] _pendingFileBytes = [];
-    private IReadOnlyList<string> _csvHeaders = [];
-    private IReadOnlyList<CustomerImportFieldMapping> _fieldMappings = [];
-    private Dictionary<string, string?> _userMappings = new();
-    private bool _uploading;
-    private IReadOnlyList<IReadOnlyDictionary<string, string>> _previewRows = [];
-
-    // Result
-    private string? _error;
-    private ImportResultDto? _result;
-    private IReadOnlyList<ImportConflictDto> _conflicts = [];
-    private Dictionary<string, string> _conflictDecisions = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, string>> _incomingConflictValuesByEmail = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, string>> _existingConflictValuesByEmail = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, ImportConflictFieldSource>> _mixedFieldSelectionsByEmail = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ImportCustomersWorkflowState _state = new();
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
-        _dragging = 0;
-        _validationError = null;
+        _state.Dragging = 0;
+        _state.ValidationError = null;
 
         var file = e.File;
-
-        if (!file.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        if (!ValidateSelectedFile(file))
         {
-            _validationError = "Only CSV files are supported (.csv).";
             return;
         }
 
-        if (file.Size > MaxFileSizeBytes)
-        {
-            _validationError = $"File is too large ({file.Size / 1024 / 1024} MB). Maximum allowed size is 5 MB.";
-            return;
-        }
-
-        using var ms = new MemoryStream();
-        await using var stream = file.OpenReadStream(MaxFileSizeBytes);
-        await stream.CopyToAsync(ms);
-        _pendingFileBytes = ms.ToArray();
-        _pendingFileName = file.Name;
-
-        var text = Encoding.UTF8.GetString(_pendingFileBytes, 0, Math.Min(4096, _pendingFileBytes.Length));
-        var firstLine = text
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .FirstOrDefault() ?? "";
-        _csvHeaders = firstLine.Split(',')
-            .Select(h => h.Trim().Trim('"'))
-            .ToList()
-            .AsReadOnly();
-
-        _fieldMappings = CustomerImportHeaderMatcher.AutoMatch(_csvHeaders);
-        _userMappings = new Dictionary<string, string?>();
-        _step = PageStep.HeaderMapping;
+        var fileBytes = await ReadFileBytes(file);
+        SetPendingFile(file.Name, fileBytes);
     }
 
     private void OnFieldMapped(string fieldName, string? csvHeader) =>
-        _userMappings[fieldName] = string.IsNullOrEmpty(csvHeader) ? null : csvHeader;
+        _state.UserMappings[fieldName] = string.IsNullOrEmpty(csvHeader) ? null : csvHeader;
 
     private string? GetEffectiveMappingValue(string fieldName, string? autoMatchedHeader)
     {
-        return _userMappings.GetValueOrDefault(fieldName, autoMatchedHeader);
+        return _state.UserMappings.GetValueOrDefault(fieldName, autoMatchedHeader);
     }
 
     private bool AllRequiredFieldsMapped(string fieldName) =>
-        _fieldMappings.First(m => m.Field.Name == fieldName) is var mapping
+        _state.FieldMappings.First(m => m.Field.Name == fieldName) is var mapping
         && (GetEffectiveMappingValue(fieldName, mapping.MatchedCsvHeader) is not null);
 
     private bool AllRequiredFieldsMapped() =>
-        _fieldMappings
+        _state.FieldMappings
             .Where(m => m.Field.IsRequired)
             .All(m => GetEffectiveMappingValue(m.Field.Name, m.MatchedCsvHeader) is not null);
 
     private void ShowPreview()
     {
-        _previewRows = ImportCustomersCsvProcessor.BuildPreviewRows(
-            _pendingFileBytes,
-            _csvHeaders,
-            _fieldMappings,
-            _userMappings,
+        _state.PreviewRows = ImportCustomersCsvProcessor.BuildPreviewRows(
+            _state.PendingFileBytes,
+            _state.CsvHeaders,
+            _state.FieldMappings,
+            _state.UserMappings,
             MaxPreviewRows);
-        _step = PageStep.Preview;
+        _state.Step = ImportCustomersWorkflowStep.Preview;
     }
 
     private async Task HandleImport()
     {
         if (!AllRequiredFieldsMapped())
         {
-            _validationError = "All required fields must be mapped before importing.";
+            _state.ValidationError = "All required fields must be mapped before importing.";
             return;
         }
 
-        _uploading = true;
-        _validationError = null;
+        BeginUpload();
 
         try
         {
-            var fileBytes = CustomerImportHeaderMatcher.ApplyMapping(
-                _pendingFileBytes,
-                _fieldMappings,
-                _userMappings);
-            var result = await CustomersApi.ImportCustomers(fileBytes, _pendingFileName, CancellationToken.None);
+            var fileBytes = ApplyCurrentMapping();
+            var result = await CustomersApi.ImportCustomers(fileBytes, _state.PendingFileName, CancellationToken.None);
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
-                _conflicts = conflicts;
                 await InitializeConflictResolutionData(conflicts, fileBytes);
-                _step = PageStep.DuplicateResolution;
+                _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
             }
             else
             {
-                _result = result;
+                _state.Result = result;
             }
         }
         catch (Exception)
         {
-            _error = UserFacingErrorMessage.ForOperation("import the customers");
+            _state.Error = UserFacingErrorMessage.ForOperation("import the customers");
         }
         finally
         {
-            _uploading = false;
+            EndUpload();
         }
     }
 
     private async Task HandleCommitWithResolutions()
     {
-        _uploading = true;
-        _validationError = null;
+        BeginUpload();
 
         try
         {
-            var fileBytes = CustomerImportHeaderMatcher.ApplyMapping(
-                _pendingFileBytes,
-                _fieldMappings,
-                _userMappings);
+            var fileBytes = ApplyCurrentMapping();
 
-            var hasMixedDecision = _conflictDecisions.Values.Any(v => v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
+            var hasMixedDecision = _state.ConflictStates.Any(state => state.HasMixedDecision);
             if (hasMixedDecision)
             {
                 fileBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
                     fileBytes,
-                    _conflictDecisions,
-                    _mixedFieldSelectionsByEmail,
-                    _existingConflictValuesByEmail);
+                    _state.ConflictStates);
             }
 
-            _result = await CustomersApi.CommitImportWithResolutions(
-                fileBytes, _pendingFileName, _conflictDecisions, CancellationToken.None);
+            var conflictDecisions = BuildConflictDecisions();
+            _state.Result = await CustomersApi.CommitImportWithResolutions(
+                fileBytes, _state.PendingFileName, conflictDecisions, CancellationToken.None);
         }
         catch (Exception)
         {
-            _error = UserFacingErrorMessage.ForOperation("complete the customer import");
+            _state.Error = UserFacingErrorMessage.ForOperation("complete the customer import");
         }
         finally
         {
-            _uploading = false;
+            EndUpload();
         }
     }
 
     private void Reset()
     {
-        _result = null;
-        _error = null;
-        _validationError = null;
-        _conflicts = [];
-        _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        _incomingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _existingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
-        _pendingFileName = "";
-        _pendingFileBytes = [];
-        _csvHeaders = [];
-        _fieldMappings = [];
-        _userMappings = new Dictionary<string, string?>();
-        _previewRows = [];
-        _uploading = false;
-        _step = PageStep.FileSelection;
+        _state.ResetToFileSelection();
     }
 
     private void RetryWithCurrentFile()
     {
-        _result = null;
-        _error = null;
-        _validationError = null;
-        _conflicts = [];
-        _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        _incomingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _existingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
-        _uploading = false;
-
-        _step = _pendingFileBytes.Length > 0
-            ? PageStep.HeaderMapping
-            : PageStep.FileSelection;
+        _state.RetryCurrentFile();
     }
 
-    private void SetConflictDecision(string email, string decision)
+    private bool ValidateSelectedFile(IBrowserFile file)
     {
-        _conflictDecisions[email] = decision;
-        if (decision.Equals("mixed", StringComparison.OrdinalIgnoreCase))
+        if (!file.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
         {
-            _ = GetOrInitializeMixedSelections(email);
-        }
-    }
-
-    private Dictionary<string, ImportConflictFieldSource> GetOrInitializeMixedSelections(string email)
-    {
-        if (_mixedFieldSelectionsByEmail.TryGetValue(email, out var existing))
-        {
-            return existing;
+            _state.ValidationError = "Only CSV files are supported (.csv).";
+            return false;
         }
 
-        var selections = new Dictionary<string, ImportConflictFieldSource>(StringComparer.OrdinalIgnoreCase);
-        foreach (var mapping in _fieldMappings)
+        if (file.Size > MaxFileSizeBytes)
         {
-            var fieldName = mapping.Field.Name;
-            var hasExisting = GetExistingConflictValues(email).ContainsKey(fieldName);
-            selections[fieldName] = hasExisting ? ImportConflictFieldSource.Existing : ImportConflictFieldSource.Incoming;
+            _state.ValidationError = $"File is too large ({file.Size / 1024 / 1024} MB). Maximum allowed size is 5 MB.";
+            return false;
         }
 
-        _mixedFieldSelectionsByEmail[email] = selections;
-        return selections;
+        return true;
     }
 
-    private void SetFieldSource(string email, string fieldName, ImportConflictFieldSource source)
+    private static async Task<byte[]> ReadFileBytes(IBrowserFile file)
     {
-        var selections = GetOrInitializeMixedSelections(email);
-        selections[fieldName] = source;
+        using var ms = new MemoryStream();
+        await using var stream = file.OpenReadStream(MaxFileSizeBytes);
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
     }
 
-    private Dictionary<string, string> GetIncomingConflictValues(string email) =>
-        _incomingConflictValuesByEmail.GetValueOrDefault(email) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    private void SetPendingFile(string fileName, byte[] fileBytes)
+    {
+        var csvHeaders = ParseCsvHeaders(fileBytes);
+        var fieldMappings = CustomerImportHeaderMatcher.AutoMatch(csvHeaders);
+        _state.SetPendingFile(fileName, fileBytes, csvHeaders, fieldMappings);
+    }
 
-    private Dictionary<string, string> GetExistingConflictValues(string email) =>
-        _existingConflictValuesByEmail.GetValueOrDefault(email) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    private static IReadOnlyList<string> ParseCsvHeaders(byte[] fileBytes)
+    {
+        var text = Encoding.UTF8.GetString(fileBytes, 0, Math.Min(4096, fileBytes.Length));
+        var firstLine = text
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault() ?? string.Empty;
+
+        return firstLine.Split(',')
+            .Select(header => header.Trim().Trim('"'))
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private byte[] ApplyCurrentMapping() =>
+        CustomerImportHeaderMatcher.ApplyMapping(
+            _state.PendingFileBytes,
+            _state.FieldMappings,
+            _state.UserMappings);
+
+    private Dictionary<string, string> BuildConflictDecisions() => _state.BuildConflictDecisions();
+
+    private void BeginUpload()
+    {
+        _state.Uploading = true;
+        _state.ValidationError = null;
+    }
+
+    private void EndUpload()
+    {
+        _state.Uploading = false;
+    }
+
+    private void SetConflictDecision(ImportCustomerConflictState conflictState, string decision)
+    {
+        conflictState.SetDecision(decision, _state.FieldMappings);
+    }
+
+    private IReadOnlyList<CustomerImportFieldMapping> GetVisibleConflictFieldMappings() =>
+        _state.FieldMappings
+            .Where(mapping => mapping.MatchedCsvHeader is not null || GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is not null)
+            .ToList()
+            .AsReadOnly();
+
+    private IReadOnlyList<ImportCustomersDuplicateResolutionItem> GetDuplicateResolutionItems() =>
+        _state.ConflictStates
+            .Select(conflictState => new ImportCustomersDuplicateResolutionItem
+            {
+                Email = conflictState.Email,
+                Decision = conflictState.Decision,
+                IsResolved = conflictState.IsResolved,
+                UseExistingFieldSelections = conflictState.FieldSelections.ToDictionary(
+                    selection => selection.Key,
+                    selection => selection.Value == ImportConflictFieldSource.Existing,
+                    StringComparer.OrdinalIgnoreCase),
+                ExistingValues = new Dictionary<string, string>(conflictState.ExistingValues, StringComparer.OrdinalIgnoreCase),
+                IncomingValues = new Dictionary<string, string>(conflictState.IncomingValues, StringComparer.OrdinalIgnoreCase),
+            })
+            .ToList()
+            .AsReadOnly();
+
+    private Task OnConflictDecisionChanged((int ConflictIndex, string Decision) args)
+    {
+        SetConflictDecision(_state.ConflictStates[args.ConflictIndex], args.Decision);
+        return Task.CompletedTask;
+    }
+
+    private Task OnConflictFieldSourceChanged((int ConflictIndex, string FieldName, bool UseExisting) args)
+    {
+        SetFieldSource(
+            _state.ConflictStates[args.ConflictIndex],
+            args.FieldName,
+            args.UseExisting ? ImportConflictFieldSource.Existing : ImportConflictFieldSource.Incoming);
+        return Task.CompletedTask;
+    }
+
+    private Task BackToPreview()
+    {
+        _state.Step = ImportCustomersWorkflowStep.Preview;
+        return Task.CompletedTask;
+    }
+
+    private static void SetFieldSource(ImportCustomerConflictState conflictState, string fieldName, ImportConflictFieldSource source)
+    {
+        conflictState.SetFieldSource(fieldName, source);
+    }
 
     private async Task InitializeConflictResolutionData(IReadOnlyList<ImportConflictDto> conflicts, byte[] mappedFileBytes)
     {
-        _incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
-        _existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(conflicts);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
-    }
-
-    private async Task<Dictionary<string, Dictionary<string, string>>> LoadExistingConflictValuesByEmail(IReadOnlyList<ImportConflictDto> conflicts)
-    {
-        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        var customers = await CustomersApi.GetCustomers(CancellationToken.None);
-
-        foreach (var conflictEmail in conflicts.Select(conflict => conflict.Email))
-        {
-            var existingSummary = customers.FirstOrDefault(customer => customer.Email.Equals(conflictEmail, StringComparison.OrdinalIgnoreCase));
-            if (existingSummary is null)
-            {
-                continue;
-            }
-
-            var details = await CustomersApi.GetCustomerById(existingSummary.Id, CancellationToken.None);
-            if (details is null)
-            {
-                continue;
-            }
-
-            result[conflictEmail] = MapCustomerDetailsToFieldValues(details);
-        }
-
-        return result;
-    }
-
-    private static Dictionary<string, string> MapCustomerDetailsToFieldValues(CustomerDetailsDto details)
-    {
-        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["FirstName"] = details.PersonalInfo.FirstName,
-            ["LastName"] = details.PersonalInfo.LastName,
-            ["Gender"] = details.PersonalInfo.Gender,
-            ["BirthDate"] = details.PersonalInfo.BirthDate.ToString("yyyy-MM-dd"),
-            ["Nationality"] = details.PersonalInfo.Nationality,
-            ["Occupation"] = details.PersonalInfo.Occupation,
-            ["NationalId"] = details.IdentificationInfo.NationalId,
-            ["IdNationality"] = details.IdentificationInfo.IdNationality,
-            ["Email"] = details.ContactInfo.Email,
-            ["Mobile"] = details.ContactInfo.Mobile,
-            ["Instagram"] = details.ContactInfo.Instagram ?? string.Empty,
-            ["Facebook"] = details.ContactInfo.Facebook ?? string.Empty,
-            ["Street"] = details.Address.Street,
-            ["Complement"] = details.Address.Complement ?? string.Empty,
-            ["Neighborhood"] = details.Address.Neighborhood ?? string.Empty,
-            ["PostalCode"] = details.Address.PostalCode,
-            ["City"] = details.Address.City,
-            ["State"] = details.Address.State,
-            ["Country"] = details.Address.Country,
-            ["WeightKg"] = details.PhysicalInfo.WeightKg.ToString(CultureInfo.InvariantCulture),
-            ["HeightCentimeters"] = details.PhysicalInfo.HeightCentimeters.ToString(CultureInfo.InvariantCulture),
-            ["BikeType"] = details.PhysicalInfo.BikeType.ToString(),
-            ["RoomType"] = details.AccommodationPreferences.RoomType.ToString(),
-            ["BedType"] = details.AccommodationPreferences.BedType.ToString(),
-            ["CompanionId"] = details.AccommodationPreferences.CompanionId?.ToString() ?? string.Empty,
-            ["EmergencyContactName"] = details.EmergencyContact.Name,
-            ["EmergencyContactMobile"] = details.EmergencyContact.Mobile,
-            ["Allergies"] = details.MedicalInfo.Allergies ?? string.Empty,
-            ["AdditionalInfo"] = details.MedicalInfo.AdditionalInfo ?? string.Empty,
-        };
+        _state.ConflictStates = await ImportCustomersConflictLoader.LoadConflictStates(
+            CustomersApi,
+            conflicts,
+            mappedFileBytes);
     }
 }

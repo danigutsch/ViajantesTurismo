@@ -26,6 +26,7 @@ Use nested `AGENTS.md` files for scoped rules.
 
 - Follow `docs/CODING_GUIDELINES.md` and `.editorconfig`.
 - Use file-scoped namespaces, 4-space indentation, nullable reference types, and XML docs on public APIs.
+- Use one top-level C# type per file for new or significantly refactored code.
 - Do not append the `Async` suffix to method names.
 - Treat warnings as errors (`Directory.Build.props`).
 

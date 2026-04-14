@@ -13,15 +13,19 @@ public sealed class ImportCustomersCsvProcessorTests
     {
         // Arrange
         var result = new ImportResultDto(3, 2);
-        var decisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["keep@example.com"] = "keep",
-            ["overwrite@example.com"] = "overwrite",
-            ["mixed@example.com"] = "mixed",
-        };
+        var keepState = new ImportCustomerConflictState("keep@example.com", null, null);
+        keepState.SetDecision("keep", CustomerImportHeaderMatcher.Fields);
+
+        var overwriteState = new ImportCustomerConflictState("overwrite@example.com", null, null);
+        overwriteState.SetDecision("overwrite", CustomerImportHeaderMatcher.Fields);
+
+        var mixedState = new ImportCustomerConflictState("mixed@example.com", null, null);
+        mixedState.SetDecision("mixed", CustomerImportHeaderMatcher.Fields);
+
+        var conflictStates = new[] { keepState, overwriteState, mixedState };
 
         // Act
-        var summary = ImportCustomersCsvProcessor.BuildImportSummary(result, decisions);
+        var summary = ImportCustomersCsvProcessor.BuildImportSummary(result, conflictStates);
 
         // Assert
         Assert.Equal(1, summary.CreatedCount);
@@ -62,34 +66,26 @@ public sealed class ImportCustomersCsvProcessorTests
             ["Email"] = "mixed@example.com",
         }));
 
-        var decisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["mixed@example.com"] = "mixed",
-        };
-
-        var fieldSelections = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["mixed@example.com"] = new Dictionary<string, ImportConflictFieldSource>(StringComparer.OrdinalIgnoreCase)
+        var mixedState = new ImportCustomerConflictState(
+            "mixed@example.com",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["FirstName"] = ImportConflictFieldSource.Incoming,
-                ["LastName"] = ImportConflictFieldSource.Existing,
+                ["FirstName"] = "IncomingFirst",
+                ["LastName"] = "IncomingLast",
+                ["Email"] = "mixed@example.com",
             },
-        };
-
-        var existingValues = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["mixed@example.com"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["LastName"] = "ExistingLast",
-            },
-        };
+            });
+        mixedState.SetDecision("mixed", CustomerImportHeaderMatcher.Fields);
+        mixedState.SetFieldSource("FirstName", ImportConflictFieldSource.Incoming);
+        mixedState.SetFieldSource("LastName", ImportConflictFieldSource.Existing);
 
         // Act
         var mergedBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
             mappedCsv,
-            decisions,
-            fieldSelections,
-            existingValues);
+            [mixedState]);
 
         // Assert
         var committedCsv = Encoding.UTF8.GetString(mergedBytes);

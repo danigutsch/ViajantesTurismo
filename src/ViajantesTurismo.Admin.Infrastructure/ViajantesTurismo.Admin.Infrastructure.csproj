@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL"/>
     </ItemGroup>
 

@@ -26,14 +26,7 @@ public static class InfrastructureDependencyInjection
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
-            configureDbContextOptions: options =>
-            {
-                if (builder.Environment.IsDevelopment())
-                {
-                    options.EnableDetailedErrors();
-                    options.EnableSensitiveDataLogging();
-                }
-            });
+            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
 
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
             ResourceNames.Database,
@@ -41,11 +34,7 @@ public static class InfrastructureDependencyInjection
             {
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-                if (builder.Environment.IsDevelopment())
-                {
-                    options.EnableDetailedErrors();
-                    options.EnableSensitiveDataLogging();
-                }
+                ConfigureDevelopmentDatabaseOptions(builder, options);
             });
 
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
@@ -69,14 +58,7 @@ public static class InfrastructureDependencyInjection
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
-            configureDbContextOptions: options =>
-            {
-                if (builder.Environment.IsDevelopment())
-                {
-                    options.EnableDetailedErrors();
-                    options.EnableSensitiveDataLogging();
-                }
-            });
+            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
@@ -92,5 +74,19 @@ public static class InfrastructureDependencyInjection
         ArgumentNullException.ThrowIfNull(services);
 
         return services.AddScoped<ISeeder, Seeder>();
+    }
+
+    private static void ConfigureDevelopmentDatabaseOptions<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        DbContextOptionsBuilder options)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        if (!builder.Environment.IsDevelopment())
+        {
+            return;
+        }
+
+        options.EnableDetailedErrors();
+        options.EnableSensitiveDataLogging();
     }
 }
