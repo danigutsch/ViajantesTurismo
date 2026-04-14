@@ -97,4 +97,17 @@ resolution, regenerate and commit the affected `packages.lock.json` files:
 - Refresh lock files: `dotnet restore ViajantesTurismo.slnx --force-evaluate`
 - Verify locked restore: `dotnet restore ViajantesTurismo.slnx --locked-mode`
 
+## Updating the .NET SDK
+
+The repository pins a specific SDK version in `global.json` with
+`"rollForward": "patch"`, so CI only rolls forward within the same patch band.
+
+To update:
+
+1. Install the new SDK locally
+2. Set the new version in `global.json`
+3. Regenerate lock files: `dotnet restore ViajantesTurismo.slnx --force-evaluate`
+4. Verify: `dotnet restore ViajantesTurismo.slnx --locked-mode`
+5. Commit `global.json` and any changed `packages.lock.json` files together
+
 See `docs/CODE_QUALITY.md` for the full local tooling reference.
