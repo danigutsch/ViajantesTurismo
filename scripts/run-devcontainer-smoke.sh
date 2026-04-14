@@ -74,7 +74,7 @@ cleanup() {
         printf "Devcontainer smoke validation failed. Inspect logs under '%s'.\n" "${log_dir}" >&2
     fi
 
-    exit "${exit_code}"
+    return "${exit_code}"
 }
 
 main() {
