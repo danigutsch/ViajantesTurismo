@@ -324,7 +324,7 @@ else
     public Guid Id { get; set; }
 
     private GetBookingDto? _booking;
-    private BookingFormModel _model = new();
+    private readonly BookingFormModel _model = new();
     private bool _loading = true;
     private bool _notFound;
     private bool _isSubmitting;
@@ -353,15 +353,7 @@ else
                 return;
             }
 
-            _model = new BookingFormModel
-            {
-                Notes = _booking.Notes ?? string.Empty,
-                Status = _booking.Status,
-                PaymentStatus = _booking.PaymentStatus,
-                DiscountType = _booking.DiscountType,
-                DiscountAmount = _booking.DiscountAmount,
-                DiscountReason = _booking.DiscountReason ?? string.Empty
-            };
+            SyncModelFromBooking();
         }
         catch (Exception)
         {
@@ -505,8 +497,7 @@ else
         {
             var createDto = _paymentFormModel.ToDto();
             await BookingsApi.RecordPayment(Id, createDto, CancellationToken.None);
-            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            SyncModelFromBooking();
+            await RefreshBookingAndSyncModel();
             _toast.ShowSuccess("Payment recorded successfully.");
             HidePaymentForm();
         }
@@ -525,8 +516,7 @@ else
         try
         {
             await BookingsApi.ConfirmBooking(Id, CancellationToken.None);
-            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            SyncModelFromBooking();
+            await RefreshBookingAndSyncModel();
             _toast.ShowSuccess("Booking confirmed successfully.");
         }
         catch (Exception)
@@ -542,8 +532,7 @@ else
             try
             {
                 await BookingsApi.CancelBooking(Id, CancellationToken.None);
-                _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-                SyncModelFromBooking();
+                await RefreshBookingAndSyncModel();
                 _toast.ShowSuccess("Booking cancelled successfully.");
             }
             catch (Exception)
@@ -558,8 +547,7 @@ else
         try
         {
             await BookingsApi.CompleteBooking(Id, CancellationToken.None);
-            _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
-            SyncModelFromBooking();
+            await RefreshBookingAndSyncModel();
             _toast.ShowSuccess("Booking completed successfully.");
         }
         catch (Exception)
@@ -598,6 +586,12 @@ else
         _model.DiscountType = _booking.DiscountType;
         _model.DiscountAmount = _booking.DiscountAmount;
         _model.DiscountReason = _booking.DiscountReason ?? string.Empty;
+    }
+
+    private async Task RefreshBookingAndSyncModel()
+    {
+        _booking = await BookingsApi.GetBookingById(Id, CancellationToken.None);
+        SyncModelFromBooking();
     }
 
     private sealed class BookingFormModel
