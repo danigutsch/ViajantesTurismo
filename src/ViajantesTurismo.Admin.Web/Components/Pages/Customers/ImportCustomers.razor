@@ -555,7 +555,7 @@
                 Email = conflictState.Email,
                 Decision = conflictState.Decision,
                 IsResolved = conflictState.IsResolved,
-                UseExistingFieldValues = conflictState.FieldSelections.ToDictionary(
+                UseExistingFieldSelections = conflictState.FieldSelections.ToDictionary(
                     selection => selection.Key,
                     selection => selection.Value == ImportConflictFieldSource.Existing,
                     StringComparer.OrdinalIgnoreCase),
@@ -567,16 +567,14 @@
 
     private Task OnConflictDecisionChanged((int ConflictIndex, string Decision) args)
     {
-        var conflictState = _state.ConflictStates[args.ConflictIndex];
-        SetConflictDecision(conflictState, args.Decision);
+        SetConflictDecision(_state.ConflictStates[args.ConflictIndex], args.Decision);
         return Task.CompletedTask;
     }
 
     private Task OnConflictFieldSourceChanged((int ConflictIndex, string FieldName, bool UseExisting) args)
     {
-        var conflictState = _state.ConflictStates[args.ConflictIndex];
         SetFieldSource(
-            conflictState,
+            _state.ConflictStates[args.ConflictIndex],
             args.FieldName,
             args.UseExisting ? ImportConflictFieldSource.Existing : ImportConflictFieldSource.Incoming);
         return Task.CompletedTask;

@@ -23,7 +23,7 @@ public sealed class ImportCustomersDuplicateResolutionItem
     /// <summary>
     /// Gets or sets the field source selections for mixed merges.
     /// </summary>
-    public IReadOnlyDictionary<string, bool> UseExistingFieldValues { get; init; } = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, bool> UseExistingFieldSelections { get; init; } = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets or sets the existing field values loaded from the current customer record.
