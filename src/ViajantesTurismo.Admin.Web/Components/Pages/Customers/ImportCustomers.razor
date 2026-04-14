@@ -22,10 +22,10 @@
 
     @if (_result is not null)
     {
-        var summary = BuildImportSummary();
+        var summary = ImportCustomersCsvProcessor.BuildImportSummary(_result, _conflictDecisions);
         var successRows = _result.SuccessRows ?? [];
         var errorRows = _result.ErrorRows ?? [];
-        var errorReportDataUri = BuildErrorReportDataUri(errorRows);
+        var errorReportDataUri = ImportCustomersCsvProcessor.BuildErrorReportDataUri(errorRows);
 
         <div class="alert @(_result.ErrorCount == 0 ? "alert-success" : "alert-warning") d-flex align-items-start gap-3">
             <i class="bi @(_result.ErrorCount == 0 ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") fs-4"></i>
@@ -381,7 +381,7 @@
                                                         }
 
                                                         var fieldName = mapping.Field.Name;
-                                                        var source = sourceSelections.GetValueOrDefault(fieldName, ConflictFieldSource.Existing);
+                                                        var source = sourceSelections.GetValueOrDefault(fieldName, ImportConflictFieldSource.Existing);
                                                         var existingValue = existingValues.GetValueOrDefault(fieldName, "");
                                                         var incomingValue = incomingValues.GetValueOrDefault(fieldName, "");
 
@@ -389,17 +389,17 @@
                                                             <td>@mapping.Field.DisplayName</td>
                                                             <td>
                                                                 <button type="button"
-                                                                        class="btn btn-sm @(source == ConflictFieldSource.Existing ? "btn-success" : "btn-outline-secondary")"
+                                                                        class="btn btn-sm @(source == ImportConflictFieldSource.Existing ? "btn-success" : "btn-outline-secondary")"
                                                                         data-action="field-existing"
-                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ConflictFieldSource.Existing))">
+                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ImportConflictFieldSource.Existing))">
                                                                     Existing: @existingValue
                                                                 </button>
                                                             </td>
                                                             <td>
                                                                 <button type="button"
-                                                                        class="btn btn-sm @(source == ConflictFieldSource.Incoming ? "btn-primary" : "btn-outline-secondary")"
+                                                                        class="btn btn-sm @(source == ImportConflictFieldSource.Incoming ? "btn-primary" : "btn-outline-secondary")"
                                                                         data-action="field-incoming"
-                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ConflictFieldSource.Incoming))">
+                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ImportConflictFieldSource.Incoming))">
                                                                     Incoming: @incomingValue
                                                                 </button>
                                                             </td>
@@ -465,12 +465,6 @@
 
 @code {
     private enum PageStep { FileSelection, HeaderMapping, Preview, DuplicateResolution }
-    private enum ConflictFieldSource { Existing, Incoming }
-    private sealed record ImportSummaryCounts(int CreatedCount, int UpdatedCount, int SkippedCount, int FailedCount);
-    private sealed record MixedConflictRow(
-        string[] Values,
-        Dictionary<string, ConflictFieldSource> FieldSelections,
-        Dictionary<string, string> ExistingValues);
 
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
     private const int MaxPreviewRows = 5;
@@ -496,7 +490,7 @@
     private Dictionary<string, string> _conflictDecisions = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, Dictionary<string, string>> _incomingConflictValuesByEmail = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, Dictionary<string, string>> _existingConflictValuesByEmail = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, ConflictFieldSource>> _mixedFieldSelectionsByEmail = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, Dictionary<string, ImportConflictFieldSource>> _mixedFieldSelectionsByEmail = new(StringComparer.OrdinalIgnoreCase);
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -556,41 +550,13 @@
 
     private void ShowPreview()
     {
-        _previewRows = BuildPreviewRows();
+        _previewRows = ImportCustomersCsvProcessor.BuildPreviewRows(
+            _pendingFileBytes,
+            _csvHeaders,
+            _fieldMappings,
+            _userMappings,
+            MaxPreviewRows);
         _step = PageStep.Preview;
-    }
-
-    private IReadOnlyList<IReadOnlyDictionary<string, string>> BuildPreviewRows()
-    {
-        var text = Encoding.UTF8.GetString(_pendingFileBytes);
-        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2) return [];
-
-        var fieldToColIndex = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var mapping in _fieldMappings)
-        {
-            var csvCol = GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader);
-            if (csvCol is null) continue;
-            for (var i = 0; i < _csvHeaders.Count; i++)
-            {
-                if (string.Equals(_csvHeaders[i], csvCol, StringComparison.OrdinalIgnoreCase))
-                {
-                    fieldToColIndex[mapping.Field.Name] = i;
-                    break;
-                }
-            }
-        }
-
-        var result = new List<IReadOnlyDictionary<string, string>>();
-        foreach (var line in lines.Skip(1).Take(MaxPreviewRows))
-        {
-            var values = line.Split(',');
-            var row = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var (fieldName, colIdx) in fieldToColIndex)
-                row[fieldName] = colIdx < values.Length ? values[colIdx].Trim().Trim('"') : "";
-            result.Add(row);
-        }
-        return result.AsReadOnly();
     }
 
     private async Task HandleImport()
@@ -647,7 +613,11 @@
             var hasMixedDecision = _conflictDecisions.Values.Any(v => v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
             if (hasMixedDecision)
             {
-                fileBytes = ApplyMixedFieldSelections(fileBytes);
+                fileBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
+                    fileBytes,
+                    _conflictDecisions,
+                    _mixedFieldSelectionsByEmail,
+                    _existingConflictValuesByEmail);
             }
 
             _result = await CustomersApi.CommitImportWithResolutions(
@@ -672,7 +642,7 @@
         _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         _incomingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         _existingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
+        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
         _pendingFileName = "";
         _pendingFileBytes = [];
         _csvHeaders = [];
@@ -692,7 +662,7 @@
         _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         _incomingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         _existingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
+        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
         _uploading = false;
 
         _step = _pendingFileBytes.Length > 0
@@ -709,26 +679,26 @@
         }
     }
 
-    private Dictionary<string, ConflictFieldSource> GetOrInitializeMixedSelections(string email)
+    private Dictionary<string, ImportConflictFieldSource> GetOrInitializeMixedSelections(string email)
     {
         if (_mixedFieldSelectionsByEmail.TryGetValue(email, out var existing))
         {
             return existing;
         }
 
-        var selections = new Dictionary<string, ConflictFieldSource>(StringComparer.OrdinalIgnoreCase);
+        var selections = new Dictionary<string, ImportConflictFieldSource>(StringComparer.OrdinalIgnoreCase);
         foreach (var mapping in _fieldMappings)
         {
             var fieldName = mapping.Field.Name;
             var hasExisting = GetExistingConflictValues(email).ContainsKey(fieldName);
-            selections[fieldName] = hasExisting ? ConflictFieldSource.Existing : ConflictFieldSource.Incoming;
+            selections[fieldName] = hasExisting ? ImportConflictFieldSource.Existing : ImportConflictFieldSource.Incoming;
         }
 
         _mixedFieldSelectionsByEmail[email] = selections;
         return selections;
     }
 
-    private void SetFieldSource(string email, string fieldName, ConflictFieldSource source)
+    private void SetFieldSource(string email, string fieldName, ImportConflictFieldSource source)
     {
         var selections = GetOrInitializeMixedSelections(email);
         selections[fieldName] = source;
@@ -742,9 +712,9 @@
 
     private async Task InitializeConflictResolutionData(IReadOnlyList<ImportConflictDto> conflicts, byte[] mappedFileBytes)
     {
-        _incomingConflictValuesByEmail = ParseMappedRowsByEmail(mappedFileBytes);
+        _incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
         _existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(conflicts);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
+        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task<Dictionary<string, Dictionary<string, string>>> LoadExistingConflictValuesByEmail(IReadOnlyList<ImportConflictDto> conflicts)
@@ -806,197 +776,5 @@
             ["Allergies"] = details.MedicalInfo.Allergies ?? string.Empty,
             ["AdditionalInfo"] = details.MedicalInfo.AdditionalInfo ?? string.Empty,
         };
-    }
-
-    private static Dictionary<string, Dictionary<string, string>> ParseMappedRowsByEmail(byte[] mappedFileBytes)
-    {
-        var text = Encoding.UTF8.GetString(mappedFileBytes);
-        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2)
-        {
-            return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var headers = lines[0].Split(',').Select(h => h.Trim().Trim('"')).ToArray();
-        var emailIndex = Array.FindIndex(headers, h => h.Equals("Email", StringComparison.OrdinalIgnoreCase));
-        if (emailIndex < 0)
-        {
-            return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var line in lines.Skip(1))
-        {
-            var values = line.Split(',').Select(v => v.Trim().Trim('"')).ToArray();
-            if (emailIndex >= values.Length)
-            {
-                continue;
-            }
-
-            var email = values[emailIndex];
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                continue;
-            }
-
-            var rowValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < headers.Length; i++)
-            {
-                rowValues[headers[i]] = i < values.Length ? values[i] : string.Empty;
-            }
-
-            result[email] = rowValues;
-        }
-
-        return result;
-    }
-
-    private byte[] ApplyMixedFieldSelections(byte[] mappedFileBytes)
-    {
-        var text = Encoding.UTF8.GetString(mappedFileBytes);
-        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2)
-        {
-            return mappedFileBytes;
-        }
-
-        var headers = lines[0].Split(',').Select(h => h.Trim().Trim('"')).ToArray();
-        var headerIndexes = headers
-            .Select((name, index) => new { name, index })
-            .ToDictionary(x => x.name, x => x.index, StringComparer.OrdinalIgnoreCase);
-
-        if (!headerIndexes.TryGetValue("Email", out var emailIndex))
-        {
-            return mappedFileBytes;
-        }
-
-        var outputLines = new List<string>(lines.Length) { lines[0] };
-        foreach (var line in lines.Skip(1))
-        {
-            var values = line.Split(',').Select(v => v.Trim().Trim('"')).ToArray();
-            if (!TryGetMixedConflictRow(values, emailIndex, out var conflictRow))
-            {
-                outputLines.Add(line);
-                continue;
-            }
-
-            var mergedValues = BuildMergedValues(headers, headerIndexes, conflictRow);
-
-            outputLines.Add(string.Join(",", mergedValues.Select(EscapeCsvValue)));
-        }
-
-        return Encoding.UTF8.GetBytes(string.Join("\n", outputLines));
-    }
-
-    private bool TryGetMixedConflictRow(string[] values, int emailIndex, out MixedConflictRow conflictRow)
-    {
-        conflictRow = null!;
-
-        if (emailIndex >= values.Length)
-        {
-            return false;
-        }
-
-        var email = values[emailIndex];
-        if (!_conflictDecisions.TryGetValue(email, out var decision)
-            || !decision.Equals("mixed", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (!_mixedFieldSelectionsByEmail.TryGetValue(email, out var fieldSelections)
-            || !_existingConflictValuesByEmail.TryGetValue(email, out var existingValues))
-        {
-            return false;
-        }
-
-        conflictRow = new MixedConflictRow(values, fieldSelections, existingValues);
-        return true;
-    }
-
-    private static string[] BuildMergedValues(
-        IReadOnlyList<string> headers,
-        IReadOnlyDictionary<string, int> headerIndexes,
-        MixedConflictRow conflictRow)
-    {
-        var mergedValues = headers.Select((_, i) => i < conflictRow.Values.Length ? conflictRow.Values[i] : string.Empty).ToArray();
-
-        foreach (var (fieldName, source) in conflictRow.FieldSelections)
-        {
-            if (source != ConflictFieldSource.Existing)
-            {
-                continue;
-            }
-
-            if (!headerIndexes.TryGetValue(fieldName, out var fieldIndex))
-            {
-                continue;
-            }
-
-            if (!conflictRow.ExistingValues.TryGetValue(fieldName, out var existingValue))
-            {
-                continue;
-            }
-
-            mergedValues[fieldIndex] = existingValue;
-        }
-
-        return mergedValues;
-    }
-
-    private static string EscapeCsvValue(string value)
-    {
-        var normalized = value;
-        if (!normalized.Contains(',') && !normalized.Contains('"') && !normalized.Contains('\n') && !normalized.Contains('\r'))
-        {
-            return normalized;
-        }
-
-        return $"\"{normalized.Replace("\"", "\"\"")}";
-    }
-
-    private ImportSummaryCounts BuildImportSummary()
-    {
-        if (_result is null)
-        {
-            return new ImportSummaryCounts(0, 0, 0, 0);
-        }
-
-        var skippedCount = _conflictDecisions.Values.Count(v =>
-            v.Equals("keep", StringComparison.OrdinalIgnoreCase));
-        var updatedCount = _conflictDecisions.Values.Count(v =>
-            v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
-            || v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
-        var createdCount = Math.Max(0, _result.SuccessCount - updatedCount);
-
-        return new ImportSummaryCounts(
-            createdCount,
-            updatedCount,
-            skippedCount,
-            _result.ErrorCount);
-    }
-
-    private static string? BuildErrorReportDataUri(IReadOnlyList<ImportErrorRowDto> errorRows)
-    {
-        if (errorRows.Count == 0)
-        {
-            return null;
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine("LineNumber,Field,Message,Email");
-        foreach (var row in errorRows)
-        {
-            sb.Append(row.LineNumber)
-                .Append(',')
-                .Append(EscapeCsvValue(row.Field ?? string.Empty))
-                .Append(',')
-                .Append(EscapeCsvValue(row.Message))
-                .Append(',')
-                .Append(EscapeCsvValue(row.Email ?? string.Empty))
-                .AppendLine();
-        }
-
-        return "data:text/csv;charset=utf-8," + Uri.EscapeDataString(sb.ToString());
     }
 }

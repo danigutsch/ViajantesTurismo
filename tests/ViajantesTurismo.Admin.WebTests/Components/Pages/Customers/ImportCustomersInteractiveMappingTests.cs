@@ -79,29 +79,29 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 
         // Act — explicitly clear a required field dropdown (overrides auto-match)
         cut.Find("select[data-field='Email']").Change("");
 
         // Assert — import disabled because required field is now unassigned
-        Assert.True(cut.Find("button.btn-primary").HasAttribute("disabled"));
+        Assert.True(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 
     [Fact]
     public void Clearing_Optional_Field_Does_Not_Disable_Import()
     {
         // Arrange — all canonical headers present: all required matched, import enabled
-        var optionalField = CustomerImportHeaderMatcher.Fields.First(f => !f.IsRequired);
+        const string optionalFieldName = "Instagram";
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
-        cut.WaitForAssertion(() => Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled")));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 
         // Act — clear an optional field
-        cut.Find($"select[data-field='{optionalField.Name}']").Change("");
+        cut.Find($"select[data-field='{optionalFieldName}']").Change("");
 
         // Assert — import still enabled (optional field not required)
-        Assert.False(cut.Find("button.btn-primary").HasAttribute("disabled"));
+        Assert.False(ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled"));
     }
 }

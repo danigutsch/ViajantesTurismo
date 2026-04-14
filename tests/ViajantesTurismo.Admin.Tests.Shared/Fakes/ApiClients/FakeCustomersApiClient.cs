@@ -14,6 +14,10 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private ImportResultDto? _importResult;
     private Exception? _updateCustomerException;
 
+    public IReadOnlyList<byte>? LastCommitFileContent { get; private set; }
+
+    public string? LastCommitFileName { get; private set; }
+
     public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
 
     public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100)
@@ -74,6 +78,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken)
     {
+        LastCommitFileContent = [.. fileContent];
+        LastCommitFileName = fileName;
         LastCommitConflictResolutions = new Dictionary<string, string>(conflictResolutions, StringComparer.OrdinalIgnoreCase);
 
         if (_commitImportResult is not null)
