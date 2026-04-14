@@ -49,10 +49,10 @@ cleanup() {
         exit_code="$?"
     fi
 
-    exit "${exit_code}"
+    return "${exit_code}"
 }
 
-trap 'cleanup $?' EXIT
+trap 'exit_code=$?; cleanup "${exit_code}"; trap - EXIT; exit $?' EXIT
 
 dotnet build ViajantesTurismo.slnx --no-restore
 
