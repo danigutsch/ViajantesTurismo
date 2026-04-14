@@ -13,33 +13,7 @@ public static class EntityBuilders
     /// <summary>
     /// Builds a Tour entity with default or custom values.
     /// </summary>
-    public static Tour BuildTour(
-        string? identifier = null,
-        string? name = null,
-        DateTime? startDate = null,
-        DateTime? endDate = null,
-        decimal? basePrice = null,
-        decimal? singleRoomSupplementPrice = null,
-        decimal? regularBikePrice = null,
-        decimal? eBikePrice = null,
-        Currency? currency = null,
-        int? minCustomers = null,
-        int? maxCustomers = null,
-        string[]? includedServices = null)
-    {
-        return BuildTour(new TourOptions(
-            identifier,
-            name,
-            new TourScheduleOptions(startDate, endDate),
-            new TourPricingOptions(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency),
-            new TourCapacityOptions(minCustomers, maxCustomers),
-            includedServices));
-    }
-
-    /// <summary>
-    /// Builds a Tour entity with default or custom values.
-    /// </summary>
-    public static Tour BuildTour(TourOptions? options)
+    public static Tour BuildTour(TourOptions? options = null)
     {
         options ??= new TourOptions();
         var scheduleOptions = options.Schedule ?? new TourScheduleOptions();
@@ -71,63 +45,8 @@ public static class EntityBuilders
     /// </summary>
     public static Customer BuildCustomer(CustomerOptions? options)
     {
-        options ??= new CustomerOptions();
-
-        var personalInfo = PersonalInfo.Create(
-            options.FirstName ?? "John",
-            options.LastName ?? "Doe",
-            options.Gender ?? "Male",
-            options.BirthDate ?? DateTime.UtcNow.AddYears(-30),
-            options.Nationality ?? "USA",
-            options.Occupation ?? "Engineer",
-            TimeProvider.System).Value;
-
-        var identificationInfo = IdentificationInfo.Create(
-            options.PassportNumber ?? "A12345678",
-            options.PassportCountry ?? "USA").Value;
-
-        var contactInfo = ContactInfo.Create(
-            options.Email ?? "test@example.com",
-            options.Mobile ?? "+1234567890",
-            options.Instagram,
-            options.Facebook).Value;
-
-        var address = Address.Create(
-            options.Street ?? "123 Main St",
-            options.Complement,
-            options.Neighborhood ?? "Downtown",
-            options.PostalCode ?? "10001",
-            options.City ?? "New York",
-            options.State ?? "NY",
-            options.Country ?? "USA").Value;
-
-        var physicalInfo = PhysicalInfo.Create(
-            options.WeightKg ?? 75,
-            options.HeightCentimeters ?? 175,
-            options.PreferredBike ?? BikeType.Regular).Value;
-
-        var accommodationPreferences = AccommodationPreferences.Create(
-            options.PreferredRoom ?? RoomType.DoubleOccupancy,
-            options.PreferredBed ?? BedType.SingleBed,
-            options.CompanionId).Value;
-
-        var emergencyContact = EmergencyContact.Create(
-            options.EmergencyContactName ?? "Emergency Contact",
-            options.EmergencyContactMobile ?? "+9876543210").Value;
-
-        var medicalInfo = MedicalInfo.Create(
-            options.Allergies ?? "None",
-            options.MedicalAdditionalInfo ?? "None").Value;
-
-        return new Customer(
-            personalInfo,
-            identificationInfo,
-            contactInfo,
-            address,
-            physicalInfo,
-            accommodationPreferences,
-            emergencyContact,
-            medicalInfo);
+        var builder = new CustomerBuilder(options);
+        return builder.Build();
     }
 
     /// <summary>
@@ -172,5 +91,69 @@ public static class EntityBuilders
             "BRL" => Currency.Real,
             _ => throw new ArgumentException($"Unknown currency: {currencyCode}", nameof(currencyCode))
         };
+    }
+
+    private sealed class CustomerBuilder(CustomerOptions? options)
+    {
+        private readonly CustomerOptions _options = options ?? new CustomerOptions();
+
+        public Customer Build()
+        {
+            var personalInfo = PersonalInfo.Create(
+                _options.FirstName ?? "John",
+                _options.LastName ?? "Doe",
+                _options.Gender ?? "Male",
+                _options.BirthDate ?? DateTime.UtcNow.AddYears(-30),
+                _options.Nationality ?? "USA",
+                _options.Occupation ?? "Engineer",
+                TimeProvider.System).Value;
+
+            var identificationInfo = IdentificationInfo.Create(
+                _options.PassportNumber ?? "A12345678",
+                _options.PassportCountry ?? "USA").Value;
+
+            var contactInfo = ContactInfo.Create(
+                _options.Email ?? "test@example.com",
+                _options.Mobile ?? "+1234567890",
+                _options.Instagram,
+                _options.Facebook).Value;
+
+            var address = Address.Create(
+                _options.Street ?? "123 Main St",
+                _options.Complement,
+                _options.Neighborhood ?? "Downtown",
+                _options.PostalCode ?? "10001",
+                _options.City ?? "New York",
+                _options.State ?? "NY",
+                _options.Country ?? "USA").Value;
+
+            var physicalInfo = PhysicalInfo.Create(
+                _options.WeightKg ?? 75,
+                _options.HeightCentimeters ?? 175,
+                _options.PreferredBike ?? BikeType.Regular).Value;
+
+            var accommodationPreferences = AccommodationPreferences.Create(
+                _options.PreferredRoom ?? RoomType.DoubleOccupancy,
+                _options.PreferredBed ?? BedType.SingleBed,
+                _options.CompanionId).Value;
+
+            var emergencyContact = EmergencyContact.Create(
+                _options.EmergencyContactName ?? "Emergency Contact",
+                _options.EmergencyContactMobile ?? "+9876543210").Value;
+
+            var medicalInfo = MedicalInfo.Create(
+                _options.Allergies ?? "None",
+                _options.MedicalAdditionalInfo ?? "None").Value;
+
+            return new Customer(
+                personalInfo,
+                identificationInfo,
+                contactInfo,
+                address,
+                physicalInfo,
+                accommodationPreferences,
+                emergencyContact,
+                medicalInfo);
+        }
     }
 }

@@ -161,6 +161,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateAddressInformationFromSanitizationInputs()
 #pragma warning restore CA1822
     {
+        // Result already stored in context by Given step.
     }
 
     [Then(@"the sanitized address city should be ""(.*)""")]
@@ -186,6 +187,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateContactInformation()
 #pragma warning restore CA1822
     {
+        // Result already stored in context by Given step.
     }
 
     [Then(@"the sanitized email should be ""(.*)""")]
@@ -211,6 +213,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateContactInformationWithSocialMedia()
 #pragma warning restore CA1822
     {
+        // Result already stored in context by Given step.
     }
 
     [Then(@"the sanitized Instagram should be ""(.*)""")]
@@ -236,6 +239,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateIdentificationInformation()
 #pragma warning restore CA1822
     {
+        // Result already stored in context by Given step.
     }
 
     [Then(@"the sanitized national ID should be ""(.*)""")]
@@ -261,6 +265,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateEmergencyContactInformation()
 #pragma warning restore CA1822
     {
+        // Result already stored in context by Given step.
     }
 
     [Then(@"the sanitized emergency contact name should be ""(.*)""")]
@@ -286,6 +291,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void WhenICreateMedicalInformation()
 #pragma warning restore CA1822
     {
+        // Result already stored in context by Given step.
     }
 
     [Then(@"the sanitized allergies should be ""(.*)""")]
@@ -364,6 +370,20 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When(@"I create a customer with email ""(.*)""")]
     public async Task WhenICreateACustomerWithEmail(string email)
     {
+        await CreateCustomerForCreation(email, useAlternateDefaults: true);
+    }
+
+    private async Task CreateCustomerForCreation(string email, bool useAlternateDefaults)
+    {
+        await CreateCustomerCommandForEmail(email, useAlternateDefaults);
+    }
+
+    private async Task CreateCustomerCommandForEmail(string email, bool useAlternateDefaults)
+    {
+        var occupation = useAlternateDefaults
+            ? GetAlternateDesignerOccupation()
+            : GetDefaultDesignerOccupation();
+
         var command = new CreateCustomerCommand(
             PersonalInfo: new PersonalInfoDto
             {
@@ -372,7 +392,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
                 Gender = "Female",
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 Nationality = "American",
-                Occupation = "Designer"
+                Occupation = occupation
             },
             IdentificationInfo: new IdentificationInfoDto
             {
@@ -421,6 +441,10 @@ public sealed class CustomerManagementSteps(CustomerContext context)
 
         context.CommandResult = await context.CommandHandler.Handle(command, CancellationToken.None);
     }
+
+    private static string GetDefaultDesignerOccupation() => "Designer";
+
+    private static string GetAlternateDesignerOccupation() => "Designer";
 
     [Then("the customer creation should fail")]
     public void ThenTheCustomerCreationShouldFail()

@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
+using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Tests.Shared.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
@@ -63,6 +64,6 @@ public class DuplicateDetectorTests
 
         // Assert
         var conflict = Assert.Single(conflicts);
-        Assert.Equal("john.doe@example.com", conflict.Email);
+        Assert.Equal(new ImportConflictDto("john.doe@example.com"), conflict);
     }
 }

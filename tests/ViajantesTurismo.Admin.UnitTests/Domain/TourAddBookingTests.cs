@@ -11,7 +11,7 @@ public class TourAddBookingTests
     public void AddBooking_When_Tour_Is_Fully_Booked_Returns_Conflict_And_Does_Not_Add_Another_Booking()
     {
         // Arrange
-        var tour = EntityBuilders.BuildTour(minCustomers: 1, maxCustomers: 1);
+        var tour = EntityBuilders.BuildTour(new TourOptions(Capacity: new TourCapacityOptions(MinCustomers: 1, MaxCustomers: 1)));
         var existingBookingResult = BookingTestHelpers.AddSingleCustomerBooking(
             tour,
             new SingleBookingOptions(CustomerId: Guid.CreateVersion7()));

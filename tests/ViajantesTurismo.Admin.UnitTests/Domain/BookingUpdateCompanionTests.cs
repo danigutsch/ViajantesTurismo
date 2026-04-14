@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Tests.Shared.Behavior;
