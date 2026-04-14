@@ -181,7 +181,7 @@ else
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary"
-                    disabled="@(_isSubmitting || _pendingRedirect || _booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)">
+                    disabled="@(_isSubmitting || _redirectState.IsPending || _booking.Status == BookingStatusDto.Completed || _booking.Status == BookingStatusDto.Cancelled)">
                 @if (_isSubmitting)
                 {
                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -193,7 +193,7 @@ else
                 }
             </button>
             <NavLink href="/bookings"
-                     class="@($"btn btn-secondary {(_isSubmitting || _pendingRedirect ? "disabled" : "")}")">
+                     class="@($"btn btn-secondary {(_isSubmitting || _redirectState.IsPending ? "disabled" : "")}")">
                 Cancel
             </NavLink>
         </div>
@@ -298,7 +298,7 @@ else
         </div>
     </div>
 
-    @if (_pendingRedirect)
+    @if (_redirectState.IsPending)
     {
         <div class="alert alert-info d-flex align-items-center justify-content-between mt-4" role="alert">
             <span>
@@ -307,7 +307,7 @@ else
             <button class="btn btn-sm btn-outline-danger ms-3" @onclick="CancelRedirect">Cancel</button>
         </div>
     }
-    else if (_redirectCancelled)
+    else if (_redirectState.IsCancelled)
     {
         <div class="alert alert-success d-flex align-items-center justify-content-between mt-4" role="alert">
             <span>Booking updated successfully!</span>
@@ -329,9 +329,7 @@ else
     private bool _notFound;
     private bool _isSubmitting;
     private bool _success;
-    private bool _pendingRedirect;
-    private bool _redirectCancelled;
-    private CancellationTokenSource? _redirectCts;
+    private readonly BookingEditRedirectState _redirectState = new();
     private string? _errorMessage;
 
     private bool _showPaymentForm;
@@ -370,10 +368,7 @@ else
         _isSubmitting = true;
         _success = false;
         _errorMessage = null;
-        _pendingRedirect = false;
-        _redirectCancelled = false;
-
-        await DisposeRedirectCancellation();
+        await _redirectState.Reset();
 
         try
         {
@@ -416,15 +411,13 @@ else
             }
 
             _success = true;
-            _pendingRedirect = true;
-            _redirectCts = new CancellationTokenSource();
-            var token = _redirectCts.Token;
+            var token = _redirectState.BeginPendingRedirect();
             StateHasChanged();
 
             try
             {
                 await Task.Delay(3000, token);
-                if (_pendingRedirect && !token.IsCancellationRequested)
+                if (_redirectState.CanNavigate(token))
                 {
                     Navigation.NavigateTo("/bookings");
                 }
@@ -435,7 +428,7 @@ else
             }
             finally
             {
-                await DisposeRedirectCancellation();
+                await _redirectState.DisposeCancellation();
             }
         }
         catch (Exception)
@@ -450,28 +443,13 @@ else
 
     private async Task CancelRedirect()
     {
-        _pendingRedirect = false;
-        _redirectCancelled = true;
-        await DisposeRedirectCancellation();
+        await _redirectState.CancelPendingRedirect();
         StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()
     {
-        await DisposeRedirectCancellation();
-    }
-
-    private async Task DisposeRedirectCancellation()
-    {
-        var redirectCts = _redirectCts;
-        if (redirectCts is null)
-        {
-            return;
-        }
-
-        _redirectCts = null;
-        await redirectCts.CancelAsync();
-        redirectCts.Dispose();
+        await _redirectState.DisposeAsync();
     }
 
     private void GoToBookings()
