@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -23,6 +24,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Tests.Shared\ViajantesTurismo.Admin.Tests.Shared.csproj"/>
     </ItemGroup>
 
