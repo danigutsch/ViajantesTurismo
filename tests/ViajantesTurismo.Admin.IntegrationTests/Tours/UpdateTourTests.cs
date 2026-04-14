@@ -34,20 +34,53 @@ public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTes
     }
 
     [Fact]
-    public async Task Update_Tour_Returns_Not_Found_For_Invalid_Id()
+    public async Task Update_Tour_Returns_Not_Found_For_Missing_Id()
     {
         // Arrange
-        const int invalidId = -1;
+        var missingTourId = Guid.NewGuid();
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: "INVALID", name: "Invalid Tour", startDate: UtcDate(2027, 1, 1),
             endDate: UtcDate(2027, 1, 10), currency: CurrencyDto.Real, basePrice: 1000.00m, singleRoomSupplement: 100.00m, regularBikePrice: 50.00m, eBikePrice: 80.00m,
             includedServices: ["None"]);
 
         // Act
-        var response = await Client.PutAsJsonAsync($"/tours/{invalidId}", updateRequest, TestContext.Current.CancellationToken);
+        var response = await Client.PutAsJsonAsync($"/tours/{missingTourId}", updateRequest, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains(missingTourId.ToString(), content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("was not found", content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Update_Tour_Returns_Conflict_For_Duplicate_Identifier()
+    {
+        // Arrange
+        var originalTour = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+        var tourToUpdate = await Client.CreateTestTour(cancellationToken: TestContext.Current.CancellationToken);
+
+        var updateRequest = DtoBuilders.BuildUpdateTourDto(
+            identifier: originalTour.Identifier,
+            name: "Updated Duplicate Identifier Tour",
+            startDate: tourToUpdate.StartDate,
+            endDate: tourToUpdate.EndDate,
+            currency: tourToUpdate.Currency,
+            basePrice: tourToUpdate.Price,
+            singleRoomSupplement: tourToUpdate.SingleRoomSupplementPrice,
+            regularBikePrice: tourToUpdate.RegularBikePrice,
+            eBikePrice: tourToUpdate.EBikePrice,
+            includedServices: [.. tourToUpdate.IncludedServices]);
+
+        // Act
+        var response = await Client.PutAsJsonAsync($"/tours/{tourToUpdate.Id}", updateRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("already exists", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

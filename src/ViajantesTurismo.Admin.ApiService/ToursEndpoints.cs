@@ -108,7 +108,7 @@ internal static class ToursEndpoints
             : TypedResults.Ok(tourDto);
     }
 
-    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem>> UpdateTour(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem, Conflict<ProblemDetails>>> UpdateTour(
         Guid id,
         [FromBody] UpdateTourDto tourDto,
         [FromServices] UpdateTourCommandHandler handler,
@@ -135,6 +135,12 @@ internal static class ToursEndpoints
 
         return result.IsSuccess
             ? TypedResults.NoContent()
-            : result.ToValidationProblem();
+            : result.Status switch
+            {
+                ResultStatus.NotFound => result.ToNotFound(),
+                ResultStatus.Conflict => result.ToConflict(),
+                ResultStatus.Invalid => result.ToValidationProblem(),
+                _ => throw new InvalidOperationException($"Unsupported result status '{result.Status}' for update tour endpoint.")
+            };
     }
 }
