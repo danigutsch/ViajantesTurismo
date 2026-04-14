@@ -247,7 +247,7 @@ public sealed class Tour : Entity<Guid>
 
         if (scheduleResult.Value.DurationDays < ContractConstants.MinimumTourDurationDays)
         {
-            return TourErrors.DurationTooShortUpdate(ContractConstants.MinimumTourDurationDays,
+            return TourErrors.DurationTooShort(ContractConstants.MinimumTourDurationDays,
                 scheduleResult.Value.DurationDays);
         }
 

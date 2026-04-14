@@ -75,17 +75,6 @@ public static class TourErrors
         message: $"Duration must be at least {minimumDays} days.");
 
     /// <summary>
-    /// Indicates that the tour duration is too short (non-generic version for update operations).
-    /// </summary>
-    /// <param name="minimumDays">The minimum required duration in days.</param>
-    /// <param name="actualDays">The actual duration provided.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result DurationTooShortUpdate(int minimumDays, double actualDays) => Result.Invalid(
-        detail: $"Tour must be at least {minimumDays} days long. Received: {actualDays:F1} days.",
-        field: "schedule",
-        message: $"Duration must be at least {minimumDays} days.");
-
-    /// <summary>
     /// Indicates that a price value is invalid (negative).
     /// </summary>
     /// <param name="priceType">The type of price (e.g., "Base price", "Single room supplement").</param>
