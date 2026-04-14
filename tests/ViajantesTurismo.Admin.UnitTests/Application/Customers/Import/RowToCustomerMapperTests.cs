@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 

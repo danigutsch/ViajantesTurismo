@@ -1,6 +1,8 @@
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 
+using ViajantesTurismo.Admin.Domain.Shared;
+
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Customers;
 
 [Binding]

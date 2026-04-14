@@ -1,5 +1,7 @@
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 
+using ViajantesTurismo.Admin.Domain.Shared;
+
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 
 [Binding]

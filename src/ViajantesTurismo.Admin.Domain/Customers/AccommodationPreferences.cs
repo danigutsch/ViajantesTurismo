@@ -1,6 +1,8 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Common.Results;
 
+using ViajantesTurismo.Admin.Domain.Shared;
+
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>

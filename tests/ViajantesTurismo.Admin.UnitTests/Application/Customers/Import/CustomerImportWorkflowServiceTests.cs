@@ -28,8 +28,9 @@ public sealed class CustomerImportWorkflowServiceTests
 
         var store = new FakeCustomerStore([dbDuplicateEmail]);
         var unitOfWork = new FakeUnitOfWork();
+        var conflictDetector = new CustomerImportConflictDetector(store);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, handler);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler);
 
         // Act
         var result = await sut.Import(csv, CancellationToken.None);

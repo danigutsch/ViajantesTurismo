@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Common.Results;
 using ViajantesTurismo.Common.Sanitizers;
 

@@ -1,6 +1,7 @@
 using System.Globalization;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Common.Results;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;

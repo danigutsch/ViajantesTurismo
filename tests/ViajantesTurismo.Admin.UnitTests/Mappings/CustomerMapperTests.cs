@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 
