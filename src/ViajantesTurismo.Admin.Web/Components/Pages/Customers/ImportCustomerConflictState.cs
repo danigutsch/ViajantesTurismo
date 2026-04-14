@@ -2,6 +2,9 @@ using ViajantesTurismo.Admin.Web.Services;
 
 namespace ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 
+/// <summary>
+/// Represents the duplicate-resolution state for a single conflicting customer import row.
+/// </summary>
 internal sealed class ImportCustomerConflictState
 {
     private readonly Dictionary<string, ImportConflictFieldSource> _fieldSelections = new(StringComparer.OrdinalIgnoreCase);

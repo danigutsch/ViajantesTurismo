@@ -4,14 +4,9 @@ using ViajantesTurismo.Admin.Web.Services;
 
 namespace ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 
-internal enum ImportConflictFieldSource
-{
-    Existing,
-    Incoming,
-}
-
-internal sealed record ImportCustomersSummaryCounts(int CreatedCount, int UpdatedCount, int SkippedCount, int FailedCount);
-
+/// <summary>
+/// Provides CSV parsing and transformation helpers used by the customer import workflow.
+/// </summary>
 internal static class ImportCustomersCsvProcessor
 {
     private sealed record MixedConflictRow(

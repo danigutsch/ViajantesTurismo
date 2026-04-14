@@ -18,6 +18,7 @@ Instructions for files under `src/ViajantesTurismo.Admin.Web/`.
 - Keep layout components in `Components/Layout/`.
 - Keep shared reusable components in `Components/Shared/`.
 - Keep page components under `Components/Pages/`.
+- For new or significantly refactored C# code in this project, keep one top-level type per file.
 
 ## Data access and API clients
 
