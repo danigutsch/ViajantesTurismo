@@ -7,8 +7,6 @@ namespace ViajantesTurismo.Admin.Web.Components.Pages.Customers;
 /// </summary>
 internal sealed class ImportCustomerConflictState
 {
-    private readonly Dictionary<string, ImportConflictFieldSource> _fieldSelections = new(StringComparer.OrdinalIgnoreCase);
-
     internal ImportCustomerConflictState(
         string email,
         IReadOnlyDictionary<string, string>? incomingValues,
@@ -27,7 +25,7 @@ internal sealed class ImportCustomerConflictState
 
     internal Dictionary<string, string> ExistingValues { get; }
 
-    internal Dictionary<string, ImportConflictFieldSource> FieldSelections => _fieldSelections;
+    internal Dictionary<string, ImportConflictFieldSource> FieldSelections { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     internal bool IsResolved => !string.IsNullOrWhiteSpace(Decision);
 
@@ -56,12 +54,12 @@ internal sealed class ImportCustomerConflictState
     {
         foreach (var fieldName in fieldNames)
         {
-            if (_fieldSelections.ContainsKey(fieldName))
+            if (FieldSelections.ContainsKey(fieldName))
             {
                 continue;
             }
 
-            _fieldSelections[fieldName] = ExistingValues.ContainsKey(fieldName)
+            FieldSelections[fieldName] = ExistingValues.ContainsKey(fieldName)
                 ? ImportConflictFieldSource.Existing
                 : ImportConflictFieldSource.Incoming;
         }
@@ -69,7 +67,7 @@ internal sealed class ImportCustomerConflictState
 
     internal void SetFieldSource(string fieldName, ImportConflictFieldSource source)
     {
-        _fieldSelections[fieldName] = source;
+        FieldSelections[fieldName] = source;
     }
 
     internal string GetIncomingValue(string fieldName) => IncomingValues.GetValueOrDefault(fieldName, string.Empty);
