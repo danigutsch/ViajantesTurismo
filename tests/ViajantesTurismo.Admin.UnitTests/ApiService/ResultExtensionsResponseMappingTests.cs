@@ -320,7 +320,7 @@ public class ResultExtensionsResponseMappingTests
 
     private static HttpValidationProblemDetails AssertValidationProblemDetails(ValidationProblem result)
     {
-        var valueResult = Assert.IsAssignableFrom<IValueHttpResult<HttpValidationProblemDetails>>(result);
+        var valueResult = Assert.IsType<IValueHttpResult<HttpValidationProblemDetails>>(result, exactMatch: false);
         return Assert.IsType<HttpValidationProblemDetails>(valueResult.Value);
     }
 
