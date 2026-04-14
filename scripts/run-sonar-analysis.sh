@@ -49,7 +49,7 @@ cleanup() {
         exit_code="$?"
     fi
 
-    return "${exit_code}"
+    exit "${exit_code}"
 }
 
 trap 'cleanup $?' EXIT
