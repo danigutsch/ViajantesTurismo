@@ -327,10 +327,10 @@
     {
         <div class="card">
             <div class="card-body">
-                 <div class="border border-2 rounded-3 p-5 text-center position-relative @(_state.Dragging > 0 ? "border-primary bg-primary bg-opacity-10" : "border-secondary")"
-                     style="border-style: dashed !important;"
-                     @ondragenter="@(() => _state.Dragging++)"
-                     @ondragleave="@(() => _state.Dragging--)">
+                <div class="border border-2 rounded-3 p-5 text-center position-relative @(_state.Dragging > 0 ? "border-primary bg-primary bg-opacity-10" : "border-secondary")"
+                    style="border-style: dashed !important;"
+                    @ondragenter="@(() => _state.Dragging++)"
+                    @ondragleave="@(() => _state.Dragging--)">
                     <i class="bi bi-file-earmark-arrow-up fs-1 text-muted d-block mb-2"></i>
                     <p class="mb-1 fw-semibold">Drop a CSV file here</p>
                     <p class="text-muted small mb-0">or click to browse &mdash; max 5 MB</p>

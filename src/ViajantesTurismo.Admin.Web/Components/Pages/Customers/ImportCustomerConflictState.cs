@@ -35,41 +35,26 @@ internal sealed class ImportCustomerConflictState
 
     internal void SetDecision(string decision, IReadOnlyList<CustomerImportFieldMapping> fieldMappings)
     {
-        Decision = decision;
-        if (HasMixedDecision)
-        {
-            EnsureMixedSelections(fieldMappings);
-        }
+        SetDecision(decision, fieldMappings.Select(mapping => mapping.Field.Name));
     }
 
     internal void SetDecision(string decision, IReadOnlyList<CustomerImportField> fields)
     {
+        SetDecision(decision, fields.Select(field => field.Name));
+    }
+
+    private void SetDecision(string decision, IEnumerable<string> fieldNames)
+    {
         Decision = decision;
         if (HasMixedDecision)
         {
-            EnsureMixedSelections(fields);
+            EnsureMixedSelections(fieldNames);
         }
     }
 
-    internal void EnsureMixedSelections(IReadOnlyList<CustomerImportFieldMapping> fieldMappings)
+    private void EnsureMixedSelections(IEnumerable<string> fieldNames)
     {
-        foreach (var mapping in fieldMappings)
-        {
-            var fieldName = mapping.Field.Name;
-            if (_fieldSelections.ContainsKey(fieldName))
-            {
-                continue;
-            }
-
-            _fieldSelections[fieldName] = ExistingValues.ContainsKey(fieldName)
-                ? ImportConflictFieldSource.Existing
-                : ImportConflictFieldSource.Incoming;
-        }
-    }
-
-    internal void EnsureMixedSelections(IReadOnlyList<CustomerImportField> fields)
-    {
-        foreach (var fieldName in fields.Select(field => field.Name))
+        foreach (var fieldName in fieldNames)
         {
             if (_fieldSelections.ContainsKey(fieldName))
             {
