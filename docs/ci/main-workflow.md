@@ -19,7 +19,7 @@ protected branch keeps its post-merge validation history intact.
 | --- | --- |
 | Job key | `build-and-test` |
 | Job name | `Build and Test` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 
 **Steps:**
 
@@ -79,7 +79,7 @@ open by setting `build_required=true` so CI prefers extra work over a false skip
 
 > **Note:** The CI setup path works around a
 > [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391) where
-> `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-latest` in SDK 10.0.103+
+> `dotnet dev-certs https --trust` exits with code 4 on `ubuntu-24.04` in SDK 10.0.103+
 > builds. The setup action uses `|| true` to tolerate the non-zero exit and then sets
 > `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP
 > clients in the test run trust the per-user dev certificate.
@@ -90,7 +90,7 @@ open by setting `build_required=true` so CI prefers extra work over a false skip
 | --- | --- |
 | Job key | `sonarcloud` |
 | Job name | `SonarCloud` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 
 **Steps:**
 
@@ -108,7 +108,7 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 | --- | --- |
 | Job key | `lint` |
 | Job name | `Lint` |
-| Runner | `ubuntu-latest` |
+| Runner | `ubuntu-24.04` |
 
 **Steps:**
 

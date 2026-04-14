@@ -15,7 +15,7 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 
 ### Development Container
 
-Ubuntu-based container with the following tools installed via features:
+Ubuntu 24.04 LTS-based container with the following tools installed via features:
 
 - **.NET 10 SDK**: For building and running the application
 - **Node.js 24**: For npm scripts and development tools
