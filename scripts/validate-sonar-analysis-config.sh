@@ -62,7 +62,8 @@ main() {
     fi
 
     local joined_settings
-    joined_settings=$(IFS=', '; echo "${missing_settings[*]}")
+    printf -v joined_settings '%s, ' "${missing_settings[@]}"
+    joined_settings="${joined_settings%, }"
 
     local message="Missing required SonarCloud configuration: ${joined_settings}."
 
