@@ -22,7 +22,7 @@
 
     @if (_result is not null)
     {
-        var summary = ImportCustomersCsvProcessor.BuildImportSummary(_result, _conflictDecisions);
+        var summary = ImportCustomersCsvProcessor.BuildImportSummary(_result, _conflictStates);
         var successRows = _result.SuccessRows ?? [];
         var errorRows = _result.ErrorRows ?? [];
         var errorReportDataUri = ImportCustomersCsvProcessor.BuildErrorReportDataUri(errorRows);
@@ -320,7 +320,7 @@
                 <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Resolve Duplicates</h5>
             </div>
             <div class="card-body">
-                <p class="text-muted">The following @_conflicts.Count email(s) already exist in the database. Choose how to handle each conflict before completing the import.</p>
+                <p class="text-muted">The following @_conflictStates.Count email(s) already exist in the database. Choose how to handle each conflict before completing the import.</p>
                 <table class="table table-sm duplicate-resolution-table">
                     <thead>
                         <tr>
@@ -329,9 +329,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var conflictEmail in _conflicts.Select(conflict => conflict.Email))
+                        @foreach (var conflictState in _conflictStates)
                         {
-                            var decision = _conflictDecisions.GetValueOrDefault(conflictEmail);
+                            var conflictEmail = conflictState.Email;
+                            var decision = conflictState.Decision;
                             <tr>
                                 <td>@conflictEmail.ToLowerInvariant()</td>
                                 <td>
@@ -339,28 +340,27 @@
                                         <button type="button"
                                                 class="btn @(decision == "keep" ? "btn-success" : "btn-outline-secondary")"
                                                 data-action="keep"
-                                                @onclick="@(() => SetConflictDecision(conflictEmail, "keep"))">
+                                                @onclick="@(() => SetConflictDecision(conflictState, "keep"))">
                                             Keep existing
                                         </button>
                                         <button type="button"
                                                 class="btn @(decision == "overwrite" ? "btn-warning" : "btn-outline-secondary")"
                                                 data-action="overwrite"
-                                                @onclick="@(() => SetConflictDecision(conflictEmail, "overwrite"))">
+                                                @onclick="@(() => SetConflictDecision(conflictState, "overwrite"))">
                                             Overwrite
                                         </button>
                                         <button type="button"
                                                 class="btn @(decision == "mixed" ? "btn-info" : "btn-outline-secondary")"
                                                 data-action="mixed"
-                                                @onclick="@(() => SetConflictDecision(conflictEmail, "mixed"))">
+                                                @onclick="@(() => SetConflictDecision(conflictState, "mixed"))">
                                             Mixed merge
                                         </button>
                                     </div>
 
                                     @if (decision == "mixed")
                                     {
-                                        var sourceSelections = GetOrInitializeMixedSelections(conflictEmail);
-                                        var incomingValues = GetIncomingConflictValues(conflictEmail);
-                                        var existingValues = GetExistingConflictValues(conflictEmail);
+                                        conflictState.EnsureMixedSelections(_fieldMappings);
+                                        var sourceSelections = conflictState.FieldSelections;
 
                                         <div class="mt-3 border rounded p-2">
                                             <div class="small fw-semibold mb-2">Field-level merge (existing vs incoming)</div>
@@ -382,8 +382,8 @@
 
                                                         var fieldName = mapping.Field.Name;
                                                         var source = sourceSelections.GetValueOrDefault(fieldName, ImportConflictFieldSource.Existing);
-                                                        var existingValue = existingValues.GetValueOrDefault(fieldName, "");
-                                                        var incomingValue = incomingValues.GetValueOrDefault(fieldName, "");
+                                                        var existingValue = conflictState.GetExistingValue(fieldName);
+                                                        var incomingValue = conflictState.GetIncomingValue(fieldName);
 
                                                         <tr>
                                                             <td>@mapping.Field.DisplayName</td>
@@ -391,7 +391,7 @@
                                                                 <button type="button"
                                                                         class="btn btn-sm @(source == ImportConflictFieldSource.Existing ? "btn-success" : "btn-outline-secondary")"
                                                                         data-action="field-existing"
-                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ImportConflictFieldSource.Existing))">
+                                                                        @onclick="@(() => SetFieldSource(conflictState, fieldName, ImportConflictFieldSource.Existing))">
                                                                     Existing: @existingValue
                                                                 </button>
                                                             </td>
@@ -399,7 +399,7 @@
                                                                 <button type="button"
                                                                         class="btn btn-sm @(source == ImportConflictFieldSource.Incoming ? "btn-primary" : "btn-outline-secondary")"
                                                                         data-action="field-incoming"
-                                                                        @onclick="@(() => SetFieldSource(conflictEmail, fieldName, ImportConflictFieldSource.Incoming))">
+                                                                        @onclick="@(() => SetFieldSource(conflictState, fieldName, ImportConflictFieldSource.Incoming))">
                                                                     Incoming: @incomingValue
                                                                 </button>
                                                             </td>
@@ -419,7 +419,7 @@
                     <button class="btn btn-primary"
                             data-action="confirm-import"
                             @onclick="HandleCommitWithResolutions"
-                            disabled="@(_conflictDecisions.Count < _conflicts.Count || _uploading)">
+                            disabled="@(_conflictStates.Count == 0 || _conflictStates.Any(state => !state.IsResolved) || _uploading)">
                         @if (_uploading)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
@@ -486,11 +486,7 @@
     // Result
     private string? _error;
     private ImportResultDto? _result;
-    private IReadOnlyList<ImportConflictDto> _conflicts = [];
-    private Dictionary<string, string> _conflictDecisions = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, string>> _incomingConflictValuesByEmail = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, string>> _existingConflictValuesByEmail = new(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Dictionary<string, ImportConflictFieldSource>> _mixedFieldSelectionsByEmail = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<ImportCustomerConflictState> _conflictStates = [];
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -579,7 +575,6 @@
             var result = await CustomersApi.ImportCustomers(fileBytes, _pendingFileName, CancellationToken.None);
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
-                _conflicts = conflicts;
                 await InitializeConflictResolutionData(conflicts, fileBytes);
                 _step = PageStep.DuplicateResolution;
             }
@@ -610,18 +605,20 @@
                 _fieldMappings,
                 _userMappings);
 
-            var hasMixedDecision = _conflictDecisions.Values.Any(v => v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
+            var hasMixedDecision = _conflictStates.Any(state => state.HasMixedDecision);
             if (hasMixedDecision)
             {
                 fileBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
                     fileBytes,
-                    _conflictDecisions,
-                    _mixedFieldSelectionsByEmail,
-                    _existingConflictValuesByEmail);
+                    _conflictStates);
             }
 
+            var conflictDecisions = _conflictStates.ToDictionary(
+                state => state.Email,
+                state => state.Decision ?? string.Empty,
+                StringComparer.OrdinalIgnoreCase);
             _result = await CustomersApi.CommitImportWithResolutions(
-                fileBytes, _pendingFileName, _conflictDecisions, CancellationToken.None);
+                fileBytes, _pendingFileName, conflictDecisions, CancellationToken.None);
         }
         catch (Exception)
         {
@@ -638,11 +635,7 @@
         _result = null;
         _error = null;
         _validationError = null;
-        _conflicts = [];
-        _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        _incomingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _existingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
+        _conflictStates = [];
         _pendingFileName = "";
         _pendingFileBytes = [];
         _csvHeaders = [];
@@ -658,11 +651,7 @@
         _result = null;
         _error = null;
         _validationError = null;
-        _conflicts = [];
-        _conflictDecisions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        _incomingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _existingConflictValuesByEmail = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
+        _conflictStates = [];
         _uploading = false;
 
         _step = _pendingFileBytes.Length > 0
@@ -670,51 +659,27 @@
             : PageStep.FileSelection;
     }
 
-    private void SetConflictDecision(string email, string decision)
+    private void SetConflictDecision(ImportCustomerConflictState conflictState, string decision)
     {
-        _conflictDecisions[email] = decision;
-        if (decision.Equals("mixed", StringComparison.OrdinalIgnoreCase))
-        {
-            _ = GetOrInitializeMixedSelections(email);
-        }
+        conflictState.SetDecision(decision, _fieldMappings);
     }
 
-    private Dictionary<string, ImportConflictFieldSource> GetOrInitializeMixedSelections(string email)
+    private static void SetFieldSource(ImportCustomerConflictState conflictState, string fieldName, ImportConflictFieldSource source)
     {
-        if (_mixedFieldSelectionsByEmail.TryGetValue(email, out var existing))
-        {
-            return existing;
-        }
-
-        var selections = new Dictionary<string, ImportConflictFieldSource>(StringComparer.OrdinalIgnoreCase);
-        foreach (var mapping in _fieldMappings)
-        {
-            var fieldName = mapping.Field.Name;
-            var hasExisting = GetExistingConflictValues(email).ContainsKey(fieldName);
-            selections[fieldName] = hasExisting ? ImportConflictFieldSource.Existing : ImportConflictFieldSource.Incoming;
-        }
-
-        _mixedFieldSelectionsByEmail[email] = selections;
-        return selections;
+        conflictState.SetFieldSource(fieldName, source);
     }
-
-    private void SetFieldSource(string email, string fieldName, ImportConflictFieldSource source)
-    {
-        var selections = GetOrInitializeMixedSelections(email);
-        selections[fieldName] = source;
-    }
-
-    private Dictionary<string, string> GetIncomingConflictValues(string email) =>
-        _incomingConflictValuesByEmail.GetValueOrDefault(email) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-    private Dictionary<string, string> GetExistingConflictValues(string email) =>
-        _existingConflictValuesByEmail.GetValueOrDefault(email) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     private async Task InitializeConflictResolutionData(IReadOnlyList<ImportConflictDto> conflicts, byte[] mappedFileBytes)
     {
-        _incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
-        _existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(conflicts);
-        _mixedFieldSelectionsByEmail = new Dictionary<string, Dictionary<string, ImportConflictFieldSource>>(StringComparer.OrdinalIgnoreCase);
+        var incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
+        var existingConflictValuesByEmail = await LoadExistingConflictValuesByEmail(conflicts);
+        _conflictStates = conflicts
+            .Select(conflict => new ImportCustomerConflictState(
+                conflict.Email,
+                incomingConflictValuesByEmail.GetValueOrDefault(conflict.Email),
+                existingConflictValuesByEmail.GetValueOrDefault(conflict.Email)))
+            .ToList()
+            .AsReadOnly();
     }
 
     private async Task<Dictionary<string, Dictionary<string, string>>> LoadExistingConflictValuesByEmail(IReadOnlyList<ImportConflictDto> conflicts)

@@ -96,9 +96,7 @@ internal static class ImportCustomersCsvProcessor
 
     internal static byte[] ApplyMixedFieldSelections(
         byte[] mappedFileBytes,
-        IReadOnlyDictionary<string, string> conflictDecisions,
-        IReadOnlyDictionary<string, Dictionary<string, ImportConflictFieldSource>> mixedFieldSelectionsByEmail,
-        IReadOnlyDictionary<string, Dictionary<string, string>> existingConflictValuesByEmail)
+        IReadOnlyList<ImportCustomerConflictState> conflictStates)
     {
         var text = Encoding.UTF8.GetString(mappedFileBytes);
         var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
@@ -121,7 +119,7 @@ internal static class ImportCustomersCsvProcessor
         foreach (var line in lines.Skip(1))
         {
             var values = line.Split(',').Select(v => v.Trim().Trim('"')).ToArray();
-            if (!TryGetMixedConflictRow(values, emailIndex, conflictDecisions, mixedFieldSelectionsByEmail, existingConflictValuesByEmail, out var conflictRow))
+            if (!TryGetMixedConflictRow(values, emailIndex, conflictStates, out var conflictRow))
             {
                 outputLines.Add(line);
                 continue;
@@ -136,18 +134,18 @@ internal static class ImportCustomersCsvProcessor
 
     internal static ImportCustomersSummaryCounts BuildImportSummary(
         ImportResultDto? result,
-        IReadOnlyDictionary<string, string> conflictDecisions)
+        IReadOnlyList<ImportCustomerConflictState> conflictStates)
     {
         if (result is null)
         {
             return new ImportCustomersSummaryCounts(0, 0, 0, 0);
         }
 
-        var skippedCount = conflictDecisions.Values.Count(v =>
-            v.Equals("keep", StringComparison.OrdinalIgnoreCase));
-        var updatedCount = conflictDecisions.Values.Count(v =>
-            v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
-            || v.Equals("mixed", StringComparison.OrdinalIgnoreCase));
+        var skippedCount = conflictStates.Count(state =>
+            string.Equals(state.Decision, "keep", StringComparison.OrdinalIgnoreCase));
+        var updatedCount = conflictStates.Count(state =>
+            string.Equals(state.Decision, "overwrite", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(state.Decision, "mixed", StringComparison.OrdinalIgnoreCase));
         var createdCount = Math.Max(0, result.SuccessCount - updatedCount);
 
         return new ImportCustomersSummaryCounts(
@@ -219,9 +217,7 @@ internal static class ImportCustomersCsvProcessor
     private static bool TryGetMixedConflictRow(
         string[] values,
         int emailIndex,
-        IReadOnlyDictionary<string, string> conflictDecisions,
-        IReadOnlyDictionary<string, Dictionary<string, ImportConflictFieldSource>> mixedFieldSelectionsByEmail,
-        IReadOnlyDictionary<string, Dictionary<string, string>> existingConflictValuesByEmail,
+        IReadOnlyList<ImportCustomerConflictState> conflictStates,
         out MixedConflictRow conflictRow)
     {
         conflictRow = null!;
@@ -232,19 +228,19 @@ internal static class ImportCustomersCsvProcessor
         }
 
         var email = values[emailIndex];
-        if (!conflictDecisions.TryGetValue(email, out var decision)
-            || !decision.Equals("mixed", StringComparison.OrdinalIgnoreCase))
+        var state = conflictStates.FirstOrDefault(candidate =>
+            candidate.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        if (state is null || !state.HasMixedDecision)
         {
             return false;
         }
 
-        if (!mixedFieldSelectionsByEmail.TryGetValue(email, out var fieldSelections)
-            || !existingConflictValuesByEmail.TryGetValue(email, out var existingValues))
+        if (state.FieldSelections.Count == 0)
         {
             return false;
         }
 
-        conflictRow = new MixedConflictRow(values, fieldSelections, existingValues);
+        conflictRow = new MixedConflictRow(values, state.FieldSelections, state.ExistingValues);
         return true;
     }
 
