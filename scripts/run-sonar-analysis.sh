@@ -44,6 +44,8 @@ dotnet tool run dotnet-sonarscanner begin \
 cleanup() {
     local exit_code="$1"
 
+    trap - EXIT
+
     if [[ ${exit_code} -eq 0 ]]; then
         dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
         exit_code="$?"
@@ -52,7 +54,7 @@ cleanup() {
     return "${exit_code}"
 }
 
-trap 'exit_code=$?; cleanup "${exit_code}"; trap - EXIT; exit "${exit_code}"' EXIT
+trap 'cleanup "$?"; exit $?' EXIT
 
 dotnet build ViajantesTurismo.slnx --no-restore
 
