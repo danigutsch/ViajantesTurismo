@@ -27,9 +27,10 @@ protected branch keeps its post-merge validation history intact.
 2. If only documentation changed, run a lightweight success step so the required
    `Build and Test` check resolves cleanly without starting the expensive validation
    path.
-3. Validate that the required SonarCloud secret and repository variables exist before
-   the expensive validation path starts.
-4. Checkout repository (`actions/checkout`) when build/test work is required.
+3. Checkout repository (`actions/checkout`) when build/test work is required.
+4. Validate that the required SonarCloud secret and repository variables exist after
+  checkout and before the expensive validation path starts, because the validation
+  uses repository-local scripts.
 5. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
   `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when build/test work
   is required.
@@ -58,8 +59,9 @@ should report the actual build/test/Sonar failure instead of adding secondary
 artifact-missing noise. The focused diagnostics artifact remains strict because it is
 part of the failure-investigation path.
 
-The SonarCloud configuration preflight intentionally runs before restore, tool setup, and
-analysis so missing repository settings fail in a dedicated step with an actionable
+The SonarCloud configuration preflight intentionally runs after checkout but before
+restore, tool setup, and analysis because it relies on a repository-local script.
+This lets missing repository settings fail in a dedicated step with an actionable
 annotation instead of surfacing later as an opaque shell exit.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
