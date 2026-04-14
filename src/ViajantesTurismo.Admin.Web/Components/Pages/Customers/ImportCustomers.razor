@@ -494,37 +494,13 @@
         _validationError = null;
 
         var file = e.File;
-
-        if (!file.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        if (!ValidateSelectedFile(file))
         {
-            _validationError = "Only CSV files are supported (.csv).";
             return;
         }
 
-        if (file.Size > MaxFileSizeBytes)
-        {
-            _validationError = $"File is too large ({file.Size / 1024 / 1024} MB). Maximum allowed size is 5 MB.";
-            return;
-        }
-
-        using var ms = new MemoryStream();
-        await using var stream = file.OpenReadStream(MaxFileSizeBytes);
-        await stream.CopyToAsync(ms);
-        _pendingFileBytes = ms.ToArray();
-        _pendingFileName = file.Name;
-
-        var text = Encoding.UTF8.GetString(_pendingFileBytes, 0, Math.Min(4096, _pendingFileBytes.Length));
-        var firstLine = text
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .FirstOrDefault() ?? "";
-        _csvHeaders = firstLine.Split(',')
-            .Select(h => h.Trim().Trim('"'))
-            .ToList()
-            .AsReadOnly();
-
-        _fieldMappings = CustomerImportHeaderMatcher.AutoMatch(_csvHeaders);
-        _userMappings = new Dictionary<string, string?>();
-        _step = PageStep.HeaderMapping;
+        var fileBytes = await ReadFileBytes(file);
+        SetPendingFile(file.Name, fileBytes);
     }
 
     private void OnFieldMapped(string fieldName, string? csvHeader) =>
@@ -563,15 +539,11 @@
             return;
         }
 
-        _uploading = true;
-        _validationError = null;
+        BeginUpload();
 
         try
         {
-            var fileBytes = CustomerImportHeaderMatcher.ApplyMapping(
-                _pendingFileBytes,
-                _fieldMappings,
-                _userMappings);
+            var fileBytes = ApplyCurrentMapping();
             var result = await CustomersApi.ImportCustomers(fileBytes, _pendingFileName, CancellationToken.None);
             if (result.Conflicts is { Count: > 0 } conflicts)
             {
@@ -589,21 +561,17 @@
         }
         finally
         {
-            _uploading = false;
+            EndUpload();
         }
     }
 
     private async Task HandleCommitWithResolutions()
     {
-        _uploading = true;
-        _validationError = null;
+        BeginUpload();
 
         try
         {
-            var fileBytes = CustomerImportHeaderMatcher.ApplyMapping(
-                _pendingFileBytes,
-                _fieldMappings,
-                _userMappings);
+            var fileBytes = ApplyCurrentMapping();
 
             var hasMixedDecision = _conflictStates.Any(state => state.HasMixedDecision);
             if (hasMixedDecision)
@@ -613,10 +581,7 @@
                     _conflictStates);
             }
 
-            var conflictDecisions = _conflictStates.ToDictionary(
-                state => state.Email,
-                state => state.Decision ?? string.Empty,
-                StringComparer.OrdinalIgnoreCase);
+            var conflictDecisions = BuildConflictDecisions();
             _result = await CustomersApi.CommitImportWithResolutions(
                 fileBytes, _pendingFileName, conflictDecisions, CancellationToken.None);
         }
@@ -626,37 +591,114 @@
         }
         finally
         {
-            _uploading = false;
+            EndUpload();
         }
     }
 
     private void Reset()
     {
-        _result = null;
-        _error = null;
-        _validationError = null;
-        _conflictStates = [];
-        _pendingFileName = "";
-        _pendingFileBytes = [];
-        _csvHeaders = [];
-        _fieldMappings = [];
-        _userMappings = new Dictionary<string, string?>();
-        _previewRows = [];
-        _uploading = false;
+        ClearTransientState();
+        ClearPendingFile();
         _step = PageStep.FileSelection;
     }
 
     private void RetryWithCurrentFile()
     {
-        _result = null;
-        _error = null;
-        _validationError = null;
-        _conflictStates = [];
-        _uploading = false;
+        ClearTransientState();
 
         _step = _pendingFileBytes.Length > 0
             ? PageStep.HeaderMapping
             : PageStep.FileSelection;
+    }
+
+    private bool ValidateSelectedFile(IBrowserFile file)
+    {
+        if (!file.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            _validationError = "Only CSV files are supported (.csv).";
+            return false;
+        }
+
+        if (file.Size > MaxFileSizeBytes)
+        {
+            _validationError = $"File is too large ({file.Size / 1024 / 1024} MB). Maximum allowed size is 5 MB.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static async Task<byte[]> ReadFileBytes(IBrowserFile file)
+    {
+        using var ms = new MemoryStream();
+        await using var stream = file.OpenReadStream(MaxFileSizeBytes);
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+    }
+
+    private void SetPendingFile(string fileName, byte[] fileBytes)
+    {
+        _pendingFileName = fileName;
+        _pendingFileBytes = fileBytes;
+        _csvHeaders = ParseCsvHeaders(fileBytes);
+        _fieldMappings = CustomerImportHeaderMatcher.AutoMatch(_csvHeaders);
+        _userMappings = new Dictionary<string, string?>();
+        _step = PageStep.HeaderMapping;
+    }
+
+    private static IReadOnlyList<string> ParseCsvHeaders(byte[] fileBytes)
+    {
+        var text = Encoding.UTF8.GetString(fileBytes, 0, Math.Min(4096, fileBytes.Length));
+        var firstLine = text
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault() ?? string.Empty;
+
+        return firstLine.Split(',')
+            .Select(header => header.Trim().Trim('"'))
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private byte[] ApplyCurrentMapping() =>
+        CustomerImportHeaderMatcher.ApplyMapping(
+            _pendingFileBytes,
+            _fieldMappings,
+            _userMappings);
+
+    private Dictionary<string, string> BuildConflictDecisions() =>
+        _conflictStates.ToDictionary(
+            state => state.Email,
+            state => state.Decision ?? string.Empty,
+            StringComparer.OrdinalIgnoreCase);
+
+    private void BeginUpload()
+    {
+        _uploading = true;
+        _validationError = null;
+    }
+
+    private void EndUpload()
+    {
+        _uploading = false;
+    }
+
+    private void ClearTransientState()
+    {
+        _result = null;
+        _error = null;
+        _validationError = null;
+        _conflictStates = [];
+        _previewRows = [];
+        _uploading = false;
+    }
+
+    private void ClearPendingFile()
+    {
+        _pendingFileName = string.Empty;
+        _pendingFileBytes = [];
+        _csvHeaders = [];
+        _fieldMappings = [];
+        _userMappings = new Dictionary<string, string?>();
     }
 
     private void SetConflictDecision(ImportCustomerConflictState conflictState, string decision)
