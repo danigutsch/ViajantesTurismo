@@ -138,4 +138,21 @@ public class IndexPageTests : BunitContext
         Assert.Contains("Pending: 2", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Confirmed: 3", cut.Markup, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Displays_Completed_And_Cancelled_Bookings_Counts()
+    {
+        // Arrange
+        _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Completed));
+        _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Completed));
+        _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Cancelled));
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.FindAll(".card-header").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        Assert.Contains("Completed: 2", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Cancelled: 1", cut.Markup, StringComparison.Ordinal);
+    }
 }
