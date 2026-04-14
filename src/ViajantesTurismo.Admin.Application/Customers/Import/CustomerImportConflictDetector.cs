@@ -10,8 +10,6 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// </summary>
 public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
 {
-    private const string EmailFieldName = "Email";
-
     /// <summary>
     /// Finds import conflicts caused by duplicate rows or existing customers.
     /// </summary>
@@ -50,7 +48,7 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
             }
 
             var row = document.Rows[rowIndex];
-            if (!row.TryGetByHeader(document.Headers, EmailFieldName, out var email) || string.IsNullOrWhiteSpace(email))
+            if (!row.TryGetByHeader(document.Headers, ImportHeaders.Email, out var email) || string.IsNullOrWhiteSpace(email))
             {
                 continue;
             }
@@ -77,7 +75,7 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
 
         foreach (var (row, lineNumber) in document.Rows.Select((row, index) => (row, index + 2)))
         {
-            if (!row.TryGetByHeader(document.Headers, EmailFieldName, out var email) || string.IsNullOrWhiteSpace(email))
+            if (!row.TryGetByHeader(document.Headers, ImportHeaders.Email, out var email) || string.IsNullOrWhiteSpace(email))
             {
                 continue;
             }
