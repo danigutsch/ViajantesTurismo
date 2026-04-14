@@ -76,7 +76,8 @@ main() {
     } >> "${summary_target}"
 
     if [[ "${validation_outcome}" != "success" ]]; then
-        echo "::error title=Build and Test failed::Build, test, coverage, or SonarCloud validation failed. See the job summary and sonar-analysis-log artifact." >&2
+        echo "::error title=Build and Test failed::Build, test, coverage, or SonarCloud validation failed. See the job summary and sonar-analysis-log artifact."
+        echo "Build, test, coverage, or SonarCloud validation failed. See the job summary and sonar-analysis-log artifact." >&2
     fi
 }
 

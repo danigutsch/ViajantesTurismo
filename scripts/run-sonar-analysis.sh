@@ -2,25 +2,12 @@
 
 set -euo pipefail
 
+bash scripts/validate-sonar-analysis-config.sh
+
 sonar_token="${SONAR_TOKEN:-}"
 sonar_organization="${SONAR_ORGANIZATION:-}"
 sonar_project_key="${SONAR_PROJECT_KEY:-}"
 sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
-
-if [[ -z "${sonar_token}" ]]; then
-    echo "Missing required environment variable: SONAR_TOKEN" >&2
-    exit 1
-fi
-
-if [[ -z "${sonar_organization}" ]]; then
-    echo "Missing required environment variable: SONAR_ORGANIZATION" >&2
-    exit 1
-fi
-
-if [[ -z "${sonar_project_key}" ]]; then
-    echo "Missing required environment variable: SONAR_PROJECT_KEY" >&2
-    exit 1
-fi
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     echo "::add-mask::${sonar_token}"

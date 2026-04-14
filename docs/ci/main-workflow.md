@@ -27,34 +27,40 @@ protected branch keeps its post-merge validation history intact.
 2. If only documentation changed, run a lightweight success step so the required
    `Build and Test` check resolves cleanly without starting the expensive validation
    path.
-3. Checkout repository (`actions/checkout`) when build/test work is required.
-4. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
+3. Validate that the required SonarCloud secret and repository variables exist before
+   the expensive validation path starts.
+4. Checkout repository (`actions/checkout`) when build/test work is required.
+5. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
   `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when build/test work
   is required.
-5. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required.
-6. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
+6. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required.
+7. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
   required.
-7. Run `dotnet tool restore` when build/test work is required.
-8. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
-9. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
+8. Run `dotnet tool restore` when build/test work is required.
+9. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
+10. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
    wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
   `coverage conversion` / `end` flow and produces both HTML coverage output and the
   SonarQube XML coverage input.
-10. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
+11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
   quality gate status, SonarCloud link, and any parse warnings appear on the workflow
   run summary page without opening the full log.
-11. When validation work fails, create a focused diagnostic summary under
+12. When validation work fails, create a focused diagnostic summary under
     `TestResults/ci-diagnostics/`.
-12. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
+13. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
   artifact, and the raw Sonar analysis log artifact (`actions/upload-artifact`, runs on
   `always()` after the validation step executes) when validation ran.
-13. Upload the focused `build-test-diagnostics` artifact when the job fails.
+14. Upload the focused `build-test-diagnostics` artifact when the job fails.
 
 The `test-results`, `coverage-report`, `sonar-coverage`, and `sonar-analysis-log`
 uploads are intentionally best-effort. If validation fails before those files exist, CI
 should report the actual build/test/Sonar failure instead of adding secondary
 artifact-missing noise. The focused diagnostics artifact remains strict because it is
 part of the failure-investigation path.
+
+The SonarCloud configuration preflight intentionally runs before restore, tool setup, and
+analysis so missing repository settings fail in a dedicated step with an actionable
+annotation instead of surfacing later as an opaque shell exit.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
