@@ -184,12 +184,9 @@ public class RowToCustomerMapperTests
         var row = CsvRow.Parse(string.Join(",", effectiveHeaders.Select(header => values[header])));
         var documentResult = CsvDocument.Create([.. effectiveHeaders], [row]);
 
-        if (documentResult.IsFailure)
-        {
-            throw new InvalidOperationException(documentResult.ErrorDetails?.Detail ?? "Failed to create CSV document for test.");
-        }
-
-        return (documentResult.Value, row);
+        return documentResult.IsFailure
+            ? throw new InvalidOperationException(documentResult.ErrorDetails?.Detail ?? "Failed to create CSV document for test.")
+            : (documentResult.Value, row);
     }
 
     private static Dictionary<string, string> BuildRowValues(IReadOnlyDictionary<string, string>? overrides)
