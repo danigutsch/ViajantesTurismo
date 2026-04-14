@@ -37,7 +37,7 @@ public sealed class CsvDocument : IImportDocument
 
         if (lines.Length == 0 || string.IsNullOrWhiteSpace(lines[0]))
         {
-            return CsvErrors.HeadersMustContainAtLeastOneColumn();
+            return CsvErrors.HeadersMustContainAtLeastOneColumn().ConvertError<CsvDocument>();
         }
 
         var headerRow = CsvRow.Parse(lines[0]);
@@ -54,7 +54,7 @@ public sealed class CsvDocument : IImportDocument
 
         if (missingRequiredHeader is not null)
         {
-            return CsvErrors.RequiredHeaderMissing(missingRequiredHeader);
+            return CsvErrors.RequiredHeaderMissing(missingRequiredHeader).ConvertError<CsvDocument>();
         }
 
         var rows = lines
@@ -80,7 +80,7 @@ public sealed class CsvDocument : IImportDocument
 
         if (headers.Count == 0)
         {
-            return CsvErrors.HeadersMustContainAtLeastOneColumn();
+            return CsvErrors.HeadersMustContainAtLeastOneColumn().ConvertError<CsvDocument>();
         }
 
         var firstRowWithInvalidColumnCount = rows
@@ -93,17 +93,17 @@ public sealed class CsvDocument : IImportDocument
             if (firstRowWithInvalidColumnCount is not null)
             {
                 var csvLineNumber = firstRowWithInvalidColumnCount.index + 2;
-                return CsvErrors.RowsHaveInconsistentColumnCounts(csvLineNumber);
+                return CsvErrors.RowsHaveInconsistentColumnCounts(csvLineNumber).ConvertError<CsvDocument>();
             }
 
-            return CsvErrors.RowsHaveInconsistentColumnCounts();
+            return CsvErrors.RowsHaveInconsistentColumnCounts().ConvertError<CsvDocument>();
         }
 
         var headerCountDiffersFromRows = firstRowWithInvalidColumnCount is not null;
         if (headerCountDiffersFromRows)
         {
             var csvLineNumber = firstRowWithInvalidColumnCount!.index + 2;
-            return CsvErrors.HeaderCountMustMatchRowColumnCount(csvLineNumber);
+            return CsvErrors.HeaderCountMustMatchRowColumnCount(csvLineNumber).ConvertError<CsvDocument>();
         }
 
         return new CsvDocument(headers, rows);
