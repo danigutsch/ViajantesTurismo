@@ -21,51 +21,50 @@ main() {
             echo "- Sonar analysis log: not generated"
             echo
             echo "No Sonar analysis log was found at \`${sonar_log_file}\`."
-            return 0
-        fi
-
-        local quality_gate_line
-        quality_gate_line=$(grep -F 'QUALITY GATE STATUS:' "${sonar_log_file}" | tail -n 1 || true)
-
-        local details_url
-        details_url=$(grep -oE 'https://sonarcloud\.io/[^[:space:]]+' "${sonar_log_file}" | tail -n 1 || true)
-
-        local warning_count
-        warning_count=$(grep -Ec 'WARN:|WARNING:' "${sonar_log_file}" || true)
-
-        if [[ -n "${quality_gate_line}" ]]; then
-            echo "- ${quality_gate_line#*QUALITY GATE STATUS: }"
         else
-            echo "- Quality gate status: not found in Sonar log"
-        fi
+            local quality_gate_line
+            quality_gate_line=$(grep -F 'QUALITY GATE STATUS:' "${sonar_log_file}" | tail -n 1 || true)
 
-        if [[ -n "${details_url}" ]]; then
-            echo "- SonarCloud details: ${details_url}"
-        fi
+            local details_url
+            details_url=$(grep -oE 'https://sonarcloud\.io/[^[:space:]]+' "${sonar_log_file}" | tail -n 1 || true)
 
-        echo "- Sonar warnings in log: ${warning_count}"
-        echo "- Uploaded artifacts: \`test-results\`, \`coverage-report\`, \`sonar-coverage\`, \`sonar-analysis-log\`"
-        echo
+            local warning_count
+            warning_count=$(grep -Ec 'WARN:|WARNING:' "${sonar_log_file}" || true)
 
-        local -a parse_warnings=()
-        mapfile -t parse_warnings < <(grep -E 'WARN: Cannot parse ' "${sonar_log_file}" || true)
+            if [[ -n "${quality_gate_line}" ]]; then
+                echo "- ${quality_gate_line#*QUALITY GATE STATUS: }"
+            else
+                echo "- Quality gate status: not found in Sonar log"
+            fi
 
-        if [[ ${#parse_warnings[@]} -gt 0 ]]; then
-            echo "### Parse warnings"
+            if [[ -n "${details_url}" ]]; then
+                echo "- SonarCloud details: ${details_url}"
+            fi
+
+            echo "- Sonar warnings in log: ${warning_count}"
+            echo "- Uploaded artifacts: \`test-results\`, \`coverage-report\`, \`sonar-coverage\`, \`sonar-analysis-log\`"
             echo
-            echo "The following files could not be parsed by Sonar during hosted analysis:"
-            echo
 
-            local warning_line
-            for warning_line in "${parse_warnings[@]}"; do
-                local cleaned_warning
-                cleaned_warning="${warning_line#*WARN: Cannot parse }"
-                cleaned_warning="${cleaned_warning#\'}"
-                cleaned_warning="${cleaned_warning%\'}"
-                printf -- "%s\n" "- \`${cleaned_warning}\`"
-            done
+            local -a parse_warnings=()
+            mapfile -t parse_warnings < <(grep -E 'WARN: Cannot parse ' "${sonar_log_file}" || true)
 
-            echo
+            if [[ ${#parse_warnings[@]} -gt 0 ]]; then
+                echo "### Parse warnings"
+                echo
+                echo "The following files could not be parsed by Sonar during hosted analysis:"
+                echo
+
+                local warning_line
+                for warning_line in "${parse_warnings[@]}"; do
+                    local cleaned_warning
+                    cleaned_warning="${warning_line#*WARN: Cannot parse }"
+                    cleaned_warning="${cleaned_warning#\'}"
+                    cleaned_warning="${cleaned_warning%\'}"
+                    printf -- "%s\n" "- \`${cleaned_warning}\`"
+                done
+
+                echo
+            fi
         fi
 
         if [[ "${validation_outcome}" != "success" ]]; then
@@ -75,16 +74,6 @@ main() {
             echo "If the quality gate failed, the SonarCloud details link above is the fastest route to the reported issues."
         fi
     } >> "${summary_target}"
-
-    if [[ -f "${sonar_log_file}" ]]; then
-        while IFS= read -r parse_warning; do
-            local warning_payload
-            warning_payload="${parse_warning#*WARN: Cannot parse }"
-            warning_payload="${warning_payload#\'}"
-            warning_payload="${warning_payload%\'}"
-            echo "::warning title=SonarCloud parse warning::${warning_payload}"
-        done < <(grep -E 'WARN: Cannot parse ' "${sonar_log_file}" || true)
-    fi
 
     if [[ "${validation_outcome}" != "success" ]]; then
         echo "::error title=Build and Test failed::Build, test, coverage, or SonarCloud validation failed. See the job summary and sonar-analysis-log artifact."
