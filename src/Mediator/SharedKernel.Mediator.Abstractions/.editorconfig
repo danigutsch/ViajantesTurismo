@@ -1,0 +1,21 @@
+# SharedKernel.Mediator uses compile-time marker interfaces by design.
+
+[IRequest.cs]
+dotnet_diagnostic.CA1040.severity = none
+dotnet_diagnostic.S2326.severity = none
+
+[ICommand.cs]
+dotnet_diagnostic.CA1040.severity = none
+
+[ICommandOfResponse.cs]
+dotnet_diagnostic.CA1040.severity = none
+
+[IQuery.cs]
+dotnet_diagnostic.CA1040.severity = none
+
+[INotification.cs]
+dotnet_diagnostic.CA1040.severity = none
+
+[IStreamRequest.cs]
+dotnet_diagnostic.CA1040.severity = none
+dotnet_diagnostic.S2326.severity = none
