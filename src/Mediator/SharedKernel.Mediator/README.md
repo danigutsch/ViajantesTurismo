@@ -10,12 +10,13 @@ source generation owns the main dispatch path.
 
 ## Current State
 
-The project currently references `SharedKernel.Mediator.Abstractions` and acts as the runtime
-package placeholder while the stack is being built from scratch.
+The project now contains the `AppMediator` runtime shell used by generated DI registration.
+Generated dispatch and notification publication are still implemented in later slices.
 
 ## Dependencies
 
 - [SharedKernel.Mediator.Abstractions](../SharedKernel.Mediator.Abstractions/README.md)
+- `Microsoft.Extensions.DependencyInjection.Abstractions`
 
 ## See Also
 
