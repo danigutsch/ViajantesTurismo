@@ -23,7 +23,7 @@ namespace ViajantesTurismo.Common.BuildingBlocks;
 /// <strong>Examples:</strong> Address, Money, DateRange, ContactInfo, PhysicalInfo
 /// </para>
 /// </remarks>
-[SuppressMessage(SuppressConstants.CategoryDesign, SuppressConstants.CheckIdS4035,
+[SuppressMessage("Design", "S4035:Classes implementing IEquatable<T> should be sealed",
     Justification = "Abstract ValueObject uses Template Method pattern via GetEqualityComponents(); derived classes control equality by overriding that method, not Equals itself.")]
 public abstract class ValueObject : IEquatable<ValueObject>
 {

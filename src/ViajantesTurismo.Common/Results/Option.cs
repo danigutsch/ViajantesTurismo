@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Common.Results;
 /// Used to avoid nullable generic Result types while maintaining type safety.
 /// </summary>
 /// <typeparam name="T">The type of the optional value.</typeparam>
-[SuppressMessage(SuppressConstants.CategoryDesign, SuppressConstants.CheckIdCA1000,
+[SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
     Justification = "Option<T> exposes static factory methods for discoverability and fluent usage; external factory would reduce ergonomics and clarity.")]
 public readonly struct Option<T> : IEquatable<Option<T>> where T : class
 {
