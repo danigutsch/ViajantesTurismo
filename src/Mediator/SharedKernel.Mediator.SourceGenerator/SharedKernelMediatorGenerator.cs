@@ -21,6 +21,10 @@ public sealed class SharedKernelMediatorGenerator : IIncrementalGenerator
                 productionContext.AddSource(
                     "SharedKernel.Mediator.Generated.DiscoveryReport.g.cs",
                     DiscoveryReportEmitter.Emit(discoveryModel));
+
+                productionContext.AddSource(
+                    "SharedKernel.Mediator.Generated.DependencyInjection.g.cs",
+                    DependencyInjectionEmitter.Emit(discoveryModel));
             });
     }
 }

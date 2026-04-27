@@ -9,9 +9,10 @@ for the mediator toolchain.
 
 ## Current Scope
 
-- Builds the initial discovery model from `IRequest<TResponse>`, `IRequestHandler<,>`, and
-  `IPipelineBehavior<,>`
-- Emits the first generated discovery report
+- Builds the discovery model from request, handler, pipeline, notification, stream, and module
+  contracts
+- Emits the readable discovery report
+- Emits generated DI registration for handlers, pipelines, notifications, and stream handlers
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
 ## Dependencies
