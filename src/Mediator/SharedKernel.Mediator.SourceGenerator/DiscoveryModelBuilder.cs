@@ -16,6 +16,14 @@ internal static class DiscoveryModelBuilder
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor DuplicateGeneratedRegistrationDescriptor = new(
+        id: "SKMED012",
+        title: "Generated mediator registration is duplicated",
+        messageFormat: "Generated mediator registration '{0}' implemented by '{1}' is duplicated",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public static DiscoveryModel Build(Compilation compilation, CancellationToken cancellationToken)
     {
         var discoverySymbols = DiscoverySymbols.Create(compilation);
@@ -378,6 +386,20 @@ internal static class DiscoveryModelBuilder
             isAccessibleToGeneratedMediator,
             handlerKind.Value);
 
+        if (isAccessibleToGeneratedMediator)
+        {
+            ReportDuplicateGeneratedRegistration(
+                type,
+                GetSelfRegistrationServiceType(descriptor.MetadataName),
+                descriptor.MetadataName,
+                discoveryState);
+            ReportDuplicateGeneratedRegistration(
+                type,
+                GetHandlerServiceType(descriptor),
+                descriptor.MetadataName,
+                discoveryState);
+        }
+
         return ($"{descriptor.RequestMetadataName}|{descriptor.ResponseMetadataName}", priority, descriptor);
     }
 
@@ -395,10 +417,14 @@ internal static class DiscoveryModelBuilder
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
         ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
 
-        foreach (var candidate in type.AllInterfaces.Where(
-                     candidate => SymbolEqualityComparer.Default.Equals(
-                         candidate.OriginalDefinition,
-                         discoverySymbols.PipelineInterface)))
+        var pipelineTypeArguments = type.AllInterfaces
+            .Where(
+                candidate => SymbolEqualityComparer.Default.Equals(
+                    candidate.OriginalDefinition,
+                    discoverySymbols.PipelineInterface))
+            .Select(static candidate => candidate.TypeArguments);
+
+        foreach (var typeArguments in pipelineTypeArguments)
         {
             var pipelineOrder = type.GetAttributes().SingleOrDefault(
                 attribute => SymbolEqualityComparer.Default.Equals(
@@ -414,11 +440,26 @@ internal static class DiscoveryModelBuilder
             yield return new PipelineDescriptor(
                 GetMetadataName(type),
                 type.TypeParameters.Length > 0 ? GetMetadataName(type.OriginalDefinition) : null,
-                GetTypeDisplayString(candidate.TypeArguments[0]),
+                GetTypeDisplayString(typeArguments[0]),
                 stage,
                 order,
                 type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed,
                 isAccessibleToGeneratedMediator);
+
+            if (isAccessibleToGeneratedMediator)
+            {
+                var implementationType = GetMetadataName(type);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    GetSelfRegistrationServiceType(implementationType),
+                    implementationType,
+                    discoveryState);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    $"global::SharedKernel.Mediator.IPipelineBehavior<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
+                    implementationType,
+                    discoveryState);
+            }
         }
     }
 
@@ -452,19 +493,38 @@ internal static class DiscoveryModelBuilder
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
         ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
 
-        foreach (var candidate in type.AllInterfaces.Where(
-                     candidate => SymbolEqualityComparer.Default.Equals(
-                         candidate.OriginalDefinition,
-                         discoverySymbols.NotificationHandlerInterface)))
+        var notificationTypeArguments = type.AllInterfaces
+            .Where(
+                candidate => SymbolEqualityComparer.Default.Equals(
+                    candidate.OriginalDefinition,
+                    discoverySymbols.NotificationHandlerInterface))
+            .Select(static candidate => candidate.TypeArguments);
+
+        foreach (var typeArguments in notificationTypeArguments)
         {
             yield return new NotificationHandlerDescriptor(
                 GetMetadataName(type),
                 GetNamespace(type),
                 type.Name,
-                GetTypeDisplayString(candidate.TypeArguments[0]),
+                GetTypeDisplayString(typeArguments[0]),
                 GetHandleMethodName(type),
                 type.DeclaredAccessibility,
                 isAccessibleToGeneratedMediator);
+
+            if (isAccessibleToGeneratedMediator)
+            {
+                var implementationType = GetMetadataName(type);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    GetSelfRegistrationServiceType(implementationType),
+                    implementationType,
+                    discoveryState);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    $"global::SharedKernel.Mediator.INotificationHandler<{GetTypeDisplayString(typeArguments[0])}>",
+                    implementationType,
+                    discoveryState);
+            }
         }
     }
 
@@ -529,6 +589,21 @@ internal static class DiscoveryModelBuilder
                 GetHandleMethodName(type),
                 type.DeclaredAccessibility,
                 isAccessibleToGeneratedMediator);
+
+            if (isAccessibleToGeneratedMediator)
+            {
+                var implementationType = GetMetadataName(type);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    GetSelfRegistrationServiceType(implementationType),
+                    implementationType,
+                    discoveryState);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    $"global::SharedKernel.Mediator.IStreamRequestHandler<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
+                    implementationType,
+                    discoveryState);
+            }
         }
     }
 
@@ -579,6 +654,54 @@ internal static class DiscoveryModelBuilder
         }
 
         discoveryState.Diagnostics.Add(Diagnostic.Create(InaccessibleRegistrationTypeDescriptor, location, metadataName));
+    }
+
+    private static void ReportDuplicateGeneratedRegistration(
+        INamedTypeSymbol type,
+        string serviceType,
+        string implementationType,
+        DiscoveryState discoveryState)
+    {
+        var registrationKey = $"{serviceType}|{implementationType}";
+        if (discoveryState.GeneratedRegistrationKeys.Add(registrationKey))
+        {
+            return;
+        }
+
+        if (!discoveryState.DiagnosedDuplicateRegistrationKeys.Add(registrationKey))
+        {
+            return;
+        }
+
+        var location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
+        if (location is null)
+        {
+            return;
+        }
+
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                DuplicateGeneratedRegistrationDescriptor,
+                location,
+                serviceType,
+                implementationType));
+    }
+
+    private static string GetSelfRegistrationServiceType(string implementationType)
+    {
+        return implementationType;
+    }
+
+    private static string GetHandlerServiceType(HandlerDescriptor handler)
+    {
+        return handler.Kind switch
+        {
+            HandlerKind.Request => $"global::SharedKernel.Mediator.IRequestHandler<{handler.RequestMetadataName}, {handler.ResponseMetadataName}>",
+            HandlerKind.Command => $"global::SharedKernel.Mediator.ICommandHandler<{handler.RequestMetadataName}>",
+            HandlerKind.CommandWithResponse => $"global::SharedKernel.Mediator.ICommandHandler<{handler.RequestMetadataName}, {handler.ResponseMetadataName}>",
+            HandlerKind.Query => $"global::SharedKernel.Mediator.IQueryHandler<{handler.RequestMetadataName}, {handler.ResponseMetadataName}>",
+            _ => throw new ArgumentOutOfRangeException(nameof(handler))
+        };
     }
 
     private static bool IsDiscoverableType(INamedTypeSymbol type)

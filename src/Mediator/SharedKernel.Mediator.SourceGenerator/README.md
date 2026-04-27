@@ -13,6 +13,7 @@ for the mediator toolchain.
   contracts
 - Emits the readable discovery report
 - Emits generated DI registration for handlers, pipelines, notifications, and stream handlers
+- Reports generated DI diagnostics for inaccessible and duplicate registrations
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
 ## Dependencies
