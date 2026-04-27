@@ -8,6 +8,14 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal static class DiscoveryModelBuilder
 {
+    private static readonly DiagnosticDescriptor InaccessibleRegistrationTypeDescriptor = new(
+        id: "SKMED010",
+        title: "Mediator registration type is inaccessible",
+        messageFormat: "Type '{0}' is inaccessible to generated mediator registrations",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public static DiscoveryModel Build(Compilation compilation, CancellationToken cancellationToken)
     {
         var discoverySymbols = DiscoverySymbols.Create(compilation);
@@ -16,6 +24,7 @@ internal static class DiscoveryModelBuilder
         if (!discoverySymbols.IsComplete)
         {
             return new DiscoveryModel(
+                [],
                 [],
                 [],
                 [],
@@ -37,6 +46,7 @@ internal static class DiscoveryModelBuilder
                 assembly.GlobalNamespace,
                 discoverySymbols,
                 discoveryState,
+                compilation.Assembly,
                 cancellationToken);
         }
 
@@ -44,7 +54,8 @@ internal static class DiscoveryModelBuilder
             [.. modules.OrderBy(static module => module.AssemblyName, StringComparer.Ordinal)],
             BuildRequestDescriptors(discoveryState.RequestContracts, discoveryState.RequestHandlers, discoveryState.Pipelines),
             BuildNotificationDescriptors(discoveryState.NotificationContracts, discoveryState.NotificationHandlers),
-            BuildStreamRequestDescriptors(discoveryState.StreamRequestContracts, discoveryState.StreamHandlers));
+            BuildStreamRequestDescriptors(discoveryState.StreamRequestContracts, discoveryState.StreamHandlers),
+            [.. discoveryState.Diagnostics.OrderBy(static diagnostic => diagnostic.Location.SourceSpan.Start)]);
     }
 
     private static IEnumerable<IAssemblySymbol> EnumerateAssemblies(
@@ -76,6 +87,7 @@ internal static class DiscoveryModelBuilder
         INamespaceSymbol @namespace,
         DiscoverySymbols discoverySymbols,
         DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -86,6 +98,7 @@ internal static class DiscoveryModelBuilder
                 nestedNamespace,
                 discoverySymbols,
                 discoveryState,
+                primaryAssembly,
                 cancellationToken);
         }
 
@@ -95,6 +108,7 @@ internal static class DiscoveryModelBuilder
                 type,
                 discoverySymbols,
                 discoveryState,
+                primaryAssembly,
                 cancellationToken);
         }
     }
@@ -103,6 +117,7 @@ internal static class DiscoveryModelBuilder
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
         DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -112,12 +127,12 @@ internal static class DiscoveryModelBuilder
             discoveryState.RequestContracts[requestContract.MetadataName] = requestContract;
         }
 
-        foreach (var requestHandler in CreateRequestHandlers(type, discoverySymbols))
+        foreach (var requestHandler in CreateRequestHandlers(type, discoverySymbols, discoveryState, primaryAssembly))
         {
             discoveryState.RequestHandlers.Add(requestHandler);
         }
 
-        foreach (var pipeline in CreatePipelines(type, discoverySymbols))
+        foreach (var pipeline in CreatePipelines(type, discoverySymbols, discoveryState, primaryAssembly))
         {
             discoveryState.Pipelines.Add(pipeline);
         }
@@ -127,7 +142,7 @@ internal static class DiscoveryModelBuilder
             discoveryState.NotificationContracts[notificationMetadataName] = notificationMetadataName;
         }
 
-        foreach (var notificationHandler in CreateNotificationHandlers(type, discoverySymbols))
+        foreach (var notificationHandler in CreateNotificationHandlers(type, discoverySymbols, discoveryState, primaryAssembly))
         {
             discoveryState.NotificationHandlers.Add(notificationHandler);
         }
@@ -137,7 +152,7 @@ internal static class DiscoveryModelBuilder
             discoveryState.StreamRequestContracts[streamRequestMetadataName] = streamItemResponse;
         }
 
-        foreach (var streamHandler in CreateStreamHandlers(type, discoverySymbols))
+        foreach (var streamHandler in CreateStreamHandlers(type, discoverySymbols, discoveryState, primaryAssembly))
         {
             discoveryState.StreamHandlers.Add(streamHandler);
         }
@@ -148,6 +163,7 @@ internal static class DiscoveryModelBuilder
                 nestedType,
                 discoverySymbols,
                 discoveryState,
+                primaryAssembly,
                 cancellationToken);
         }
     }
@@ -284,7 +300,11 @@ internal static class DiscoveryModelBuilder
         return true;
     }
 
-    private static IEnumerable<HandlerDescriptor> CreateRequestHandlers(INamedTypeSymbol type, DiscoverySymbols discoverySymbols)
+    private static IEnumerable<HandlerDescriptor> CreateRequestHandlers(
+        INamedTypeSymbol type,
+        DiscoverySymbols discoverySymbols,
+        DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly)
     {
         if (!IsDiscoverableType(type))
         {
@@ -292,7 +312,7 @@ internal static class DiscoveryModelBuilder
         }
 
         var handlerInterfaces = type.AllInterfaces
-            .Select(candidate => CreateRequestHandlerDescriptor(type, candidate, discoverySymbols))
+            .Select(candidate => CreateRequestHandlerDescriptor(type, candidate, discoverySymbols, discoveryState, primaryAssembly))
             .OfType<(string Key, int Priority, HandlerDescriptor Descriptor)>()
             .GroupBy(static descriptor => descriptor.Key, StringComparer.Ordinal)
             .Select(static group => group.OrderBy(static item => item.Priority).First().Descriptor)
@@ -307,7 +327,9 @@ internal static class DiscoveryModelBuilder
     private static (string Key, int Priority, HandlerDescriptor Descriptor)? CreateRequestHandlerDescriptor(
         INamedTypeSymbol type,
         INamedTypeSymbol candidate,
-        DiscoverySymbols discoverySymbols)
+        DiscoverySymbols discoverySymbols,
+        DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly)
     {
         var originalDefinition = candidate.OriginalDefinition;
         HandlerKind? handlerKind = null;
@@ -343,6 +365,8 @@ internal static class DiscoveryModelBuilder
         var responseType = handlerKind is HandlerKind.Command
             ? discoverySymbols.UnitType
             : candidate.TypeArguments[1];
+        var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
         var descriptor = new HandlerDescriptor(
             GetMetadataName(type),
             GetNamespace(type),
@@ -351,17 +375,25 @@ internal static class DiscoveryModelBuilder
             GetTypeDisplayString(responseType),
             GetHandleMethodName(type),
             type.DeclaredAccessibility,
+            isAccessibleToGeneratedMediator,
             handlerKind.Value);
 
         return ($"{descriptor.RequestMetadataName}|{descriptor.ResponseMetadataName}", priority, descriptor);
     }
 
-    private static IEnumerable<PipelineDescriptor> CreatePipelines(INamedTypeSymbol type, DiscoverySymbols discoverySymbols)
+    private static IEnumerable<PipelineDescriptor> CreatePipelines(
+        INamedTypeSymbol type,
+        DiscoverySymbols discoverySymbols,
+        DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly)
     {
         if (!IsDiscoverableType(type))
         {
             yield break;
         }
+
+        var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
 
         foreach (var candidate in type.AllInterfaces.Where(
                      candidate => SymbolEqualityComparer.Default.Equals(
@@ -385,7 +417,8 @@ internal static class DiscoveryModelBuilder
                 GetTypeDisplayString(candidate.TypeArguments[0]),
                 stage,
                 order,
-                type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed);
+                type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed,
+                isAccessibleToGeneratedMediator);
         }
     }
 
@@ -407,12 +440,17 @@ internal static class DiscoveryModelBuilder
 
     private static IEnumerable<NotificationHandlerDescriptor> CreateNotificationHandlers(
         INamedTypeSymbol type,
-        DiscoverySymbols discoverySymbols)
+        DiscoverySymbols discoverySymbols,
+        DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly)
     {
         if (!IsDiscoverableType(type))
         {
             yield break;
         }
+
+        var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
 
         foreach (var candidate in type.AllInterfaces.Where(
                      candidate => SymbolEqualityComparer.Default.Equals(
@@ -425,7 +463,8 @@ internal static class DiscoveryModelBuilder
                 type.Name,
                 GetTypeDisplayString(candidate.TypeArguments[0]),
                 GetHandleMethodName(type),
-                type.DeclaredAccessibility);
+                type.DeclaredAccessibility,
+                isAccessibleToGeneratedMediator);
         }
     }
 
@@ -460,12 +499,17 @@ internal static class DiscoveryModelBuilder
 
     private static IEnumerable<StreamHandlerDescriptor> CreateStreamHandlers(
         INamedTypeSymbol type,
-        DiscoverySymbols discoverySymbols)
+        DiscoverySymbols discoverySymbols,
+        DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly)
     {
         if (!IsDiscoverableType(type))
         {
             yield break;
         }
+
+        var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
 
         var streamHandlerTypeArguments = type.AllInterfaces
             .Where(
@@ -483,8 +527,58 @@ internal static class DiscoveryModelBuilder
                 GetTypeDisplayString(typeArguments[0]),
                 GetTypeDisplayString(typeArguments[1]),
                 GetHandleMethodName(type),
-                type.DeclaredAccessibility);
+                type.DeclaredAccessibility,
+                isAccessibleToGeneratedMediator);
         }
+    }
+
+    private static bool IsAccessibleToGeneratedMediator(INamedTypeSymbol type, IAssemblySymbol primaryAssembly)
+    {
+        for (var current = type; current is not null; current = current.ContainingType)
+        {
+            switch (current.DeclaredAccessibility)
+            {
+                case Accessibility.Public:
+                    continue;
+                case Accessibility.Internal:
+                case Accessibility.ProtectedOrInternal:
+                    if (SymbolEqualityComparer.Default.Equals(current.ContainingAssembly, primaryAssembly))
+                    {
+                        continue;
+                    }
+
+                    return false;
+                default:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static void ReportInaccessibleRegistrationType(
+        INamedTypeSymbol type,
+        bool isAccessibleToGeneratedMediator,
+        DiscoveryState discoveryState)
+    {
+        if (isAccessibleToGeneratedMediator)
+        {
+            return;
+        }
+
+        var metadataName = GetMetadataName(type);
+        if (!discoveryState.DiagnosedInaccessibleTypes.Add(metadataName))
+        {
+            return;
+        }
+
+        var location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
+        if (location is null)
+        {
+            return;
+        }
+
+        discoveryState.Diagnostics.Add(Diagnostic.Create(InaccessibleRegistrationTypeDescriptor, location, metadataName));
     }
 
     private static bool IsDiscoverableType(INamedTypeSymbol type)

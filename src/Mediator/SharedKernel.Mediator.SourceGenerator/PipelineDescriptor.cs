@@ -9,4 +9,5 @@ internal sealed record PipelineDescriptor(
     string RequestMetadataName,
     int Stage,
     int Order,
-    PipelineApplicability Applicability);
+    PipelineApplicability Applicability,
+    bool IsAccessibleToGeneratedMediator);

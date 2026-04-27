@@ -11,4 +11,5 @@ internal sealed record NotificationHandlerDescriptor(
     string Name,
     string NotificationMetadataName,
     string MethodName,
-    Accessibility Accessibility);
+    Accessibility Accessibility,
+    bool IsAccessibleToGeneratedMediator);

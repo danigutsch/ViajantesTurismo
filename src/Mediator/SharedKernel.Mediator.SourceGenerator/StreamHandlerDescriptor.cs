@@ -12,4 +12,5 @@ internal sealed record StreamHandlerDescriptor(
     string RequestMetadataName,
     string ResponseMetadataName,
     string MethodName,
-    Accessibility Accessibility);
+    Accessibility Accessibility,
+    bool IsAccessibleToGeneratedMediator);

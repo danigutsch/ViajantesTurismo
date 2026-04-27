@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 
 namespace SharedKernel.Mediator.SourceGenerator;
 
@@ -9,7 +10,8 @@ internal sealed record DiscoveryModel(
     ImmutableArray<ModuleDescriptor> Modules,
     ImmutableArray<RequestDescriptor> Requests,
     ImmutableArray<NotificationDescriptor> Notifications,
-    ImmutableArray<StreamRequestDescriptor> StreamRequests)
+    ImmutableArray<StreamRequestDescriptor> StreamRequests,
+    ImmutableArray<Diagnostic> Diagnostics)
 {
     /// <summary>
     /// Gets the number of discovered request contracts.

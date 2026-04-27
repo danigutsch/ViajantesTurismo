@@ -54,7 +54,7 @@ internal static class DependencyInjectionEmitter
 
         foreach (var request in requests)
         {
-            foreach (var handler in request.Handlers)
+            foreach (var handler in request.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator))
             {
                 EmitRegistration(
                     builder,
@@ -64,7 +64,7 @@ internal static class DependencyInjectionEmitter
                 emittedAny = true;
             }
 
-            foreach (var pipeline in request.Pipelines)
+            foreach (var pipeline in request.Pipelines.Where(static pipeline => pipeline.IsAccessibleToGeneratedMediator))
             {
                 EmitRegistration(
                     builder,
@@ -92,7 +92,7 @@ internal static class DependencyInjectionEmitter
                 builder.AppendLine();
             }
 
-            foreach (var handler in notification.Handlers)
+            foreach (var handler in notification.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator))
             {
                 EmitRegistration(
                     builder,
@@ -120,7 +120,7 @@ internal static class DependencyInjectionEmitter
                 builder.AppendLine();
             }
 
-            foreach (var handler in streamRequest.Handlers)
+            foreach (var handler in streamRequest.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator))
             {
                 EmitRegistration(
                     builder,

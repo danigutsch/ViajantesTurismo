@@ -18,6 +18,11 @@ public sealed class SharedKernelMediatorGenerator : IIncrementalGenerator
             discoveryModel,
             static (productionContext, discoveryModel) =>
             {
+                foreach (var diagnostic in discoveryModel.Diagnostics)
+                {
+                    productionContext.ReportDiagnostic(diagnostic);
+                }
+
                 productionContext.AddSource(
                     "SharedKernel.Mediator.Generated.DiscoveryReport.g.cs",
                     DiscoveryReportEmitter.Emit(discoveryModel));
