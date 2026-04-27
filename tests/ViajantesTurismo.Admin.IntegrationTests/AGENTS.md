@@ -51,7 +51,8 @@ Use the existing helpers before adding new plumbing:
 
 ## Naming conventions
 
-Follow `Method_Name_Context_Description_Expected_Behavior` using underscores throughout.
+Use descriptive, natural-language test names with underscores throughout. Do not append
+fixed suffixes like `Expected_Behavior`.
 
 | Test type                     | Form                                           |
 |-------------------------------|------------------------------------------------|

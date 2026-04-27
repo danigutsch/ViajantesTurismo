@@ -190,9 +190,10 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 ### Unit and Integration Tests
 
-**Pattern:** `Method_Name_Context_Description_Expected_Behavior`
+**Pattern:** descriptive natural-language phrase with underscores
 
-Use underscores to separate all words for improved readability (natural language description).
+Use underscores to separate all words for improved readability. Do not append fixed
+suffixes like `Expected_Behavior`.
 
 ```csharp
 // Good

@@ -34,8 +34,9 @@ This file overrides root guidance where test-specific behavior is needed.
   move only non-test-critical setup/navigation/mechanical steps into helpers.
 - Keep reusable test-only helpers close to the consuming test project, and do not move
   domain or application behavior into test helpers.
-- Unit/integration/web test method names should follow
-  `Method_Name_Context_Description_Expected_Behavior`.
+- Unit/integration/web test method names should be descriptive, natural-language
+  phrases with underscores between words. Do not append fixed suffixes like
+  `Expected_Behavior`.
 - Feature files should follow `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
