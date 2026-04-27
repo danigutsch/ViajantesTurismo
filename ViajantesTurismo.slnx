@@ -42,4 +42,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj" />
     </Folder>
+    <Folder Name="/benchmarks/">
+        <Project Path="benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj" />
+    </Folder>
 </Solution>

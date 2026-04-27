@@ -51,11 +51,13 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.MigrationService/          # Database migration worker
 │   ├── ViajantesTurismo.Resources/                 # Resource definitions
 │   └── ViajantesTurismo.ServiceDefaults/           # Service defaults and extensions
-└── tests/
-    ├── ViajantesTurismo.Admin.UnitTests/           # Domain unit tests
-    ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
-    ├── ViajantesTurismo.Admin.IntegrationTests/    # API integration tests
-    └── ViajantesTurismo.Common.UnitTests/          # Common utilities tests
+├── tests/
+│   ├── ViajantesTurismo.Admin.UnitTests/           # Domain unit tests
+│   ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
+│   ├── ViajantesTurismo.Admin.IntegrationTests/    # API integration tests
+│   └── ViajantesTurismo.Common.UnitTests/          # Common utilities tests
+└── benchmarks/
+    └── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
 ```
 
 ## Getting Started
@@ -210,6 +212,12 @@ dotnet test --solution ViajantesTurismo.slnx
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 ```
 
+**Run SharedKernel mediator benchmarks:**
+
+```powershell
+dotnet run --project benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj -c Release -- --filter *DiscoveryBenchmarks*
+```
+
 **NuGet lock files:**
 
 This repository commits `packages.lock.json` for its .NET projects so CI can use
@@ -308,9 +316,10 @@ Key patterns:
 - **Aggregate Roots**: Tour manages all Booking operations
 - **AOT Compatibility**: Library projects prepared for Native AOT with trim analyzers enabled
 
-See [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#native-aot-compatibility) for Native
-AOT guidance and [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for the deeper
-architecture record.
+See the Native AOT Compatibility section in
+[docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md) for Native AOT guidance and
+[docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for the deeper architecture
+record.
 
 ## Development
 
