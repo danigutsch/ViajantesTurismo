@@ -34,6 +34,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.Tests.Shared/ViajantesTurismo.Admin.Tests.Shared.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.WebTests/ViajantesTurismo.Admin.WebTests.csproj" />
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />
+        <Project Path="tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Testing.ReferenceDispatcher/SharedKernel.Mediator.Testing.ReferenceDispatcher.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj" />

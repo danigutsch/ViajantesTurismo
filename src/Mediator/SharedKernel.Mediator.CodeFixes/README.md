@@ -9,7 +9,13 @@ mediator toolchain.
 
 ## Current State
 
-The project is scaffolded and packable, but code fixes have not been implemented yet.
+The project now provides safe fixes for the currently implemented generator diagnostics:
+
+- `SKMED001` can generate a missing handler file when no handler candidate exists.
+- `SKMED003` can repair the explicit-interface-only handler shape by adding a public forwarding
+  `Handle(...)` method.
+
+Unsafe or cross-assembly diagnostics remain intentionally unfixed until a safe local repair exists.
 
 ## Planned Scope
 
