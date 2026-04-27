@@ -13,7 +13,7 @@ source generation owns the main dispatch path.
 The consumer-side source generator now emits the `AppMediator` shell used by generated DI
 registration.
 This runtime package stays focused on shared abstractions-facing runtime support that can remain
-available even when generation owns mediator composition.
+available while source generation owns mediator composition and request dispatch.
 
 ## Dependencies
 

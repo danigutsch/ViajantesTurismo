@@ -33,7 +33,7 @@ public sealed class SharedKernelMediatorGenerator : IIncrementalGenerator
 
                 productionContext.AddSource(
                     "SharedKernel.Mediator.Generated.AppMediator.g.cs",
-                    AppMediatorEmitter.Emit());
+                    AppMediatorEmitter.Emit(discoveryModel));
             });
     }
 }

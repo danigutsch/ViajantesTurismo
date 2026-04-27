@@ -13,7 +13,7 @@ for the mediator toolchain.
   contracts
 - Emits the readable discovery report
 - Emits generated DI registration for handlers, pipelines, notifications, and stream handlers
-- Emits the generated `AppMediator` shell into the consumer compilation
+- Emits the generated `AppMediator` shell and request dispatch skeleton into the consumer compilation
 - Reports generated DI diagnostics for inaccessible and duplicate registrations
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
