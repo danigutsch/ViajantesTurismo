@@ -10,8 +10,10 @@ source generation owns the main dispatch path.
 
 ## Current State
 
-The project now contains the `AppMediator` runtime shell used by generated DI registration.
-Generated dispatch and notification publication are still implemented in later slices.
+The consumer-side source generator now emits the `AppMediator` shell used by generated DI
+registration.
+This runtime package stays focused on shared abstractions-facing runtime support that can remain
+available even when generation owns mediator composition.
 
 ## Dependencies
 
