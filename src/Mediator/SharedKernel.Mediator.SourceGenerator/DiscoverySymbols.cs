@@ -22,7 +22,9 @@ internal sealed class DiscoverySymbols
         && NotificationHandlerInterface is not null
         && StreamRequestInterface is not null
         && StreamHandlerInterface is not null
-        && UnitType is not null;
+        && UnitType is not null
+        && CancellationTokenType is not null
+        && ValueTaskOfT is not null;
 
     public INamedTypeSymbol RequestInterface { get; private init; } = null!;
 
@@ -54,6 +56,10 @@ internal sealed class DiscoverySymbols
 
     public INamedTypeSymbol UnitType { get; private init; } = null!;
 
+    public INamedTypeSymbol CancellationTokenType { get; private init; } = null!;
+
+    public INamedTypeSymbol ValueTaskOfT { get; private init; } = null!;
+
     public static DiscoverySymbols Create(Compilation compilation)
     {
         return new DiscoverySymbols
@@ -73,6 +79,8 @@ internal sealed class DiscoverySymbols
             StreamRequestInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequest)!,
             StreamHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,
             UnitType = compilation.GetTypeByMetadataName("SharedKernel.Mediator.Unit")!,
+            CancellationTokenType = compilation.GetTypeByMetadataName(MetadataNames.CancellationToken)!,
+            ValueTaskOfT = compilation.GetTypeByMetadataName(MetadataNames.ValueTaskOfResponse)!,
         };
     }
 }

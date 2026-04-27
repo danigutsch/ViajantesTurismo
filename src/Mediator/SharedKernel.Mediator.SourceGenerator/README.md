@@ -12,9 +12,10 @@ for the mediator toolchain.
 - Builds the discovery model from request, handler, pipeline, notification, stream, and module
   contracts
 - Emits the readable discovery report
+- Reports discovery diagnostics for missing handlers, multiple handlers, invalid request-handler
+  signatures, inaccessible handlers, and duplicate generated registrations
 - Emits generated DI registration for handlers, pipelines, notifications, and stream handlers
 - Emits the generated `AppMediator` shell and request dispatch skeleton into the consumer compilation
-- Reports generated DI diagnostics for inaccessible and duplicate registrations
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
 ## Dependencies

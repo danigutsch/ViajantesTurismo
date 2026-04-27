@@ -77,7 +77,9 @@ internal static class AppMediatorEmitter
 
     private static void EmitTypedSendOverload(StringBuilder builder, RequestDescriptor request)
     {
-        var accessibleHandlers = request.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator).ToArray();
+        var accessibleHandlers = request.Handlers
+            .Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod)
+            .ToArray();
 
         builder.AppendLine();
         GeneratedXmlDocumentationEmitter.AppendSummary(

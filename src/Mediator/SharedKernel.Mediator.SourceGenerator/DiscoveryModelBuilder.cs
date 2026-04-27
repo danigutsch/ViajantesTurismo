@@ -8,6 +8,30 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal static class DiscoveryModelBuilder
 {
+    private static readonly DiagnosticDescriptor MissingHandlerDescriptor = new(
+        id: "SKMED001",
+        title: "Request has no handler",
+        messageFormat: "Request '{0}' does not have an accessible compatible handler",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor MultipleHandlersDescriptor = new(
+        id: "SKMED002",
+        title: "Request has multiple handlers",
+        messageFormat: "Request '{0}' has {1} accessible compatible handlers",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor InvalidHandlerSignatureDescriptor = new(
+        id: "SKMED003",
+        title: "Handler has invalid signature",
+        messageFormat: "Handler '{0}' does not expose a compatible Handle method for request '{1}'",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor InaccessibleRegistrationTypeDescriptor = new(
         id: "SKMED010",
         title: "Mediator registration type is inaccessible",
@@ -58,9 +82,12 @@ internal static class DiscoveryModelBuilder
                 cancellationToken);
         }
 
+        var requests = BuildRequestDescriptors(discoveryState.RequestContracts, discoveryState.RequestHandlers, discoveryState.Pipelines);
+        ReportRequestHandlerDiagnostics(requests, discoveryState);
+
         return new DiscoveryModel(
             [.. modules.OrderBy(static module => module.AssemblyName, StringComparer.Ordinal)],
-            BuildRequestDescriptors(discoveryState.RequestContracts, discoveryState.RequestHandlers, discoveryState.Pipelines),
+            requests,
             BuildNotificationDescriptors(discoveryState.NotificationContracts, discoveryState.NotificationHandlers),
             BuildStreamRequestDescriptors(discoveryState.StreamRequestContracts, discoveryState.StreamHandlers),
             [.. discoveryState.Diagnostics.OrderBy(static diagnostic => diagnostic.Location.SourceSpan.Start)]);
@@ -303,7 +330,8 @@ internal static class DiscoveryModelBuilder
             type.Name,
             GetRequestKind(type, discoverySymbols),
             CreateResponseDescriptor(responseType),
-            type.IsValueType);
+            type.IsValueType,
+            type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault());
 
         return true;
     }
@@ -374,7 +402,9 @@ internal static class DiscoveryModelBuilder
             ? discoverySymbols.UnitType
             : candidate.TypeArguments[1];
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
+        var hasCompatibleHandleMethod = HasCompatibleRequestHandleMethod(type, requestType, responseType, discoverySymbols, primaryAssembly);
         ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
+        ReportInvalidHandlerSignature(type, GetTypeDisplayString(requestType), hasCompatibleHandleMethod, discoveryState);
         var descriptor = new HandlerDescriptor(
             GetMetadataName(type),
             GetNamespace(type),
@@ -384,9 +414,10 @@ internal static class DiscoveryModelBuilder
             GetHandleMethodName(type),
             type.DeclaredAccessibility,
             isAccessibleToGeneratedMediator,
+            hasCompatibleHandleMethod,
             handlerKind.Value);
 
-        if (isAccessibleToGeneratedMediator)
+        if (isAccessibleToGeneratedMediator && hasCompatibleHandleMethod)
         {
             ReportDuplicateGeneratedRegistration(
                 type,
@@ -631,6 +662,16 @@ internal static class DiscoveryModelBuilder
         return true;
     }
 
+    private static bool IsAccessibleToGeneratedMediator(ISymbol symbol, IAssemblySymbol primaryAssembly)
+    {
+        return symbol.DeclaredAccessibility switch
+        {
+            Accessibility.Public => true,
+            Accessibility.Internal or Accessibility.ProtectedOrInternal => SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, primaryAssembly),
+            _ => false,
+        };
+    }
+
     private static void ReportInaccessibleRegistrationType(
         INamedTypeSymbol type,
         bool isAccessibleToGeneratedMediator,
@@ -685,6 +726,82 @@ internal static class DiscoveryModelBuilder
                 location,
                 serviceType,
                 implementationType));
+    }
+
+    private static void ReportRequestHandlerDiagnostics(
+        IEnumerable<RequestDescriptor> requests,
+        DiscoveryState discoveryState)
+    {
+        foreach (var request in requests)
+        {
+            var compatibleAccessibleHandlerCount = request.Handlers.Count(
+                static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod);
+
+            if (compatibleAccessibleHandlerCount == 0)
+            {
+                ReportRequestDiagnostic(MissingHandlerDescriptor, request, compatibleAccessibleHandlerCount, discoveryState);
+                continue;
+            }
+
+            if (compatibleAccessibleHandlerCount > 1)
+            {
+                ReportRequestDiagnostic(MultipleHandlersDescriptor, request, compatibleAccessibleHandlerCount, discoveryState);
+            }
+        }
+    }
+
+    private static void ReportRequestDiagnostic(
+        DiagnosticDescriptor descriptor,
+        RequestDescriptor request,
+        int handlerCount,
+        DiscoveryState discoveryState)
+    {
+        if (!discoveryState.RequestContracts.TryGetValue(request.MetadataName, out var requestContract))
+        {
+            return;
+        }
+
+        var location = requestContract.Location;
+        if (location is null)
+        {
+            return;
+        }
+
+        var diagnostic = descriptor.Id == MissingHandlerDescriptor.Id
+            ? Diagnostic.Create(descriptor, location, request.MetadataName)
+            : Diagnostic.Create(descriptor, location, request.MetadataName, handlerCount);
+        discoveryState.Diagnostics.Add(diagnostic);
+    }
+
+    private static void ReportInvalidHandlerSignature(
+        INamedTypeSymbol type,
+        string requestMetadataName,
+        bool hasCompatibleHandleMethod,
+        DiscoveryState discoveryState)
+    {
+        if (hasCompatibleHandleMethod)
+        {
+            return;
+        }
+
+        var key = $"{GetMetadataName(type)}|{requestMetadataName}";
+        if (!discoveryState.DiagnosedInvalidHandlerKeys.Add(key))
+        {
+            return;
+        }
+
+        var location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
+        if (location is null)
+        {
+            return;
+        }
+
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                InvalidHandlerSignatureDescriptor,
+                location,
+                GetMetadataName(type),
+                requestMetadataName));
     }
 
     private static string GetSelfRegistrationServiceType(string implementationType)
@@ -782,6 +899,31 @@ internal static class DiscoveryModelBuilder
             [.. type.AllInterfaces
                 .Select(GetTypeDisplayString)
                 .OrderBy(static interfaceName => interfaceName, StringComparer.Ordinal)]);
+    }
+
+    private static bool HasCompatibleRequestHandleMethod(
+        INamedTypeSymbol type,
+        ITypeSymbol requestType,
+        ITypeSymbol responseType,
+        DiscoverySymbols discoverySymbols,
+        IAssemblySymbol primaryAssembly)
+    {
+        return type.GetMembers("Handle")
+            .OfType<IMethodSymbol>()
+            .Any(
+                method =>
+                    !method.IsStatic
+                    && method.MethodKind == MethodKind.Ordinary
+                    && method.Parameters.Length == 2
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType)
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, discoverySymbols.CancellationTokenType)
+                    && SymbolEqualityComparer.Default.Equals(method.ReturnType, ConstructValueTaskResponse(discoverySymbols, responseType))
+                    && IsAccessibleToGeneratedMediator(method, primaryAssembly));
+    }
+
+    private static INamedTypeSymbol ConstructValueTaskResponse(DiscoverySymbols discoverySymbols, ITypeSymbol responseType)
+    {
+        return discoverySymbols.ValueTaskOfT.Construct(responseType);
     }
 
     private static string GetMetadataName(INamedTypeSymbol type)

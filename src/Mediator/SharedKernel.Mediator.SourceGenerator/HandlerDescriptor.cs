@@ -14,4 +14,5 @@ internal sealed record HandlerDescriptor(
     string MethodName,
     Accessibility Accessibility,
     bool IsAccessibleToGeneratedMediator,
+    bool HasCompatibleHandleMethod,
     HandlerKind Kind);

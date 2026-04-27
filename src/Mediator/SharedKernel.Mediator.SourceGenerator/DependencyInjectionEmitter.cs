@@ -75,7 +75,7 @@ internal static class DependencyInjectionEmitter
 
         foreach (var request in requests)
         {
-            foreach (var handler in request.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator))
+            foreach (var handler in request.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod))
             {
                 EmitRegistration(
                     builder,

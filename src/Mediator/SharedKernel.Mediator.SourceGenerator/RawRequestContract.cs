@@ -1,3 +1,5 @@
+using Microsoft.CodeAnalysis;
+
 namespace SharedKernel.Mediator.SourceGenerator;
 
 /// <summary>
@@ -9,4 +11,5 @@ internal sealed record RawRequestContract(
     string Name,
     RequestKind Kind,
     ResponseDescriptor Response,
-    bool IsValueType);
+    bool IsValueType,
+    Location? Location);

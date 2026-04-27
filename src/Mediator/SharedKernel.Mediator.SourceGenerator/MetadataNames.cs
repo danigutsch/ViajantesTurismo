@@ -20,4 +20,6 @@ internal static class MetadataNames
     public const string StreamRequest = "SharedKernel.Mediator.IStreamRequest`1";
     public const string StreamRequestHandler = "SharedKernel.Mediator.IStreamRequestHandler`2";
     public const string MediatorModuleAttribute = "SharedKernel.Mediator.MediatorModuleAttribute";
+    public const string CancellationToken = "System.Threading.CancellationToken";
+    public const string ValueTaskOfResponse = "System.Threading.Tasks.ValueTask`1";
 }
