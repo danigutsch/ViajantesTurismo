@@ -1,7 +1,7 @@
 namespace SharedKernel.Mediator.Testing.ReferenceDispatcher;
 
 /// <summary>
-/// Marks the test-only reference-dispatcher assembly until the implementation arrives in the next slice.
+/// Marks the test-only reference-dispatcher assembly.
 /// </summary>
 internal static class ReferenceDispatcherAssemblyMarker
 {
