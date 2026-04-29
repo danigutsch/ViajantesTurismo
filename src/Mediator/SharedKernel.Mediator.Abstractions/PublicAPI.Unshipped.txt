@@ -1,0 +1,42 @@
+#nullable enable
+SharedKernel.Mediator.ICommand
+SharedKernel.Mediator.ICommand<TResponse>
+SharedKernel.Mediator.ICommandHandler<TCommand, TResponse>
+SharedKernel.Mediator.ICommandHandler<TCommand>
+SharedKernel.Mediator.IMediator
+SharedKernel.Mediator.INotification
+SharedKernel.Mediator.INotificationHandler<TNotification>
+SharedKernel.Mediator.INotificationHandler<TNotification>.Handle(TNotification notification, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.Mediator.IPipelineBehavior<TRequest, TResponse>
+SharedKernel.Mediator.IPipelineBehavior<TRequest, TResponse>.Handle(TRequest request, SharedKernel.Mediator.RequestHandlerContinuation<TResponse>! next, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
+SharedKernel.Mediator.IPublisher
+SharedKernel.Mediator.IPublisher.Publish<TNotification>(TNotification notification, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.Mediator.IQuery<TResponse>
+SharedKernel.Mediator.IQueryHandler<TQuery, TResponse>
+SharedKernel.Mediator.IRequest<TResponse>
+SharedKernel.Mediator.IRequestHandler<TRequest, TResponse>
+SharedKernel.Mediator.IRequestHandler<TRequest, TResponse>.Handle(TRequest request, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
+SharedKernel.Mediator.ISender
+SharedKernel.Mediator.ISender.Send<TResponse>(SharedKernel.Mediator.IRequest<TResponse>! request, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
+SharedKernel.Mediator.IStreamRequest<TResponse>
+SharedKernel.Mediator.IStreamRequestHandler<TRequest, TResponse>
+SharedKernel.Mediator.IStreamRequestHandler<TRequest, TResponse>.Handle(TRequest request, System.Threading.CancellationToken ct) -> System.Collections.Generic.IAsyncEnumerable<TResponse>!
+SharedKernel.Mediator.MediatorModuleAttribute
+SharedKernel.Mediator.MediatorModuleAttribute.MediatorModuleAttribute() -> void
+SharedKernel.Mediator.PipelineOrderAttribute
+SharedKernel.Mediator.PipelineOrderAttribute.Order.get -> int
+SharedKernel.Mediator.PipelineOrderAttribute.Order.init -> void
+SharedKernel.Mediator.PipelineOrderAttribute.PipelineOrderAttribute(SharedKernel.Mediator.PipelineStage stage) -> void
+SharedKernel.Mediator.PipelineOrderAttribute.Stage.get -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.Authorization = -800 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.Caching = -600 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.Handler = 0 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.Observability = 800 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.PostProcessing = 400 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.Transaction = -400 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.PipelineStage.Validation = -1000 -> SharedKernel.Mediator.PipelineStage
+SharedKernel.Mediator.RequestHandlerContinuation<TResponse>
+SharedKernel.Mediator.Unit
+SharedKernel.Mediator.Unit.Unit() -> void
+static SharedKernel.Mediator.Unit.Value.get -> SharedKernel.Mediator.Unit
