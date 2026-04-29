@@ -4,18 +4,21 @@ Incremental source generator for `SharedKernel.Mediator`.
 
 ## Purpose
 
-This Roslyn component discovers mediator contracts in the owning project and emits generated source
-for the mediator toolchain.
+This Roslyn component discovers mediator contracts in the owning
+project and emits generated source for the mediator toolchain.
 
 ## Current Scope
 
-- Builds the discovery model from request, handler, pipeline, notification, stream, and module
-  contracts
+- Builds the discovery model from request, handler, pipeline,
+  notification, stream, and module contracts
 - Emits the readable discovery report
-- Reports discovery diagnostics for missing handlers, multiple handlers, invalid request-handler
-  signatures, inaccessible handlers, and duplicate generated registrations
-- Emits generated DI registration for handlers, pipelines, notifications, and stream handlers
-- Emits the generated `AppMediator` shell and request dispatch skeleton into the consumer compilation
+- Reports discovery diagnostics for missing handlers, multiple
+  handlers, invalid request-handler signatures, inaccessible
+  handlers, and duplicate generated registrations
+- Emits generated DI registration for handlers, pipelines,
+  notifications, and stream handlers
+- Emits the generated `AppMediator` shell and request dispatch
+  skeleton into the consumer compilation
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
 ## Dependencies

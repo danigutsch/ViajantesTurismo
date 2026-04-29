@@ -8,7 +8,6 @@
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <NoWarn>$(NoWarn);RS2008</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,6 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+        <None Include="SharedKernel.Mediator.SourceGenerator.props" Pack="true" PackagePath="buildTransitive/" Visible="false" />
+        <None Include="_._" Pack="true" PackagePath="lib/netstandard2.0/" Visible="false" />
         <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
