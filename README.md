@@ -56,8 +56,11 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
 │   ├── ViajantesTurismo.Admin.IntegrationTests/    # API integration tests
 │   └── ViajantesTurismo.Common.UnitTests/          # Common utilities tests
-└── benchmarks/
-    └── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
+├── benchmarks/
+│   └── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
+└── samples/
+    └── Mediator/
+        └── BasicCqrs.Sample/                       # Generated mediator CQRS sample
 ```
 
 ## Getting Started
@@ -216,6 +219,12 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 
 ```powershell
 dotnet run --project benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj -c Release -- --filter *DiscoveryBenchmarks*
+```
+
+**Run the SharedKernel mediator sample:**
+
+```powershell
+dotnet run --project samples/Mediator/BasicCqrs.Sample/BasicCqrs.Sample.csproj
 ```
 
 **NuGet lock files:**

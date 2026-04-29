@@ -23,4 +23,5 @@ available while source generation owns mediator composition and request dispatch
 ## See Also
 
 - [SharedKernel.Mediator.SourceGenerator](../SharedKernel.Mediator.SourceGenerator/README.md)
+- [BasicCqrs.Sample](../../../samples/Mediator/BasicCqrs.Sample/README.md)
 - [tmp/mediator.md](../../../tmp/mediator.md)

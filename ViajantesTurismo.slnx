@@ -47,4 +47,7 @@
     <Folder Name="/benchmarks/">
         <Project Path="benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj" />
     </Folder>
+    <Folder Name="/samples/">
+        <Project Path="samples/Mediator/BasicCqrs.Sample/BasicCqrs.Sample.csproj" />
+    </Folder>
 </Solution>
