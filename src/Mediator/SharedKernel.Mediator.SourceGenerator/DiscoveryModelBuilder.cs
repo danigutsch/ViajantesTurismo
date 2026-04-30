@@ -11,7 +11,7 @@ internal static class DiscoveryModelBuilder
     private const string PrimaryAssemblyNamePropertyName = "PrimaryAssemblyName";
 
     private static readonly DiagnosticDescriptor MissingHandlerDescriptor = new(
-        id: "SKMED001",
+        id: MediatorDiagnosticIds.MissingHandler,
         title: "Request has no handler",
         messageFormat: "Request '{0}' does not have an accessible compatible handler",
         category: "Usage",
@@ -19,7 +19,7 @@ internal static class DiscoveryModelBuilder
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor MultipleHandlersDescriptor = new(
-        id: "SKMED002",
+        id: MediatorDiagnosticIds.MultipleHandlers,
         title: "Request has multiple handlers",
         messageFormat: "Request '{0}' has {1} accessible compatible handlers",
         category: "Usage",
@@ -27,7 +27,7 @@ internal static class DiscoveryModelBuilder
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor InvalidHandlerSignatureDescriptor = new(
-        id: "SKMED003",
+        id: MediatorDiagnosticIds.InvalidHandlerSignature,
         title: "Handler has invalid signature",
         messageFormat: "Handler '{0}' does not expose a compatible Handle method for request '{1}'",
         category: "Usage",
@@ -35,7 +35,7 @@ internal static class DiscoveryModelBuilder
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor InaccessibleRegistrationTypeDescriptor = new(
-        id: "SKMED010",
+        id: MediatorDiagnosticIds.InaccessibleRegistrationType,
         title: "Mediator registration type is inaccessible",
         messageFormat: "Type '{0}' is inaccessible to generated mediator registrations",
         category: "Usage",
@@ -43,7 +43,7 @@ internal static class DiscoveryModelBuilder
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor MissingModuleMarkerDescriptor = new(
-        id: "SKMED011",
+        id: MediatorDiagnosticIds.MissingModuleMarker,
         title: "Handler module is not marked with [assembly: MediatorModule]",
         messageFormat: "Assembly '{0}' contains mediator registrations but is not marked with [assembly: MediatorModule]",
         category: "Usage",
@@ -51,7 +51,7 @@ internal static class DiscoveryModelBuilder
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor DuplicateGeneratedRegistrationDescriptor = new(
-        id: "SKMED012",
+        id: MediatorDiagnosticIds.DuplicateGeneratedRegistration,
         title: "Generated mediator registration is duplicated",
         messageFormat: "Generated mediator registration '{0}' implemented by '{1}' is duplicated",
         category: "Usage",
@@ -59,7 +59,7 @@ internal static class DiscoveryModelBuilder
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor UnprovenObjectDispatchCoverageDescriptor = new(
-        id: "SKMED013",
+        id: MediatorDiagnosticIds.UnprovenObjectDispatchCoverage,
         title: "Generated object dispatch coverage cannot be proven",
         messageFormat: "Generated object dispatch coverage cannot be proven because assembly '{0}' is not marked with [assembly: MediatorModule]",
         category: "Usage",
@@ -915,7 +915,7 @@ internal static class DiscoveryModelBuilder
 
         var location = GetDiagnosticLocation(requestContract.Location, requestContract.IsInPrimaryAssembly);
 
-        var diagnostic = descriptor.Id == MissingHandlerDescriptor.Id
+        var diagnostic = descriptor.Id == MediatorDiagnosticIds.MissingHandler
             ? Diagnostic.Create(descriptor, location, request.MetadataName)
             : Diagnostic.Create(descriptor, location, request.MetadataName, handlerCount);
         discoveryState.Diagnostics.Add(diagnostic);

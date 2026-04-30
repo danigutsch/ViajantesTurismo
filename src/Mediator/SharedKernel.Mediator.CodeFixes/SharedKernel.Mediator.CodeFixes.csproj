@@ -17,6 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="..\SharedKernel.Mediator.SourceGenerator\MediatorDiagnosticIds.cs" Link="MediatorDiagnosticIds.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 

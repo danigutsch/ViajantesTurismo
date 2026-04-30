@@ -10,18 +10,13 @@ namespace SharedKernel.Mediator.CodeFixes;
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SharedKernelMediatorCodeFixProvider))]
 public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
 {
-    private const string MissingHandlerDiagnosticId = "SKMED001";
-    private const string InvalidHandlerSignatureDiagnosticId = "SKMED003";
-    private const string InaccessibleRegistrationTypeDiagnosticId = "SKMED010";
-    private const string MissingModuleMarkerDiagnosticId = "SKMED011";
-
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds =>
         [
-            MissingHandlerDiagnosticId,
-            InvalidHandlerSignatureDiagnosticId,
-            InaccessibleRegistrationTypeDiagnosticId,
-            MissingModuleMarkerDiagnosticId
+            MediatorDiagnosticIds.MissingHandler,
+            MediatorDiagnosticIds.InvalidHandlerSignature,
+            MediatorDiagnosticIds.InaccessibleRegistrationType,
+            MediatorDiagnosticIds.MissingModuleMarker
         ];
 
     /// <inheritdoc />
@@ -37,16 +32,16 @@ public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
         {
             switch (diagnostic.Id)
             {
-                case MissingHandlerDiagnosticId:
+                case MediatorDiagnosticIds.MissingHandler:
                     await MissingHandlerCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
                     break;
-                case InvalidHandlerSignatureDiagnosticId:
+                case MediatorDiagnosticIds.InvalidHandlerSignature:
                     await InvalidHandlerSignatureCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
                     break;
-                case InaccessibleRegistrationTypeDiagnosticId:
+                case MediatorDiagnosticIds.InaccessibleRegistrationType:
                     await InaccessibleRegistrationTypeCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
                     break;
-                case MissingModuleMarkerDiagnosticId:
+                case MediatorDiagnosticIds.MissingModuleMarker:
                     await MissingModuleMarkerCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
                     break;
             }
