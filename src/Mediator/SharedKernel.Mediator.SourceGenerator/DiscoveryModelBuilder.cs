@@ -58,6 +58,14 @@ internal static class DiscoveryModelBuilder
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor UnprovenObjectDispatchCoverageDescriptor = new(
+        id: "SKMED013",
+        title: "Generated object dispatch coverage cannot be proven",
+        messageFormat: "Generated object dispatch coverage cannot be proven because assembly '{0}' is not marked with [assembly: MediatorModule]",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public static DiscoveryModel Build(Compilation compilation, CancellationToken cancellationToken)
     {
         var discoverySymbols = DiscoverySymbols.Create(compilation);
@@ -758,6 +766,11 @@ internal static class DiscoveryModelBuilder
             discoveryState.Diagnostics.Add(
                 Diagnostic.Create(
                     MissingModuleMarkerDescriptor,
+                    Location.None,
+                    referencedAssembly.Identity.Name));
+            discoveryState.Diagnostics.Add(
+                Diagnostic.Create(
+                    UnprovenObjectDispatchCoverageDescriptor,
                     Location.None,
                     referencedAssembly.Identity.Name));
         }
