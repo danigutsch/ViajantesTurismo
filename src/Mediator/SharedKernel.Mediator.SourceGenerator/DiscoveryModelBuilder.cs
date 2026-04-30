@@ -8,6 +8,8 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal static class DiscoveryModelBuilder
 {
+    private const string PrimaryAssemblyNamePropertyName = "PrimaryAssemblyName";
+
     private static readonly DiagnosticDescriptor MissingHandlerDescriptor = new(
         id: "SKMED001",
         title: "Request has no handler",
@@ -40,6 +42,14 @@ internal static class DiscoveryModelBuilder
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor MissingModuleMarkerDescriptor = new(
+        id: "SKMED011",
+        title: "Handler module is not marked with [assembly: MediatorModule]",
+        messageFormat: "Assembly '{0}' contains mediator registrations but is not marked with [assembly: MediatorModule]",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor DuplicateGeneratedRegistrationDescriptor = new(
         id: "SKMED012",
         title: "Generated mediator registration is duplicated",
@@ -65,6 +75,8 @@ internal static class DiscoveryModelBuilder
 
         var discoveryState = new DiscoveryState();
         var modules = new List<ModuleDescriptor>();
+
+        ReportUnmarkedReferencedAssemblies(compilation, discoverySymbols, moduleAttribute, discoveryState, cancellationToken);
 
         foreach (var assembly in EnumerateAssemblies(compilation, moduleAttribute))
         {
@@ -157,7 +169,7 @@ internal static class DiscoveryModelBuilder
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (TryCreateRequestContract(type, discoverySymbols, out var requestContract))
+        if (TryCreateRequestContract(type, discoverySymbols, primaryAssembly, out var requestContract))
         {
             discoveryState.RequestContracts[requestContract.MetadataName] = requestContract;
         }
@@ -308,6 +320,7 @@ internal static class DiscoveryModelBuilder
     private static bool TryCreateRequestContract(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
+        IAssemblySymbol primaryAssembly,
         out RawRequestContract requestContract)
     {
         requestContract = null!;
@@ -331,6 +344,7 @@ internal static class DiscoveryModelBuilder
             GetRequestKind(type, discoverySymbols),
             CreateResponseDescriptor(responseType),
             type.IsValueType,
+            SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, primaryAssembly),
             type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault());
 
         return true;
@@ -403,8 +417,8 @@ internal static class DiscoveryModelBuilder
             : candidate.TypeArguments[1];
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
         var hasCompatibleHandleMethod = HasCompatibleRequestHandleMethod(type, requestType, responseType, discoverySymbols, primaryAssembly);
-        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
-        ReportInvalidHandlerSignature(type, GetTypeDisplayString(requestType), hasCompatibleHandleMethod, discoveryState);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, primaryAssembly, discoveryState);
+        ReportInvalidHandlerSignature(type, GetTypeDisplayString(requestType), hasCompatibleHandleMethod, primaryAssembly, discoveryState);
         var descriptor = new HandlerDescriptor(
             GetMetadataName(type),
             GetNamespace(type),
@@ -423,11 +437,13 @@ internal static class DiscoveryModelBuilder
                 type,
                 GetSelfRegistrationServiceType(descriptor.MetadataName),
                 descriptor.MetadataName,
+                primaryAssembly,
                 discoveryState);
             ReportDuplicateGeneratedRegistration(
                 type,
                 GetHandlerServiceType(descriptor),
                 descriptor.MetadataName,
+                primaryAssembly,
                 discoveryState);
         }
 
@@ -446,7 +462,7 @@ internal static class DiscoveryModelBuilder
         }
 
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
-        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, primaryAssembly, discoveryState);
 
         var pipelineTypeArguments = type.AllInterfaces
             .Where(
@@ -484,11 +500,13 @@ internal static class DiscoveryModelBuilder
                     type,
                     GetSelfRegistrationServiceType(implementationType),
                     implementationType,
+                    primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
                     $"global::SharedKernel.Mediator.IPipelineBehavior<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
                     implementationType,
+                    primaryAssembly,
                     discoveryState);
             }
         }
@@ -522,7 +540,7 @@ internal static class DiscoveryModelBuilder
         }
 
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
-        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, primaryAssembly, discoveryState);
 
         var notificationTypeArguments = type.AllInterfaces
             .Where(
@@ -549,11 +567,13 @@ internal static class DiscoveryModelBuilder
                     type,
                     GetSelfRegistrationServiceType(implementationType),
                     implementationType,
+                    primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
                     $"global::SharedKernel.Mediator.INotificationHandler<{GetTypeDisplayString(typeArguments[0])}>",
                     implementationType,
+                    primaryAssembly,
                     discoveryState);
             }
         }
@@ -600,7 +620,7 @@ internal static class DiscoveryModelBuilder
         }
 
         var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
-        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, discoveryState);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, primaryAssembly, discoveryState);
 
         var streamHandlerTypeArguments = type.AllInterfaces
             .Where(
@@ -628,11 +648,13 @@ internal static class DiscoveryModelBuilder
                     type,
                     GetSelfRegistrationServiceType(implementationType),
                     implementationType,
+                    primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
                     $"global::SharedKernel.Mediator.IStreamRequestHandler<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
                     implementationType,
+                    primaryAssembly,
                     discoveryState);
             }
         }
@@ -648,7 +670,7 @@ internal static class DiscoveryModelBuilder
                     continue;
                 case Accessibility.Internal:
                 case Accessibility.ProtectedOrInternal:
-                    if (SymbolEqualityComparer.Default.Equals(current.ContainingAssembly, primaryAssembly))
+                    if (HasInternalAccessToPrimaryAssembly(current.ContainingAssembly, primaryAssembly))
                     {
                         continue;
                     }
@@ -667,14 +689,21 @@ internal static class DiscoveryModelBuilder
         return symbol.DeclaredAccessibility switch
         {
             Accessibility.Public => true,
-            Accessibility.Internal or Accessibility.ProtectedOrInternal => SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, primaryAssembly),
+            Accessibility.Internal or Accessibility.ProtectedOrInternal => HasInternalAccessToPrimaryAssembly(symbol.ContainingAssembly, primaryAssembly),
             _ => false,
         };
+    }
+
+    private static bool HasInternalAccessToPrimaryAssembly(IAssemblySymbol assembly, IAssemblySymbol primaryAssembly)
+    {
+        return SymbolEqualityComparer.Default.Equals(assembly, primaryAssembly)
+               || assembly.GivesAccessTo(primaryAssembly);
     }
 
     private static void ReportInaccessibleRegistrationType(
         INamedTypeSymbol type,
         bool isAccessibleToGeneratedMediator,
+        IAssemblySymbol primaryAssembly,
         DiscoveryState discoveryState)
     {
         if (isAccessibleToGeneratedMediator)
@@ -694,13 +723,129 @@ internal static class DiscoveryModelBuilder
             return;
         }
 
-        discoveryState.Diagnostics.Add(Diagnostic.Create(InaccessibleRegistrationTypeDescriptor, location, metadataName));
+        var properties = ImmutableDictionary<string, string?>.Empty.Add(PrimaryAssemblyNamePropertyName, primaryAssembly.Identity.Name);
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                InaccessibleRegistrationTypeDescriptor,
+                GetDiagnosticLocation(location, SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, primaryAssembly)),
+                properties,
+                metadataName));
+    }
+
+    private static void ReportUnmarkedReferencedAssemblies(
+        Compilation compilation,
+        DiscoverySymbols discoverySymbols,
+        INamedTypeSymbol? moduleAttribute,
+        DiscoveryState discoveryState,
+        CancellationToken cancellationToken)
+    {
+        if (moduleAttribute is null)
+        {
+            return;
+        }
+
+        foreach (var referencedAssembly in compilation.SourceModule.ReferencedAssemblySymbols)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (HasModuleMarker(referencedAssembly, moduleAttribute)
+                || !discoveryState.DiagnosedUnmarkedAssemblies.Add(referencedAssembly.Identity.Name)
+                || !TryFindModuleCandidateLocation(referencedAssembly.GlobalNamespace, discoverySymbols, cancellationToken, out _))
+            {
+                continue;
+            }
+
+            discoveryState.Diagnostics.Add(
+                Diagnostic.Create(
+                    MissingModuleMarkerDescriptor,
+                    Location.None,
+                    referencedAssembly.Identity.Name));
+        }
+    }
+
+    private static bool TryFindModuleCandidateLocation(
+        INamespaceSymbol @namespace,
+        DiscoverySymbols discoverySymbols,
+        CancellationToken cancellationToken,
+        out Location? location)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        foreach (var nestedNamespace in @namespace.GetNamespaceMembers())
+        {
+            if (TryFindModuleCandidateLocation(nestedNamespace, discoverySymbols, cancellationToken, out location))
+            {
+                return true;
+            }
+        }
+
+        foreach (var type in @namespace.GetTypeMembers())
+        {
+            if (TryFindModuleCandidateLocation(type, discoverySymbols, cancellationToken, out location))
+            {
+                return true;
+            }
+        }
+
+        location = null;
+        return false;
+    }
+
+    private static bool TryFindModuleCandidateLocation(
+        INamedTypeSymbol type,
+        DiscoverySymbols discoverySymbols,
+        CancellationToken cancellationToken,
+        out Location? location)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (ContainsModuleCandidate(type, discoverySymbols))
+        {
+            location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
+            return location is not null;
+        }
+
+        foreach (var nestedType in type.GetTypeMembers())
+        {
+            if (TryFindModuleCandidateLocation(nestedType, discoverySymbols, cancellationToken, out location))
+            {
+                return true;
+            }
+        }
+
+        location = null;
+        return false;
+    }
+
+    private static bool ContainsModuleCandidate(INamedTypeSymbol type, DiscoverySymbols discoverySymbols)
+    {
+        if (!IsDiscoverableType(type))
+        {
+            return false;
+        }
+
+        if (FindBestRequestInterface(type, discoverySymbols) is not null
+            || ImplementsInterface(type, discoverySymbols.NotificationInterface)
+            || ImplementsInterface(type, discoverySymbols.StreamRequestInterface))
+        {
+            return true;
+        }
+
+        return type.AllInterfaces.Any(
+            candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.HandlerInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.CommandHandlerInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.CommandHandlerOfResponseInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.QueryHandlerInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.PipelineInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.NotificationHandlerInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.StreamHandlerInterface));
     }
 
     private static void ReportDuplicateGeneratedRegistration(
         INamedTypeSymbol type,
         string serviceType,
         string implementationType,
+        IAssemblySymbol primaryAssembly,
         DiscoveryState discoveryState)
     {
         var registrationKey = $"{serviceType}|{implementationType}";
@@ -714,16 +859,10 @@ internal static class DiscoveryModelBuilder
             return;
         }
 
-        var location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
-        if (location is null)
-        {
-            return;
-        }
-
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
                 DuplicateGeneratedRegistrationDescriptor,
-                location,
+                GetDiagnosticLocation(type, primaryAssembly),
                 serviceType,
                 implementationType));
     }
@@ -761,11 +900,7 @@ internal static class DiscoveryModelBuilder
             return;
         }
 
-        var location = requestContract.Location;
-        if (location is null)
-        {
-            return;
-        }
+        var location = GetDiagnosticLocation(requestContract.Location, requestContract.IsInPrimaryAssembly);
 
         var diagnostic = descriptor.Id == MissingHandlerDescriptor.Id
             ? Diagnostic.Create(descriptor, location, request.MetadataName)
@@ -777,6 +912,7 @@ internal static class DiscoveryModelBuilder
         INamedTypeSymbol type,
         string requestMetadataName,
         bool hasCompatibleHandleMethod,
+        IAssemblySymbol primaryAssembly,
         DiscoveryState discoveryState)
     {
         if (hasCompatibleHandleMethod)
@@ -790,18 +926,28 @@ internal static class DiscoveryModelBuilder
             return;
         }
 
-        var location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
-        if (location is null)
-        {
-            return;
-        }
-
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
                 InvalidHandlerSignatureDescriptor,
-                location,
+                GetDiagnosticLocation(type, primaryAssembly),
                 GetMetadataName(type),
                 requestMetadataName));
+    }
+
+    private static Location GetDiagnosticLocation(INamedTypeSymbol type, IAssemblySymbol primaryAssembly)
+    {
+        var location = type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault();
+        return GetDiagnosticLocation(location, SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, primaryAssembly));
+    }
+
+    private static Location GetDiagnosticLocation(Location? location, bool isInPrimaryAssembly)
+    {
+        if (!isInPrimaryAssembly || location is null)
+        {
+            return Location.None;
+        }
+
+        return location;
     }
 
     private static string GetSelfRegistrationServiceType(string implementationType)

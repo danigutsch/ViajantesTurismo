@@ -30,4 +30,6 @@ internal sealed class DiscoveryState
     public HashSet<string> DiagnosedDuplicateRegistrationKeys { get; } = new(StringComparer.Ordinal);
 
     public HashSet<string> DiagnosedInvalidHandlerKeys { get; } = new(StringComparer.Ordinal);
+
+    public HashSet<string> DiagnosedUnmarkedAssemblies { get; } = new(StringComparer.Ordinal);
 }
