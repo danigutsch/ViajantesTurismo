@@ -12,4 +12,8 @@ internal static class MediatorDiagnosticIds
     public const string MissingModuleMarker = "SKMED011";
     public const string DuplicateGeneratedRegistration = "SKMED012";
     public const string UnprovenObjectDispatchCoverage = "SKMED013";
+    public const string InvalidPipelineGenericArity = "SKMED020";
+    public const string DuplicatePipelineOrder = "SKMED021";
+    public const string NeverAppliesPipeline = "SKMED022";
+    public const string UnboundPipelineConstraints = "SKMED023";
 }

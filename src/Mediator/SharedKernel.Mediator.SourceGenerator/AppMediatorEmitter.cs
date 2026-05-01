@@ -42,9 +42,9 @@ internal static class AppMediatorEmitter
         builder.AppendLine("    internal global::System.IServiceProvider Services { get; }");
         builder.AppendLine();
 
-        foreach (var request in model.Requests)
+        for (var requestIndex = 0; requestIndex < model.Requests.Length; requestIndex++)
         {
-            EmitTypedSendOverload(builder, request);
+            EmitTypedSendOverload(builder, model.Requests[requestIndex], requestIndex);
         }
 
         builder.AppendLine();
@@ -100,7 +100,7 @@ internal static class AppMediatorEmitter
         return builder.ToString();
     }
 
-    private static void EmitTypedSendOverload(StringBuilder builder, RequestDescriptor request)
+    private static void EmitTypedSendOverload(StringBuilder builder, RequestDescriptor request, int requestIndex)
     {
         var accessibleHandlers = request.Handlers
             .Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod)
@@ -147,11 +147,20 @@ internal static class AppMediatorEmitter
                     .AppendLine(">(request);");
                 break;
             case 1:
-                builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
-                    .Append(accessibleHandlers[0].MetadataName)
-                    .AppendLine(">(Services);");
-                builder.AppendLine();
-                builder.AppendLine("        return handler.Handle(request, ct);");
+                if (request.Pipelines.Length == 0)
+                {
+                    builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                        .Append(accessibleHandlers[0].MetadataName)
+                        .AppendLine(">(Services);");
+                    builder.AppendLine();
+                    builder.AppendLine("        return handler.Handle(request, ct);");
+                }
+                else
+                {
+                    builder.Append("        return GeneratedPipelines.Invoke_")
+                        .Append(requestIndex.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture))
+                        .AppendLine("(this, request, ct);");
+                }
                 break;
             default:
                 builder.Append("        return GeneratedDispatch.ThrowAmbiguousHandlers<")

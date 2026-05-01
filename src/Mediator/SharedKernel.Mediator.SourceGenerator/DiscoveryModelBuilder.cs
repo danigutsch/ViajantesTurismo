@@ -66,6 +66,38 @@ internal static class DiscoveryModelBuilder
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor InvalidPipelineGenericArityDescriptor = new(
+        id: MediatorDiagnosticIds.InvalidPipelineGenericArity,
+        title: "Pipeline behavior has invalid generic arity",
+        messageFormat: "Pipeline behavior '{0}' has invalid generic arity {1}; open generic pipeline behaviors must declare exactly two type parameters",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor DuplicatePipelineOrderDescriptor = new(
+        id: MediatorDiagnosticIds.DuplicatePipelineOrder,
+        title: "Duplicate pipeline order",
+        messageFormat: "Request '{0}' has multiple applicable pipeline behaviors with stage {1} and order {2}",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor NeverAppliesPipelineDescriptor = new(
+        id: MediatorDiagnosticIds.NeverAppliesPipeline,
+        title: "Pipeline behavior is registered but never applies",
+        messageFormat: "Pipeline behavior '{0}' is registered but does not apply to any discovered request",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor UnboundPipelineConstraintsDescriptor = new(
+        id: MediatorDiagnosticIds.UnboundPipelineConstraints,
+        title: "Pipeline behavior constraints cannot bind to any request",
+        messageFormat: "Pipeline behavior '{0}' constraints cannot bind to any discovered request/response pair",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public static DiscoveryModel Build(Compilation compilation, CancellationToken cancellationToken)
     {
         var discoverySymbols = DiscoverySymbols.Create(compilation);
@@ -102,7 +134,12 @@ internal static class DiscoveryModelBuilder
                 cancellationToken);
         }
 
-        var requests = BuildRequestDescriptors(discoveryState.RequestContracts, discoveryState.RequestHandlers, discoveryState.Pipelines);
+        var requests = BuildRequestDescriptors(
+            discoveryState.RequestContracts,
+            discoveryState.RequestHandlers,
+            discoveryState.Pipelines,
+            compilation.Assembly,
+            discoveryState);
         ReportRequestHandlerDiagnostics(requests, discoveryState);
 
         return new DiscoveryModel(
@@ -226,7 +263,9 @@ internal static class DiscoveryModelBuilder
     private static ImmutableArray<RequestDescriptor> BuildRequestDescriptors(
         IDictionary<string, RawRequestContract> requestContracts,
         IEnumerable<HandlerDescriptor> requestHandlers,
-        IEnumerable<PipelineDescriptor> pipelines)
+        IEnumerable<RawPipelineDescriptor> pipelines,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
     {
         var handlersByRequest = requestHandlers
             .GroupBy(static handler => handler.RequestMetadataName, StringComparer.Ordinal)
@@ -238,16 +277,40 @@ internal static class DiscoveryModelBuilder
                     .ToImmutableArray(),
                 StringComparer.Ordinal);
 
-        var pipelinesByRequest = pipelines
-            .GroupBy(static pipeline => pipeline.RequestMetadataName, StringComparer.Ordinal)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group
-                    .OrderBy(static pipeline => pipeline.Stage)
-                    .ThenBy(static pipeline => pipeline.Order)
-                    .ThenBy(static pipeline => pipeline.MetadataName, StringComparer.Ordinal)
-                    .ToImmutableArray(),
-                StringComparer.Ordinal);
+        var matchedPipelinesByRequest = requestContracts.Keys.ToDictionary(
+            static requestMetadataName => requestMetadataName,
+            static _ => new List<(PipelineDescriptor Descriptor, RawPipelineDescriptor Raw)>(),
+            StringComparer.Ordinal);
+
+        foreach (var pipeline in pipelines)
+        {
+            foreach (var match in MatchPipelineDescriptors(pipeline, requestContracts.Values, primaryAssembly, discoveryState))
+            {
+                if (matchedPipelinesByRequest.TryGetValue(match.Descriptor.RequestMetadataName, out var requestPipelines))
+                {
+                    requestPipelines.Add(match);
+                }
+            }
+        }
+
+        foreach (var requestPipelines in matchedPipelinesByRequest)
+        {
+            foreach (var duplicateGroup in requestPipelines.Value
+                         .GroupBy(static pipeline => (pipeline.Descriptor.Stage, pipeline.Descriptor.Order))
+                         .Where(static group => group.Count() > 1))
+            {
+                foreach (var pipeline in duplicateGroup)
+                {
+                    discoveryState.Diagnostics.Add(
+                        Diagnostic.Create(
+                            DuplicatePipelineOrderDescriptor,
+                            GetDiagnosticLocation(pipeline.Raw.TypeSymbol, primaryAssembly),
+                            requestPipelines.Key,
+                            duplicateGroup.Key.Stage,
+                            duplicateGroup.Key.Order));
+                }
+            }
+        }
 
         return [.. requestContracts.Values
             .OrderBy(static request => request.MetadataName, StringComparer.Ordinal)
@@ -257,8 +320,14 @@ internal static class DiscoveryModelBuilder
                     var handlers = handlersByRequest.TryGetValue(request.MetadataName, out var requestHandlers)
                         ? requestHandlers
                         : [];
-                    var requestPipelines = pipelinesByRequest.TryGetValue(request.MetadataName, out var discoveredPipelines)
-                        ? discoveredPipelines
+                    ImmutableArray<PipelineDescriptor> requestPipelines = matchedPipelinesByRequest.TryGetValue(
+                        request.MetadataName,
+                        out var discoveredPipelines)
+                        ? [.. discoveredPipelines
+                            .OrderBy(static pipeline => pipeline.Descriptor.Stage)
+                            .ThenBy(static pipeline => pipeline.Descriptor.Order)
+                            .ThenBy(static pipeline => pipeline.Descriptor.MetadataName, StringComparer.Ordinal)
+                            .Select(static pipeline => pipeline.Descriptor)]
                         : [];
 
                     return new RequestDescriptor(
@@ -271,6 +340,306 @@ internal static class DiscoveryModelBuilder
                         handlers,
                         requestPipelines);
                 })];
+    }
+
+    private static IEnumerable<(PipelineDescriptor Descriptor, RawPipelineDescriptor Raw)> MatchPipelineDescriptors(
+        RawPipelineDescriptor pipeline,
+        IEnumerable<RawRequestContract> requestContracts,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
+    {
+        if (!pipeline.IsAccessibleToGeneratedMediator)
+        {
+            yield break;
+        }
+
+        if (pipeline.Applicability == PipelineApplicability.Closed)
+        {
+            var matchedRequest = requestContracts.FirstOrDefault(
+                request =>
+                    string.Equals(request.MetadataName, pipeline.RequestMetadataName, StringComparison.Ordinal)
+                    && string.Equals(request.Response.MetadataName, pipeline.ResponseMetadataName, StringComparison.Ordinal));
+
+            if (matchedRequest is null)
+            {
+                ReportNeverAppliesPipeline(pipeline, primaryAssembly, discoveryState);
+                yield break;
+            }
+
+            yield return (
+                new PipelineDescriptor(
+                    pipeline.MetadataName,
+                    pipeline.OpenGenericMetadataName,
+                    matchedRequest.MetadataName,
+                    pipeline.Stage,
+                    pipeline.Order,
+                    PipelineApplicability.Closed,
+                    pipeline.IsAccessibleToGeneratedMediator),
+                pipeline);
+            yield break;
+        }
+
+        if (pipeline.TypeParameters.Length != 2)
+        {
+            ReportInvalidPipelineGenericArity(pipeline, primaryAssembly, discoveryState);
+            yield break;
+        }
+
+        var matchedAny = false;
+        var constraintFailure = false;
+
+        foreach (var request in requestContracts)
+        {
+            if (TryBindOpenGenericPipeline(pipeline, request, out var descriptor, out var failedConstraints))
+            {
+                matchedAny = true;
+                yield return (descriptor, pipeline);
+                continue;
+            }
+
+            constraintFailure |= failedConstraints;
+        }
+
+        if (matchedAny)
+        {
+            yield break;
+        }
+
+        if (constraintFailure)
+        {
+            ReportUnboundPipelineConstraints(pipeline, primaryAssembly, discoveryState);
+            yield break;
+        }
+
+        ReportNeverAppliesPipeline(pipeline, primaryAssembly, discoveryState);
+    }
+
+    private static bool TryBindOpenGenericPipeline(
+        RawPipelineDescriptor pipeline,
+        RawRequestContract request,
+        out PipelineDescriptor descriptor,
+        out bool failedConstraints)
+    {
+        descriptor = null!;
+        failedConstraints = false;
+
+        var bindings = new Dictionary<ITypeParameterSymbol, ITypeSymbol>(SymbolEqualityComparer.Default);
+        if (!TryUnifyTypePattern(pipeline.RequestTypePattern, request.TypeSymbol, bindings)
+            || !TryUnifyTypePattern(pipeline.ResponseTypePattern, request.ResponseTypeSymbol, bindings))
+        {
+            return false;
+        }
+
+        if (pipeline.TypeParameters.Any(typeParameter => !bindings.ContainsKey(typeParameter))
+            || !TypeArgumentsSatisfyConstraints(pipeline.TypeParameters, bindings))
+        {
+            failedConstraints = true;
+            return false;
+        }
+
+        var constructedType = pipeline.TypeSymbol.OriginalDefinition.Construct(
+            [.. pipeline.TypeParameters.Select(typeParameter => bindings[typeParameter])]);
+        descriptor = new PipelineDescriptor(
+            GetMetadataName(constructedType),
+            pipeline.OpenGenericMetadataName,
+            request.MetadataName,
+            pipeline.Stage,
+            pipeline.Order,
+            PipelineApplicability.OpenGeneric,
+            pipeline.IsAccessibleToGeneratedMediator);
+        return true;
+    }
+
+    private static bool TryUnifyTypePattern(
+        ITypeSymbol pattern,
+        ITypeSymbol actual,
+        Dictionary<ITypeParameterSymbol, ITypeSymbol> bindings)
+    {
+        if (pattern is ITypeParameterSymbol typeParameter)
+        {
+            if (bindings.TryGetValue(typeParameter, out var boundType))
+            {
+                return SymbolEqualityComparer.Default.Equals(boundType, actual);
+            }
+
+            bindings[typeParameter] = actual;
+            return true;
+        }
+
+        if (pattern is INamedTypeSymbol namedPattern)
+        {
+            if (actual is not INamedTypeSymbol namedActual
+                || !SymbolEqualityComparer.Default.Equals(namedPattern.OriginalDefinition, namedActual.OriginalDefinition)
+                || namedPattern.TypeArguments.Length != namedActual.TypeArguments.Length)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < namedPattern.TypeArguments.Length; index++)
+            {
+                if (!TryUnifyTypePattern(namedPattern.TypeArguments[index], namedActual.TypeArguments[index], bindings))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return SymbolEqualityComparer.Default.Equals(pattern, actual);
+    }
+
+    private static bool TypeArgumentsSatisfyConstraints(
+        ImmutableArray<ITypeParameterSymbol> typeParameters,
+        Dictionary<ITypeParameterSymbol, ITypeSymbol> bindings)
+    {
+        foreach (var typeParameter in typeParameters)
+        {
+            var actualType = bindings[typeParameter];
+            if (!TypeArgumentSatisfiesConstraints(actualType, typeParameter, bindings))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TypeArgumentSatisfiesConstraints(
+        ITypeSymbol actualType,
+        ITypeParameterSymbol typeParameter,
+        Dictionary<ITypeParameterSymbol, ITypeSymbol> bindings)
+    {
+        if (typeParameter.HasReferenceTypeConstraint && !actualType.IsReferenceType)
+        {
+            return false;
+        }
+
+        if (typeParameter.HasValueTypeConstraint && !actualType.IsValueType)
+        {
+            return false;
+        }
+
+        if (typeParameter.HasUnmanagedTypeConstraint && !actualType.IsUnmanagedType)
+        {
+            return false;
+        }
+
+        if (typeParameter.HasNotNullConstraint && actualType.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            return false;
+        }
+
+        if (typeParameter.HasConstructorConstraint
+            && actualType is INamedTypeSymbol namedActual
+            && !namedActual.IsValueType
+            && !namedActual.InstanceConstructors.Any(static constructor => constructor.Parameters.Length == 0 && constructor.DeclaredAccessibility == Accessibility.Public))
+        {
+            return false;
+        }
+
+        foreach (var constraintType in typeParameter.ConstraintTypes)
+        {
+            var substitutedConstraint = SubstituteTypeParameters(constraintType, bindings);
+            if (substitutedConstraint is null || !ImplementsOrDerivesFrom(actualType, substitutedConstraint))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static ITypeSymbol? SubstituteTypeParameters(
+        ITypeSymbol type,
+        Dictionary<ITypeParameterSymbol, ITypeSymbol> bindings)
+    {
+        if (type is ITypeParameterSymbol typeParameter)
+        {
+            return bindings.TryGetValue(typeParameter, out var boundType) ? boundType : null;
+        }
+
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericType)
+        {
+            var substitutedArguments = new ITypeSymbol[namedType.TypeArguments.Length];
+            for (var index = 0; index < namedType.TypeArguments.Length; index++)
+            {
+                var substitutedArgument = SubstituteTypeParameters(namedType.TypeArguments[index], bindings);
+                if (substitutedArgument is null)
+                {
+                    return null;
+                }
+
+                substitutedArguments[index] = substitutedArgument;
+            }
+
+            return namedType.OriginalDefinition.Construct(substitutedArguments);
+        }
+
+        return type;
+    }
+
+    private static bool ImplementsOrDerivesFrom(ITypeSymbol actualType, ITypeSymbol constraintType)
+    {
+        if (SymbolEqualityComparer.Default.Equals(actualType, constraintType))
+        {
+            return true;
+        }
+
+        if (actualType is INamedTypeSymbol namedActual)
+        {
+            if (namedActual.AllInterfaces.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, constraintType)))
+            {
+                return true;
+            }
+
+            for (var baseType = namedActual.BaseType; baseType is not null; baseType = baseType.BaseType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(baseType, constraintType))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void ReportInvalidPipelineGenericArity(
+        RawPipelineDescriptor pipeline,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
+    {
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                InvalidPipelineGenericArityDescriptor,
+                GetDiagnosticLocation(pipeline.TypeSymbol, primaryAssembly),
+                pipeline.MetadataName,
+                pipeline.TypeParameters.Length));
+    }
+
+    private static void ReportNeverAppliesPipeline(
+        RawPipelineDescriptor pipeline,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
+    {
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                NeverAppliesPipelineDescriptor,
+                GetDiagnosticLocation(pipeline.TypeSymbol, primaryAssembly),
+                pipeline.MetadataName));
+    }
+
+    private static void ReportUnboundPipelineConstraints(
+        RawPipelineDescriptor pipeline,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
+    {
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                UnboundPipelineConstraintsDescriptor,
+                GetDiagnosticLocation(pipeline.TypeSymbol, primaryAssembly),
+                pipeline.MetadataName));
     }
 
     private static ImmutableArray<NotificationDescriptor> BuildNotificationDescriptors(
@@ -351,6 +720,8 @@ internal static class DiscoveryModelBuilder
             type.Name,
             GetRequestKind(type, discoverySymbols),
             CreateResponseDescriptor(responseType),
+            type,
+            responseType,
             type.IsValueType,
             SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, primaryAssembly),
             type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault());
@@ -458,7 +829,7 @@ internal static class DiscoveryModelBuilder
         return ($"{descriptor.RequestMetadataName}|{descriptor.ResponseMetadataName}", priority, descriptor);
     }
 
-    private static IEnumerable<PipelineDescriptor> CreatePipelines(
+    private static IEnumerable<RawPipelineDescriptor> CreatePipelines(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
         DiscoveryState discoveryState,
@@ -492,14 +863,19 @@ internal static class DiscoveryModelBuilder
                 ? orderValue
                 : 0;
 
-            yield return new PipelineDescriptor(
+            yield return new RawPipelineDescriptor(
                 GetMetadataName(type),
                 type.TypeParameters.Length > 0 ? GetMetadataName(type.OriginalDefinition) : null,
-                GetTypeDisplayString(typeArguments[0]),
                 stage,
                 order,
                 type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed,
-                isAccessibleToGeneratedMediator);
+                isAccessibleToGeneratedMediator,
+                GetTypeDisplayString(typeArguments[0]),
+                GetTypeDisplayString(typeArguments[1]),
+                type,
+                typeArguments[0],
+                typeArguments[1],
+                [.. type.TypeParameters]);
 
             if (isAccessibleToGeneratedMediator)
             {

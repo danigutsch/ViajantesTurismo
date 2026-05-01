@@ -11,7 +11,7 @@ internal sealed class DiscoveryState
 
     public List<HandlerDescriptor> RequestHandlers { get; } = [];
 
-    public List<PipelineDescriptor> Pipelines { get; } = [];
+    public List<RawPipelineDescriptor> Pipelines { get; } = [];
 
     public Dictionary<string, string> NotificationContracts { get; } = new(StringComparer.Ordinal);
 

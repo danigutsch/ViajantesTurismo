@@ -11,6 +11,8 @@ internal sealed record RawRequestContract(
     string Name,
     RequestKind Kind,
     ResponseDescriptor Response,
+    INamedTypeSymbol TypeSymbol,
+    ITypeSymbol ResponseTypeSymbol,
     bool IsValueType,
     bool IsInPrimaryAssembly,
     Location? Location);

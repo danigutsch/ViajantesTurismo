@@ -9,3 +9,7 @@ SKMED010 | Usage | Warning | Mediator registration type is inaccessible
 SKMED011 | Usage | Warning | Handler module is not marked with `[assembly: MediatorModule]`
 SKMED012 | Usage | Warning | Generated mediator registration is duplicated
 SKMED013 | Usage | Warning | Generated object dispatch coverage cannot be proven
+SKMED020 | Usage | Warning | Pipeline behavior has invalid generic arity
+SKMED021 | Usage | Warning | Duplicate pipeline order
+SKMED022 | Usage | Warning | Pipeline behavior is registered but never applies
+SKMED023 | Usage | Warning | Pipeline behavior constraints cannot bind to any request
