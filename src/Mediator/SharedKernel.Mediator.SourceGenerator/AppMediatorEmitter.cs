@@ -96,8 +96,6 @@ internal static class AppMediatorEmitter
         builder.AppendLine("        throw new global::System.NotSupportedException(\"Generated notification dispatch is not available yet.\");");
         builder.AppendLine("    }");
         builder.AppendLine("}");
-        builder.AppendLine();
-        EmitGeneratedDispatch(builder, model.Requests);
 
         return builder.ToString();
     }
@@ -165,106 +163,5 @@ internal static class AppMediatorEmitter
         }
 
         builder.AppendLine("    }");
-    }
-
-    private static void EmitGeneratedDispatch(StringBuilder builder, IEnumerable<RequestDescriptor> requests)
-    {
-        var requestList = requests.ToArray();
-
-        builder.AppendLine("internal static class GeneratedDispatch");
-        builder.AppendLine("{");
-        builder.AppendLine("    public static global::System.Threading.Tasks.ValueTask<TResponse> Send<TResponse>(");
-        builder.AppendLine("        AppMediator mediator,");
-        builder.AppendLine("        global::SharedKernel.Mediator.IRequest<TResponse> request,");
-        builder.AppendLine("        global::System.Threading.CancellationToken ct)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        return request switch");
-        builder.AppendLine("        {");
-
-        foreach (var request in requestList)
-        {
-            builder.Append("            ")
-                .Append(request.MetadataName)
-                .Append(" typed => Cast<")
-                .Append(request.Response.MetadataName)
-                .Append(", TResponse>(mediator.Send(typed, ct)),")
-                .AppendLine();
-        }
-
-        builder.AppendLine("            _ => ThrowNoHandler<TResponse>(request),");
-        builder.AppendLine("        };");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static global::System.Threading.Tasks.ValueTask<object?> SendObject(");
-        builder.AppendLine("        AppMediator mediator,");
-        builder.AppendLine("        object request,");
-        builder.AppendLine("        global::System.Threading.CancellationToken ct)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        return request switch");
-        builder.AppendLine("        {");
-
-        foreach (var request in requestList)
-        {
-            builder.Append("            ")
-                .Append(request.MetadataName)
-                .Append(" typed => Box<")
-                .Append(request.Response.MetadataName)
-                .Append(">(mediator.Send(typed, ct)),")
-                .AppendLine();
-        }
-
-        builder.AppendLine("            _ => ThrowUnknownRequestObject(request),");
-        builder.AppendLine("        };");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static async global::System.Threading.Tasks.ValueTask<TTarget> Cast<TSource, TTarget>(");
-        builder.AppendLine("        global::System.Threading.Tasks.ValueTask<TSource> source)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        var result = await source.ConfigureAwait(false);");
-        builder.AppendLine();
-        builder.AppendLine("        if (result is TTarget typed)");
-        builder.AppendLine("        {");
-        builder.AppendLine("            return typed;");
-        builder.AppendLine("        }");
-        builder.AppendLine();
-        builder.AppendLine("        return ThrowInvalidResponseCast<TSource, TTarget>();");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static async global::System.Threading.Tasks.ValueTask<object?> Box<TSource>(");
-        builder.AppendLine("        global::System.Threading.Tasks.ValueTask<TSource> source)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        return await source.ConfigureAwait(false);");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static global::System.Threading.Tasks.ValueTask<TResponse> ThrowNoHandler<TResponse>(");
-        builder.AppendLine("        global::SharedKernel.Mediator.IRequest<TResponse> request)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(request);");
-        builder.AppendLine();
-        builder.AppendLine("        throw new global::System.NotSupportedException($\"Generated request dispatch is not available for request type '{request.GetType().FullName}'.\");");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static global::System.Threading.Tasks.ValueTask<object?> ThrowUnknownRequestObject(");
-        builder.AppendLine("        object request)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(request);");
-        builder.AppendLine();
-        builder.AppendLine("        throw new global::System.NotSupportedException($\"Generated object dispatch is not available for request type '{request.GetType().FullName}'.\");");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static global::System.Threading.Tasks.ValueTask<TResponse> ThrowAmbiguousHandlers<TResponse>(");
-        builder.AppendLine("        global::SharedKernel.Mediator.IRequest<TResponse> request,");
-        builder.AppendLine("        int handlerCount)");
-        builder.AppendLine("    {");
-        builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(request);");
-        builder.AppendLine();
-        builder.AppendLine("        throw new global::System.InvalidOperationException($\"Generated request dispatch found {handlerCount} accessible handlers for request type '{request.GetType().FullName}'.\");");
-        builder.AppendLine("    }");
-        builder.AppendLine();
-        builder.AppendLine("    public static TTarget ThrowInvalidResponseCast<TSource, TTarget>()");
-        builder.AppendLine("    {");
-        builder.AppendLine("        throw new global::System.InvalidOperationException($\"Generated request dispatch returned '{typeof(TSource).FullName}' when '{typeof(TTarget).FullName}' was expected.\");");
-        builder.AppendLine("    }");
-        builder.AppendLine("}");
     }
 }
