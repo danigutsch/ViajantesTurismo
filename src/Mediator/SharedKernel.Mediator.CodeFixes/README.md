@@ -26,6 +26,14 @@ The project also provides safe fixes for closely related compiler diagnostics:
 - `CS7036` can add the missing `ct` argument to mediator `Send(...)` calls.
 - `CS1503` can add the required mediator request interface to a request type used in `Send(...)`.
 
+Fix All is intentionally limited to the safe bulk-fix set:
+
+- `CS7036`
+- `CS1503`
+- `SKMED001`
+- `SKMED004`
+- `SKMED011`
+
 Unsafe or cross-assembly diagnostics remain intentionally unfixed until a safe local repair exists.
 
 ## Planned Scope

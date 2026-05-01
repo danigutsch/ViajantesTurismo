@@ -29,7 +29,7 @@ public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()
     {
-        return WellKnownFixAllProviders.BatchFixer;
+        return SafeMediatorFixAllProvider.Instance;
     }
 
     /// <inheritdoc />
