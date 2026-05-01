@@ -93,7 +93,7 @@ internal static class AppMediatorEmitter
         builder.AppendLine("    {");
         builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(notification);");
         builder.AppendLine();
-        builder.AppendLine("        throw new global::System.NotSupportedException(\"Generated notification dispatch is not available yet.\");");
+        builder.AppendLine("        return GeneratedDispatch.Publish(this, notification, ct);");
         builder.AppendLine("    }");
         builder.AppendLine("}");
 
