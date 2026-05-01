@@ -8,6 +8,9 @@ internal static class MediatorDiagnosticIds
     public const string MissingHandler = "SKMED001";
     public const string MultipleHandlers = "SKMED002";
     public const string InvalidHandlerSignature = "SKMED003";
+    public const string MissingCancellationToken = "SKMED004";
+    public const string HandlerReturnTypeMismatch = "SKMED005";
+    public const string MissingCancellationForwarding = "SKMED006";
     public const string InaccessibleRegistrationType = "SKMED010";
     public const string MissingModuleMarker = "SKMED011";
     public const string DuplicateGeneratedRegistration = "SKMED012";
@@ -16,4 +19,5 @@ internal static class MediatorDiagnosticIds
     public const string DuplicatePipelineOrder = "SKMED021";
     public const string NeverAppliesPipeline = "SKMED022";
     public const string UnboundPipelineConstraints = "SKMED023";
+    public const string HandlerShouldNotCallSender = "SKMED500";
 }
