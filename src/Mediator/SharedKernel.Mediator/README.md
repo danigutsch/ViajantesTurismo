@@ -15,6 +15,13 @@ registration.
 This runtime package stays focused on shared abstractions-facing runtime support that can remain
 available while source generation owns mediator composition and request dispatch.
 
+## AOT and Trimming
+
+This package is marked `IsAotCompatible=true` so the SDK enables trim and Native AOT analysis for
+the public runtime surface.
+The repository does not keep a dedicated mediator AOT sample project; compatibility is documented
+through package metadata and generator behavior instead.
+
 ## Dependencies
 
 - [SharedKernel.Mediator.Abstractions](../SharedKernel.Mediator.Abstractions/README.md)

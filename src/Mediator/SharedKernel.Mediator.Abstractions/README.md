@@ -16,6 +16,13 @@ abstractions that the runtime, generator, analyzers, and tests build on.
 - Mediator-facing contracts: `ISender`, `IPublisher`, `IMediator`
 - `Unit` and `MediatorModuleAttribute`
 
+## AOT and Trimming
+
+This package is marked `IsAotCompatible=true` so trim and Native AOT analyzers run against the
+abstractions surface.
+The compatibility story for mediator stays documentation-first; the repository does not keep a
+separate mediator AOT sample project.
+
 ## Dependencies
 
 None.

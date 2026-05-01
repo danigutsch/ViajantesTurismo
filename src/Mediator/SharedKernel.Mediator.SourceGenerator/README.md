@@ -21,6 +21,11 @@ project and emits generated source for the mediator toolchain.
   skeleton into the consumer compilation
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
+## AOT and Trimming
+
+The repository does not keep a dedicated mediator AOT sample project; the supported posture is to
+document compatibility and keep the runtime and abstractions packages marked `IsAotCompatible=true`.
+
 ## Dependencies
 
 - `Microsoft.CodeAnalysis.Analyzers`
