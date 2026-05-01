@@ -1,4 +1,7 @@
 #nullable enable
+SharedKernel.Mediator.NotificationOrderAttribute
+SharedKernel.Mediator.NotificationOrderAttribute.NotificationOrderAttribute(int order) -> void
+SharedKernel.Mediator.NotificationOrderAttribute.Order.get -> int
 SharedKernel.Mediator.ICommand
 SharedKernel.Mediator.ICommand<TResponse>
 SharedKernel.Mediator.ICommandHandler<TCommand, TResponse>

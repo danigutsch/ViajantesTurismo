@@ -203,9 +203,18 @@ public sealed class ReferenceMediator : IMediator
 
     internal sealed class NotificationHandlerRegistration(
         string implementationTypeName,
+        int order,
+        bool hasExplicitOrder,
+        int registrationOrder,
         Func<object, CancellationToken, ValueTask> invoke)
     {
         public string ImplementationTypeName { get; } = implementationTypeName;
+
+        public int Order { get; } = order;
+
+        public bool HasExplicitOrder { get; } = hasExplicitOrder;
+
+        public int RegistrationOrder { get; } = registrationOrder;
 
         public Func<object, CancellationToken, ValueTask> Invoke { get; } = invoke;
     }

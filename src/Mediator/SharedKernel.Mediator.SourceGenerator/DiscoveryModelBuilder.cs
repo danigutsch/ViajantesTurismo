@@ -66,6 +66,22 @@ internal static class DiscoveryModelBuilder
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor NotificationHandlersRequireExplicitOrderDescriptor = new(
+        id: MediatorDiagnosticIds.NotificationHandlersRequireExplicitOrder,
+        title: "Notification handlers require explicit order",
+        messageFormat: "Notification '{0}' has multiple sequential handlers and handler '{1}' does not declare [NotificationOrder]",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor DuplicateNotificationHandlerOrderDescriptor = new(
+        id: MediatorDiagnosticIds.DuplicateNotificationHandlerOrder,
+        title: "Duplicate notification handler order",
+        messageFormat: "Notification '{0}' has multiple handlers with explicit order {1}",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor InvalidPipelineGenericArityDescriptor = new(
         id: MediatorDiagnosticIds.InvalidPipelineGenericArity,
         title: "Pipeline behavior has invalid generic arity",
@@ -145,7 +161,7 @@ internal static class DiscoveryModelBuilder
         return new DiscoveryModel(
             [.. modules.OrderBy(static module => module.AssemblyName, StringComparer.Ordinal)],
             requests,
-            BuildNotificationDescriptors(discoveryState.NotificationContracts, discoveryState.NotificationHandlers),
+            BuildNotificationDescriptors(discoveryState.NotificationContracts, discoveryState.NotificationHandlers, discoveryState),
             BuildStreamRequestDescriptors(discoveryState.StreamRequestContracts, discoveryState.StreamHandlers),
             [.. discoveryState.Diagnostics.OrderBy(static diagnostic => diagnostic.Location.SourceSpan.Start)]);
     }
@@ -642,17 +658,43 @@ internal static class DiscoveryModelBuilder
                 pipeline.MetadataName));
     }
 
+    private static void ReportNotificationHandlersRequireExplicitOrder(
+        string notificationMetadataName,
+        NotificationHandlerDescriptor handler,
+        DiscoveryState discoveryState)
+    {
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                NotificationHandlersRequireExplicitOrderDescriptor,
+                handler.DiagnosticLocation ?? Location.None,
+                notificationMetadataName,
+                handler.MetadataName));
+    }
+
+    private static void ReportDuplicateNotificationHandlerOrder(
+        string notificationMetadataName,
+        NotificationHandlerDescriptor handler,
+        int order,
+        DiscoveryState discoveryState)
+    {
+        discoveryState.Diagnostics.Add(
+            Diagnostic.Create(
+                DuplicateNotificationHandlerOrderDescriptor,
+                handler.DiagnosticLocation ?? Location.None,
+                notificationMetadataName,
+                order));
+    }
+
     private static ImmutableArray<NotificationDescriptor> BuildNotificationDescriptors(
         IDictionary<string, string> notificationContracts,
-        IEnumerable<NotificationHandlerDescriptor> notificationHandlers)
+        IEnumerable<NotificationHandlerDescriptor> notificationHandlers,
+        DiscoveryState discoveryState)
     {
         var handlersByNotification = notificationHandlers
             .GroupBy(static handler => handler.NotificationMetadataName, StringComparer.Ordinal)
             .ToDictionary(
                 static group => group.Key,
-                static group => group
-                    .OrderBy(static handler => handler.MetadataName, StringComparer.Ordinal)
-                    .ToImmutableArray(),
+                group => OrderNotificationHandlers(group.Key, [.. group], discoveryState),
                 StringComparer.Ordinal);
 
         return [.. notificationContracts.Keys
@@ -666,6 +708,40 @@ internal static class DiscoveryModelBuilder
 
                     return new NotificationDescriptor(notification, handlers);
                 })];
+    }
+
+    private static ImmutableArray<NotificationHandlerDescriptor> OrderNotificationHandlers(
+        string notificationMetadataName,
+        ImmutableArray<NotificationHandlerDescriptor> handlers,
+        DiscoveryState discoveryState)
+    {
+        var accessibleHandlers = handlers
+            .Where(static handler => handler.IsAccessibleToGeneratedMediator)
+            .ToImmutableArray();
+
+        if (accessibleHandlers.Length > 1)
+        {
+            foreach (var unorderedHandler in accessibleHandlers.Where(static handler => !handler.HasExplicitOrder))
+            {
+                ReportNotificationHandlersRequireExplicitOrder(notificationMetadataName, unorderedHandler, discoveryState);
+            }
+        }
+
+        foreach (var duplicateGroup in accessibleHandlers
+                     .Where(static handler => handler.HasExplicitOrder)
+                     .GroupBy(static handler => handler.Order)
+                     .Where(static group => group.Count() > 1))
+        {
+            foreach (var handler in duplicateGroup)
+            {
+                ReportDuplicateNotificationHandlerOrder(notificationMetadataName, handler, duplicateGroup.Key, discoveryState);
+            }
+        }
+
+        return [.. handlers
+            .OrderByDescending(static handler => handler.HasExplicitOrder)
+            .ThenBy(static handler => handler.Order)
+            .ThenBy(static handler => handler.MetadataName, StringComparer.Ordinal)];
     }
 
     private static ImmutableArray<StreamRequestDescriptor> BuildStreamRequestDescriptors(
@@ -935,6 +1011,13 @@ internal static class DiscoveryModelBuilder
 
         foreach (var typeArguments in notificationTypeArguments)
         {
+            var notificationOrder = type.GetAttributes().SingleOrDefault(
+                attribute => SymbolEqualityComparer.Default.Equals(
+                    attribute.AttributeClass,
+                    discoverySymbols.NotificationOrderAttribute));
+            var hasExplicitOrder = notificationOrder is not null;
+            var order = notificationOrder?.ConstructorArguments[0].Value is int orderValue ? orderValue : 0;
+
             yield return new NotificationHandlerDescriptor(
                 GetMetadataName(type),
                 GetNamespace(type),
@@ -942,7 +1025,10 @@ internal static class DiscoveryModelBuilder
                 GetTypeDisplayString(typeArguments[0]),
                 GetHandleMethodName(type),
                 type.DeclaredAccessibility,
-                isAccessibleToGeneratedMediator);
+                isAccessibleToGeneratedMediator,
+                order,
+                hasExplicitOrder,
+                GetDiagnosticLocation(type, primaryAssembly));
 
             if (isAccessibleToGeneratedMediator)
             {

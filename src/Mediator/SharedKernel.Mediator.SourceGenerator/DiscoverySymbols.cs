@@ -20,6 +20,7 @@ internal sealed class DiscoverySymbols
         && PipelineOrderAttribute is not null
         && NotificationInterface is not null
         && NotificationHandlerInterface is not null
+        && NotificationOrderAttribute is not null
         && StreamRequestInterface is not null
         && StreamHandlerInterface is not null
         && UnitType is not null
@@ -50,6 +51,8 @@ internal sealed class DiscoverySymbols
 
     public INamedTypeSymbol NotificationHandlerInterface { get; private init; } = null!;
 
+    public INamedTypeSymbol NotificationOrderAttribute { get; private init; } = null!;
+
     public INamedTypeSymbol StreamRequestInterface { get; private init; } = null!;
 
     public INamedTypeSymbol StreamHandlerInterface { get; private init; } = null!;
@@ -76,6 +79,7 @@ internal sealed class DiscoverySymbols
             PipelineOrderAttribute = compilation.GetTypeByMetadataName(MetadataNames.PipelineOrderAttribute)!,
             NotificationInterface = compilation.GetTypeByMetadataName(MetadataNames.Notification)!,
             NotificationHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.NotificationHandler)!,
+            NotificationOrderAttribute = compilation.GetTypeByMetadataName(MetadataNames.NotificationOrderAttribute)!,
             StreamRequestInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequest)!,
             StreamHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,
             UnitType = compilation.GetTypeByMetadataName("SharedKernel.Mediator.Unit")!,

@@ -34,6 +34,7 @@ public sealed class ReferenceDispatcherBuilder
     private readonly Dictionary<(Type RequestType, Type ResponseType), List<ReferenceMediator.StreamHandlerRegistration>> streamHandlers = [];
 
     private int pipelineRegistrationOrder;
+    private int notificationRegistrationOrder;
 
     /// <summary>
     /// Registers a typed request handler.
@@ -144,11 +145,15 @@ public sealed class ReferenceDispatcherBuilder
         where TNotification : INotification
     {
         ArgumentNullException.ThrowIfNull(handler);
+        var notificationOrder = handler.GetType().GetCustomAttribute<NotificationOrderAttribute>();
 
         AddNotificationHandlerCore(
             typeof(TNotification),
             new ReferenceMediator.NotificationHandlerRegistration(
                 handler.GetType().FullName ?? handler.GetType().Name,
+                notificationOrder?.Order ?? 0,
+                notificationOrder is not null,
+                notificationRegistrationOrder++,
                 (notification, ct) => handler.Handle((TNotification)notification, ct)));
 
         return this;
@@ -173,7 +178,8 @@ public sealed class ReferenceDispatcherBuilder
             CreateTypedRegistration<ReferenceMediator.NotificationHandlerRegistration>(
                 CreateNotificationHandlerRegistrationMethod,
                 notificationType,
-                handler));
+                handler,
+                notificationRegistrationOrder++));
 
         return this;
     }
@@ -254,7 +260,12 @@ public sealed class ReferenceDispatcherBuilder
 
         var notificationRoutes = notificationHandlers.ToDictionary(
             static pair => pair.Key,
-            static pair => new ReferenceMediator.NotificationRoute(pair.Value.ToArray()));
+            static pair => new ReferenceMediator.NotificationRoute(
+                [.. pair.Value
+                    .OrderByDescending(static registration => registration.HasExplicitOrder)
+                    .ThenBy(static registration => registration.Order)
+                    .ThenBy(static registration => registration.RegistrationOrder)
+                    .ThenBy(static registration => registration.ImplementationTypeName, StringComparer.Ordinal)]));
 
         var streamRoutes = streamHandlers.ToDictionary(
             static pair => pair.Key,
@@ -329,10 +340,11 @@ public sealed class ReferenceDispatcherBuilder
     private static TRegistration CreateTypedRegistration<TRegistration>(
         MethodInfo openMethod,
         Type notificationType,
-        object instance)
+        object instance,
+        params object[] extraArguments)
     {
         var closedMethod = openMethod.MakeGenericMethod(notificationType);
-        return (TRegistration)closedMethod.Invoke(null, [instance])!;
+        return (TRegistration)closedMethod.Invoke(null, [instance, .. extraArguments])!;
     }
 
     private static void EnsureRequestType(Type requestType, Type responseType)
@@ -468,11 +480,16 @@ public sealed class ReferenceDispatcherBuilder
         }
 
         public static ReferenceMediator.NotificationHandlerRegistration CreateNotificationHandlerRegistrationCore<TNotification>(
-            object handler)
+            object handler,
+            int registrationOrder)
             where TNotification : INotification
         {
+            var notificationOrder = handler.GetType().GetCustomAttribute<NotificationOrderAttribute>();
             return new ReferenceMediator.NotificationHandlerRegistration(
                 handler.GetType().FullName ?? handler.GetType().Name,
+                notificationOrder?.Order ?? 0,
+                notificationOrder is not null,
+                registrationOrder,
                 (notification, ct) => ((INotificationHandler<TNotification>)handler).Handle((TNotification)notification, ct));
         }
 
