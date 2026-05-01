@@ -110,4 +110,4 @@ implementation and package documentation instead of adding speculative analyzer 
 ## See Also
 
 - [SharedKernel.Mediator.CodeFixes](../SharedKernel.Mediator.CodeFixes/README.md)
-- [tmp/dispatching-tooling-expansion-plan.md](../../../tmp/dispatching-tooling-expansion-plan.md)
+- [SharedKernel.Mediator.SourceGenerator](../SharedKernel.Mediator.SourceGenerator/README.md)

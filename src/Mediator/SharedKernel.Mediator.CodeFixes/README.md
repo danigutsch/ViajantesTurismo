@@ -14,6 +14,17 @@ The project now provides safe fixes for the currently implemented generator diag
 - `SKMED001` can generate a missing handler file when no handler candidate exists.
 - `SKMED003` can repair the explicit-interface-only handler shape by adding a public forwarding
   `Handle(...)` method.
+- `SKMED004` can add the missing public `CancellationToken ct` parameter to a handler `Handle(...)`
+  method.
+- `SKMED006` can replace an incorrect forwarded cancellation token with the in-scope `ct`.
+- `SKMED010` can either make an inaccessible registration type public or add
+  `InternalsVisibleTo(...)`.
+- `SKMED011` can add `[assembly: MediatorModule]` for cross-assembly discovery.
+
+The project also provides safe fixes for closely related compiler diagnostics:
+
+- `CS7036` can add the missing `ct` argument to mediator `Send(...)` calls.
+- `CS1503` can add the required mediator request interface to a request type used in `Send(...)`.
 
 Unsafe or cross-assembly diagnostics remain intentionally unfixed until a safe local repair exists.
 
@@ -32,4 +43,4 @@ Unsafe or cross-assembly diagnostics remain intentionally unfixed until a safe l
 ## See Also
 
 - [SharedKernel.Mediator.Analyzers](../SharedKernel.Mediator.Analyzers/README.md)
-- [tmp/dispatching-tooling-expansion-plan.md](../../../tmp/dispatching-tooling-expansion-plan.md)
+- [SharedKernel.Mediator.SourceGenerator](../SharedKernel.Mediator.SourceGenerator/README.md)

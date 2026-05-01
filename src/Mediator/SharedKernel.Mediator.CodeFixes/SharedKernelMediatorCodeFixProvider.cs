@@ -11,11 +11,13 @@ namespace SharedKernel.Mediator.CodeFixes;
 public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
 {
     private const string MissingArgumentDiagnosticId = "CS7036";
+    private const string InvalidRequestArgumentDiagnosticId = "CS1503";
 
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds =>
         [
             MissingArgumentDiagnosticId,
+            InvalidRequestArgumentDiagnosticId,
             MediatorDiagnosticIds.MissingHandler,
             MediatorDiagnosticIds.InvalidHandlerSignature,
             MediatorDiagnosticIds.MissingCancellationToken,
@@ -38,13 +40,12 @@ public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
             switch (diagnostic.Id)
             {
                 case MissingArgumentDiagnosticId:
+                    await MissingCancellationForwardingCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
+                    break;
+                case InvalidRequestArgumentDiagnosticId:
+                    await MissingRequestInterfaceCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
+                    break;
                 case MediatorDiagnosticIds.MissingHandler:
-                    if (string.Equals(diagnostic.Id, MissingArgumentDiagnosticId, StringComparison.Ordinal))
-                    {
-                        await MissingCancellationForwardingCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
-                        break;
-                    }
-
                     await MissingHandlerCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
                     break;
                 case MediatorDiagnosticIds.InvalidHandlerSignature:
