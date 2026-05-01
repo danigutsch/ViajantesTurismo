@@ -1,1 +1,2 @@
-src/Mediator/SharedKernel.Mediator.SourceGenerator/AnalyzerReleases.Unshipped.md
+**/AnalyzerReleases.*.md
+**/BenchmarkDotNet.Artifacts/**/*.md
