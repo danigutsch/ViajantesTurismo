@@ -147,16 +147,16 @@ internal static class MissingRequestInterfaceCodeFix
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan(
-                        $"global::SharedKernel.Mediator.IQuery<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>",
-                        $"IQuery<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}>");
+                        $"global::SharedKernel.Mediator.IQuery<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability)}>",
+                        $"IQuery<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.MinimallyQualifiedWithNullability)}>");
                 }
 
                 if (SymbolMatches(compilation, candidateInterface, ICommandHandlerOfResponseMetadataName)
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan(
-                        $"global::SharedKernel.Mediator.ICommand<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>",
-                        $"ICommand<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}>");
+                        $"global::SharedKernel.Mediator.ICommand<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability)}>",
+                        $"ICommand<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.MinimallyQualifiedWithNullability)}>");
                 }
 
                 if (SymbolMatches(compilation, candidateInterface, ICommandHandlerMetadataName)
@@ -169,15 +169,15 @@ internal static class MissingRequestInterfaceCodeFix
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan(
-                        $"global::SharedKernel.Mediator.IRequest<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>",
-                        $"IRequest<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}>");
+                        $"global::SharedKernel.Mediator.IRequest<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability)}>",
+                        $"IRequest<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.MinimallyQualifiedWithNullability)}>");
                 }
             }
         }
 
         var requestParameter = targetMethod.Parameters.First();
-        var requestContract = requestParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        var displayName = requestParameter.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        var requestContract = requestParameter.Type.ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
+        var displayName = requestParameter.Type.ToDisplayString(SymbolDisplayFormats.MinimallyQualifiedWithNullability);
         return new InterfacePlan(requestContract, displayName);
     }
 

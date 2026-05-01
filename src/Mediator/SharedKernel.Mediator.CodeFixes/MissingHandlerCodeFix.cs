@@ -84,7 +84,7 @@ internal static class MissingHandlerCodeFix
 
     private static bool TryCreatePlan(INamedTypeSymbol requestTypeSymbol, Compilation compilation, out GenerationPlan plan)
     {
-        var requestTypeName = requestTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var requestTypeName = requestTypeSymbol.ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
         var namespaceName = requestTypeSymbol.ContainingNamespace.IsGlobalNamespace
             ? null
             : requestTypeSymbol.ContainingNamespace.ToDisplayString();
@@ -94,7 +94,7 @@ internal static class MissingHandlerCodeFix
         {
             if (SymbolMatches(compilation, mediatorInterface, IQueryMetadataName))
             {
-                var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
                 plan = new GenerationPlan(
                     handlerName,
                     namespaceName,
@@ -107,7 +107,7 @@ internal static class MissingHandlerCodeFix
 
             if (SymbolMatches(compilation, mediatorInterface, ICommandOfResponseMetadataName))
             {
-                var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
                 plan = new GenerationPlan(
                     handlerName,
                     namespaceName,
@@ -132,7 +132,7 @@ internal static class MissingHandlerCodeFix
 
             if (SymbolMatches(compilation, mediatorInterface, IRequestMetadataName))
             {
-                var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
                 plan = new GenerationPlan(
                     handlerName,
                     namespaceName,

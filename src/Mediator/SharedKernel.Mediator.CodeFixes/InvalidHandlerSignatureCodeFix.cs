@@ -143,9 +143,9 @@ internal static class InvalidHandlerSignatureCodeFix
             }
 
             plan = new ForwardingPlan(
-                method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                method.Parameters[0].Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                interfaceType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                method.ReturnType.ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability),
+                method.Parameters[0].Type.ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability),
+                interfaceType.ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability));
             return true;
         }
 
