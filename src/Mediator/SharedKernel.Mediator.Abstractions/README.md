@@ -11,7 +11,7 @@ abstractions that the runtime, generator, analyzers, and tests build on.
 
 - Request contracts: `IRequest<TResponse>`, `ICommand`, `ICommand<TResponse>`, `IQuery<TResponse>`
 - Handler contracts: `IRequestHandler<,>`, command/query handler variants
-- Notification and stream contracts
+- Notification and stream contracts plus notification ordering/dispatch metadata
 - Pipeline contracts and ordering metadata
 - Mediator-facing contracts: `ISender`, `IPublisher`, `IMediator`
 - `Unit` and `MediatorModuleAttribute`

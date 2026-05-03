@@ -17,6 +17,7 @@ internal static class MetadataNames
     public const string PipelineOrderAttribute = "SharedKernel.Mediator.PipelineOrderAttribute";
     public const string Notification = "SharedKernel.Mediator.INotification";
     public const string NotificationHandler = "SharedKernel.Mediator.INotificationHandler`1";
+    public const string NotificationDispatchAttribute = "SharedKernel.Mediator.NotificationDispatchAttribute";
     public const string NotificationOrderAttribute = "SharedKernel.Mediator.NotificationOrderAttribute";
     public const string StreamRequest = "SharedKernel.Mediator.IStreamRequest`1";
     public const string StreamRequestHandler = "SharedKernel.Mediator.IStreamRequestHandler`2";

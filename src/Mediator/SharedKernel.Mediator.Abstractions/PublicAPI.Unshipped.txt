@@ -1,4 +1,10 @@
 #nullable enable
+SharedKernel.Mediator.NotificationDispatchAttribute
+SharedKernel.Mediator.NotificationDispatchAttribute.NotificationDispatchAttribute(SharedKernel.Mediator.NotificationDispatchStrategy strategy) -> void
+SharedKernel.Mediator.NotificationDispatchAttribute.Strategy.get -> SharedKernel.Mediator.NotificationDispatchStrategy
+SharedKernel.Mediator.NotificationDispatchStrategy
+SharedKernel.Mediator.NotificationDispatchStrategy.Parallel = 1 -> SharedKernel.Mediator.NotificationDispatchStrategy
+SharedKernel.Mediator.NotificationDispatchStrategy.Sequential = 0 -> SharedKernel.Mediator.NotificationDispatchStrategy
 SharedKernel.Mediator.NotificationOrderAttribute
 SharedKernel.Mediator.NotificationOrderAttribute.NotificationOrderAttribute(int order) -> void
 SharedKernel.Mediator.NotificationOrderAttribute.Order.get -> int

@@ -9,6 +9,7 @@ namespace SharedKernel.Mediator.SourceGenerator;
 internal static class DiscoveryModelBuilder
 {
     private const string PrimaryAssemblyNamePropertyName = "PrimaryAssemblyName";
+    private const int ParallelNotificationDispatchStrategyValue = 1;
 
     private static readonly DiagnosticDescriptor MissingHandlerDescriptor = new(
         id: MediatorDiagnosticIds.MissingHandler,
@@ -245,9 +246,9 @@ internal static class DiscoveryModelBuilder
             discoveryState.Pipelines.Add(pipeline);
         }
 
-        if (TryCreateNotificationContract(type, discoverySymbols, out var notificationMetadataName))
+        if (TryCreateNotificationContract(type, discoverySymbols, out var notificationContract))
         {
-            discoveryState.NotificationContracts[notificationMetadataName] = notificationMetadataName;
+            discoveryState.NotificationContracts[notificationContract.MetadataName] = notificationContract;
         }
 
         foreach (var notificationHandler in CreateNotificationHandlers(type, discoverySymbols, discoveryState, primaryAssembly))
@@ -686,7 +687,7 @@ internal static class DiscoveryModelBuilder
     }
 
     private static ImmutableArray<NotificationDescriptor> BuildNotificationDescriptors(
-        IDictionary<string, string> notificationContracts,
+        IDictionary<string, RawNotificationContract> notificationContracts,
         IEnumerable<NotificationHandlerDescriptor> notificationHandlers,
         DiscoveryState discoveryState)
     {
@@ -694,32 +695,42 @@ internal static class DiscoveryModelBuilder
             .GroupBy(static handler => handler.NotificationMetadataName, StringComparer.Ordinal)
             .ToDictionary(
                 static group => group.Key,
-                group => OrderNotificationHandlers(group.Key, [.. group], discoveryState),
+                group =>
+                {
+                    var publishInParallel = notificationContracts.TryGetValue(group.Key, out var notificationContract)
+                        && notificationContract.PublishInParallel;
+                    return OrderNotificationHandlers(
+                        group.Key,
+                        [.. group],
+                        publishInParallel,
+                        discoveryState);
+                },
                 StringComparer.Ordinal);
 
-        return [.. notificationContracts.Keys
-            .OrderBy(static notification => notification, StringComparer.Ordinal)
+        return [.. notificationContracts.Values
+            .OrderBy(static notification => notification.MetadataName, StringComparer.Ordinal)
             .Select(
                 notification =>
                 {
-                    var handlers = handlersByNotification.TryGetValue(notification, out var notificationHandlersForContract)
+                    var handlers = handlersByNotification.TryGetValue(notification.MetadataName, out var notificationHandlersForContract)
                         ? notificationHandlersForContract
                         : [];
 
-                    return new NotificationDescriptor(notification, handlers);
+                    return new NotificationDescriptor(notification.MetadataName, notification.PublishInParallel, handlers);
                 })];
     }
 
     private static ImmutableArray<NotificationHandlerDescriptor> OrderNotificationHandlers(
         string notificationMetadataName,
         ImmutableArray<NotificationHandlerDescriptor> handlers,
+        bool publishInParallel,
         DiscoveryState discoveryState)
     {
         var accessibleHandlers = handlers
             .Where(static handler => handler.IsAccessibleToGeneratedMediator)
             .ToImmutableArray();
 
-        if (accessibleHandlers.Length > 1)
+        if (!publishInParallel && accessibleHandlers.Length > 1)
         {
             foreach (var unorderedHandler in accessibleHandlers.Where(static handler => !handler.HasExplicitOrder))
             {
@@ -727,20 +738,23 @@ internal static class DiscoveryModelBuilder
             }
         }
 
-        foreach (var duplicateGroup in accessibleHandlers
-                     .Where(static handler => handler.HasExplicitOrder)
-                     .GroupBy(static handler => handler.Order)
-                     .Where(static group => group.Count() > 1))
+        if (!publishInParallel)
         {
-            foreach (var handler in duplicateGroup)
+            foreach (var duplicateGroup in accessibleHandlers
+                         .Where(static handler => handler.HasExplicitOrder)
+                         .GroupBy(static handler => handler.Order)
+                         .Where(static group => group.Count() > 1))
             {
-                ReportDuplicateNotificationHandlerOrder(notificationMetadataName, handler, duplicateGroup.Key, discoveryState);
+                foreach (var handler in duplicateGroup)
+                {
+                    ReportDuplicateNotificationHandlerOrder(notificationMetadataName, handler, duplicateGroup.Key, discoveryState);
+                }
             }
         }
 
         return [.. handlers
-            .OrderByDescending(static handler => handler.HasExplicitOrder)
-            .ThenBy(static handler => handler.Order)
+            .OrderByDescending(handler => !publishInParallel && handler.HasExplicitOrder)
+            .ThenBy(handler => publishInParallel ? 0 : handler.Order)
             .ThenBy(static handler => handler.MetadataName, StringComparer.Ordinal)];
     }
 
@@ -975,16 +989,25 @@ internal static class DiscoveryModelBuilder
     private static bool TryCreateNotificationContract(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
-        out string notificationMetadataName)
+        out RawNotificationContract notificationContract)
     {
-        notificationMetadataName = string.Empty;
+        notificationContract = null!;
 
         if (!IsDiscoverableType(type) || !ImplementsInterface(type, discoverySymbols.NotificationInterface))
         {
             return false;
         }
 
-        notificationMetadataName = GetMetadataName(type);
+        var notificationDispatchAttribute = discoverySymbols.NotificationDispatchAttribute is null
+            ? null
+            : type.GetAttributes().SingleOrDefault(
+                attribute => SymbolEqualityComparer.Default.Equals(
+                    attribute.AttributeClass,
+                    discoverySymbols.NotificationDispatchAttribute));
+        var publishInParallel = notificationDispatchAttribute?.ConstructorArguments[0].Value is int strategy
+                                && strategy == ParallelNotificationDispatchStrategyValue;
+
+        notificationContract = new RawNotificationContract(GetMetadataName(type), publishInParallel);
         return true;
     }
 

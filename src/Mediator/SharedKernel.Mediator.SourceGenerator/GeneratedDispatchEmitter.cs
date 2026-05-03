@@ -179,11 +179,40 @@ internal static class GeneratedDispatchEmitter
                     .AppendLine(">(services).Handle(notification, ct);");
                 break;
             default:
-                foreach (var handler in accessibleHandlers)
+                if (notification.PublishInParallel)
                 {
-                    builder.Append("        await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
-                        .Append(handler.MetadataName)
-                        .AppendLine(">(services).Handle(notification, ct).ConfigureAwait(false);");
+                    for (var handlerIndex = 0; handlerIndex < accessibleHandlers.Length; handlerIndex++)
+                    {
+                        builder.Append("        var handler")
+                            .Append(handlerIndex.ToString(global::System.Globalization.CultureInfo.InvariantCulture))
+                            .Append(" = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                            .Append(accessibleHandlers[handlerIndex].MetadataName)
+                            .AppendLine(">(services).Handle(notification, ct);");
+                    }
+
+                    builder.Append("        await global::System.Threading.Tasks.Task.WhenAll(");
+                    for (var handlerIndex = 0; handlerIndex < accessibleHandlers.Length; handlerIndex++)
+                    {
+                        if (handlerIndex > 0)
+                        {
+                            builder.Append(", ");
+                        }
+
+                        builder.Append("handler")
+                            .Append(handlerIndex.ToString(global::System.Globalization.CultureInfo.InvariantCulture))
+                            .Append(".AsTask()");
+                    }
+
+                    builder.AppendLine(").ConfigureAwait(false);");
+                }
+                else
+                {
+                    foreach (var handler in accessibleHandlers)
+                    {
+                        builder.Append("        await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                            .Append(handler.MetadataName)
+                            .AppendLine(">(services).Handle(notification, ct).ConfigureAwait(false);");
+                    }
                 }
 
                 break;

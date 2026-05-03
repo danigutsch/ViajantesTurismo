@@ -131,11 +131,19 @@ public sealed class ReferenceMediator : IMediator
         }
     }
 
-    internal sealed class NotificationRoute(IReadOnlyList<NotificationHandlerRegistration> handlers)
+    internal sealed class NotificationRoute(
+        IReadOnlyList<NotificationHandlerRegistration> handlers,
+        bool publishInParallel)
     {
         public async ValueTask Publish(object notification, CancellationToken ct)
         {
             ArgumentNullException.ThrowIfNull(notification);
+
+            if (publishInParallel && handlers.Count > 1)
+            {
+                await Task.WhenAll(handlers.Select(handler => handler.Invoke(notification, ct).AsTask())).ConfigureAwait(false);
+                return;
+            }
 
             foreach (var handler in handlers)
             {

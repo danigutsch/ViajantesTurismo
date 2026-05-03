@@ -51,6 +51,8 @@ internal sealed class DiscoverySymbols
 
     public INamedTypeSymbol NotificationHandlerInterface { get; private init; } = null!;
 
+    public INamedTypeSymbol? NotificationDispatchAttribute { get; private init; }
+
     public INamedTypeSymbol NotificationOrderAttribute { get; private init; } = null!;
 
     public INamedTypeSymbol StreamRequestInterface { get; private init; } = null!;
@@ -79,6 +81,7 @@ internal sealed class DiscoverySymbols
             PipelineOrderAttribute = compilation.GetTypeByMetadataName(MetadataNames.PipelineOrderAttribute)!,
             NotificationInterface = compilation.GetTypeByMetadataName(MetadataNames.Notification)!,
             NotificationHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.NotificationHandler)!,
+            NotificationDispatchAttribute = compilation.GetTypeByMetadataName(MetadataNames.NotificationDispatchAttribute),
             NotificationOrderAttribute = compilation.GetTypeByMetadataName(MetadataNames.NotificationOrderAttribute)!,
             StreamRequestInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequest)!,
             StreamHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,

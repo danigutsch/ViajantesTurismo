@@ -265,7 +265,8 @@ public sealed class ReferenceDispatcherBuilder
                     .OrderByDescending(static registration => registration.HasExplicitOrder)
                     .ThenBy(static registration => registration.Order)
                     .ThenBy(static registration => registration.RegistrationOrder)
-                    .ThenBy(static registration => registration.ImplementationTypeName, StringComparer.Ordinal)]));
+                    .ThenBy(static registration => registration.ImplementationTypeName, StringComparer.Ordinal)],
+                IsParallelNotificationDispatch(pair.Key)));
 
         var streamRoutes = streamHandlers.ToDictionary(
             static pair => pair.Key,
@@ -365,6 +366,12 @@ public sealed class ReferenceDispatcherBuilder
                 $"Type '{notificationType.FullName}' must implement '{typeof(INotification).FullName}'.",
                 nameof(notificationType));
         }
+    }
+
+    private static bool IsParallelNotificationDispatch(Type notificationType)
+    {
+        return notificationType.GetCustomAttribute<NotificationDispatchAttribute>()?.Strategy
+               == NotificationDispatchStrategy.Parallel;
     }
 
     private static void EnsureClosedGenericContract(
