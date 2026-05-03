@@ -18,6 +18,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         MediatorAnalyzerDescriptors.MissingCancellationToken,
         MediatorAnalyzerDescriptors.HandlerReturnTypeMismatch,
         MediatorAnalyzerDescriptors.MissingCancellationForwarding,
+        MediatorAnalyzerDescriptors.MissingEnumeratorCancellation,
         MediatorAnalyzerDescriptors.InvalidPipelineGenericArity,
         MediatorAnalyzerDescriptors.HandlerShouldNotCallSender);
 
@@ -46,7 +47,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         var pipelineTypeParameterDiagnostics = new ConcurrentDictionary<string, Diagnostic>(StringComparer.Ordinal);
 
         context.RegisterSymbolAction(
-            symbolContext => AnalyzeNamedType(symbolContext, symbols, pipelineTypeParameterDiagnostics),
+            symbolContext => AnalyzeNamedType(symbolContext, symbols, options, pipelineTypeParameterDiagnostics),
             SymbolKind.NamedType);
 
         context.RegisterOperationAction(
@@ -57,6 +58,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeNamedType(
         SymbolAnalysisContext context,
         DiscoverySymbols symbols,
+        MediatorAnalyzerConfigOptions options,
         ConcurrentDictionary<string, Diagnostic> pipelineTypeParameterDiagnostics)
     {
         if (context.Symbol is not INamedTypeSymbol type
@@ -68,6 +70,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
 
         AnalyzeHandlerType(context, type, symbols);
         AnalyzePipelineType(context, type, symbols, pipelineTypeParameterDiagnostics);
+        AnalyzeStreamType(context, type, symbols, options);
     }
 
     private static void AnalyzeHandlerType(SymbolAnalysisContext context, INamedTypeSymbol type, DiscoverySymbols symbols)
@@ -204,6 +207,79 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private static void AnalyzeStreamType(
+        SymbolAnalysisContext context,
+        INamedTypeSymbol type,
+        DiscoverySymbols symbols,
+        MediatorAnalyzerConfigOptions options)
+    {
+        if (!options.EnableCancellationAnalysis)
+        {
+            return;
+        }
+
+        foreach (var streamHandlerTypeArguments in type.AllInterfaces
+                     .Where(candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, symbols.StreamHandlerInterface))
+                     .Select(static candidate => candidate.TypeArguments))
+        {
+            var requestType = streamHandlerTypeArguments[0];
+            var responseType = streamHandlerTypeArguments[1];
+            var compatibleHandle = FindPublicStreamHandleMethod(
+                type,
+                requestType,
+                responseType,
+                symbols.CancellationTokenType,
+                symbols.AsyncEnumerableOfT);
+
+            ReportMissingEnumeratorCancellation(context, type, compatibleHandle, symbols);
+        }
+
+        foreach (var streamPipelineTypeArguments in type.AllInterfaces
+                     .Where(candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, symbols.StreamPipelineInterface))
+                     .Select(static candidate => candidate.TypeArguments))
+        {
+            var requestType = streamPipelineTypeArguments[0];
+            var responseType = streamPipelineTypeArguments[1];
+            var compatibleHandle = FindPublicStreamPipelineHandleMethod(
+                type,
+                requestType,
+                responseType,
+                symbols.StreamHandlerContinuation,
+                symbols.CancellationTokenType,
+                symbols.AsyncEnumerableOfT);
+
+            ReportMissingEnumeratorCancellation(context, type, compatibleHandle, symbols);
+        }
+    }
+
+    private static void ReportMissingEnumeratorCancellation(
+        SymbolAnalysisContext context,
+        INamedTypeSymbol containingType,
+        IMethodSymbol? method,
+        DiscoverySymbols symbols)
+    {
+        if (method is null
+            || !method.IsAsync
+            || method.Parameters.Length == 0)
+        {
+            return;
+        }
+
+        var cancellationTokenParameter = method.Parameters[method.Parameters.Length - 1];
+        if (!SymbolEqualityComparer.Default.Equals(cancellationTokenParameter.Type, symbols.CancellationTokenType)
+            || HasEnumeratorCancellationAttribute(cancellationTokenParameter, symbols.EnumeratorCancellationAttribute))
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(
+            Diagnostic.Create(
+                MediatorAnalyzerDescriptors.MissingEnumeratorCancellation,
+                GetDiagnosticLocation(cancellationTokenParameter, method, containingType),
+                method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                cancellationTokenParameter.Name));
+    }
+
     private static IMethodSymbol? FindPublicHandleMethod(
         INamedTypeSymbol type,
         ITypeSymbol requestType,
@@ -220,8 +296,50 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                     && method.DeclaredAccessibility == Accessibility.Public
                     && method.Parameters.Length == 2
                     && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType)
+                     && SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, cancellationTokenType)
+                     && SymbolEqualityComparer.Default.Equals(method.ReturnType, valueTaskOfT.Construct(responseType)));
+    }
+
+    private static IMethodSymbol? FindPublicStreamHandleMethod(
+        INamedTypeSymbol type,
+        ITypeSymbol requestType,
+        ITypeSymbol responseType,
+        INamedTypeSymbol cancellationTokenType,
+        INamedTypeSymbol asyncEnumerableOfT)
+    {
+        return type.GetMembers("Handle")
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(
+                method =>
+                    !method.IsStatic
+                    && method.MethodKind == MethodKind.Ordinary
+                    && method.DeclaredAccessibility == Accessibility.Public
+                    && method.Parameters.Length == 2
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType)
                     && SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, cancellationTokenType)
-                    && SymbolEqualityComparer.Default.Equals(method.ReturnType, valueTaskOfT.Construct(responseType)));
+                    && SymbolEqualityComparer.Default.Equals(method.ReturnType, asyncEnumerableOfT.Construct(responseType)));
+    }
+
+    private static IMethodSymbol? FindPublicStreamPipelineHandleMethod(
+        INamedTypeSymbol type,
+        ITypeSymbol requestType,
+        ITypeSymbol responseType,
+        INamedTypeSymbol streamHandlerContinuation,
+        INamedTypeSymbol cancellationTokenType,
+        INamedTypeSymbol asyncEnumerableOfT)
+    {
+        return type.GetMembers("Handle")
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(
+                method =>
+                    !method.IsStatic
+                    && method.MethodKind == MethodKind.Ordinary
+                    && method.DeclaredAccessibility == Accessibility.Public
+                    && method.Parameters.Length == 3
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType)
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, streamHandlerContinuation.Construct(responseType))
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[2].Type, cancellationTokenType)
+                    && SymbolEqualityComparer.Default.Equals(method.ReturnType, asyncEnumerableOfT.Construct(responseType)));
     }
 
     private static bool IsMediatorDispatchCall(IMethodSymbol method, DiscoverySymbols symbols)
@@ -241,6 +359,14 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
     {
         return operation is IParameterReferenceOperation parameterReference
                && SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, availableCancellationToken);
+    }
+
+    private static bool HasEnumeratorCancellationAttribute(
+        IParameterSymbol parameter,
+        INamedTypeSymbol enumeratorCancellationAttribute)
+    {
+        return parameter.GetAttributes().Any(
+            attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, enumeratorCancellationAttribute));
     }
 
     private static bool IsHandlerType(INamedTypeSymbol? type, DiscoverySymbols symbols)
@@ -272,17 +398,36 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
             : GetDiagnosticLocation(fallbackType);
     }
 
+    private static Location GetDiagnosticLocation(
+        IParameterSymbol parameter,
+        IMethodSymbol fallbackMethod,
+        INamedTypeSymbol fallbackType)
+    {
+        return GetDiagnosticLocation((ISymbol)parameter).SourceTree is not null
+            ? GetDiagnosticLocation((ISymbol)parameter)
+            : GetDiagnosticLocation(fallbackMethod, fallbackType);
+    }
+
     private sealed class DiscoverySymbols(
         INamedTypeSymbol handlerInterface,
         INamedTypeSymbol pipelineInterface,
+        INamedTypeSymbol streamHandlerInterface,
+        INamedTypeSymbol streamPipelineInterface,
         INamedTypeSymbol senderInterface,
         INamedTypeSymbol publisherInterface,
         INamedTypeSymbol cancellationTokenType,
-        INamedTypeSymbol valueTaskOfT)
+        INamedTypeSymbol valueTaskOfT,
+        INamedTypeSymbol asyncEnumerableOfT,
+        INamedTypeSymbol streamHandlerContinuation,
+        INamedTypeSymbol enumeratorCancellationAttribute)
     {
         public INamedTypeSymbol HandlerInterface { get; } = handlerInterface;
 
         public INamedTypeSymbol PipelineInterface { get; } = pipelineInterface;
+
+        public INamedTypeSymbol StreamHandlerInterface { get; } = streamHandlerInterface;
+
+        public INamedTypeSymbol StreamPipelineInterface { get; } = streamPipelineInterface;
 
         public INamedTypeSymbol SenderInterface { get; } = senderInterface;
 
@@ -292,23 +437,39 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
 
         public INamedTypeSymbol ValueTaskOfT { get; } = valueTaskOfT;
 
+        public INamedTypeSymbol AsyncEnumerableOfT { get; } = asyncEnumerableOfT;
+
+        public INamedTypeSymbol StreamHandlerContinuation { get; } = streamHandlerContinuation;
+
+        public INamedTypeSymbol EnumeratorCancellationAttribute { get; } = enumeratorCancellationAttribute;
+
         public bool IsComplete =>
             HandlerInterface is not null
             && PipelineInterface is not null
+            && StreamHandlerInterface is not null
+            && StreamPipelineInterface is not null
             && SenderInterface is not null
             && PublisherInterface is not null
             && CancellationTokenType is not null
-            && ValueTaskOfT is not null;
+            && ValueTaskOfT is not null
+            && AsyncEnumerableOfT is not null
+            && StreamHandlerContinuation is not null
+            && EnumeratorCancellationAttribute is not null;
 
         public static DiscoverySymbols Create(Compilation compilation)
         {
             return new DiscoverySymbols(
                 compilation.GetTypeByMetadataName("SharedKernel.Mediator.IRequestHandler`2")!,
                 compilation.GetTypeByMetadataName("SharedKernel.Mediator.IPipelineBehavior`2")!,
+                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IStreamRequestHandler`2")!,
+                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IStreamPipelineBehavior`2")!,
                 compilation.GetTypeByMetadataName("SharedKernel.Mediator.ISender")!,
                 compilation.GetTypeByMetadataName("SharedKernel.Mediator.IPublisher")!,
                 compilation.GetTypeByMetadataName("System.Threading.CancellationToken")!,
-                compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1")!);
+                compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1")!,
+                compilation.GetTypeByMetadataName("System.Collections.Generic.IAsyncEnumerable`1")!,
+                compilation.GetTypeByMetadataName("SharedKernel.Mediator.StreamHandlerContinuation`1")!,
+                compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.EnumeratorCancellationAttribute")!);
         }
     }
 }

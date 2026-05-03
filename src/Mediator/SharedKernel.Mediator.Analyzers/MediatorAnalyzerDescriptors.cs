@@ -39,6 +39,14 @@ internal static class MediatorAnalyzerDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor MissingEnumeratorCancellation = new(
+        id: MediatorDiagnosticIds.MissingEnumeratorCancellation,
+        title: "Async stream Handle method is missing [EnumeratorCancellation]",
+        messageFormat: "Async stream Handle method '{0}' should annotate CancellationToken '{1}' with [EnumeratorCancellation]",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public static readonly DiagnosticDescriptor InvalidPipelineGenericArity = new(
         id: MediatorDiagnosticIds.InvalidPipelineGenericArity,
         title: "Pipeline behavior has invalid generic arity",

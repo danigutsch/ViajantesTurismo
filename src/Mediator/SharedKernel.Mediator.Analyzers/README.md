@@ -15,6 +15,7 @@ already implemented in the base packages.
 | `SKMED004` | Warning | Handler public `Handle` method omits `CancellationToken ct`. |
 | `SKMED005` | Warning | Handler public `Handle` method returns the wrong `ValueTask<TResponse>` shape. |
 | `SKMED006` | Warning | Mediator `Send` or `Publish` call does not forward the available `CancellationToken`. |
+| `SKMED007` | Warning | Async stream `Handle` iterators must annotate `CancellationToken ct` with `[EnumeratorCancellation]`. |
 | `SKMED020` | Warning | Open generic pipeline behavior declares an invalid type-parameter count. |
 | `SKMED500` | Info | Handler calls mediator send APIs directly while CQRS strict rules are enabled. |
 
@@ -24,6 +25,7 @@ Use `.editorconfig` to tune analyzer behavior:
 
 ```ini
 dotnet_diagnostic.SKMED006.severity = warning
+dotnet_diagnostic.SKMED007.severity = warning
 dotnet_diagnostic.SKMED500.severity = suggestion
 
 sharedkernel_mediator_cqrs_strict = true
@@ -83,6 +85,19 @@ public sealed class ValidationBehavior<TRequest> : IPipelineBehavior<TRequest, i
 {
     public ValueTask<int> Handle(TRequest request, RequestHandlerContinuation<int> next, CancellationToken ct)
         => next();
+}
+```
+
+### `SKMED007` missing `[EnumeratorCancellation]`
+
+```csharp
+public sealed class StreamToursHandler : IStreamRequestHandler<StreamTours, string>
+{
+    public async IAsyncEnumerable<string> Handle(StreamTours request, CancellationToken ct)
+    {
+        await Task.Yield();
+        yield return request.Count.ToString();
+    }
 }
 ```
 
