@@ -21,6 +21,11 @@ internal static class GeneratedPipelinesEmitter
             EmitPipelineMethod(builder, model.Requests[index], index);
         }
 
+        for (var index = 0; index < model.StreamRequests.Length; index++)
+        {
+            EmitStreamPipelineMethod(builder, model.StreamRequests[index], index);
+        }
+
         builder.AppendLine("}");
         return builder.ToString();
     }
@@ -74,5 +79,56 @@ internal static class GeneratedPipelinesEmitter
         }
 
         return $"pipeline{pipelineIndex}.Handle(request, () => {BuildPipelineInvocation(request, pipelineIndex + 1)}, ct)";
+    }
+
+    private static void EmitStreamPipelineMethod(StringBuilder builder, StreamRequestDescriptor streamRequest, int index)
+    {
+        var accessibleHandlers = streamRequest.Handlers
+            .Where(static handler => handler.IsAccessibleToGeneratedMediator)
+            .ToArray();
+
+        if (streamRequest.Pipelines.Length == 0 || accessibleHandlers.Length != 1)
+        {
+            return;
+        }
+
+        builder.AppendLine();
+        builder.Append("    public static global::System.Collections.Generic.IAsyncEnumerable<")
+            .Append(streamRequest.ItemResponse.MetadataName)
+            .Append("> InvokeStream_")
+            .Append(index.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture))
+            .Append("(AppMediator mediator, ")
+            .Append(streamRequest.MetadataName)
+            .AppendLine(" request,");
+        builder.AppendLine("        global::System.Threading.CancellationToken ct)");
+        builder.AppendLine("    {");
+
+        for (var pipelineIndex = 0; pipelineIndex < streamRequest.Pipelines.Length; pipelineIndex++)
+        {
+            builder.Append("        var pipeline")
+                .Append(pipelineIndex.ToString(global::System.Globalization.CultureInfo.InvariantCulture))
+                .Append(" = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                .Append(streamRequest.Pipelines[pipelineIndex].MetadataName)
+                .AppendLine(">(mediator.Services);");
+        }
+
+        builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+            .Append(accessibleHandlers[0].MetadataName)
+            .AppendLine(">(mediator.Services);");
+        builder.AppendLine();
+        builder.Append("        return ")
+            .Append(BuildStreamPipelineInvocation(streamRequest, 0))
+            .AppendLine(";");
+        builder.AppendLine("    }");
+    }
+
+    private static string BuildStreamPipelineInvocation(StreamRequestDescriptor streamRequest, int pipelineIndex)
+    {
+        if (pipelineIndex >= streamRequest.Pipelines.Length)
+        {
+            return "handler.Handle(request, ct)";
+        }
+
+        return $"pipeline{pipelineIndex}.Handle(request, () => {BuildStreamPipelineInvocation(streamRequest, pipelineIndex + 1)}, ct)";
     }
 }

@@ -49,7 +49,7 @@ internal static class AppMediatorEmitter
 
         for (var streamRequestIndex = 0; streamRequestIndex < model.StreamRequests.Length; streamRequestIndex++)
         {
-            EmitTypedCreateStreamOverload(builder, model.StreamRequests[streamRequestIndex]);
+            EmitTypedStreamSendOverload(builder, model.StreamRequests[streamRequestIndex], streamRequestIndex);
         }
 
         builder.AppendLine();
@@ -66,7 +66,7 @@ internal static class AppMediatorEmitter
         GeneratedXmlDocumentationEmitter.AppendSummary(
             builder,
             "    ",
-            "Creates a stream request instance through the generated stream-dispatch path.");
+            "Sends a stream request instance through the generated stream-dispatch path.");
         GeneratedXmlDocumentationEmitter.AppendParam(
             builder,
             "    ",
@@ -81,13 +81,13 @@ internal static class AppMediatorEmitter
             builder,
             "    ",
             "The produced response stream.");
-        builder.AppendLine("    public global::System.Collections.Generic.IAsyncEnumerable<TResponse> CreateStream<TResponse>(");
+        builder.AppendLine("    public global::System.Collections.Generic.IAsyncEnumerable<TResponse> Send<TResponse>(");
         builder.AppendLine("        global::SharedKernel.Mediator.IStreamRequest<TResponse> request,");
         builder.AppendLine("        global::System.Threading.CancellationToken ct)");
         builder.AppendLine("    {");
         builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(request);");
         builder.AppendLine();
-        builder.AppendLine("        return GeneratedDispatch.CreateStream<TResponse>(this, request, ct);");
+        builder.AppendLine("        return GeneratedDispatch.Send<TResponse>(this, request, ct);");
         builder.AppendLine("    }");
         builder.AppendLine();
         GeneratedXmlDocumentationEmitter.AppendSummary(
@@ -206,7 +206,7 @@ internal static class AppMediatorEmitter
         builder.AppendLine("    }");
     }
 
-    private static void EmitTypedCreateStreamOverload(StringBuilder builder, StreamRequestDescriptor streamRequest)
+    private static void EmitTypedStreamSendOverload(StringBuilder builder, StreamRequestDescriptor streamRequest, int streamRequestIndex)
     {
         var accessibleHandlers = streamRequest.Handlers
             .Where(static handler => handler.IsAccessibleToGeneratedMediator)
@@ -216,7 +216,7 @@ internal static class AppMediatorEmitter
         GeneratedXmlDocumentationEmitter.AppendSummary(
             builder,
             "    ",
-            $"Creates a <see cref=\"{streamRequest.MetadataName}\"/> stream through the generated mediator dispatch path.");
+            $"Sends a <see cref=\"{streamRequest.MetadataName}\"/> stream through the generated mediator dispatch path.");
         GeneratedXmlDocumentationEmitter.AppendParam(
             builder,
             "    ",
@@ -233,7 +233,7 @@ internal static class AppMediatorEmitter
             "The produced response stream.");
         builder.Append("    public global::System.Collections.Generic.IAsyncEnumerable<")
             .Append(streamRequest.ItemResponse.MetadataName)
-            .Append("> CreateStream(")
+            .Append("> Send(")
             .Append(streamRequest.MetadataName)
             .AppendLine(" request,");
         builder.AppendLine("        global::System.Threading.CancellationToken ct)");
@@ -249,11 +249,20 @@ internal static class AppMediatorEmitter
                     .AppendLine(">(request);");
                 break;
             case 1:
-                builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
-                    .Append(accessibleHandlers[0].MetadataName)
-                    .AppendLine(">(Services);");
-                builder.AppendLine();
-                builder.AppendLine("        return handler.Handle(request, ct);");
+                if (streamRequest.Pipelines.Length == 0)
+                {
+                    builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                        .Append(accessibleHandlers[0].MetadataName)
+                        .AppendLine(">(Services);");
+                    builder.AppendLine();
+                    builder.AppendLine("        return handler.Handle(request, ct);");
+                }
+                else
+                {
+                    builder.Append("        return GeneratedPipelines.InvokeStream_")
+                        .Append(streamRequestIndex.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture))
+                        .AppendLine("(this, request, ct);");
+                }
                 break;
             default:
                 builder.Append("        return GeneratedDispatch.ThrowAmbiguousStreamHandlers<")

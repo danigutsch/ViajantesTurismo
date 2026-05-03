@@ -163,7 +163,12 @@ internal static class DiscoveryModelBuilder
             [.. modules.OrderBy(static module => module.AssemblyName, StringComparer.Ordinal)],
             requests,
             BuildNotificationDescriptors(discoveryState.NotificationContracts, discoveryState.NotificationHandlers, discoveryState),
-            BuildStreamRequestDescriptors(discoveryState.StreamRequestContracts, discoveryState.StreamHandlers),
+            BuildStreamRequestDescriptors(
+                discoveryState.StreamRequestContracts,
+                discoveryState.StreamHandlers,
+                discoveryState.StreamPipelines,
+                compilation.Assembly,
+                discoveryState),
             [.. discoveryState.Diagnostics.OrderBy(static diagnostic => diagnostic.Location.SourceSpan.Start)]);
     }
 
@@ -256,14 +261,19 @@ internal static class DiscoveryModelBuilder
             discoveryState.NotificationHandlers.Add(notificationHandler);
         }
 
-        if (TryCreateStreamRequestContract(type, discoverySymbols, out var streamRequestMetadataName, out var streamItemResponse))
+        if (TryCreateStreamRequestContract(type, discoverySymbols, out var streamRequestContract))
         {
-            discoveryState.StreamRequestContracts[streamRequestMetadataName] = streamItemResponse;
+            discoveryState.StreamRequestContracts[streamRequestContract.MetadataName] = streamRequestContract;
         }
 
         foreach (var streamHandler in CreateStreamHandlers(type, discoverySymbols, discoveryState, primaryAssembly))
         {
             discoveryState.StreamHandlers.Add(streamHandler);
+        }
+
+        foreach (var streamPipeline in CreateStreamPipelines(type, discoverySymbols, discoveryState, primaryAssembly))
+        {
+            discoveryState.StreamPipelines.Add(streamPipeline);
         }
 
         foreach (var nestedType in type.GetTypeMembers())
@@ -759,8 +769,11 @@ internal static class DiscoveryModelBuilder
     }
 
     private static ImmutableArray<StreamRequestDescriptor> BuildStreamRequestDescriptors(
-        IDictionary<string, ResponseDescriptor> streamRequestContracts,
-        IEnumerable<StreamHandlerDescriptor> streamHandlers)
+        IDictionary<string, RawStreamRequestContract> streamRequestContracts,
+        IEnumerable<StreamHandlerDescriptor> streamHandlers,
+        IEnumerable<RawStreamPipelineDescriptor> streamPipelines,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
     {
         var handlersByRequest = streamHandlers
             .GroupBy(static handler => handler.RequestMetadataName, StringComparer.Ordinal)
@@ -771,17 +784,229 @@ internal static class DiscoveryModelBuilder
                     .ToImmutableArray(),
                 StringComparer.Ordinal);
 
-        return [.. streamRequestContracts
-            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-            .Select(
-                pair =>
+        var matchedPipelinesByRequest = streamRequestContracts.Keys.ToDictionary(
+            static requestMetadataName => requestMetadataName,
+            static _ => new List<(StreamPipelineDescriptor Descriptor, RawStreamPipelineDescriptor Raw)>(),
+            StringComparer.Ordinal);
+
+        foreach (var pipeline in streamPipelines)
+        {
+            foreach (var match in MatchStreamPipelineDescriptors(pipeline, streamRequestContracts.Values, primaryAssembly, discoveryState))
+            {
+                if (matchedPipelinesByRequest.TryGetValue(match.Descriptor.RequestMetadataName, out var requestPipelines))
                 {
-                    var handlers = handlersByRequest.TryGetValue(pair.Key, out var streamHandlersForRequest)
+                    requestPipelines.Add(match);
+                }
+            }
+        }
+
+        foreach (var requestPipelines in matchedPipelinesByRequest)
+        {
+            foreach (var duplicateGroup in requestPipelines.Value
+                         .GroupBy(static pipeline => (pipeline.Descriptor.Stage, pipeline.Descriptor.Order))
+                         .Where(static group => group.Count() > 1))
+            {
+                foreach (var pipeline in duplicateGroup)
+                {
+                    discoveryState.Diagnostics.Add(
+                        Diagnostic.Create(
+                            DuplicatePipelineOrderDescriptor,
+                            GetDiagnosticLocation(pipeline.Raw.TypeSymbol, primaryAssembly),
+                            requestPipelines.Key,
+                            duplicateGroup.Key.Stage,
+                            duplicateGroup.Key.Order));
+                }
+            }
+        }
+
+        return [.. streamRequestContracts.Values
+            .OrderBy(static request => request.MetadataName, StringComparer.Ordinal)
+            .Select(
+                request =>
+                {
+                    var handlers = handlersByRequest.TryGetValue(request.MetadataName, out var streamHandlersForRequest)
                         ? streamHandlersForRequest
                         : [];
+                    ImmutableArray<StreamPipelineDescriptor> requestPipelines = matchedPipelinesByRequest.TryGetValue(
+                        request.MetadataName,
+                        out var discoveredPipelines)
+                        ? [.. discoveredPipelines
+                            .OrderBy(static pipeline => pipeline.Descriptor.Stage)
+                            .ThenBy(static pipeline => pipeline.Descriptor.Order)
+                            .ThenBy(static pipeline => pipeline.Descriptor.MetadataName, StringComparer.Ordinal)
+                            .Select(static pipeline => pipeline.Descriptor)]
+                        : [];
 
-                    return new StreamRequestDescriptor(pair.Key, pair.Value, handlers);
+                    return new StreamRequestDescriptor(request.MetadataName, request.ItemResponse, handlers, requestPipelines);
                 })];
+    }
+
+    private static IEnumerable<(StreamPipelineDescriptor Descriptor, RawStreamPipelineDescriptor Raw)> MatchStreamPipelineDescriptors(
+        RawStreamPipelineDescriptor pipeline,
+        IEnumerable<RawStreamRequestContract> streamRequestContracts,
+        IAssemblySymbol primaryAssembly,
+        DiscoveryState discoveryState)
+    {
+        if (!pipeline.IsAccessibleToGeneratedMediator)
+        {
+            yield break;
+        }
+
+        if (pipeline.Applicability == PipelineApplicability.Closed)
+        {
+            var matchedRequest = streamRequestContracts.FirstOrDefault(
+                request =>
+                    string.Equals(request.MetadataName, pipeline.RequestMetadataName, StringComparison.Ordinal)
+                    && string.Equals(request.ItemResponse.MetadataName, pipeline.ResponseMetadataName, StringComparison.Ordinal));
+
+            if (matchedRequest is null)
+            {
+                ReportNeverAppliesPipeline(
+                    new RawPipelineDescriptor(
+                        pipeline.MetadataName,
+                        pipeline.OpenGenericMetadataName,
+                        pipeline.Stage,
+                        pipeline.Order,
+                        pipeline.Applicability,
+                        pipeline.IsAccessibleToGeneratedMediator,
+                        pipeline.RequestMetadataName,
+                        pipeline.ResponseMetadataName,
+                        pipeline.TypeSymbol,
+                        pipeline.RequestTypePattern,
+                        pipeline.ResponseTypePattern,
+                        pipeline.TypeParameters),
+                    primaryAssembly,
+                    discoveryState);
+                yield break;
+            }
+
+            yield return (
+                new StreamPipelineDescriptor(
+                    pipeline.MetadataName,
+                    pipeline.OpenGenericMetadataName,
+                    matchedRequest.MetadataName,
+                    pipeline.Stage,
+                    pipeline.Order,
+                    PipelineApplicability.Closed,
+                    pipeline.IsAccessibleToGeneratedMediator),
+                pipeline);
+            yield break;
+        }
+
+        if (pipeline.TypeParameters.Length != 2)
+        {
+            ReportInvalidPipelineGenericArity(
+                new RawPipelineDescriptor(
+                    pipeline.MetadataName,
+                    pipeline.OpenGenericMetadataName,
+                    pipeline.Stage,
+                    pipeline.Order,
+                    pipeline.Applicability,
+                    pipeline.IsAccessibleToGeneratedMediator,
+                    pipeline.RequestMetadataName,
+                    pipeline.ResponseMetadataName,
+                    pipeline.TypeSymbol,
+                    pipeline.RequestTypePattern,
+                    pipeline.ResponseTypePattern,
+                    pipeline.TypeParameters),
+                primaryAssembly,
+                discoveryState);
+            yield break;
+        }
+
+        var matchedAny = false;
+        var constraintFailure = false;
+
+        foreach (var request in streamRequestContracts)
+        {
+            if (TryBindOpenGenericStreamPipeline(pipeline, request, out var descriptor, out var failedConstraints))
+            {
+                matchedAny = true;
+                yield return (descriptor, pipeline);
+                continue;
+            }
+
+            constraintFailure |= failedConstraints;
+        }
+
+        if (matchedAny)
+        {
+            yield break;
+        }
+
+        if (constraintFailure)
+        {
+            ReportUnboundPipelineConstraints(
+                new RawPipelineDescriptor(
+                    pipeline.MetadataName,
+                    pipeline.OpenGenericMetadataName,
+                    pipeline.Stage,
+                    pipeline.Order,
+                    pipeline.Applicability,
+                    pipeline.IsAccessibleToGeneratedMediator,
+                    pipeline.RequestMetadataName,
+                    pipeline.ResponseMetadataName,
+                    pipeline.TypeSymbol,
+                    pipeline.RequestTypePattern,
+                    pipeline.ResponseTypePattern,
+                    pipeline.TypeParameters),
+                primaryAssembly,
+                discoveryState);
+            yield break;
+        }
+
+        ReportNeverAppliesPipeline(
+            new RawPipelineDescriptor(
+                pipeline.MetadataName,
+                pipeline.OpenGenericMetadataName,
+                pipeline.Stage,
+                pipeline.Order,
+                pipeline.Applicability,
+                pipeline.IsAccessibleToGeneratedMediator,
+                pipeline.RequestMetadataName,
+                pipeline.ResponseMetadataName,
+                pipeline.TypeSymbol,
+                pipeline.RequestTypePattern,
+                pipeline.ResponseTypePattern,
+                pipeline.TypeParameters),
+            primaryAssembly,
+            discoveryState);
+    }
+
+    private static bool TryBindOpenGenericStreamPipeline(
+        RawStreamPipelineDescriptor pipeline,
+        RawStreamRequestContract request,
+        out StreamPipelineDescriptor descriptor,
+        out bool failedConstraints)
+    {
+        descriptor = null!;
+        failedConstraints = false;
+
+        var bindings = new Dictionary<ITypeParameterSymbol, ITypeSymbol>(SymbolEqualityComparer.Default);
+        if (!TryUnifyTypePattern(pipeline.RequestTypePattern, request.TypeSymbol, bindings)
+            || !TryUnifyTypePattern(pipeline.ResponseTypePattern, request.ItemResponseTypeSymbol, bindings))
+        {
+            return false;
+        }
+
+        if (pipeline.TypeParameters.Any(typeParameter => !bindings.ContainsKey(typeParameter))
+            || !TypeArgumentsSatisfyConstraints(pipeline.TypeParameters, bindings))
+        {
+            failedConstraints = true;
+            return false;
+        }
+
+        var constructedType = pipeline.TypeSymbol.OriginalDefinition.Construct(
+            [.. pipeline.TypeParameters.Select(typeParameter => bindings[typeParameter])]);
+        descriptor = new StreamPipelineDescriptor(
+            GetMetadataName(constructedType),
+            pipeline.OpenGenericMetadataName,
+            request.MetadataName,
+            pipeline.Stage,
+            pipeline.Order,
+            PipelineApplicability.OpenGeneric,
+            pipeline.IsAccessibleToGeneratedMediator);
+        return true;
     }
 
     private static bool TryCreateRequestContract(
@@ -1075,11 +1300,9 @@ internal static class DiscoveryModelBuilder
     private static bool TryCreateStreamRequestContract(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
-        out string requestMetadataName,
-        out ResponseDescriptor itemResponse)
+        out RawStreamRequestContract streamRequestContract)
     {
-        requestMetadataName = string.Empty;
-        itemResponse = default!;
+        streamRequestContract = null!;
 
         if (!IsDiscoverableType(type))
         {
@@ -1096,8 +1319,12 @@ internal static class DiscoveryModelBuilder
             return false;
         }
 
-        requestMetadataName = GetMetadataName(type);
-        itemResponse = CreateResponseDescriptor(streamRequestInterface.TypeArguments[0]);
+        var itemResponseType = streamRequestInterface.TypeArguments[0];
+        streamRequestContract = new RawStreamRequestContract(
+            GetMetadataName(type),
+            CreateResponseDescriptor(itemResponseType),
+            type,
+            itemResponseType);
         return true;
     }
 
@@ -1146,6 +1373,73 @@ internal static class DiscoveryModelBuilder
                 ReportDuplicateGeneratedRegistration(
                     type,
                     $"global::SharedKernel.Mediator.IStreamRequestHandler<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
+                    implementationType,
+                    primaryAssembly,
+                    discoveryState);
+            }
+        }
+    }
+
+    private static IEnumerable<RawStreamPipelineDescriptor> CreateStreamPipelines(
+        INamedTypeSymbol type,
+        DiscoverySymbols discoverySymbols,
+        DiscoveryState discoveryState,
+        IAssemblySymbol primaryAssembly)
+    {
+        if (!IsDiscoverableType(type))
+        {
+            yield break;
+        }
+
+        var isAccessibleToGeneratedMediator = IsAccessibleToGeneratedMediator(type, primaryAssembly);
+        ReportInaccessibleRegistrationType(type, isAccessibleToGeneratedMediator, primaryAssembly, discoveryState);
+
+        var pipelineTypeArguments = type.AllInterfaces
+            .Where(
+                candidate => SymbolEqualityComparer.Default.Equals(
+                    candidate.OriginalDefinition,
+                    discoverySymbols.StreamPipelineInterface))
+            .Select(static candidate => candidate.TypeArguments);
+
+        foreach (var typeArguments in pipelineTypeArguments)
+        {
+            var pipelineOrder = type.GetAttributes().SingleOrDefault(
+                attribute => SymbolEqualityComparer.Default.Equals(
+                    attribute.AttributeClass,
+                    discoverySymbols.PipelineOrderAttribute));
+
+            var stage = pipelineOrder?.ConstructorArguments[0].Value is int stageValue ? stageValue : 0;
+            var order = pipelineOrder?.NamedArguments.FirstOrDefault(
+                static argument => argument.Key == "Order").Value.Value is int orderValue
+                ? orderValue
+                : 0;
+
+            yield return new RawStreamPipelineDescriptor(
+                GetMetadataName(type),
+                type.TypeParameters.Length > 0 ? GetMetadataName(type.OriginalDefinition) : null,
+                stage,
+                order,
+                type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed,
+                isAccessibleToGeneratedMediator,
+                GetTypeDisplayString(typeArguments[0]),
+                GetTypeDisplayString(typeArguments[1]),
+                type,
+                typeArguments[0],
+                typeArguments[1],
+                [.. type.TypeParameters]);
+
+            if (isAccessibleToGeneratedMediator)
+            {
+                var implementationType = GetMetadataName(type);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    GetSelfRegistrationServiceType(implementationType),
+                    implementationType,
+                    primaryAssembly,
+                    discoveryState);
+                ReportDuplicateGeneratedRegistration(
+                    type,
+                    $"global::SharedKernel.Mediator.IStreamPipelineBehavior<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
                     implementationType,
                     primaryAssembly,
                     discoveryState);

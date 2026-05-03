@@ -17,6 +17,7 @@ internal sealed class DiscoverySymbols
         && CommandHandlerOfResponseInterface is not null
         && QueryHandlerInterface is not null
         && PipelineInterface is not null
+        && StreamPipelineInterface is not null
         && PipelineOrderAttribute is not null
         && NotificationInterface is not null
         && NotificationHandlerInterface is not null
@@ -44,6 +45,8 @@ internal sealed class DiscoverySymbols
     public INamedTypeSymbol QueryHandlerInterface { get; private init; } = null!;
 
     public INamedTypeSymbol PipelineInterface { get; private init; } = null!;
+
+    public INamedTypeSymbol StreamPipelineInterface { get; private init; } = null!;
 
     public INamedTypeSymbol PipelineOrderAttribute { get; private init; } = null!;
 
@@ -78,6 +81,7 @@ internal sealed class DiscoverySymbols
             CommandHandlerOfResponseInterface = compilation.GetTypeByMetadataName(MetadataNames.CommandHandlerOfResponse)!,
             QueryHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.QueryHandler)!,
             PipelineInterface = compilation.GetTypeByMetadataName(MetadataNames.PipelineBehavior)!,
+            StreamPipelineInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamPipelineBehavior)!,
             PipelineOrderAttribute = compilation.GetTypeByMetadataName(MetadataNames.PipelineOrderAttribute)!,
             NotificationInterface = compilation.GetTypeByMetadataName(MetadataNames.Notification)!,
             NotificationHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.NotificationHandler)!,

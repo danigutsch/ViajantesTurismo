@@ -17,9 +17,11 @@ internal sealed class DiscoveryState
 
     public List<NotificationHandlerDescriptor> NotificationHandlers { get; } = [];
 
-    public Dictionary<string, ResponseDescriptor> StreamRequestContracts { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, RawStreamRequestContract> StreamRequestContracts { get; } = new(StringComparer.Ordinal);
 
     public List<StreamHandlerDescriptor> StreamHandlers { get; } = [];
+
+    public List<RawStreamPipelineDescriptor> StreamPipelines { get; } = [];
 
     public List<Diagnostic> Diagnostics { get; } = [];
 

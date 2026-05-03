@@ -156,6 +156,17 @@ internal static class DependencyInjectionEmitter
                     emittedRegistrationKeys);
                 emittedAny = true;
             }
+
+            foreach (var pipeline in streamRequest.Pipelines.Where(static pipeline => pipeline.IsAccessibleToGeneratedMediator))
+            {
+                EmitRegistration(
+                    builder,
+                    AddTransientMethodName,
+                    pipeline.MetadataName,
+                    $"global::SharedKernel.Mediator.IStreamPipelineBehavior<{streamRequest.MetadataName}, {streamRequest.ItemResponse.MetadataName}>",
+                    emittedRegistrationKeys);
+                emittedAny = true;
+            }
         }
 
         return emittedAny;

@@ -14,6 +14,7 @@ internal static class MetadataNames
     public const string CommandHandlerOfResponse = "SharedKernel.Mediator.ICommandHandler`2";
     public const string QueryHandler = "SharedKernel.Mediator.IQueryHandler`2";
     public const string PipelineBehavior = "SharedKernel.Mediator.IPipelineBehavior`2";
+    public const string StreamPipelineBehavior = "SharedKernel.Mediator.IStreamPipelineBehavior`2";
     public const string PipelineOrderAttribute = "SharedKernel.Mediator.PipelineOrderAttribute";
     public const string Notification = "SharedKernel.Mediator.INotification";
     public const string NotificationHandler = "SharedKernel.Mediator.INotificationHandler`1";

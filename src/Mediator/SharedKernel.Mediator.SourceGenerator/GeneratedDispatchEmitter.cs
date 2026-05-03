@@ -63,7 +63,7 @@ internal static class GeneratedDispatchEmitter
         builder.AppendLine("        };");
         builder.AppendLine("    }");
         builder.AppendLine();
-        builder.AppendLine("    public static global::System.Collections.Generic.IAsyncEnumerable<TResponse> CreateStream<TResponse>(");
+        builder.AppendLine("    public static global::System.Collections.Generic.IAsyncEnumerable<TResponse> Send<TResponse>(");
         builder.AppendLine("        AppMediator mediator,");
         builder.AppendLine("        global::SharedKernel.Mediator.IStreamRequest<TResponse> request,");
         builder.AppendLine("        global::System.Threading.CancellationToken ct)");
@@ -77,7 +77,7 @@ internal static class GeneratedDispatchEmitter
                 .Append(streamRequest.MetadataName)
                 .Append(" typed => CastStream<")
                 .Append(streamRequest.ItemResponse.MetadataName)
-                .Append(", TResponse>(mediator.CreateStream(typed, ct), ct),")
+                .Append(", TResponse>(mediator.Send(typed, ct), ct),")
                 .AppendLine();
         }
 
