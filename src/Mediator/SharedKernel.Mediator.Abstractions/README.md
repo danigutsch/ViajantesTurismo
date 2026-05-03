@@ -11,10 +11,19 @@ abstractions that the runtime, generator, analyzers, and tests build on.
 
 - Request contracts: `IRequest<TResponse>`, `ICommand`, `ICommand<TResponse>`, `IQuery<TResponse>`
 - Handler contracts: `IRequestHandler<,>`, command/query handler variants
-- Notification and stream contracts plus notification ordering/dispatch metadata
-- Pipeline contracts and ordering metadata
-- Mediator-facing contracts: `ISender`, `IPublisher`, `IMediator`, including generated stream dispatch
-  via `CreateStream(...)`
+- Notification and streaming contracts, including response-stream, stream command/query, and duplex
+  stream command/query markers, plus notification ordering/dispatch metadata
+- Pipeline contracts and ordering metadata, including dedicated stream pipeline behaviors for
+  stream-producing requests
+- Mediator-facing contracts: `ISender`, `IPublisher`, `IMediator`, including generated request and
+  response-stream dispatch via `Send(...)`
+- Stream semantics follow the command/query families used by unary requests:
+    - `IStreamCommand<TResponse>` and `IStreamQuery<TResponse>` extend `IStreamRequest<TResponse>`
+    - `IStreamCommand<TRequestItem, TResponse>` and `IStreamQuery<TRequestItem, TResponse>` extend
+      `ICommand<TResponse>` and `IQuery<TResponse>` while carrying streamed input through `Items`
+    - `IDuplexStreamCommand<TRequestItem, TResponse>` and
+      `IDuplexStreamQuery<TRequestItem, TResponse>` extend the streamed-response command/query
+      contracts and also carry streamed input through `Items`
 - `Unit` and `MediatorModuleAttribute`
 
 ## AOT and Trimming

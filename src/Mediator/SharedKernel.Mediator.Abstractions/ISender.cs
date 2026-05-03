@@ -15,11 +15,11 @@ public interface ISender
     ValueTask<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct);
 
     /// <summary>
-    /// Creates a response stream through the generated stream-dispatch path.
+    /// Sends a stream request through the generated dispatch path.
     /// </summary>
     /// <typeparam name="TResponse">The streamed item type.</typeparam>
     /// <param name="request">The stream request instance to dispatch.</param>
     /// <param name="ct">The cancellation token for the operation.</param>
     /// <returns>The produced response stream.</returns>
-    IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct);
+    IAsyncEnumerable<TResponse> Send<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct);
 }

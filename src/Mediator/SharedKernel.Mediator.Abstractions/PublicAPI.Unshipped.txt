@@ -1,4 +1,8 @@
 #nullable enable
+SharedKernel.Mediator.IDuplexStreamCommand<TRequestItem, TResponse>
+SharedKernel.Mediator.IDuplexStreamCommand<TRequestItem, TResponse>.Items.get -> System.Collections.Generic.IAsyncEnumerable<TRequestItem>!
+SharedKernel.Mediator.IDuplexStreamQuery<TRequestItem, TResponse>
+SharedKernel.Mediator.IDuplexStreamQuery<TRequestItem, TResponse>.Items.get -> System.Collections.Generic.IAsyncEnumerable<TRequestItem>!
 SharedKernel.Mediator.NotificationDispatchAttribute
 SharedKernel.Mediator.NotificationDispatchAttribute.NotificationDispatchAttribute(SharedKernel.Mediator.NotificationDispatchStrategy strategy) -> void
 SharedKernel.Mediator.NotificationDispatchAttribute.Strategy.get -> SharedKernel.Mediator.NotificationDispatchStrategy
@@ -26,8 +30,16 @@ SharedKernel.Mediator.IRequest<TResponse>
 SharedKernel.Mediator.IRequestHandler<TRequest, TResponse>
 SharedKernel.Mediator.IRequestHandler<TRequest, TResponse>.Handle(TRequest request, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
 SharedKernel.Mediator.ISender
-SharedKernel.Mediator.ISender.CreateStream<TResponse>(SharedKernel.Mediator.IStreamRequest<TResponse>! request, System.Threading.CancellationToken ct) -> System.Collections.Generic.IAsyncEnumerable<TResponse>!
 SharedKernel.Mediator.ISender.Send<TResponse>(SharedKernel.Mediator.IRequest<TResponse>! request, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
+SharedKernel.Mediator.ISender.Send<TResponse>(SharedKernel.Mediator.IStreamRequest<TResponse>! request, System.Threading.CancellationToken ct) -> System.Collections.Generic.IAsyncEnumerable<TResponse>!
+SharedKernel.Mediator.IStreamCommand<TResponse>
+SharedKernel.Mediator.IStreamCommand<TRequestItem, TResponse>
+SharedKernel.Mediator.IStreamCommand<TRequestItem, TResponse>.Items.get -> System.Collections.Generic.IAsyncEnumerable<TRequestItem>!
+SharedKernel.Mediator.IStreamPipelineBehavior<TRequest, TResponse>
+SharedKernel.Mediator.IStreamPipelineBehavior<TRequest, TResponse>.Handle(TRequest request, SharedKernel.Mediator.StreamHandlerContinuation<TResponse>! next, System.Threading.CancellationToken ct) -> System.Collections.Generic.IAsyncEnumerable<TResponse>!
+SharedKernel.Mediator.IStreamQuery<TResponse>
+SharedKernel.Mediator.IStreamQuery<TRequestItem, TResponse>
+SharedKernel.Mediator.IStreamQuery<TRequestItem, TResponse>.Items.get -> System.Collections.Generic.IAsyncEnumerable<TRequestItem>!
 SharedKernel.Mediator.IStreamRequest<TResponse>
 SharedKernel.Mediator.IStreamRequestHandler<TRequest, TResponse>
 SharedKernel.Mediator.IStreamRequestHandler<TRequest, TResponse>.Handle(TRequest request, System.Threading.CancellationToken ct) -> System.Collections.Generic.IAsyncEnumerable<TResponse>!
@@ -47,6 +59,7 @@ SharedKernel.Mediator.PipelineStage.PostProcessing = 400 -> SharedKernel.Mediato
 SharedKernel.Mediator.PipelineStage.Transaction = -400 -> SharedKernel.Mediator.PipelineStage
 SharedKernel.Mediator.PipelineStage.Validation = -1000 -> SharedKernel.Mediator.PipelineStage
 SharedKernel.Mediator.RequestHandlerContinuation<TResponse>
+SharedKernel.Mediator.StreamHandlerContinuation<TResponse>
 SharedKernel.Mediator.Unit
 SharedKernel.Mediator.Unit.Unit() -> void
 static SharedKernel.Mediator.Unit.Value.get -> SharedKernel.Mediator.Unit
