@@ -15,16 +15,17 @@ public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
 
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        [
-            MissingArgumentDiagnosticId,
-            InvalidRequestArgumentDiagnosticId,
-            MediatorDiagnosticIds.MissingHandler,
-            MediatorDiagnosticIds.InvalidHandlerSignature,
-            MediatorDiagnosticIds.MissingCancellationToken,
-            MediatorDiagnosticIds.MissingCancellationForwarding,
-            MediatorDiagnosticIds.InaccessibleRegistrationType,
-            MediatorDiagnosticIds.MissingModuleMarker
-        ];
+            [
+                MissingArgumentDiagnosticId,
+                InvalidRequestArgumentDiagnosticId,
+                MediatorDiagnosticIds.MissingHandler,
+                MediatorDiagnosticIds.InvalidHandlerSignature,
+                MediatorDiagnosticIds.MissingCancellationToken,
+                MediatorDiagnosticIds.MissingCancellationForwarding,
+                MediatorDiagnosticIds.MissingEnumeratorCancellation,
+                MediatorDiagnosticIds.InaccessibleRegistrationType,
+                MediatorDiagnosticIds.MissingModuleMarker
+            ];
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()
@@ -56,6 +57,9 @@ public sealed class SharedKernelMediatorCodeFixProvider : CodeFixProvider
                     break;
                 case MediatorDiagnosticIds.MissingCancellationForwarding:
                     await MissingCancellationForwardingCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
+                    break;
+                case MediatorDiagnosticIds.MissingEnumeratorCancellation:
+                    await MissingEnumeratorCancellationCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);
                     break;
                 case MediatorDiagnosticIds.InaccessibleRegistrationType:
                     await InaccessibleRegistrationTypeCodeFix.RegisterAsync(context, diagnostic).ConfigureAwait(false);

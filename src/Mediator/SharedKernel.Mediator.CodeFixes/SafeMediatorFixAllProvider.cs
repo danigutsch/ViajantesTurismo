@@ -19,6 +19,7 @@ internal sealed class SafeMediatorFixAllProvider : FixAllProvider
         InvalidRequestArgumentDiagnosticId,
         MediatorDiagnosticIds.MissingHandler,
         MediatorDiagnosticIds.MissingCancellationToken,
+        MediatorDiagnosticIds.MissingEnumeratorCancellation,
         MediatorDiagnosticIds.MissingModuleMarker
     ];
 

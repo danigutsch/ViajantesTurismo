@@ -17,6 +17,8 @@ The project now provides safe fixes for the currently implemented generator diag
 - `SKMED004` can add the missing public `CancellationToken ct` parameter to a handler `Handle(...)`
   method.
 - `SKMED006` can replace an incorrect forwarded cancellation token with the in-scope `ct`.
+- `SKMED007` can add `[EnumeratorCancellation]` to async stream handler and pipeline
+  `Handle(...)` iterator parameters.
 - `SKMED010` can either make an inaccessible registration type public or add
   `InternalsVisibleTo(...)`.
 - `SKMED011` can add `[assembly: MediatorModule]` for cross-assembly discovery.
@@ -32,6 +34,7 @@ Fix All is intentionally limited to the safe bulk-fix set:
 - `CS1503`
 - `SKMED001`
 - `SKMED004`
+- `SKMED007`
 - `SKMED011`
 
 Unsafe or cross-assembly diagnostics remain intentionally unfixed until a safe local repair exists.
