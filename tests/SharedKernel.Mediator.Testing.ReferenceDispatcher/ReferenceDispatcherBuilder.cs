@@ -28,13 +28,20 @@ public sealed class ReferenceDispatcherBuilder
             nameof(RegistrationFactory.CreateStreamHandlerRegistrationCore),
             BindingFlags.Static | BindingFlags.Public)!;
 
+    private static readonly MethodInfo CreateStreamPipelineRegistrationMethod =
+        typeof(RegistrationFactory).GetMethod(
+            nameof(RegistrationFactory.CreateStreamPipelineRegistrationCore),
+            BindingFlags.Static | BindingFlags.Public)!;
+
     private readonly Dictionary<(Type RequestType, Type ResponseType), List<ReferenceMediator.RequestHandlerRegistration>> requestHandlers = [];
     private readonly Dictionary<(Type RequestType, Type ResponseType), List<ReferenceMediator.PipelineRegistration>> pipelines = [];
     private readonly Dictionary<Type, List<ReferenceMediator.NotificationHandlerRegistration>> notificationHandlers = [];
     private readonly Dictionary<(Type RequestType, Type ResponseType), List<ReferenceMediator.StreamHandlerRegistration>> streamHandlers = [];
+    private readonly Dictionary<(Type RequestType, Type ResponseType), List<ReferenceMediator.StreamPipelineRegistration>> streamPipelines = [];
 
     private int pipelineRegistrationOrder;
     private int notificationRegistrationOrder;
+    private int streamPipelineRegistrationOrder;
 
     /// <summary>
     /// Registers a typed request handler.
@@ -235,6 +242,55 @@ public sealed class ReferenceDispatcherBuilder
     }
 
     /// <summary>
+    /// Registers a typed stream pipeline behavior.
+    /// </summary>
+    /// <typeparam name="TRequest">The stream request type handled by the pipeline.</typeparam>
+    /// <typeparam name="TResponse">The streamed item type.</typeparam>
+    /// <param name="pipeline">The stream pipeline instance to register.</param>
+    /// <returns>The current builder.</returns>
+    public ReferenceDispatcherBuilder AddStreamPipeline<TRequest, TResponse>(IStreamPipelineBehavior<TRequest, TResponse> pipeline)
+        where TRequest : IStreamRequest<TResponse>
+    {
+        ArgumentNullException.ThrowIfNull(pipeline);
+
+        AddStreamPipelineCore(
+            typeof(TRequest),
+            typeof(TResponse),
+            CreateStreamPipelineRegistration(pipeline, streamPipelineRegistrationOrder++));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a stream pipeline behavior using runtime types.
+    /// </summary>
+    /// <param name="requestType">The stream request type handled by the pipeline.</param>
+    /// <param name="responseType">The streamed item type.</param>
+    /// <param name="pipeline">The stream pipeline instance to register.</param>
+    /// <returns>The current builder.</returns>
+    public ReferenceDispatcherBuilder AddStreamPipeline(Type requestType, Type responseType, object pipeline)
+    {
+        ArgumentNullException.ThrowIfNull(requestType);
+        ArgumentNullException.ThrowIfNull(responseType);
+        ArgumentNullException.ThrowIfNull(pipeline);
+
+        EnsureStreamRequestType(requestType, responseType);
+        EnsureHandlerType(typeof(IStreamPipelineBehavior<,>), requestType, responseType, pipeline);
+
+        AddStreamPipelineCore(
+            requestType,
+            responseType,
+            CreateTypedRegistration<ReferenceMediator.StreamPipelineRegistration>(
+                CreateStreamPipelineRegistrationMethod,
+                requestType,
+                responseType,
+                pipeline,
+                streamPipelineRegistrationOrder++));
+
+        return this;
+    }
+
+    /// <summary>
     /// Builds the reference dispatcher from the registered handlers.
     /// </summary>
     /// <returns>The configured reference dispatcher.</returns>
@@ -268,9 +324,22 @@ public sealed class ReferenceDispatcherBuilder
                     .ThenBy(static registration => registration.ImplementationTypeName, StringComparer.Ordinal)],
                 IsParallelNotificationDispatch(pair.Key)));
 
-        var streamRoutes = streamHandlers.ToDictionary(
-            static pair => pair.Key,
-            static pair => new ReferenceMediator.StreamRoute(pair.Value.ToArray()));
+        var streamRoutes = new Dictionary<(Type RequestType, Type ResponseType), ReferenceMediator.StreamRoute>();
+        foreach (var routeKey in streamHandlers.Keys.Union(streamPipelines.Keys))
+        {
+            var routeHandlers = streamHandlers.TryGetValue(routeKey, out var handlerRegistrations)
+                ? handlerRegistrations
+                : [];
+            var routePipelines = streamPipelines.TryGetValue(routeKey, out var registrations)
+                    ? registrations
+                        .OrderBy(static registration => registration.Stage)
+                        .ThenBy(static registration => registration.Order)
+                        .ThenBy(static registration => registration.RegistrationOrder)
+                        .ThenBy(static registration => registration.ImplementationTypeName, StringComparer.Ordinal)
+                        .ToArray()
+                    : [];
+            streamRoutes[routeKey] = new ReferenceMediator.StreamRoute(routeHandlers.ToArray(), routePipelines);
+        }
 
         return new ReferenceMediator(requestRoutes, notificationRoutes, streamRoutes);
     }
@@ -324,6 +393,42 @@ public sealed class ReferenceDispatcherBuilder
         async ValueTask<TResponse> Next()
         {
             return ReferenceMediator.CastBoxedResult<TResponse>(await next().ConfigureAwait(false));
+        }
+    }
+
+    private static ReferenceMediator.StreamPipelineRegistration CreateStreamPipelineRegistration<TRequest, TResponse>(
+        IStreamPipelineBehavior<TRequest, TResponse> pipeline,
+        int registrationOrder)
+        where TRequest : IStreamRequest<TResponse>
+    {
+        var pipelineOrder = pipeline.GetType().GetCustomAttribute<PipelineOrderAttribute>();
+
+        return new ReferenceMediator.StreamPipelineRegistration(
+            pipeline.GetType().FullName ?? pipeline.GetType().Name,
+            pipelineOrder?.Stage ?? PipelineStage.Handler,
+            pipelineOrder?.Order ?? 0,
+            registrationOrder,
+            (request, next, ct) => BoxStreamPipeline(pipeline, (TRequest)request, next, ct));
+    }
+
+    private static async IAsyncEnumerable<object?> BoxStreamPipeline<TRequest, TResponse>(
+        IStreamPipelineBehavior<TRequest, TResponse> pipeline,
+        TRequest request,
+        ReferenceMediator.BoxedStreamHandlerContinuation next,
+        [EnumeratorCancellation] CancellationToken ct)
+        where TRequest : IStreamRequest<TResponse>
+    {
+        await foreach (var item in pipeline.Handle(request, Next, ct).WithCancellation(ct))
+        {
+            yield return item;
+        }
+
+        async IAsyncEnumerable<TResponse> Next()
+        {
+            await foreach (var item in next().WithCancellation(ct))
+            {
+                yield return ReferenceMediator.CastBoxedResult<TResponse>(item);
+            }
         }
     }
 
@@ -467,6 +572,21 @@ public sealed class ReferenceDispatcherBuilder
         registrations.Add(registration);
     }
 
+    private void AddStreamPipelineCore(
+        Type requestType,
+        Type responseType,
+        ReferenceMediator.StreamPipelineRegistration registration)
+    {
+        var routeKey = (requestType, responseType);
+        if (!streamPipelines.TryGetValue(routeKey, out var registrations))
+        {
+            registrations = [];
+            streamPipelines[routeKey] = registrations;
+        }
+
+        registrations.Add(registration);
+    }
+
     private static class RegistrationFactory
     {
         public static ReferenceMediator.RequestHandlerRegistration CreateRequestHandlerRegistrationCore<TRequest, TResponse>(
@@ -507,6 +627,14 @@ public sealed class ReferenceDispatcherBuilder
             return new ReferenceMediator.StreamHandlerRegistration(
                 handler.GetType().FullName ?? handler.GetType().Name,
                 (request, ct) => BoxStreamHandler((IStreamRequestHandler<TRequest, TResponse>)handler, (TRequest)request, ct));
+        }
+
+        public static ReferenceMediator.StreamPipelineRegistration CreateStreamPipelineRegistrationCore<TRequest, TResponse>(
+            object pipeline,
+            int registrationOrder)
+            where TRequest : IStreamRequest<TResponse>
+        {
+            return CreateStreamPipelineRegistration((IStreamPipelineBehavior<TRequest, TResponse>)pipeline, registrationOrder);
         }
     }
 }

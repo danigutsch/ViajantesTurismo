@@ -35,6 +35,27 @@ public sealed class ReferenceMediator : IMediator
         return route.Invoke(request, ct);
     }
 
+    /// <summary>
+    /// Executes a registered stream handler for the provided request.
+    /// </summary>
+    /// <typeparam name="TResponse">The streamed item type.</typeparam>
+    /// <param name="request">The stream request instance to dispatch.</param>
+    /// <param name="ct">The cancellation token for the operation.</param>
+    /// <returns>The produced stream of response items.</returns>
+    public IAsyncEnumerable<TResponse> Send<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (!streamRoutes.TryGetValue((request.GetType(), typeof(TResponse)), out var route))
+        {
+            return new ThrowingAsyncEnumerable<TResponse>(
+                new NotSupportedException(
+                    $"Reference stream dispatch is not available for request type '{request.GetType().FullName}'."));
+        }
+
+        return route.Invoke(request, ct);
+    }
+
     /// <inheritdoc />
     public ValueTask Publish<TNotification>(TNotification notification, CancellationToken ct)
         where TNotification : INotification
@@ -47,27 +68,6 @@ public sealed class ReferenceMediator : IMediator
         }
 
         return route.Publish(notification, ct);
-    }
-
-    /// <summary>
-    /// Executes a registered stream handler for the provided request.
-    /// </summary>
-    /// <typeparam name="TResponse">The streamed item type.</typeparam>
-    /// <param name="request">The stream request instance to dispatch.</param>
-    /// <param name="ct">The cancellation token for the operation.</param>
-    /// <returns>The produced stream of response items.</returns>
-    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        if (!streamRoutes.TryGetValue((request.GetType(), typeof(TResponse)), out var route))
-        {
-            return new ThrowingAsyncEnumerable<TResponse>(
-                new NotSupportedException(
-                    $"Reference stream dispatch is not available for request type '{request.GetType().FullName}'."));
-        }
-
-        return route.Invoke(request, ct);
     }
 
     internal static TResponse CastBoxedResult<TResponse>(object? result)
@@ -83,6 +83,8 @@ public sealed class ReferenceMediator : IMediator
     }
 
     internal delegate ValueTask<object?> BoxedHandlerContinuation();
+
+    internal delegate IAsyncEnumerable<object?> BoxedStreamHandlerContinuation();
 
     internal sealed class RequestRoute(
         IReadOnlyList<RequestHandlerRegistration> registrations,
@@ -152,7 +154,9 @@ public sealed class ReferenceMediator : IMediator
         }
     }
 
-    internal sealed class StreamRoute(IReadOnlyList<StreamHandlerRegistration> registrations)
+    internal sealed class StreamRoute(
+        IReadOnlyList<StreamHandlerRegistration> registrations,
+        IReadOnlyList<StreamPipelineRegistration> pipelines)
     {
         public IAsyncEnumerable<TResponse> Invoke<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct)
         {
@@ -163,11 +167,25 @@ public sealed class ReferenceMediator : IMediator
                 0 => new ThrowingAsyncEnumerable<TResponse>(
                     new NotSupportedException(
                         $"Reference stream dispatch is not available for request type '{request.GetType().FullName}'.")),
-                1 => CastStream<TResponse>(registrations[0].Invoke(request, ct), ct),
+                1 => InvokeCore<TResponse>(request, ct),
                 _ => new ThrowingAsyncEnumerable<TResponse>(
                     new InvalidOperationException(
                         $"Reference stream dispatch found {registrations.Count} registered handlers for request type '{request.GetType().FullName}'.")),
             };
+        }
+
+        private IAsyncEnumerable<TResponse> InvokeCore<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct)
+        {
+            BoxedStreamHandlerContinuation next = () => registrations[0].Invoke(request, ct);
+
+            for (var index = pipelines.Count - 1; index >= 0; index--)
+            {
+                var current = pipelines[index];
+                var currentNext = next;
+                next = () => current.Invoke(request, currentNext, ct);
+            }
+
+            return CastStream<TResponse>(next(), ct);
         }
 
         private static async IAsyncEnumerable<TResponse> CastStream<TResponse>(
@@ -234,6 +252,24 @@ public sealed class ReferenceMediator : IMediator
         public string ImplementationTypeName { get; } = implementationTypeName;
 
         public Func<object, CancellationToken, IAsyncEnumerable<object?>> Invoke { get; } = invoke;
+    }
+
+    internal sealed class StreamPipelineRegistration(
+        string implementationTypeName,
+        PipelineStage stage,
+        int order,
+        int registrationOrder,
+        Func<object, BoxedStreamHandlerContinuation, CancellationToken, IAsyncEnumerable<object?>> invoke)
+    {
+        public string ImplementationTypeName { get; } = implementationTypeName;
+
+        public PipelineStage Stage { get; } = stage;
+
+        public int Order { get; } = order;
+
+        public int RegistrationOrder { get; } = registrationOrder;
+
+        public Func<object, BoxedStreamHandlerContinuation, CancellationToken, IAsyncEnumerable<object?>> Invoke { get; } = invoke;
     }
 
     private sealed class ThrowingAsyncEnumerable<T>(Exception exception) : IAsyncEnumerable<T>, IAsyncEnumerator<T>
