@@ -26,6 +26,7 @@ SharedKernel.Mediator.IRequest<TResponse>
 SharedKernel.Mediator.IRequestHandler<TRequest, TResponse>
 SharedKernel.Mediator.IRequestHandler<TRequest, TResponse>.Handle(TRequest request, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
 SharedKernel.Mediator.ISender
+SharedKernel.Mediator.ISender.CreateStream<TResponse>(SharedKernel.Mediator.IStreamRequest<TResponse>! request, System.Threading.CancellationToken ct) -> System.Collections.Generic.IAsyncEnumerable<TResponse>!
 SharedKernel.Mediator.ISender.Send<TResponse>(SharedKernel.Mediator.IRequest<TResponse>! request, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
 SharedKernel.Mediator.IStreamRequest<TResponse>
 SharedKernel.Mediator.IStreamRequestHandler<TRequest, TResponse>

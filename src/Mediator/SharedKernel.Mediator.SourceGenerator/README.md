@@ -17,9 +17,10 @@ project and emits generated source for the mediator toolchain.
   handlers, and duplicate generated registrations
 - Emits generated DI registration for handlers, pipelines,
   notifications, and stream handlers
-- Emits the generated `AppMediator` shell plus request and
-  notification dispatch helpers into the consumer compilation,
-  including per-notification sequential or parallel fan-out
+- Emits the generated `AppMediator` shell plus request, stream,
+  and notification dispatch helpers into the consumer
+  compilation, including per-notification sequential or
+  parallel fan-out
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
 ## AOT and Trimming

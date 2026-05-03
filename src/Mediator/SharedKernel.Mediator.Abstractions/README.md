@@ -13,7 +13,8 @@ abstractions that the runtime, generator, analyzers, and tests build on.
 - Handler contracts: `IRequestHandler<,>`, command/query handler variants
 - Notification and stream contracts plus notification ordering/dispatch metadata
 - Pipeline contracts and ordering metadata
-- Mediator-facing contracts: `ISender`, `IPublisher`, `IMediator`
+- Mediator-facing contracts: `ISender`, `IPublisher`, `IMediator`, including generated stream dispatch
+  via `CreateStream(...)`
 - `Unit` and `MediatorModuleAttribute`
 
 ## AOT and Trimming
