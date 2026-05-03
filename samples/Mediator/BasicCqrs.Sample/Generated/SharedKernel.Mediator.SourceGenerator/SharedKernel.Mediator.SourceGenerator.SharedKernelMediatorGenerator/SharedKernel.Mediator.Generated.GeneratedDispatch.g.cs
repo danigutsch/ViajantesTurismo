@@ -31,6 +31,18 @@ internal static class GeneratedDispatch
         };
     }
 
+    public static global::System.Threading.Tasks.ValueTask Publish<TNotification>(
+        AppMediator mediator,
+        TNotification notification,
+        global::System.Threading.CancellationToken ct)
+        where TNotification : global::SharedKernel.Mediator.INotification
+    {
+        return notification switch
+        {
+            _ => global::System.Threading.Tasks.ValueTask.CompletedTask,
+        };
+    }
+
     public static async global::System.Threading.Tasks.ValueTask<TTarget> Cast<TSource, TTarget>(
         global::System.Threading.Tasks.ValueTask<TSource> source)
     {
