@@ -21,6 +21,8 @@ project and emits generated source for the mediator toolchain.
   and notification dispatch helpers into the consumer
   compilation, including per-notification sequential or
   parallel fan-out
+- Can optionally emit a generated call-graph JSON artifact wrapper
+  when `sharedkernel_mediator_emit_call_graph_json = true`
 - Packs as an analyzer-style assembly under `analyzers/dotnet/cs`
 
 ## AOT and Trimming

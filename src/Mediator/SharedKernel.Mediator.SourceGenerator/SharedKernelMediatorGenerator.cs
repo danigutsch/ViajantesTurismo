@@ -13,11 +13,16 @@ public sealed class SharedKernelMediatorGenerator : IIncrementalGenerator
     {
         var discoveryModel = context.CompilationProvider.Select(
             static (compilation, cancellationToken) => DiscoveryModelBuilder.Build(compilation, cancellationToken));
+        var generatorOptions = context.AnalyzerConfigOptionsProvider.Select(
+            static (optionsProvider, _) => MediatorGeneratorConfigOptions.Parse(optionsProvider));
+        var generationInput = discoveryModel.Combine(generatorOptions);
 
         context.RegisterSourceOutput(
-            discoveryModel,
-            static (productionContext, discoveryModel) =>
+            generationInput,
+            static (productionContext, input) =>
             {
+                var (discoveryModel, generatorOptions) = input;
+
                 foreach (var diagnostic in discoveryModel.Diagnostics)
                 {
                     productionContext.ReportDiagnostic(diagnostic);
@@ -42,6 +47,13 @@ public sealed class SharedKernelMediatorGenerator : IIncrementalGenerator
                 productionContext.AddSource(
                     "SharedKernel.Mediator.Generated.GeneratedPipelines.g.cs",
                     GeneratedPipelinesEmitter.Emit(discoveryModel));
+
+                if (generatorOptions.EmitCallGraphJson)
+                {
+                    productionContext.AddSource(
+                        "SharedKernel.Mediator.Generated.CallGraph.g.cs",
+                        CallGraphArtifactEmitter.Emit(discoveryModel));
+                }
             });
     }
 }
