@@ -15,6 +15,13 @@ registration.
 This runtime package stays focused on shared abstractions-facing runtime support that can remain
 available while source generation owns mediator composition and request dispatch.
 
+The package now also exposes an optional activity-based observability behavior:
+
+- `SharedKernelMediatorActivitySource` defines the stable `ActivitySource` name
+  `SharedKernel.Mediator`.
+- `ActivityBehavior<TRequest, TResponse>` adds an internal request activity around mediator pipeline
+  execution.
+
 ## AOT and Trimming
 
 This package is marked `IsAotCompatible=true` so the SDK enables trim and Native AOT analysis for

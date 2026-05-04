@@ -37,6 +37,16 @@ Fix All is intentionally limited to the safe bulk-fix set:
 - `SKMED007`
 - `SKMED011`
 
+Fix All stays out of behavioral or ordering changes, even when a future local code action might
+exist. Those categories remain intentionally manual by default:
+
+- exception-to-`Result<T>` conversions, which would change error-shaping semantics and belong with
+  the later `SharedKernel.Result` integration work
+- notification ordering repairs such as `SKMED200` and `SKMED201`
+- pipeline ordering or applicability repairs such as `SKMED020`, `SKMED021`, `SKMED022`, and
+  `SKMED023`
+- architecture-rule changes such as `SKMED500`
+
 Unsafe or cross-assembly diagnostics remain intentionally unfixed until a safe local repair exists.
 
 ## Planned Scope

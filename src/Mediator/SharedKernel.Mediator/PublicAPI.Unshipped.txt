@@ -1,1 +1,7 @@
 #nullable enable
+SharedKernel.Mediator.ActivityBehavior<TRequest, TResponse>
+SharedKernel.Mediator.ActivityBehavior<TRequest, TResponse>.ActivityBehavior() -> void
+SharedKernel.Mediator.ActivityBehavior<TRequest, TResponse>.Handle(TRequest request, SharedKernel.Mediator.RequestHandlerContinuation<TResponse>! next, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<TResponse>
+SharedKernel.Mediator.SharedKernelMediatorActivitySource
+const SharedKernel.Mediator.SharedKernelMediatorActivitySource.ActivitySourceName = "SharedKernel.Mediator" -> string!
+static SharedKernel.Mediator.SharedKernelMediatorActivitySource.Source.get -> System.Diagnostics.ActivitySource!
