@@ -26,8 +26,10 @@ The package now also exposes an optional activity-based observability behavior:
 
 This package is marked `IsAotCompatible=true` so the SDK enables trim and Native AOT analysis for
 the public runtime surface.
-The repository does not keep a dedicated mediator AOT sample project; compatibility is documented
-through package metadata and generator behavior instead.
+The repository does not keep a dedicated mediator AOT benchmark project; instead,
+`SharedKernel.Mediator.PackageConsumptionTests` publishes a fresh generated consumer with
+`PublishAot=true` and records publish success, trim warnings, native binary size, cold start, first
+dispatch, and steady-state dispatch metrics.
 
 ## Dependencies
 
