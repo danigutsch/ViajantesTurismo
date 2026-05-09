@@ -209,7 +209,7 @@ internal static class AppMediatorEmitter
     private static void EmitTypedStreamSendOverload(StringBuilder builder, StreamRequestDescriptor streamRequest, int streamRequestIndex)
     {
         var accessibleHandlers = streamRequest.Handlers
-            .Where(static handler => handler.IsAccessibleToGeneratedMediator)
+            .Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod)
             .ToArray();
 
         builder.AppendLine();

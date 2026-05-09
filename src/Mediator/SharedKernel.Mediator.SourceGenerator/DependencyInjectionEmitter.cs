@@ -147,7 +147,7 @@ internal static class DependencyInjectionEmitter
                 writer.Line();
             }
 
-            foreach (var handler in streamRequest.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator))
+            foreach (var handler in streamRequest.Handlers.Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod))
             {
                 EmitRegistration(
                     writer,

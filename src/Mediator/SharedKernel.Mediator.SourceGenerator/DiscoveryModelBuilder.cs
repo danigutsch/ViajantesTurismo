@@ -1194,14 +1194,20 @@ internal static class DiscoveryModelBuilder
 
         foreach (var typeArguments in streamHandlerTypeArguments)
         {
+            var requestType = typeArguments[0];
+            var responseType = typeArguments[1];
+            var hasCompatibleHandleMethod = HasCompatibleStreamHandleMethod(type, requestType, responseType, discoverySymbols, primaryAssembly);
+            ReportInvalidHandlerSignature(type, GetTypeDisplayString(requestType), hasCompatibleHandleMethod, primaryAssembly, discoveryState);
+
             yield return new StreamHandlerDescriptor(
                 GetMetadataName(type),
                 GetTypeDisplayString(typeArguments[0]),
                 GetHandleMethodName(type),
                 type.DeclaredAccessibility,
-                isAccessibleToGeneratedMediator);
+                isAccessibleToGeneratedMediator,
+                hasCompatibleHandleMethod);
 
-            if (isAccessibleToGeneratedMediator)
+            if (isAccessibleToGeneratedMediator && hasCompatibleHandleMethod)
             {
                 var implementationType = GetMetadataName(type);
                 ReportDuplicateGeneratedRegistration(
@@ -1688,6 +1694,27 @@ internal static class DiscoveryModelBuilder
     private static INamedTypeSymbol ConstructValueTaskResponse(DiscoverySymbols discoverySymbols, ITypeSymbol responseType)
     {
         return discoverySymbols.ValueTaskOfT.Construct(responseType);
+    }
+
+    private static bool HasCompatibleStreamHandleMethod(
+        INamedTypeSymbol type,
+        ITypeSymbol requestType,
+        ITypeSymbol responseType,
+        DiscoverySymbols discoverySymbols,
+        IAssemblySymbol primaryAssembly)
+    {
+        var expectedReturnType = discoverySymbols.AsyncEnumerableOfT.Construct(responseType);
+        return type.GetMembers("Handle")
+            .OfType<IMethodSymbol>()
+            .Any(
+                method =>
+                    !method.IsStatic
+                    && method.MethodKind == MethodKind.Ordinary
+                    && method.Parameters.Length == 2
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType)
+                    && SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, discoverySymbols.CancellationTokenType)
+                    && SymbolEqualityComparer.Default.Equals(method.ReturnType, expectedReturnType)
+                    && IsAccessibleToGeneratedMediator(method, primaryAssembly));
     }
 
     private static string GetMetadataName(INamedTypeSymbol type)

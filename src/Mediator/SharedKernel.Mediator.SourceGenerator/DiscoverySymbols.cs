@@ -26,7 +26,8 @@ internal sealed class DiscoverySymbols
         && StreamHandlerInterface is not null
         && UnitType is not null
         && CancellationTokenType is not null
-        && ValueTaskOfT is not null;
+        && ValueTaskOfT is not null
+        && AsyncEnumerableOfT is not null;
 
     public INamedTypeSymbol RequestInterface { get; private init; } = null!;
 
@@ -68,6 +69,8 @@ internal sealed class DiscoverySymbols
 
     public INamedTypeSymbol ValueTaskOfT { get; private init; } = null!;
 
+    public INamedTypeSymbol AsyncEnumerableOfT { get; private init; } = null!;
+
     public static DiscoverySymbols Create(Compilation compilation)
     {
         return new DiscoverySymbols
@@ -92,6 +95,7 @@ internal sealed class DiscoverySymbols
             UnitType = compilation.GetTypeByMetadataName(MetadataNames.Unit)!,
             CancellationTokenType = compilation.GetTypeByMetadataName(MetadataNames.CancellationToken)!,
             ValueTaskOfT = compilation.GetTypeByMetadataName(MetadataNames.ValueTaskOfResponse)!,
+            AsyncEnumerableOfT = compilation.GetTypeByMetadataName(MetadataNames.AsyncEnumerableOfResponse)!,
         };
     }
 }
