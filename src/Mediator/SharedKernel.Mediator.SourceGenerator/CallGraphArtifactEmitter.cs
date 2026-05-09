@@ -118,7 +118,7 @@ internal static class CallGraphArtifactEmitter
 
         for (var index = 0; index < entries.Length; index++)
         {
-            builder.Append("        ").Append(EscapeStringLiteral(entries[index]));
+            builder.Append("        ").Append(MediatorGenerationNames.EscapeStringLiteral(entries[index]));
             if (index < entries.Length - 1)
             {
                 builder.Append(',');
@@ -141,7 +141,7 @@ internal static class CallGraphArtifactEmitter
         builder.Append("      \"")
             .Append(propertyName)
             .Append("\": ")
-            .Append(EscapeStringLiteral(value));
+            .Append(MediatorGenerationNames.EscapeStringLiteral(value));
         if (trailingComma)
         {
             builder.Append(',');
@@ -150,8 +150,4 @@ internal static class CallGraphArtifactEmitter
         builder.AppendLine();
     }
 
-    private static string EscapeStringLiteral(string value)
-    {
-        return "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
-    }
 }

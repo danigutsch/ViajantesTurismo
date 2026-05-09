@@ -7,12 +7,6 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record NotificationHandlerDescriptor(
     string MetadataName,
-    string Namespace,
-    string Name,
-    string NotificationMetadataName,
     string MethodName,
     Accessibility Accessibility,
-    bool IsAccessibleToGeneratedMediator,
-    int Order,
-    bool HasExplicitOrder,
-    Location? DiagnosticLocation);
+    bool IsAccessibleToGeneratedMediator);

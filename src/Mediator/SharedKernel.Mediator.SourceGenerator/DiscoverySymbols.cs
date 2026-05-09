@@ -89,7 +89,7 @@ internal sealed class DiscoverySymbols
             NotificationOrderAttribute = compilation.GetTypeByMetadataName(MetadataNames.NotificationOrderAttribute)!,
             StreamRequestInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequest)!,
             StreamHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,
-            UnitType = compilation.GetTypeByMetadataName("SharedKernel.Mediator.Unit")!,
+            UnitType = compilation.GetTypeByMetadataName(MetadataNames.Unit)!,
             CancellationTokenType = compilation.GetTypeByMetadataName(MetadataNames.CancellationToken)!,
             ValueTaskOfT = compilation.GetTypeByMetadataName(MetadataNames.ValueTaskOfResponse)!,
         };

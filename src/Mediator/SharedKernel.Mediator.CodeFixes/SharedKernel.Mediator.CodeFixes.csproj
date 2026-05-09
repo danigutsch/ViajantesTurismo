@@ -18,9 +18,12 @@
 
     <ItemGroup>
         <Compile Include="..\SharedKernel.Mediator.SourceGenerator\MediatorDiagnosticIds.cs" Link="MediatorDiagnosticIds.cs" />
+        <Compile Include="..\SharedKernel.Mediator.SourceGenerator\MediatorDiagnosticDescriptors.cs" Link="MediatorDiagnosticDescriptors.cs" />
+        <Compile Include="..\SharedKernel.Mediator.SourceGenerator\MetadataNames.cs" Link="MetadataNames.cs" />
     </ItemGroup>
 
     <ItemGroup>
+        <AdditionalFiles Include="..\SharedKernel.Mediator.SourceGenerator\AnalyzerReleases.Unshipped.md" Link="AnalyzerReleases.Unshipped.md" />
         <None Include="_._" Pack="true" PackagePath="lib/netstandard2.0/" Visible="false" />
         <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>

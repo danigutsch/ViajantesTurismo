@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.CodeFixes;
 
@@ -12,10 +13,6 @@ namespace SharedKernel.Mediator.CodeFixes;
 /// </summary>
 internal static class MissingCancellationForwardingCodeFix
 {
-    private const string CancellationTokenMetadataName = "System.Threading.CancellationToken";
-    private const string SenderMetadataName = "SharedKernel.Mediator.ISender";
-    private const string PublisherMetadataName = "SharedKernel.Mediator.IPublisher";
-
     /// <summary>
     /// Registers the cancellation-forwarding code fix when the diagnostic targets a dispatch invocation.
     /// </summary>
@@ -102,7 +99,7 @@ internal static class MissingCancellationForwardingCodeFix
 
         var containingMethod = semanticModel.GetEnclosingSymbol(invocation.SpanStart, cancellationToken) as IMethodSymbol;
         var availableCancellationToken = containingMethod?.Parameters.FirstOrDefault(
-            parameter => string.Equals(parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), $"global::{CancellationTokenMetadataName}", StringComparison.Ordinal));
+            parameter => string.Equals(parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), $"global::{MetadataNames.CancellationToken}", StringComparison.Ordinal));
         if (availableCancellationToken is null)
         {
             plan = default;
@@ -160,9 +157,9 @@ internal static class MissingCancellationForwardingCodeFix
     private static bool IsMediatorDispatchMethod(Compilation compilation, IMethodSymbol method)
     {
         return string.Equals(method.Name, "Send", StringComparison.Ordinal)
-               && TypeImplementsOrEquals(compilation, method.ContainingType, SenderMetadataName)
+               && TypeImplementsOrEquals(compilation, method.ContainingType, MetadataNames.Sender)
                || string.Equals(method.Name, "Publish", StringComparison.Ordinal)
-               && TypeImplementsOrEquals(compilation, method.ContainingType, PublisherMetadataName);
+               && TypeImplementsOrEquals(compilation, method.ContainingType, MetadataNames.Publisher);
     }
 
     private static bool TypeImplementsOrEquals(Compilation compilation, INamedTypeSymbol type, string metadataName)

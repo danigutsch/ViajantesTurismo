@@ -11,110 +11,6 @@ internal static class DiscoveryModelBuilder
     private const string PrimaryAssemblyNamePropertyName = "PrimaryAssemblyName";
     private const int ParallelNotificationDispatchStrategyValue = 1;
 
-    private static readonly DiagnosticDescriptor MissingHandlerDescriptor = new(
-        id: MediatorDiagnosticIds.MissingHandler,
-        title: "Request has no handler",
-        messageFormat: "Request '{0}' does not have an accessible compatible handler",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor MultipleHandlersDescriptor = new(
-        id: MediatorDiagnosticIds.MultipleHandlers,
-        title: "Request has multiple handlers",
-        messageFormat: "Request '{0}' has {1} accessible compatible handlers",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor InvalidHandlerSignatureDescriptor = new(
-        id: MediatorDiagnosticIds.InvalidHandlerSignature,
-        title: "Handler has invalid signature",
-        messageFormat: "Handler '{0}' does not expose a compatible Handle method for request '{1}'",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor InaccessibleRegistrationTypeDescriptor = new(
-        id: MediatorDiagnosticIds.InaccessibleRegistrationType,
-        title: "Mediator registration type is inaccessible",
-        messageFormat: "Type '{0}' is inaccessible to generated mediator registrations",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor MissingModuleMarkerDescriptor = new(
-        id: MediatorDiagnosticIds.MissingModuleMarker,
-        title: "Handler module is not marked with [assembly: MediatorModule]",
-        messageFormat: "Assembly '{0}' contains mediator registrations but is not marked with [assembly: MediatorModule]",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor DuplicateGeneratedRegistrationDescriptor = new(
-        id: MediatorDiagnosticIds.DuplicateGeneratedRegistration,
-        title: "Generated mediator registration is duplicated",
-        messageFormat: "Generated mediator registration '{0}' implemented by '{1}' is duplicated",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor UnprovenObjectDispatchCoverageDescriptor = new(
-        id: MediatorDiagnosticIds.UnprovenObjectDispatchCoverage,
-        title: "Generated object dispatch coverage cannot be proven",
-        messageFormat: "Generated object dispatch coverage cannot be proven because assembly '{0}' is not marked with [assembly: MediatorModule]",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor NotificationHandlersRequireExplicitOrderDescriptor = new(
-        id: MediatorDiagnosticIds.NotificationHandlersRequireExplicitOrder,
-        title: "Notification handlers require explicit order",
-        messageFormat: "Notification '{0}' has multiple sequential handlers and handler '{1}' does not declare [NotificationOrder]",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor DuplicateNotificationHandlerOrderDescriptor = new(
-        id: MediatorDiagnosticIds.DuplicateNotificationHandlerOrder,
-        title: "Duplicate notification handler order",
-        messageFormat: "Notification '{0}' has multiple handlers with explicit order {1}",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor InvalidPipelineGenericArityDescriptor = new(
-        id: MediatorDiagnosticIds.InvalidPipelineGenericArity,
-        title: "Pipeline behavior has invalid generic arity",
-        messageFormat: "Pipeline behavior '{0}' has invalid generic arity {1}; open generic pipeline behaviors must declare exactly two type parameters",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor DuplicatePipelineOrderDescriptor = new(
-        id: MediatorDiagnosticIds.DuplicatePipelineOrder,
-        title: "Duplicate pipeline order",
-        messageFormat: "Request '{0}' has multiple applicable pipeline behaviors with stage {1} and order {2}",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor NeverAppliesPipelineDescriptor = new(
-        id: MediatorDiagnosticIds.NeverAppliesPipeline,
-        title: "Pipeline behavior is registered but never applies",
-        messageFormat: "Pipeline behavior '{0}' is registered but does not apply to any discovered request",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor UnboundPipelineConstraintsDescriptor = new(
-        id: MediatorDiagnosticIds.UnboundPipelineConstraints,
-        title: "Pipeline behavior constraints cannot bind to any request",
-        messageFormat: "Pipeline behavior '{0}' constraints cannot bind to any discovered request/response pair",
-        category: "Usage",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
-
     public static DiscoveryModel Build(Compilation compilation, CancellationToken cancellationToken)
     {
         var discoverySymbols = DiscoverySymbols.Create(compilation);
@@ -330,7 +226,7 @@ internal static class DiscoveryModelBuilder
                 {
                     discoveryState.Diagnostics.Add(
                         Diagnostic.Create(
-                            DuplicatePipelineOrderDescriptor,
+                            MediatorDiagnosticDescriptors.DuplicatePipelineOrder,
                             GetDiagnosticLocation(pipeline.Raw.TypeSymbol, primaryAssembly),
                             requestPipelines.Key,
                             duplicateGroup.Key.Stage,
@@ -359,8 +255,6 @@ internal static class DiscoveryModelBuilder
 
                     return new RequestDescriptor(
                         request.MetadataName,
-                        request.Namespace,
-                        request.Name,
                         request.Kind,
                         request.Response,
                         request.IsValueType,
@@ -401,7 +295,8 @@ internal static class DiscoveryModelBuilder
                     pipeline.Stage,
                     pipeline.Order,
                     PipelineApplicability.Closed,
-                    pipeline.IsAccessibleToGeneratedMediator),
+                    pipeline.IsAccessibleToGeneratedMediator,
+                    pipeline.IsStream),
                 pipeline);
             yield break;
         }
@@ -473,7 +368,8 @@ internal static class DiscoveryModelBuilder
             pipeline.Stage,
             pipeline.Order,
             PipelineApplicability.OpenGeneric,
-            pipeline.IsAccessibleToGeneratedMediator);
+            pipeline.IsAccessibleToGeneratedMediator,
+            pipeline.IsStream);
         return true;
     }
 
@@ -639,7 +535,7 @@ internal static class DiscoveryModelBuilder
     {
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                InvalidPipelineGenericArityDescriptor,
+                MediatorDiagnosticDescriptors.InvalidPipelineGenericArity,
                 GetDiagnosticLocation(pipeline.TypeSymbol, primaryAssembly),
                 pipeline.MetadataName,
                 pipeline.TypeParameters.Length));
@@ -652,7 +548,7 @@ internal static class DiscoveryModelBuilder
     {
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                NeverAppliesPipelineDescriptor,
+                MediatorDiagnosticDescriptors.NeverAppliesPipeline,
                 GetDiagnosticLocation(pipeline.TypeSymbol, primaryAssembly),
                 pipeline.MetadataName));
     }
@@ -664,19 +560,19 @@ internal static class DiscoveryModelBuilder
     {
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                UnboundPipelineConstraintsDescriptor,
+                MediatorDiagnosticDescriptors.UnboundPipelineConstraints,
                 GetDiagnosticLocation(pipeline.TypeSymbol, primaryAssembly),
                 pipeline.MetadataName));
     }
 
     private static void ReportNotificationHandlersRequireExplicitOrder(
         string notificationMetadataName,
-        NotificationHandlerDescriptor handler,
+        RawNotificationHandlerDescriptor handler,
         DiscoveryState discoveryState)
     {
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                NotificationHandlersRequireExplicitOrderDescriptor,
+                MediatorDiagnosticDescriptors.NotificationHandlersRequireExplicitOrder,
                 handler.DiagnosticLocation ?? Location.None,
                 notificationMetadataName,
                 handler.MetadataName));
@@ -684,13 +580,13 @@ internal static class DiscoveryModelBuilder
 
     private static void ReportDuplicateNotificationHandlerOrder(
         string notificationMetadataName,
-        NotificationHandlerDescriptor handler,
+        RawNotificationHandlerDescriptor handler,
         int order,
         DiscoveryState discoveryState)
     {
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                DuplicateNotificationHandlerOrderDescriptor,
+                MediatorDiagnosticDescriptors.DuplicateNotificationHandlerOrder,
                 handler.DiagnosticLocation ?? Location.None,
                 notificationMetadataName,
                 order));
@@ -698,7 +594,7 @@ internal static class DiscoveryModelBuilder
 
     private static ImmutableArray<NotificationDescriptor> BuildNotificationDescriptors(
         IDictionary<string, RawNotificationContract> notificationContracts,
-        IEnumerable<NotificationHandlerDescriptor> notificationHandlers,
+        IEnumerable<RawNotificationHandlerDescriptor> notificationHandlers,
         DiscoveryState discoveryState)
     {
         var handlersByNotification = notificationHandlers
@@ -732,7 +628,7 @@ internal static class DiscoveryModelBuilder
 
     private static ImmutableArray<NotificationHandlerDescriptor> OrderNotificationHandlers(
         string notificationMetadataName,
-        ImmutableArray<NotificationHandlerDescriptor> handlers,
+        ImmutableArray<RawNotificationHandlerDescriptor> handlers,
         bool publishInParallel,
         DiscoveryState discoveryState)
     {
@@ -765,13 +661,19 @@ internal static class DiscoveryModelBuilder
         return [.. handlers
             .OrderByDescending(handler => !publishInParallel && handler.HasExplicitOrder)
             .ThenBy(handler => publishInParallel ? 0 : handler.Order)
-            .ThenBy(static handler => handler.MetadataName, StringComparer.Ordinal)];
+            .ThenBy(static handler => handler.MetadataName, StringComparer.Ordinal)
+            .Select(
+                static handler => new NotificationHandlerDescriptor(
+                    handler.MetadataName,
+                    handler.MethodName,
+                    handler.Accessibility,
+                    handler.IsAccessibleToGeneratedMediator))];
     }
 
     private static ImmutableArray<StreamRequestDescriptor> BuildStreamRequestDescriptors(
         IDictionary<string, RawStreamRequestContract> streamRequestContracts,
         IEnumerable<StreamHandlerDescriptor> streamHandlers,
-        IEnumerable<RawStreamPipelineDescriptor> streamPipelines,
+        IEnumerable<RawPipelineDescriptor> streamPipelines,
         IAssemblySymbol primaryAssembly,
         DiscoveryState discoveryState)
     {
@@ -786,7 +688,7 @@ internal static class DiscoveryModelBuilder
 
         var matchedPipelinesByRequest = streamRequestContracts.Keys.ToDictionary(
             static requestMetadataName => requestMetadataName,
-            static _ => new List<(StreamPipelineDescriptor Descriptor, RawStreamPipelineDescriptor Raw)>(),
+            static _ => new List<(PipelineDescriptor Descriptor, RawPipelineDescriptor Raw)>(),
             StringComparer.Ordinal);
 
         foreach (var pipeline in streamPipelines)
@@ -810,7 +712,7 @@ internal static class DiscoveryModelBuilder
                 {
                     discoveryState.Diagnostics.Add(
                         Diagnostic.Create(
-                            DuplicatePipelineOrderDescriptor,
+                            MediatorDiagnosticDescriptors.DuplicatePipelineOrder,
                             GetDiagnosticLocation(pipeline.Raw.TypeSymbol, primaryAssembly),
                             requestPipelines.Key,
                             duplicateGroup.Key.Stage,
@@ -827,7 +729,7 @@ internal static class DiscoveryModelBuilder
                     var handlers = handlersByRequest.TryGetValue(request.MetadataName, out var streamHandlersForRequest)
                         ? streamHandlersForRequest
                         : [];
-                    ImmutableArray<StreamPipelineDescriptor> requestPipelines = matchedPipelinesByRequest.TryGetValue(
+                    ImmutableArray<PipelineDescriptor> requestPipelines = matchedPipelinesByRequest.TryGetValue(
                         request.MetadataName,
                         out var discoveredPipelines)
                         ? [.. discoveredPipelines
@@ -841,8 +743,8 @@ internal static class DiscoveryModelBuilder
                 })];
     }
 
-    private static IEnumerable<(StreamPipelineDescriptor Descriptor, RawStreamPipelineDescriptor Raw)> MatchStreamPipelineDescriptors(
-        RawStreamPipelineDescriptor pipeline,
+    private static IEnumerable<(PipelineDescriptor Descriptor, RawPipelineDescriptor Raw)> MatchStreamPipelineDescriptors(
+        RawPipelineDescriptor pipeline,
         IEnumerable<RawStreamRequestContract> streamRequestContracts,
         IAssemblySymbol primaryAssembly,
         DiscoveryState discoveryState)
@@ -861,56 +763,27 @@ internal static class DiscoveryModelBuilder
 
             if (matchedRequest is null)
             {
-                ReportNeverAppliesPipeline(
-                    new RawPipelineDescriptor(
-                        pipeline.MetadataName,
-                        pipeline.OpenGenericMetadataName,
-                        pipeline.Stage,
-                        pipeline.Order,
-                        pipeline.Applicability,
-                        pipeline.IsAccessibleToGeneratedMediator,
-                        pipeline.RequestMetadataName,
-                        pipeline.ResponseMetadataName,
-                        pipeline.TypeSymbol,
-                        pipeline.RequestTypePattern,
-                        pipeline.ResponseTypePattern,
-                        pipeline.TypeParameters),
-                    primaryAssembly,
-                    discoveryState);
+                ReportNeverAppliesPipeline(pipeline, primaryAssembly, discoveryState);
                 yield break;
             }
 
             yield return (
-                new StreamPipelineDescriptor(
+                new PipelineDescriptor(
                     pipeline.MetadataName,
                     pipeline.OpenGenericMetadataName,
                     matchedRequest.MetadataName,
                     pipeline.Stage,
                     pipeline.Order,
                     PipelineApplicability.Closed,
-                    pipeline.IsAccessibleToGeneratedMediator),
+                    pipeline.IsAccessibleToGeneratedMediator,
+                    pipeline.IsStream),
                 pipeline);
             yield break;
         }
 
         if (pipeline.TypeParameters.Length != 2)
         {
-            ReportInvalidPipelineGenericArity(
-                new RawPipelineDescriptor(
-                    pipeline.MetadataName,
-                    pipeline.OpenGenericMetadataName,
-                    pipeline.Stage,
-                    pipeline.Order,
-                    pipeline.Applicability,
-                    pipeline.IsAccessibleToGeneratedMediator,
-                    pipeline.RequestMetadataName,
-                    pipeline.ResponseMetadataName,
-                    pipeline.TypeSymbol,
-                    pipeline.RequestTypePattern,
-                    pipeline.ResponseTypePattern,
-                    pipeline.TypeParameters),
-                primaryAssembly,
-                discoveryState);
+            ReportInvalidPipelineGenericArity(pipeline, primaryAssembly, discoveryState);
             yield break;
         }
 
@@ -936,47 +809,17 @@ internal static class DiscoveryModelBuilder
 
         if (constraintFailure)
         {
-            ReportUnboundPipelineConstraints(
-                new RawPipelineDescriptor(
-                    pipeline.MetadataName,
-                    pipeline.OpenGenericMetadataName,
-                    pipeline.Stage,
-                    pipeline.Order,
-                    pipeline.Applicability,
-                    pipeline.IsAccessibleToGeneratedMediator,
-                    pipeline.RequestMetadataName,
-                    pipeline.ResponseMetadataName,
-                    pipeline.TypeSymbol,
-                    pipeline.RequestTypePattern,
-                    pipeline.ResponseTypePattern,
-                    pipeline.TypeParameters),
-                primaryAssembly,
-                discoveryState);
+            ReportUnboundPipelineConstraints(pipeline, primaryAssembly, discoveryState);
             yield break;
         }
 
-        ReportNeverAppliesPipeline(
-            new RawPipelineDescriptor(
-                pipeline.MetadataName,
-                pipeline.OpenGenericMetadataName,
-                pipeline.Stage,
-                pipeline.Order,
-                pipeline.Applicability,
-                pipeline.IsAccessibleToGeneratedMediator,
-                pipeline.RequestMetadataName,
-                pipeline.ResponseMetadataName,
-                pipeline.TypeSymbol,
-                pipeline.RequestTypePattern,
-                pipeline.ResponseTypePattern,
-                pipeline.TypeParameters),
-            primaryAssembly,
-            discoveryState);
+        ReportNeverAppliesPipeline(pipeline, primaryAssembly, discoveryState);
     }
 
     private static bool TryBindOpenGenericStreamPipeline(
-        RawStreamPipelineDescriptor pipeline,
+        RawPipelineDescriptor pipeline,
         RawStreamRequestContract request,
-        out StreamPipelineDescriptor descriptor,
+        out PipelineDescriptor descriptor,
         out bool failedConstraints)
     {
         descriptor = null!;
@@ -998,14 +841,15 @@ internal static class DiscoveryModelBuilder
 
         var constructedType = pipeline.TypeSymbol.OriginalDefinition.Construct(
             [.. pipeline.TypeParameters.Select(typeParameter => bindings[typeParameter])]);
-        descriptor = new StreamPipelineDescriptor(
+        descriptor = new PipelineDescriptor(
             GetMetadataName(constructedType),
             pipeline.OpenGenericMetadataName,
             request.MetadataName,
             pipeline.Stage,
             pipeline.Order,
             PipelineApplicability.OpenGeneric,
-            pipeline.IsAccessibleToGeneratedMediator);
+            pipeline.IsAccessibleToGeneratedMediator,
+            pipeline.IsStream);
         return true;
     }
 
@@ -1115,8 +959,6 @@ internal static class DiscoveryModelBuilder
         ReportInvalidHandlerSignature(type, GetTypeDisplayString(requestType), hasCompatibleHandleMethod, primaryAssembly, discoveryState);
         var descriptor = new HandlerDescriptor(
             GetMetadataName(type),
-            GetNamespace(type),
-            type.Name,
             GetTypeDisplayString(requestType),
             GetTypeDisplayString(responseType),
             GetHandleMethodName(type),
@@ -1129,13 +971,13 @@ internal static class DiscoveryModelBuilder
         {
             ReportDuplicateGeneratedRegistration(
                 type,
-                GetSelfRegistrationServiceType(descriptor.MetadataName),
+                MediatorGenerationNames.GetSelfRegistrationServiceType(descriptor.MetadataName),
                 descriptor.MetadataName,
                 primaryAssembly,
                 discoveryState);
             ReportDuplicateGeneratedRegistration(
                 type,
-                GetHandlerServiceType(descriptor),
+                MediatorGenerationNames.GetHandlerServiceType(descriptor),
                 descriptor.MetadataName,
                 primaryAssembly,
                 discoveryState);
@@ -1185,6 +1027,7 @@ internal static class DiscoveryModelBuilder
                 order,
                 type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed,
                 isAccessibleToGeneratedMediator,
+                IsStream: false,
                 GetTypeDisplayString(typeArguments[0]),
                 GetTypeDisplayString(typeArguments[1]),
                 type,
@@ -1197,13 +1040,13 @@ internal static class DiscoveryModelBuilder
                 var implementationType = GetMetadataName(type);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    GetSelfRegistrationServiceType(implementationType),
+                    MediatorGenerationNames.GetSelfRegistrationServiceType(implementationType),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    $"global::SharedKernel.Mediator.IPipelineBehavior<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
+                    MediatorGenerationNames.GetPipelineServiceType(GetTypeDisplayString(typeArguments[0]), GetTypeDisplayString(typeArguments[1])),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
@@ -1236,7 +1079,7 @@ internal static class DiscoveryModelBuilder
         return true;
     }
 
-    private static IEnumerable<NotificationHandlerDescriptor> CreateNotificationHandlers(
+    private static IEnumerable<RawNotificationHandlerDescriptor> CreateNotificationHandlers(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
         DiscoveryState discoveryState,
@@ -1266,7 +1109,7 @@ internal static class DiscoveryModelBuilder
             var hasExplicitOrder = notificationOrder is not null;
             var order = notificationOrder?.ConstructorArguments[0].Value is int orderValue ? orderValue : 0;
 
-            yield return new NotificationHandlerDescriptor(
+            yield return new RawNotificationHandlerDescriptor(
                 GetMetadataName(type),
                 GetNamespace(type),
                 type.Name,
@@ -1283,13 +1126,13 @@ internal static class DiscoveryModelBuilder
                 var implementationType = GetMetadataName(type);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    GetSelfRegistrationServiceType(implementationType),
+                    MediatorGenerationNames.GetSelfRegistrationServiceType(implementationType),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    $"global::SharedKernel.Mediator.INotificationHandler<{GetTypeDisplayString(typeArguments[0])}>",
+                    MediatorGenerationNames.GetNotificationHandlerServiceType(GetTypeDisplayString(typeArguments[0])),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
@@ -1353,10 +1196,7 @@ internal static class DiscoveryModelBuilder
         {
             yield return new StreamHandlerDescriptor(
                 GetMetadataName(type),
-                GetNamespace(type),
-                type.Name,
                 GetTypeDisplayString(typeArguments[0]),
-                GetTypeDisplayString(typeArguments[1]),
                 GetHandleMethodName(type),
                 type.DeclaredAccessibility,
                 isAccessibleToGeneratedMediator);
@@ -1366,13 +1206,13 @@ internal static class DiscoveryModelBuilder
                 var implementationType = GetMetadataName(type);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    GetSelfRegistrationServiceType(implementationType),
+                    MediatorGenerationNames.GetSelfRegistrationServiceType(implementationType),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    $"global::SharedKernel.Mediator.IStreamRequestHandler<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
+                    MediatorGenerationNames.GetStreamHandlerServiceType(GetTypeDisplayString(typeArguments[0]), GetTypeDisplayString(typeArguments[1])),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
@@ -1380,7 +1220,7 @@ internal static class DiscoveryModelBuilder
         }
     }
 
-    private static IEnumerable<RawStreamPipelineDescriptor> CreateStreamPipelines(
+    private static IEnumerable<RawPipelineDescriptor> CreateStreamPipelines(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
         DiscoveryState discoveryState,
@@ -1414,13 +1254,14 @@ internal static class DiscoveryModelBuilder
                 ? orderValue
                 : 0;
 
-            yield return new RawStreamPipelineDescriptor(
+            yield return new RawPipelineDescriptor(
                 GetMetadataName(type),
                 type.TypeParameters.Length > 0 ? GetMetadataName(type.OriginalDefinition) : null,
                 stage,
                 order,
                 type.TypeParameters.Length > 0 ? PipelineApplicability.OpenGeneric : PipelineApplicability.Closed,
                 isAccessibleToGeneratedMediator,
+                IsStream: true,
                 GetTypeDisplayString(typeArguments[0]),
                 GetTypeDisplayString(typeArguments[1]),
                 type,
@@ -1433,13 +1274,13 @@ internal static class DiscoveryModelBuilder
                 var implementationType = GetMetadataName(type);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    GetSelfRegistrationServiceType(implementationType),
+                    MediatorGenerationNames.GetSelfRegistrationServiceType(implementationType),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
                 ReportDuplicateGeneratedRegistration(
                     type,
-                    $"global::SharedKernel.Mediator.IStreamPipelineBehavior<{GetTypeDisplayString(typeArguments[0])}, {GetTypeDisplayString(typeArguments[1])}>",
+                    MediatorGenerationNames.GetStreamPipelineServiceType(GetTypeDisplayString(typeArguments[0]), GetTypeDisplayString(typeArguments[1])),
                     implementationType,
                     primaryAssembly,
                     discoveryState);
@@ -1513,7 +1354,7 @@ internal static class DiscoveryModelBuilder
         var properties = ImmutableDictionary<string, string?>.Empty.Add(PrimaryAssemblyNamePropertyName, primaryAssembly.Identity.Name);
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                InaccessibleRegistrationTypeDescriptor,
+                MediatorDiagnosticDescriptors.InaccessibleRegistrationType,
                 GetDiagnosticLocation(location, SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, primaryAssembly)),
                 properties,
                 metadataName));
@@ -1544,12 +1385,12 @@ internal static class DiscoveryModelBuilder
 
             discoveryState.Diagnostics.Add(
                 Diagnostic.Create(
-                    MissingModuleMarkerDescriptor,
+                    MediatorDiagnosticDescriptors.MissingModuleMarker,
                     Location.None,
                     referencedAssembly.Identity.Name));
             discoveryState.Diagnostics.Add(
                 Diagnostic.Create(
-                    UnprovenObjectDispatchCoverageDescriptor,
+                    MediatorDiagnosticDescriptors.UnprovenObjectDispatchCoverage,
                     Location.None,
                     referencedAssembly.Identity.Name));
         }
@@ -1630,7 +1471,8 @@ internal static class DiscoveryModelBuilder
                          || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.QueryHandlerInterface)
                          || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.PipelineInterface)
                          || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.NotificationHandlerInterface)
-                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.StreamHandlerInterface));
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.StreamHandlerInterface)
+                         || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, discoverySymbols.StreamPipelineInterface));
     }
 
     private static void ReportDuplicateGeneratedRegistration(
@@ -1653,7 +1495,7 @@ internal static class DiscoveryModelBuilder
 
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                DuplicateGeneratedRegistrationDescriptor,
+                MediatorDiagnosticDescriptors.DuplicateGeneratedRegistration,
                 GetDiagnosticLocation(type, primaryAssembly),
                 serviceType,
                 implementationType));
@@ -1670,13 +1512,13 @@ internal static class DiscoveryModelBuilder
 
             if (compatibleAccessibleHandlerCount == 0)
             {
-                ReportRequestDiagnostic(MissingHandlerDescriptor, request, compatibleAccessibleHandlerCount, discoveryState);
+                ReportRequestDiagnostic(MediatorDiagnosticDescriptors.MissingHandler, request, compatibleAccessibleHandlerCount, discoveryState);
                 continue;
             }
 
             if (compatibleAccessibleHandlerCount > 1)
             {
-                ReportRequestDiagnostic(MultipleHandlersDescriptor, request, compatibleAccessibleHandlerCount, discoveryState);
+                ReportRequestDiagnostic(MediatorDiagnosticDescriptors.MultipleHandlers, request, compatibleAccessibleHandlerCount, discoveryState);
             }
         }
     }
@@ -1720,7 +1562,7 @@ internal static class DiscoveryModelBuilder
 
         discoveryState.Diagnostics.Add(
             Diagnostic.Create(
-                InvalidHandlerSignatureDescriptor,
+                MediatorDiagnosticDescriptors.InvalidHandlerSignature,
                 GetDiagnosticLocation(type, primaryAssembly),
                 GetMetadataName(type),
                 requestMetadataName));
@@ -1742,22 +1584,6 @@ internal static class DiscoveryModelBuilder
         return location;
     }
 
-    private static string GetSelfRegistrationServiceType(string implementationType)
-    {
-        return implementationType;
-    }
-
-    private static string GetHandlerServiceType(HandlerDescriptor handler)
-    {
-        return handler.Kind switch
-        {
-            HandlerKind.Request => $"global::SharedKernel.Mediator.IRequestHandler<{handler.RequestMetadataName}, {handler.ResponseMetadataName}>",
-            HandlerKind.Command => $"global::SharedKernel.Mediator.ICommandHandler<{handler.RequestMetadataName}>",
-            HandlerKind.CommandWithResponse => $"global::SharedKernel.Mediator.ICommandHandler<{handler.RequestMetadataName}, {handler.ResponseMetadataName}>",
-            HandlerKind.Query => $"global::SharedKernel.Mediator.IQueryHandler<{handler.RequestMetadataName}, {handler.ResponseMetadataName}>",
-            _ => throw new ArgumentOutOfRangeException(nameof(handler))
-        };
-    }
 
     private static bool IsDiscoverableType(INamedTypeSymbol type)
     {

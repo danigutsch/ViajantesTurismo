@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.CodeFixes;
 
@@ -12,12 +13,6 @@ namespace SharedKernel.Mediator.CodeFixes;
 internal static class MissingRequestInterfaceCodeFix
 {
     private const string InvalidRequestArgumentDiagnosticId = "CS1503";
-    private const string IRequestHandlerMetadataName = "SharedKernel.Mediator.IRequestHandler`2";
-    private const string IQueryHandlerMetadataName = "SharedKernel.Mediator.IQueryHandler`2";
-    private const string ICommandHandlerMetadataName = "SharedKernel.Mediator.ICommandHandler`1";
-    private const string ICommandHandlerOfResponseMetadataName = "SharedKernel.Mediator.ICommandHandler`2";
-    private const string SenderMetadataName = "SharedKernel.Mediator.ISender";
-
     /// <summary>
     /// Registers the missing-request-interface code fix when a send call uses a request type without the required mediator interface.
     /// </summary>
@@ -143,7 +138,7 @@ internal static class MissingRequestInterfaceCodeFix
         {
             foreach (var candidateInterface in candidateType.AllInterfaces)
             {
-                if (SymbolMatches(compilation, candidateInterface, IQueryHandlerMetadataName)
+                if (SymbolMatches(compilation, candidateInterface, MetadataNames.QueryHandler)
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan(
@@ -151,7 +146,7 @@ internal static class MissingRequestInterfaceCodeFix
                         $"IQuery<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.MinimallyQualifiedWithNullability)}>");
                 }
 
-                if (SymbolMatches(compilation, candidateInterface, ICommandHandlerOfResponseMetadataName)
+                if (SymbolMatches(compilation, candidateInterface, MetadataNames.CommandHandlerOfResponse)
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan(
@@ -159,13 +154,13 @@ internal static class MissingRequestInterfaceCodeFix
                         $"ICommand<{candidateInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormats.MinimallyQualifiedWithNullability)}>");
                 }
 
-                if (SymbolMatches(compilation, candidateInterface, ICommandHandlerMetadataName)
+                if (SymbolMatches(compilation, candidateInterface, MetadataNames.CommandHandler)
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan("global::SharedKernel.Mediator.ICommand", "ICommand");
                 }
 
-                if (SymbolMatches(compilation, candidateInterface, IRequestHandlerMetadataName)
+                if (SymbolMatches(compilation, candidateInterface, MetadataNames.RequestHandler)
                     && SymbolEqualityComparer.Default.Equals(candidateInterface.TypeArguments[0], requestType))
                 {
                     return new InterfacePlan(
@@ -197,7 +192,7 @@ internal static class MissingRequestInterfaceCodeFix
 
     private static bool IsSenderSendMethod(Compilation compilation, IMethodSymbol method)
     {
-        var senderType = compilation.GetTypeByMetadataName(SenderMetadataName);
+        var senderType = compilation.GetTypeByMetadataName(MetadataNames.Sender);
         return senderType is not null
                && string.Equals(method.Name, "Send", StringComparison.Ordinal)
                && (SymbolEqualityComparer.Default.Equals(method.ContainingType, senderType)

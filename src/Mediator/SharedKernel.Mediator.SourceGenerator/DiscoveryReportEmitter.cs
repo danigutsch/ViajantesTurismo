@@ -47,7 +47,7 @@ internal static class DiscoveryReportEmitter
 
         foreach (var value in values)
         {
-            builder.Append("        ").Append(EscapeStringLiteral(value)).AppendLine(",");
+            builder.Append("        ").Append(MediatorGenerationNames.EscapeStringLiteral(value)).AppendLine(",");
         }
 
         builder.AppendLine("    ];");
@@ -126,8 +126,4 @@ internal static class DiscoveryReportEmitter
         return "[" + string.Join(", ", values) + "]";
     }
 
-    private static string EscapeStringLiteral(string value)
-    {
-        return "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
-    }
 }

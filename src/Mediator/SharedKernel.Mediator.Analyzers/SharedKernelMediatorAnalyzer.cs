@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.Analyzers;
 
@@ -141,7 +142,9 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         DiscoverySymbols symbols,
         ConcurrentDictionary<string, Diagnostic> pipelineTypeParameterDiagnostics)
     {
-        if (!type.AllInterfaces.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, symbols.PipelineInterface)))
+        if (!type.AllInterfaces.Any(
+                candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, symbols.PipelineInterface)
+                             || SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, symbols.StreamPipelineInterface)))
         {
             return;
         }
@@ -459,17 +462,17 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         public static DiscoverySymbols Create(Compilation compilation)
         {
             return new DiscoverySymbols(
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IRequestHandler`2")!,
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IPipelineBehavior`2")!,
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IStreamRequestHandler`2")!,
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IStreamPipelineBehavior`2")!,
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.ISender")!,
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.IPublisher")!,
-                compilation.GetTypeByMetadataName("System.Threading.CancellationToken")!,
-                compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1")!,
-                compilation.GetTypeByMetadataName("System.Collections.Generic.IAsyncEnumerable`1")!,
-                compilation.GetTypeByMetadataName("SharedKernel.Mediator.StreamHandlerContinuation`1")!,
-                compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.EnumeratorCancellationAttribute")!);
+                compilation.GetTypeByMetadataName(MetadataNames.RequestHandler)!,
+                compilation.GetTypeByMetadataName(MetadataNames.PipelineBehavior)!,
+                compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,
+                compilation.GetTypeByMetadataName(MetadataNames.StreamPipelineBehavior)!,
+                compilation.GetTypeByMetadataName(MetadataNames.Sender)!,
+                compilation.GetTypeByMetadataName(MetadataNames.Publisher)!,
+                compilation.GetTypeByMetadataName(MetadataNames.CancellationToken)!,
+                compilation.GetTypeByMetadataName(MetadataNames.ValueTaskOfResponse)!,
+                compilation.GetTypeByMetadataName(MetadataNames.AsyncEnumerableOfResponse)!,
+                compilation.GetTypeByMetadataName(MetadataNames.StreamHandlerContinuation)!,
+                compilation.GetTypeByMetadataName(MetadataNames.EnumeratorCancellationAttribute)!);
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Text;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.CodeFixes;
 
@@ -11,15 +12,6 @@ namespace SharedKernel.Mediator.CodeFixes;
 /// </summary>
 internal static class MissingHandlerCodeFix
 {
-    private const string IRequestMetadataName = "SharedKernel.Mediator.IRequest`1";
-    private const string IQueryMetadataName = "SharedKernel.Mediator.IQuery`1";
-    private const string ICommandMetadataName = "SharedKernel.Mediator.ICommand";
-    private const string ICommandOfResponseMetadataName = "SharedKernel.Mediator.ICommand`1";
-    private const string IRequestHandlerMetadataName = "SharedKernel.Mediator.IRequestHandler`2";
-    private const string IQueryHandlerMetadataName = "SharedKernel.Mediator.IQueryHandler`2";
-    private const string ICommandHandlerMetadataName = "SharedKernel.Mediator.ICommandHandler`1";
-    private const string ICommandHandlerOfResponseMetadataName = "SharedKernel.Mediator.ICommandHandler`2";
-
     /// <summary>
     /// Registers the missing-handler code fix when the request shape supports a safe generated stub.
     /// </summary>
@@ -92,7 +84,7 @@ internal static class MissingHandlerCodeFix
 
         foreach (var mediatorInterface in requestTypeSymbol.AllInterfaces)
         {
-            if (SymbolMatches(compilation, mediatorInterface, IQueryMetadataName))
+            if (SymbolMatches(compilation, mediatorInterface, MetadataNames.Query))
             {
                 var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
                 plan = new GenerationPlan(
@@ -105,7 +97,7 @@ internal static class MissingHandlerCodeFix
                 return true;
             }
 
-            if (SymbolMatches(compilation, mediatorInterface, ICommandOfResponseMetadataName))
+            if (SymbolMatches(compilation, mediatorInterface, MetadataNames.CommandOfResponse))
             {
                 var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
                 plan = new GenerationPlan(
@@ -118,7 +110,7 @@ internal static class MissingHandlerCodeFix
                 return true;
             }
 
-            if (SymbolMatches(compilation, mediatorInterface, ICommandMetadataName))
+            if (SymbolMatches(compilation, mediatorInterface, MetadataNames.Command))
             {
                 plan = new GenerationPlan(
                     handlerName,
@@ -130,7 +122,7 @@ internal static class MissingHandlerCodeFix
                 return true;
             }
 
-            if (SymbolMatches(compilation, mediatorInterface, IRequestMetadataName))
+            if (SymbolMatches(compilation, mediatorInterface, MetadataNames.Request))
             {
                 var responseTypeName = mediatorInterface.TypeArguments[0].ToDisplayString(SymbolDisplayFormats.FullyQualifiedWithNullability);
                 plan = new GenerationPlan(
@@ -206,15 +198,15 @@ internal static class MissingHandlerCodeFix
         Compilation compilation,
         out ITypeSymbol? handledRequestType)
     {
-        if (SymbolMatches(compilation, candidateInterface, IRequestHandlerMetadataName)
-            || SymbolMatches(compilation, candidateInterface, IQueryHandlerMetadataName)
-            || SymbolMatches(compilation, candidateInterface, ICommandHandlerOfResponseMetadataName))
+        if (SymbolMatches(compilation, candidateInterface, MetadataNames.RequestHandler)
+            || SymbolMatches(compilation, candidateInterface, MetadataNames.QueryHandler)
+            || SymbolMatches(compilation, candidateInterface, MetadataNames.CommandHandlerOfResponse))
         {
             handledRequestType = candidateInterface.TypeArguments[0];
             return true;
         }
 
-        if (SymbolMatches(compilation, candidateInterface, ICommandHandlerMetadataName))
+        if (SymbolMatches(compilation, candidateInterface, MetadataNames.CommandHandler))
         {
             handledRequestType = candidateInterface.TypeArguments[0];
             return true;

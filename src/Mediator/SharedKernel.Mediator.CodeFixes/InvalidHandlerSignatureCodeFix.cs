@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.CodeFixes;
 
@@ -10,11 +11,6 @@ namespace SharedKernel.Mediator.CodeFixes;
 /// </summary>
 internal static class InvalidHandlerSignatureCodeFix
 {
-    private const string IRequestHandlerMetadataName = "SharedKernel.Mediator.IRequestHandler`2";
-    private const string IQueryHandlerMetadataName = "SharedKernel.Mediator.IQueryHandler`2";
-    private const string ICommandHandlerMetadataName = "SharedKernel.Mediator.ICommandHandler`1";
-    private const string ICommandHandlerOfResponseMetadataName = "SharedKernel.Mediator.ICommandHandler`2";
-
     /// <summary>
     /// Registers the invalid-signature fix when the diagnostic represents an explicit-interface-only handler.
     /// </summary>
@@ -167,10 +163,10 @@ internal static class InvalidHandlerSignatureCodeFix
 
     private static bool IsHandledMediatorInterface(INamedTypeSymbol interfaceSymbol, Compilation compilation)
     {
-        return Matches(interfaceSymbol, compilation, IRequestHandlerMetadataName)
-               || Matches(interfaceSymbol, compilation, IQueryHandlerMetadataName)
-               || Matches(interfaceSymbol, compilation, ICommandHandlerMetadataName)
-               || Matches(interfaceSymbol, compilation, ICommandHandlerOfResponseMetadataName);
+        return Matches(interfaceSymbol, compilation, MetadataNames.RequestHandler)
+               || Matches(interfaceSymbol, compilation, MetadataNames.QueryHandler)
+               || Matches(interfaceSymbol, compilation, MetadataNames.CommandHandler)
+               || Matches(interfaceSymbol, compilation, MetadataNames.CommandHandlerOfResponse);
     }
 
     private static bool Matches(INamedTypeSymbol interfaceSymbol, Compilation compilation, string metadataName)

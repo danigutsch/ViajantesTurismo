@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.CodeFixes;
 
@@ -9,8 +10,6 @@ namespace SharedKernel.Mediator.CodeFixes;
 /// </summary>
 internal static class MissingModuleMarkerCodeFix
 {
-    private const string MediatorModuleAttributeMetadataName = "SharedKernel.Mediator.MediatorModuleAttribute";
-
     /// <summary>
     /// Registers the missing-module-marker fix when the current project is unmarked.
     /// </summary>
@@ -39,7 +38,7 @@ internal static class MissingModuleMarkerCodeFix
             return false;
         }
 
-        var attributeSymbol = compilation.GetTypeByMetadataName(MediatorModuleAttributeMetadataName);
+        var attributeSymbol = compilation.GetTypeByMetadataName(MetadataNames.MediatorModuleAttribute);
         if (attributeSymbol is null)
         {
             return false;

@@ -22,7 +22,14 @@ internal static class MetadataNames
     public const string NotificationOrderAttribute = "SharedKernel.Mediator.NotificationOrderAttribute";
     public const string StreamRequest = "SharedKernel.Mediator.IStreamRequest`1";
     public const string StreamRequestHandler = "SharedKernel.Mediator.IStreamRequestHandler`2";
+    public const string Sender = "SharedKernel.Mediator.ISender";
+    public const string Publisher = "SharedKernel.Mediator.IPublisher";
+    public const string StreamHandlerContinuation = "SharedKernel.Mediator.StreamHandlerContinuation`1";
+    public const string Unit = "SharedKernel.Mediator.Unit";
     public const string MediatorModuleAttribute = "SharedKernel.Mediator.MediatorModuleAttribute";
     public const string CancellationToken = "System.Threading.CancellationToken";
     public const string ValueTaskOfResponse = "System.Threading.Tasks.ValueTask`1";
+    public const string AsyncEnumerableOfResponse = "System.Collections.Generic.IAsyncEnumerable`1";
+    public const string EnumeratorCancellationAttribute = "System.Runtime.CompilerServices.EnumeratorCancellationAttribute";
+    public const string InternalsVisibleToAttribute = "System.Runtime.CompilerServices.InternalsVisibleToAttribute";
 }

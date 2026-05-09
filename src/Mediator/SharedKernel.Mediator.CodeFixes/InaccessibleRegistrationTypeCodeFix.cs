@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
+using SharedKernel.Mediator.SourceGenerator;
 
 namespace SharedKernel.Mediator.CodeFixes;
 
@@ -13,7 +14,6 @@ namespace SharedKernel.Mediator.CodeFixes;
 internal static class InaccessibleRegistrationTypeCodeFix
 {
     private const string DiagnosticPropertyPrimaryAssemblyName = "PrimaryAssemblyName";
-    private const string InternalsVisibleToAttributeMetadataName = "System.Runtime.CompilerServices.InternalsVisibleToAttribute";
 
     /// <summary>
     /// Registers safe fixes for inaccessible registration diagnostics.
@@ -137,7 +137,7 @@ internal static class InaccessibleRegistrationTypeCodeFix
             return false;
         }
 
-        var attributeSymbol = compilation.GetTypeByMetadataName(InternalsVisibleToAttributeMetadataName);
+        var attributeSymbol = compilation.GetTypeByMetadataName(MetadataNames.InternalsVisibleToAttribute);
         if (attributeSymbol is null)
         {
             return false;
