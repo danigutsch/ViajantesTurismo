@@ -189,8 +189,8 @@ internal static class AppMediatorEmitter
                 }
                 else
                 {
-                    builder.Append("        return GeneratedPipelines.Invoke_")
-                        .Append(requestIndex.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture))
+                    builder.Append("        return GeneratedPipelines.")
+                        .Append(GetGeneratedPipelineMethodName(request.Pipelines[0].IsStream, requestIndex))
                         .AppendLine("(this, request, ct);");
                 }
                 break;
@@ -259,8 +259,8 @@ internal static class AppMediatorEmitter
                 }
                 else
                 {
-                    builder.Append("        return GeneratedPipelines.InvokeStream_")
-                        .Append(streamRequestIndex.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture))
+                    builder.Append("        return GeneratedPipelines.")
+                        .Append(GetGeneratedPipelineMethodName(streamRequest.Pipelines[0].IsStream, streamRequestIndex))
                         .AppendLine("(this, request, ct);");
                 }
                 break;
@@ -274,5 +274,11 @@ internal static class AppMediatorEmitter
         }
 
         builder.AppendLine("    }");
+    }
+
+    private static string GetGeneratedPipelineMethodName(bool isStream, int index)
+    {
+        return (isStream ? "InvokeStream_" : "Invoke_")
+            + index.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture);
     }
 }

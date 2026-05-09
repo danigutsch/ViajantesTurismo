@@ -13,6 +13,7 @@ internal sealed record RawPipelineDescriptor(
     int Order,
     PipelineApplicability Applicability,
     bool IsAccessibleToGeneratedMediator,
+    bool IsStream,
     string RequestMetadataName,
     string ResponseMetadataName,
     INamedTypeSymbol TypeSymbol,

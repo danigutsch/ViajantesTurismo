@@ -7,10 +7,7 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record StreamHandlerDescriptor(
     string MetadataName,
-    string Namespace,
-    string Name,
     string RequestMetadataName,
-    string ResponseMetadataName,
     string MethodName,
     Accessibility Accessibility,
     bool IsAccessibleToGeneratedMediator);

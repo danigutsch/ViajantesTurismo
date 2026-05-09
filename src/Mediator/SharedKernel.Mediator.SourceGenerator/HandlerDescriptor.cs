@@ -7,8 +7,6 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record HandlerDescriptor(
     string MetadataName,
-    string Namespace,
-    string Name,
     string RequestMetadataName,
     string ResponseMetadataName,
     string MethodName,

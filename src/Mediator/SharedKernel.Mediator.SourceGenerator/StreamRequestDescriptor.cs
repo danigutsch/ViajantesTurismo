@@ -9,4 +9,4 @@ internal sealed record StreamRequestDescriptor(
     string MetadataName,
     ResponseDescriptor ItemResponse,
     ImmutableArray<StreamHandlerDescriptor> Handlers,
-    ImmutableArray<StreamPipelineDescriptor> Pipelines);
+    ImmutableArray<PipelineDescriptor> Pipelines);
