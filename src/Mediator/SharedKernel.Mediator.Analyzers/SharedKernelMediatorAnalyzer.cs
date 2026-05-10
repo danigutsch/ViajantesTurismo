@@ -70,6 +70,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         }
 
         AnalyzeHandlerType(context, type, symbols);
+        AnalyzeStreamHandlerType(context, type, symbols);
         AnalyzePipelineType(context, type, symbols, pipelineTypeParameterDiagnostics);
         AnalyzeStreamType(context, type, symbols, options);
     }
@@ -124,6 +125,68 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                         wrongReturnMethod.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         symbols.ValueTaskOfT.Construct(responseType).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
+                continue;
+            }
+
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    MediatorAnalyzerDescriptors.InvalidHandlerSignature,
+                    GetDiagnosticLocation(type),
+                    type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
+        }
+    }
+
+    private static void AnalyzeStreamHandlerType(SymbolAnalysisContext context, INamedTypeSymbol type, DiscoverySymbols symbols)
+    {
+        foreach (var streamHandlerTypeArguments in type.AllInterfaces
+                     .Where(candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, symbols.StreamHandlerInterface))
+                     .Select(static candidate => candidate.TypeArguments))
+        {
+            var requestType = streamHandlerTypeArguments[0];
+            var responseType = streamHandlerTypeArguments[1];
+            var compatibleHandle = FindPublicStreamHandleMethod(type, requestType, responseType, symbols.CancellationTokenType, symbols.AsyncEnumerableOfT);
+
+            if (compatibleHandle is not null)
+            {
+                continue;
+            }
+
+            var methodsForRequest = type.GetMembers("Handle")
+                .OfType<IMethodSymbol>()
+                .Where(static method => !method.IsStatic && method.MethodKind == MethodKind.Ordinary && method.DeclaredAccessibility == Accessibility.Public)
+                .Where(method => method.Parameters.Length > 0 && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType))
+                .ToArray();
+
+            var missingTokenMethod = methodsForRequest.FirstOrDefault(static method => method.Parameters.Length == 1);
+            if (missingTokenMethod is not null)
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        MediatorAnalyzerDescriptors.MissingCancellationToken,
+                        GetDiagnosticLocation(missingTokenMethod, type),
+                        type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
+                continue;
+            }
+
+            var wrongReturnMethod = methodsForRequest.FirstOrDefault(
+                method => method.Parameters.Length == 2
+                          && SymbolEqualityComparer.Default.Equals(method.Parameters[1].Type, symbols.CancellationTokenType)
+                          && !SymbolEqualityComparer.Default.Equals(
+                              method.ReturnType,
+                              symbols.AsyncEnumerableOfT.Construct(responseType)));
+
+            if (wrongReturnMethod is not null)
+            {
+                context.ReportDiagnostic(
+                    Diagnostic.Create(
+                        MediatorAnalyzerDescriptors.HandlerReturnTypeMismatch,
+                        GetDiagnosticLocation(wrongReturnMethod, type),
+                        type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        wrongReturnMethod.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        symbols.AsyncEnumerableOfT.Construct(responseType).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
                 continue;
             }
 
@@ -375,7 +438,8 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
     private static bool IsHandlerType(INamedTypeSymbol? type, DiscoverySymbols symbols)
     {
         return type is not null
-               && ImplementsOrEquals(type, symbols.HandlerInterface);
+               && (ImplementsOrEquals(type, symbols.HandlerInterface)
+                   || ImplementsOrEquals(type, symbols.StreamHandlerInterface));
     }
 
     private static bool ImplementsOrEquals(INamedTypeSymbol type, INamedTypeSymbol contract)
