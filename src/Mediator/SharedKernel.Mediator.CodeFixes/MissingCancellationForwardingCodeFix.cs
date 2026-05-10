@@ -34,7 +34,7 @@ internal static class MissingCancellationForwardingCodeFix
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Forward CancellationToken ct",
+                title: $"Forward CancellationToken {plan.AvailableCancellationTokenName}",
                 createChangedDocument: cancellationToken => ForwardCancellationTokenAsync(context.Document, invocation, plan, cancellationToken),
                 equivalenceKey: "ForwardMediatorCancellationToken"),
             diagnostic);
