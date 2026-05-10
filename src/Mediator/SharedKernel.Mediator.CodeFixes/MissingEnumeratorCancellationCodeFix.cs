@@ -29,7 +29,6 @@ internal static class MissingEnumeratorCancellationCodeFix
         var parameter = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
             .FirstAncestorOrSelf<ParameterSyntax>();
         if (parameter is null
-            || !string.Equals(parameter.Identifier.ValueText, "ct", StringComparison.Ordinal)
             || parameter.Parent?.Parent is not MethodDeclarationSyntax methodDeclaration
             || !string.Equals(methodDeclaration.Identifier.ValueText, "Handle", StringComparison.Ordinal))
         {
