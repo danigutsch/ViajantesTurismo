@@ -166,7 +166,7 @@ internal static class InaccessibleRegistrationTypeCodeFix
         var filePath = document.FilePath is null
             ? fileName
             : Path.Combine(Path.GetDirectoryName(document.FilePath) ?? string.Empty, fileName);
-        var updatedProject = document.Project.AddDocument(fileName, source, filePath: filePath).Project;
+        var updatedProject = document.Project.AddDocument(fileName, source, folders: document.Folders, filePath: filePath).Project;
 
         return Task.FromResult(updatedProject.Solution);
     }
