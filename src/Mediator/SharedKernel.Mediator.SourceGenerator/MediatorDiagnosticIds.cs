@@ -12,6 +12,7 @@ internal static class MediatorDiagnosticIds
     public const string HandlerReturnTypeMismatch = "SKMED005";
     public const string MissingCancellationForwarding = "SKMED006";
     public const string MissingEnumeratorCancellation = "SKMED007";
+    public const string NonIteratorStreamHandlerHasCancellationToken = "SKMED008";
     public const string InaccessibleRegistrationType = "SKMED010";
     public const string MissingModuleMarker = "SKMED011";
     public const string DuplicateGeneratedRegistration = "SKMED012";

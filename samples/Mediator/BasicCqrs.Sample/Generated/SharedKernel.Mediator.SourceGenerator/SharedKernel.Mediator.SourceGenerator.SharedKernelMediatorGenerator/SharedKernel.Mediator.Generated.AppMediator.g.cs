@@ -68,6 +68,21 @@ public sealed partial class AppMediator : IMediator
     }
 
     /// <summary>
+    /// Sends a stream request instance through the generated stream-dispatch path.
+    /// </summary>
+    /// <param name="request">The stream request instance to dispatch.</param>
+    /// <param name="ct">The cancellation token for the operation.</param>
+    /// <returns>The produced response stream.</returns>
+    public global::System.Collections.Generic.IAsyncEnumerable<TResponse> Send<TResponse>(
+        global::SharedKernel.Mediator.IStreamRequest<TResponse> request,
+        global::System.Threading.CancellationToken ct)
+    {
+        global::System.ArgumentNullException.ThrowIfNull(request);
+
+        return GeneratedDispatch.Send<TResponse>(this, request, ct);
+    }
+
+    /// <summary>
     /// Sends a request instance through the generated object-dispatch path.
     /// </summary>
     /// <param name="request">The boxed request instance to dispatch.</param>
