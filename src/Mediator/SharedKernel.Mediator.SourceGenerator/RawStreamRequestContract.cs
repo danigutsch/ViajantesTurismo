@@ -9,4 +9,6 @@ internal sealed record RawStreamRequestContract(
     string MetadataName,
     ResponseDescriptor ItemResponse,
     INamedTypeSymbol TypeSymbol,
-    ITypeSymbol ItemResponseTypeSymbol);
+    ITypeSymbol ItemResponseTypeSymbol,
+    bool IsInPrimaryAssembly,
+    Location? Location);

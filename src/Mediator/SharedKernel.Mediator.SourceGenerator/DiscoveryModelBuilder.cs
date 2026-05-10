@@ -55,16 +55,19 @@ internal static class DiscoveryModelBuilder
             discoveryState);
         ReportRequestHandlerDiagnostics(requests, discoveryState);
 
+        var streamRequests = BuildStreamRequestDescriptors(
+            discoveryState.StreamRequestContracts,
+            discoveryState.StreamHandlers,
+            discoveryState.StreamPipelines,
+            compilation.Assembly,
+            discoveryState);
+        ReportStreamRequestHandlerDiagnostics(discoveryState.StreamRequestContracts, discoveryState.StreamHandlers, discoveryState);
+
         return new DiscoveryModel(
             [.. modules.OrderBy(static module => module.AssemblyName, StringComparer.Ordinal)],
             requests,
             BuildNotificationDescriptors(discoveryState.NotificationContracts, discoveryState.NotificationHandlers, discoveryState),
-            BuildStreamRequestDescriptors(
-                discoveryState.StreamRequestContracts,
-                discoveryState.StreamHandlers,
-                discoveryState.StreamPipelines,
-                compilation.Assembly,
-                discoveryState),
+            streamRequests,
             [.. discoveryState.Diagnostics.OrderBy(static diagnostic => diagnostic.Location.SourceSpan.Start)]);
     }
 
@@ -157,7 +160,7 @@ internal static class DiscoveryModelBuilder
             discoveryState.NotificationHandlers.Add(notificationHandler);
         }
 
-        if (TryCreateStreamRequestContract(type, discoverySymbols, out var streamRequestContract))
+        if (TryCreateStreamRequestContract(type, discoverySymbols, primaryAssembly, out var streamRequestContract))
         {
             discoveryState.StreamRequestContracts[streamRequestContract.MetadataName] = streamRequestContract;
         }
@@ -1143,6 +1146,7 @@ internal static class DiscoveryModelBuilder
     private static bool TryCreateStreamRequestContract(
         INamedTypeSymbol type,
         DiscoverySymbols discoverySymbols,
+        IAssemblySymbol primaryAssembly,
         out RawStreamRequestContract streamRequestContract)
     {
         streamRequestContract = null!;
@@ -1167,7 +1171,9 @@ internal static class DiscoveryModelBuilder
             GetMetadataName(type),
             CreateResponseDescriptor(itemResponseType),
             type,
-            itemResponseType);
+            itemResponseType,
+            SymbolEqualityComparer.Default.Equals(type.ContainingAssembly, primaryAssembly),
+            type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ?? type.Locations.FirstOrDefault());
         return true;
     }
 
@@ -1505,6 +1511,38 @@ internal static class DiscoveryModelBuilder
                 GetDiagnosticLocation(type, primaryAssembly),
                 serviceType,
                 implementationType));
+    }
+
+    private static void ReportStreamRequestHandlerDiagnostics(
+        IDictionary<string, RawStreamRequestContract> streamRequestContracts,
+        IEnumerable<StreamHandlerDescriptor> streamHandlers,
+        DiscoveryState discoveryState)
+    {
+        var handlersByRequest = streamHandlers
+            .GroupBy(static handler => handler.RequestMetadataName, StringComparer.Ordinal)
+            .ToDictionary(static group => group.Key, static group => group.ToList(), StringComparer.Ordinal);
+
+        foreach (var entry in streamRequestContracts)
+        {
+            var metadataName = entry.Key;
+            var contract = entry.Value;
+            var handlers = handlersByRequest.TryGetValue(metadataName, out var found) ? found : [];
+            var compatibleAccessibleHandlerCount = handlers.Count(
+                static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod);
+
+            var location = GetDiagnosticLocation(contract.Location, contract.IsInPrimaryAssembly);
+
+            if (compatibleAccessibleHandlerCount == 0)
+            {
+                discoveryState.Diagnostics.Add(
+                    Diagnostic.Create(MediatorDiagnosticDescriptors.MissingHandler, location, metadataName));
+            }
+            else if (compatibleAccessibleHandlerCount > 1)
+            {
+                discoveryState.Diagnostics.Add(
+                    Diagnostic.Create(MediatorDiagnosticDescriptors.MultipleHandlers, location, metadataName, compatibleAccessibleHandlerCount));
+            }
+        }
     }
 
     private static void ReportRequestHandlerDiagnostics(
