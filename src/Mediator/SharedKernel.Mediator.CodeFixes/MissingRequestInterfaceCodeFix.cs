@@ -105,7 +105,12 @@ internal static class MissingRequestInterfaceCodeFix
             return false;
         }
 
-        if (requestType.AllInterfaces.Any(static candidate => candidate.Name is "IRequest" or "ICommand" or "IQuery"))
+        var compilation = semanticModel.Compilation;
+        if (requestType.AllInterfaces.Any(candidate =>
+                SymbolMatches(compilation, candidate, MetadataNames.Request)
+                || SymbolMatches(compilation, candidate, MetadataNames.Command)
+                || SymbolMatches(compilation, candidate, MetadataNames.CommandOfResponse)
+                || SymbolMatches(compilation, candidate, MetadataNames.Query)))
         {
             requestDeclaration = null!;
             plan = default;
@@ -114,7 +119,7 @@ internal static class MissingRequestInterfaceCodeFix
 
         var invocation = argumentExpression.FirstAncestorOrSelf<InvocationExpressionSyntax>();
         var targetMethod = invocation is null ? null : GetCandidateTargetMethod(semanticModel, invocation, cancellationToken);
-        if (targetMethod is null || !IsSenderSendMethod(semanticModel.Compilation, targetMethod))
+        if (targetMethod is null || !IsSenderSendMethod(compilation, targetMethod))
         {
             requestDeclaration = null!;
             plan = default;
@@ -128,7 +133,7 @@ internal static class MissingRequestInterfaceCodeFix
             return false;
         }
 
-        plan = CreateInterfacePlan(semanticModel.Compilation, requestType, targetMethod);
+        plan = CreateInterfacePlan(compilation, requestType, targetMethod);
         return true;
     }
 
