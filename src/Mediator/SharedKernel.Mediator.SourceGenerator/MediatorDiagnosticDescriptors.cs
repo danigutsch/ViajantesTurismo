@@ -63,6 +63,14 @@ internal static class MediatorDiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor NonIteratorStreamHandlerHasCancellationToken = new(
+        id: MediatorDiagnosticIds.NonIteratorStreamHandlerHasCancellationToken,
+        title: "CancellationToken parameter has no effect in non-iterator stream handler",
+        messageFormat: "CancellationToken parameter '{0}' in non-iterator stream handler '{1}' has no effect via WithCancellation(); pass the token explicitly to the inner IAsyncEnumerable<T>",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
+
     public static readonly DiagnosticDescriptor InaccessibleRegistrationType = new(
         id: MediatorDiagnosticIds.InaccessibleRegistrationType,
         title: "Mediator registration type is inaccessible",

@@ -17,6 +17,8 @@ internal static class MediatorAnalyzerDescriptors
 
     public static DiagnosticDescriptor MissingEnumeratorCancellation => MediatorDiagnosticDescriptors.MissingEnumeratorCancellation;
 
+    public static DiagnosticDescriptor NonIteratorStreamHandlerHasCancellationToken => MediatorDiagnosticDescriptors.NonIteratorStreamHandlerHasCancellationToken;
+
     public static DiagnosticDescriptor InvalidPipelineGenericArity => MediatorDiagnosticDescriptors.InvalidPipelineGenericArity;
 
     public static DiagnosticDescriptor HandlerShouldNotCallSender => MediatorDiagnosticDescriptors.HandlerShouldNotCallSender;

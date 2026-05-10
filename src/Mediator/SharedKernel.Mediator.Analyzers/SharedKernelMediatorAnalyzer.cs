@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using SharedKernel.Mediator.SourceGenerator;
@@ -20,6 +21,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         MediatorAnalyzerDescriptors.HandlerReturnTypeMismatch,
         MediatorAnalyzerDescriptors.MissingCancellationForwarding,
         MediatorAnalyzerDescriptors.MissingEnumeratorCancellation,
+        MediatorAnalyzerDescriptors.NonIteratorStreamHandlerHasCancellationToken,
         MediatorAnalyzerDescriptors.InvalidPipelineGenericArity,
         MediatorAnalyzerDescriptors.HandlerShouldNotCallSender);
 
@@ -324,9 +326,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         IMethodSymbol? method,
         DiscoverySymbols symbols)
     {
-        if (method is null
-            || !method.IsAsync
-            || method.Parameters.Length == 0)
+        if (method is null || method.Parameters.Length == 0)
         {
             return;
         }
@@ -338,12 +338,35 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(
-            Diagnostic.Create(
-                MediatorAnalyzerDescriptors.MissingEnumeratorCancellation,
-                GetDiagnosticLocation(cancellationTokenParameter, method, containingType),
-                method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                cancellationTokenParameter.Name));
+        var location = GetDiagnosticLocation(cancellationTokenParameter, method, containingType);
+
+        if (ContainsYield(method))
+        {
+            // Async iterator: [EnumeratorCancellation] is needed for cancellation to propagate → SKMED007
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    MediatorAnalyzerDescriptors.MissingEnumeratorCancellation,
+                    location,
+                    method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                    cancellationTokenParameter.Name));
+        }
+        else
+        {
+            // Non-iterator: CT has no effect via WithCancellation(); must be threaded explicitly → SKMED008
+            context.ReportDiagnostic(
+                Diagnostic.Create(
+                    MediatorAnalyzerDescriptors.NonIteratorStreamHandlerHasCancellationToken,
+                    location,
+                    cancellationTokenParameter.Name,
+                    method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
+        }
+    }
+
+    private static bool ContainsYield(IMethodSymbol method)
+    {
+        return method.DeclaringSyntaxReferences
+            .Select(static reference => reference.GetSyntax())
+            .Any(static syntax => syntax.DescendantNodes().OfType<YieldStatementSyntax>().Any());
     }
 
     private static IMethodSymbol? FindPublicHandleMethod(

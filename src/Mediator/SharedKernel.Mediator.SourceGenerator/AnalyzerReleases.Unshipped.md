@@ -9,6 +9,7 @@ SKMED004 | Usage | Warning | Handler is missing CancellationToken ct
 SKMED005 | Usage | Warning | Handler return type does not match request response type
 SKMED006 | Usage | Warning | Mediator call does not pass available CancellationToken ct
 SKMED007 | Usage | Warning | Async stream Handle method is missing `[EnumeratorCancellation]`
+SKMED008 | Usage | Info | CancellationToken parameter has no effect in non-iterator stream handler
 SKMED010 | Usage | Warning | Mediator registration type is inaccessible
 SKMED011 | Usage | Warning | Handler module is not marked with `[assembly: MediatorModule]`
 SKMED012 | Usage | Warning | Generated mediator registration is duplicated
