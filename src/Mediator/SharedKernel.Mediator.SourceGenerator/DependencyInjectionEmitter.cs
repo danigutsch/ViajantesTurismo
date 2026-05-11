@@ -32,6 +32,8 @@ internal static class DependencyInjectionEmitter
         writer.Line("{");
         writer.Indent();
         writer.Line("global::System.ArgumentNullException.ThrowIfNull(services);");
+        writer.Line("services.AddMetrics();");
+        writer.Line("services.AddSingleton<AppMediatorInstrumentation>();");
         writer.Line("services.AddScoped<AppMediator>();");
         writer.Line("services.AddScoped<ISender>(static sp => sp.GetRequiredService<AppMediator>());");
         writer.Line("services.AddScoped<IPublisher>(static sp => sp.GetRequiredService<AppMediator>());");

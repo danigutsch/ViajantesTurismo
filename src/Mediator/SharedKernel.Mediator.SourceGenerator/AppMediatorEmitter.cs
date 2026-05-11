@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace SharedKernel.Mediator.SourceGenerator;
@@ -19,6 +20,8 @@ internal static class AppMediatorEmitter
             "Provides the generated mediator shell owned by the consumer compilation.");
         builder.AppendLine("public sealed partial class AppMediator : IMediator");
         builder.AppendLine("{");
+        builder.AppendLine("    private readonly global::SharedKernel.Mediator.AppMediatorInstrumentation _instrumentation;");
+        builder.AppendLine();
         GeneratedXmlDocumentationEmitter.AppendSummary(
             builder,
             "    ",
@@ -33,6 +36,7 @@ internal static class AppMediatorEmitter
         builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(services);");
         builder.AppendLine();
         builder.AppendLine("        Services = services;");
+        builder.AppendLine("        _instrumentation = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::SharedKernel.Mediator.AppMediatorInstrumentation>(services);");
         builder.AppendLine("    }");
         builder.AppendLine();
         GeneratedXmlDocumentationEmitter.AppendSummary(
@@ -40,6 +44,12 @@ internal static class AppMediatorEmitter
             "    ",
             "Gets the scoped service provider used by generated mediator code.");
         builder.AppendLine("    internal global::System.IServiceProvider Services { get; }");
+        builder.AppendLine();
+        GeneratedXmlDocumentationEmitter.AppendSummary(
+            builder,
+            "    ",
+            "Gets the instrumentation services used by generated mediator code.");
+        builder.AppendLine("    internal global::SharedKernel.Mediator.AppMediatorInstrumentation Instrumentation => _instrumentation;");
         builder.AppendLine();
 
         for (var requestIndex = 0; requestIndex < model.Requests.Length; requestIndex++)
@@ -137,6 +147,9 @@ internal static class AppMediatorEmitter
         var accessibleHandlers = request.Handlers
             .Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod)
             .ToArray();
+        var requestNameLiteral = MediatorGenerationNames.EscapeStringLiteral(request.Name);
+        var assemblyNameLiteral = MediatorGenerationNames.EscapeStringLiteral(request.AssemblyName);
+        var pipelineDepthLiteral = request.Pipelines.Length.ToString(CultureInfo.InvariantCulture);
 
         builder.AppendLine();
         GeneratedXmlDocumentationEmitter.AppendSummary(
@@ -157,7 +170,13 @@ internal static class AppMediatorEmitter
             builder,
             "    ",
             "The produced response value.");
-        builder.Append("    public global::System.Threading.Tasks.ValueTask<")
+        builder.Append("    public ");
+        if (accessibleHandlers.Length == 1)
+        {
+            builder.Append("async ");
+        }
+
+        builder.Append("global::System.Threading.Tasks.ValueTask<")
             .Append(request.Response.MetadataName)
             .Append("> Send(")
             .Append(request.MetadataName)
@@ -174,32 +193,75 @@ internal static class AppMediatorEmitter
         switch (accessibleHandlers.Length)
         {
             case 0:
-                builder.Append("        return GeneratedDispatch.ThrowNoHandler<")
-                    .Append(request.Response.MetadataName)
-                    .AppendLine(">(request);");
+                builder.AppendLine("        throw new global::System.NotSupportedException($\"Generated request dispatch is not available for request type '{request.GetType().FullName}'.\");");
                 break;
             case 1:
+                builder.AppendLine("        var activity = _instrumentation.ActivitySource.StartActivity(\"mediator.send\", global::System.Diagnostics.ActivityKind.Internal);");
+                builder.Append("        activity?.SetTag(\"mediator.request.name\", ")
+                    .Append(requestNameLiteral)
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.request.assembly\", ")
+                    .Append(assemblyNameLiteral)
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.handler.name\", ")
+                    .Append(MediatorGenerationNames.EscapeStringLiteral(GetSimpleName(accessibleHandlers[0].MetadataName)))
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.pipeline.depth\", ")
+                    .Append(pipelineDepthLiteral)
+                    .AppendLine(");");
+                builder.AppendLine("        var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();");
+                builder.AppendLine("        var outcome = \"success\";");
+                builder.AppendLine("        try");
+                builder.AppendLine("        {");
                 if (request.Pipelines.Length == 0)
                 {
-                    builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                    builder.Append("            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
                         .Append(accessibleHandlers[0].MetadataName)
                         .AppendLine(">(Services);");
                     builder.AppendLine();
-                    builder.AppendLine("        return handler.Handle(request, ct);");
+                    builder.AppendLine("            var result = await handler.Handle(request, ct).ConfigureAwait(false);");
                 }
                 else
                 {
-                    builder.Append("        return GeneratedPipelines.")
+                    builder.Append("            var result = await GeneratedPipelines.")
                         .Append(GetGeneratedPipelineMethodName(request.Pipelines[0].IsStream, requestIndex))
-                        .AppendLine("(this, request, ct);");
+                        .AppendLine("(this, request, ct).ConfigureAwait(false);");
                 }
+
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"success\");");
+                builder.AppendLine("            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);");
+                builder.AppendLine("            return result;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        catch (global::System.OperationCanceledException)");
+                builder.AppendLine("        {");
+                builder.AppendLine("            outcome = \"cancelled\";");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"cancelled\");");
+                builder.AppendLine("            throw;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        catch (global::System.Exception ex)");
+                builder.AppendLine("        {");
+                builder.AppendLine("            outcome = \"error\";");
+                builder.AppendLine("            activity?.SetTag(\"error.type\", ex.GetType().Name);");
+                builder.AppendLine("            activity?.AddException(ex);");
+                builder.AppendLine("            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"error\");");
+                builder.AppendLine("            throw;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        finally");
+                builder.AppendLine("        {");
+                builder.AppendLine("            activity?.Dispose();");
+                builder.Append("            _instrumentation.RequestsTotal.Add(1, new global::System.Diagnostics.TagList { { \"mediator.request.name\", ")
+                    .Append(requestNameLiteral)
+                    .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+                builder.Append("            _instrumentation.RequestsDuration.Record(global::System.Diagnostics.Stopwatch.GetElapsedTime(sw).TotalMilliseconds, new global::System.Diagnostics.TagList { { \"mediator.request.name\", ")
+                    .Append(requestNameLiteral)
+                    .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+                builder.AppendLine("        }");
                 break;
             default:
-                builder.Append("        return GeneratedDispatch.ThrowAmbiguousHandlers<")
-                    .Append(request.Response.MetadataName)
-                    .Append(">(request, ")
-                    .Append(accessibleHandlers.Length)
-                    .AppendLine(");");
+                builder.Append("        throw new global::System.InvalidOperationException($\"Generated request dispatch found ")
+                    .Append(accessibleHandlers.Length.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(" accessible handlers for request type '{request.GetType().FullName}'.\");");
                 break;
         }
 
@@ -211,6 +273,8 @@ internal static class AppMediatorEmitter
         var accessibleHandlers = streamRequest.Handlers
             .Where(static handler => handler.IsAccessibleToGeneratedMediator && handler.HasCompatibleHandleMethod)
             .ToArray();
+        var requestNameLiteral = MediatorGenerationNames.EscapeStringLiteral(streamRequest.Name);
+        var assemblyNameLiteral = MediatorGenerationNames.EscapeStringLiteral(streamRequest.AssemblyName);
 
         builder.AppendLine();
         GeneratedXmlDocumentationEmitter.AppendSummary(
@@ -249,36 +313,126 @@ internal static class AppMediatorEmitter
                     .AppendLine(">(request);");
                 break;
             case 1:
-                if (streamRequest.Pipelines.Length == 0)
-                {
-                    builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
-                        .Append(accessibleHandlers[0].MetadataName)
-                        .AppendLine(">(Services);");
-                    builder.AppendLine();
-                    builder.AppendLine("        return handler.Handle(request, ct);");
-                }
-                else
-                {
-                    builder.Append("        return GeneratedPipelines.")
-                        .Append(GetGeneratedPipelineMethodName(streamRequest.Pipelines[0].IsStream, streamRequestIndex))
-                        .AppendLine("(this, request, ct);");
-                }
+                builder.Append("        return SendStream_")
+                    .Append(streamRequestIndex.ToString("D4", CultureInfo.InvariantCulture))
+                    .AppendLine("(request, ct);");
                 break;
             default:
                 builder.Append("        return GeneratedDispatch.ThrowAmbiguousStreamHandlers<")
                     .Append(streamRequest.ItemResponse.MetadataName)
                     .Append(">(request, ")
-                    .Append(accessibleHandlers.Length)
+                    .Append(accessibleHandlers.Length.ToString(CultureInfo.InvariantCulture))
                     .AppendLine(");");
                 break;
         }
 
+        builder.AppendLine("    }");
+
+        if (accessibleHandlers.Length == 1)
+        {
+            EmitStreamSendHelper(builder, streamRequest, streamRequestIndex, requestNameLiteral, assemblyNameLiteral, accessibleHandlers[0]);
+        }
+    }
+
+    private static void EmitStreamSendHelper(
+        StringBuilder builder,
+        StreamRequestDescriptor streamRequest,
+        int streamRequestIndex,
+        string requestNameLiteral,
+        string assemblyNameLiteral,
+        StreamHandlerDescriptor handlerDescriptor)
+    {
+        builder.AppendLine();
+        builder.Append("    private async global::System.Collections.Generic.IAsyncEnumerable<")
+            .Append(streamRequest.ItemResponse.MetadataName)
+            .Append("> SendStream_")
+            .Append(streamRequestIndex.ToString("D4", CultureInfo.InvariantCulture))
+            .Append('(')
+            .Append(streamRequest.MetadataName)
+            .AppendLine(" request,");
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.EnumeratorCancellation] global::System.Threading.CancellationToken ct)");
+        builder.AppendLine("    {");
+        builder.AppendLine("        var activity = _instrumentation.ActivitySource.StartActivity(\"mediator.stream\", global::System.Diagnostics.ActivityKind.Internal);");
+        builder.Append("        activity?.SetTag(\"mediator.request.name\", ")
+            .Append(requestNameLiteral)
+            .AppendLine(");");
+        builder.Append("        activity?.SetTag(\"mediator.request.assembly\", ")
+            .Append(assemblyNameLiteral)
+            .AppendLine(");");
+        builder.Append("        activity?.SetTag(\"mediator.handler.name\", ")
+            .Append(MediatorGenerationNames.EscapeStringLiteral(GetSimpleName(handlerDescriptor.MetadataName)))
+            .AppendLine(");");
+        builder.AppendLine("        var outcome = \"success\";");
+        if (streamRequest.Pipelines.Length == 0)
+        {
+            builder.Append("        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                .Append(handlerDescriptor.MetadataName)
+                .AppendLine(">(Services);");
+            builder.AppendLine();
+            builder.AppendLine("        var enumerator = handler.Handle(request, ct).GetAsyncEnumerator(ct);");
+        }
+        else
+        {
+            builder.Append("        var enumerator = GeneratedPipelines.")
+                .Append(GetGeneratedPipelineMethodName(streamRequest.Pipelines[0].IsStream, streamRequestIndex))
+                .AppendLine("(this, request, ct).GetAsyncEnumerator(ct);");
+        }
+
+        // yield return cannot live in a try-with-catch, only in try-finally.
+        // Inner try-catches handle MoveNextAsync errors; yield return lives in the outer try-finally.
+        builder.AppendLine("        try");
+        builder.AppendLine("        {");
+        builder.AppendLine("            while (true)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                bool hasNext;");
+        builder.AppendLine("                try");
+        builder.AppendLine("                {");
+        builder.AppendLine("                    hasNext = await enumerator.MoveNextAsync();");
+        builder.AppendLine("                }");
+        builder.AppendLine("                catch (global::System.OperationCanceledException)");
+        builder.AppendLine("                {");
+        builder.AppendLine("                    outcome = \"cancelled\";");
+        builder.AppendLine("                    activity?.SetTag(\"mediator.outcome\", \"cancelled\");");
+        builder.AppendLine("                    throw;");
+        builder.AppendLine("                }");
+        builder.AppendLine("                catch (global::System.Exception ex)");
+        builder.AppendLine("                {");
+        builder.AppendLine("                    outcome = \"error\";");
+        builder.AppendLine("                    activity?.SetTag(\"error.type\", ex.GetType().Name);");
+        builder.AppendLine("                    activity?.AddException(ex);");
+        builder.AppendLine("                    activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);");
+        builder.AppendLine("                    activity?.SetTag(\"mediator.outcome\", \"error\");");
+        builder.AppendLine("                    throw;");
+        builder.AppendLine("                }");
+        builder.AppendLine("                if (!hasNext)");
+        builder.AppendLine("                {");
+        builder.AppendLine("                    activity?.SetTag(\"mediator.outcome\", \"success\");");
+        builder.AppendLine("                    activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);");
+        builder.AppendLine("                    break;");
+        builder.AppendLine("                }");
+        builder.AppendLine("                yield return enumerator.Current;");
+        builder.AppendLine("            }");
+        builder.AppendLine("        }");
+        builder.AppendLine("        finally");
+        builder.AppendLine("        {");
+        builder.AppendLine("            await enumerator.DisposeAsync();");
+        builder.AppendLine("            activity?.Dispose();");
+        builder.Append("            _instrumentation.StreamsTotal.Add(1, new global::System.Diagnostics.TagList { { \"mediator.request.name\", ")
+            .Append(requestNameLiteral)
+            .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+        builder.AppendLine("        }");
         builder.AppendLine("    }");
     }
 
     private static string GetGeneratedPipelineMethodName(bool isStream, int index)
     {
         return (isStream ? "InvokeStream_" : "Invoke_")
-            + index.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture);
+            + index.ToString("D4", CultureInfo.InvariantCulture);
+    }
+
+    private static string GetSimpleName(string metadataName)
+    {
+        var lastDotIndex = metadataName.LastIndexOf('.');
+        return lastDotIndex >= 0 ? metadataName.Substring(lastDotIndex + 1) : metadataName;
     }
 }

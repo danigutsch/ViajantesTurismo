@@ -7,6 +7,8 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record StreamRequestDescriptor(
     string MetadataName,
+    string Name,
+    string AssemblyName,
     ResponseDescriptor ItemResponse,
     ImmutableArray<StreamHandlerDescriptor> Handlers,
     ImmutableArray<PipelineDescriptor> Pipelines);

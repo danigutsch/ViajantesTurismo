@@ -1,4 +1,6 @@
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace SharedKernel.Mediator.SourceGenerator;
 
@@ -29,30 +31,34 @@ public sealed class SharedKernelMediatorGenerator : IIncrementalGenerator
                 }
 
                 productionContext.AddSource(
-                    "SharedKernel.Mediator.Generated.DiscoveryReport.g.cs",
-                    DiscoveryReportEmitter.Emit(discoveryModel));
+                    GeneratedHintNames.DiscoveryReport,
+                    SourceText.From(DiscoveryReportEmitter.Emit(discoveryModel), Encoding.UTF8));
 
                 productionContext.AddSource(
-                    "SharedKernel.Mediator.Generated.DependencyInjection.g.cs",
-                    DependencyInjectionEmitter.Emit(discoveryModel));
+                    GeneratedHintNames.DependencyInjection,
+                    SourceText.From(DependencyInjectionEmitter.Emit(discoveryModel), Encoding.UTF8));
 
                 productionContext.AddSource(
-                    "SharedKernel.Mediator.Generated.AppMediator.g.cs",
-                    AppMediatorEmitter.Emit(discoveryModel));
+                    GeneratedHintNames.AppMediator,
+                    SourceText.From(AppMediatorEmitter.Emit(discoveryModel), Encoding.UTF8));
 
                 productionContext.AddSource(
-                    "SharedKernel.Mediator.Generated.GeneratedDispatch.g.cs",
-                    GeneratedDispatchEmitter.Emit(discoveryModel));
+                    GeneratedHintNames.AppMediatorTelemetry,
+                    SourceText.From(AppMediatorTelemetryEmitter.Emit(), Encoding.UTF8));
 
                 productionContext.AddSource(
-                    "SharedKernel.Mediator.Generated.GeneratedPipelines.g.cs",
-                    GeneratedPipelinesEmitter.Emit(discoveryModel));
+                    GeneratedHintNames.GeneratedDispatch,
+                    SourceText.From(GeneratedDispatchEmitter.Emit(discoveryModel), Encoding.UTF8));
+
+                productionContext.AddSource(
+                    GeneratedHintNames.GeneratedPipelines,
+                    SourceText.From(GeneratedPipelinesEmitter.Emit(discoveryModel), Encoding.UTF8));
 
                 if (generatorOptions.EmitCallGraphJson)
                 {
                     productionContext.AddSource(
-                        "SharedKernel.Mediator.Generated.CallGraph.g.cs",
-                        CallGraphArtifactEmitter.Emit(discoveryModel));
+                        GeneratedHintNames.CallGraph,
+                        SourceText.From(CallGraphArtifactEmitter.Emit(discoveryModel), Encoding.UTF8));
                 }
             });
     }

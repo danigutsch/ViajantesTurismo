@@ -8,6 +8,8 @@ namespace SharedKernel.Mediator;
 /// </summary>
 public sealed partial class AppMediator : IMediator
 {
+    private readonly global::SharedKernel.Mediator.AppMediatorInstrumentation _instrumentation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AppMediator"/> class.
     /// </summary>
@@ -17,12 +19,18 @@ public sealed partial class AppMediator : IMediator
         global::System.ArgumentNullException.ThrowIfNull(services);
 
         Services = services;
+        _instrumentation = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::SharedKernel.Mediator.AppMediatorInstrumentation>(services);
     }
 
     /// <summary>
     /// Gets the scoped service provider used by generated mediator code.
     /// </summary>
     internal global::System.IServiceProvider Services { get; }
+
+    /// <summary>
+    /// Gets the instrumentation services used by generated mediator code.
+    /// </summary>
+    internal global::SharedKernel.Mediator.AppMediatorInstrumentation Instrumentation => _instrumentation;
 
 
     /// <summary>
@@ -31,14 +39,48 @@ public sealed partial class AppMediator : IMediator
     /// <param name="request">The request instance to dispatch.</param>
     /// <param name="ct">The cancellation token for the operation.</param>
     /// <returns>The produced response value.</returns>
-    public global::System.Threading.Tasks.ValueTask<string> Send(global::BasicCqrs.Sample.CreateBooking request,
+    public async global::System.Threading.Tasks.ValueTask<string> Send(global::BasicCqrs.Sample.CreateBooking request,
         global::System.Threading.CancellationToken ct)
     {
         global::System.ArgumentNullException.ThrowIfNull(request);
 
-        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.CreateBookingHandler>(Services);
+        var activity = _instrumentation.ActivitySource.StartActivity("mediator.send", global::System.Diagnostics.ActivityKind.Internal);
+        activity?.SetTag("mediator.request.name", "CreateBooking");
+        activity?.SetTag("mediator.request.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.handler.name", "CreateBookingHandler");
+        activity?.SetTag("mediator.pipeline.depth", 0);
+        var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();
+        var outcome = "success";
+        try
+        {
+            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.CreateBookingHandler>(Services);
 
-        return handler.Handle(request, ct);
+            var result = await handler.Handle(request, ct).ConfigureAwait(false);
+            activity?.SetTag("mediator.outcome", "success");
+            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);
+            return result;
+        }
+        catch (global::System.OperationCanceledException)
+        {
+            outcome = "cancelled";
+            activity?.SetTag("mediator.outcome", "cancelled");
+            throw;
+        }
+        catch (global::System.Exception ex)
+        {
+            outcome = "error";
+            activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddException(ex);
+            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("mediator.outcome", "error");
+            throw;
+        }
+        finally
+        {
+            activity?.Dispose();
+            _instrumentation.RequestsTotal.Add(1, new global::System.Diagnostics.TagList { { "mediator.request.name", "CreateBooking" }, { "mediator.outcome", outcome } });
+            _instrumentation.RequestsDuration.Record(global::System.Diagnostics.Stopwatch.GetElapsedTime(sw).TotalMilliseconds, new global::System.Diagnostics.TagList { { "mediator.request.name", "CreateBooking" }, { "mediator.outcome", outcome } });
+        }
     }
 
     /// <summary>
@@ -47,14 +89,48 @@ public sealed partial class AppMediator : IMediator
     /// <param name="request">The request instance to dispatch.</param>
     /// <param name="ct">The cancellation token for the operation.</param>
     /// <returns>The produced response value.</returns>
-    public global::System.Threading.Tasks.ValueTask<string> Send(global::BasicCqrs.Sample.LookupTourSummary request,
+    public async global::System.Threading.Tasks.ValueTask<string> Send(global::BasicCqrs.Sample.LookupTourSummary request,
         global::System.Threading.CancellationToken ct)
     {
         global::System.ArgumentNullException.ThrowIfNull(request);
 
-        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.LookupTourSummaryHandler>(Services);
+        var activity = _instrumentation.ActivitySource.StartActivity("mediator.send", global::System.Diagnostics.ActivityKind.Internal);
+        activity?.SetTag("mediator.request.name", "LookupTourSummary");
+        activity?.SetTag("mediator.request.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.handler.name", "LookupTourSummaryHandler");
+        activity?.SetTag("mediator.pipeline.depth", 0);
+        var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();
+        var outcome = "success";
+        try
+        {
+            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.LookupTourSummaryHandler>(Services);
 
-        return handler.Handle(request, ct);
+            var result = await handler.Handle(request, ct).ConfigureAwait(false);
+            activity?.SetTag("mediator.outcome", "success");
+            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);
+            return result;
+        }
+        catch (global::System.OperationCanceledException)
+        {
+            outcome = "cancelled";
+            activity?.SetTag("mediator.outcome", "cancelled");
+            throw;
+        }
+        catch (global::System.Exception ex)
+        {
+            outcome = "error";
+            activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddException(ex);
+            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("mediator.outcome", "error");
+            throw;
+        }
+        finally
+        {
+            activity?.Dispose();
+            _instrumentation.RequestsTotal.Add(1, new global::System.Diagnostics.TagList { { "mediator.request.name", "LookupTourSummary" }, { "mediator.outcome", outcome } });
+            _instrumentation.RequestsDuration.Record(global::System.Diagnostics.Stopwatch.GetElapsedTime(sw).TotalMilliseconds, new global::System.Diagnostics.TagList { { "mediator.request.name", "LookupTourSummary" }, { "mediator.outcome", outcome } });
+        }
     }
 
     /// <inheritdoc />

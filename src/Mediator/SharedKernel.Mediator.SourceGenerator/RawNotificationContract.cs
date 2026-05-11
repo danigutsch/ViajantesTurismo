@@ -5,4 +5,5 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record RawNotificationContract(
     string MetadataName,
+    string AssemblyName,
     bool PublishInParallel);

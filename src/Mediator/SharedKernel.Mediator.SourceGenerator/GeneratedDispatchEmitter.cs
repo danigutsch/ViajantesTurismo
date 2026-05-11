@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace SharedKernel.Mediator.SourceGenerator;
@@ -99,8 +100,8 @@ internal static class GeneratedDispatchEmitter
             builder.Append("            ")
                 .Append(notificationList[notificationIndex].MetadataName)
                 .Append(" typed => Publish_")
-                .Append(notificationIndex.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture))
-                .Append("(mediator.Services, typed, ct),")
+                .Append(notificationIndex.ToString("D4", CultureInfo.InvariantCulture))
+                .Append("(mediator, typed, ct),")
                 .AppendLine();
         }
 
@@ -237,16 +238,18 @@ internal static class GeneratedDispatchEmitter
         var accessibleHandlers = notification.Handlers
             .Where(static handler => handler.IsAccessibleToGeneratedMediator)
             .ToArray();
+        var notificationNameLiteral = MediatorGenerationNames.EscapeStringLiteral(notification.Name);
+        var assemblyNameLiteral = MediatorGenerationNames.EscapeStringLiteral(notification.AssemblyName);
 
         builder.Append("    private static ");
-        if (accessibleHandlers.Length > 1)
+        if (accessibleHandlers.Length > 0)
         {
             builder.Append("async ");
         }
 
         builder.AppendLine("global::System.Threading.Tasks.ValueTask Publish_"
-            + notificationIndex.ToString("D4", global::System.Globalization.CultureInfo.InvariantCulture) + "(");
-        builder.AppendLine("        global::System.IServiceProvider services,");
+            + notificationIndex.ToString("D4", CultureInfo.InvariantCulture) + "(");
+        builder.AppendLine("        AppMediator mediator,");
         builder.Append("        ")
             .Append(notification.MetadataName)
             .AppendLine(" notification,");
@@ -259,23 +262,79 @@ internal static class GeneratedDispatchEmitter
                 builder.AppendLine("        return global::System.Threading.Tasks.ValueTask.CompletedTask;");
                 break;
             case 1:
-                builder.Append("        return global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                builder.AppendLine("        var activity = mediator.Instrumentation.ActivitySource.StartActivity(\"mediator.publish\", global::System.Diagnostics.ActivityKind.Internal);");
+                builder.Append("        activity?.SetTag(\"mediator.notification.name\", ")
+                    .Append(notificationNameLiteral)
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.notification.assembly\", ")
+                    .Append(assemblyNameLiteral)
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.notification.handler.count\", ")
+                    .Append(accessibleHandlers.Length.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(");");
+                builder.AppendLine("        var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();");
+                builder.AppendLine("        var outcome = \"success\";");
+                builder.AppendLine("        try");
+                builder.AppendLine("        {");
+                builder.Append("            await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
                     .Append(accessibleHandlers[0].MetadataName)
-                    .AppendLine(">(services).Handle(notification, ct);");
+                    .AppendLine(">(mediator.Services).Handle(notification, ct).ConfigureAwait(false);");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"success\");");
+                builder.AppendLine("            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);");
+                builder.AppendLine("        }");
+                builder.AppendLine("        catch (global::System.OperationCanceledException)");
+                builder.AppendLine("        {");
+                builder.AppendLine("            outcome = \"cancelled\";");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"cancelled\");");
+                builder.AppendLine("            throw;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        catch (global::System.Exception ex)");
+                builder.AppendLine("        {");
+                builder.AppendLine("            outcome = \"error\";");
+                builder.AppendLine("            activity?.SetTag(\"error.type\", ex.GetType().Name);");
+                builder.AppendLine("            activity?.AddException(ex);");
+                builder.AppendLine("            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"error\");");
+                builder.AppendLine("            throw;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        finally");
+                builder.AppendLine("        {");
+                builder.AppendLine("            activity?.Dispose();");
+                builder.Append("            mediator.Instrumentation.NotificationsTotal.Add(1, new global::System.Diagnostics.TagList { { \"mediator.notification.name\", ")
+                    .Append(notificationNameLiteral)
+                    .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+                builder.Append("            mediator.Instrumentation.NotificationsDuration.Record(global::System.Diagnostics.Stopwatch.GetElapsedTime(sw).TotalMilliseconds, new global::System.Diagnostics.TagList { { \"mediator.notification.name\", ")
+                    .Append(notificationNameLiteral)
+                    .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+                builder.AppendLine("        }");
                 break;
             default:
+                builder.AppendLine("        var activity = mediator.Instrumentation.ActivitySource.StartActivity(\"mediator.publish\", global::System.Diagnostics.ActivityKind.Internal);");
+                builder.Append("        activity?.SetTag(\"mediator.notification.name\", ")
+                    .Append(notificationNameLiteral)
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.notification.assembly\", ")
+                    .Append(assemblyNameLiteral)
+                    .AppendLine(");");
+                builder.Append("        activity?.SetTag(\"mediator.notification.handler.count\", ")
+                    .Append(accessibleHandlers.Length.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(");");
+                builder.AppendLine("        var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();");
+                builder.AppendLine("        var outcome = \"success\";");
+                builder.AppendLine("        try");
+                builder.AppendLine("        {");
                 if (notification.PublishInParallel)
                 {
                     for (var handlerIndex = 0; handlerIndex < accessibleHandlers.Length; handlerIndex++)
                     {
-                        builder.Append("        var handler")
-                            .Append(handlerIndex.ToString(global::System.Globalization.CultureInfo.InvariantCulture))
+                        builder.Append("            var handler")
+                            .Append(handlerIndex.ToString(CultureInfo.InvariantCulture))
                             .Append(" = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
                             .Append(accessibleHandlers[handlerIndex].MetadataName)
-                            .AppendLine(">(services).Handle(notification, ct);");
+                            .AppendLine(">(mediator.Services).Handle(notification, ct);");
                     }
 
-                    builder.Append("        await global::System.Threading.Tasks.Task.WhenAll(");
+                    builder.Append("            await global::System.Threading.Tasks.Task.WhenAll(");
                     for (var handlerIndex = 0; handlerIndex < accessibleHandlers.Length; handlerIndex++)
                     {
                         if (handlerIndex > 0)
@@ -284,7 +343,7 @@ internal static class GeneratedDispatchEmitter
                         }
 
                         builder.Append("handler")
-                            .Append(handlerIndex.ToString(global::System.Globalization.CultureInfo.InvariantCulture))
+                            .Append(handlerIndex.ToString(CultureInfo.InvariantCulture))
                             .Append(".AsTask()");
                     }
 
@@ -292,18 +351,81 @@ internal static class GeneratedDispatchEmitter
                 }
                 else
                 {
-                    foreach (var handler in accessibleHandlers)
+                    for (var handlerIndex = 0; handlerIndex < accessibleHandlers.Length; handlerIndex++)
                     {
-                        builder.Append("        await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
+                        var handler = accessibleHandlers[handlerIndex];
+                        builder.AppendLine("            {");
+                        builder.AppendLine("                var handlerActivity = mediator.Instrumentation.ActivitySource.StartActivity(\"mediator.notification.handle\", global::System.Diagnostics.ActivityKind.Internal);");
+                        builder.Append("                handlerActivity?.SetTag(\"mediator.handler.name\", ")
+                            .Append(MediatorGenerationNames.EscapeStringLiteral(GetSimpleName(handler.MetadataName)))
+                            .AppendLine(");");
+                        builder.AppendLine("                try");
+                        builder.AppendLine("                {");
+                        builder.Append("                    await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<")
                             .Append(handler.MetadataName)
-                            .AppendLine(">(services).Handle(notification, ct).ConfigureAwait(false);");
+                            .AppendLine(">(mediator.Services).Handle(notification, ct).ConfigureAwait(false);");
+                        builder.AppendLine("                    handlerActivity?.SetTag(\"mediator.outcome\", \"success\");");
+                        builder.AppendLine("                    handlerActivity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);");
+                        builder.AppendLine("                }");
+                        builder.AppendLine("                catch (global::System.OperationCanceledException)");
+                        builder.AppendLine("                {");
+                        builder.AppendLine("                    handlerActivity?.SetTag(\"mediator.outcome\", \"cancelled\");");
+                        builder.AppendLine("                    throw;");
+                        builder.AppendLine("                }");
+                        builder.AppendLine("                catch (global::System.Exception ex)");
+                        builder.AppendLine("                {");
+                        builder.AppendLine("                    handlerActivity?.SetTag(\"error.type\", ex.GetType().Name);");
+                        builder.AppendLine("                    handlerActivity?.AddException(ex);");
+                        builder.AppendLine("                    handlerActivity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);");
+                        builder.AppendLine("                    handlerActivity?.SetTag(\"mediator.outcome\", \"error\");");
+                        builder.AppendLine("                    throw;");
+                        builder.AppendLine("                }");
+                        builder.AppendLine("                finally");
+                        builder.AppendLine("                {");
+                        builder.AppendLine("                    handlerActivity?.Dispose();");
+                        builder.AppendLine("                }");
+                        builder.AppendLine("            }");
                     }
                 }
 
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"success\");");
+                builder.AppendLine("            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);");
+                builder.AppendLine("        }");
+                builder.AppendLine("        catch (global::System.OperationCanceledException)");
+                builder.AppendLine("        {");
+                builder.AppendLine("            outcome = \"cancelled\";");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"cancelled\");");
+                builder.AppendLine("            throw;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        catch (global::System.Exception ex)");
+                builder.AppendLine("        {");
+                builder.AppendLine("            outcome = \"error\";");
+                builder.AppendLine("            activity?.SetTag(\"error.type\", ex.GetType().Name);");
+                builder.AppendLine("            activity?.AddException(ex);");
+                builder.AppendLine("            activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);");
+                builder.AppendLine("            activity?.SetTag(\"mediator.outcome\", \"error\");");
+                builder.AppendLine("            throw;");
+                builder.AppendLine("        }");
+                builder.AppendLine("        finally");
+                builder.AppendLine("        {");
+                builder.AppendLine("            activity?.Dispose();");
+                builder.Append("            mediator.Instrumentation.NotificationsTotal.Add(1, new global::System.Diagnostics.TagList { { \"mediator.notification.name\", ")
+                    .Append(notificationNameLiteral)
+                    .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+                builder.Append("            mediator.Instrumentation.NotificationsDuration.Record(global::System.Diagnostics.Stopwatch.GetElapsedTime(sw).TotalMilliseconds, new global::System.Diagnostics.TagList { { \"mediator.notification.name\", ")
+                    .Append(notificationNameLiteral)
+                    .AppendLine(" }, { \"mediator.outcome\", outcome } });");
+                builder.AppendLine("        }");
                 break;
         }
 
         builder.AppendLine("    }");
         builder.AppendLine();
+    }
+
+    private static string GetSimpleName(string metadataName)
+    {
+        var lastDotIndex = metadataName.LastIndexOf('.');
+        return lastDotIndex >= 0 ? metadataName.Substring(lastDotIndex + 1) : metadataName;
     }
 }

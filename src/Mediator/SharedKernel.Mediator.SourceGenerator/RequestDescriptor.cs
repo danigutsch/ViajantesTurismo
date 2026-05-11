@@ -7,6 +7,8 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record RequestDescriptor(
     string MetadataName,
+    string Name,
+    string AssemblyName,
     RequestKind Kind,
     ResponseDescriptor Response,
     bool IsValueType,

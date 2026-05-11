@@ -7,5 +7,7 @@ namespace SharedKernel.Mediator.SourceGenerator;
 /// </summary>
 internal sealed record NotificationDescriptor(
     string MetadataName,
+    string Name,
+    string AssemblyName,
     bool PublishInParallel,
     ImmutableArray<NotificationHandlerDescriptor> Handlers);
