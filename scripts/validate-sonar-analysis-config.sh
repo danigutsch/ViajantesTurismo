@@ -3,12 +3,13 @@
 set -euo pipefail
 
 load_local_env() {
+    local repo_root="$1"
     local env_file=""
 
-    if [[ -f ".env.local" ]]; then
-        env_file=".env.local"
-    elif [[ -f ".env" ]]; then
-        env_file=".env"
+    if [[ -f "${repo_root}/.env.local" ]]; then
+        env_file="${repo_root}/.env.local"
+    elif [[ -f "${repo_root}/.env" ]]; then
+        env_file="${repo_root}/.env"
     fi
 
     if [[ -z "${env_file}" ]]; then
@@ -65,7 +66,13 @@ format_missing_setting() {
 }
 
 main() {
-    load_local_env
+    local script_dir
+    local repo_root
+
+    script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+    repo_root="$(cd -- "${script_dir}/.." && pwd)"
+
+    load_local_env "${repo_root}"
 
     local -a missing_vars=()
     local -a missing_settings=()

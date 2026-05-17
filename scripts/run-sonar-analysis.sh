@@ -7,6 +7,9 @@ repo_root="$(cd -- "${script_dir}/.." && pwd)"
 
 cd "${repo_root}"
 
+source "${script_dir}/validate-sonar-analysis-config.sh"
+load_local_env "${repo_root}"
+
 bash scripts/validate-sonar-analysis-config.sh
 
 sonar_token="${SONAR_TOKEN:-}"
