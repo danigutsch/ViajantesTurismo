@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble",
 
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "24",
       "nodeGypDependencies": true
     },
