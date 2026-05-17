@@ -1,18 +1,6 @@
 name: Devcontainer Smoke
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - .devcontainer/**
-      - .github/workflows/devcontainer-smoke.yml
-      - .nvmrc
-      - global.json
-      - NuGet.Config
-      - Directory.Packages.props
-      - ViajantesTurismo.slnx
-      - scripts/run-devcontainer-smoke.sh
   push:
     branches:
       - main
