@@ -14,6 +14,8 @@ namespace SharedKernel.Mediator.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
 {
+    private const string HandleMethodName = "Handle";
+
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         MediatorAnalyzerDescriptors.InvalidHandlerSignature,
@@ -92,7 +94,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var methodsForRequest = type.GetMembers("Handle")
+            var methodsForRequest = type.GetMembers(HandleMethodName)
                 .OfType<IMethodSymbol>()
                 .Where(static method => !method.IsStatic && method.MethodKind == MethodKind.Ordinary && method.DeclaredAccessibility == Accessibility.Public)
                 .Where(method => method.Parameters.Length > 0 && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType))
@@ -154,7 +156,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var methodsForRequest = type.GetMembers("Handle")
+            var methodsForRequest = type.GetMembers(HandleMethodName)
                 .OfType<IMethodSymbol>()
                 .Where(static method => !method.IsStatic && method.MethodKind == MethodKind.Ordinary && method.DeclaredAccessibility == Accessibility.Public)
                 .Where(method => method.Parameters.Length > 0 && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType))
@@ -386,7 +388,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol cancellationTokenType,
         INamedTypeSymbol valueTaskOfT)
     {
-        return type.GetMembers("Handle")
+        return type.GetMembers(HandleMethodName)
             .OfType<IMethodSymbol>()
             .FirstOrDefault(
                 method =>
@@ -406,7 +408,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol cancellationTokenType,
         INamedTypeSymbol asyncEnumerableOfT)
     {
-        return type.GetMembers("Handle")
+        return type.GetMembers(HandleMethodName)
             .OfType<IMethodSymbol>()
             .FirstOrDefault(
                 method =>
@@ -427,7 +429,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol cancellationTokenType,
         INamedTypeSymbol asyncEnumerableOfT)
     {
-        return type.GetMembers("Handle")
+        return type.GetMembers(HandleMethodName)
             .OfType<IMethodSymbol>()
             .FirstOrDefault(
                 method =>
@@ -508,40 +510,29 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
             : GetDiagnosticLocation(fallbackMethod, fallbackType);
     }
 
-    private sealed class DiscoverySymbols(
-        INamedTypeSymbol handlerInterface,
-        INamedTypeSymbol pipelineInterface,
-        INamedTypeSymbol streamHandlerInterface,
-        INamedTypeSymbol streamPipelineInterface,
-        INamedTypeSymbol senderInterface,
-        INamedTypeSymbol publisherInterface,
-        INamedTypeSymbol cancellationTokenType,
-        INamedTypeSymbol valueTaskOfT,
-        INamedTypeSymbol asyncEnumerableOfT,
-        INamedTypeSymbol streamHandlerContinuation,
-        INamedTypeSymbol enumeratorCancellationAttribute)
+    private sealed class DiscoverySymbols
     {
-        public INamedTypeSymbol HandlerInterface { get; } = handlerInterface;
+        public INamedTypeSymbol HandlerInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol PipelineInterface { get; } = pipelineInterface;
+        public INamedTypeSymbol PipelineInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol StreamHandlerInterface { get; } = streamHandlerInterface;
+        public INamedTypeSymbol StreamHandlerInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol StreamPipelineInterface { get; } = streamPipelineInterface;
+        public INamedTypeSymbol StreamPipelineInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol SenderInterface { get; } = senderInterface;
+        public INamedTypeSymbol SenderInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol PublisherInterface { get; } = publisherInterface;
+        public INamedTypeSymbol PublisherInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol CancellationTokenType { get; } = cancellationTokenType;
+        public INamedTypeSymbol CancellationTokenType { get; private set; } = null!;
 
-        public INamedTypeSymbol ValueTaskOfT { get; } = valueTaskOfT;
+        public INamedTypeSymbol ValueTaskOfT { get; private set; } = null!;
 
-        public INamedTypeSymbol AsyncEnumerableOfT { get; } = asyncEnumerableOfT;
+        public INamedTypeSymbol AsyncEnumerableOfT { get; private set; } = null!;
 
-        public INamedTypeSymbol StreamHandlerContinuation { get; } = streamHandlerContinuation;
+        public INamedTypeSymbol StreamHandlerContinuation { get; private set; } = null!;
 
-        public INamedTypeSymbol EnumeratorCancellationAttribute { get; } = enumeratorCancellationAttribute;
+        public INamedTypeSymbol EnumeratorCancellationAttribute { get; private set; } = null!;
 
         public bool IsComplete =>
             HandlerInterface is not null
@@ -558,18 +549,20 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
 
         public static DiscoverySymbols Create(Compilation compilation)
         {
-            return new DiscoverySymbols(
-                compilation.GetTypeByMetadataName(MetadataNames.RequestHandler)!,
-                compilation.GetTypeByMetadataName(MetadataNames.PipelineBehavior)!,
-                compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,
-                compilation.GetTypeByMetadataName(MetadataNames.StreamPipelineBehavior)!,
-                compilation.GetTypeByMetadataName(MetadataNames.Sender)!,
-                compilation.GetTypeByMetadataName(MetadataNames.Publisher)!,
-                compilation.GetTypeByMetadataName(MetadataNames.CancellationToken)!,
-                compilation.GetTypeByMetadataName(MetadataNames.ValueTaskOfResponse)!,
-                compilation.GetTypeByMetadataName(MetadataNames.AsyncEnumerableOfResponse)!,
-                compilation.GetTypeByMetadataName(MetadataNames.StreamHandlerContinuation)!,
-                compilation.GetTypeByMetadataName(MetadataNames.EnumeratorCancellationAttribute)!);
+            return new DiscoverySymbols
+            {
+                HandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.RequestHandler)!,
+                PipelineInterface = compilation.GetTypeByMetadataName(MetadataNames.PipelineBehavior)!,
+                StreamHandlerInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamRequestHandler)!,
+                StreamPipelineInterface = compilation.GetTypeByMetadataName(MetadataNames.StreamPipelineBehavior)!,
+                SenderInterface = compilation.GetTypeByMetadataName(MetadataNames.Sender)!,
+                PublisherInterface = compilation.GetTypeByMetadataName(MetadataNames.Publisher)!,
+                CancellationTokenType = compilation.GetTypeByMetadataName(MetadataNames.CancellationToken)!,
+                ValueTaskOfT = compilation.GetTypeByMetadataName(MetadataNames.ValueTaskOfResponse)!,
+                AsyncEnumerableOfT = compilation.GetTypeByMetadataName(MetadataNames.AsyncEnumerableOfResponse)!,
+                StreamHandlerContinuation = compilation.GetTypeByMetadataName(MetadataNames.StreamHandlerContinuation)!,
+                EnumeratorCancellationAttribute = compilation.GetTypeByMetadataName(MetadataNames.EnumeratorCancellationAttribute)!,
+            };
         }
     }
 }

@@ -12,6 +12,8 @@ namespace SharedKernel.Mediator.CodeFixes;
 /// </summary>
 internal static class MissingHandlerCodeFix
 {
+    private const string NotImplementedBody = "throw new global::System.NotImplementedException();";
+
     /// <summary>
     /// Registers the missing-handler code fix when the request shape supports a safe generated stub.
     /// </summary>
@@ -93,7 +95,7 @@ internal static class MissingHandlerCodeFix
                     $"global::SharedKernel.Mediator.IQueryHandler<{requestTypeName}, {responseTypeName}>",
                     $"global::System.Threading.Tasks.ValueTask<{responseTypeName}>",
                     requestTypeName,
-                    "throw new global::System.NotImplementedException();");
+                    NotImplementedBody);
                 return true;
             }
 
@@ -106,7 +108,7 @@ internal static class MissingHandlerCodeFix
                     $"global::SharedKernel.Mediator.ICommandHandler<{requestTypeName}, {responseTypeName}>",
                     $"global::System.Threading.Tasks.ValueTask<{responseTypeName}>",
                     requestTypeName,
-                    "throw new global::System.NotImplementedException();");
+                    NotImplementedBody);
                 return true;
             }
 
@@ -118,7 +120,7 @@ internal static class MissingHandlerCodeFix
                     $"global::SharedKernel.Mediator.ICommandHandler<{requestTypeName}>",
                     "global::System.Threading.Tasks.ValueTask<global::SharedKernel.Mediator.Unit>",
                     requestTypeName,
-                    "throw new global::System.NotImplementedException();");
+                    NotImplementedBody);
                 return true;
             }
 
@@ -131,7 +133,7 @@ internal static class MissingHandlerCodeFix
                     $"global::SharedKernel.Mediator.IRequestHandler<{requestTypeName}, {responseTypeName}>",
                     $"global::System.Threading.Tasks.ValueTask<{responseTypeName}>",
                     requestTypeName,
-                    "throw new global::System.NotImplementedException();");
+                    NotImplementedBody);
                 return true;
             }
         }
