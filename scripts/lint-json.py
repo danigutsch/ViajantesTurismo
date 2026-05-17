@@ -11,6 +11,55 @@ import sys
 IGNORED_PARTS = {"node_modules", "bin", "obj", "TestResults", ".vs", ".vscode"}
 
 
+def append_escaped_character(content: str, index: int, result: list[str]) -> int:
+    result.append(content[index])
+    result.append(content[index + 1])
+    return index + 2
+
+
+def try_consume_string_character(
+    content: str,
+    index: int,
+    result: list[str],
+    string_quote: str,
+) -> tuple[int, bool]:
+    current = content[index]
+
+    if current == "\\" and index + 1 < len(content):
+        return append_escaped_character(content, index, result), False
+
+    result.append(current)
+
+    return index + 1, current == string_quote
+
+
+def consume_line_comment(content: str, index: int) -> int:
+    index += 2
+    while index < len(content) and content[index] not in {"\n", "\r"}:
+        index += 1
+    return index
+
+
+def consume_block_comment(content: str, index: int) -> int:
+    index += 2
+    while index + 1 < len(content) and not (content[index] == "*" and content[index + 1] == "/"):
+        index += 1
+    return index + 2
+
+
+def try_consume_comment(content: str, index: int) -> int | None:
+    if index + 1 >= len(content) or content[index] != "/":
+        return None
+
+    next_char = content[index + 1]
+    if next_char == "/":
+        return consume_line_comment(content, index)
+    if next_char == "*":
+        return consume_block_comment(content, index)
+
+    return None
+
+
 def iter_target_files(args: list[str]) -> list[pathlib.Path]:
     if args:
         return [pathlib.Path(arg) for arg in args if arg != "--" and arg.endswith(".json")]
@@ -26,21 +75,14 @@ def strip_jsonc(content: str) -> str:
     index = 0
     in_string = False
     string_quote = ""
-    length = len(content)
 
-    while index < length:
+    while index < len(content):
         current = content[index]
-        next_char = content[index + 1] if index + 1 < length else ""
 
         if in_string:
-            result.append(current)
-            if current == "\\" and index + 1 < length:
-                result.append(content[index + 1])
-                index += 2
-                continue
-            if current == string_quote:
+            index, string_closed = try_consume_string_character(content, index, result, string_quote)
+            if string_closed:
                 in_string = False
-            index += 1
             continue
 
         if current in {'"', "'"}:
@@ -50,17 +92,9 @@ def strip_jsonc(content: str) -> str:
             index += 1
             continue
 
-        if current == "/" and next_char == "/":
-            index += 2
-            while index < length and content[index] not in {"\n", "\r"}:
-                index += 1
-            continue
-
-        if current == "/" and next_char == "*":
-            index += 2
-            while index + 1 < length and not (content[index] == "*" and content[index + 1] == "/"):
-                index += 1
-            index += 2
+        comment_end = try_consume_comment(content, index)
+        if comment_end is not None:
+            index = comment_end
             continue
 
         result.append(current)
