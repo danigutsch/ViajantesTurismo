@@ -4,24 +4,14 @@
 
 set -e
 
-SKIP_GIT_HOOK=false
-SKIP_NPM=false
 NOT_FOUND="not found"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --skip-git-hook)
-            SKIP_GIT_HOOK=true
-            shift
-            ;;
-        --skip-npm)
-            SKIP_NPM=true
-            shift
-            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--skip-git-hook] [--skip-npm]"
+            echo "Usage: $0"
             exit 1
             ;;
     esac
@@ -172,96 +162,6 @@ check_powershell() {
     return 0
 }
 
-check_nodejs_and_npm() {
-    local install_linters
-    local node_version
-    local required_node_version
-
-    if [[ "${SKIP_NPM}" = true ]]; then
-        return 0
-    fi
-
-    printf "\n%b" "${YELLOW}📦 Checking Node.js and npm...${NC}\n"
-
-    required_node_version=""
-    if [[ -f ".nvmrc" ]]; then
-        read -r required_node_version < .nvmrc
-    else
-        printf "%b" "   ${YELLOW}⚠️ .nvmrc file not found${NC}\n"
-    fi
-
-    node_version=$(node --version 2>&1 || echo "${NOT_FOUND}")
-
-    if [[ "${node_version}" != "${NOT_FOUND}" ]]; then
-        printf "%b" "   ${GREEN}✅ Node.js installed: ${node_version}${NC}\n"
-
-        if [[ -n "${required_node_version}" ]]; then
-            if echo "${node_version}" | grep -q "v${required_node_version}"; then
-                printf "%b" "   ${GREEN}✅ Version matches .nvmrc (${required_node_version})${NC}\n"
-            else
-                printf "%b" "   ${YELLOW}⚠️ Version mismatch!${NC}\n"
-                printf "%b" "   ${YELLOW}   Required: v${required_node_version} (from .nvmrc)${NC}\n"
-                printf "%b" "   ${YELLOW}   Installed: ${node_version}${NC}\n"
-                printf "%b" "   ${CYAN}💡 Switch with: nvm use${NC}\n"
-            fi
-        fi
-
-        printf "\n%b" "${CYAN}Code quality linters available (optional):${NC}\n"
-        printf "%b" "  • markdownlint-cli - Markdown file linting\n"
-        printf "%b" "  • shellcheck - Shell script linting\n"
-        printf "%b" "  • shfmt - Shell script formatting\n"
-        printf "%b" "  • gherkin-lint - BDD feature file linting\n"
-        printf "%b" "  • ESLint - JSON file linting\n"
-        printf "\n"
-        printf "%b" "Install code quality linters? (y/N): "
-        read -r install_linters
-
-        if [[ "${install_linters}" = "y" ]] || [[ "${install_linters}" = "Y" ]]; then
-            printf "\n%b" "${YELLOW}📦 Installing npm dependencies...${NC}\n"
-            if npm ci --ignore-scripts > /dev/null 2>&1; then
-                printf "%b" "   ${GREEN}✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt, gherkin-lint, ESLint)${NC}\n"
-            else
-                printf "%b" "   ${RED}❌ Failed to install npm dependencies${NC}\n"
-                exit 1
-            fi
-        else
-            printf "%b" "   ${YELLOW}⏭️ Skipping linter installation${NC}\n"
-            printf "%b" "   ${CYAN}💡 Install later with: npm ci --ignore-scripts${NC}\n"
-        fi
-    else
-        printf "%b" "   ${YELLOW}⚠️ Node.js not found - code quality linters will not be available${NC}\n"
-        if [[ -n "${required_node_version}" ]]; then
-            printf "%b" "   ${CYAN}💡 Expected version: v${required_node_version} (from .nvmrc)${NC}\n"
-        fi
-        printf "%b" "   ${CYAN}💡 Download from: https://nodejs.org/${NC}\n"
-    fi
-
-    return 0
-}
-
-install_pre_commit_hook() {
-    if [[ "${SKIP_GIT_HOOK}" = true ]]; then
-        return 0
-    fi
-
-    printf "\n%b" "${YELLOW}🪝 Setting up git hooks...${NC}\n"
-    if [[ -d ".git/hooks" ]]; then
-        if [[ -f "scripts/pre-commit" && -f "scripts/commit-msg" ]]; then
-            cp scripts/pre-commit .git/hooks/pre-commit
-            cp scripts/commit-msg .git/hooks/commit-msg
-            chmod +x .git/hooks/pre-commit .git/hooks/commit-msg
-            printf "%b" "   ${GREEN}✅ Git hooks installed (pre-commit, commit-msg)${NC}\n"
-            printf "%b" "   ${CYAN}💡 Bypass with: git commit --no-verify${NC}\n"
-        else
-            printf "%b" "   ${YELLOW}⚠️ Hook scripts not found at scripts/pre-commit and scripts/commit-msg${NC}\n"
-        fi
-    else
-        printf "%b" "   ${YELLOW}⚠️ Not a git repository - skipping hook installation${NC}\n"
-    fi
-
-    return 0
-}
-
 print_summary() {
     printf "\n%b" "${GREEN}✨ Setup Complete!${NC}\n"
     printf "%b" "${GREEN}==================${NC}\n\n"
@@ -270,7 +170,7 @@ print_summary() {
     printf "%b" "  1. Run the application: ${NC}dotnet tool run aspire run\n"
     printf "%b" "  2. Run tests: ${NC}dotnet test\n"
     printf "%b" "  3. Install Playwright browsers after build: ${NC}bash scripts/install-playwright.sh\n"
-    printf "%b" "  4. Check markdown: ${NC}npm run lint:md\n"
+    printf "%b" "  4. Validate a commit message: ${NC}bash scripts/validate-commit-message.sh /path/to/message.txt\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
     printf "\n"
     return 0
@@ -282,6 +182,4 @@ restore_dotnet_dependencies
 restore_dotnet_local_tools
 check_aspnet_core_development_certificate_trust
 check_powershell
-check_nodejs_and_npm
-install_pre_commit_hook
 print_summary

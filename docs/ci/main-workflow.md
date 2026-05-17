@@ -116,8 +116,8 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 
 1. Checkout repository (`actions/checkout`).
 2. Set up Node.js from `.nvmrc` with npm cache (`actions/setup-node`).
-3. Run `npm ci --ignore-scripts`.
-4. Run `npm run lint:all`.
+3. Configure npm for hardened ephemeral tool execution.
+4. Run `bash scripts/lint-all.sh`.
 
 ## Recommended workflow evolution
 

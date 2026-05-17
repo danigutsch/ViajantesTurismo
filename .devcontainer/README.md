@@ -149,9 +149,7 @@ On first container creation, the `post-create.sh` script automatically:
 
 1. Restores .NET tools
 2. Restores NuGet packages
-3. Installs npm packages
-4. Sets up git hooks
-5. Builds the solution to verify everything works
+3. Builds the solution to verify everything works
 
 ## Troubleshooting
 

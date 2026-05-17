@@ -10,7 +10,7 @@
 
 - [ ] `dotnet build ViajantesTurismo.slnx`
 - [ ] `dotnet test --solution ViajantesTurismo.slnx`
-- [ ] `npm run lint:all`
+- [ ] CI lint (`bash scripts/lint-all.sh`)
 - [ ] Not run, with reason:
 
 ## Checklist

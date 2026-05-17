@@ -53,7 +53,7 @@ Use nested `AGENTS.md` files for scoped rules.
     100 characters, and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`.
-- Docs/scripts/spec quality checks: `npm run lint:all`, `npm run lint:all:fix`.
+- Docs/scripts/spec quality checks run in CI via `bash scripts/lint-all.sh`.
 
 ## Aspire operations
 

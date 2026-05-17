@@ -87,21 +87,14 @@ through the lightweight docs-only path in the job.
 
 ```bash
 # From repository root
-npm ci --ignore-scripts
-npm run lint:all
+bash scripts/lint-all.sh
 ```
 
-If `npm run lint:all` fails, run individual linters to isolate the failure:
+If the CI lint job fails, run individual linters to isolate the failure:
 
 ```bash
-npm run lint:md        # Markdown
-npm run lint:sh        # Shell scripts
-npm run lint:json      # JSON files
-npm run lint:gherkin   # Gherkin/feature files
-```
-
-Auto-fix what can be auto-fixed:
-
-```bash
-npm run lint:all:fix
+bash scripts/lint-markdown.sh              # Markdown
+shellcheck **/*.sh                         # Shell scripts
+bash scripts/lint-json.sh **/*.json        # JSON files
+bash scripts/lint-gherkin.sh tests/**/*.feature  # Gherkin/feature files
 ```

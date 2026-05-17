@@ -120,7 +120,6 @@ Recommended follow-up validation while iterating:
 
 ```bash
 dotnet test --solution ViajantesTurismo.slnx
-npm run lint:all
 ```
 
 ## Relationship to CI

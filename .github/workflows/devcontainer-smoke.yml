@@ -9,12 +9,9 @@ on:
       - .github/workflows/devcontainer-smoke.yml
       - .nvmrc
       - global.json
-      - package.json
-      - package-lock.json
       - NuGet.Config
       - Directory.Packages.props
       - ViajantesTurismo.slnx
-      - scripts/install-git-hooks.sh
       - scripts/run-devcontainer-smoke.sh
   push:
     branches:
@@ -24,12 +21,9 @@ on:
       - .github/workflows/devcontainer-smoke.yml
       - .nvmrc
       - global.json
-      - package.json
-      - package-lock.json
       - NuGet.Config
       - Directory.Packages.props
       - ViajantesTurismo.slnx
-      - scripts/install-git-hooks.sh
       - scripts/run-devcontainer-smoke.sh
   schedule:
     - cron: '0 6 * * 1'
