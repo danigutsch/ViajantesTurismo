@@ -11,6 +11,10 @@ import sys
 IGNORED_PARTS = {"node_modules", "bin", "obj", "TestResults", ".vs", ".vscode"}
 
 
+def is_included_json_path(path: pathlib.Path) -> bool:
+    return path.suffix == ".json" and not any(part in IGNORED_PARTS for part in path.parts)
+
+
 def append_escaped_character(content: str, index: int, result: list[str]) -> int:
     result.append(content[index])
     result.append(content[index + 1])
@@ -62,12 +66,9 @@ def try_consume_comment(content: str, index: int) -> int | None:
 
 def iter_target_files(args: list[str]) -> list[pathlib.Path]:
     if args:
-        return [pathlib.Path(arg) for arg in args if arg != "--" and arg.endswith(".json")]
+        return [pathlib.Path(arg) for arg in args if arg != "--" and is_included_json_path(pathlib.Path(arg))]
 
-    return [
-        path for path in pathlib.Path(".").rglob("*.json")
-        if not any(part in IGNORED_PARTS for part in path.parts)
-    ]
+    return [path for path in pathlib.Path(".").rglob("*.json") if is_included_json_path(path)]
 
 
 def strip_jsonc(content: str) -> str:
