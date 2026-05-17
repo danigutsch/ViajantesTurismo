@@ -17,6 +17,10 @@ SonarQube XML formats with the repo-pinned `reportgenerator` tool before publish
 `TestResults/sonar-coverage.xml` to the scanner. The CI workflow wraps that script with
 `tee` so the raw scanner output is preserved in `TestResults/sonar-analysis.log`.
 
+The script also sets `sonar.projectBaseDir` explicitly to the repository root. This keeps
+Scanner for .NET v8 aligned with the repo's expected analysis scope and avoids warnings
+caused by the newer automatic base-directory detection behavior.
+
 The CI workflow then uses GitHub Actions job summaries to publish a short validation
 overview directly on the workflow run summary page. This follows GitHub's documented
 `GITHUB_STEP_SUMMARY` mechanism so readers can see the quality gate result, SonarCloud

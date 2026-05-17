@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "${script_dir}/.." && pwd)"
+
+cd "${repo_root}"
+
 bash scripts/validate-sonar-analysis-config.sh
 
 sonar_token="${SONAR_TOKEN:-}"
@@ -25,6 +30,7 @@ dotnet tool run dotnet-sonarscanner begin \
     "/o:${sonar_organization}" \
     "/k:${sonar_project_key}" \
     "/d:sonar.token=${sonar_token}" \
+    "/d:sonar.projectBaseDir=${repo_root}" \
     "/d:sonar.coverageReportPaths=${coverage_report}" \
     "/d:sonar.exclusions=${sonar_exclusions}" \
     "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
