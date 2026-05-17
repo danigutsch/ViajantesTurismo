@@ -15,5 +15,14 @@ var bookingCode = await mediator.Send(
     new CreateBooking("VT-42", "Ada Lovelace"),
     CancellationToken.None);
 
+await mediator.Publish(new TourBooked(bookingCode, "Ada Lovelace"), CancellationToken.None);
+
+var streamedCodes = new List<string>();
+await foreach (var code in mediator.Send(new StreamTourCodes(3), CancellationToken.None))
+{
+    streamedCodes.Add(code);
+}
+
 Console.WriteLine(summary);
 Console.WriteLine($"Created booking: {bookingCode}");
+Console.WriteLine($"Streamed tour codes: {string.Join(", ", streamedCodes)}");
