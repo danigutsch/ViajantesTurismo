@@ -37,8 +37,8 @@ Breaking changes should use `!` or a `BREAKING CHANGE:` footer:
 feat(api)!: remove legacy booking endpoint
 ```
 
-Git hooks install a `commit-msg` check that validates messages with `commitlint`.
-If you need to bypass hooks for an emergency, use `git commit --no-verify` and fix the history before merge.
+Commit messages can be checked locally with
+`bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
 
 ## Signed Commits
 
@@ -89,7 +89,7 @@ Run the checks relevant to your changes:
 
 - `.NET`: `dotnet build ViajantesTurismo.slnx`
 - Tests: `dotnet test --solution ViajantesTurismo.slnx`
-- Docs, scripts, specs: `npm run lint:all`
+- Docs, scripts, specs: CI runs `bash scripts/lint-all.sh`
 
 If you change NuGet dependencies or project references that affect package
 resolution, regenerate and commit the affected `packages.lock.json` files:

@@ -210,15 +210,17 @@ jobs:
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version-file: .nvmrc
-          cache: npm
 
       - name: Install shellcheck
         run: |
           sudo apt-get update
           sudo apt-get install --yes shellcheck
 
-      - name: Install Node.js dependencies
-        run: npm ci --ignore-scripts
+      - name: Harden npm execution defaults
+        run: |
+          npm config set ignore-scripts true
+          npm config set audit false
+          npm config set fund false
 
       - name: Run all linters
-        run: npm run lint:all
+        run: bash scripts/lint-all.sh

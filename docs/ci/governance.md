@@ -19,8 +19,8 @@ jobs must be reflected in branch protection settings.
 Representative pull request validation has also been observed successfully with these
 checks, including the main CI workflow and its integrated SonarCloud status job, the
 separate dependency review workflow, and the separate secret scanning workflow. The
-`Devcontainer Smoke` workflow remains supplemental and is not part of the required merge
-gate.
+`Devcontainer Smoke` workflow remains supplemental, does not run on ordinary pull requests,
+and is not part of the required merge gate.
 
 ## Signed commit policy
 

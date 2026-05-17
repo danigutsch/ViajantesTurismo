@@ -228,7 +228,7 @@ All `.feature` files are linted using `gherkin-lint` with project-specific rules
 
 - `@BC:<BoundedContext>` tag on every feature
 - `@Agg:<Aggregate>` tag on every feature
-- Consistent indentation (Feature: 0, Rule/Scenario: 2, Steps: 4)
+- Consistent indentation (Feature: 0, Rule/Scenario: 4, Steps: 8)
 - No unnamed features/scenarios
 
 **Anti-Patterns Prevented:**
@@ -239,34 +239,24 @@ All `.feature` files are linted using `gherkin-lint` with project-specific rules
 ### Running the Linter
 
 ```powershell
-
 # Validate all feature files
+bash scripts/lint-gherkin.sh tests/**/*.feature
 
-npm run lint:gherkin
-
-# Runs automatically in pre-commit hook
-
+# CI uses the same repository script
 ```
 
 **Note:** gherkin-lint validates but does not auto-fix. Errors must be corrected manually.
 
 **Configuration:** Rules are defined in `.gherkin-lintrc` at the repository root.
 
-### Pre-Commit Hook
+### CI Validation
 
-Gherkin linting runs automatically before each commit and **blocks commit** if errors found.
+Gherkin linting runs in CI.
 
-Install hook:
+Run locally:
 
 ```powershell
-
-# Windows
-
-.\scripts\install-git-hooks.ps1
-
-# Unix/Linux/macOS
-
-bash scripts/install-git-hooks.sh
+bash scripts/lint-gherkin.sh tests/**/*.feature
 ```
 
 ---

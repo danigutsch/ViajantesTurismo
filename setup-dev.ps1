@@ -2,10 +2,7 @@
 # ViajantesTurismo Development Environment Setup Script
 # This script installs all required and optional tools for development
 
-param(
-    [switch]$SkipGitHook,
-    [switch]$SkipNpm
-)
+param()
 
 $ErrorActionPreference = "Stop"
 
@@ -128,94 +125,6 @@ function Test-PowerShellAndPlaywrightPrerequisites {
     }
 }
 
-function Test-NodeJsAndNpm {
-    if ($SkipNpm) {
-        return
-    }
-
-    Write-Host "`n📦 Checking Node.js and npm..." -ForegroundColor Yellow
-
-    $requiredNodeVersion = ""
-    if (Test-Path ".nvmrc") {
-        $requiredNodeVersion = (Get-Content ".nvmrc" -Raw).Trim()
-    }
-    else {
-        Write-Host "   ⚠️ .nvmrc file not found" -ForegroundColor Yellow
-    }
-
-    $nodeVersion = node --version 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "   ✅ Node.js installed: $nodeVersion" -ForegroundColor Green
-
-        if ($requiredNodeVersion) {
-            if ($nodeVersion -like "v$requiredNodeVersion*") {
-                Write-Host "   ✅ Version matches .nvmrc ($requiredNodeVersion)" -ForegroundColor Green
-            }
-            else {
-                Write-Host "   ⚠️ Version mismatch!" -ForegroundColor Yellow
-                Write-Host "      Required: v$requiredNodeVersion (from .nvmrc)" -ForegroundColor Yellow
-                Write-Host "      Installed: $nodeVersion" -ForegroundColor Yellow
-                Write-Host "   💡 Switch with: nvm use" -ForegroundColor Cyan
-            }
-        }
-
-        Write-Host ""
-        Write-Host "Code quality linters available (optional):" -ForegroundColor Cyan
-        Write-Host "  • markdownlint-cli - Markdown file linting" -ForegroundColor White
-        Write-Host "  • shellcheck - Shell script linting" -ForegroundColor White
-        Write-Host "  • shfmt - Shell script formatting" -ForegroundColor White
-        Write-Host "  • gherkin-lint - BDD feature file linting" -ForegroundColor White
-        Write-Host "  • ESLint - JSON file linting" -ForegroundColor White
-        Write-Host ""
-        $installLinters = Read-Host "Install code quality linters? (y/N)"
-
-        if ($installLinters -eq 'y' -or $installLinters -eq 'Y') {
-            Write-Host "`n📦 Installing npm dependencies..." -ForegroundColor Yellow
-            npm install
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "   ✅ npm dependencies installed (markdownlint-cli, shellcheck, shfmt, gherkin-lint, ESLint)" -ForegroundColor Green
-            }
-            else {
-                Write-Host "   ❌ Failed to install npm dependencies" -ForegroundColor Red
-                exit 1
-            }
-        }
-        else {
-            Write-Host "   ⏭️ Skipping linter installation" -ForegroundColor Yellow
-            Write-Host "   💡 Install later with: npm install" -ForegroundColor Cyan
-        }
-    }
-    else {
-        Write-Host "   ⚠️ Node.js not found - code quality linters will not be available" -ForegroundColor Yellow
-        if ($requiredNodeVersion) {
-            Write-Host "      Expected version: v$requiredNodeVersion (from .nvmrc)" -ForegroundColor Cyan
-        }
-        Write-Host "   💡 Download from: https://nodejs.org/" -ForegroundColor Cyan
-    }
-}
-
-function Install-PreCommitHook {
-    if ($SkipGitHook) {
-        return
-    }
-
-    Write-Host "`n🪝 Setting up git hooks..." -ForegroundColor Yellow
-    if (Test-Path ".git/hooks") {
-        if ((Test-Path "scripts/pre-commit") -and (Test-Path "scripts/commit-msg")) {
-            Copy-Item "scripts/pre-commit" ".git/hooks/pre-commit" -Force
-            Copy-Item "scripts/commit-msg" ".git/hooks/commit-msg" -Force
-            Write-Host "   ✅ Git hooks installed (pre-commit, commit-msg)" -ForegroundColor Green
-            Write-Host "   💡 Bypass with: git commit --no-verify" -ForegroundColor Cyan
-        }
-        else {
-            Write-Host "   ⚠️ Hook scripts not found at scripts/pre-commit and scripts/commit-msg" -ForegroundColor Yellow
-        }
-    }
-    else {
-        Write-Host "   ⚠️ Not a git repository - skipping hook installation" -ForegroundColor Yellow
-    }
-}
-
 function Write-SetupSummary {
     Write-Host "`n✨ Setup Complete!" -ForegroundColor Green
     Write-Host "==================`n" -ForegroundColor Green
@@ -224,7 +133,7 @@ function Write-SetupSummary {
     Write-Host "  1. Run the application: dotnet tool run aspire run" -ForegroundColor White
     Write-Host "  2. Run tests: dotnet test" -ForegroundColor White
     Write-Host "  3. Install Playwright browsers after build: bash scripts/install-playwright.sh" -ForegroundColor White
-    Write-Host "  4. Check markdown: npm run lint:md" -ForegroundColor White
+    Write-Host "  4. Validate a commit message: bash scripts/validate-commit-message.sh /path/to/message.txt" -ForegroundColor White
     Write-Host "     (If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)" -ForegroundColor DarkGray
     Write-Host ""
 }
@@ -235,6 +144,4 @@ Restore-DotNetDependencies
 Restore-DotNetLocalTools
 Test-AspNetCoreDevelopmentCertificateTrust
 Test-PowerShellAndPlaywrightPrerequisites
-Test-NodeJsAndNpm
-Install-PreCommitHook
 Write-SetupSummary

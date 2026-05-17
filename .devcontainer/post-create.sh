@@ -11,23 +11,6 @@ echo "🚀 Running post-create setup..."
 echo "📦 Restoring NuGet packages..."
 dotnet restore ViajantesTurismo.slnx
 
-# Install npm packages
-echo "📦 Installing npm packages..."
-if ! npm ci --ignore-scripts --prefer-offline; then
-    echo "❌ npm installation failed" >&2
-    exit 1
-fi
-
-# Install git hooks
-echo "🪝 Installing git hooks..."
-if [[ -f "scripts/install-git-hooks.sh" ]]; then
-    if bash scripts/install-git-hooks.sh; then
-        echo "✅ Git hooks installed successfully"
-    else
-        echo "⚠️ Git hooks installation failed (non-critical, continuing...)"
-    fi
-fi
-
 # Build the solution to verify everything works (optional)
 if [[ "${DEVCONTAINER_VERIFY_BUILD:-1}" == "1" ]]; then
     echo "🔨 Building solution..."

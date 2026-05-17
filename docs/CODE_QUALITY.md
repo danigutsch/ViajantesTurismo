@@ -4,12 +4,11 @@ This project uses automated tools to enforce consistent formatting and style acr
 
 ## Tools Overview
 
-- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (npm)
-- **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (npm)
-- **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (npm)
-- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (npm)
-- **[ESLint](https://eslint.org/)** with **[eslint-plugin-jsonc](https://www.npmjs.com/package/eslint-plugin-jsonc)** -
-  JSON file linting (npm)
+- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (pinned `npm exec`)
+- **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI, installed in CI)
+- **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI)
+- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (pinned `npm exec`)
+- **Python JSON validator** (`scripts/lint-json.py`) - JSON and JSONC validation with repo-specific exclusions
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code
@@ -98,7 +97,7 @@ code quality.
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 ```
 
-The pre-commit hook will use PSScriptAnalyzer if available but will skip it if not installed.
+PowerShell script analysis remains optional for local contributors.
 
 ## Gherkin/Feature File Linting
 
@@ -110,15 +109,15 @@ Gherkin linting rules are defined in `.gherkin-lintrc` at the solution root.
 
 - **Mandatory tags**: `@BC:<BoundedContext>` and `@Agg:<Aggregate>` required on all features
 - **Tag validation**: Enforces project-specific tag patterns (bounded contexts, aggregates, invariants)
-- **Indentation**: Consistent 2-space indentation (Feature: 0, Background/Rule/Scenario: 2, Steps: 4)
+- **Indentation**: Consistent feature-file indentation (Feature: 0, Background/Rule/Scenario: 4, Steps: 8)
 - **BDD anti-patterns**: Prevents conjunction steps, unnamed features/scenarios
 - **Formatting**: No trailing spaces, newline at EOF, no duplicate scenario names
 
 See [Available Scripts](#available-scripts) for validation commands.
 
-### Pre-commit Integration
+### CI Integration
 
-Gherkin files are validated during pre-commit and will block commits if validation errors are found.
+Gherkin files are validated in CI and can also be checked manually with the repository script.
 
 See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
@@ -128,11 +127,11 @@ See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
 ### Configuration
 
-JSON linting rules are defined in `eslint.config.mjs` at the solution root using ESLint with the JSONC plugin.
+JSON validation is performed by `scripts/lint-json.py`, which accepts repository JSON and JSONC-style comments.
 
 **Key Rules:**
 
-See configuration in `eslint.config.mjs` for complete linting rules.
+The validator focuses on parse correctness for repository JSON files without a repo-tracked npm toolchain.
 
 ### Tool
 
@@ -268,10 +267,10 @@ dotnet format --verify-no-changes
 
 ### Prerequisites
 
-Install Node.js dependencies (includes markdownlint, shellcheck, shfmt, gherkin-lint, and ESLint):
+Install Node.js only if you want to run the pinned lint wrappers or commit hook validation locally:
 
 ```powershell
-npm install
+node --version
 ```
 
 Install .NET local tools (dotnet-ef, reportgenerator, aspire):
@@ -297,74 +296,57 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 **Markdown:**
 
 ```powershell
-npm run lint:md          # Check all markdown files
-npm run lint:md:fix      # Auto-fix markdown issues
+bash scripts/lint-markdown.sh                    # Check markdown files
+bash scripts/lint-markdown.sh --fix README.md   # Auto-fix selected markdown files
 ```
 
 **Shell Scripts:**
 
 ```powershell
-npm run lint:sh          # Lint shell scripts with ShellCheck
-npm run format:sh        # Format shell scripts with shfmt
+shellcheck **/*.sh       # Lint shell scripts with ShellCheck
+shfmt -w -i 2 **/*.sh    # Format shell scripts with shfmt
 ```
 
 **Gherkin/Feature Files:**
 
 ```powershell
-npm run lint:gherkin     # Validate all feature files
+bash scripts/lint-gherkin.sh tests/**/*.feature     # Validate all feature files
 ```
 
 **JSON Files:**
 
 ```powershell
-npm run lint:json        # Check all JSON files
-npm run lint:json:fix    # Auto-fix JSON formatting
+bash scripts/lint-json.sh **/*.json        # Check all JSON files
 ```
 
 **All Linters:**
 
 ```powershell
-npm run lint:all         # Run all linters (markdown, shell, JSON, Gherkin)
-npm run lint:all:fix     # Auto-fix markdown, shell, and JSON (Gherkin manual)
+bash scripts/lint-all.sh         # Run all linters (markdown, shell, JSON, Gherkin)
 ```
 
 **All Tools:**
 
 ```powershell
-npm run tools:restore    # Install all npm and .NET tools
+dotnet tool restore      # Install all pinned .NET tools
 ```
 
-## Pre-Commit Hooks
+## Local Validation
 
-Git hooks are provided in `scripts/pre-commit` and `scripts/commit-msg`. They lint staged
-files before each commit and validate commit messages against Conventional Commits.
+The repository no longer installs git hooks by default.
 
-**Installation:**
-
-```powershell
-# Windows (PowerShell)
-.\setup-dev.ps1
-# Or manually: .\scripts\install-git-hooks.ps1
-
-# Unix/Linux/macOS (Bash)
-bash scripts/install-git-hooks.sh
-```
-
-**What it does:**
-
-- **Markdown**: Auto-fixes with markdownlint (never blocks)
-- **Gherkin**: Validates with gherkin-lint (blocks on errors)
-- **JSON**: Auto-fixes with ESLint (never blocks)
-- **Shell**: Lints with ShellCheck, formats with shfmt (never blocks)
-- **PowerShell**: Lints with PSScriptAnalyzer if available (never blocks)
-- **.NET C#**: Auto-fixes whitespace with `dotnet format` (blocks on failure)
-- **Commit messages**: Validates `<type>[optional scope]: <description>` with `commitlint` (blocks on errors)
-
-Bypass if needed: `git commit --no-verify`
+- Lint is CI-owned and runs through `bash scripts/lint-all.sh` in workflows.
+- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; CI installs it for
+  workflow runs.
+- Commit message validation remains available locally through
+  `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
+- If you previously installed repository hooks from an older revision, remove or replace the copied
+  files under `git rev-parse --git-path hooks` so commits do not keep calling deleted npm-based
+  hook scripts.
 
 ## Commit Message Conventions
 
-This repository uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and enforces them with [`commitlint`](https://commitlint.js.org/).
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and enforces them with `scripts/validate-commit-message.sh`.
 
 **Required format:**
 
@@ -397,7 +379,8 @@ fix(web): prevent empty booking date submission
 **Manual validation:**
 
 ```powershell
-"ci: add dependency review workflow" | npx commitlint
+printf "%s\n" "ci: add dependency review workflow" > /tmp/commit-msg.txt
+bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
 ```
 
 ### VS Code Integration

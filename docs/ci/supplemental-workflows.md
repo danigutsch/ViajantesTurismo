@@ -89,9 +89,9 @@ check name instead of stalling on a missing governance result.
 
 A separate workflow (`.github/workflows/devcontainer-smoke.yml`) runs supplemental
 devcontainer validation on a weekly schedule, on a monthly deeper-validation schedule, on
-manual dispatch, and for pull requests or pushes that touch devcontainer and bootstrap inputs
-such as `.devcontainer/**`, `.nvmrc`, `global.json`, or dependency manifests for npm and
-NuGet packages.
+manual dispatch, and on pushes to `main` that touch devcontainer and bootstrap inputs such
+as `.devcontainer/**`, `.nvmrc`, `global.json`, or dependency manifests for npm and NuGet
+packages.
 
 ### Devcontainer Smoke
 
@@ -105,9 +105,9 @@ NuGet packages.
 **Steps:**
 
 1. Checkout repository (`actions/checkout`).
-2. Set up Node.js from `.nvmrc` (`actions/setup-node`) with npm caching enabled.
+2. Set up Node.js from `.nvmrc` (`actions/setup-node`).
 3. Choose a validation mode.
-    - Weekly schedule, pull requests, and pushes use the default smoke path.
+    - Weekly schedule and pushes use the default smoke path.
     - Monthly schedule and manual full runs use the deeper mode.
 4. Run `bash scripts/run-devcontainer-smoke.sh` for smoke validation or
    `bash scripts/run-devcontainer-smoke.sh --run-tests` for the deeper mode.
@@ -117,13 +117,15 @@ NuGet packages.
 6. Upload `devcontainer-smoke-logs` when the workflow fails.
 
 This workflow is intentionally supplemental rather than required. It is meant to catch
-environment drift in the repository's containerized developer path without expanding the
-required pull-request gate for ordinary application changes.
+environment drift in the repository's containerized developer path without running on every
+pull request or expanding the required merge gate for ordinary application changes.
+That trade-off means a devcontainer regression can now reach `main` before the scheduled,
+manual, or post-merge smoke run catches it.
 
 Because the workflow now uses the same script contributors can run locally, failures are
 more reproducible and devcontainer changes only need to update one smoke-validation path.
 The weekly cadence keeps the low-cost baseline fresh, while the monthly full run checks that
 the complete in-container test suite still works without paying that cost every week.
-The current optimization stance is intentionally conservative: npm caching is enabled for the
-workflow's Node-based Dev Container CLI path, but broader startup work stays deferred unless
-devcontainer latency becomes a demonstrated contributor pain point.
+The current optimization stance is intentionally conservative: the workflow keeps a narrow
+Node-based Dev Container CLI setup, but broader startup work stays deferred unless devcontainer
+latency becomes a demonstrated contributor pain point.

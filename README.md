@@ -101,18 +101,8 @@ This script will:
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
-- ✅ Install npm packages (markdownlint-cli, shellcheck, shfmt)
-- ✅ Install git pre-commit hook for automatic code quality checks
-
-**Options (PowerShell only):**
-
-```powershell
-# Skip git hook installation
-.\setup-dev.ps1 -SkipGitHook
-
-# Skip npm installation
-.\setup-dev.ps1 -SkipNpm
-```
+- ✅ Explain optional Node.js setup for CI-pinned lint wrappers and hooks
+- ✅ Explain CI-owned linting and optional local commit validation
 
 ### Manual Setup (Alternative)
 
@@ -136,15 +126,12 @@ dotnet build ViajantesTurismo.slnx --no-restore
 # 5. Install Playwright browsers (requires pwsh on Linux/macOS)
 bash scripts/install-playwright.sh
 
-# 6. Install Node.js dependencies (optional)
-npm install
-
-# 7. Install PowerShell linting (optional, Windows only)
+# 6. Install PowerShell linting (optional, Windows only)
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
-# 8. Install git hooks (optional)
-.\scripts\install-git-hooks.ps1   # Windows (PowerShell)
-bash scripts/install-git-hooks.sh # Unix/Linux/macOS (Bash)
+# 7. Optional local commit validation
+printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
+bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
 ```
 
 On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS
@@ -245,11 +232,14 @@ dotnet restore ViajantesTurismo.slnx --locked-mode
 dotnet build ViajantesTurismo.slnx --no-restore
 ```
 
-**Run All Quality Checks:**
+**Run CI-Owned Quality Checks:**
 
 ```powershell
-npm run lint:all
+bash scripts/lint-all.sh
 ```
+
+This lint entry point is primarily for CI. Local contributors do not need to install or run the
+lint toolchain unless they are debugging CI lint failures.
 
 See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for tool configuration and linting usage,
 [docs/TEST_GUIDELINES.md](docs/TEST_GUIDELINES.md) for testing strategy and patterns, and
@@ -272,7 +262,7 @@ The required checks on `main` are:
 
 - `Build and Test` — build, tests, coverage, and integrated SonarCloud analysis; docs-only changes
     use a lightweight success path
-- `Lint` — repository lint suite (`npm run lint:all`)
+- `Lint` — repository lint suite (`bash scripts/lint-all.sh` in CI)
 - `Dependency Review`
 - `Secret Scan`
 - `SonarCloud`
@@ -282,7 +272,6 @@ To reproduce the core checks locally, run:
 ```powershell
 dotnet build ViajantesTurismo.slnx
 dotnet test --solution ViajantesTurismo.slnx
-npm run lint:all
 ```
 
 For CI internals and maintainer-facing policy — including workflow structure, docs-only

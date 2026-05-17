@@ -17,7 +17,7 @@ sonar_token="${SONAR_TOKEN:-}"
 sonar_organization="${SONAR_ORGANIZATION:-}"
 sonar_project_key="${SONAR_PROJECT_KEY:-}"
 sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
-sonar_coverage_exclusions="benchmarks/**,samples/**,src/Mediator/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs"
+sonar_coverage_exclusions="benchmarks/**,samples/**,scripts/**,src/Mediator/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs"
 sonar_cpd_exclusions="benchmarks/**,src/Mediator/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/Mediator/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/Mediator/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs"
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
