@@ -68,21 +68,22 @@ Sonar script exit.
 ## Local execution and secrets
 
 For local runs of `scripts/run-sonar-analysis.sh`, keep real credentials out of source control.
-The repository may document required variable names in `.env.example`, but contributors should not
+The repository documents the required variable names in `.env.example`, but contributors should not
 commit a real `.env` file.
 
 Recommended local pattern:
 
-1. copy `.env.example` to an ignored local file such as `.env.local` or load the values from your shell,
-2. export `SONAR_TOKEN`, `SONAR_ORGANIZATION`, and `SONAR_PROJECT_KEY` into the current shell,
-3. run `bash scripts/run-sonar-analysis.sh`.
+1. copy `.env.example` to `.env.local` and replace the placeholder values,
+2. run `bash scripts/run-sonar-analysis.sh`.
+
+The Sonar helper scripts now auto-load `.env.local` first and fall back to `.env` when present,
+so no manual `source` step is required.
 
 Example:
 
 ```bash
-set -a
-source .env.local
-set +a
+cp .env.example .env.local
+# edit .env.local with real values
 bash scripts/run-sonar-analysis.sh
 ```
 

@@ -2,6 +2,25 @@
 
 set -euo pipefail
 
+load_local_env() {
+    local env_file=""
+
+    if [[ -f ".env.local" ]]; then
+        env_file=".env.local"
+    elif [[ -f ".env" ]]; then
+        env_file=".env"
+    fi
+
+    if [[ -z "${env_file}" ]]; then
+        return 0
+    fi
+
+    set -a
+    # shellcheck disable=SC1090
+    source "${env_file}"
+    set +a
+}
+
 append_summary() {
     local summary_target="${GITHUB_STEP_SUMMARY:-}"
 
@@ -46,6 +65,8 @@ format_missing_setting() {
 }
 
 main() {
+    load_local_env
+
     local -a missing_vars=()
     local -a missing_settings=()
 
