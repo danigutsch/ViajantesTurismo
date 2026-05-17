@@ -3,11 +3,13 @@
 set -euo pipefail
 
 args=("$@")
+flags=()
 targets=()
 
 for arg in "${args[@]}"; do
     case "${arg}" in
         -* )
+            flags+=("${arg}")
             ;;
         * )
             targets+=("${arg}")
@@ -25,4 +27,4 @@ npm exec --yes --package markdownlint-cli@0.48.0 -- \
     --ignore "**/bin/**" \
     --ignore "**/obj/**" \
     --ignore "**/TestResults/**" \
-    --config .markdownlint.json "${args[@]}"
+    --config .markdownlint.json "${flags[@]}"
