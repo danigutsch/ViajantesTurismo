@@ -103,6 +103,23 @@ public sealed partial class NamingConventionTests
             $"Expected behavior feature files to use kebab-case or the tracked legacy PascalCase style, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingFiles)}");
     }
 
+    [Fact]
+    public void Mediator_Tests_Should_Not_Invoke_Methods_Inside_Simple_Assertions()
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var mediatorTestsRoot = Path.Combine(repositoryRoot, "tests");
+        var offendingAssertions = Directory
+            .GetFiles(mediatorTestsRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => path.Contains("SharedKernel.Mediator", StringComparison.Ordinal))
+            .Where(path => !IsGeneratedTestPath(path))
+            .SelectMany(path => FindOffendingAssertionMethodCalls(repositoryRoot, path))
+            .ToArray();
+
+        Assert.False(
+            offendingAssertions.Length != 0,
+            $"Expected mediator tests to assign method-call results to locals before simple assertions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingAssertions)}");
+    }
+
     private static bool IsWithinSolution(string? @namespace)
     {
         if (@namespace is null)
@@ -146,6 +163,24 @@ public sealed partial class NamingConventionTests
         return [.. offendingMethods];
     }
 
+    private static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
+    {
+        var lines = File.ReadAllLines(filePath);
+        var offendingAssertions = new List<string>();
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            if (!SimpleAssertMethodCallRegex().IsMatch(lines[lineIndex]))
+            {
+                continue;
+            }
+
+            offendingAssertions.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
+        }
+
+        return [.. offendingAssertions];
+    }
+
     private static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -178,6 +213,9 @@ public sealed partial class NamingConventionTests
 
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
     private static partial Regex XunitMethodNamingRegex();
+
+    [GeneratedRegex(@"Assert\.(Equal|Null|NotNull|True|False)\([^\n]*\.[A-Za-z_][A-Za-z0-9_]*\([^\n]*\)", RegexOptions.Compiled)]
+    private static partial Regex SimpleAssertMethodCallRegex();
 
     [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)+\.feature$", RegexOptions.Compiled)]
     private static partial Regex KebabCaseFeatureFileRegex();

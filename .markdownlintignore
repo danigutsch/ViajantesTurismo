@@ -1,2 +1,3 @@
 **/AnalyzerReleases.*.md
 **/BenchmarkDotNet.Artifacts/**/*.md
+tmp/**/*.md
