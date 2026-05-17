@@ -318,7 +318,6 @@ bash scripts/lint-gherkin.sh tests/**/*.feature     # Validate all feature files
 
 ```powershell
 bash scripts/lint-json.sh **/*.json        # Check all JSON files
-bash scripts/lint-json.sh **/*.json --fix  # Auto-fix JSON formatting
 ```
 
 **All Linters:**
