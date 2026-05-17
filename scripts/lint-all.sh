@@ -5,6 +5,9 @@ set -euo pipefail
 shopt -s globstar nullglob
 
 bash scripts/lint-markdown.sh
-shellcheck -- ./**/*.sh
+shellcheck \
+    --exclude=SC1091 \
+    --source-path=SCRIPTDIR \
+    -- ./**/*.sh
 bash scripts/lint-json.sh
 bash scripts/lint-gherkin.sh tests/**/*.feature

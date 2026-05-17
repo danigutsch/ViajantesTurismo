@@ -110,7 +110,7 @@ Gherkin linting rules are defined in `.gherkin-lintrc` at the solution root.
 
 - **Mandatory tags**: `@BC:<BoundedContext>` and `@Agg:<Aggregate>` required on all features
 - **Tag validation**: Enforces project-specific tag patterns (bounded contexts, aggregates, invariants)
-- **Indentation**: Consistent 2-space indentation (Feature: 0, Background/Rule/Scenario: 2, Steps: 4)
+- **Indentation**: Consistent feature-file indentation (Feature: 0, Background/Rule/Scenario: 4, Steps: 8)
 - **BDD anti-patterns**: Prevents conjunction steps, unnamed features/scenarios
 - **Formatting**: No trailing spaces, newline at EOF, no duplicate scenario names
 

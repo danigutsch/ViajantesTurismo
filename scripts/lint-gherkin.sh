@@ -15,7 +15,7 @@ append_feature_file_list() {
 }
 
 for arg in "$@"; do
-    if [[ "${arg}" == tests/**/*.feature || -z "${arg}" ]]; then
+    if [[ "${arg}" == 'tests/**/*.feature' ]]; then
         append_feature_file_list
         continue
     fi

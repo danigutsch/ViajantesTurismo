@@ -228,7 +228,7 @@ All `.feature` files are linted using `gherkin-lint` with project-specific rules
 
 - `@BC:<BoundedContext>` tag on every feature
 - `@Agg:<Aggregate>` tag on every feature
-- Consistent indentation (Feature: 0, Rule/Scenario: 2, Steps: 4)
+- Consistent indentation (Feature: 0, Rule/Scenario: 4, Steps: 8)
 - No unnamed features/scenarios
 
 **Anti-Patterns Prevented:**

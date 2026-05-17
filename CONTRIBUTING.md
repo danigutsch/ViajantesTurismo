@@ -37,7 +37,7 @@ Breaking changes should use `!` or a `BREAKING CHANGE:` footer:
 feat(api)!: remove legacy booking endpoint
 ```
 
-Commit messages are validated in CI and can be checked locally with
+Commit messages can be checked locally with
 `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
 
 ## Signed Commits

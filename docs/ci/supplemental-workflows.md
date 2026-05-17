@@ -105,7 +105,7 @@ packages.
 **Steps:**
 
 1. Checkout repository (`actions/checkout`).
-2. Set up Node.js from `.nvmrc` (`actions/setup-node`) with npm caching enabled.
+2. Set up Node.js from `.nvmrc` (`actions/setup-node`).
 3. Choose a validation mode.
     - Weekly schedule and pushes use the default smoke path.
     - Monthly schedule and manual full runs use the deeper mode.
@@ -119,11 +119,13 @@ packages.
 This workflow is intentionally supplemental rather than required. It is meant to catch
 environment drift in the repository's containerized developer path without running on every
 pull request or expanding the required merge gate for ordinary application changes.
+That trade-off means a devcontainer regression can now reach `main` before the scheduled,
+manual, or post-merge smoke run catches it.
 
 Because the workflow now uses the same script contributors can run locally, failures are
 more reproducible and devcontainer changes only need to update one smoke-validation path.
 The weekly cadence keeps the low-cost baseline fresh, while the monthly full run checks that
 the complete in-container test suite still works without paying that cost every week.
-The current optimization stance is intentionally conservative: npm caching is enabled for the
-workflow's Node-based Dev Container CLI path, but broader startup work stays deferred unless
-devcontainer latency becomes a demonstrated contributor pain point.
+The current optimization stance is intentionally conservative: the workflow keeps a narrow
+Node-based Dev Container CLI setup, but broader startup work stays deferred unless devcontainer
+latency becomes a demonstrated contributor pain point.
