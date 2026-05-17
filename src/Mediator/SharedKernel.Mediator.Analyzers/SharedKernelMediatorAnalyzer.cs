@@ -512,27 +512,27 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
 
     private sealed class DiscoverySymbols
     {
-        public INamedTypeSymbol HandlerInterface { get; private init; } = null!;
+        public INamedTypeSymbol HandlerInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol PipelineInterface { get; private init; } = null!;
+        public INamedTypeSymbol PipelineInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol StreamHandlerInterface { get; private init; } = null!;
+        public INamedTypeSymbol StreamHandlerInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol StreamPipelineInterface { get; private init; } = null!;
+        public INamedTypeSymbol StreamPipelineInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol SenderInterface { get; private init; } = null!;
+        public INamedTypeSymbol SenderInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol PublisherInterface { get; private init; } = null!;
+        public INamedTypeSymbol PublisherInterface { get; private set; } = null!;
 
-        public INamedTypeSymbol CancellationTokenType { get; private init; } = null!;
+        public INamedTypeSymbol CancellationTokenType { get; private set; } = null!;
 
-        public INamedTypeSymbol ValueTaskOfT { get; private init; } = null!;
+        public INamedTypeSymbol ValueTaskOfT { get; private set; } = null!;
 
-        public INamedTypeSymbol AsyncEnumerableOfT { get; private init; } = null!;
+        public INamedTypeSymbol AsyncEnumerableOfT { get; private set; } = null!;
 
-        public INamedTypeSymbol StreamHandlerContinuation { get; private init; } = null!;
+        public INamedTypeSymbol StreamHandlerContinuation { get; private set; } = null!;
 
-        public INamedTypeSymbol EnumeratorCancellationAttribute { get; private init; } = null!;
+        public INamedTypeSymbol EnumeratorCancellationAttribute { get; private set; } = null!;
 
         public bool IsComplete =>
             HandlerInterface is not null
