@@ -20,15 +20,15 @@ function Test-DotNetSdkVersion {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "   ✅ .NET SDK installed: $installedSdk" -ForegroundColor Green
         if ($installedSdk -ne $requiredVersion) {
-            Write-Error "Required version: $requiredVersion"
             Write-Output "Install the exact SDK from: https://dotnet.microsoft.com/download/dotnet/10.0"
             Write-Output "   Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI."
+            Write-Error "Required version: $requiredVersion"
             exit 1
         }
     }
     else {
-        Write-Error ".NET SDK not found"
         Write-Output "Download .NET $requiredVersion from: https://dotnet.microsoft.com/download/dotnet/10.0"
+        Write-Error ".NET SDK not found"
         exit 1
     }
 }

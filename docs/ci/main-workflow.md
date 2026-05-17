@@ -79,9 +79,9 @@ The change classification logic is implemented in `scripts/detect-changes.sh`, n
 in the workflow YAML. If the script cannot determine the diff range reliably, it fails
 open by setting `build_required=true` so CI prefers extra work over a false skip.
 
-SDK bump pull requests also rely on the separate `SDK Lockfile Maintenance` workflow. When a
-Dependabot branch changes `global.json`, that workflow refreshes committed `packages.lock.json`
-files and pushes a follow-up commit so the subsequent CI run uses the updated lockfiles.
+SDK bump pull requests must refresh committed `packages.lock.json` files when `global.json`
+changes. The repository provides `bash scripts/refresh-sdk-lockfiles.sh` as the canonical
+command for that maintenance step.
 
 > **Note:** The CI setup path works around a
 > [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391) where

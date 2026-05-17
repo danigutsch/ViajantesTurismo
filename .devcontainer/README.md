@@ -153,7 +153,7 @@ On first container creation, the `post-create.sh` script automatically:
 
 Before that happens, `.devcontainer/on-create.sh` verifies the exact SDK pinned in `global.json`.
 When the base image does not already provide it, the script installs that SDK under
-`/home/vscode/.dotnet` and places it first on `PATH` for future shells and lifecycle commands.
+`/home/vscode/.dotnet` and the companion lifecycle scripts source that fallback environment.
 
 ## Troubleshooting
 
