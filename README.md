@@ -96,7 +96,7 @@ bash setup-dev.sh
 This script will:
 
 - ✅ Verify the exact .NET SDK version pinned in `global.json`
-- ✅ Restore .NET dependencies (`dotnet restore`)
+- ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)

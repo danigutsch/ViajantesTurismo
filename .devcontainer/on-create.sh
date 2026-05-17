@@ -9,6 +9,7 @@ BUILD_DIR="${WORKSPACE_FOLDER}/.build"
 DOTNET_INSTALL_DIR="/home/vscode/.dotnet"
 DOTNET_ROOT_MARKER_BEGIN="# >>> ViajantesTurismo DOTNET_ROOT >>>"
 DOTNET_ROOT_MARKER_END="# <<< ViajantesTurismo DOTNET_ROOT <<<"
+DOTNET_ENV_FILE="${WORKSPACE_FOLDER}/.devcontainer/.dotnet-env"
 
 required_sdk_version="$(python3 - "${WORKSPACE_FOLDER}/global.json" <<'PY'
 import json
@@ -49,6 +50,12 @@ fi
 if [[ "${use_local_dotnet}" == "true" ]]; then
     export DOTNET_ROOT="${DOTNET_INSTALL_DIR}"
     export PATH="${DOTNET_INSTALL_DIR}:${PATH}"
+    cat > "${DOTNET_ENV_FILE}" <<EOF
+export DOTNET_ROOT="${DOTNET_INSTALL_DIR}"
+export PATH="${DOTNET_INSTALL_DIR}:\$PATH"
+EOF
+else
+    rm -f "${DOTNET_ENV_FILE}"
 fi
 
 resolved_sdk_version="$(dotnet --version)"

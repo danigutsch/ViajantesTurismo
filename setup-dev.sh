@@ -64,6 +64,12 @@ EOF
         exit 1
     fi
 
+    if ! command -v dotnet > /dev/null 2>&1; then
+        printf "%b" "   ${RED}❌ .NET SDK not found${NC}\n"
+        printf "%b" "   ${CYAN}💡 Download .NET ${required_version} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
+        exit 1
+    fi
+
     installed_sdk=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
 
     if [[ "${installed_sdk}" != "${NOT_FOUND}" ]]; then
@@ -74,10 +80,6 @@ EOF
             printf "%b" "   ${CYAN}💡 Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI.${NC}\n"
             exit 1
         fi
-    else
-        printf "%b" "   ${RED}❌ .NET SDK not found${NC}\n"
-        printf "%b" "   ${CYAN}💡 Download .NET ${required_version} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
-        exit 1
     fi
 
     return 0

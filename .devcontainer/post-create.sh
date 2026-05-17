@@ -7,9 +7,16 @@ trap 'echo "❌ Setup failed at line $LINENO with exit code $?" >&2; exit 1' ERR
 
 echo "🚀 Running post-create setup..."
 
+dotnet_env_file="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/.dotnet-env"
+if [[ -f "${dotnet_env_file}" ]]; then
+    # Ensure non-interactive lifecycle commands use the same exact SDK selected during on-create.
+    # shellcheck source=.devcontainer/.dotnet-env
+    source "${dotnet_env_file}"
+fi
+
 # Restore NuGet packages
 echo "📦 Restoring NuGet packages..."
-dotnet restore ViajantesTurismo.slnx
+dotnet restore ViajantesTurismo.slnx --locked-mode
 
 # Build the solution to verify everything works (optional)
 if [[ "${DEVCONTAINER_VERIFY_BUILD:-1}" == "1" ]]; then
