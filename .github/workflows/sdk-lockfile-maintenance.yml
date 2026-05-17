@@ -65,4 +65,6 @@ jobs:
       - name: Push refreshed lock files
         if: ${{ steps.lockfiles.outputs.changed == 'true' }}
         shell: bash
-        run: git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: git push origin "HEAD:${PR_HEAD_REF}"
