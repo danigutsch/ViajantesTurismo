@@ -91,14 +91,33 @@ configuration discoverable.
 
 ## Analysis exclusions
 
-The scanner `begin` command in `scripts/run-sonar-analysis.sh` sets `sonar.exclusions` to
-skip auto-generated code that should not be analyzed.
+The scanner `begin` command in `scripts/run-sonar-analysis.sh` sets `sonar.exclusions`,
+`sonar.coverage.exclusions`, and `sonar.cpd.exclusions`. The repository uses the narrowest
+exclusion type that fits each case:
+
+- `sonar.exclusions` only for files that should not be analyzed at all
+- `sonar.coverage.exclusions` for files that should still be analyzed, but should not drive
+  coverage targets
+- `sonar.cpd.exclusions` for files that should still be analyzed, but contain intentional or
+  template-heavy repetition that would distort duplication metrics
 
 | Pattern | Reason |
 | --- | --- |
 | `**/Migrations/**` | EF Core migration files are scaffolded by `dotnet ef` and should not be manually edited |
 | `.devcontainer/**` | Dev Container configuration uses JSONC comments that Sonar's JSON parser cannot read, causing noisy CI warnings |
 | `.vscode/**` | VS Code workspace settings and launch configuration use JSONC comments that Sonar's JSON parser cannot read, causing noisy CI warnings |
+
+Coverage exclusions skip:
+
+- `benchmarks/**` because benchmark harnesses are measurement scaffolding
+- `samples/**` because sample projects are demonstrative consumer code
+- `src/Mediator/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
+  compatibility shim
+
+Duplication exclusions currently cover:
+
+- `benchmarks/**` because benchmark source factories intentionally repeat controlled variants
+- mediator analyzer and code-fix files that intentionally repeat handler-shape and template logic
 
 To add further exclusions, append additional comma-separated glob patterns to the existing
 `sonar.exclusions` property in the script.

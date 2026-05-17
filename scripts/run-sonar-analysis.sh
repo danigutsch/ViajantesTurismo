@@ -8,6 +8,8 @@ sonar_token="${SONAR_TOKEN:-}"
 sonar_organization="${SONAR_ORGANIZATION:-}"
 sonar_project_key="${SONAR_PROJECT_KEY:-}"
 sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
+sonar_coverage_exclusions="benchmarks/**,samples/**,src/Mediator/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs"
+sonar_cpd_exclusions="benchmarks/**,src/Mediator/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/Mediator/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/Mediator/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs"
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     echo "::add-mask::${sonar_token}"
@@ -25,6 +27,8 @@ dotnet tool run dotnet-sonarscanner begin \
     "/d:sonar.token=${sonar_token}" \
     "/d:sonar.coverageReportPaths=${coverage_report}" \
     "/d:sonar.exclusions=${sonar_exclusions}" \
+    "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
+    "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
     "/d:sonar.qualitygate.wait=true" \
     "/d:sonar.qualitygate.timeout=300"
 
