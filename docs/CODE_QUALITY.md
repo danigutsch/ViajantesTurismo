@@ -336,6 +336,8 @@ dotnet tool restore      # Install all pinned .NET tools
 The repository no longer installs git hooks by default.
 
 - Lint is CI-owned and runs through `bash scripts/lint-all.sh` in workflows.
+- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; CI installs it for
+  workflow runs.
 - Commit message validation remains available locally through
   `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
 - If you previously installed repository hooks from an older revision, remove or replace the copied
