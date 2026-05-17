@@ -7,6 +7,7 @@ repo_root="$(cd -- "${script_dir}/.." && pwd)"
 
 cd "${repo_root}"
 
+# shellcheck source=scripts/validate-sonar-analysis-config.sh
 source "${script_dir}/validate-sonar-analysis-config.sh"
 load_local_env "${repo_root}"
 
