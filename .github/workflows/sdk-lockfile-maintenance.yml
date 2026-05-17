@@ -34,7 +34,10 @@ jobs:
             **/packages.lock.json
 
       - name: Refresh lock files for the pinned SDK
-        run: bash scripts/refresh-sdk-lockfiles.sh
+        shell: bash
+        run: |
+          dotnet restore ViajantesTurismo.slnx --force-evaluate
+          dotnet restore ViajantesTurismo.slnx --locked-mode
 
       - name: Detect lock file updates
         id: lockfiles

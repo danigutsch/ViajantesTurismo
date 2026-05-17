@@ -151,8 +151,9 @@ On first container creation, the `post-create.sh` script automatically:
 2. Restores NuGet packages
 3. Builds the solution to verify everything works
 
-Before that happens, `.devcontainer/on-create.sh` ensures the exact SDK pinned in `global.json`
-is available under `/home/vscode/.dotnet` and places it first on `PATH` for future shells.
+Before that happens, `.devcontainer/on-create.sh` verifies the exact SDK pinned in `global.json`.
+When the base image does not already provide it, the script installs that SDK under
+`/home/vscode/.dotnet` and places it first on `PATH` for future shells and lifecycle commands.
 
 ## Troubleshooting
 
