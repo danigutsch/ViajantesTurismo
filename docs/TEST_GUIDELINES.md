@@ -190,14 +190,15 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 ### Unit and Integration Tests
 
-**Pattern:** `Method_Name_Context_Description_Expected_Behavior`
+**Pattern:** descriptive natural-language phrase with underscores
 
-Use underscores to separate all words for improved readability (natural language description).
+Use underscores to separate all words for improved readability. Do not append fixed
+suffixes like `Expected_Behavior`.
 
 ```csharp
 // Good
-public void Map_To_Currency_Dto_Should_Map_All_Valid_Values()
-public void Create_Tour_With_Valid_Data_Should_Return_Created_Status()
+public void Maps_currency_values_for_the_response_model()
+public void Creates_a_tour_when_the_request_is_valid()
 
 // Bad
 public void MapToCurrencyDto_ShouldMapAllValidValues()  // Inconsistent
@@ -244,6 +245,20 @@ public void Invalid_Amount_Should_Return_Invalid_Result()
 ```
 
 Benefits: Standard pattern, clear flow, helps identify tests doing too much.
+
+### Assertion readability
+
+Keep method calls and computed values out of assertion arguments when practical.
+Assign them to local variables first so failures are easier to inspect while debugging.
+
+```csharp
+// Good
+var errorType = span.GetTagItem("error.type");
+Assert.Equal("InvalidOperationException", errorType);
+
+// Avoid
+Assert.Equal("InvalidOperationException", span.GetTagItem("error.type"));
+```
 
 ## Blazor Component Testing (bUnit)
 
@@ -295,7 +310,7 @@ Use `[Theory]` with `[InlineData]` for multiple inputs:
 [Theory]
 [InlineData(Currency.Real, CurrencyDto.Real)]
 [InlineData(Currency.Euro, CurrencyDto.Euro)]
-public void Map_To_Currency_Dto_Should_Map_All_Valid_Values(Currency domain, CurrencyDto expected)
+public void Maps_all_supported_currency_values(Currency domain, CurrencyDto expected)
 {
     var result = TourMapper.MapToCurrencyDto(domain);
     Assert.Equal(expected, result);
