@@ -3,14 +3,14 @@
   "isRoot": true,
   "tools": {
     "dotnet-ef": {
-      "version": "10.0.5",
+      "version": "10.0.7",
       "commands": [
         "dotnet-ef"
       ],
       "rollForward": false
     },
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.5.4",
+      "version": "5.5.9",
       "commands": [
         "reportgenerator"
       ],
@@ -24,14 +24,14 @@
       "rollForward": false
     },
     "dotnet-coverage": {
-      "version": "18.5.2",
+      "version": "18.6.2",
       "commands": [
         "dotnet-coverage"
       ],
       "rollForward": false
     },
     "aspire.cli": {
-      "version": "13.2.1",
+      "version": "13.2.4",
       "commands": [
         "aspire"
       ],

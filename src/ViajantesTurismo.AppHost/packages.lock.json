@@ -4,18 +4,18 @@
     "net10.0": {
       "Aspire.Dashboard.Sdk.linux-x64": {
         "type": "Direct",
-        "requested": "[13.2.1, )",
-        "resolved": "13.2.1",
-        "contentHash": "rUlEhekc+EyDbOcyfWneGBikNvdLuV5UPtOww2KpUOAcO7oBVG70kTJiFzN/UYU3I/5Udc1xoDt2lWIoyEYADQ=="
+        "requested": "[13.2.4, )",
+        "resolved": "13.2.4",
+        "contentHash": "9/Nl+3Hc/oK8upfYl7swUy5MEkwMPUtWpQkUJZcs1F0XvROI48V5ZXaPycDxxyNMAn/DYXgpOvU+QLdr2uTjCg=="
       },
       "Aspire.Hosting.AppHost": {
         "type": "Direct",
-        "requested": "[13.2.1, )",
-        "resolved": "13.2.1",
-        "contentHash": "4B/eoZPwOobxpMpvYnqe/EcXabjPhZJhfxlHXv5gdKd16duoWbHnvvAZJsVI3WUpakCwmsCiTrT4sNGfW8H+IQ==",
+        "requested": "[13.2.4, )",
+        "resolved": "13.2.4",
+        "contentHash": "BRepNYGYzHQkbWriwf+CzAdPCCKKarmDS8z+ofvR7xkudMa+2ThzB4G0plBAsoAUuOjFTDxTRzCHKyTBR2xcNQ==",
         "dependencies": {
           "AspNetCore.HealthChecks.Uris": "9.0.0",
-          "Aspire.Hosting": "13.2.1",
+          "Aspire.Hosting": "13.2.4",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
@@ -44,9 +44,9 @@
       },
       "Aspire.Hosting.Orchestration.linux-x64": {
         "type": "Direct",
-        "requested": "[13.2.1, )",
-        "resolved": "13.2.1",
-        "contentHash": "LcC21cYVVsTDSQe4B0i7X2q1U8u5Bl+X53wPfucfW4YlQhAGzG2FajVfa5PRDduGlp5mjtgjh2vDO4oEBfpSUg=="
+        "requested": "[13.2.4, )",
+        "resolved": "13.2.4",
+        "contentHash": "/OzUdJUKWDVbK2igP+X3r455Y8SV+5Y7WaTur7fPcS6FalTFtNvfR2NZWiwd9UjY3M7ytdIS4PKHnReWyX7rLg=="
       },
       "Aspire.Hosting.PostgreSQL": {
         "type": "Direct",
@@ -127,14 +127,13 @@
       },
       "Aspire.Hosting": {
         "type": "Transitive",
-        "resolved": "13.2.1",
-        "contentHash": "GY/T5iK2F4K3Sk60VUeVnTX1MhCjSaX48+qPUjA/rI1x1ONHevHzFj+Gc3fNlGEaZGY8L87hSxwGrV+Bjd5EJw==",
+        "resolved": "13.2.4",
+        "contentHash": "ixblQ1eHtcZ3H2TFiNkJkphv1Gx0uKSyBAHuXX9y0QmlmWHEp45xhqPCn6R7B03SaspyOtXZA7NuUGT1cDa2eg==",
         "dependencies": {
           "AspNetCore.HealthChecks.Uris": "9.0.0",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
-          "Grpc.Tools": "2.78.0",
           "Humanizer.Core": "2.14.1",
           "JsonPatch.Net": "3.3.0",
           "KubernetesClient": "18.0.13",
