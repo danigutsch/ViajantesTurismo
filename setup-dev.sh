@@ -64,18 +64,22 @@ EOF
         exit 1
     fi
 
+    if ! command -v dotnet > /dev/null 2>&1; then
+        printf "%b" "   ${RED}❌ .NET SDK not found${NC}\n"
+        printf "%b" "   ${CYAN}💡 Download .NET ${required_version} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
+        exit 1
+    fi
+
     installed_sdk=$(dotnet --version 2>&1 || echo "${NOT_FOUND}")
 
     if [[ "${installed_sdk}" != "${NOT_FOUND}" ]]; then
         printf "%b" "   ${GREEN}✅ .NET SDK installed: ${installed_sdk}${NC}\n"
         if [[ "${installed_sdk}" != "${required_version}" ]]; then
-            printf "%b" "   ${YELLOW}⚠️ Required version: ${required_version}${NC}\n"
-            printf "%b" "   ${CYAN}💡 Download from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
+            printf "%b" "   ${RED}❌ Required version: ${required_version}${NC}\n"
+            printf "%b" "   ${CYAN}💡 Install the exact SDK from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
+            printf "%b" "   ${CYAN}💡 Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI.${NC}\n"
+            exit 1
         fi
-    else
-        printf "%b" "   ${RED}❌ .NET SDK not found${NC}\n"
-        printf "%b" "   ${CYAN}💡 Download .NET ${required_version} from: https://dotnet.microsoft.com/download/dotnet/10.0${NC}\n"
-        exit 1
     fi
 
     return 0
@@ -83,10 +87,10 @@ EOF
 
 restore_dotnet_dependencies() {
     printf "\n%b" "${YELLOW}📦 Restoring .NET dependencies...${NC}\n"
-    if dotnet restore > /dev/null 2>&1; then
+    if dotnet restore --locked-mode > /dev/null 2>&1; then
         printf "%b" "   ${GREEN}✅ .NET dependencies restored${NC}\n"
     else
-        printf "%b" "   ${RED}❌ Failed to restore .NET dependencies${NC}\n"
+        printf "%b" "   ${RED}❌ Failed to restore .NET dependencies in locked mode${NC}\n"
         exit 1
     fi
 

@@ -67,7 +67,7 @@ ViajantesTurismo/
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) - Version specified in `global.json`
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) - Exact version specified in `global.json`
 - [Node.js](https://nodejs.org/) (LTS) - For Markdown linting and documentation tools
 - Container runtime (for PostgreSQL):
     - [Podman](https://podman.io/) (recommended, open source) or
@@ -95,8 +95,8 @@ bash setup-dev.sh
 
 This script will:
 
-- ✅ Verify .NET SDK version (from `global.json`)
-- ✅ Restore .NET dependencies (`dotnet restore`)
+- ✅ Verify the exact .NET SDK version pinned in `global.json`
+- ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
@@ -109,7 +109,7 @@ This script will:
 If you prefer manual setup or the automated script doesn't work:
 
 ```bash
-# 1. Verify .NET SDK version matches global.json
+# 1. Verify the exact .NET SDK version pinned in global.json
 dotnet --version
 
 # 2. Clone and navigate to repository
@@ -117,7 +117,7 @@ git clone https://github.com/danigutsch/ViajantesTurismo.git
 cd ViajantesTurismo
 
 # 3. Restore .NET dependencies and tools
-dotnet restore
+dotnet restore --locked-mode
 dotnet tool restore
 
 # 4. Build once so the generated Playwright installer exists
@@ -148,6 +148,10 @@ sudo apt-get install -y libnspr4 libnss3 libasound2t64
 ```
 
 See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
+
+When `global.json` changes, CI still expects committed `packages.lock.json` files to stay in sync.
+Dependabot PRs that only bump the SDK now trigger the `SDK Lockfile Maintenance` workflow, which
+refreshes lock files and pushes a follow-up commit so the next CI run uses the updated lockfiles.
 
 ### Optional: Dev Containers
 
