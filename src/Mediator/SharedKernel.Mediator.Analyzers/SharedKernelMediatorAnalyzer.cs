@@ -350,7 +350,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                     method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     cancellationTokenParameter.Name));
         }
-        else
+        else if (!ExplicitlyForwardsCancellationToken(method, cancellationTokenParameter))
         {
             // Non-iterator: CT has no effect via WithCancellation(); must be threaded explicitly → SKMED008
             context.ReportDiagnostic(
@@ -360,6 +360,16 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                     cancellationTokenParameter.Name,
                     method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
         }
+    }
+
+    private static bool ExplicitlyForwardsCancellationToken(IMethodSymbol method, IParameterSymbol cancellationTokenParameter)
+    {
+        return method.DeclaringSyntaxReferences
+            .Select(static reference => reference.GetSyntax())
+            .OfType<MethodDeclarationSyntax>()
+            .SelectMany(static declaration => declaration.DescendantNodes().OfType<ArgumentSyntax>())
+            .Any(argument => argument.Expression is IdentifierNameSyntax identifier
+                && string.Equals(identifier.Identifier.ValueText, cancellationTokenParameter.Name, StringComparison.Ordinal));
     }
 
     private static bool ContainsYield(IMethodSymbol method)

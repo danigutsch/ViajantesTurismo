@@ -16,6 +16,7 @@ already implemented in the base packages.
 | `SKMED005` | Warning | Handler public `Handle` method returns the wrong `ValueTask<TResponse>` shape. |
 | `SKMED006` | Warning | Mediator `Send` or `Publish` call does not forward the available `CancellationToken`. |
 | `SKMED007` | Warning | Async stream `Handle` iterators must annotate `CancellationToken ct` with `[EnumeratorCancellation]`. |
+| `SKMED008` | Info | Non-iterator async stream `Handle` methods should not declare an ineffective `CancellationToken ct`. |
 | `SKMED020` | Warning | Open generic pipeline behavior declares an invalid type-parameter count. |
 | `SKMED500` | Info | Handler calls mediator send APIs directly while CQRS strict rules are enabled. |
 
@@ -94,6 +95,22 @@ public sealed class ValidationBehavior<TRequest> : IPipelineBehavior<TRequest, i
 public sealed class StreamToursHandler : IStreamRequestHandler<StreamTours, string>
 {
     public async IAsyncEnumerable<string> Handle(StreamTours request, CancellationToken ct)
+    {
+        await Task.Yield();
+        yield return request.Count.ToString();
+    }
+}
+```
+
+### `SKMED008` ineffective `CancellationToken` on non-iterator stream handler
+
+```csharp
+public sealed class StreamToursHandler : IStreamRequestHandler<StreamTours, string>
+{
+    public IAsyncEnumerable<string> Handle(StreamTours request, CancellationToken ct)
+        => GetTours(request);
+
+    private static async IAsyncEnumerable<string> GetTours(StreamTours request)
     {
         await Task.Yield();
         yield return request.Count.ToString();

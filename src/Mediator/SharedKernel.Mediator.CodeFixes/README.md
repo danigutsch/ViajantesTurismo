@@ -41,7 +41,7 @@ Fix All stays out of behavioral or ordering changes, even when a future local co
 exist. Those categories remain intentionally manual by default:
 
 - exception-to-`Result<T>` conversions, which would change error-shaping semantics and belong with
-  the later `SharedKernel.Result` integration work
+  later result-integration work
 - notification ordering repairs such as `SKMED200` and `SKMED201`
 - pipeline ordering or applicability repairs such as `SKMED020`, `SKMED021`, `SKMED022`, and
   `SKMED023`

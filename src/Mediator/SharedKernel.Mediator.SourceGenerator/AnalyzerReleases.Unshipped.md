@@ -20,4 +20,4 @@ SKMED022 | Usage | Warning | Pipeline behavior is registered but never applies
 SKMED023 | Usage | Warning | Pipeline behavior constraints cannot bind to any request
 SKMED200 | Usage | Warning | Notification handlers require explicit order
 SKMED201 | Usage | Warning | Duplicate notification handler order
-SKMED500 | Architecture | Info | Handler should not call ISender.Send
+SKMED500 | Architecture | Info | Handler should not call mediator send APIs directly
