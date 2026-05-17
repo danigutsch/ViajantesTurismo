@@ -1,7 +1,7 @@
 name: SDK Lockfile Maintenance
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - synchronize
@@ -29,6 +29,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
@@ -67,4 +68,5 @@ jobs:
         shell: bash
         env:
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: git push origin "HEAD:${PR_HEAD_REF}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "HEAD:${PR_HEAD_REF}"

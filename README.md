@@ -117,7 +117,7 @@ git clone https://github.com/danigutsch/ViajantesTurismo.git
 cd ViajantesTurismo
 
 # 3. Restore .NET dependencies and tools
-dotnet restore
+dotnet restore --locked-mode
 dotnet tool restore
 
 # 4. Build once so the generated Playwright installer exists
@@ -150,8 +150,8 @@ sudo apt-get install -y libnspr4 libnss3 libasound2t64
 See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
 
 When `global.json` changes, CI still expects committed `packages.lock.json` files to stay in sync.
-Dependabot PRs that only bump the SDK now auto-refresh lock files through the `SDK Lockfile Maintenance`
-workflow before the main CI restore runs.
+Dependabot PRs that only bump the SDK now trigger the `SDK Lockfile Maintenance` workflow, which
+refreshes lock files and pushes a follow-up commit so the next CI run uses the updated lockfiles.
 
 ### Optional: Dev Containers
 

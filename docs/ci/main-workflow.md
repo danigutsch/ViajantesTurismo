@@ -81,7 +81,7 @@ open by setting `build_required=true` so CI prefers extra work over a false skip
 
 SDK bump pull requests also rely on the separate `SDK Lockfile Maintenance` workflow. When a
 Dependabot branch changes `global.json`, that workflow refreshes committed `packages.lock.json`
-files before the main CI restore path runs in locked mode.
+files and pushes a follow-up commit so the subsequent CI run uses the updated lockfiles.
 
 > **Note:** The CI setup path works around a
 > [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391) where
