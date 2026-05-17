@@ -37,6 +37,7 @@ This file overrides root guidance where test-specific behavior is needed.
 - Unit/integration/web test method names should be descriptive, natural-language
   phrases with underscores between words. Do not append fixed suffixes like
   `Expected_Behavior`.
+- Example: `Creates_a_tour_when_the_request_is_valid`.
 - Feature files should follow `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.

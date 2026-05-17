@@ -57,11 +57,11 @@ fixed suffixes like `Expected_Behavior`.
 | Test type                     | Form                                           |
 |-------------------------------|------------------------------------------------|
 | Happy path                    | `Can_Verb_Object`                              |
-| Not found                     | `Verb_Object_Returns_Not_Found_For_Invalid_Id` |
-| Validation failure            | `Verb_Object_Returns_Bad_Request_For_Reason`   |
-| Conflict / illegal transition | `Verb_Object_Returns_Conflict`                 |
-| Idempotency                   | `Verb_Object_Is_Idempotent`                    |
-| Serial empty-state smoke      | `Can_Get_Empty_Object_List`                    |
+| Not found                     | `Returns_not_found_for_an_invalid_id`          |
+| Validation failure            | `Returns_bad_request_for_an_invalid_reason`    |
+| Conflict / illegal transition | `Returns_conflict_for_an_illegal_transition`   |
+| Idempotency                   | `Ignores_a_duplicate_request`                  |
+| Serial empty-state smoke      | `Returns_an_empty_list_when_no_records_exist`  |
 
 Do not append `Async` to test method names.
 

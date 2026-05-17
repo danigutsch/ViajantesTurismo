@@ -197,8 +197,8 @@ suffixes like `Expected_Behavior`.
 
 ```csharp
 // Good
-public void Map_To_Currency_Dto_Should_Map_All_Valid_Values()
-public void Create_Tour_With_Valid_Data_Should_Return_Created_Status()
+public void Maps_currency_values_for_the_response_model()
+public void Creates_a_tour_when_the_request_is_valid()
 
 // Bad
 public void MapToCurrencyDto_ShouldMapAllValidValues()  // Inconsistent
@@ -296,7 +296,7 @@ Use `[Theory]` with `[InlineData]` for multiple inputs:
 [Theory]
 [InlineData(Currency.Real, CurrencyDto.Real)]
 [InlineData(Currency.Euro, CurrencyDto.Euro)]
-public void Map_To_Currency_Dto_Should_Map_All_Valid_Values(Currency domain, CurrencyDto expected)
+public void Maps_all_supported_currency_values(Currency domain, CurrencyDto expected)
 {
     var result = TourMapper.MapToCurrencyDto(domain);
     Assert.Equal(expected, result);
