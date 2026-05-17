@@ -17,6 +17,10 @@ SonarQube XML formats with the repo-pinned `reportgenerator` tool before publish
 `TestResults/sonar-coverage.xml` to the scanner. The CI workflow wraps that script with
 `tee` so the raw scanner output is preserved in `TestResults/sonar-analysis.log`.
 
+The script also sets `sonar.projectBaseDir` explicitly to the repository root. This keeps
+Scanner for .NET v8 aligned with the repo's expected analysis scope and avoids warnings
+caused by the newer automatic base-directory detection behavior.
+
 The CI workflow then uses GitHub Actions job summaries to publish a short validation
 overview directly on the workflow run summary page. This follows GitHub's documented
 `GITHUB_STEP_SUMMARY` mechanism so readers can see the quality gate result, SonarCloud
@@ -68,21 +72,22 @@ Sonar script exit.
 ## Local execution and secrets
 
 For local runs of `scripts/run-sonar-analysis.sh`, keep real credentials out of source control.
-The repository may document required variable names in `.env.example`, but contributors should not
+The repository documents the required variable names in `.env.example`, but contributors should not
 commit a real `.env` file.
 
 Recommended local pattern:
 
-1. copy `.env.example` to an ignored local file such as `.env.local` or load the values from your shell,
-2. export `SONAR_TOKEN`, `SONAR_ORGANIZATION`, and `SONAR_PROJECT_KEY` into the current shell,
-3. run `bash scripts/run-sonar-analysis.sh`.
+1. copy `.env.example` to `.env.local` and replace the placeholder values,
+2. run `bash scripts/run-sonar-analysis.sh`.
+
+The Sonar helper scripts now auto-load `.env.local` first and fall back to `.env` when present,
+so no manual `source` step is required.
 
 Example:
 
 ```bash
-set -a
-source .env.local
-set +a
+cp .env.example .env.local
+# edit .env.local with real values
 bash scripts/run-sonar-analysis.sh
 ```
 

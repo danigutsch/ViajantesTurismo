@@ -2,6 +2,26 @@
 
 set -euo pipefail
 
+load_local_env() {
+    local repo_root="$1"
+    local env_file=""
+
+    if [[ -f "${repo_root}/.env.local" ]]; then
+        env_file="${repo_root}/.env.local"
+    elif [[ -f "${repo_root}/.env" ]]; then
+        env_file="${repo_root}/.env"
+    fi
+
+    if [[ -z "${env_file}" ]]; then
+        return 0
+    fi
+
+    set -a
+    # shellcheck disable=SC1090
+    source "${env_file}"
+    set +a
+}
+
 append_summary() {
     local summary_target="${GITHUB_STEP_SUMMARY:-}"
 
@@ -46,6 +66,14 @@ format_missing_setting() {
 }
 
 main() {
+    local script_dir
+    local repo_root
+
+    script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+    repo_root="$(cd -- "${script_dir}/.." && pwd)"
+
+    load_local_env "${repo_root}"
+
     local -a missing_vars=()
     local -a missing_settings=()
 
