@@ -20,15 +20,15 @@ function Test-DotNetSdkVersion {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "   ✅ .NET SDK installed: $installedSdk" -ForegroundColor Green
         if ($installedSdk -ne $requiredVersion) {
-            Write-Host "   ❌ Required version: $requiredVersion" -ForegroundColor Red
-            Write-Host "   💡 Install the exact SDK from: https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Cyan
-            Write-Host "   💡 Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI." -ForegroundColor Cyan
+            Write-Error "Required version: $requiredVersion"
+            Write-Output "Install the exact SDK from: https://dotnet.microsoft.com/download/dotnet/10.0"
+            Write-Output "   Re-run setup after the exact SDK is installed so locked restore uses the same toolchain as CI."
             exit 1
         }
     }
     else {
-        Write-Host "   ❌ .NET SDK not found" -ForegroundColor Red
-        Write-Host "   💡 Download .NET $requiredVersion from: https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Cyan
+        Write-Error ".NET SDK not found"
+        Write-Output "Download .NET $requiredVersion from: https://dotnet.microsoft.com/download/dotnet/10.0"
         exit 1
     }
 }
@@ -40,7 +40,7 @@ function Restore-DotNetDependencies {
         Write-Host "   ✅ .NET dependencies restored" -ForegroundColor Green
     }
     else {
-        Write-Host "   ❌ Failed to restore .NET dependencies in locked mode" -ForegroundColor Red
+        Write-Error "Failed to restore .NET dependencies in locked mode"
         exit 1
     }
 }

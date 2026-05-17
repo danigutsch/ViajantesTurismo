@@ -1,16 +1,12 @@
 name: SDK Lockfile Maintenance
 
 on:
-  pull_request_target:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - ready_for_review
+  push:
     branches:
-      - main
+      - 'dependabot/dotnet_sdk/**'
     paths:
       - global.json
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,16 +14,14 @@ permissions:
 jobs:
   refresh-sdk-lockfiles:
     name: Refresh SDK Lockfiles
-    if: ${{ github.actor == 'dependabot[bot]' && startsWith(github.head_ref, 'dependabot/dotnet_sdk/') && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ github.actor == 'dependabot[bot]' && startsWith(github.ref_name, 'dependabot/dotnet_sdk/') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-      pull-requests: read
     steps:
-      - name: Checkout pull request branch
+      - name: Checkout branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -67,6 +61,6 @@ jobs:
         if: ${{ steps.lockfiles.outputs.changed == 'true' }}
         shell: bash
         env:
-          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BRANCH_NAME: ${{ github.ref_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "HEAD:${PR_HEAD_REF}"
+        run: git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "HEAD:${BRANCH_NAME}"
