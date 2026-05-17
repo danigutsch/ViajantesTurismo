@@ -17,7 +17,7 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 
 Ubuntu 24.04 LTS-based container with the following tools installed via features:
 
-- **.NET 10 SDK**: For building and running the application
+- **Exact .NET 10 SDK from `global.json`**: For building and running the application with the same toolchain as CI
 - **Node.js 24**: For npm scripts and development tools
 - **Git**: Version control
 - **Docker-in-Docker**: Run a Docker daemon inside the dev container for Aspire-managed resources
@@ -56,7 +56,7 @@ No additional database containers are configured in the dev container - Aspire h
 2. **Verify Setup**:
 
    ```bash
-   dotnet --version    # Should show 10.x
+   dotnet --version    # Should match global.json exactly
    node --version      # Should show v24.x
    git --version
    ```
@@ -151,6 +151,9 @@ On first container creation, the `post-create.sh` script automatically:
 2. Restores NuGet packages
 3. Builds the solution to verify everything works
 
+Before that happens, `.devcontainer/on-create.sh` ensures the exact SDK pinned in `global.json`
+is available under `/home/vscode/.dotnet` and places it first on `PATH` for future shells.
+
 ## Troubleshooting
 
 ### Container Build Fails
@@ -173,7 +176,7 @@ On first container creation, the `post-create.sh` script automatically:
 
 The dev container is optional. You can develop on your host machine if you have:
 
-- .NET 10 SDK installed
+- Exact .NET SDK from `global.json` installed
 - Node.js 24 installed
 - A container runtime running (for Aspire)
 
