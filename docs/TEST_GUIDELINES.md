@@ -246,6 +246,20 @@ public void Invalid_Amount_Should_Return_Invalid_Result()
 
 Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 
+### Assertion readability
+
+Keep method calls and computed values out of assertion arguments when practical.
+Assign them to local variables first so failures are easier to inspect while debugging.
+
+```csharp
+// Good
+var errorType = span.GetTagItem("error.type");
+Assert.Equal("InvalidOperationException", errorType);
+
+// Avoid
+Assert.Equal("InvalidOperationException", span.GetTagItem("error.type"));
+```
+
 ## Blazor Component Testing (bUnit)
 
 For testing Razor components in `ViajantesTurismo.Admin.Web`, we use bUnit following Microsoft's recommended approach

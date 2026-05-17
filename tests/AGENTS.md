@@ -41,6 +41,8 @@ This file overrides root guidance where test-specific behavior is needed.
 - Feature files should follow `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
+- Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
+  directly inside assertion arguments when that makes debugging harder.
 
 ## Test independence
 
