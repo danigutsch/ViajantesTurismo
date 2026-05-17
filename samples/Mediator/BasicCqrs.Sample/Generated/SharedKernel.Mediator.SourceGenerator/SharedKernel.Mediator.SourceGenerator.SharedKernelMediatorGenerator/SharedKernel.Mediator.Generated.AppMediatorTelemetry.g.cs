@@ -7,4 +7,8 @@ internal static class AppMediatorTelemetry
 {
     internal const string ActivitySourceName = "SharedKernel.Mediator";
     internal const string MeterName = "SharedKernel.Mediator";
+    internal const string SendSpanName = "mediator.send";
+    internal const string StreamSpanName = "mediator.stream";
+    internal const string PublishSpanName = "mediator.publish";
+    internal const string HandlerSpanName = "mediator.notification.handle";
 }

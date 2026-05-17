@@ -11,10 +11,10 @@ internal static class MediatorDiscoveryReport
     public const int RequestCount = 2;
     public const int HandlerCount = 2;
     public const int PipelineCount = 0;
-    public const int NotificationCount = 0;
-    public const int NotificationHandlerCount = 0;
-    public const int StreamRequestCount = 0;
-    public const int StreamHandlerCount = 0;
+    public const int NotificationCount = 1;
+    public const int NotificationHandlerCount = 1;
+    public const int StreamRequestCount = 1;
+    public const int StreamHandlerCount = 1;
     public const int ModuleCount = 1;
 
     public static string[] Modules { get; } =
@@ -30,9 +30,11 @@ internal static class MediatorDiscoveryReport
 
     public static string[] Notifications { get; } =
     [
+        "global::BasicCqrs.Sample.TourBooked | Handlers=[global::BasicCqrs.Sample.TourBookedHandler(Public,Handle)]",
     ];
 
     public static string[] StreamRequests { get; } =
     [
+        "global::BasicCqrs.Sample.StreamTourCodes | ItemResponse=string | ItemResponseGenericDefinition=<none> | ItemResponseTypeArguments=[] | Handlers=[global::BasicCqrs.Sample.StreamTourCodesHandler(Public,Handle)]",
     ];
 }

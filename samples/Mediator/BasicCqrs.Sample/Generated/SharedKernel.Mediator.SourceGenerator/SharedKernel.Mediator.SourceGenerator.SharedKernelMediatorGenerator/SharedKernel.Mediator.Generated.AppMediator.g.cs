@@ -133,6 +133,72 @@ public sealed partial class AppMediator : IMediator
         }
     }
 
+    /// <summary>
+    /// Sends a <see cref="global::BasicCqrs.Sample.StreamTourCodes"/> stream through the generated mediator dispatch path.
+    /// </summary>
+    /// <param name="request">The stream request instance to dispatch.</param>
+    /// <param name="ct">The cancellation token for the operation.</param>
+    /// <returns>The produced response stream.</returns>
+    public global::System.Collections.Generic.IAsyncEnumerable<string> Send(global::BasicCqrs.Sample.StreamTourCodes request,
+        global::System.Threading.CancellationToken ct)
+    {
+        global::System.ArgumentNullException.ThrowIfNull(request);
+
+        return SendStream_0000(request, ct);
+    }
+
+    private async global::System.Collections.Generic.IAsyncEnumerable<string> SendStream_0000(global::BasicCqrs.Sample.StreamTourCodes request,
+        [global::System.Runtime.CompilerServices.EnumeratorCancellation] global::System.Threading.CancellationToken ct)
+    {
+        var activity = _instrumentation.ActivitySource.StartActivity("mediator.stream", global::System.Diagnostics.ActivityKind.Internal);
+        activity?.SetTag("mediator.request.name", "StreamTourCodes");
+        activity?.SetTag("mediator.request.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.handler.name", "StreamTourCodesHandler");
+        var outcome = "success";
+        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.StreamTourCodesHandler>(Services);
+
+        var enumerator = handler.Handle(request, ct).GetAsyncEnumerator(ct);
+        try
+        {
+            while (true)
+            {
+                bool hasNext;
+                try
+                {
+                    hasNext = await enumerator.MoveNextAsync();
+                }
+                catch (global::System.OperationCanceledException)
+                {
+                    outcome = "cancelled";
+                    activity?.SetTag("mediator.outcome", "cancelled");
+                    throw;
+                }
+                catch (global::System.Exception ex)
+                {
+                    outcome = "error";
+                    activity?.SetTag("error.type", ex.GetType().Name);
+                    activity?.AddException(ex);
+                    activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Error, ex.Message);
+                    activity?.SetTag("mediator.outcome", "error");
+                    throw;
+                }
+                if (!hasNext)
+                {
+                    activity?.SetTag("mediator.outcome", "success");
+                    activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);
+                    break;
+                }
+                yield return enumerator.Current;
+            }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync();
+            activity?.Dispose();
+            _instrumentation.StreamsTotal.Add(1, new global::System.Diagnostics.TagList { { "mediator.request.name", "StreamTourCodes" }, { "mediator.outcome", outcome } });
+        }
+    }
+
     /// <inheritdoc />
     public global::System.Threading.Tasks.ValueTask<TResponse> Send<TResponse>(
         global::SharedKernel.Mediator.IRequest<TResponse> request,

@@ -30,6 +30,12 @@ public static partial class SharedKernelMediatorServiceCollectionExtensions
         services.AddTransient<global::BasicCqrs.Sample.LookupTourSummaryHandler>();
         services.AddTransient<global::SharedKernel.Mediator.IRequestHandler<global::BasicCqrs.Sample.LookupTourSummary, string>, global::BasicCqrs.Sample.LookupTourSummaryHandler>();
 
+        services.AddTransient<global::BasicCqrs.Sample.TourBookedHandler>();
+        services.AddTransient<global::SharedKernel.Mediator.INotificationHandler<global::BasicCqrs.Sample.TourBooked>, global::BasicCqrs.Sample.TourBookedHandler>();
+
+        services.AddTransient<global::BasicCqrs.Sample.StreamTourCodesHandler>();
+        services.AddTransient<global::SharedKernel.Mediator.IStreamRequestHandler<global::BasicCqrs.Sample.StreamTourCodes, string>, global::BasicCqrs.Sample.StreamTourCodesHandler>();
+
         return services;
     }
 }
