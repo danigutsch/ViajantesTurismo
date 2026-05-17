@@ -56,13 +56,7 @@ jobs:
         if: ${{ steps.lockfiles.outputs.changed == 'true' }}
         shell: bash
         run: |
-          sdk_version="$(python3 - <<'PY'
-import json
-
-with open('global.json', 'r', encoding='utf-8') as file:
-    print(json.load(file)['sdk']['version'])
-PY
-          )"
+          sdk_version="$(python3 -c 'import json; print(json.load(open("global.json", encoding="utf-8"))["sdk"]["version"])')"
 
           git add '**/packages.lock.json'
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
