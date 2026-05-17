@@ -14,6 +14,8 @@ namespace SharedKernel.Mediator.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
 {
+    private const string HandleMethodName = "Handle";
+
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         MediatorAnalyzerDescriptors.InvalidHandlerSignature,
@@ -92,7 +94,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var methodsForRequest = type.GetMembers("Handle")
+            var methodsForRequest = type.GetMembers(HandleMethodName)
                 .OfType<IMethodSymbol>()
                 .Where(static method => !method.IsStatic && method.MethodKind == MethodKind.Ordinary && method.DeclaredAccessibility == Accessibility.Public)
                 .Where(method => method.Parameters.Length > 0 && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType))
@@ -154,7 +156,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var methodsForRequest = type.GetMembers("Handle")
+            var methodsForRequest = type.GetMembers(HandleMethodName)
                 .OfType<IMethodSymbol>()
                 .Where(static method => !method.IsStatic && method.MethodKind == MethodKind.Ordinary && method.DeclaredAccessibility == Accessibility.Public)
                 .Where(method => method.Parameters.Length > 0 && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, requestType))
@@ -386,7 +388,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol cancellationTokenType,
         INamedTypeSymbol valueTaskOfT)
     {
-        return type.GetMembers("Handle")
+        return type.GetMembers(HandleMethodName)
             .OfType<IMethodSymbol>()
             .FirstOrDefault(
                 method =>
@@ -406,7 +408,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol cancellationTokenType,
         INamedTypeSymbol asyncEnumerableOfT)
     {
-        return type.GetMembers("Handle")
+        return type.GetMembers(HandleMethodName)
             .OfType<IMethodSymbol>()
             .FirstOrDefault(
                 method =>
@@ -427,7 +429,7 @@ public sealed class SharedKernelMediatorAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol cancellationTokenType,
         INamedTypeSymbol asyncEnumerableOfT)
     {
-        return type.GetMembers("Handle")
+        return type.GetMembers(HandleMethodName)
             .OfType<IMethodSymbol>()
             .FirstOrDefault(
                 method =>
