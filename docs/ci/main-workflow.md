@@ -34,24 +34,23 @@ protected branch keeps its post-merge validation history intact.
 5. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
   `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when build/test work
   is required.
-6. Set up Node.js from `.nvmrc` (`actions/setup-node`) when build/test work is required.
-7. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
-  required.
-8. Run `dotnet tool restore` when build/test work is required.
-9. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
-10. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
+6. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
+   required.
+7. Run `dotnet tool restore` when build/test work is required.
+8. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
+9. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
    wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
   `coverage conversion` / `end` flow and produces both HTML coverage output and the
   SonarQube XML coverage input.
-11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
+10. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
   quality gate status, SonarCloud link, and any parse warnings appear on the workflow
   run summary page without opening the full log.
-12. When validation work fails, create a focused diagnostic summary under
+11. When validation work fails, create a focused diagnostic summary under
     `TestResults/ci-diagnostics/`.
-13. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
+12. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
   artifact, and the raw Sonar analysis log artifact (`actions/upload-artifact`, runs on
   `always()` after the validation step executes) when validation ran.
-14. Upload the focused `build-test-diagnostics` artifact when the job fails.
+13. Upload the focused `build-test-diagnostics` artifact when the job fails.
 
 The `test-results`, `coverage-report`, `sonar-coverage`, and `sonar-analysis-log`
 uploads are intentionally best-effort. If validation fails before those files exist, CI
@@ -119,9 +118,8 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 **Steps:**
 
 1. Checkout repository (`actions/checkout`).
-2. Set up Node.js from `.nvmrc` with npm cache (`actions/setup-node`).
-3. Configure npm for hardened ephemeral tool execution.
-4. Run `bash scripts/lint-all.sh`.
+2. Install `shellcheck` on the runner.
+3. Run `bash scripts/lint-all.sh`.
 
 ## Recommended workflow evolution
 

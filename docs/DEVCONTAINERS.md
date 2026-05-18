@@ -16,7 +16,7 @@ VS Code Dev Containers.
 The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
 - .NET 10 via `mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble` (Ubuntu 24.04 LTS)
-- Node.js 24, Git, and Docker-in-Docker Dev Container Features
+- Git and Docker-in-Docker Dev Container Features
 - repository-specific VS Code extensions and default settings
 - lifecycle commands for one-time setup, dependency restore, and build verification
 - named volume mounts for NuGet packages, ASP.NET state, and `.build` output reuse
@@ -26,10 +26,9 @@ The current lifecycle flow is:
 
 1. `onCreateCommand` runs `.devcontainer/on-create.sh`
 2. `postCreateCommand` runs `.devcontainer/post-create.sh`
-3. `postStartCommand` runs `dotnet dev-certs https --trust || true`
+3. `postStartCommand` runs `.devcontainer/post-start.sh`
 
-By default, the post-create script restores NuGet packages, installs npm packages,
-installs git hooks, and builds `ViajantesTurismo.slnx` unless
+By default, the post-create script restores NuGet packages and builds `ViajantesTurismo.slnx` unless
 `DEVCONTAINER_VERIFY_BUILD=0` is set.
 
 ## Local VS Code Dev Container workflow
@@ -59,7 +58,6 @@ After the container opens successfully, verify the minimum supported contributor
 
 ```bash
 dotnet --version
-node --version
 git --version
 docker version --format "{{.Server.Version}}"
 dotnet tool run aspire run
@@ -68,7 +66,6 @@ dotnet tool run aspire run
 Expected outcomes:
 
 - `dotnet --version` reports the repo-pinned .NET 10 SDK line
-- `node --version` reports Node 24
 - `docker version` succeeds so the in-container Docker daemon can orchestrate Aspire's dependent services
 - `dotnet tool run aspire run` starts the AppHost and shows the Aspire dashboard URL
 
@@ -99,7 +96,7 @@ The script:
 
 - builds and starts the repository devcontainer with the pinned Dev Container CLI
 - lets the configured lifecycle hooks run
-- verifies `.NET`, Node.js, Git, and Docker access inside the container
+- verifies `.NET`, Git, and Docker access inside the container
 - optionally runs `dotnet test --solution ViajantesTurismo.slnx --no-build` inside the
   container when `--run-tests` is passed
 - writes logs to `TestResults/devcontainer-smoke`
@@ -113,8 +110,8 @@ The GitHub Actions workflow uses the same option surface:
 - weekly schedule and pushes run the regular smoke path
 - the monthly schedule runs `--run-tests` to validate the full in-container test suite
 - manual dispatch lets you choose either mode
-- the workflow also enables npm caching for the Node-based Dev Container CLI path to reduce
-  repeat package download churn without weakening validation
+- the workflow uses the shared smoke script and a bundled Dev Container CLI install path instead of
+  a repo-owned npm toolchain
 
 Recommended follow-up validation while iterating:
 
@@ -134,7 +131,7 @@ The shared script validates the non-interactive baseline by:
 
 - building the devcontainer with the Dev Container CLI
 - letting lifecycle commands run
-- checking `dotnet`, `node`, `git`, and Docker access inside the container
+- checking `dotnet`, `git`, and Docker access inside the container
 
 It is intentionally supplemental. The repository's primary PR gate still runs on standard
 GitHub-hosted runners.

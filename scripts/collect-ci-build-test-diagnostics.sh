@@ -25,20 +25,6 @@ main() {
         git_commit="unavailable"
     fi
 
-    local node_version
-    if node_version=$(node --version 2> /dev/null); then
-        :
-    else
-        node_version="unavailable"
-    fi
-
-    local npm_version
-    if npm_version=$(npm --version 2> /dev/null); then
-        :
-    else
-        npm_version="unavailable"
-    fi
-
     {
         echo "CI build/test diagnostics"
         echo "========================="
@@ -56,11 +42,6 @@ main() {
         echo "dotnet --info"
         echo "-------------"
         dotnet --info || true
-        echo
-        echo "Node toolchain"
-        echo "--------------"
-        echo "node: ${node_version}"
-        echo "npm: ${npm_version}"
         echo
         echo "TestResults inventory"
         echo "---------------------"

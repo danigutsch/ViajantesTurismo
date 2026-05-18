@@ -10,10 +10,6 @@ inputs:
     description: Path to the global.json file used to select the .NET SDK.
     required: false
     default: global.json
-  node-version-file:
-    description: Path to the Node.js version file.
-    required: false
-    default: .nvmrc
   trust-dev-certificate:
     description: Whether to trust the ASP.NET HTTPS developer certificate.
     required: false
@@ -33,11 +29,6 @@ runs:
         cache: true
         cache-dependency-path: |
           **/packages.lock.json
-
-    - name: Set up Node.js
-      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
-      with:
-        node-version-file: ${{ inputs.node-version-file }}
 
     - name: Restore .NET dependencies
       shell: bash

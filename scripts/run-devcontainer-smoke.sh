@@ -6,6 +6,7 @@ repo_root="$(cd -- "${script_dir}/.." && pwd)"
 workspace_folder="${repo_root}"
 log_dir="${DEVCONTAINER_SMOKE_LOG_DIR:-${repo_root}/TestResults/devcontainer-smoke}"
 devcontainer_cli_version="${DEVCONTAINER_CLI_VERSION:-0.84.1}"
+devcontainer_cli_prefix="${DEVCONTAINER_CLI_PREFIX:-/tmp/opencode/devcontainers-cli-${devcontainer_cli_version}}"
 keep_container="${DEVCONTAINER_SMOKE_KEEP_CONTAINER:-0}"
 run_tests="${DEVCONTAINER_SMOKE_RUN_TESTS:-0}"
 container_id=""
@@ -31,7 +32,20 @@ require_command() {
 run_devcontainer_cli() {
     local args=("$@")
 
-    npm exec --yes --package "@devcontainers/cli@${devcontainer_cli_version}" -- "${args[@]}"
+    "${devcontainer_cli_prefix}/bin/devcontainer" "${args[@]}"
+    return 0
+}
+
+ensure_devcontainer_cli() {
+    if [[ -x "${devcontainer_cli_prefix}/bin/devcontainer" ]]; then
+        return 0
+    fi
+
+    mkdir -p "${devcontainer_cli_prefix}"
+
+    curl -fsSL "https://raw.githubusercontent.com/devcontainers/cli/main/scripts/install.sh" |
+        sh -s -- --version "${devcontainer_cli_version}" --prefix "${devcontainer_cli_prefix}"
+
     return 0
 }
 
@@ -126,7 +140,7 @@ main() {
     fi
 
     require_command docker
-    require_command npm
+    ensure_devcontainer_cli
 
     mkdir -p "${log_dir}"
 
@@ -158,7 +172,6 @@ main() {
     run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
         set -euo pipefail
         dotnet --version
-        node --version
         git --version
         docker version --format "{{.Server.Version}}"
     ' 2>&1 | tee "${verify_log_path}"

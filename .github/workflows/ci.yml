@@ -206,21 +206,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version-file: .nvmrc
-
       - name: Install shellcheck
         run: |
           sudo apt-get update
           sudo apt-get install --yes shellcheck
-
-      - name: Harden npm execution defaults
-        run: |
-          npm config set ignore-scripts true
-          npm config set audit false
-          npm config set fund false
 
       - name: Run all linters
         run: bash scripts/lint-all.sh

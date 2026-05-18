@@ -4,10 +4,10 @@ This project uses automated tools to enforce consistent formatting and style acr
 
 ## Tools Overview
 
-- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (pinned `npm exec`)
+- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (CI-owned npm wrapper)
 - **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI, installed in CI)
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI)
-- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (pinned `npm exec`)
+- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (CI-owned npm wrapper)
 - **Python JSON validator** (`scripts/lint-json.py`) - JSON and JSONC validation with repo-specific exclusions
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
@@ -266,12 +266,6 @@ dotnet format --verify-no-changes
 ```
 
 ### Prerequisites
-
-Install Node.js only if you want to run the pinned lint wrappers or commit hook validation locally:
-
-```powershell
-node --version
-```
 
 Install .NET local tools (dotnet-ef, reportgenerator, aspire):
 

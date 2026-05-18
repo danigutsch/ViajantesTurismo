@@ -19,7 +19,7 @@ in Aspire orchestration.
 ## Usage
 
 ```csharp
-builder.Services.AddHttpClient<ApiClient>(client => 
+builder.Services.AddHttpClient<ApiClient>(client =>
     client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"));
 
 builder.AddRedisOutputCache(ResourceNames.Cache);

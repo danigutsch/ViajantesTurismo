@@ -10,15 +10,13 @@
 			"**/obj": true,
 			"**/TestResults": true,
 			"**/*.feature.cs": true,
-			"**/.vs": true,
-			"**/node_modules": true
+			"**/.vs": true
 		},
 
 		"search.exclude": {
 			"**/bin": true,
 			"**/obj": true,
 			"**/TestResults": true,
-			"**/node_modules": true,
 			"**/.git": true
 		},
 
@@ -126,13 +124,6 @@
 				"command": "dotnet",
 				"type": "process",
 				"args": ["tool", "restore"],
-				"problemMatcher": []
-			},
-			{
-				"label": "npm install",
-				"command": "npm",
-				"type": "shell",
-				"args": ["install"],
 				"problemMatcher": []
 			},
 			{

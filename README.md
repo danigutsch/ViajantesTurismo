@@ -68,7 +68,6 @@ ViajantesTurismo/
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) - Exact version specified in `global.json`
-- [Node.js](https://nodejs.org/) (LTS) - For Markdown linting and documentation tools
 - Container runtime (for PostgreSQL):
     - [Podman](https://podman.io/) (recommended, open source) or
     - [Docker Desktop](https://www.docker.com/products/docker-desktop)
@@ -101,7 +100,7 @@ This script will:
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
-- ✅ Explain optional Node.js setup for CI-pinned lint wrappers and hooks
+- ✅ Explain optional local lint prerequisites
 - ✅ Explain CI-owned linting and optional local commit validation
 
 ### Manual Setup (Alternative)

@@ -18,7 +18,6 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 Ubuntu 24.04 LTS-based container with the following tools installed via features:
 
 - **Exact .NET 10 SDK from `global.json`**: For building and running the application with the same toolchain as CI
-- **Node.js 24**: For npm scripts and development tools
 - **Git**: Version control
 - **Docker-in-Docker**: Run a Docker daemon inside the dev container for Aspire-managed resources
 
@@ -57,7 +56,6 @@ No additional database containers are configured in the dev container - Aspire h
 
    ```bash
    dotnet --version    # Should match global.json exactly
-   node --version      # Should show v24.x
    git --version
    ```
 
@@ -178,7 +176,6 @@ When the base image does not already provide it, the script installs that SDK un
 The dev container is optional. You can develop on your host machine if you have:
 
 - Exact .NET SDK from `global.json` installed
-- Node.js 24 installed
 - A container runtime running (for Aspire)
 
 Aspire will work the same way whether inside or outside the container.

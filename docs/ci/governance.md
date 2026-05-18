@@ -75,7 +75,6 @@ The workflow uses only official GitHub-maintained actions.
 | --- | --- |
 | `actions/checkout` | Repository checkout |
 | `actions/setup-dotnet` | .NET SDK provisioning |
-| `actions/setup-node` | Node.js provisioning |
 | `actions/cache` | SonarCloud package cache |
 | `actions/download-artifact` | Retrieve SARIF artifact for the dedicated code-scanning upload job |
 | `actions/upload-artifact` | Test result artifact upload |
@@ -102,7 +101,7 @@ SonarCloud analysis model used in BookWorm's quality strategy.
 ### Update process
 
 - GitHub Dependabot automates version update PRs via `.github/dependabot.yml`. The
-  configuration covers `github-actions`, `devcontainers`, `nuget`, and `npm`
+  configuration covers `github-actions`, `devcontainers`, and `nuget`
   ecosystems on a deliberately cautious monthly schedule for routine version updates.
 - When Dependabot proposes an action update, review both the release notes and the
   resolved SHA, then verify the affected workflows still pass before merging.
@@ -126,13 +125,11 @@ designated code owners. See `CODEOWNERS` for the current ownership mapping.
 | `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | All action updates grouped into one PR |
 | `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Monthly at 05:00 UTC | 1 | All feature updates grouped into one PR |
 | `nuget` | .NET package dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
-| `npm` | Node.js dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
 
 Dependabot PRs use conventional commit prefixes (`ci` for actions, `deps` for packages).
 
-The repository relies on Dependabot defaults for npm labels and uses explicit custom
-labels for ecosystems where the repository wants a different triage taxonomy than the
-default ecosystem label. The `devcontainers` entry also relies on Dependabot defaults
+The repository uses explicit custom labels for ecosystems where it wants a different triage
+taxonomy than the default ecosystem label. The `devcontainers` entry also relies on defaults
 so the repository does not need to maintain a separate custom label for that ecosystem.
 Those custom labels are managed in `.github/labels.json` and synced by
 `.github/workflows/sync-labels.yml`.
@@ -148,7 +145,7 @@ default one-PR-per-update behavior.
   ecosystem.
 - `groups` consolidate related updates so low-risk churn does not fan out into many
   small PRs.
-- `cooldown` delays fast-follow NuGet and npm version updates, with deliberately longer
+- `cooldown` delays fast-follow NuGet version updates, with deliberately longer
   waits than before so newly published releases have more time to prove they are stable
   and trustworthy before the bot proposes them here.
 - monthly schedules keep ordinary version drift reviewable instead of constantly landing
