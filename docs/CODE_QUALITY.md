@@ -4,7 +4,7 @@ This project uses automated tools to enforce consistent formatting and style acr
 
 ## Tools Overview
 
-- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (CI-owned npm wrapper)
+- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (`DavidAnson/markdownlint-cli2-action` in CI, no npm required)
 - **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI, installed in CI)
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI)
 - **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (CI-owned npm wrapper)
@@ -290,8 +290,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 **Markdown:**
 
 ```powershell
-bash scripts/lint-markdown.sh                    # Check markdown files
-bash scripts/lint-markdown.sh --fix README.md   # Auto-fix selected markdown files
+bash scripts/lint-markdown.sh                    # CI-owned markdown lint wrapper
 ```
 
 **Shell Scripts:**
@@ -304,19 +303,13 @@ shfmt -w -i 2 **/*.sh    # Format shell scripts with shfmt
 **Gherkin/Feature Files:**
 
 ```powershell
-bash scripts/lint-gherkin.sh tests/**/*.feature     # Validate all feature files
-```
-
-**JSON Files:**
-
-```powershell
-bash scripts/lint-json.sh **/*.json        # Check all JSON files
+bash scripts/lint-gherkin.sh tests/**/*.feature     # CI-owned Gherkin lint wrapper (npm-based)
 ```
 
 **All Linters:**
 
 ```powershell
-bash scripts/lint-all.sh         # Run all linters (markdown, shell, JSON, Gherkin)
+bash scripts/lint-all.sh         # Run all linters (shell, JSON, Gherkin — markdown runs via GitHub Action in CI)
 ```
 
 **All Tools:**
@@ -329,7 +322,10 @@ dotnet tool restore      # Install all pinned .NET tools
 
 The repository no longer installs git hooks by default.
 
-- Lint is CI-owned and runs through `bash scripts/lint-all.sh` in workflows.
+- Lint is CI-owned and runs through `bash scripts/lint-all.sh` and `DavidAnson/markdownlint-cli2-action` in workflows.
+- Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action which bundles its own Node.js runtime — no npm dependency on the runner or for contributors.
+- Gherkin lint currently relies on a CI-owned npm wrapper; normal contributor setup does
+  not require Node.js unless you intentionally run that wrapper yourself.
 - Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; CI installs it for
   workflow runs.
 - Commit message validation remains available locally through

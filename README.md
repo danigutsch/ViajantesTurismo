@@ -100,7 +100,7 @@ This script will:
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
-- ✅ Explain optional local lint prerequisites
+- ✅ Explain that Markdown and Gherkin lint tooling remains CI-owned for now
 - ✅ Explain CI-owned linting and optional local commit validation
 
 ### Manual Setup (Alternative)

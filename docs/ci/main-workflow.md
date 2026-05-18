@@ -118,8 +118,9 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 **Steps:**
 
 1. Checkout repository (`actions/checkout`).
-2. Install `shellcheck` on the runner.
-3. Run `bash scripts/lint-all.sh`.
+2. Run `DavidAnson/markdownlint-cli2-action` to lint Markdown files using the bundled Node.js runtime — no npm install required.
+3. Install `shellcheck` on the runner.
+4. Run `bash scripts/lint-all.sh`.
 
 ## Recommended workflow evolution
 
