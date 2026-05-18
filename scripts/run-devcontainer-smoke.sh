@@ -44,7 +44,7 @@ ensure_devcontainer_cli() {
     mkdir -p "${devcontainer_cli_prefix}"
 
     curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --tlsv1.2 \
-        "https://raw.githubusercontent.com/devcontainers/cli/main/scripts/install.sh" |
+        "https://raw.githubusercontent.com/devcontainers/cli/71fb1401a9706133637c03dfaf2ad7d595952c7d/scripts/install.sh" |
         sh -s -- --version "${devcontainer_cli_version}" --prefix "${devcontainer_cli_prefix}"
 
     return 0

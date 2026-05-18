@@ -332,8 +332,9 @@ The repository no longer installs git hooks by default.
 - Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action which bundles its own Node.js runtime — no npm dependency on the runner or for contributors.
 - Gherkin lint currently relies on a CI-owned npm wrapper; normal contributor setup does
   not require Node.js unless you intentionally run that wrapper yourself.
-- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; CI installs it for
-  workflow runs.
+- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; if you also want
+  the Gherkin step to run locally, install Node.js/npm as well. CI installs the needed tooling
+  on the runner.
 - Commit message validation remains available locally through
   `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
 - If you previously installed repository hooks from an older revision, remove or replace the copied
