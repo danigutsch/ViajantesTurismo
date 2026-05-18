@@ -23,34 +23,35 @@ protected branch keeps its post-merge validation history intact.
 
 **Steps:**
 
-1. Read the `build_required` decision from `detect-changes`.
-2. If only documentation changed, run a lightweight success step so the required
+1. Wait for both `detect-changes` and `lint` to complete successfully.
+2. Read the `build_required` decision from `detect-changes`.
+3. If only documentation changed, run a lightweight success step so the required
    `Build and Test` check resolves cleanly without starting the expensive validation
    path.
-3. Checkout repository (`actions/checkout`) when build/test work is required.
-4. Validate that the required SonarCloud secret and repository variables exist after
+4. Checkout repository (`actions/checkout`) when build/test work is required.
+5. Validate that the required SonarCloud secret and repository variables exist after
   checkout and before the expensive validation path starts, because the validation
   uses repository-local scripts.
-5. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
+6. Configure a repository-local NuGet global-packages path and set up the .NET SDK from
   `global.json` with built-in NuGet caching (`actions/setup-dotnet`) when build/test work
   is required.
-6. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
+7. Run `dotnet restore ViajantesTurismo.slnx --locked-mode` when build/test work is
    required.
-7. Run `dotnet tool restore` when build/test work is required.
-8. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
-9. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
-   wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
+8. Run `dotnet tool restore` when build/test work is required.
+9. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
+10. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
+  wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
   `coverage conversion` / `end` flow and produces both HTML coverage output and the
   SonarQube XML coverage input.
-10. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
+11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
   quality gate status, SonarCloud link, and any parse warnings appear on the workflow
   run summary page without opening the full log.
-11. When validation work fails, create a focused diagnostic summary under
-    `TestResults/ci-diagnostics/`.
-12. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
+12. When validation work fails, create a focused diagnostic summary under
+   `TestResults/ci-diagnostics/`.
+13. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input
   artifact, and the raw Sonar analysis log artifact (`actions/upload-artifact`, runs on
   `always()` after the validation step executes) when validation ran.
-13. Upload the focused `build-test-diagnostics` artifact when the job fails.
+14. Upload the focused `build-test-diagnostics` artifact when the job fails.
 
 The `test-results`, `coverage-report`, `sonar-coverage`, and `sonar-analysis-log`
 uploads are intentionally best-effort. If validation fails before those files exist, CI
@@ -118,9 +119,10 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 **Steps:**
 
 1. Checkout repository (`actions/checkout`).
-2. Run `DavidAnson/markdownlint-cli2-action` to lint Markdown files using the bundled Node.js runtime — no npm install required.
-3. Install `shellcheck` on the runner.
-4. Run `bash scripts/lint-all.sh`.
+2. On pull requests, detect changed Markdown files and lint only that set with `tj-actions/changed-files` and `DavidAnson/markdownlint-cli2-action`.
+3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
+4. Install `shellcheck` on the runner.
+5. Run `bash scripts/lint-all.sh`.
 
 ## Recommended workflow evolution
 
