@@ -3,10 +3,6 @@
   "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble",
 
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "24",
-      "nodeGypDependencies": true
-    },
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
       "ppa": true
@@ -49,7 +45,6 @@
           "**/obj": true
         },
         "search.exclude": {
-          "**/node_modules": true,
           "**/bin": true,
           "**/obj": true,
           "**/TestResults": true

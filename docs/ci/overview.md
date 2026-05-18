@@ -20,8 +20,8 @@ The workflow-level concurrency policy cancels stale runs for non-`main` refs whi
 preserving in-flight `main` runs. This keeps pull request iteration responsive without
 interrupting post-merge validation on the protected branch.
 
-Dependabot version updates now cover GitHub Actions, Dev Container Features, NuGet, and
-npm dependencies. See [Governance](governance.md#dependabot-configuration) for the
+Dependabot version updates now cover GitHub Actions, Dev Container Features, and NuGet
+dependencies. See [Governance](governance.md#dependabot-configuration) for the
 current schedules and grouping rules.
 
 ## Documentation map

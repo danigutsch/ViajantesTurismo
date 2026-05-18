@@ -4,8 +4,6 @@ set -euo pipefail
 
 shopt -s globstar nullglob
 
-bash scripts/lint-markdown.sh
-
 if ! command -v shellcheck >/dev/null 2>&1; then
     echo "shellcheck is required for bash scripts/lint-all.sh. Install shellcheck locally or rely on CI." >&2
     exit 1

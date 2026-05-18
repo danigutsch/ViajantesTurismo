@@ -4,10 +4,11 @@ This project uses automated tools to enforce consistent formatting and style acr
 
 ## Tools Overview
 
-- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting (pinned `npm exec`)
+- **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting
+  (`DavidAnson/markdownlint-cli2-action` in CI, no npm required)
 - **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI, installed in CI)
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI)
-- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (pinned `npm exec`)
+- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (CI-owned npm wrapper)
 - **Python JSON validator** (`scripts/lint-json.py`) - JSON and JSONC validation with repo-specific exclusions
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
@@ -267,12 +268,6 @@ dotnet format --verify-no-changes
 
 ### Prerequisites
 
-Install Node.js only if you want to run the pinned lint wrappers or commit hook validation locally:
-
-```powershell
-node --version
-```
-
 Install .NET local tools (dotnet-ef, reportgenerator, aspire):
 
 ```powershell
@@ -296,8 +291,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 **Markdown:**
 
 ```powershell
-bash scripts/lint-markdown.sh                    # Check markdown files
-bash scripts/lint-markdown.sh --fix README.md   # Auto-fix selected markdown files
+bash scripts/lint-markdown.sh                    # CI-owned markdown lint wrapper
 ```
 
 **Shell Scripts:**
@@ -310,7 +304,7 @@ shfmt -w -i 2 **/*.sh    # Format shell scripts with shfmt
 **Gherkin/Feature Files:**
 
 ```powershell
-bash scripts/lint-gherkin.sh tests/**/*.feature     # Validate all feature files
+bash scripts/lint-gherkin.sh tests/**/*.feature     # CI-owned Gherkin lint wrapper (npm-based)
 ```
 
 **JSON Files:**
@@ -322,7 +316,7 @@ bash scripts/lint-json.sh **/*.json        # Check all JSON files
 **All Linters:**
 
 ```powershell
-bash scripts/lint-all.sh         # Run all linters (markdown, shell, JSON, Gherkin)
+bash scripts/lint-all.sh         # Run all linters (shell, JSON, Gherkin — markdown runs via GitHub Action in CI)
 ```
 
 **All Tools:**
@@ -335,9 +329,14 @@ dotnet tool restore      # Install all pinned .NET tools
 
 The repository no longer installs git hooks by default.
 
-- Lint is CI-owned and runs through `bash scripts/lint-all.sh` in workflows.
-- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; CI installs it for
-  workflow runs.
+- Lint is CI-owned and runs through `bash scripts/lint-all.sh` and `DavidAnson/markdownlint-cli2-action` in workflows.
+- Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action,
+  which bundles its own Node.js runtime with no npm dependency on the runner or contributors.
+- Gherkin lint currently relies on a CI-owned npm wrapper; normal contributor setup does
+  not require Node.js unless you intentionally run that wrapper yourself.
+- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; if you also want
+  the Gherkin step to run locally, install Node.js/npm as well. CI installs the needed tooling
+  on the runner.
 - Commit message validation remains available locally through
   `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
 - If you previously installed repository hooks from an older revision, remove or replace the copied

@@ -48,7 +48,9 @@ jobs:
 
   build-and-test:
     name: Build and Test
-    needs: detect-changes
+    needs:
+      - detect-changes
+      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -205,11 +207,47 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version-file: .nvmrc
+          fetch-depth: 0
+
+      - name: Get changed Markdown files
+        if: ${{ github.event_name == 'pull_request' }}
+        id: changed-markdown-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            README.md
+            docs/**/*.md
+            .github/**/*.md
+            .devcontainer/**/*.md
+            src/**/*.md
+            tests/**/*.md
+            benchmarks/**/*.md
+            samples/**/*.md
+          separator: ","
+
+      - name: Lint changed Markdown files in pull requests
+        if: ${{ github.event_name == 'pull_request' && steps.changed-markdown-files.outputs.any_changed == 'true' }}
+        uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0
+        with:
+          globs: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
+          config: .markdownlint.json
+          separator: ","
+
+      - name: Lint all Markdown files on mainline runs
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0
+        with:
+          globs: |
+            README.md
+            docs/**/*.md
+            .github/**/*.md
+            .devcontainer/**/*.md
+            src/**/*.md
+            tests/**/*.md
+            benchmarks/**/*.md
+            samples/**/*.md
+          config: .markdownlint.json
 
       - name: Install shellcheck
         run: |
