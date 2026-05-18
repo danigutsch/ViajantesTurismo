@@ -306,6 +306,12 @@ shfmt -w -i 2 **/*.sh    # Format shell scripts with shfmt
 bash scripts/lint-gherkin.sh tests/**/*.feature     # CI-owned Gherkin lint wrapper (npm-based)
 ```
 
+**JSON Files:**
+
+```powershell
+bash scripts/lint-json.sh **/*.json        # Check all JSON files
+```
+
 **All Linters:**
 
 ```powershell
