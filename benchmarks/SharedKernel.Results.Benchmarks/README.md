@@ -21,3 +21,12 @@ dotnet run --project benchmarks/SharedKernel.Results.Benchmarks/SharedKernel.Res
 dotnet run --project benchmarks/SharedKernel.Results.Benchmarks/SharedKernel.Results.Benchmarks.csproj -c Release -- --filter *ResultValueShapeBenchmarks*
 dotnet run --project benchmarks/SharedKernel.Results.Benchmarks/SharedKernel.Results.Benchmarks.csproj -c Release -- --filter *LargeStructInParameterBenchmarks*
 ```
+
+## Current Findings
+
+- `Result<T>` with the existing `readonly struct` carrier shape is already fast for normal payloads
+- larger struct payloads make copy-sensitive reads more visible than small struct or reference payloads
+- benchmark-only `in` helper calls help simple large-struct projection, but they do not consistently
+  improve create-style or sink-style paths
+- current data does not justify changing `Result`, `Result<T>`, or `Option<T>` to a different public
+  type shape
