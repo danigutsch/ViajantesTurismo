@@ -35,6 +35,25 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
+    public void Creates_A_Failed_Result_With_Multiple_Validation_Errors()
+    {
+        // Arrange
+        var validationErrors = new Dictionary<string, string[]>
+        {
+            ["name"] = ["Name is required"],
+            ["email"] = ["Email is invalid"],
+        };
+
+        // Act
+        var result = Result.Invalid("Validation failed", validationErrors);
+
+        // Assert
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Equal(["Name is required"], result.ErrorDetails!.ValidationErrors!["name"]);
+        Assert.Equal(["Email is invalid"], result.ErrorDetails.ValidationErrors["email"]);
+    }
+
+    [Fact]
     public void Creates_A_Successful_Result_With_A_Value()
     {
         // Arrange
