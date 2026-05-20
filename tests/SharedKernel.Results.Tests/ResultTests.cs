@@ -45,6 +45,20 @@ public sealed class ResultTests
     }
 
     [Fact]
+    public void TryGetValue_returns_true_for_successful_generic_results()
+    {
+        // Arrange
+        var result = Result.Ok("porto");
+
+        // Act
+        var hasValue = result.TryGetValue(out var value);
+
+        // Assert
+        Assert.True(hasValue);
+        Assert.Equal("porto", value);
+    }
+
+    [Fact]
     public void Error_of_t_creates_a_failed_result_without_a_value()
     {
         // Act
@@ -55,6 +69,20 @@ public sealed class ResultTests
         Assert.Equal(ResultStatus.Error, result.Status);
         Assert.True(result.TryGetError(out var error));
         Assert.Equal("Unexpected failure", error.Detail);
+    }
+
+    [Fact]
+    public void TryGetValue_returns_false_for_failed_generic_results()
+    {
+        // Arrange
+        var result = Result.Error<string>("Unexpected failure");
+
+        // Act
+        var hasValue = result.TryGetValue(out var value);
+
+        // Assert
+        Assert.False(hasValue);
+        Assert.Null(value);
     }
 
     [Fact]
