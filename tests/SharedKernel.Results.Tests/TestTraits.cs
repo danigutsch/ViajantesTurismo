@@ -9,4 +9,5 @@ internal static class TestTraits
     public const string UnitScope = "Unit";
     public const string ResultsComponent = "SharedKernel.Results";
     public const string OptionCapability = "Option";
+    public const string ResultCapability = "Result";
 }
