@@ -5,7 +5,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class ResultCoreTests
 {
     [Fact]
-    public void Ok_creates_a_successful_result()
+    public void Creates_A_Successful_Result()
     {
         // Arrange
         // Act
@@ -19,7 +19,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void Invalid_creates_a_failed_result_with_error_details()
+    public void Creates_A_Failed_Result_With_Error_Details()
     {
         // Arrange
         // Act
@@ -35,7 +35,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void Ok_of_t_creates_a_successful_result_with_a_value()
+    public void Creates_A_Successful_Result_With_A_Value()
     {
         // Arrange
         // Act
@@ -49,7 +49,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void Created_creates_a_successful_non_generic_result()
+    public void Creates_A_Successful_Non_Generic_Result()
     {
         // Arrange
         // Act
@@ -63,7 +63,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void TryGetValue_returns_true_for_successful_generic_results()
+    public void Returns_True_For_Successful_Generic_Results()
     {
         // Arrange
         var result = Result.Ok("porto");
@@ -77,7 +77,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void Error_of_t_creates_a_failed_result_without_a_value()
+    public void Creates_A_Failed_Result_Without_A_Value()
     {
         // Arrange
         // Act
@@ -91,7 +91,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void TryGetError_returns_false_for_successful_results()
+    public void Returns_False_For_Successful_Results()
     {
         // Arrange
         var result = Result.Ok();
@@ -105,7 +105,7 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
-    public void TryGetError_returns_true_for_failed_generic_results()
+    public void Returns_True_For_Failed_Generic_Results()
     {
         // Arrange
         var result = Result.Error<string>("Unexpected failure");

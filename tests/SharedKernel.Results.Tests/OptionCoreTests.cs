@@ -5,7 +5,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class OptionCoreTests
 {
     [Fact]
-    public void Some_creates_an_option_with_a_value()
+    public void Creates_An_Option_With_A_Value()
     {
         // Arrange
         const string expectedValue = "porto";
@@ -20,7 +20,7 @@ public sealed class OptionCoreTests
     }
 
     [Fact]
-    public void None_creates_an_empty_option()
+    public void Creates_An_Empty_Option()
     {
         // Arrange
         // Act
@@ -33,7 +33,7 @@ public sealed class OptionCoreTests
     }
 
     [Fact]
-    public void FromNullable_returns_none_for_null_values()
+    public void Returns_None_For_Null_Values()
     {
         // Arrange
         string? value = null;
@@ -47,7 +47,7 @@ public sealed class OptionCoreTests
     }
 
     [Fact]
-    public void Some_supports_value_types_when_the_value_is_not_null()
+    public void Supports_Value_Types_When_The_Value_Is_Not_Null()
     {
         // Arrange
         const int expectedValue = 42;

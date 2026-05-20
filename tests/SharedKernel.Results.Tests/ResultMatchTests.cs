@@ -6,7 +6,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class ResultMatchTests
 {
     [Fact]
-    public void Match_returns_the_success_branch_value_for_generic_results()
+    public void Returns_The_Success_Branch_Value_For_Generic_Results()
     {
         // Arrange
         var result = Result.Ok("porto");
@@ -21,7 +21,7 @@ public sealed class ResultMatchTests
     }
 
     [Fact]
-    public void Match_returns_the_failure_branch_value_for_generic_results()
+    public void Returns_The_Failure_Branch_Value_For_Generic_Results()
     {
         // Arrange
         var result = Result.Error<string>("Unexpected failure");
@@ -36,7 +36,7 @@ public sealed class ResultMatchTests
     }
 
     [Fact]
-    public void Match_returns_the_success_branch_value_for_non_generic_results()
+    public void Returns_The_Success_Branch_Value_For_Non_Generic_Results()
     {
         // Arrange
         var result = Result.Ok();
@@ -51,7 +51,7 @@ public sealed class ResultMatchTests
     }
 
     [Fact]
-    public void Match_returns_the_failure_branch_value_for_non_generic_results()
+    public void Returns_The_Failure_Branch_Value_For_Non_Generic_Results()
     {
         // Arrange
         var result = Result.Error("Unexpected failure");

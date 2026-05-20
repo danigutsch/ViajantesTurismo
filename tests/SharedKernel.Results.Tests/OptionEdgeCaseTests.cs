@@ -5,7 +5,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class OptionEdgeCaseTests
 {
     [Fact]
-    public void Some_rejects_null_values()
+    public void Rejects_Null_Values()
     {
         // Act
         var exception = Assert.Throws<ArgumentNullException>(() => Option.Some<string>(null!));

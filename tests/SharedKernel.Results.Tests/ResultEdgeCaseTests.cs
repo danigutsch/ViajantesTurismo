@@ -5,7 +5,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class ResultEdgeCaseTests
 {
     [Fact]
-    public void Value_throws_when_accessed_on_a_failed_result()
+    public void Throws_When_The_Value_Is_Accessed_On_A_Failed_Result()
     {
         // Arrange
         var result = Result.Error<string>("Unexpected failure");
@@ -22,7 +22,7 @@ public sealed class ResultEdgeCaseTests
     }
 
     [Fact]
-    public void TryGetValue_returns_false_for_failed_generic_results()
+    public void Returns_False_For_Failed_Generic_Results()
     {
         // Arrange
         var result = Result.Error<string>("Unexpected failure");
@@ -36,7 +36,7 @@ public sealed class ResultEdgeCaseTests
     }
 
     [Fact]
-    public void Ok_of_t_throws_when_given_a_null_reference()
+    public void Throws_When_Ok_Gets_A_Null_Reference()
     {
         // Arrange
         // Act
@@ -47,7 +47,7 @@ public sealed class ResultEdgeCaseTests
     }
 
     [Fact]
-    public void Created_of_t_throws_when_given_a_null_reference()
+    public void Throws_When_Created_Gets_A_Null_Reference()
     {
         // Arrange
         // Act
@@ -58,7 +58,7 @@ public sealed class ResultEdgeCaseTests
     }
 
     [Fact]
-    public void Accepted_of_t_throws_when_given_a_null_reference()
+    public void Throws_When_Accepted_Gets_A_Null_Reference()
     {
         // Arrange
         // Act

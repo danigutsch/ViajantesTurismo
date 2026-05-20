@@ -5,7 +5,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class ResultCompositionTests
 {
     [Fact]
-    public void ToResult_discards_the_value_and_preserves_success_status()
+    public void Discards_The_Value_And_Preserves_Success_Status()
     {
         // Arrange
         var result = Result.Ok("porto");
@@ -20,7 +20,7 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
-    public void ToResult_preserves_created_status_as_success()
+    public void Preserves_Created_Status_As_Success()
     {
         // Arrange
         var result = Result.Created("porto");
@@ -35,7 +35,7 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
-    public void ToResult_discards_the_value_and_preserves_failure_error()
+    public void Discards_The_Value_And_Preserves_Failure_Error()
     {
         // Arrange
         var result = Result.Conflict<string>("Tour is already published");
@@ -51,7 +51,7 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
-    public void Map_transforms_the_success_value()
+    public void Transforms_The_Success_Value()
     {
         // Arrange
         var result = Result.Ok("porto");
@@ -65,7 +65,7 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
-    public void Map_preserves_failure_details()
+    public void Preserves_Failure_Details()
     {
         // Arrange
         var result = Result.Error<string>("Unexpected failure");
@@ -80,7 +80,7 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
-    public void Bind_flattens_successful_results()
+    public void Flattens_Successful_Results()
     {
         // Arrange
         var result = Result.Ok("porto");
@@ -94,7 +94,7 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
-    public void Bind_short_circuits_failures()
+    public void Short_Circuits_Failures()
     {
         // Arrange
         var result = Result.Error<string>("Unexpected failure");

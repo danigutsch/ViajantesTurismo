@@ -6,7 +6,7 @@ namespace SharedKernel.Results.Tests;
 public sealed class OptionCompositionTests
 {
     [Fact]
-    public void Match_returns_the_some_branch_value_when_a_value_is_present()
+    public void Returns_The_Some_Branch_Value_When_A_Value_Is_Present()
     {
         // Arrange
         var option = Option.Some("porto");
@@ -21,7 +21,7 @@ public sealed class OptionCompositionTests
     }
 
     [Fact]
-    public void Match_returns_the_none_branch_value_when_no_value_is_present()
+    public void Returns_The_None_Branch_Value_When_No_Value_Is_Present()
     {
         // Arrange
         var option = Option.None<string>();
@@ -36,7 +36,7 @@ public sealed class OptionCompositionTests
     }
 
     [Fact]
-    public void Map_returns_none_when_the_option_is_empty()
+    public void Returns_None_When_The_Option_Is_Empty()
     {
         // Arrange
         var option = Option.None<string>();
@@ -49,7 +49,7 @@ public sealed class OptionCompositionTests
     }
 
     [Fact]
-    public void Bind_returns_none_when_the_option_is_empty()
+    public void Returns_None_When_The_Option_Is_Empty_After_Binding()
     {
         // Arrange
         var option = Option.None<string>();
@@ -62,7 +62,7 @@ public sealed class OptionCompositionTests
     }
 
     [Fact]
-    public void Map_can_project_reference_options_into_value_type_options()
+    public void Can_Project_Reference_Options_Into_Value_Type_Options()
     {
         // Arrange
         var option = Option.Some("porto");
@@ -75,7 +75,7 @@ public sealed class OptionCompositionTests
     }
 
     [Fact]
-    public void Bind_can_project_into_value_type_options()
+    public void Can_Project_Into_Value_Type_Options()
     {
         // Arrange
         var option = Option.Some("porto");
