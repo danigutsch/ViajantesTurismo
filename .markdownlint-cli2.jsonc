@@ -1,0 +1,10 @@
+{
+  "config": {
+    "extends": ".markdownlint.json"
+  },
+  "ignores": [
+    "**/AnalyzerReleases.*.md",
+    "**/BenchmarkDotNet.Artifacts/**/*.md",
+    "tmp/**/*.md"
+  ]
+}
