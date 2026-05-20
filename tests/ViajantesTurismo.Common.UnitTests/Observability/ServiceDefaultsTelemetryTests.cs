@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
@@ -15,9 +16,10 @@ public sealed class ServiceDefaultsTelemetryTests
     public void Add_Service_Defaults_Exports_Mediator_Custom_Tracing_And_Metrics()
     {
         // Arrange
-        var exportedActivities = new List<Activity>();
-        var exportedMetricNames = new List<string>();
+        var exportedActivities = new ConcurrentQueue<Activity>();
+        var exportedMetricNames = new ConcurrentQueue<string>();
         var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
 
         builder.AddServiceDefaults();
         builder.Services.AddSingleton<AppMediatorInstrumentation>();
@@ -60,26 +62,26 @@ public sealed class ServiceDefaultsTelemetryTests
         Assert.Contains("mediator.requests", exportedMetricNames, StringComparer.Ordinal);
     }
 
-    private sealed class CollectingActivityExporter(List<Activity> exportedActivities) : BaseExporter<Activity>
+    private sealed class CollectingActivityExporter(ConcurrentQueue<Activity> exportedActivities) : BaseExporter<Activity>
     {
         public override ExportResult Export(in Batch<Activity> batch)
         {
             foreach (var activity in batch)
             {
-                exportedActivities.Add(activity);
+                exportedActivities.Enqueue(activity);
             }
 
             return ExportResult.Success;
         }
     }
 
-    private sealed class CollectingMetricExporter(List<string> exportedMetricNames) : BaseExporter<Metric>
+    private sealed class CollectingMetricExporter(ConcurrentQueue<string> exportedMetricNames) : BaseExporter<Metric>
     {
         public override ExportResult Export(in Batch<Metric> batch)
         {
             foreach (var metric in batch)
             {
-                exportedMetricNames.Add(metric.Name);
+                exportedMetricNames.Enqueue(metric.Name);
             }
 
             return ExportResult.Success;
