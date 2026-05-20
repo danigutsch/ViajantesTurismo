@@ -30,7 +30,7 @@ public sealed class ServiceDefaultsTelemetryTests
             })
             .WithMetrics(metrics =>
             {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames), 10));
+                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
             });
 
         using var host = builder.Build();
