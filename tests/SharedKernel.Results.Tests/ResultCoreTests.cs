@@ -147,4 +147,39 @@ public sealed class ResultCoreTests
         Assert.Equal(ResultErrorCodes.Error, error.Code);
         Assert.Equal("Unexpected failure", error.Detail);
     }
+
+    [Fact]
+    public void Returns_False_For_An_Uninitialized_Non_Generic_Result()
+    {
+        // Arrange
+        var result = default(Result);
+
+        // Act
+        var hasError = result.TryGetError(out var error);
+
+        // Assert
+        Assert.False(hasError);
+        Assert.Null(error);
+        Assert.False(result.IsSuccess);
+        Assert.False(result.IsFailure);
+    }
+
+    [Fact]
+    public void Returns_False_For_An_Uninitialized_Generic_Result()
+    {
+        // Arrange
+        var result = default(Result<string>);
+
+        // Act
+        var hasValue = result.TryGetValue(out var value);
+        var hasError = result.TryGetError(out var error);
+
+        // Assert
+        Assert.False(hasValue);
+        Assert.Null(value);
+        Assert.False(hasError);
+        Assert.Null(error);
+        Assert.False(result.IsSuccess);
+        Assert.False(result.IsFailure);
+    }
 }

@@ -121,6 +121,32 @@ public sealed class ResultEdgeCaseTests
     }
 
     [Fact]
+    public void Returns_An_Unknown_String_For_An_Uninitialized_Non_Generic_Result()
+    {
+        // Arrange
+        var result = default(Result);
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Unknown: Unknown", text);
+    }
+
+    [Fact]
+    public void Returns_An_Unknown_String_For_An_Uninitialized_Generic_Result()
+    {
+        // Arrange
+        var result = default(Result<string>);
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Unknown: Unknown", text);
+    }
+
+    [Fact]
     public void Returns_A_Useful_String_For_A_Successful_Generic_Result_With_A_Reference_Type_Value()
     {
         // Arrange

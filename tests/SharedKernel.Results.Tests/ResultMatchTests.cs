@@ -64,4 +64,32 @@ public sealed class ResultMatchTests
         // Assert
         Assert.Equal("Unexpected failure", matched);
     }
+
+    [Fact]
+    public void Throws_For_An_Uninitialized_Non_Generic_Result()
+    {
+        // Arrange
+        var result = default(Result);
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => result.Match(static () => "success", static error => error.Detail));
+
+        // Assert
+        Assert.Equal("Result status is not initialized.", exception.Message);
+    }
+
+    [Fact]
+    public void Throws_For_An_Uninitialized_Generic_Result()
+    {
+        // Arrange
+        var result = default(Result<string>);
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => result.Match(static value => value.Length, static error => error.Detail.Length));
+
+        // Assert
+        Assert.Equal("Result status is not initialized.", exception.Message);
+    }
 }

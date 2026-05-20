@@ -48,6 +48,29 @@ public sealed class ResultErrorTests
     }
 
     [Fact]
+    public void Exposes_Read_Only_Validation_Error_Collections()
+    {
+        // Arrange
+        var error = new ResultError(
+            "Validation failed",
+            ResultErrorCodes.Invalid,
+            new Dictionary<string, string[]>
+            {
+                ["Name"] = ["Name is required"],
+            });
+
+        Assert.NotNull(error.ValidationErrors);
+
+        // Act
+        var messages = error.ValidationErrors["Name"];
+
+        // Assert
+        Assert.IsNotType<List<string>>(messages);
+        Assert.Throws<NotSupportedException>(() => ((IList<string>)messages).Add("Changed after construction"));
+        Assert.Equal(["Name is required"], error.ValidationErrors["Name"]);
+    }
+
+    [Fact]
     public void Uses_Code_And_Detail_In_ToString()
     {
         // Arrange
