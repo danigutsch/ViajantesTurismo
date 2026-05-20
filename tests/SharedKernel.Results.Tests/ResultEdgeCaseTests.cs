@@ -34,4 +34,37 @@ public sealed class ResultEdgeCaseTests
         Assert.False(hasValue);
         Assert.Null(value);
     }
+
+    [Fact]
+    public void Ok_of_t_throws_when_given_a_null_reference()
+    {
+        // Arrange
+        // Act
+        var exception = Assert.Throws<ArgumentNullException>(() => Result.Ok<string>(null!));
+
+        // Assert
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void Created_of_t_throws_when_given_a_null_reference()
+    {
+        // Arrange
+        // Act
+        var exception = Assert.Throws<ArgumentNullException>(() => Result.Created<string>(null!));
+
+        // Assert
+        Assert.Equal("value", exception.ParamName);
+    }
+
+    [Fact]
+    public void Accepted_of_t_throws_when_given_a_null_reference()
+    {
+        // Arrange
+        // Act
+        var exception = Assert.Throws<ArgumentNullException>(() => Result.Accepted<string>(null!));
+
+        // Assert
+        Assert.Equal("value", exception.ParamName);
+    }
 }
