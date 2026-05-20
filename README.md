@@ -60,7 +60,7 @@ ViajantesTurismo/
 │   └── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
 └── samples/
     └── Mediator/
-        └── BasicCqrs.Sample/                       # Generated mediator CQRS sample
+        └── Mediator.Sample/                        # Generated mediator CQRS sample
 ```
 
 ## Getting Started
@@ -214,7 +214,7 @@ dotnet run --project benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Me
 **Run the SharedKernel mediator sample:**
 
 ```powershell
-dotnet run --project samples/Mediator/BasicCqrs.Sample/BasicCqrs.Sample.csproj
+dotnet run --project samples/Mediator/Mediator.Sample/Mediator.Sample.csproj
 ```
 
 **NuGet lock files:**

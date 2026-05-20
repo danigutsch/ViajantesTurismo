@@ -1,6 +1,6 @@
 using SharedKernel.Mediator;
 
-namespace BasicCqrs.Sample;
+namespace Mediator.Sample;
 
 /// <summary>
 /// Requests a readable summary for a tour code.

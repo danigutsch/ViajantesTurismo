@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using SharedKernel.Mediator;
 
-namespace BasicCqrs.Sample;
+namespace Mediator.Sample;
 
 /// <summary>
 /// Streams a small sequence of tour codes for the sample flow.

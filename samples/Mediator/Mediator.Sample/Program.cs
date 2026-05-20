@@ -1,4 +1,4 @@
-using BasicCqrs.Sample;
+using Mediator.Sample;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Mediator;
 

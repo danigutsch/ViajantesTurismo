@@ -12,8 +12,8 @@ internal static class GeneratedDispatch
     {
         return request switch
         {
-            global::BasicCqrs.Sample.CreateBooking typed => Cast<string, TResponse>(mediator.Send(typed, ct)),
-            global::BasicCqrs.Sample.LookupTourSummary typed => Cast<string, TResponse>(mediator.Send(typed, ct)),
+            global::Mediator.Sample.CreateBooking typed => Cast<string, TResponse>(mediator.Send(typed, ct)),
+            global::Mediator.Sample.LookupTourSummary typed => Cast<string, TResponse>(mediator.Send(typed, ct)),
             _ => ThrowNoHandler<TResponse>(request),
         };
     }
@@ -25,8 +25,8 @@ internal static class GeneratedDispatch
     {
         return request switch
         {
-            global::BasicCqrs.Sample.CreateBooking typed => Box<string>(mediator.Send(typed, ct)),
-            global::BasicCqrs.Sample.LookupTourSummary typed => Box<string>(mediator.Send(typed, ct)),
+            global::Mediator.Sample.CreateBooking typed => Box<string>(mediator.Send(typed, ct)),
+            global::Mediator.Sample.LookupTourSummary typed => Box<string>(mediator.Send(typed, ct)),
             _ => ThrowUnknownRequestObject(request),
         };
     }
@@ -38,7 +38,7 @@ internal static class GeneratedDispatch
     {
         return request switch
         {
-            global::BasicCqrs.Sample.StreamTourCodes typed => CastStream<string, TResponse>(mediator.Send(typed, ct), ct),
+            global::Mediator.Sample.StreamTourCodes typed => CastStream<string, TResponse>(mediator.Send(typed, ct), ct),
             _ => ThrowNoStreamHandler<TResponse>(request),
         };
     }
@@ -51,25 +51,25 @@ internal static class GeneratedDispatch
     {
         return notification switch
         {
-            global::BasicCqrs.Sample.TourBooked typed => Publish_0000(mediator, typed, ct),
+            global::Mediator.Sample.TourBooked typed => Publish_0000(mediator, typed, ct),
             _ => global::System.Threading.Tasks.ValueTask.CompletedTask,
         };
     }
 
     private static async global::System.Threading.Tasks.ValueTask Publish_0000(
         AppMediator mediator,
-        global::BasicCqrs.Sample.TourBooked notification,
+        global::Mediator.Sample.TourBooked notification,
         global::System.Threading.CancellationToken ct)
     {
         var activity = mediator.Instrumentation.ActivitySource.StartActivity("mediator.publish", global::System.Diagnostics.ActivityKind.Internal);
         activity?.SetTag("mediator.notification.name", "TourBooked");
-        activity?.SetTag("mediator.notification.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.notification.assembly", "Mediator.Sample");
         activity?.SetTag("mediator.notification.handler.count", 1);
         var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();
         var outcome = "success";
         try
         {
-            await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.TourBookedHandler>(mediator.Services).Handle(notification, ct).ConfigureAwait(false);
+            await global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::Mediator.Sample.TourBookedHandler>(mediator.Services).Handle(notification, ct).ConfigureAwait(false);
             activity?.SetTag("mediator.outcome", "success");
             activity?.SetStatus(global::System.Diagnostics.ActivityStatusCode.Ok);
         }
