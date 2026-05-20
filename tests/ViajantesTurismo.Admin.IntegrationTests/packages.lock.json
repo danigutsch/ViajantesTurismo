@@ -4,18 +4,18 @@
     "net10.0": {
       "Aspire.Dashboard.Sdk.linux-x64": {
         "type": "Direct",
-        "requested": "[13.3.3, )",
-        "resolved": "13.3.3",
-        "contentHash": "qq8FcxWNgMSu0yun+bCQy+ixn7bSOvxeD4k0603wdzESTttenP5dGqQPYrpgP2v+cHJGQnFFOCupolmBS0bo4w=="
+        "requested": "[13.3.4, )",
+        "resolved": "13.3.4",
+        "contentHash": "tczlGTgPI7tddj9tAohRB0seVOnSEJ6WPQotPUaNp7u6LWHDvhUl6R0Hcr6GjMZqQgr5D3tdQwUGGz9BYTs5YA=="
       },
       "Aspire.Hosting.AppHost": {
         "type": "Direct",
-        "requested": "[13.3.3, )",
-        "resolved": "13.3.3",
-        "contentHash": "1gf9xSW5ZpkX6BCRubzHZJd8up8NB9nnJfOwzt/KJZzEe9Zo3OqsVaAjaMNiEbmtkl8kEnE977qfgJ5oopYTBQ==",
+        "requested": "[13.3.4, )",
+        "resolved": "13.3.4",
+        "contentHash": "JqAAsaf9axOnbxPuVCDRZoxt75Z7xDQc9LK6O+XhZl/Vt0T0voLnzpq/KISwnmWvWTxj/r4Yj56CZzNOaAoJww==",
         "dependencies": {
           "AspNetCore.HealthChecks.Uris": "9.0.0",
-          "Aspire.Hosting": "13.3.3",
+          "Aspire.Hosting": "13.3.4",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
@@ -45,19 +45,19 @@
       },
       "Aspire.Hosting.Orchestration.linux-x64": {
         "type": "Direct",
-        "requested": "[13.3.3, )",
-        "resolved": "13.3.3",
-        "contentHash": "Ob/p+HU9fU1mGO4jDy9QtsX+sqSrvGAON0qNG4XMX+lGv++lOBsoS7oQ4meQz+VC5fZiDM27sav4VpETONsJvA=="
+        "requested": "[13.3.4, )",
+        "resolved": "13.3.4",
+        "contentHash": "QgH1uyk9L4RoTS15GsgclJwuovaUvdaf1nYr52kA9VWeRu8WEddzAbxbI0IJrCPb6DqxbYSBI6QswGcpN0qPNA=="
       },
       "Aspire.Hosting.PostgreSQL": {
         "type": "Direct",
-        "requested": "[13.3.3, )",
-        "resolved": "13.3.3",
-        "contentHash": "Pnr+M1LnU3hP7LFxya/huJQ9WwGIHR4QozOrdy88bU5iE12Sj5BUIHQ0FkWHKdJOYdJPnKp9vY27Gdy2GoK5wQ==",
+        "requested": "[13.3.4, )",
+        "resolved": "13.3.4",
+        "contentHash": "eSdJV1spRa4NNdlOybViQrDhLiMCEBshstCIA/v+adhInSG2gIaJLUUG/9ZFRmsj/xqhzVo5VqlwQ5ozi03G7g==",
         "dependencies": {
           "AspNetCore.HealthChecks.NpgSql": "9.0.0",
           "AspNetCore.HealthChecks.Uris": "9.0.0",
-          "Aspire.Hosting": "13.3.3",
+          "Aspire.Hosting": "13.3.4",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
@@ -87,13 +87,13 @@
       },
       "Aspire.Hosting.Redis": {
         "type": "Direct",
-        "requested": "[13.3.3, )",
-        "resolved": "13.3.3",
-        "contentHash": "f3ugIEv12/8rSO8GEktg7PAaFPSkNJuY+tBhdZubk8cNTER0QBYhEGC1NBTvI2uca8sInJrdNpePfZT9DjNAAA==",
+        "requested": "[13.3.4, )",
+        "resolved": "13.3.4",
+        "contentHash": "C+AAYKEGSY8QhiD24OyNwVzVDKEQ1mPZ/7gfvRjoxnwyWvI9//JbFmISWM2DgKqJlufXrAH/tmeZ9MLaf8IpjQ==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "AspNetCore.HealthChecks.Uris": "9.0.0",
-          "Aspire.Hosting": "13.3.3",
+          "Aspire.Hosting": "13.3.4",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
@@ -169,8 +169,8 @@
       },
       "Aspire.Hosting": {
         "type": "Transitive",
-        "resolved": "13.3.3",
-        "contentHash": "HUM1EgCDKT4hzNkoHjLHkNXaT3K9a34UsbiCatFUoOhIBCoHTEsb8shgbQ50oAfRTm6uLXXo2s91gDQKJHLnXw==",
+        "resolved": "13.3.4",
+        "contentHash": "Y0bPB95Lc34WeDx03PR0Ca1qmCQOmjDDxSD1zwJ0noF/yI/p669rCdXKMdRgxOWqOpfLVMUUr8YyLbIIq/inhA==",
         "dependencies": {
           "AspNetCore.HealthChecks.Uris": "9.0.0",
           "Google.Protobuf": "3.33.5",
@@ -1102,7 +1102,7 @@
       "viajantesturismo.admin.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.3.3, )",
+          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.3.4, )",
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )"
@@ -1139,9 +1139,9 @@
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "CentralTransitive",
-        "requested": "[13.3.3, )",
-        "resolved": "13.3.3",
-        "contentHash": "QcF42zmhBmS5JmRh7MX9oN8dI4s/LbU+wcHwn6E+ejJna/qOVTPwHgp5/DJBBGBk7r6JDi9/wCahxIKSQ9x5uw==",
+        "requested": "[13.3.4, )",
+        "resolved": "13.3.4",
+        "contentHash": "DEBhtOGgzYzb5BWYzjBE/BMLdMJepDI3g7TPWdGbrOZhGt/2ThxDk+CAgl9kqdF9XbCJ5Ii3kv58vhUKQqGBUg==",
         "dependencies": {
           "Microsoft.Extensions.Caching.Memory": "10.0.7",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
