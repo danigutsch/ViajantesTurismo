@@ -20,6 +20,21 @@ public sealed class ResultCompositionTests
     }
 
     [Fact]
+    public void ToResult_preserves_created_status_as_success()
+    {
+        // Arrange
+        var result = Result.Created("porto");
+
+        // Act
+        var converted = result.ToResult();
+
+        // Assert
+        Assert.True(converted.IsSuccess);
+        Assert.Equal(ResultStatus.Created, converted.Status);
+        Assert.Null(converted.ErrorDetails);
+    }
+
+    [Fact]
     public void ToResult_discards_the_value_and_preserves_failure_error()
     {
         // Arrange

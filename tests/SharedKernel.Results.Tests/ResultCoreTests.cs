@@ -49,6 +49,20 @@ public sealed class ResultCoreTests
     }
 
     [Fact]
+    public void Created_creates_a_successful_non_generic_result()
+    {
+        // Arrange
+        // Act
+        var result = Result<string>.Created("porto").ToResult();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.False(result.IsFailure);
+        Assert.Equal(ResultStatus.Created, result.Status);
+        Assert.Null(result.ErrorDetails);
+    }
+
+    [Fact]
     public void TryGetValue_returns_true_for_successful_generic_results()
     {
         // Arrange
