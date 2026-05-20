@@ -67,4 +67,74 @@ public sealed class ResultEdgeCaseTests
         // Assert
         Assert.Equal("value", exception.ParamName);
     }
+
+    [Fact]
+    public void Returns_A_Useful_String_For_A_Successful_Non_Generic_Result()
+    {
+        // Arrange
+        var result = Result.Accepted();
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Success: Accepted", text);
+    }
+
+    [Fact]
+    public void Returns_A_Useful_String_For_A_Failed_Non_Generic_Result()
+    {
+        // Arrange
+        var result = Result.Error("Unexpected failure");
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Failure: Error - Unexpected failure", text);
+    }
+
+    [Fact]
+    public void Returns_A_Useful_String_For_A_Successful_Generic_Result()
+    {
+        // Arrange
+        var result = Result.Ok("porto");
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Success: Ok - porto", text);
+    }
+
+    [Fact]
+    public void Returns_A_Useful_String_For_A_Failed_Generic_Result()
+    {
+        // Arrange
+        var result = Result.NotFound<string>("Tour not found");
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Failure: NotFound - Tour not found", text);
+    }
+
+    [Fact]
+    public void Returns_A_Useful_String_For_A_Successful_Generic_Result_With_A_Reference_Type_Value()
+    {
+        // Arrange
+        var result = Result.Ok(new LoggedTourSummary("VT-42", "Porto river ride"));
+
+        // Act
+        var text = result.ToString();
+
+        // Assert
+        Assert.Equal("Success: Ok - VT-42 | Porto river ride", text);
+    }
+
+    private sealed class LoggedTourSummary(string code, string title)
+    {
+        public override string ToString() => $"{code} | {title}";
+    }
 }
