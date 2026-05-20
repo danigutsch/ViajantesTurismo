@@ -17,8 +17,8 @@ sonar_token="${SONAR_TOKEN:-}"
 sonar_organization="${SONAR_ORGANIZATION:-}"
 sonar_project_key="${SONAR_PROJECT_KEY:-}"
 sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
-sonar_coverage_exclusions="benchmarks/**,samples/**,scripts/**,src/Mediator/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs"
-sonar_cpd_exclusions="benchmarks/**,src/Mediator/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/Mediator/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/Mediator/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs"
+sonar_coverage_exclusions="benchmarks/**,samples/**,scripts/**,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs"
+sonar_cpd_exclusions="benchmarks/**,src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs"
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     echo "::add-mask::${sonar_token}"
@@ -27,20 +27,43 @@ fi
 coverage_report="TestResults/sonar-coverage.xml"
 coverage_reports_file="TestResults/coverage-reports.txt"
 coverage_html_dir="TestResults/CoverageReport"
+build_log="TestResults/sonar-build.log"
+playwright_install_log="TestResults/sonar-playwright-install.log"
+coverage_collection_log="TestResults/sonar-coverage-collection.log"
+reportgenerator_log="TestResults/sonar-reportgenerator.log"
+sonar_begin_log="TestResults/sonarscanner-begin.log"
+sonar_end_log="TestResults/sonarscanner-end.log"
 
 mkdir -p TestResults
 
-dotnet tool run dotnet-sonarscanner begin \
-    "/o:${sonar_organization}" \
-    "/k:${sonar_project_key}" \
-    "/d:sonar.token=${sonar_token}" \
-    "/d:sonar.projectBaseDir=${repo_root}" \
-    "/d:sonar.coverageReportPaths=${coverage_report}" \
-    "/d:sonar.exclusions=${sonar_exclusions}" \
-    "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
-    "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
-    "/d:sonar.qualitygate.wait=true" \
-    "/d:sonar.qualitygate.timeout=300"
+run_with_log() {
+    local description="$1"
+    local log_file="$2"
+
+    shift 2
+
+    echo "==> ${description}"
+
+    if "$@" >"${log_file}" 2>&1; then
+        return 0
+    fi
+
+    echo "${description} failed. See ${log_file}." >&2
+    return 1
+}
+
+run_with_log "Starting SonarScanner" "${sonar_begin_log}" \
+    dotnet tool run dotnet-sonarscanner begin \
+        "/o:${sonar_organization}" \
+        "/k:${sonar_project_key}" \
+        "/d:sonar.token=${sonar_token}" \
+        "/d:sonar.projectBaseDir=${repo_root}" \
+        "/d:sonar.coverageReportPaths=${coverage_report}" \
+        "/d:sonar.exclusions=${sonar_exclusions}" \
+        "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
+        "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
+        "/d:sonar.qualitygate.wait=true" \
+        "/d:sonar.qualitygate.timeout=300"
 
 cleanup() {
     local exit_code="$1"
@@ -48,8 +71,12 @@ cleanup() {
     trap - EXIT
 
     if [[ ${exit_code} -eq 0 ]]; then
-        dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
-        exit_code="$?"
+        if run_with_log "Finalizing SonarScanner" "${sonar_end_log}" \
+            dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"; then
+            grep -F "QUALITY GATE STATUS:" "${sonar_end_log}" || true
+        else
+            exit_code="$?"
+        fi
     fi
 
     return "${exit_code}"
@@ -57,7 +84,8 @@ cleanup() {
 
 trap 'cleanup "$?"; exit $?' EXIT
 
-dotnet build ViajantesTurismo.slnx --no-restore
+run_with_log "Building solution" "${build_log}" \
+    dotnet build ViajantesTurismo.slnx --no-restore
 
 playwright_script="$(find tests -name playwright.ps1 -path '*/bin/Debug/*' | head -1)"
 
@@ -66,17 +94,20 @@ if [[ -z "${playwright_script}" ]]; then
     exit 1
 fi
 
-bash scripts/install-playwright.sh "${playwright_script}"
+run_with_log "Installing Playwright browsers" "${playwright_install_log}" \
+    bash scripts/install-playwright.sh "${playwright_script}"
 
-bash scripts/collect-test-coverage.sh "${coverage_reports_file}"
+run_with_log "Running tests with coverage" "${coverage_collection_log}" \
+    bash scripts/collect-test-coverage.sh "${coverage_reports_file}"
 
 coverage_reports="$(< "${coverage_reports_file}")"
 
 rm -rf "${coverage_html_dir}"
 
-dotnet tool run reportgenerator \
-    "-reports:${coverage_reports}" \
-    "-targetdir:${coverage_html_dir}" \
-    "-reporttypes:Html;SonarQube"
+run_with_log "Generating coverage report" "${reportgenerator_log}" \
+    dotnet tool run reportgenerator \
+        "-reports:${coverage_reports}" \
+        "-targetdir:${coverage_html_dir}" \
+        "-reporttypes:Html;SonarQube"
 
 cp "${coverage_html_dir}/SonarQube.xml" "${coverage_report}"
