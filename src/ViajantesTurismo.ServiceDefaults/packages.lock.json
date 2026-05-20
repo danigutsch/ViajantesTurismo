@@ -199,6 +199,9 @@
         "dependencies": {
           "Polly.Core": "8.4.2"
         }
+      },
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
       }
     }
   }

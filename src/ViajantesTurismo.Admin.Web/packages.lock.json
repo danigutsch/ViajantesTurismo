@@ -186,6 +186,9 @@
         "resolved": "10.0.3",
         "contentHash": "La6ICwsdTKhVX+LKN+pvFjQRR3LhLwq3uKdi2knjLzRyPYBSydF4cjXidYxIiTcDD6XVYdsBWQEI8ZxiZ/OdIg=="
       },
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.contracts": {
         "type": "Project"
       },
@@ -204,7 +207,8 @@
           "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.Http": "[1.15.1, )",
-          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
+          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
       "JetBrains.Annotations": {
