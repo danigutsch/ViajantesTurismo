@@ -9,6 +9,8 @@ via .NET Aspire.
 - Advanced multi-endpoint scenarios (discount, payment, room/companion changes) in `BookingApiAdvancedTests`.
 - Business rule permutations belong in unit/behavior tests — not here.
 - Validation errors asserted only when testing API contract translation (Result → ValidationProblem / NotFound).
+- Observability coverage may assert a real request trace shape when the request path is part of the
+  consumer-facing contract, but should stay focused on durable span relationships rather than exporter internals.
 
 ## Notes
 
