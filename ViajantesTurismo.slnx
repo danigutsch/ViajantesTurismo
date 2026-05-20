@@ -53,5 +53,6 @@
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Mediator/Mediator.Sample/Mediator.Sample.csproj" />
+        <Project Path="samples/Results/BasicResults.Sample/BasicResults.Sample.csproj" />
     </Folder>
 </Solution>
