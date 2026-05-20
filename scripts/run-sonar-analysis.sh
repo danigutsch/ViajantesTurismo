@@ -44,8 +44,14 @@ run_with_log() {
 
     echo "==> ${description}"
 
-    if "$@" >"${log_file}" 2>&1; then
-        return 0
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        if "$@" 2>&1 | tee "${log_file}"; then
+            return 0
+        fi
+    else
+        if "$@" >"${log_file}" 2>&1; then
+            return 0
+        fi
     fi
 
     echo "${description} failed. See ${log_file}." >&2
