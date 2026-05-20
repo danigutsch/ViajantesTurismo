@@ -118,7 +118,7 @@ Coverage exclusions skip:
 - `samples/**` because sample projects are demonstrative consumer code
 - `scripts/**` because repository maintenance and CI helper scripts are linted directly, not exercised via
   the .NET test coverage pipeline
-- `src/Mediator/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
+- `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
   compatibility shim
 
 Duplication exclusions currently cover:

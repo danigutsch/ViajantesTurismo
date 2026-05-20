@@ -14,12 +14,12 @@
         <Project Path="src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
         <Project Path="src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj" />
     </Folder>
-    <Folder Name="/src/Mediator/">
-        <Project Path="src/Mediator/SharedKernel.Mediator.Abstractions/SharedKernel.Mediator.Abstractions.csproj" />
-        <Project Path="src/Mediator/SharedKernel.Mediator.Analyzers/SharedKernel.Mediator.Analyzers.csproj" />
-        <Project Path="src/Mediator/SharedKernel.Mediator.CodeFixes/SharedKernel.Mediator.CodeFixes.csproj" />
-        <Project Path="src/Mediator/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
-        <Project Path="src/Mediator/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
+    <Folder Name="/src/SharedKernel/">
+        <Project Path="src/SharedKernel/SharedKernel.Mediator.Abstractions/SharedKernel.Mediator.Abstractions.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernel.Mediator.Analyzers.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Mediator.CodeFixes/SharedKernel.Mediator.CodeFixes.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />
