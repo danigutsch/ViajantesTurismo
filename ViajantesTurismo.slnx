@@ -50,6 +50,7 @@
     </Folder>
     <Folder Name="/benchmarks/">
         <Project Path="benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj" />
+        <Project Path="benchmarks/SharedKernel.Results.Benchmarks/SharedKernel.Results.Benchmarks.csproj" />
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Mediator/Mediator.Sample/Mediator.Sample.csproj" />
