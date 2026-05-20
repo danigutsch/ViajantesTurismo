@@ -1,6 +1,6 @@
 using SharedKernel.Mediator;
 
-namespace BasicCqrs.Sample;
+namespace Mediator.Sample;
 
 /// <summary>
 /// Announces that the sample booking command completed.

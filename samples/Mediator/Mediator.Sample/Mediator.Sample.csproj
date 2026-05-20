@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>BasicCqrs.Sample</RootNamespace>
+        <RootNamespace>Mediator.Sample</RootNamespace>
         <IsPackable>false</IsPackable>
         <IsAotCompatible>true</IsAotCompatible>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>

@@ -1,6 +1,6 @@
 using SharedKernel.Mediator;
 
-namespace BasicCqrs.Sample;
+namespace Mediator.Sample;
 
 /// <summary>
 /// Emits a readable confirmation for the sample notification flow.

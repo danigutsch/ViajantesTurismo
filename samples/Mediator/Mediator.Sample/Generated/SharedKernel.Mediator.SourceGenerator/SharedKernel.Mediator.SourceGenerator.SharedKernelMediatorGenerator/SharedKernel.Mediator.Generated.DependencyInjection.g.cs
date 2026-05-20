@@ -25,16 +25,16 @@ public static partial class SharedKernelMediatorServiceCollectionExtensions
         services.AddScoped<IPublisher>(static sp => sp.GetRequiredService<AppMediator>());
         services.AddScoped<IMediator>(static sp => sp.GetRequiredService<AppMediator>());
 
-        services.AddTransient<global::BasicCqrs.Sample.CreateBookingHandler>();
-        services.AddTransient<global::SharedKernel.Mediator.IRequestHandler<global::BasicCqrs.Sample.CreateBooking, string>, global::BasicCqrs.Sample.CreateBookingHandler>();
-        services.AddTransient<global::BasicCqrs.Sample.LookupTourSummaryHandler>();
-        services.AddTransient<global::SharedKernel.Mediator.IRequestHandler<global::BasicCqrs.Sample.LookupTourSummary, string>, global::BasicCqrs.Sample.LookupTourSummaryHandler>();
+        services.AddTransient<global::Mediator.Sample.CreateBookingHandler>();
+        services.AddTransient<global::SharedKernel.Mediator.IRequestHandler<global::Mediator.Sample.CreateBooking, string>, global::Mediator.Sample.CreateBookingHandler>();
+        services.AddTransient<global::Mediator.Sample.LookupTourSummaryHandler>();
+        services.AddTransient<global::SharedKernel.Mediator.IRequestHandler<global::Mediator.Sample.LookupTourSummary, string>, global::Mediator.Sample.LookupTourSummaryHandler>();
 
-        services.AddTransient<global::BasicCqrs.Sample.TourBookedHandler>();
-        services.AddTransient<global::SharedKernel.Mediator.INotificationHandler<global::BasicCqrs.Sample.TourBooked>, global::BasicCqrs.Sample.TourBookedHandler>();
+        services.AddTransient<global::Mediator.Sample.TourBookedHandler>();
+        services.AddTransient<global::SharedKernel.Mediator.INotificationHandler<global::Mediator.Sample.TourBooked>, global::Mediator.Sample.TourBookedHandler>();
 
-        services.AddTransient<global::BasicCqrs.Sample.StreamTourCodesHandler>();
-        services.AddTransient<global::SharedKernel.Mediator.IStreamRequestHandler<global::BasicCqrs.Sample.StreamTourCodes, string>, global::BasicCqrs.Sample.StreamTourCodesHandler>();
+        services.AddTransient<global::Mediator.Sample.StreamTourCodesHandler>();
+        services.AddTransient<global::SharedKernel.Mediator.IStreamRequestHandler<global::Mediator.Sample.StreamTourCodes, string>, global::Mediator.Sample.StreamTourCodesHandler>();
 
         return services;
     }

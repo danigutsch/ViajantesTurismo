@@ -1,4 +1,4 @@
-# BasicCqrs.Sample
+# Mediator.Sample
 
 Single console sample for `SharedKernel.Mediator`.
 
@@ -17,7 +17,7 @@ the package set:
 ## Run
 
 ```bash
-dotnet run --project samples/Mediator/BasicCqrs.Sample/BasicCqrs.Sample.csproj
+dotnet run --project samples/Mediator/Mediator.Sample/Mediator.Sample.csproj
 ```
 
 ## Notes

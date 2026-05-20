@@ -34,26 +34,26 @@ public sealed partial class AppMediator : IMediator
 
 
     /// <summary>
-    /// Sends a <see cref="global::BasicCqrs.Sample.CreateBooking"/> request through the generated mediator dispatch path.
+    /// Sends a <see cref="global::Mediator.Sample.CreateBooking"/> request through the generated mediator dispatch path.
     /// </summary>
     /// <param name="request">The request instance to dispatch.</param>
     /// <param name="ct">The cancellation token for the operation.</param>
     /// <returns>The produced response value.</returns>
-    public async global::System.Threading.Tasks.ValueTask<string> Send(global::BasicCqrs.Sample.CreateBooking request,
+    public async global::System.Threading.Tasks.ValueTask<string> Send(global::Mediator.Sample.CreateBooking request,
         global::System.Threading.CancellationToken ct)
     {
         global::System.ArgumentNullException.ThrowIfNull(request);
 
         var activity = _instrumentation.ActivitySource.StartActivity("mediator.send", global::System.Diagnostics.ActivityKind.Internal);
         activity?.SetTag("mediator.request.name", "CreateBooking");
-        activity?.SetTag("mediator.request.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.request.assembly", "Mediator.Sample");
         activity?.SetTag("mediator.handler.name", "CreateBookingHandler");
         activity?.SetTag("mediator.pipeline.depth", 0);
         var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();
         var outcome = "success";
         try
         {
-            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.CreateBookingHandler>(Services);
+            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::Mediator.Sample.CreateBookingHandler>(Services);
 
             var result = await handler.Handle(request, ct).ConfigureAwait(false);
             activity?.SetTag("mediator.outcome", "success");
@@ -84,26 +84,26 @@ public sealed partial class AppMediator : IMediator
     }
 
     /// <summary>
-    /// Sends a <see cref="global::BasicCqrs.Sample.LookupTourSummary"/> request through the generated mediator dispatch path.
+    /// Sends a <see cref="global::Mediator.Sample.LookupTourSummary"/> request through the generated mediator dispatch path.
     /// </summary>
     /// <param name="request">The request instance to dispatch.</param>
     /// <param name="ct">The cancellation token for the operation.</param>
     /// <returns>The produced response value.</returns>
-    public async global::System.Threading.Tasks.ValueTask<string> Send(global::BasicCqrs.Sample.LookupTourSummary request,
+    public async global::System.Threading.Tasks.ValueTask<string> Send(global::Mediator.Sample.LookupTourSummary request,
         global::System.Threading.CancellationToken ct)
     {
         global::System.ArgumentNullException.ThrowIfNull(request);
 
         var activity = _instrumentation.ActivitySource.StartActivity("mediator.send", global::System.Diagnostics.ActivityKind.Internal);
         activity?.SetTag("mediator.request.name", "LookupTourSummary");
-        activity?.SetTag("mediator.request.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.request.assembly", "Mediator.Sample");
         activity?.SetTag("mediator.handler.name", "LookupTourSummaryHandler");
         activity?.SetTag("mediator.pipeline.depth", 0);
         var sw = global::System.Diagnostics.Stopwatch.GetTimestamp();
         var outcome = "success";
         try
         {
-            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.LookupTourSummaryHandler>(Services);
+            var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::Mediator.Sample.LookupTourSummaryHandler>(Services);
 
             var result = await handler.Handle(request, ct).ConfigureAwait(false);
             activity?.SetTag("mediator.outcome", "success");
@@ -134,12 +134,12 @@ public sealed partial class AppMediator : IMediator
     }
 
     /// <summary>
-    /// Sends a <see cref="global::BasicCqrs.Sample.StreamTourCodes"/> stream through the generated mediator dispatch path.
+    /// Sends a <see cref="global::Mediator.Sample.StreamTourCodes"/> stream through the generated mediator dispatch path.
     /// </summary>
     /// <param name="request">The stream request instance to dispatch.</param>
     /// <param name="ct">The cancellation token for the operation.</param>
     /// <returns>The produced response stream.</returns>
-    public global::System.Collections.Generic.IAsyncEnumerable<string> Send(global::BasicCqrs.Sample.StreamTourCodes request,
+    public global::System.Collections.Generic.IAsyncEnumerable<string> Send(global::Mediator.Sample.StreamTourCodes request,
         global::System.Threading.CancellationToken ct)
     {
         global::System.ArgumentNullException.ThrowIfNull(request);
@@ -147,15 +147,15 @@ public sealed partial class AppMediator : IMediator
         return SendStream_0000(request, ct);
     }
 
-    private async global::System.Collections.Generic.IAsyncEnumerable<string> SendStream_0000(global::BasicCqrs.Sample.StreamTourCodes request,
+    private async global::System.Collections.Generic.IAsyncEnumerable<string> SendStream_0000(global::Mediator.Sample.StreamTourCodes request,
         [global::System.Runtime.CompilerServices.EnumeratorCancellation] global::System.Threading.CancellationToken ct)
     {
         var activity = _instrumentation.ActivitySource.StartActivity("mediator.stream", global::System.Diagnostics.ActivityKind.Internal);
         activity?.SetTag("mediator.request.name", "StreamTourCodes");
-        activity?.SetTag("mediator.request.assembly", "BasicCqrs.Sample");
+        activity?.SetTag("mediator.request.assembly", "Mediator.Sample");
         activity?.SetTag("mediator.handler.name", "StreamTourCodesHandler");
         var outcome = "success";
-        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::BasicCqrs.Sample.StreamTourCodesHandler>(Services);
+        var handler = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<global::Mediator.Sample.StreamTourCodesHandler>(Services);
 
         var enumerator = handler.Handle(request, ct).GetAsyncEnumerator(ct);
         try

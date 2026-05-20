@@ -1,6 +1,6 @@
 using SharedKernel.Mediator;
 
-namespace BasicCqrs.Sample;
+namespace Mediator.Sample;
 
 /// <summary>
 /// Produces a simple query response for the sample tour summary flow.

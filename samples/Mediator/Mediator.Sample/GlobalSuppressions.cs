@@ -5,4 +5,4 @@ using System.Diagnostics.CodeAnalysis;
     "CA1515:Consider making public types internal",
     Justification = "Generated AppMediator overloads reference sample request and handler types.",
     Scope = "namespaceanddescendants",
-    Target = "~N:BasicCqrs.Sample")]
+    Target = "~N:Mediator.Sample")]

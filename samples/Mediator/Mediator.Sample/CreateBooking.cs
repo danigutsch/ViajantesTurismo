@@ -1,6 +1,6 @@
 using SharedKernel.Mediator;
 
-namespace BasicCqrs.Sample;
+namespace Mediator.Sample;
 
 /// <summary>
 /// Represents the sample command used to create a booking identifier.
