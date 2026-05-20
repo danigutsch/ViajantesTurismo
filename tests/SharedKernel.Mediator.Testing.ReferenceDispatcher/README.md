@@ -20,7 +20,7 @@ The project now exposes `ReferenceDispatcherBuilder` and `ReferenceMediator` for
 
 ## Dependencies
 
-- [SharedKernel.Mediator.Abstractions](../../src/Mediator/SharedKernel.Mediator.Abstractions/README.md)
+- [SharedKernel.Mediator.Abstractions](../../src/SharedKernel/SharedKernel.Mediator.Abstractions/README.md)
 
 ## See Also
 

@@ -231,7 +231,7 @@ jobs:
         uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0
         with:
           globs: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
-          config: .markdownlint.json
+          config: .markdownlint-cli2.jsonc
           separator: ","
 
       - name: Lint all Markdown files on mainline runs
@@ -247,7 +247,7 @@ jobs:
             tests/**/*.md
             benchmarks/**/*.md
             samples/**/*.md
-          config: .markdownlint.json
+          config: .markdownlint-cli2.jsonc
 
       - name: Install shellcheck
         run: |
