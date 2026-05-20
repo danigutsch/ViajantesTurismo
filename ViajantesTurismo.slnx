@@ -20,6 +20,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.CodeFixes/SharedKernel.Mediator.CodeFixes.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />
@@ -30,6 +31,7 @@
         <Project Path="src/ViajantesTurismo.Admin.Web/ViajantesTurismo.Admin.Web.csproj" />
     </Folder>
     <Folder Name="/tests/">
+        <Project Path="tests/SharedKernel.Results.Tests/SharedKernel.Results.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.Tests.Shared/ViajantesTurismo.Admin.Tests.Shared.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.WebTests/ViajantesTurismo.Admin.WebTests.csproj" />
