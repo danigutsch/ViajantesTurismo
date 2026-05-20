@@ -116,4 +116,72 @@ public sealed class ValidationErrorsTests
         // Assert
         Assert.Contains("Only validation errors can be added", exception.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Rejects_Non_Invalid_Generic_Results()
+    {
+        // Arrange
+        var errors = new ValidationErrors();
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() => errors.Add(Result.Ok(42)));
+
+        // Assert
+        Assert.Contains("Only validation errors can be added", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Returns_A_Single_Non_Generic_Result_Unchanged()
+    {
+        // Arrange
+        var errors = new ValidationErrors();
+        var original = Result.Invalid("Validation failed", "Name", "Name is required");
+        errors.Add(original);
+
+        // Act
+        var result = errors.ToResult();
+
+        // Assert
+        Assert.Equal(original, result);
+    }
+
+    [Fact]
+    public void Throws_When_A_Single_Invalid_Result_Lacks_Error_Details()
+    {
+        // Arrange
+        var errors = new ValidationErrors();
+        errors.Add(CreateMalformedInvalidResult(error: null));
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() => errors.ToResult<int>());
+
+        // Assert
+        Assert.Equal("Validation errors must include error details.", exception.Message);
+    }
+
+    [Fact]
+    public void Throws_When_A_Single_Invalid_Result_Lacks_Validation_Details()
+    {
+        // Arrange
+        var errors = new ValidationErrors();
+        errors.Add(CreateMalformedInvalidResult(new ResultError("Validation failed", ResultErrorCodes.Invalid)));
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() => errors.ToResult<int>());
+
+        // Assert
+        Assert.Equal("Validation errors must include field details.", exception.Message);
+    }
+
+    private static Result CreateMalformedInvalidResult(ResultError? error)
+    {
+        var constructor = typeof(Result).GetConstructor(
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            binder: null,
+            types: [typeof(ResultStatus), typeof(ResultError)],
+            modifiers: null);
+
+        Assert.NotNull(constructor);
+        return (Result)constructor.Invoke([ResultStatus.Invalid, error]);
+    }
 }

@@ -82,4 +82,105 @@ public sealed class ResultErrorTests
         // Assert
         Assert.Equal("not_found: Tour not found", text);
     }
+
+    [Fact]
+    public void Supports_Value_Equality_For_Identical_Errors()
+    {
+        // Arrange
+        var left = new ResultError(
+            "Validation failed",
+            ResultErrorCodes.Invalid,
+            new Dictionary<string, string[]>
+            {
+                ["Name"] = ["Name is required"],
+            });
+        var right = new ResultError(
+            "Validation failed",
+            ResultErrorCodes.Invalid,
+            new Dictionary<string, string[]>
+            {
+                ["Name"] = ["Name is required"],
+            });
+
+        // Act
+        var equalAsTyped = left.Equals(right);
+        var equalAsObject = left.Equals((object)right);
+
+        // Assert
+        Assert.True(equalAsTyped);
+        Assert.True(equalAsObject);
+        Assert.Equal(left.GetHashCode(), right.GetHashCode());
+    }
+
+    [Fact]
+    public void Detects_Different_Error_Details()
+    {
+        // Arrange
+        var left = new ResultError("Validation failed", ResultErrorCodes.Invalid);
+        var right = new ResultError("Something else failed", ResultErrorCodes.Invalid);
+
+        // Act
+        var equal = left.Equals(right);
+
+        // Assert
+        Assert.False(equal);
+    }
+
+    [Fact]
+    public void Detects_Different_Validation_Payloads()
+    {
+        // Arrange
+        var left = new ResultError(
+            "Validation failed",
+            ResultErrorCodes.Invalid,
+            new Dictionary<string, string[]>
+            {
+                ["Name"] = ["Name is required"],
+            });
+        var right = new ResultError(
+            "Validation failed",
+            ResultErrorCodes.Invalid,
+            new Dictionary<string, string[]>
+            {
+                ["Name"] = ["Name must be at least 3 characters"],
+            });
+
+        // Act
+        var equal = left.Equals(right);
+
+        // Assert
+        Assert.False(equal);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Rejects_Null_Or_Whitespace_Detail(string? detail)
+    {
+        // Arrange
+        // Act
+        var exception = Record.Exception(() => new ResultError(detail!, ResultErrorCodes.Error));
+
+        // Assert
+        Assert.NotNull(exception);
+        var argumentException = Assert.IsAssignableFrom<ArgumentException>(exception);
+        Assert.Equal("detail", argumentException.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Rejects_Null_Or_Whitespace_Code(string? code)
+    {
+        // Arrange
+        // Act
+        var exception = Record.Exception(() => new ResultError("Something went wrong", code!));
+
+        // Assert
+        Assert.NotNull(exception);
+        var argumentException = Assert.IsAssignableFrom<ArgumentException>(exception);
+        Assert.Equal("code", argumentException.ParamName);
+    }
 }

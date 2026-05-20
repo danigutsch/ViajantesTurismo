@@ -182,4 +182,65 @@ public sealed class ResultCoreTests
         Assert.False(result.IsSuccess);
         Assert.False(result.IsFailure);
     }
+
+    [Fact]
+    public void Rejects_Empty_Validation_Error_Dictionaries()
+    {
+        // Arrange
+        var validationErrors = new Dictionary<string, string[]>();
+
+        // Act
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Result.Invalid("Validation failed", validationErrors));
+
+        // Assert
+        Assert.Equal("validationErrors", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Rejects_Null_Or_Whitespace_Error_Detail(string? detail)
+    {
+        // Arrange
+        // Act
+        var exception = Record.Exception(() => Result.Error(detail!));
+
+        // Assert
+        Assert.NotNull(exception);
+        var argumentException = Assert.IsAssignableFrom<ArgumentException>(exception);
+        Assert.Equal("detail", argumentException.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Rejects_Null_Or_Whitespace_Validation_Field(string? field)
+    {
+        // Arrange
+        // Act
+        var exception = Record.Exception(() => Result.Invalid("Validation failed", field!, "Name is required"));
+
+        // Assert
+        Assert.NotNull(exception);
+        var argumentException = Assert.IsAssignableFrom<ArgumentException>(exception);
+        Assert.Equal("field", argumentException.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Rejects_Null_Or_Whitespace_Validation_Message(string? message)
+    {
+        // Arrange
+        // Act
+        var exception = Record.Exception(() => Result.Invalid("Validation failed", "Name", message!));
+
+        // Assert
+        Assert.NotNull(exception);
+        var argumentException = Assert.IsAssignableFrom<ArgumentException>(exception);
+        Assert.Equal("message", argumentException.ParamName);
+    }
 }

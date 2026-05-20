@@ -75,6 +75,21 @@ public sealed class ResultConvertErrorTests
         Assert.Equal(["Name is required"], error.ValidationErrors["Name"]);
     }
 
+    [Fact]
+    public void Throws_When_Converting_An_Invalid_Result_Without_Validation_Payload()
+    {
+        // Arrange
+        var malformedResult = CreateMalformedResult(
+            ResultStatus.Invalid,
+            new ResultError("Validation failed", ResultErrorCodes.Invalid));
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() => malformedResult.ConvertError<string>());
+
+        // Assert
+        Assert.Equal("Failed results must contain error details.", exception.Message);
+    }
+
     [Theory]
     [InlineData((int)ResultStatus.Created, "Cannot convert a successful result. Only failed results can be converted.")]
     [InlineData((int)ResultStatus.Unknown, "Unsupported result status: Unknown")]
