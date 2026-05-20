@@ -199,6 +199,9 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
@@ -243,7 +246,8 @@
           "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.Http": "[1.15.1, )",
-          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
+          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
