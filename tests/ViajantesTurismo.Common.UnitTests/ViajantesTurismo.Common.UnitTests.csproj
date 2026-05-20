@@ -22,6 +22,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Mediator\SharedKernel.Mediator.csproj"/>
     </ItemGroup>
 
 </Project>
