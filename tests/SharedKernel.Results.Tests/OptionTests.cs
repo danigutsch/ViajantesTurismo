@@ -182,4 +182,44 @@ public sealed class OptionTests
         // Assert
         Assert.Equal(Option.None<string>(), bound);
     }
+
+    [Fact]
+    public void Some_supports_value_types_when_the_value_is_not_null()
+    {
+        // Arrange
+        const int expectedValue = 42;
+
+        // Act
+        var option = Option.Some(expectedValue);
+
+        // Assert
+        Assert.True(option.HasValue);
+        Assert.Equal(expectedValue, option.Value);
+    }
+
+    [Fact]
+    public void Map_can_project_reference_options_into_value_type_options()
+    {
+        // Arrange
+        var option = Option.Some("porto");
+
+        // Act
+        var mapped = option.Map(static value => value.Length);
+
+        // Assert
+        Assert.Equal(Option.Some(5), mapped);
+    }
+
+    [Fact]
+    public void Bind_can_project_into_value_type_options()
+    {
+        // Arrange
+        var option = Option.Some("porto");
+
+        // Act
+        var bound = option.Bind(static value => Option.Some(value.Length));
+
+        // Assert
+        Assert.Equal(Option.Some(5), bound);
+    }
 }
