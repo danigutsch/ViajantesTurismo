@@ -50,7 +50,11 @@ public sealed class RequestTraceCorrelationTests(ApiFixture fixture) : AdminApiI
     {
         return new ActivityListener
         {
-            ShouldListenTo = static _ => true,
+            ShouldListenTo = static source =>
+                source.Name.StartsWith("System.Net.Http", StringComparison.Ordinal)
+                || source.Name.StartsWith("Microsoft.AspNetCore", StringComparison.Ordinal)
+                || source.Name.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal)
+                || source.Name.StartsWith("Npgsql", StringComparison.Ordinal),
             Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity =>
