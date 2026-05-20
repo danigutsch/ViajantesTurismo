@@ -65,6 +65,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-method "*To
 - For grid assertions, avoid assuming page 1 and avoid scanning pages until a row is found.
   If the behavior under test is not pagination, constrain the dataset or navigate directly by known ID.
 - Prefer asserting semantic state (status text, details page values) over fragile CSS-class-only checks.
+- For async upload or wizard flows, wait on the first stable user-visible state transition (for example
+  success/warning text or an enabled primary action) before asserting secondary badges or decorative UI.
 
 ## Specialized helper classes
 
