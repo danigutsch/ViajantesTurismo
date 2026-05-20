@@ -30,8 +30,11 @@ public sealed class ResultCoreTests
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
         Assert.True(result.TryGetError(out var error));
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Invalid, error.Code);
         Assert.Equal("Validation failed", error.Detail);
-        Assert.Equal(["Name is required"], error.ValidationErrors!["name"]);
+        Assert.NotNull(error.ValidationErrors);
+        Assert.Equal(["Name is required"], error.ValidationErrors["name"]);
     }
 
     [Fact]
@@ -49,8 +52,12 @@ public sealed class ResultCoreTests
 
         // Assert
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Equal(["Name is required"], result.ErrorDetails!.ValidationErrors!["name"]);
-        Assert.Equal(["Email is invalid"], result.ErrorDetails.ValidationErrors["email"]);
+        var error = result.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Invalid, error.Code);
+        Assert.NotNull(error.ValidationErrors);
+        Assert.Equal(["Name is required"], error.ValidationErrors["name"]);
+        Assert.Equal(["Email is invalid"], error.ValidationErrors["email"]);
     }
 
     [Fact]
@@ -106,6 +113,8 @@ public sealed class ResultCoreTests
         Assert.True(result.IsFailure);
         Assert.Equal(ResultStatus.Error, result.Status);
         Assert.True(result.TryGetError(out var error));
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Error, error.Code);
         Assert.Equal("Unexpected failure", error.Detail);
     }
 
@@ -134,6 +143,8 @@ public sealed class ResultCoreTests
 
         // Assert
         Assert.True(hasError);
-        Assert.Equal("Unexpected failure", error!.Detail);
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Error, error.Code);
+        Assert.Equal("Unexpected failure", error.Detail);
     }
 }

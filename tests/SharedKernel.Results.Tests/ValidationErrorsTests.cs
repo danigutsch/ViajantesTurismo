@@ -43,9 +43,13 @@ public sealed class ValidationErrorsTests
 
         // Assert
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Equal("Multiple validation errors occurred.", result.ErrorDetails!.Detail);
-        Assert.Equal(["Name is required"], result.ErrorDetails.ValidationErrors!["Name"]);
-        Assert.Equal(["Email is invalid"], result.ErrorDetails.ValidationErrors["Email"]);
+        var error = result.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Invalid, error.Code);
+        Assert.Equal("Multiple validation errors occurred.", error.Detail);
+        Assert.NotNull(error.ValidationErrors);
+        Assert.Equal(["Name is required"], error.ValidationErrors["Name"]);
+        Assert.Equal(["Email is invalid"], error.ValidationErrors["Email"]);
     }
 
     [Fact]
@@ -60,9 +64,12 @@ public sealed class ValidationErrorsTests
         var result = errors.ToResult();
 
         // Assert
+        var error = result.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.NotNull(error.ValidationErrors);
         Assert.Equal(
             ["Name is required", "Name must be at least 3 characters"],
-            result.ErrorDetails!.ValidationErrors!["Name"]);
+            error.ValidationErrors["Name"]);
     }
 
     [Fact]
@@ -77,7 +84,11 @@ public sealed class ValidationErrorsTests
 
         // Assert
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Equal(["Age must be positive"], result.ErrorDetails!.ValidationErrors!["Age"]);
+        var error = result.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Invalid, error.Code);
+        Assert.NotNull(error.ValidationErrors);
+        Assert.Equal(["Age must be positive"], error.ValidationErrors["Age"]);
     }
 
     [Fact]

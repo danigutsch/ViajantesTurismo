@@ -17,7 +17,10 @@ public sealed class ResultConvertErrorTests
 
         // Assert
         Assert.Equal(ResultStatus.NotFound, converted.Status);
-        Assert.Equal("Tour not found", converted.ErrorDetails!.Detail);
+        var error = converted.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.NotFound, error.Code);
+        Assert.Equal("Tour not found", error.Detail);
     }
 
     [Fact]
@@ -31,7 +34,10 @@ public sealed class ResultConvertErrorTests
 
         // Assert
         Assert.Equal(ResultStatus.Conflict, converted.Status);
-        Assert.Equal("Tour already exists", converted.ErrorDetails!.Detail);
+        var error = converted.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Conflict, error.Code);
+        Assert.Equal("Tour already exists", error.Detail);
     }
 
     [Fact]
@@ -45,7 +51,10 @@ public sealed class ResultConvertErrorTests
 
         // Assert
         Assert.Equal(ResultStatus.Error, converted.Status);
-        Assert.Equal("Unexpected failure", converted.ErrorDetails!.Detail);
+        var error = converted.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Error, error.Code);
+        Assert.Equal("Unexpected failure", error.Detail);
     }
 
     [Fact]
@@ -59,7 +68,11 @@ public sealed class ResultConvertErrorTests
 
         // Assert
         Assert.Equal(ResultStatus.Invalid, converted.Status);
-        Assert.Equal(["Name is required"], converted.ErrorDetails!.ValidationErrors!["Name"]);
+        var error = converted.ErrorDetails;
+        Assert.NotNull(error);
+        Assert.Equal(ResultErrorCodes.Invalid, error.Code);
+        Assert.NotNull(error.ValidationErrors);
+        Assert.Equal(["Name is required"], error.ValidationErrors["Name"]);
     }
 
     [Theory]

@@ -173,6 +173,7 @@ ownership boundaries diverge enough to justify a split.
 - **Naming**: Natural language with underscores — `Confirming_A_Booking_When_Cancelled_Returns_Failure`
 - **Pattern**: Arrange-Act-Assert
 - **Validation**: Domain operations use the Result pattern; tests assert on `IsSuccess` / `IsFailure`
+- **Nullability**: Do not use the null-forgiving operator (`!`) in tests; use `Assert.NotNull(...)` before dereferencing.
 
 ## Coverage Goals
 

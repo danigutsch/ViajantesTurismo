@@ -43,6 +43,7 @@ This file overrides root guidance where test-specific behavior is needed.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.
+- Do not use the null-forgiving operator (`!`) in tests; assert non-null explicitly before dereferencing.
 
 ## Test independence
 
