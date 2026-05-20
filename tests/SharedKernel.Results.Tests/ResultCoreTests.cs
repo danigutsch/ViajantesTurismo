@@ -53,7 +53,7 @@ public sealed class ResultCoreTests
     {
         // Arrange
         // Act
-        var result = Result<string>.Created("porto").ToResult();
+        var result = Result.Created("porto").ToResult();
 
         // Assert
         Assert.True(result.IsSuccess);
