@@ -8,7 +8,7 @@ import re
 import sys
 
 
-IGNORED_PARTS = {"node_modules", "bin", "obj", "TestResults", ".vs", ".vscode"}
+IGNORED_PARTS = {"node_modules", "bin", "obj", "TestResults", ".sonarqube", ".vs", ".vscode"}
 
 
 def is_included_json_path(path: pathlib.Path) -> bool:

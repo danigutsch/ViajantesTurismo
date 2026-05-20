@@ -71,11 +71,18 @@ cleanup() {
     trap - EXIT
 
     if [[ ${exit_code} -eq 0 ]]; then
-        if run_with_log "Finalizing SonarScanner" "${sonar_end_log}" \
-            dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"; then
+        local sonar_end_exit_code
+
+        set +e
+        run_with_log "Finalizing SonarScanner" "${sonar_end_log}" \
+            dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
+        sonar_end_exit_code="$?"
+        set -e
+
+        if [[ ${sonar_end_exit_code} -eq 0 ]]; then
             grep -F "QUALITY GATE STATUS:" "${sonar_end_log}" || true
         else
-            exit_code="$?"
+            exit_code="${sonar_end_exit_code}"
         fi
     fi
 
