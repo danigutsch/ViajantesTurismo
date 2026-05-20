@@ -446,7 +446,8 @@
           "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.Http": "[1.15.1, )",
-          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
+          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection": {

@@ -20,7 +20,6 @@ public static class ServiceDefaultsExtensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
-    private const string SharedKernelMediatorTelemetryName = "SharedKernel.Mediator";
 
     /// <summary>
     /// Adds a set of default services and configurations to the host builder, including OpenTelemetry,
@@ -79,13 +78,13 @@ public static class ServiceDefaultsExtensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddMeter(SharedKernelMediatorTelemetryName)
+                    .AddSharedKernelMediatorMetrics()
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddSource(SharedKernelMediatorTelemetryName)
+                    .AddSharedKernelMediatorTracing()
                     .AddAspNetCoreInstrumentation(options =>
                         options.Filter = context =>
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath, StringComparison.OrdinalIgnoreCase)

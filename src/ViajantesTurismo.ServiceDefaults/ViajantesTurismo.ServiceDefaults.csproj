@@ -18,4 +18,8 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>
