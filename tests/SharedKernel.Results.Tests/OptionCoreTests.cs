@@ -23,6 +23,7 @@ public sealed class OptionCoreTests
     public void None_creates_an_empty_option()
     {
         // Arrange
+        // Act
         var option = Option.None<string>();
 
         // Assert

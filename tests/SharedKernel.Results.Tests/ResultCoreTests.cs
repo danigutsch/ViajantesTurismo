@@ -7,6 +7,7 @@ public sealed class ResultCoreTests
     [Fact]
     public void Ok_creates_a_successful_result()
     {
+        // Arrange
         // Act
         var result = Result.Ok();
 
@@ -20,6 +21,7 @@ public sealed class ResultCoreTests
     [Fact]
     public void Invalid_creates_a_failed_result_with_error_details()
     {
+        // Arrange
         // Act
         var result = Result.Invalid("Validation failed", "name", "Name is required");
 
@@ -35,6 +37,7 @@ public sealed class ResultCoreTests
     [Fact]
     public void Ok_of_t_creates_a_successful_result_with_a_value()
     {
+        // Arrange
         // Act
         var result = Result.Ok("porto");
 
@@ -62,6 +65,7 @@ public sealed class ResultCoreTests
     [Fact]
     public void Error_of_t_creates_a_failed_result_without_a_value()
     {
+        // Arrange
         // Act
         var result = Result.Error<string>("Unexpected failure");
 
