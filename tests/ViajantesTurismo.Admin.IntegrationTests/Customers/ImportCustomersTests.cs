@@ -3,7 +3,6 @@ using System.Text;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 
-[Collection(AdminApiIntegrationTestSet.Name)]
 public sealed class ImportCustomersTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     private static string BuildCanonicalCsv(string email)

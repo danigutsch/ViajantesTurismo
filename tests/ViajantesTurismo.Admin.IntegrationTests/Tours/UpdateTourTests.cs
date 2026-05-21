@@ -1,6 +1,5 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Tours;
 
-[Collection(AdminApiIntegrationTestSet.Name)]
 public sealed class UpdateTourTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     private static DateTime UtcDate(int year, int month, int day)

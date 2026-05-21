@@ -1,6 +1,5 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-[Collection(AdminApiIntegrationTestSet.Name)]
 public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     [Fact]

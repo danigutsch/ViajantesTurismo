@@ -1,6 +1,5 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 
-[Collection(AdminApiIntegrationTestSet.Name)]
 public sealed class UpdateCustomerTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     [Fact]
