@@ -23,7 +23,7 @@ public sealed class RequestTraceCorrelationTests(ApiFixture fixture) : AdminApiI
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var capturedActivities = exportedActivities.ToArray();
+        var capturedActivities = await WaitForCapturedActivities(exportedActivities, TestContext.Current.CancellationToken);
 
         var clientActivity = Assert.Single(capturedActivities, activity =>
             activity.Kind == ActivityKind.Client
@@ -65,5 +65,48 @@ public sealed class RequestTraceCorrelationTests(ApiFixture fixture) : AdminApiI
                 }
             }
         };
+    }
+
+    private static async Task<Activity[]> WaitForCapturedActivities(
+        ConcurrentQueue<Activity> exportedActivities,
+        CancellationToken cancellationToken)
+    {
+        var timeout = TimeSpan.FromSeconds(5);
+        var startedAt = Stopwatch.GetTimestamp();
+
+        while (true)
+        {
+            var capturedActivities = exportedActivities.ToArray();
+            if (HasExpectedTraceShape(capturedActivities))
+            {
+                return capturedActivities;
+            }
+
+            if (Stopwatch.GetElapsedTime(startedAt) >= timeout)
+            {
+                return capturedActivities;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+        }
+    }
+
+    private static bool HasExpectedTraceShape(Activity[] capturedActivities)
+    {
+        var hasClientActivity = capturedActivities.Any(activity =>
+            activity.Kind == ActivityKind.Client
+            && string.Equals(activity.Source.Name, "System.Net.Http", StringComparison.Ordinal));
+
+        var hasServerActivity = capturedActivities.Any(activity =>
+            activity.Kind == ActivityKind.Server
+            && string.Equals(activity.Source.Name, "Microsoft.AspNetCore", StringComparison.Ordinal));
+
+        var hasDatabaseActivity = capturedActivities.Any(activity =>
+            activity.Kind == ActivityKind.Client
+            && activity.Tags.Any(tag =>
+                string.Equals(tag.Key, "db.system.name", StringComparison.Ordinal)
+                && string.Equals(tag.Value, "postgresql", StringComparison.Ordinal)));
+
+        return hasClientActivity && hasServerActivity && hasDatabaseActivity;
     }
 }
