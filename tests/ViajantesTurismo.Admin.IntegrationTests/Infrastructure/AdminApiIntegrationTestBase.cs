@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.ApiService;
 
 [assembly: AssemblyFixture(typeof(ApiFixture))]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 

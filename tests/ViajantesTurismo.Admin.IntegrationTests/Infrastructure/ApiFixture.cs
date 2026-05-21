@@ -60,17 +60,18 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
         await seeder.Seed(cts.Token);
     }
 
-    public HttpClient GetApiClient() => CreateClient();
-    public Uri GetBaseUrl() => ClientOptions.BaseAddress ?? new Uri("http://localhost/");
-    public async Task Seed(CancellationToken ct)
+    public Uri Uri => ClientOptions.BaseAddress ?? new Uri("http://localhost/");
+    public async Task Seed()
     {
         using var scope = Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.Seed(ct);
+        await seeder.Seed(default);
     }
-    public Task Reset(CancellationToken ct)
+    public async Task Reset()
     {
-        return Task.CompletedTask;
+        using var scope = Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+        await seeder.ClearDatabase(default);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

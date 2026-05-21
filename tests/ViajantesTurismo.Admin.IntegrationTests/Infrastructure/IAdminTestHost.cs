@@ -1,8 +1,9 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 /// <summary>
-/// Admin integration/E2E test host seam for API access, URL resolution, and lifecycle control.
+/// Abstraction for admin integration test host operations for Admin integration tests only.
 /// </summary>
+
 /// <summary>
 /// Abstraction for portable admin test host operations.
 /// </summary>
@@ -11,12 +12,14 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 /// </summary>
 public interface IAdminTestHost
 {
-    /// <summary>Test application base URI.</summary>
+    /// <summary>
+    /// Test application base URI, seed/clear/teardown hooks for integration test host lifecycle.
+    /// </summary>
     Uri Uri { get; }
-    /// <summary>Seeds test data for the integration test host.</summary>
+    /// <summary>
+    /// Seed test data and reset infra for admin integration tests.
+    /// </summary>
     Task Seed();
-    /// <summary>Resets the test application to pre-seed state.</summary>
     Task Reset();
-    /// <summary>Disposes any transient resources for test lifecycle management.</summary>
     ValueTask DisposeAsync();
 }
