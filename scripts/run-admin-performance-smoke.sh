@@ -15,5 +15,5 @@ fi
 k6 run \
   -e "VT_API_BASE_URL=${VT_API_BASE_URL}" \
   -e "VT_K6_PROFILE=${VT_K6_PROFILE:-smoke}" \
-  tests/performance/k6/scenarios/admin-smoke.js \
-  "$@"
+  "$@" \
+  tests/performance/k6/scenarios/admin-smoke.js

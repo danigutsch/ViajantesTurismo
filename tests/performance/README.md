@@ -1,4 +1,4 @@
-% Performance Testing
+# Performance Testing
 
 This folder contains repository-owned performance and load testing assets.
 
