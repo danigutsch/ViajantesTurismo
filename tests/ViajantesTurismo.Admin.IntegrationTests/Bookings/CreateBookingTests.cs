@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-public sealed class CreateBookingTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
+public sealed class CreateBookingTests(IAdminTestHost host) : AdminApiIntegrationTestBase(host)
 {
     [Fact]
     public async Task Can_Create_Booking()
