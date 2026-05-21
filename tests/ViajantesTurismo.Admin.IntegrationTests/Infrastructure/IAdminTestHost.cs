@@ -12,7 +12,7 @@ public interface IAdminTestHost
     /// <summary>
     /// Gets the base URL of the Admin API for browser or HTTP tests.
     /// </summary>
-    string GetBaseUrl();
+    Uri GetBaseUrl();
     /// <summary>
     /// Performs database seeding for test setup.
     /// </summary>
