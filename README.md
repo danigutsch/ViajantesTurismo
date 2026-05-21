@@ -82,7 +82,7 @@ for the best development experience.
 
 ### Quick Setup
 
-Run the automated setup script to install all required dependencies:
+Run the automated setup script to verify required dependencies and point you to optional tools:
 
 ```powershell
 # Windows (PowerShell)
@@ -100,8 +100,21 @@ This script will:
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
 - ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
+- ✅ Detect optional `k6` availability for `tests/performance/`
 - ✅ Explain that Markdown and Gherkin lint tooling remains CI-owned for now
 - ✅ Explain CI-owned linting and optional local commit validation
+
+Required local tools for normal development:
+
+- `.NET 10 SDK` matching `global.json`
+- container runtime for Aspire-managed dependencies
+
+Optional local tools by task:
+
+- `pwsh`: required for Playwright browser installation on Linux/macOS and useful for PowerShell script work
+- `PSScriptAnalyzer`: optional local PowerShell linting
+- `k6`: optional performance/load testing under `tests/performance/`
+- `shellcheck`: optional unless you want to run CI-owned lint scripts locally
 
 ### Manual Setup (Alternative)
 
@@ -125,10 +138,15 @@ dotnet build ViajantesTurismo.slnx --no-restore
 # 5. Install Playwright browsers (requires pwsh on Linux/macOS)
 bash scripts/install-playwright.sh
 
-# 6. Install PowerShell linting (optional, Windows only)
+# 6. Install PowerShell linting (optional, when working on PowerShell scripts)
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
-# 7. Optional local commit validation
+# 7. Optional performance testing tool
+# macOS: brew install k6
+# Windows: winget install k6 --source winget
+# Linux: follow the official install guide
+
+# 8. Optional local commit validation
 printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
 bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
 ```
@@ -147,6 +165,23 @@ sudo apt-get install -y libnspr4 libnss3 libasound2t64
 ```
 
 See `setup-dev.ps1` or `setup-dev.sh` for detailed steps.
+
+### Optional: Performance and Load Testing
+
+The repository now has a generic performance testing area under `tests/performance/`.
+The first implementation uses `k6`, but `k6` is an optional external CLI, not a repo-pinned package dependency.
+
+Install `k6` only if you plan to run those scenarios:
+
+- macOS: `brew install k6`
+- Windows: `winget install k6 --source winget`
+- Linux: follow the official install guide: <https://grafana.com/docs/k6/latest/set-up/install-k6/>
+
+Example run:
+
+```bash
+VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh
+```
 
 When `global.json` changes, CI still expects committed `packages.lock.json` files to stay in sync.
 Dependabot PRs that only bump the SDK now trigger the `SDK Lockfile Maintenance` workflow, which
