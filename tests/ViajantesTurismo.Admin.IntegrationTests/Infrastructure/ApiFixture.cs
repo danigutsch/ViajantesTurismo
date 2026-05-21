@@ -60,9 +60,8 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
         await seeder.Seed(cts.Token);
     }
 
-    // IAdminTestHost implementation
     public HttpClient GetApiClient() => CreateClient();
-    public string GetBaseUrl() => ClientOptions.BaseAddress?.ToString() ?? string.Empty;
+    public Uri GetBaseUrl() => ClientOptions.BaseAddress ?? new Uri("http://localhost/");
     public async Task Seed(CancellationToken ct)
     {
         using var scope = Services.CreateScope();
