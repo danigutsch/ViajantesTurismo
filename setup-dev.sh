@@ -1,6 +1,6 @@
 #!/bin/bash
 # ViajantesTurismo Development Environment Setup Script
-# This script installs all required and optional tools for development
+# This script verifies required tooling and points to optional local tools
 
 set -e
 
@@ -166,6 +166,24 @@ check_powershell() {
     return 0
 }
 
+check_k6() {
+    printf "\n%b" "${YELLOW}📈 Checking optional performance testing tooling...${NC}\n"
+
+    if command -v k6 > /dev/null 2>&1; then
+        printf "%b" "   ${GREEN}✅ k6 installed${NC}\n"
+        printf "%b" "   ${CYAN}💡 Run the Admin smoke scenario with:${NC}\n"
+        printf "%b" "   ${CYAN}   VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh${NC}\n"
+    else
+        printf "%b" "   ${YELLOW}⚠️ k6 not available - performance/load testing scripts will be skipped locally${NC}\n"
+        printf "%b" "   ${CYAN}💡 Install k6 only if you plan to run tests under tests/performance/:${NC}\n"
+        printf "%b" "   ${CYAN}   Linux: https://grafana.com/docs/k6/latest/set-up/install-k6/${NC}\n"
+        printf "%b" "   ${CYAN}   macOS: brew install k6${NC}\n"
+        printf "%b" "   ${CYAN}   Windows: winget install k6 --source winget${NC}\n"
+    fi
+
+    return 0
+}
+
 print_summary() {
     printf "\n%b" "${GREEN}✨ Setup Complete!${NC}\n"
     printf "%b" "${GREEN}==================${NC}\n\n"
@@ -174,7 +192,8 @@ print_summary() {
     printf "%b" "  1. Run the application: ${NC}dotnet tool run aspire run\n"
     printf "%b" "  2. Run tests: ${NC}dotnet test\n"
     printf "%b" "  3. Install Playwright browsers after build: ${NC}bash scripts/install-playwright.sh\n"
-    printf "%b" "  4. Validate a commit message: ${NC}bash scripts/validate-commit-message.sh /path/to/message.txt\n"
+    printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh\n"
+    printf "%b" "  5. Validate a commit message: ${NC}bash scripts/validate-commit-message.sh /path/to/message.txt\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
     printf "\n"
     return 0
@@ -186,4 +205,5 @@ restore_dotnet_dependencies
 restore_dotnet_local_tools
 check_aspnet_core_development_certificate_trust
 check_powershell
+check_k6
 print_summary

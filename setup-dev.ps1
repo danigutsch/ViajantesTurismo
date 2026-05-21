@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # ViajantesTurismo Development Environment Setup Script
-# This script installs all required and optional tools for development
+# This script verifies required tooling and points to optional local tools
 
 param()
 
@@ -127,6 +127,23 @@ function Test-PowerShellAndPlaywrightPrerequisites {
     }
 }
 
+function Test-K6Prerequisites {
+    Write-Host "`n📈 Checking optional performance testing tooling..." -ForegroundColor Yellow
+    $k6Command = Get-Command k6 -ErrorAction SilentlyContinue
+
+    if ($k6Command) {
+        Write-Host "   ✅ k6 installed: $($k6Command.Source)" -ForegroundColor Green
+        Write-Host "   💡 Run the Admin smoke scenario with: VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh" -ForegroundColor Cyan
+    }
+    else {
+        Write-Host "   ⚠️ k6 not available - performance/load testing scripts will be skipped locally" -ForegroundColor Yellow
+        Write-Host "   💡 Install k6 only if you plan to run tests under tests/performance/:" -ForegroundColor Cyan
+        Write-Host "      Linux: https://grafana.com/docs/k6/latest/set-up/install-k6/" -ForegroundColor Cyan
+        Write-Host "      macOS: brew install k6" -ForegroundColor Cyan
+        Write-Host "      Windows: winget install k6 --source winget" -ForegroundColor Cyan
+    }
+}
+
 function Write-SetupSummary {
     Write-Host "`n✨ Setup Complete!" -ForegroundColor Green
     Write-Host "==================`n" -ForegroundColor Green
@@ -135,7 +152,8 @@ function Write-SetupSummary {
     Write-Host "  1. Run the application: dotnet tool run aspire run" -ForegroundColor White
     Write-Host "  2. Run tests: dotnet test" -ForegroundColor White
     Write-Host "  3. Install Playwright browsers after build: bash scripts/install-playwright.sh" -ForegroundColor White
-    Write-Host "  4. Validate a commit message: bash scripts/validate-commit-message.sh /path/to/message.txt" -ForegroundColor White
+    Write-Host "  4. Optional performance smoke run: VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh" -ForegroundColor White
+    Write-Host "  5. Validate a commit message: bash scripts/validate-commit-message.sh /path/to/message.txt" -ForegroundColor White
     Write-Host "     (If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)" -ForegroundColor DarkGray
     Write-Host ""
 }
@@ -146,4 +164,5 @@ Restore-DotNetDependencies
 Restore-DotNetLocalTools
 Test-AspNetCoreDevelopmentCertificateTrust
 Test-PowerShellAndPlaywrightPrerequisites
+Test-K6Prerequisites
 Write-SetupSummary
