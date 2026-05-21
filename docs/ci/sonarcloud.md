@@ -118,6 +118,8 @@ Coverage exclusions skip:
 - `samples/**` because sample projects are demonstrative consumer code
 - `scripts/**` because repository maintenance and CI helper scripts are linted directly, not exercised via
   the .NET test coverage pipeline
+- `tests/performance/**` because the current performance/load-testing assets are JavaScript-based tool inputs,
+  not .NET code exercised by the repository's MTP coverage pipeline
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
   compatibility shim
 
