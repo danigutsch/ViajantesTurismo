@@ -17,6 +17,8 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
     {
         // Arrange
         var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";
+        var autoMatchedAlert = Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" });
+        var previewButton = Page.GetButton("Preview");
 
         // Act
         await NavigateTo(CustomerImportRoutes.Import);
@@ -25,6 +27,8 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
         // Assert
         await Expect(Page).ToHaveTitleAsync("Import Customers");
         await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
+        await Expect(autoMatchedAlert).ToBeVisibleAsync();
+        await Expect(previewButton).Not.ToBeDisabledAsync();
         await Expect(Page.Locator(".badge.bg-secondary", new PageLocatorOptions { HasText = "column(s) detected" }))
             .ToBeVisibleAsync();
     }
