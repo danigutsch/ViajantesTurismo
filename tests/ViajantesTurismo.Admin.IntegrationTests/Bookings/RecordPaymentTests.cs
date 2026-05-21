@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
+[Collection(AdminApiIntegrationTestSet.Name)]
 public sealed class RecordPaymentTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     private const decimal PaymentAmountExceedingRemainingBalance = 3000m;

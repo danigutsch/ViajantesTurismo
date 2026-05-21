@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
+[Collection(AdminApiIntegrationTestSet.Name)]
 public sealed class UpdateBookingDiscountTests(ApiFixture fixture) : AdminApiIntegrationTestBase(fixture)
 {
     private const decimal ValidPercentageDiscount = 10m;
