@@ -22,6 +22,8 @@
             <Exclude>
                 <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
                 <Attribute>^System\.Diagnostics\.CodeAnalysis\.GeneratedCodeAttribute$</Attribute>
+                <!-- Keep CompilerGeneratedAttribute included: excluding it removes async/iterator
+                     user code from coverage because the compiler emits state machines for those methods. -->
             </Exclude>
         </Attributes>
 
