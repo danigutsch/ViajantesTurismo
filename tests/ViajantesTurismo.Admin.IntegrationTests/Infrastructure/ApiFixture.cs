@@ -14,7 +14,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 /// <summary>
 /// Fixture for API integration tests.
 /// </summary>
-public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetime
+public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetime, IAdminTestHost
 {
     private const string LoopbackAddress = "http://127.0.0.1:0";
     private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(30);
@@ -58,6 +58,20 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
         using var seedScope = Services.CreateScope();
         var seeder = seedScope.ServiceProvider.GetRequiredService<ISeeder>();
         await seeder.Seed(cts.Token);
+    }
+
+    // IAdminTestHost implementation
+    public HttpClient GetApiClient() => CreateClient();
+    public string GetBaseUrl() => ClientOptions.BaseAddress?.ToString() ?? string.Empty;
+    public async Task Seed(CancellationToken ct)
+    {
+        using var scope = Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+        await seeder.Seed(ct);
+    }
+    public Task Reset(CancellationToken ct)
+    {
+        return Task.CompletedTask;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
