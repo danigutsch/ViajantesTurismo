@@ -4,4 +4,5 @@ using ViajantesTurismo.Admin.ApiService;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-public abstract class AdminApiIntegrationTestBase(ApiFixture fixture) : IntegrationTestBase<ApiMarker>(fixture);
+public abstract class AdminApiIntegrationTestBase(ApiFixture fixture)
+    : IntegrationTestBase<ApiMarker>(fixture) { }
