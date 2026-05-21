@@ -22,7 +22,6 @@
             <Exclude>
                 <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
                 <Attribute>^System\.Diagnostics\.CodeAnalysis\.GeneratedCodeAttribute$</Attribute>
-                <Attribute>^System\.Runtime\.CompilerServices\.CompilerGeneratedAttribute$</Attribute>
             </Exclude>
         </Attributes>
 
