@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using SharedKernel.Observability;
 
 namespace ViajantesTurismo.ServiceDefaults;
 
@@ -57,9 +57,8 @@ public static class ServiceDefaultsExtensions
     /// ASP.NET Core, HTTP clients, and runtime metrics.
     /// </summary>
     /// <remarks>This method adds OpenTelemetry instrumentation for ASP.NET Core requests, HTTP client calls,
-    /// and runtime metrics. It also configures logging to include formatted messages and scopes. Health check and
-    /// aliveness endpoints are excluded from tracing by default. To enable gRPC instrumentation, ensure the required
-    /// package is referenced and uncomment the relevant line in the configuration.</remarks>
+    /// runtime metrics, gRPC client calls, and Entity Framework Core operations. It also configures logging to include
+    /// formatted messages and scopes. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
     /// <typeparam name="TBuilder">The type of the application builder to configure. Must implement <see cref="IHostApplicationBuilder"/>.</typeparam>
     /// <param name="builder">The application builder to configure with OpenTelemetry services and instrumentation.</param>
     /// <returns>The same application builder instance, configured with OpenTelemetry logging, metrics, and tracing.</returns>
@@ -67,24 +66,17 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Logging.AddOpenTelemetry(logging =>
-        {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
-        });
+        ObservabilityBuilderExtensions.ConfigureOpenTelemetry(builder);
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
-                metrics.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddDetector(new SharedKernel.Observability.ExplicitServiceNameDetector(builder.Environment.ApplicationName)));
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddSharedKernelMediatorMetrics()
-                    .AddRuntimeInstrumentation();
+                    .AddSharedKernelMediatorMetrics();
             })
             .WithTracing(tracing =>
             {
-                tracing.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddDetector(new SharedKernel.Observability.ExplicitServiceNameDetector(builder.Environment.ApplicationName)));
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddSharedKernelMediatorTracing()
                     .AddAspNetCoreInstrumentation(options =>
