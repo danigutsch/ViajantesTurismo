@@ -5,12 +5,12 @@
 All tests must use the unified test fixture seam:
 
 ```csharp
-public interface IAdminTestHost : IAsyncLifetime, IDisposable
+public interface IAdminTestHost : IAsyncDisposable, IDisposable
 {
     HttpClient Client { get; }
     Uri BaseUri { get; }
-    Task Seed();
-    Task Reset();
+    Task Seed(CancellationToken cancellationToken = default);
+    Task Reset(CancellationToken cancellationToken = default);
 }
 ```
 

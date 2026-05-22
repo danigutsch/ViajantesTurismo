@@ -1,9 +1,9 @@
 namespace ViajantesTurismo.Admin.Tests.Shared.Integration;
 
-public interface IAdminTestHost : System.IDisposable
+public interface IAdminTestHost : IAsyncDisposable, IDisposable
 {
-    System.Net.Http.HttpClient Client { get; }
-    System.Uri BaseUri { get; }
-    System.Threading.Tasks.Task Seed();
-    System.Threading.Tasks.Task Reset();
+    HttpClient Client { get; }
+    Uri BaseUri { get; }
+    Task Seed(CancellationToken cancellationToken = default);
+    Task Reset(CancellationToken cancellationToken = default);
 }

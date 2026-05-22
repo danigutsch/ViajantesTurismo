@@ -3,12 +3,12 @@
 ## Unified Fixture Interface
 
 ```csharp
-public interface IAdminTestHost : IAsyncLifetime, IDisposable
+public interface IAdminTestHost : IAsyncDisposable, IDisposable
 {
     HttpClient Client { get; }
     Uri BaseUri { get; }
-    Task Seed();
-    Task Reset();
+    Task Seed(CancellationToken cancellationToken = default);
+    Task Reset(CancellationToken cancellationToken = default);
 }
 ```
 
@@ -42,8 +42,8 @@ public class BookingTests(ApiFixture fixture)
 
 - Expose `HttpClient Client { get; }` (from `CreateClient()` in WebApplicationFactory or equivalent).
 - Expose `Uri BaseUri { get; }` for constructing relative URIs.
-- Implement `Task Seed()` and `Task Reset()` for DB/test-data prep & teardown.
-- Implement xUnit's `IAsyncLifetime`, `DisposeAsync` for infra lifecycle.
+- Implement `Task Seed(CancellationToken)` and `Task Reset(CancellationToken)` for DB/test-data prep & teardown.
+- Keep fixture lifecycle async via xUnit (`IAsyncLifetime` on fixture implementations) and `DisposeAsync`.
 
 ## Guidelines
 

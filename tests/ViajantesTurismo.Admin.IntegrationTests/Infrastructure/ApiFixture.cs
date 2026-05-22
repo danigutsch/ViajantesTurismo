@@ -40,18 +40,18 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAdminTestHos
 
     public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
-    public async Task Seed()
+    public async Task Seed(CancellationToken cancellationToken = default)
     {
         using var scope = Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.Seed(CancellationToken.None);
+        await seeder.Seed(cancellationToken);
     }
 
-    public async Task Reset()
+    public async Task Reset(CancellationToken cancellationToken = default)
     {
         using var scope = Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.ClearDatabase(CancellationToken.None);
+        await seeder.ClearDatabase(cancellationToken);
     }
 
     public async ValueTask InitializeAsync()
@@ -94,9 +94,14 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAdminTestHos
 
     public override async ValueTask DisposeAsync()
     {
-        await Reset();
-        _client?.Dispose();
-        _client = null;
+        if (_client is not null)
+        {
+            using var cts = new CancellationTokenSource(ResourceStartupTimeout);
+            await Reset(cts.Token);
+            _client.Dispose();
+            _client = null;
+        }
+
         await base.DisposeAsync();
         await _app.StopAsync();
         await _app.DisposeAsync();

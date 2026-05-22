@@ -1,7 +1,10 @@
 # Issue 117 Implementation Plan: Admin Test Host Abstraction
 
-- [ ] Define `IAdminTestHost` interface with minimal, intention-revealing operations for both integration and E2E tests:
-    - e.g., GetApiClient(), GetBaseUrl(), Seed(), Reset(), Clear()
+- [x] Define `IAdminTestHost` interface with minimal operations shared by integration and E2E tests:
+    - `HttpClient Client { get; }`
+    - `Uri BaseUri { get; }`
+    - `Task Seed(CancellationToken cancellationToken = default)`
+    - `Task Reset(CancellationToken cancellationToken = default)`
 - [ ] Implement `IAdminTestHost` for existing `ApiFixture` (integration tests)
 - [ ] Update one integration test (e.g., Bookings or Tours happy-path) to use abstraction
 - [ ] Implement `IAdminTestHost` for Aspire-hosted fixture (if present)
