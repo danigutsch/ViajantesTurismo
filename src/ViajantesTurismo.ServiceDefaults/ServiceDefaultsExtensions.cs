@@ -76,6 +76,7 @@ public static class ServiceDefaultsExtensions
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
+                metrics.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddDetector(new SharedKernel.Observability.ExplicitServiceNameDetector(builder.Environment.ApplicationName)));
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddSharedKernelMediatorMetrics()
@@ -83,6 +84,7 @@ public static class ServiceDefaultsExtensions
             })
             .WithTracing(tracing =>
             {
+                tracing.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddDetector(new SharedKernel.Observability.ExplicitServiceNameDetector(builder.Environment.ApplicationName)));
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddSharedKernelMediatorTracing()
                     .AddAspNetCoreInstrumentation(options =>

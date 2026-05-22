@@ -167,7 +167,7 @@ public sealed class ReferenceMediator : IMediator
                 0 => new ThrowingAsyncEnumerable<TResponse>(
                     new NotSupportedException(
                         $"Reference stream dispatch is not available for request type '{request.GetType().FullName}'.")),
-                1 => InvokeCore<TResponse>(request, ct),
+                1 => InvokeCore(request, ct),
                 _ => new ThrowingAsyncEnumerable<TResponse>(
                     new InvalidOperationException(
                         $"Reference stream dispatch found {registrations.Count} registered handlers for request type '{request.GetType().FullName}'.")),

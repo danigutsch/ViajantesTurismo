@@ -911,16 +911,6 @@
           "OpenTelemetry.API": "1.14.0"
         }
       },
-      "OpenTelemetry": {
-        "type": "Transitive",
-        "resolved": "1.15.3",
-        "contentHash": "N0i6WjPoHPbZyms1ugbDIFAJFuGlpeExJMU/+XSL0lQRUkg/D0utFkDoLXf8Z1km5B+xVZ2GyMXXiX8qdeNmPg==",
-        "dependencies": {
-          "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.0",
-          "Microsoft.Extensions.Logging.Configuration": "10.0.0",
-          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.15.3"
-        }
-      },
       "OpenTelemetry.Api": {
         "type": "Transitive",
         "resolved": "1.15.3",
@@ -1074,6 +1064,15 @@
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
+      "sharedkernel.observability": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting": "[10.0.8, )",
+          "OpenTelemetry": "[1.15.3, )",
+          "OpenTelemetry.Extensions.Hosting": "[1.15.3, )",
+          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
+        }
+      },
       "viajantesturismo.admin.apiservice": {
         "type": "Project",
         "dependencies": {
@@ -1138,7 +1137,8 @@
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.15.1-beta.1, )",
           "OpenTelemetry.Instrumentation.Http": "[1.15.1, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
+          "SharedKernel.Observability": "[1.0.0, )"
         }
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
@@ -1267,6 +1267,17 @@
         "dependencies": {
           "Microsoft.Extensions.Http": "10.0.8",
           "Microsoft.Extensions.ServiceDiscovery.Abstractions": "10.6.0"
+        }
+      },
+      "OpenTelemetry": {
+        "type": "CentralTransitive",
+        "requested": "[1.15.3, )",
+        "resolved": "1.15.3",
+        "contentHash": "N0i6WjPoHPbZyms1ugbDIFAJFuGlpeExJMU/+XSL0lQRUkg/D0utFkDoLXf8Z1km5B+xVZ2GyMXXiX8qdeNmPg==",
+        "dependencies": {
+          "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.0",
+          "Microsoft.Extensions.Logging.Configuration": "10.0.0",
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.15.3"
         }
       },
       "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
