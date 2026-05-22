@@ -27,7 +27,7 @@ if ! command -v npx >/dev/null 2>&1; then
     echo "npx is required for markdownlint. Please install Node.js/npx." >&2
     exit 1
 fi
-npx markdownlint-cli2@0.22.1 "**/*.md"
+npx --ignore-scripts markdownlint-cli2@0.22.1 "**/*.md"
 
 # Optional: markdown spelling (warn only, does not fail build)
 if command -v mdspell >/dev/null 2>&1; then
