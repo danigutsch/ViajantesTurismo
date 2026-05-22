@@ -19,14 +19,14 @@ surface is registered, and how to verify the emitted signals locally.
 `builder.AddServiceDefaults()`.
 
 - Metrics registration:
-  - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
-  - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
+    - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
+    - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
 - Tracing registration:
-  - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
-  - `AddSharedKernelMediatorTracing()` -> `tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name)`
+    - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
+    - `AddSharedKernelMediatorTracing()` -> `tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name)`
 - Applied in pipeline:
-  - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
-  - `ConfigureOpenTelemetry()` calls both shared registration helpers.
+    - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
+    - `ConfigureOpenTelemetry()` calls both shared registration helpers.
 
 ### Migration service registration
 
