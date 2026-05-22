@@ -8,13 +8,13 @@ internal static class OpenTelemetryBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(metrics);
 
-        return metrics.AddMeter(global::SharedKernel.Mediator.MediatorTelemetry.Name);
+        return metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name);
     }
 
     public static TracerProviderBuilder AddSharedKernelMediatorTracing(this TracerProviderBuilder tracing)
     {
         ArgumentNullException.ThrowIfNull(tracing);
 
-        return tracing.AddSource(global::SharedKernel.Mediator.MediatorTelemetry.Name);
+        return tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name);
     }
 }
