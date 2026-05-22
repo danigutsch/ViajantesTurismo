@@ -5,9 +5,6 @@
         <RootNamespace>ViajantesTurismo.Admin.IntegrationTests</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
 
     <ItemGroup>
         <Using Include="System.Net" />
