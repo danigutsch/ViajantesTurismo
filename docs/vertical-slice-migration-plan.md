@@ -2,7 +2,8 @@
 
 ## Goal
 
-Migrate from separate `ViajantesTurismo.Admin.Domain` and `ViajantesTurismo.Admin.Application` projects to a single `ViajantesTurismo.Admin` bounded-context project using vertical slice architecture.
+Migrate from separate `ViajantesTurismo.Admin.Domain` and `ViajantesTurismo.Admin.Application` projects
+to a single `ViajantesTurismo.Admin` bounded-context project using vertical slice architecture.
 
 ## Steps
 
