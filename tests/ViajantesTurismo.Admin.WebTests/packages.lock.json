@@ -74,8 +74,8 @@
       },
       "Aspire.StackExchange.Redis": {
         "type": "Transitive",
-        "resolved": "13.3.4",
-        "contentHash": "ejFTlVgn5m8Zf/7Pey+bUJaUdodhWDOlMo+5StUwyWGJucPHjK6v0ZhS02kCCxCGEfdQRYj095/N8E5wbAoOSQ==",
+        "resolved": "13.3.5",
+        "contentHash": "VdyKKxxSekfakcjKJjgUiuNaIFBV4gR5R0/HRLLgQWsss7jkShZ7oX+4E4X6qwjOfFykxNZKiApHJQtG/YNc1A==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
@@ -809,7 +809,7 @@
       "viajantesturismo.admin.web": {
         "type": "Project",
         "dependencies": {
-          "Aspire.StackExchange.Redis.OutputCaching": "[13.3.4, )",
+          "Aspire.StackExchange.Redis.OutputCaching": "[13.3.5, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.8, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )",
@@ -841,12 +841,12 @@
       },
       "Aspire.StackExchange.Redis.OutputCaching": {
         "type": "CentralTransitive",
-        "requested": "[13.3.4, )",
-        "resolved": "13.3.4",
-        "contentHash": "M464udsXebWOJLkV6kpIBtkyDb/oQq2LOy4rZScESau15lX+czyOSN2vhyzEsq8KFFmVidZVsF1tralWDDYumg==",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "mrnLKEFv4Qu/pxfr/Jd3s3kyGHu6vR1A5UYfANvUA5ElNUOppVjT3+8UWIar39wVUMjJU7LnHeJc37f0xtLlng==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
-          "Aspire.StackExchange.Redis": "13.3.4",
+          "Aspire.StackExchange.Redis": "13.3.5",
           "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis": "10.0.7",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
           "Microsoft.Extensions.Configuration.Binder": "10.0.7",
