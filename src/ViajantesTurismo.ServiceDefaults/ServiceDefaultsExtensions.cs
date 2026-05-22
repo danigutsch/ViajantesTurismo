@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using SharedKernel.Observability;
 
 namespace ViajantesTurismo.ServiceDefaults;
 
@@ -67,24 +67,17 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Logging.AddOpenTelemetry(logging =>
-        {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
-        });
+        ObservabilityBuilderExtensions.ConfigureOpenTelemetry(builder);
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
-                metrics.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddDetector(new SharedKernel.Observability.ExplicitServiceNameDetector(builder.Environment.ApplicationName)));
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddSharedKernelMediatorMetrics()
-                    .AddRuntimeInstrumentation();
+                    .AddSharedKernelMediatorMetrics();
             })
             .WithTracing(tracing =>
             {
-                tracing.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddDetector(new SharedKernel.Observability.ExplicitServiceNameDetector(builder.Environment.ApplicationName)));
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddSharedKernelMediatorTracing()
                     .AddAspNetCoreInstrumentation(options =>
