@@ -57,9 +57,8 @@ public static class ServiceDefaultsExtensions
     /// ASP.NET Core, HTTP clients, and runtime metrics.
     /// </summary>
     /// <remarks>This method adds OpenTelemetry instrumentation for ASP.NET Core requests, HTTP client calls,
-    /// and runtime metrics. It also configures logging to include formatted messages and scopes. Health check and
-    /// aliveness endpoints are excluded from tracing by default. To enable gRPC instrumentation, ensure the required
-    /// package is referenced and uncomment the relevant line in the configuration.</remarks>
+    /// runtime metrics, gRPC client calls, and Entity Framework Core operations. It also configures logging to include
+    /// formatted messages and scopes. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
     /// <typeparam name="TBuilder">The type of the application builder to configure. Must implement <see cref="IHostApplicationBuilder"/>.</typeparam>
     /// <param name="builder">The application builder to configure with OpenTelemetry services and instrumentation.</param>
     /// <returns>The same application builder instance, configured with OpenTelemetry logging, metrics, and tracing.</returns>
