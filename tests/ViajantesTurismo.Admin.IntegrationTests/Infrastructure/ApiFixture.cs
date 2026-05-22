@@ -71,7 +71,7 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAdminTestHos
         _databaseConnectionString = databaseConnectionStringBuilder.ConnectionString;
 
         _client = CreateClient();
-        await Seed();
+        await Seed(cts.Token);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -94,16 +94,21 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAdminTestHos
 
     public override async ValueTask DisposeAsync()
     {
-        if (_client is not null)
+        try
         {
-            using var cts = new CancellationTokenSource(ResourceStartupTimeout);
-            await Reset(cts.Token);
-            _client.Dispose();
-            _client = null;
+            if (_client is not null)
+            {
+                using var cts = new CancellationTokenSource(ResourceStartupTimeout);
+                await Reset(cts.Token);
+                _client.Dispose();
+                _client = null;
+            }
         }
-
-        await base.DisposeAsync();
-        await _app.StopAsync();
-        await _app.DisposeAsync();
+        finally
+        {
+            await base.DisposeAsync();
+            await _app.StopAsync();
+            await _app.DisposeAsync();
+        }
     }
 }
