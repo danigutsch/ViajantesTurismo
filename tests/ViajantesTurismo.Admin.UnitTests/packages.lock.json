@@ -578,7 +578,7 @@
       "viajantesturismo.admin.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.3.4, )",
+          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.3.5, )",
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )"
@@ -616,9 +616,9 @@
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "CentralTransitive",
-        "requested": "[13.3.4, )",
-        "resolved": "13.3.4",
-        "contentHash": "DEBhtOGgzYzb5BWYzjBE/BMLdMJepDI3g7TPWdGbrOZhGt/2ThxDk+CAgl9kqdF9XbCJ5Ii3kv58vhUKQqGBUg==",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "VDg0Gkud8sgKqeRUMUhIHYIk8Wpgpm71McpwRspFiT2XAWSodl/NpLMaG+rivQl1cKIE2QVTjgVYLqYdEArYzQ==",
         "dependencies": {
           "Microsoft.Extensions.Caching.Memory": "10.0.7",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",

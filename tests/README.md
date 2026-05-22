@@ -5,7 +5,7 @@
 All tests must use the unified test fixture seam:
 
 ```csharp
-public interface ITestHost : IAsyncLifetime, IDisposable
+public interface IAdminTestHost : IAsyncLifetime, IDisposable
 {
     HttpClient Client { get; }
     Uri BaseUri { get; }
@@ -17,15 +17,13 @@ public interface ITestHost : IAsyncLifetime, IDisposable
 ### Using the Fixture in Tests
 
 ```csharp
-public class UserTests : IClassFixture<ApiFixture> {
-    private readonly ApiFixture _fixture;
-    public UserTests(ApiFixture fixture) => _fixture = fixture;
-
+public class UserTests(ApiFixture fixture)
+{
     [Fact]
-    public async Task Can_SmokeTheAPI() {
-        var url = new Uri(_fixture.BaseUri, "/api/users");
-        var resp = await _fixture.Client.GetAsync(url);
-        // ...assertions...
+    public async Task Can_SmokeTheAPI()
+    {
+        var resp = await fixture.Client.GetAsync(new Uri("/tours", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 }
 ```
@@ -38,12 +36,18 @@ public class UserTests : IClassFixture<ApiFixture> {
 - Expose `HttpClient Client { get; }` (uses WebApplicationFactory or similar).
 - Provide `Uri BaseUri { get; }` (points at running SUT).
 - Implement `Seed()` and `Reset()` using proper data lifecycle routines.
-- Use only `[assembly: AssemblyFixture(typeof(ApiFixture))]` for xUnit-based wiring.
+- Use `[assembly: AssemblyFixture(typeof(ApiFixture))]` as the canonical wiring pattern.
+- Do not combine assembly fixture registration with `IClassFixture<ApiFixture>` in the same test class.
 
 ### Why?
 
 - Ensures all test code is portable, parallel-safe, and ready for modern .NET/Aspire scenarios.
 - Consistent with xUnit, Microsoft, Aspire, and test community best practices.
+
+### Filtering
+
+- Prefer MTP trait filters for fast slices, e.g. `dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-trait "Category=smoke"`.
+- Combine traits when needed, e.g. `--filter-trait "Scope=integration" --filter-trait "Area=bookings"`.
 
 ### References
 

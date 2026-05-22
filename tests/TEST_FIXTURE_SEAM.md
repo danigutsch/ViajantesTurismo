@@ -3,7 +3,7 @@
 ## Unified Fixture Interface
 
 ```csharp
-public interface ITestHost : IAsyncLifetime, IDisposable
+public interface IAdminTestHost : IAsyncLifetime, IDisposable
 {
     HttpClient Client { get; }
     Uri BaseUri { get; }
@@ -18,19 +18,19 @@ public interface ITestHost : IAsyncLifetime, IDisposable
 ## Usage Pattern
 
 ```csharp
-public class BookingTests : IClassFixture<ApiFixture> {
-    private readonly ApiFixture _fixture;
-    public BookingTests(ApiFixture fixture) => _fixture = fixture;
-
+public class BookingTests(ApiFixture fixture)
+{
     [Fact]
-    public async Task Can_GetBooking() {
-        var resp = await _fixture.Client.GetAsync($"{_fixture.BaseUri}/bookings");
-        // ... assertions ...
+    public async Task Can_GetTours_Smoke()
+    {
+        var resp = await fixture.Client.GetAsync(new Uri("/tours", UriKind.Relative));
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 }
 ```
 
-- Prefer injection over base class, unless many helpers are shared/repeated.
+- Prefer constructor injection from the assembly fixture over base classes.
+- Do not also implement `IClassFixture<ApiFixture>` when assembly fixture wiring is used.
 - All helpers come from the fixture, never from new/scattered clients.
 
 ## xUnit Wiring
@@ -50,6 +50,11 @@ public class BookingTests : IClassFixture<ApiFixture> {
 - All test helpers (seeding, reset, client) MUST come from the injected fixture.
 - Never append `Async` to test plumbing methods (except infrastructure frameworks requiring it, e.g., DisposeAsync).
 - Add new helpers to the fixture and keep the interface up to date.
+
+## Filtering
+
+- Prefer MTP trait filters for organization and targeted runs.
+- Example: `dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-trait "Category=smoke"`.
 
 ## References
 

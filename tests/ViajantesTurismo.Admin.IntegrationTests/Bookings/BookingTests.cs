@@ -1,11 +1,15 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
+[Trait(TestTraits.CategoryName, TestTraits.SmokeCategory)]
+[Trait(TestTraits.ScopeName, TestTraits.IntegrationScope)]
+[Trait(TestTraits.AreaName, TestTraits.BookingsArea)]
+public class BookingTests(ApiFixture fixture)
 {
     [Fact]
-    public async Task Can_GetBooking()
+    public async Task Can_GetBookings_Smoke()
     {
-        var response = await fixture.Client.GetAsync(fixture.BaseUri, TestContext.Current.CancellationToken);
-        Assert.NotNull(response);
+        var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }
