@@ -26,28 +26,50 @@ It is not intended for:
 
 1. Start the local stack separately.
 2. Ensure the Admin API is reachable.
-3. Install `k6` locally.
+3. Install `k6` locally or have Docker available.
 
 ## Required environment
 
-- `VT_API_BASE_URL`: base URL of the Admin API, for example `http://127.0.0.1:5001`
+- `VT_API_BASE_URL`: base URL of the Admin API, for example `http://127.0.0.1:5510`
 
 Optional overrides:
 
 - `VT_K6_PROFILE`: defaults to `smoke`
 - `VT_K6_VUS`: override VU count
 - `VT_K6_DURATION`: override duration for duration-based profiles
+- `VT_K6_USE_DOCKER`: `auto` (default), `0` (force local k6), `1` (force Docker k6)
+- `VT_K6_DOCKER_IMAGE`: Docker image used in Docker mode, defaults to `grafana/k6:0.49.0`
 
 ## Run with wrapper
 
 ```bash
-VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
 ```
+
+Wrapper behavior:
+
+- uses local `k6` when available
+- falls back to Docker when `k6` is missing
+- rewrites `http://127.0.0.1:*`, `http://localhost:*`, `https://127.0.0.1:*`, `https://localhost:*` to `host.docker.internal` in Docker mode
+- forwards `VT_K6_VUS` and `VT_K6_DURATION` into Docker mode
+- uses `VT_K6_DOCKER_IMAGE` or `grafana/k6:0.49.0` by default in Docker mode
 
 ## Run raw k6
 
 ```bash
-k6 run -e VT_API_BASE_URL=http://127.0.0.1:5001 tests/performance/k6/scenarios/admin-smoke.js
+k6 run -e VT_API_BASE_URL=http://127.0.0.1:5510 tests/performance/k6/scenarios/admin-smoke.js
+```
+
+## Run raw Docker k6
+
+```bash
+docker run --rm \
+  --add-host host.docker.internal:host-gateway \
+  -v "$(pwd):/work" -w /work \
+  grafana/k6:0.49.0 run \
+  -e VT_API_BASE_URL=http://host.docker.internal:5510 \
+  -e VT_K6_PROFILE=smoke \
+  tests/performance/k6/scenarios/admin-smoke.js
 ```
 
 ## Conventions

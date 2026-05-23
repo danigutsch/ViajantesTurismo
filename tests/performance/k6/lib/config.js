@@ -39,11 +39,10 @@ export function getScenarioProfile() {
   const vusOverride = Number.parseInt(__ENV.VT_K6_VUS || '', 10);
   const durationOverride = (__ENV.VT_K6_DURATION || '').trim();
 
-  return {
-    ...profile,
+  return Object.assign({}, profile, {
     vus: Number.isNaN(vusOverride) ? profile.vus : vusOverride,
     duration: durationOverride || profile.duration,
-  };
+  });
 }
 
 export function createOptions() {

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Playwright.Xunit.v3;
 
 namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
@@ -7,7 +8,7 @@ namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
 /// Seeds before each test and clears after. Use for tests that assert exact counts
 /// or call ClearDatabase() mid-test.
 /// </summary>
-[Collection("E2E.Serial")]
+[Collection(E2ETestCollections.Serial)]
 public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 {
     private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
@@ -50,5 +51,9 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
     }
 }
 
-[CollectionDefinition("E2E.Serial", DisableParallelization = true)]
+/// <summary>
+/// Defines the serial E2E test collection and disables parallel execution within it.
+/// </summary>
+[ExcludeFromCodeCoverage]
+[CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
 public sealed class E2ESerialTests;
