@@ -1,17 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Playwright.Xunit.v3;
 
 namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Bases;
-
-/// <summary>
-/// Provides shared xUnit collection names used by E2E tests.
-/// </summary>
-public static class E2ETestCollections
-{
-    /// <summary>
-    /// Collection name for serial E2E tests.
-    /// </summary>
-    public const string Serial = "E2E.Serial";
-}
 
 /// <summary>
 /// Base class for E2E tests that require sequential execution with a clean database.
@@ -64,5 +54,6 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 /// <summary>
 /// Defines the serial E2E test collection and disables parallel execution within it.
 /// </summary>
+[ExcludeFromCodeCoverage]
 [CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
 public sealed class E2ESerialTests;

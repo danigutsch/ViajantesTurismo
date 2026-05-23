@@ -38,6 +38,7 @@ Optional overrides:
 - `VT_K6_VUS`: override VU count
 - `VT_K6_DURATION`: override duration for duration-based profiles
 - `VT_K6_USE_DOCKER`: `auto` (default), `0` (force local k6), `1` (force Docker k6)
+- `VT_K6_DOCKER_IMAGE`: Docker image used in Docker mode, defaults to `grafana/k6:0.49.0`
 
 ## Run with wrapper
 
@@ -51,6 +52,7 @@ Wrapper behavior:
 - falls back to Docker when `k6` is missing
 - rewrites `http://127.0.0.1:*`, `http://localhost:*`, `https://127.0.0.1:*`, `https://localhost:*` to `host.docker.internal` in Docker mode
 - forwards `VT_K6_VUS` and `VT_K6_DURATION` into Docker mode
+- uses `VT_K6_DOCKER_IMAGE` or `grafana/k6:0.49.0` by default in Docker mode
 
 ## Run raw k6
 
@@ -64,7 +66,7 @@ k6 run -e VT_API_BASE_URL=http://127.0.0.1:5510 tests/performance/k6/scenarios/a
 docker run --rm \
   --add-host host.docker.internal:host-gateway \
   -v "$(pwd):/work" -w /work \
-  grafana/k6:latest run \
+  grafana/k6:0.49.0 run \
   -e VT_API_BASE_URL=http://host.docker.internal:5510 \
   -e VT_K6_PROFILE=smoke \
   tests/performance/k6/scenarios/admin-smoke.js

@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+if ! command -v curl >/dev/null 2>&1; then
+  printf 'curl is required but was not found on PATH.\n' >&2
+  exit 1
+fi
+
 if [[ -z "${VT_API_BASE_URL:-}" ]]; then
   printf 'VT_API_BASE_URL is required, for example http://127.0.0.1:5510\n' >&2
   exit 1
@@ -12,6 +17,7 @@ repo_root="$(cd "${script_dir}/.." && pwd)"
 profile="${VT_K6_PROFILE:-smoke}"
 use_docker="${VT_K6_USE_DOCKER:-auto}"
 api_base_url="${VT_API_BASE_URL%/}"
+docker_k6_image="${VT_K6_DOCKER_IMAGE:-grafana/k6:0.49.0}"
 
 if [[ "${use_docker}" == "auto" ]]; then
   if command -v k6 >/dev/null 2>&1; then
@@ -86,7 +92,7 @@ docker run --rm \
   "${docker_add_host_args[@]}" \
   -v "${repo_root}:/work" \
   -w /work \
-  grafana/k6:latest run \
+  "${docker_k6_image}" run \
   "${docker_env_args[@]}" \
   "$@" \
   tests/performance/k6/scenarios/admin-smoke.js
