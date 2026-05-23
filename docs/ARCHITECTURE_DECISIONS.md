@@ -30,10 +30,8 @@ Decisions about code quality standards and testing practices.
 
 - **[ADR-005](adr/20251108-no-comments-domain-code.md)** — No Comments in Domain Code
 - **[ADR-006](adr/20251108-type-safety-test-step-definitions.md)** — Type Safety in Test Step Definitions
-- **[ADR-018](adr/20260228-test-parallelization-with-assembly-fixtures.md)** — Test Parallelization with xUnit v3
-Assembly Fixtures
+- **[ADR-018](adr/20260228-test-parallelization-with-assembly-fixtures.md)** — Test Parallelization with xUnit v3 Assembly Fixtures
 - **[ADR-019](adr/20260321-no-task-delay-in-production-code.md)** — No Direct Task.Delay in Production Code
-- **[ADR-020](adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)** — Web Frontends by Audience, Not by Bounded Context
 
 ### Architecture & Layers
 
@@ -44,6 +42,7 @@ Decisions about application architecture and layer responsibilities.
 - **[ADR-013](adr/20251105-value-objects-tour-creation.md)** — Value Objects for Tour Creation Parameters
 - **[ADR-015](adr/20251115-iqueryable-query-service-frontend-optimization.md)** — IQueryable in Query
   Service for Frontend Optimization
+- **[ADR-020](adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)** — Web Frontends by Audience, Not by Bounded Context
 
 ### Business Logic & Pricing
 

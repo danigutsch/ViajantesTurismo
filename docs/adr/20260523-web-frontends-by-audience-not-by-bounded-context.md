@@ -15,7 +15,7 @@ As the solution grows into more bounded contexts, creating one frontend per boun
 
 The product needs two clear audience-facing web surfaces:
 
-- an internal management experience for operators/backoffice workflows
+- an internal management experience for operators/back-office workflows
 - a public website for customer-facing discovery and interactions
 
 Those audience boundaries are stable. Bounded contexts are backend/domain boundaries and should not force one frontend project per context.
