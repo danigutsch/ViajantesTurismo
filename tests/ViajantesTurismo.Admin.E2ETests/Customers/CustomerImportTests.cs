@@ -108,7 +108,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 /// Serial E2E tests for the full import commit flow (UI-4).
 /// Clean-slate tests that import actual data.
 /// </summary>
-[Collection("E2E.Serial")]
+[Collection(E2ETestCollections.Serial)]
 public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
 {
     [Fact]
