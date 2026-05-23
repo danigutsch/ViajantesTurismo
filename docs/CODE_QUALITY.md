@@ -5,11 +5,13 @@ This project uses automated tools to enforce consistent formatting and style acr
 ## Tools Overview
 
 - **[markdownlint](https://github.com/DavidAnson/markdownlint)** - Markdown documentation formatting
-  (`DavidAnson/markdownlint-cli2-action` in CI, no npm required)
-- **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI, installed in CI)
-- **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI)
-- **[gherkin-lint](https://github.com/vsiakka/gherkin-lint)** - BDD/Gherkin feature file linting (CI-owned npm wrapper)
+  (`DavidAnson/markdownlint-cli2-action` in CI and Dockerized CLI locally, no npm required)
+- **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI or Docker fallback)
+- **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI or Docker fallback)
+- **Repository Gherkin linter** (`scripts/lint-gherkin.py`) - BDD/Gherkin feature-file linting
+  (runs via local Python or Docker fallback)
 - **Python JSON validator** (`scripts/lint-json.py`) - JSON and JSONC validation with repo-specific exclusions
+  (runs via local Python or Docker fallback)
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code
@@ -304,7 +306,7 @@ shfmt -w -i 2 **/*.sh    # Format shell scripts with shfmt
 **Gherkin/Feature Files:**
 
 ```powershell
-bash scripts/lint-gherkin.sh tests/**/*.feature     # CI-owned Gherkin lint wrapper (npm-based)
+bash scripts/lint-gherkin.sh tests/**/*.feature     # Repository Gherkin lint wrapper (Python-based)
 ```
 
 **JSON Files:**
@@ -316,7 +318,9 @@ bash scripts/lint-json.sh **/*.json        # Check all JSON files
 **All Linters:**
 
 ```powershell
-bash scripts/lint-all.sh         # Run all linters (shell, JSON, Gherkin — markdown runs via GitHub Action in CI)
+bash scripts/lint-all.sh                 # Run all linters in check mode
+bash scripts/lint-all.sh --fix           # Apply available autofixes (shfmt + markdownlint), then lint
+bash scripts/lint-all.sh --skip-markdown # Run non-markdown linters only (CI helper)
 ```
 
 **All Tools:**
@@ -330,13 +334,15 @@ dotnet tool restore      # Install all pinned .NET tools
 The repository no longer installs git hooks by default.
 
 - Lint is CI-owned and runs through `bash scripts/lint-all.sh` and `DavidAnson/markdownlint-cli2-action` in workflows.
+- `bash scripts/lint-all.sh --fix` is available locally to apply supported autofixes before strict checks.
 - Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action,
-  which bundles its own Node.js runtime with no npm dependency on the runner or contributors.
-- Gherkin lint currently relies on a CI-owned npm wrapper; normal contributor setup does
-  not require Node.js unless you intentionally run that wrapper yourself.
-- Running `bash scripts/lint-all.sh` locally requires `shellcheck` on `PATH`; if you also want
-  the Gherkin step to run locally, install Node.js/npm as well. CI installs the needed tooling
-  on the runner.
+  and locally through the Docker image `davidanson/markdownlint-cli2`.
+- Gherkin lint runs via the repository-owned `scripts/lint-gherkin.py` (Python-based, no npm).
+- Running `bash scripts/lint-all.sh` locally does not require manual linter installs when Docker is
+  available; wrappers fall back to pinned Docker images for shellcheck, shfmt, markdown lint, and
+  Python-based linters.
+- If Docker is unavailable, wrappers use local tools when present and fail with an explicit message
+  when neither local tool nor Docker is available.
 - Commit message validation remains available locally through
   `bash scripts/validate-commit-message.sh <path-to-commit-message-file>`.
 - If you previously installed repository hooks from an older revision, remove or replace the copied

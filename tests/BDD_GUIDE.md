@@ -222,7 +222,8 @@ See [Reqnroll: Reporting][reporting] for advanced reporting options.
 
 ### Enforced Rules
 
-All `.feature` files are linted using `gherkin-lint` with project-specific rules:
+All `.feature` files are linted using the repository linter (`scripts/lint-gherkin.py`) with
+project-specific rules:
 
 **Mandatory:**
 
@@ -245,7 +246,8 @@ bash scripts/lint-gherkin.sh tests/**/*.feature
 # CI uses the same repository script
 ```
 
-**Note:** gherkin-lint validates but does not auto-fix. Errors must be corrected manually.
+**Note:** The repository Gherkin linter validates but does not auto-fix. Errors must be corrected
+manually.
 
 **Configuration:** Rules are defined in `.gherkin-lintrc` at the repository root.
 

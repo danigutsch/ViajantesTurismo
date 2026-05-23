@@ -254,11 +254,5 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes shellcheck
 
-      - name: Harden npm execution defaults
-        run: |
-          npm config set ignore-scripts true
-          npm config set audit false
-          npm config set fund false
-
-      - name: Run all linters
-        run: bash scripts/lint-all.sh
+      - name: Run repository linters
+        run: bash scripts/lint-all.sh --skip-markdown

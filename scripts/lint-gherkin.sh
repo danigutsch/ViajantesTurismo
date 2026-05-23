@@ -2,34 +2,19 @@
 
 set -euo pipefail
 
-filtered_args=()
-tmp_file="$(mktemp)"
-trap 'rm -f "${tmp_file}"' EXIT
-
-append_feature_file_list() {
-    find tests -name '*.feature' -not -path '*/bin/*' -not -path '*/obj/*' | sort > "${tmp_file}"
-
-    while IFS= read -r file; do
-        filtered_args+=("${file}")
-    done < "${tmp_file}"
-}
-
-for arg in "$@"; do
-    if [[ "${arg}" == 'tests/**/*.feature' ]]; then
-        append_feature_file_list
-        continue
-    fi
-
-    if [[ "${arg}" == */bin/* || "${arg}" == */obj/* ]]; then
-        continue
-    fi
-
-    filtered_args+=("${arg}")
-done
-
-if [[ ${#filtered_args[@]} -eq 0 ]]; then
-    append_feature_file_list
+if command -v python3 >/dev/null 2>&1; then
+    python3 scripts/lint-gherkin.py "$@"
+    exit 0
 fi
 
-npm exec --yes --package gherkin-lint@4.2.4 -- \
-    gherkin-lint "${filtered_args[@]}"
+if command -v docker >/dev/null 2>&1; then
+    docker run --rm \
+        --volume "${PWD}:/workspace" \
+        --workdir /workspace \
+        python:3.13-alpine \
+        python3 scripts/lint-gherkin.py "$@"
+    exit 0
+fi
+
+echo "lint-gherkin requires either local python3 or docker." >&2
+exit 1
