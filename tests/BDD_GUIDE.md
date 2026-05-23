@@ -222,19 +222,27 @@ See [Reqnroll: Reporting][reporting] for advanced reporting options.
 
 ### Enforced Rules
 
-All `.feature` files are linted using `gherkin-lint` with project-specific rules:
+All `.feature` files are linted using the repository linter (`scripts/lint-gherkin.py`) with
+project-specific rules:
 
 **Mandatory:**
 
 - `@BC:<BoundedContext>` tag on every feature
 - `@Agg:<Aggregate>` tag on every feature
-- Consistent indentation (Feature: 0, Rule/Scenario: 4, Steps: 8)
 - No unnamed features/scenarios
+- No duplicate feature or scenario names within the checked scope
+- Scenario outlines must include `Examples`
+- Restricted tags like `@skip` are rejected
 
-**Anti-Patterns Prevented:**
+**Formatting checks:**
 
-- Conjunction steps
-- Use of `@skip` (use `@wip` instead)
+- Trailing spaces are rejected
+- Tabs are rejected
+- A newline at end of file is required
+
+**Note:** The repository linter currently enforces the subset of `.gherkin-lintrc` used by the
+repo-owned Python implementation. It does not currently auto-fix files or enforce indentation/
+conjunction-style rules.
 
 ### Running the Linter
 
@@ -245,7 +253,8 @@ bash scripts/lint-gherkin.sh tests/**/*.feature
 # CI uses the same repository script
 ```
 
-**Note:** gherkin-lint validates but does not auto-fix. Errors must be corrected manually.
+**Note:** The repository Gherkin linter validates but does not auto-fix. Errors must be corrected
+manually.
 
 **Configuration:** Rules are defined in `.gherkin-lintrc` at the repository root.
 
