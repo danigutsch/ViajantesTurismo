@@ -56,7 +56,9 @@
         "^@manual$",
         "^@automated$",
         "^@flaky$",
-        "^@ignore$"
+        "^@ignore$",
+        "^@summary$",
+        "^@duplicate_resolution$"
       ],
       "tags": [
         "@BC:Admin",
@@ -94,7 +96,9 @@
         "@manual",
         "@automated",
         "@flaky",
-        "@ignore"
+        "@ignore",
+        "@summary",
+        "@duplicate_resolution"
       ]
     }
   ],

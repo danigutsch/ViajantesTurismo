@@ -2,29 +2,50 @@
 
 set -euo pipefail
 
+docker_uid="$(id -u)"
+docker_gid="$(id -g)"
+docker_user="${docker_uid}:${docker_gid}"
+
+if ! command -v docker >/dev/null 2>&1; then
+    echo "docker is required for markdown lint" >&2
+    exit 1
+fi
+
 args=("$@")
-flags=()
-targets=()
+fix_mode=false
+globs=()
 
 for arg in "${args[@]}"; do
     case "${arg}" in
-        -* )
-            flags+=("${arg}")
+        --fix)
+            fix_mode=true
             ;;
-        * )
-            targets+=("${arg}")
+        *)
+            globs+=("${arg}")
             ;;
     esac
 done
 
-if [[ ${#targets[@]} -eq 0 ]]; then
-    targets=("**/*.md")
+if [[ ${#globs[@]} -eq 0 ]]; then
+    globs=("**/*.md")
 fi
 
-npm exec --yes --package markdownlint-cli@0.48.0 -- \
-    markdownlint "${targets[@]}" \
-    --ignore node_modules \
-    --ignore "**/bin/**" \
-    --ignore "**/obj/**" \
-    --ignore "**/TestResults/**" \
-    --config .markdownlint.json "${flags[@]}"
+markdownlint_args=(
+    --config /workspace/.markdownlint-cli2.jsonc
+)
+
+for pattern in "${globs[@]}"; do
+    markdownlint_args+=(--globs "${pattern}")
+done
+
+if [[ "${fix_mode}" == true ]]; then
+    markdownlint_args+=(--fix)
+fi
+
+docker run --rm \
+    --user "${docker_user}" \
+    --env HOME=/tmp \
+    --volume "${PWD}:/workspace" \
+    --workdir /workspace \
+    davidanson/markdownlint-cli2:v0.18.1 \
+    "${markdownlint_args[@]}"
