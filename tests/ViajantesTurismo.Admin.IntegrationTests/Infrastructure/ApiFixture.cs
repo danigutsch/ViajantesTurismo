@@ -7,20 +7,19 @@ using Npgsql;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Tests.Shared.Integration;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-/// <summary>
-/// Fixture for API integration tests.
-/// </summary>
-public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetime
+public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAdminTestHost, IAsyncLifetime
 {
     private const string LoopbackAddress = "http://127.0.0.1:0";
     private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(30);
 
     private readonly DistributedApplication _app;
     private string? _databaseConnectionString;
+    private HttpClient? _client;
 
     public ApiFixture()
     {
@@ -36,6 +35,24 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
 
     public IResourceBuilder<PostgresServerResource> DatabaseServer { get; }
     public IResourceBuilder<PostgresDatabaseResource> Database { get; }
+
+    public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
+
+    public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
+
+    public async Task Seed(CancellationToken cancellationToken = default)
+    {
+        using var scope = Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+        await seeder.Seed(cancellationToken);
+    }
+
+    public async Task Reset(CancellationToken cancellationToken = default)
+    {
+        using var scope = Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+        await seeder.ClearDatabase(cancellationToken);
+    }
 
     public async ValueTask InitializeAsync()
     {
@@ -53,11 +70,8 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
 
         _databaseConnectionString = databaseConnectionStringBuilder.ConnectionString;
 
-        // Trigger host creation and seed once for the assembly
-        _ = CreateClient();
-        using var seedScope = Services.CreateScope();
-        var seeder = seedScope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.Seed(cts.Token);
+        _client = CreateClient();
+        await Seed(cts.Token);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -80,8 +94,21 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAsyncLifetim
 
     public override async ValueTask DisposeAsync()
     {
-        await base.DisposeAsync();
-        await _app.StopAsync();
-        await _app.DisposeAsync();
+        try
+        {
+            if (_client is not null)
+            {
+                using var cts = new CancellationTokenSource(ResourceStartupTimeout);
+                await Reset(cts.Token);
+                _client.Dispose();
+                _client = null;
+            }
+        }
+        finally
+        {
+            await base.DisposeAsync();
+            await _app.StopAsync();
+            await _app.DisposeAsync();
+        }
     }
 }

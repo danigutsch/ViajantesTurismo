@@ -5,6 +5,17 @@
   "ignores": [
     "**/AnalyzerReleases.*.md",
     "**/BenchmarkDotNet.Artifacts/**/*.md",
-    "tmp/**/*.md"
+    "tmp/**/*.md",
+    "node_modules/**",
+    "**/bin/**",
+    "**/obj/**",
+    "**/TestResults/**",
+    "logs/**",
+    "**/logs/**",
+    ".tmp/**",
+    ".idea/**",
+    ".vs/**",
+    "**/playwright/**",
+    "**/.local/**"
   ]
 }

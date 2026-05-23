@@ -51,13 +51,13 @@
       },
       "Aspire.Hosting.PostgreSQL": {
         "type": "Direct",
-        "requested": "[13.3.4, )",
-        "resolved": "13.3.4",
-        "contentHash": "eSdJV1spRa4NNdlOybViQrDhLiMCEBshstCIA/v+adhInSG2gIaJLUUG/9ZFRmsj/xqhzVo5VqlwQ5ozi03G7g==",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "z9ikuYmeBhcUzA1lVeRfDdxdK2QcGI3golOvQ0EwkCyTpnD4yjTezuO5olY0qe4Wf/esxMPFHP8A1J5TEuNz1w==",
         "dependencies": {
           "AspNetCore.HealthChecks.NpgSql": "9.0.0",
           "AspNetCore.HealthChecks.Uris": "9.0.0",
-          "Aspire.Hosting": "13.3.4",
+          "Aspire.Hosting": "13.3.5",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
@@ -87,13 +87,13 @@
       },
       "Aspire.Hosting.Redis": {
         "type": "Direct",
-        "requested": "[13.3.4, )",
-        "resolved": "13.3.4",
-        "contentHash": "C+AAYKEGSY8QhiD24OyNwVzVDKEQ1mPZ/7gfvRjoxnwyWvI9//JbFmISWM2DgKqJlufXrAH/tmeZ9MLaf8IpjQ==",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "l65u4TliNyJneZHKiQYINkc1abjzqlsaWp8eVDonMajM/Rn/Dtzf5FbEmDZZr9vf/siIhTZCmkKsRkpYfbPEsQ==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "AspNetCore.HealthChecks.Uris": "9.0.0",
-          "Aspire.Hosting": "13.3.4",
+          "Aspire.Hosting": "13.3.5",
           "Google.Protobuf": "3.33.5",
           "Grpc.AspNetCore": "2.76.0",
           "Grpc.Net.ClientFactory": "2.76.0",
@@ -180,8 +180,8 @@
       },
       "Aspire.Hosting": {
         "type": "Transitive",
-        "resolved": "13.3.4",
-        "contentHash": "Y0bPB95Lc34WeDx03PR0Ca1qmCQOmjDDxSD1zwJ0noF/yI/p669rCdXKMdRgxOWqOpfLVMUUr8YyLbIIq/inhA==",
+        "resolved": "13.3.5",
+        "contentHash": "LHkPq30RgIxyN3rwPdqPAB1w5VwmfqjLoq+xX+Bac/9JOOwRROxHr7bjve28PnqBKmSX/z4PZlKlakKLOMGJXw==",
         "dependencies": {
           "AspNetCore.HealthChecks.Uris": "9.0.0",
           "Google.Protobuf": "3.33.5",
@@ -212,8 +212,8 @@
       },
       "Aspire.StackExchange.Redis": {
         "type": "Transitive",
-        "resolved": "13.3.4",
-        "contentHash": "ejFTlVgn5m8Zf/7Pey+bUJaUdodhWDOlMo+5StUwyWGJucPHjK6v0ZhS02kCCxCGEfdQRYj095/N8E5wbAoOSQ==",
+        "resolved": "13.3.5",
+        "contentHash": "VdyKKxxSekfakcjKJjgUiuNaIFBV4gR5R0/HRLLgQWsss7jkShZ7oX+4E4X6qwjOfFykxNZKiApHJQtG/YNc1A==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
@@ -1247,7 +1247,7 @@
       "viajantesturismo.admin.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.3.4, )",
+          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.3.5, )",
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )"
@@ -1264,7 +1264,7 @@
       "viajantesturismo.admin.web": {
         "type": "Project",
         "dependencies": {
-          "Aspire.StackExchange.Redis.OutputCaching": "[13.3.4, )",
+          "Aspire.StackExchange.Redis.OutputCaching": "[13.3.5, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.8, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )",
@@ -1296,9 +1296,9 @@
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "CentralTransitive",
-        "requested": "[13.3.4, )",
-        "resolved": "13.3.4",
-        "contentHash": "DEBhtOGgzYzb5BWYzjBE/BMLdMJepDI3g7TPWdGbrOZhGt/2ThxDk+CAgl9kqdF9XbCJ5Ii3kv58vhUKQqGBUg==",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "VDg0Gkud8sgKqeRUMUhIHYIk8Wpgpm71McpwRspFiT2XAWSodl/NpLMaG+rivQl1cKIE2QVTjgVYLqYdEArYzQ==",
         "dependencies": {
           "Microsoft.Extensions.Caching.Memory": "10.0.7",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
@@ -1319,12 +1319,12 @@
       },
       "Aspire.StackExchange.Redis.OutputCaching": {
         "type": "CentralTransitive",
-        "requested": "[13.3.4, )",
-        "resolved": "13.3.4",
-        "contentHash": "M464udsXebWOJLkV6kpIBtkyDb/oQq2LOy4rZScESau15lX+czyOSN2vhyzEsq8KFFmVidZVsF1tralWDDYumg==",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "mrnLKEFv4Qu/pxfr/Jd3s3kyGHu6vR1A5UYfANvUA5ElNUOppVjT3+8UWIar39wVUMjJU7LnHeJc37f0xtLlng==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
-          "Aspire.StackExchange.Redis": "13.3.4",
+          "Aspire.StackExchange.Redis": "13.3.5",
           "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis": "10.0.7",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
           "Microsoft.Extensions.Configuration.Binder": "10.0.7",
