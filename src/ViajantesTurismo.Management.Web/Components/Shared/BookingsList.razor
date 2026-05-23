@@ -1,0 +1,145 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Management.Web.Helpers
+
+@if (Bookings == null || !Bookings.Any())
+{
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle"></i> No bookings found.
+    </div>
+}
+else
+{
+    <div class="table-responsive-wrapper">
+    <QuickGrid Items="@Bookings.AsQueryable()" Class="table table-hover" Pagination="@(Bookings.Count() > 10 ? _pagination : null)">
+        <PropertyColumn Property="@(b => b.BookingDate)" Title="Booking Date" Format="@DateFormatter.DateTimeFormat"
+                        Sortable="true"/>
+
+        @if (ShowTourInfo)
+        {
+            <TemplateColumn Title="Tour" Sortable="true" SortBy="GridSort<GetBookingDto>.ByAscending(b => b.TourName)">
+                <a href="/tours/@context.TourId">@context.TourName</a>
+                <br/>
+                <small class="text-muted">@context.TourIdentifier</small>
+            </TemplateColumn>
+        }
+
+        @if (ShowCustomerInfo)
+        {
+            <TemplateColumn Title="Customer" Sortable="true" SortBy="GridSort<GetBookingDto>.ByAscending(b => b.CustomerName)">
+                <a href="/customers/@context.CustomerId">@context.CustomerName</a>
+            </TemplateColumn>
+        }
+
+        <TemplateColumn Title="Companion">
+            @if (context.CompanionId.HasValue)
+            {
+                <a href="/customers/@context.CompanionId">@context.CompanionName</a>
+            }
+            else
+            {
+                <span class="text-muted">-</span>
+            }
+        </TemplateColumn>
+
+        <TemplateColumn Title="Total Price" Sortable="true"
+                        SortBy="GridSort<GetBookingDto>.ByAscending(b => b.TotalPrice)">
+            @CurrencyFormatter.Format(context.TotalPrice, context.Currency)
+        </TemplateColumn>
+
+        <TemplateColumn Title="Discount">
+            @if (context.DiscountType != DiscountTypeDto.None)
+            {
+                <span class="badge @GetDiscountBadgeClass(context.DiscountType)"
+                      title="@GetDiscountTooltip(context)">
+                    <i class="bi bi-percent"></i> @GetDiscountDisplayText(context)
+                </span>
+            }
+            else
+            {
+                <span class="text-muted">-</span>
+            }
+        </TemplateColumn>
+
+        <TemplateColumn Title="Status">
+            <BookingStatusBadge Status="@context.Status"/>
+        </TemplateColumn>
+
+        <TemplateColumn Title="Payment">
+            <PaymentStatusBadge Status="@context.PaymentStatus"/>
+        </TemplateColumn>
+
+        <TemplateColumn Title="Actions">
+            <div class="btn-group" role="group">
+                <NavLink href="@GetBookingDetailsUrl(context.Id)" class="btn btn-sm btn-info" title="View Booking">
+                    <i class="bi bi-eye"></i> View
+                </NavLink>
+                <NavLink href="@GetBookingEditUrl(context.Id)" class="btn btn-sm btn-primary" title="Edit Booking">
+                    <i class="bi bi-pencil"></i> Edit
+                </NavLink>
+            </div>
+        </TemplateColumn>
+    </QuickGrid>
+
+    </div>
+
+    @if (Bookings.Count() > 10)
+    {
+        <Paginator State="@_pagination" />
+    }
+}
+
+@code {
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    [Parameter]
+    public IEnumerable<GetBookingDto>? Bookings { get; set; }
+
+    [Parameter]
+    public bool ShowTourInfo { get; set; } = true;
+
+    [Parameter]
+    public bool ShowCustomerInfo { get; set; } = true;
+
+    private static string GetDiscountBadgeClass(DiscountTypeDto discountType)
+    {
+        return discountType switch
+        {
+            DiscountTypeDto.None => "bg-secondary",
+            DiscountTypeDto.Percentage => "bg-primary",
+            DiscountTypeDto.Absolute => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    private static string GetDiscountDisplayText(GetBookingDto booking)
+    {
+        return booking.DiscountType switch
+        {
+            DiscountTypeDto.Percentage => $"{booking.DiscountAmount:F2}%",
+            DiscountTypeDto.Absolute => CurrencyFormatter.Format(booking.DiscountAmount, booking.Currency),
+            _ => "-"
+        };
+    }
+
+    private static string GetDiscountTooltip(GetBookingDto booking)
+    {
+        if (booking.DiscountType == DiscountTypeDto.None)
+        {
+            return "No discount applied";
+        }
+
+        var discountTypeText = booking.DiscountType == DiscountTypeDto.Percentage
+            ? "Percentage Discount"
+            : "Absolute Discount";
+
+        return string.IsNullOrWhiteSpace(booking.DiscountReason)
+            ? discountTypeText
+            : $"{discountTypeText}: {booking.DiscountReason}";
+    }
+
+    private static string GetBookingDetailsUrl(Guid bookingId) => $"/bookings/{bookingId}";
+
+    private static string GetBookingEditUrl(Guid bookingId) => $"/bookings/{bookingId}/edit";
+
+}

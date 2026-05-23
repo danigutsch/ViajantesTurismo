@@ -1,0 +1,120 @@
+@page "/customers/create/personal-info"
+@using ViajantesTurismo.Management.Web.Models
+@using ViajantesTurismo.Management.Web.Services
+@rendermode InteractiveServer
+
+@inject CustomerCreationState State
+@inject NavigationManager Navigation
+@inject ICountryService CountryService
+
+<PageTitle>Create Customer - Personal Information</PageTitle>
+
+<div class="container mt-4">
+    <h2>Create New Customer</h2>
+    <WizardProgress/>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Step 1 of 8: Personal Information</h4>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <InputText id="firstName" @bind-Value="_model.FirstName" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.FirstName)"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <InputText id="lastName" @bind-Value="_model.LastName" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.LastName)"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="birthDate" class="form-label">Birth Date <span class="text-danger">*</span></label>
+                        <InputDate id="birthDate" @bind-Value="_model.BirthDate" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.BirthDate)"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                        <InputSelect id="gender" @bind-Value="_model.Gender" class="form-select">
+                            <option value="">-- Select Gender --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _model.Gender)"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nationality <span class="text-danger">*</span></label>
+                        <CountrySelector id="nationality" @bind-Value="_model.Nationality"
+                                         Countries="@(_countries ?? [])"/>
+                        @if (_countries == null)
+                        {
+                            <small class="form-text text-muted">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Loading countries...
+                            </small>
+                        }
+                        <ValidationMessage For="@(() => _model.Nationality)"/>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="occupation" class="form-label">Occupation <span class="text-danger">*</span></label>
+                        <InputText id="occupation" @bind-Value="_model.Occupation" class="form-control"/>
+                        <ValidationMessage For="@(() => _model.Occupation)"/>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <button @onclick="@(() => Navigation.NavigateTo("/customers"))" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <NavLink href="/customers/import" class="text-muted small">
+                            <i class="bi bi-upload"></i> or import from CSV
+                        </NavLink>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private PersonalInfoFormModel _model = new();
+    private IReadOnlyList<CountryInfo>? _countries;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        if (State.PersonalInfo is not null)
+        {
+            _model = State.PersonalInfo;
+        }
+
+        State.NavigateToStep(1);
+
+        _countries = await CountryService.GetCountries(CancellationToken.None);
+    }
+
+    private void HandleValidSubmit()
+    {
+        State.SetPersonalInfo(_model);
+        Navigation.NavigateTo("/customers/create/identification");
+    }
+
+}

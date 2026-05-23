@@ -45,7 +45,7 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Admin.Infrastructure/      # Infrastructure (EF Core, DB context, stores)
 │   ├── ViajantesTurismo.Admin.Contracts/           # API contracts and DTOs
 │   ├── ViajantesTurismo.Admin.ApiService/          # Main API service
-│   ├── ViajantesTurismo.Admin.Web/                 # Blazor admin web frontend
+│   ├── ViajantesTurismo.Management.Web/                 # Blazor admin web frontend
 │   ├── ViajantesTurismo.AppHost/                   # Aspire orchestration
 │   ├── ViajantesTurismo.Common/                    # Shared domain models and utilities
 │   ├── ViajantesTurismo.MigrationService/          # Database migration worker
@@ -220,7 +220,7 @@ For service-specific details, see:
 
 - [AppHost README](src/ViajantesTurismo.AppHost/README.md)
 - [Admin API README](src/ViajantesTurismo.Admin.ApiService/README.md)
-- [Admin Web README](src/ViajantesTurismo.Admin.Web/README.md)
+- [Management Web README](src/ViajantesTurismo.Management.Web/README.md)
 
 ### Development Workflow
 

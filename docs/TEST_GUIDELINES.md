@@ -170,7 +170,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
   Fast, no dependencies.
 - **`ViajantesTurismo.Admin.UnitTests`** — Domain logic: entities, aggregates, mappers, business rules. Fast, in-memory
   only.
-- **`ViajantesTurismo.Admin.WebTests`** — Blazor Web components: Razor component rendering, UI state, user interactions.
+- **`ViajantesTurismo.Management.WebTests`** — Blazor Web components: Razor component rendering, UI state, user interactions.
   Uses bUnit for fast, in-memory component testing.
 - **`ViajantesTurismo.Admin.IntegrationTests`** — API endpoints with real PostgreSQL database. Slower, tests complete
   request-response cycle.
@@ -181,7 +181,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 - `tests/Admin.Domain.Tests/` — Entities, value objects, aggregates (unit tests)
 - `tests/Admin.Application.Tests/` — Use cases, policies, application services (unit tests)
-- `tests/Admin.Web.Tests/` — Blazor components (bUnit tests) ✅ *Already exists as `Admin.WebTests`*
+- `tests/Management.Web.Tests/` — Blazor components (bUnit tests) ✅ *Already exists as `Management.WebTests`*
 - `tests/Admin.Acceptance.Tests/` — BDD scenarios calling the Application layer
 - `tests/Contract.Tests/` — Consumer-driven contract tests (if services integrate with others)
 - `tests/specs/` — Shared `.feature` files (if not colocated in acceptance tests)
@@ -262,7 +262,7 @@ Assert.Equal("InvalidOperationException", span.GetTagItem("error.type"));
 
 ## Blazor Component Testing (bUnit)
 
-For testing Razor components in `ViajantesTurismo.Admin.Web`, we use bUnit following Microsoft's recommended approach
+For testing Razor components in `ViajantesTurismo.Management.Web`, we use bUnit following Microsoft's recommended approach
 for components without complex JS interop.
 
 ### Test Class Pattern
@@ -297,7 +297,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 - **No explicit Arrange** - Component rendering is the arrangement in bUnit tests
 - **Semantic Comparison** - Use `cut.MarkupMatches()` for HTML comparison
 
-See [ViajantesTurismo.Admin.WebTests README](../tests/ViajantesTurismo.Admin.WebTests/README.md) for detailed examples
+See [ViajantesTurismo.Management.WebTests README](../tests/ViajantesTurismo.Management.WebTests/README.md) for detailed examples
 and patterns.
 
 ## Test Patterns

@@ -1,0 +1,301 @@
+@page "/tours/{id:guid}"
+@using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Management.Web.Exceptions
+@using ViajantesTurismo.Management.Web.Helpers
+@rendermode InteractiveServer
+
+@inject IToursApiClient ToursApi
+@inject IBookingsApiClient BookingsApi
+@inject ICustomersApiClient CustomersApi
+@inject ILogger<Details> Logger
+
+<PageTitle>Tour Details</PageTitle>
+
+<ToastNotification @ref="_toast" />
+
+<h1>Tour Details</h1>
+
+@if (_loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (_notFound)
+{
+    <div class="alert alert-danger" role="alert">
+        Tour not found.
+    </div>
+    <NavLink href="/tours" class="btn btn-secondary">Back to Tours</NavLink>
+}
+else if (_tour != null)
+{
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">@_tour.Name</h3>
+            <div class="d-flex gap-2">
+                <a href="@($"/edittour/{_tour.Id}")" class="btn btn-primary">Edit Tour</a>
+                <NavLink href="/tours" class="btn btn-secondary">Back to List</NavLink>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>General Information</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Identifier:</dt>
+                        <dd class="col-sm-8">@_tour.Identifier</dd>
+
+                        <dt class="col-sm-4">Tour Name:</dt>
+                        <dd class="col-sm-8">@_tour.Name</dd>
+
+                        <dt class="col-sm-4">Start Date:</dt>
+                        <dd class="col-sm-8">@DateFormatter.FormatDate(_tour.StartDate)</dd>
+
+                        <dt class="col-sm-4">End Date:</dt>
+                        <dd class="col-sm-8">@DateFormatter.FormatDate(_tour.EndDate)</dd>
+
+                        <dt class="col-sm-4">Duration:</dt>
+                        <dd class="col-sm-8">@((_tour.EndDate - _tour.StartDate).Days) days</dd>
+
+                        <dt class="col-sm-4">Currency:</dt>
+                        <dd class="col-sm-8">@EnumFormatter.Format(_tour.Currency)</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    <h5>Pricing</h5>
+                    <dl class="row">
+                        <dt class="col-sm-6">Base Price:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.Price, _tour.Currency)</dd>
+
+                        <dt class="col-sm-6">Single Room Supplement:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.SingleRoomSupplementPrice, _tour.Currency)</dd>
+
+                        <dt class="col-sm-6">Regular Bike Price:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.RegularBikePrice, _tour.Currency)</dd>
+
+                        <dt class="col-sm-6">E-Bike Price:</dt>
+                        <dd class="col-sm-6">@FormatPrice(_tour.EBikePrice, _tour.Currency)</dd>
+                    </dl>
+
+                    <h5 class="mt-4">Capacity</h5>
+                    <dl class="row">
+                        <dt class="col-sm-6">Minimum Customers:</dt>
+                        <dd class="col-sm-6">@_tour.MinCustomers</dd>
+
+                        <dt class="col-sm-6">Maximum Customers:</dt>
+                        <dd class="col-sm-6">@_tour.MaxCustomers</dd>
+
+                        <dt class="col-sm-6">Current Bookings:</dt>
+                        <dd class="col-sm-6">
+                            @_tour.CurrentCustomerCount / @_tour.MaxCustomers customers
+                            @if (IsFullyBooked(_tour))
+                            {
+                                <span class="badge bg-danger ms-2">Fully Booked</span>
+                            }
+                            else if (IsBelowMinimum(_tour))
+                            {
+                                <span class="badge bg-warning ms-2">Below Minimum</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success ms-2">@GetAvailableSpots(_tour) spots available</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            @if (_tour.IncludedServices.Any())
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <h5>Included Services</h5>
+                        <ul class="list-group">
+                            @foreach (var service in _tour.IncludedServices)
+                            {
+                                <li class="list-group-item">@service</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="bi bi-calendar-check"></i> Bookings</h3>
+            <button class="btn btn-success" @onclick="ShowCreateBookingForm">
+                <i class="bi bi-plus-circle"></i> Add Booking
+            </button>
+        </div>
+        <div class="card-body">
+            @if (_loadingBookings)
+            {
+                <p><em>Loading bookings...</em></p>
+            }
+            else if (_showCreateForm)
+            {
+                <div class="border rounded p-3 mb-3">
+                    <h5>Create New Booking</h5>
+                    <BookingCreateForm @ref="_bookingCreateFormRef"
+                                       Model="_bookingFormModel"
+                                       Customers="_customers"
+                                       Tours="_tours"
+                                       SelectedTour="_tour"
+                                       OnValidSubmit="@HandleSaveBooking"
+                                       OnInvalidSubmit="@HandleInvalidBookingSubmit"
+                                       OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
+                                       IsSubmitting="_isSubmitting"/>
+                </div>
+            }
+            else
+            {
+                <BookingsList Bookings="_bookings"
+                              ShowTourInfo="false" />
+            }
+        </div>
+    </div>
+}
+
+@code {
+
+    /// <summary>
+	/// The ID of the tour to display details for.
+    /// </summary>
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private GetTourDto? _tour;
+    private bool _loading = true;
+    private bool _notFound;
+
+    private GetBookingDto[]? _bookings;
+    private bool _loadingBookings = true;
+    private bool _showCreateForm;
+
+    private GetCustomerDto[] _customers = [];
+    private GetTourDto[] _tours = [];
+    private BookingFormModel _bookingFormModel = new();
+    private bool _isSubmitting;
+    private BookingCreateForm? _bookingCreateFormRef;
+
+    private ToastNotification _toast = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _tour = await ToursApi.GetTourById(Id, CancellationToken.None);
+
+            if (_tour is null)
+            {
+                _notFound = true;
+            }
+            else
+            {
+                await Task.WhenAll(LoadBookings(), LoadCustomers(), LoadTours());
+            }
+        }
+        catch (Exception)
+        {
+            _notFound = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadBookings()
+    {
+        _loadingBookings = true;
+        try
+        {
+            _bookings = await BookingsApi.GetBookingsByTourId(Id, CancellationToken.None);
+        }
+        finally
+        {
+            _loadingBookings = false;
+        }
+    }
+
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            _customers = (await CustomersApi.GetCustomers(CancellationToken.None)).ToArray();
+        }
+        catch (Exception)
+        {
+            _customers = [];
+        }
+    }
+
+    private async Task LoadTours()
+    {
+        try
+        {
+            _tours = (await ToursApi.GetTours(CancellationToken.None)).ToArray();
+        }
+        catch (Exception)
+        {
+            _tours = [];
+        }
+    }
+
+    private void ShowCreateBookingForm()
+    {
+        _bookingFormModel = new BookingFormModel { TourId = Id };
+        _showCreateForm = true;
+    }
+
+    private void HideBookingForm()
+    {
+        _showCreateForm = false;
+    }
+
+    private async Task HandleSaveBooking(BookingFormModel model)
+    {
+        _isSubmitting = true;
+        try
+        {
+            var createDto = model.ToDto() with { TourId = Id };
+            await BookingsApi.CreateBooking(createDto, CancellationToken.None);
+            _toast.ShowSuccess("Booking created successfully.");
+
+            await LoadBookings();
+            HideBookingForm();
+        }
+        catch (ApiValidationException ex)
+        {
+            if (_bookingCreateFormRef?.EditContext is not null)
+            {
+                EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, ex);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Unexpected error while creating booking for tour {TourId}", Id);
+            _toast.ShowError("Failed to create booking. Please check the form for errors.");
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private static Task HandleInvalidBookingSubmit(EditContext _)
+    {
+        return Task.CompletedTask;
+    }
+
+    private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
+
+    private static bool IsFullyBooked(GetTourDto tour) => tour.CurrentCustomerCount >= tour.MaxCustomers;
+
+    private static bool IsBelowMinimum(GetTourDto tour) => tour.CurrentCustomerCount < tour.MinCustomers;
+
+    private static int GetAvailableSpots(GetTourDto tour) => tour.MaxCustomers - tour.CurrentCustomerCount;
+
+}

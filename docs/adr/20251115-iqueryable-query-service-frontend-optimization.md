@@ -9,7 +9,7 @@
 
 ## Context
 
-The Admin.Web frontend uses QuickGrid components to display tabular data. We need to decide what type
+The Management.Web frontend uses QuickGrid components to display tabular data. We need to decide what type
 the `IQueryService` should return for collection queries.
 
 ## Options Considered

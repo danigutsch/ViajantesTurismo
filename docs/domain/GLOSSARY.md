@@ -4,11 +4,11 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 
 ## General Terms
 
-| Term    | Definition                                                                       | Notes                                                       |
-|---------|----------------------------------------------------------------------------------|-------------------------------------------------------------|
-| Admin   | Bounded context responsible for reference data and administrative configuration. | Owners, roles, countries, etc.                              |
-| Country | ISO-3166 country metadata used across the system.                                | Source lives under `Admin.Web/wwwroot/data/countries.json`. |
-| User    | Person managing Admin functions.                                                 |                                                             |
+| Term    | Definition                                                                       | Notes                                                                  |
+|---------|----------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| Admin   | Bounded context responsible for reference data and administrative configuration. | Owners, roles, countries, etc.                                         |
+| Country | ISO-3166 country metadata used across the system.                                | Source lives under `Management.Web/wwwroot/data/countries.json`.       |
+| User    | Person managing Admin functions.                                                 |                                                                        |
 
 ## Aggregates
 

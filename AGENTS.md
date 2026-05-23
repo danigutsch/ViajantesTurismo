@@ -15,7 +15,7 @@ Use nested `AGENTS.md` files for scoped rules.
     - `src/ViajantesTurismo.Admin.Contracts/AGENTS.md`
     - `src/ViajantesTurismo.Admin.Domain/AGENTS.md`
     - `src/ViajantesTurismo.Admin.Infrastructure/AGENTS.md`
-    - `src/ViajantesTurismo.Admin.Web/AGENTS.md`
+    - `src/ViajantesTurismo.Management.Web/AGENTS.md`
     - `src/ViajantesTurismo.AppHost/AGENTS.md`
     - `tests/AGENTS.md`
     - `tests/ViajantesTurismo.Admin.BehaviorTests/AGENTS.md`

@@ -7,7 +7,7 @@ using Npgsql;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
-using ViajantesTurismo.Admin.Web;
+using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.E2ETests.Infrastructure.Fixtures;

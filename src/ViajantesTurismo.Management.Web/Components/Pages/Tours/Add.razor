@@ -1,0 +1,239 @@
+@page "/addtour"
+@using System.ComponentModel.DataAnnotations
+@using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Management.Web.Helpers
+@inject IToursApiClient ToursApi
+@rendermode InteractiveServer
+
+<PageTitle>Add Tour</PageTitle>
+
+<h1>Add New Tour</h1>
+
+@if (_success && _createdTourUrl != null)
+{
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">Tour created successfully!</h4>
+        <p>What would you like to do next?</p>
+        <hr>
+        <div class="d-flex gap-2">
+            <a href="@_createdTourUrl" class="btn btn-primary">View Tour Details</a>
+            <button type="button" class="btn btn-success" @onclick="CreateAnother">Create Another Tour</button>
+            <NavLink href="/tours" class="btn btn-secondary">View All Tours</NavLink>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @_errorMessage
+    </div>
+}
+
+<EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="addTour">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="mb-3">
+        <label for="identifier" class="form-label">Tour Identifier</label>
+        <InputText id="identifier" class="form-control" @bind-Value="_model.Identifier" placeholder="e.g., CUBA2024"/>
+    </div>
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Tour Name</label>
+        <InputText id="name" class="form-control" @bind-Value="_model.Name" placeholder="e.g., Isla de Cuba"/>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="startDate" class="form-label">Start Date</label>
+            <InputDate id="startDate" class="form-control" @bind-Value="_model.StartDate"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="endDate" class="form-label">End Date</label>
+            <InputDate id="endDate" class="form-control" @bind-Value="_model.EndDate"/>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="currency" class="form-label">Currency</label>
+        <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency">
+            <option value="@CurrencyDto.Real">Brazilian Real (BRL)</option>
+            <option value="@CurrencyDto.Euro">Euro (EUR)</option>
+            <option value="@CurrencyDto.UsDollar">US Dollar (USD)</option>
+        </InputSelect>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="price" class="form-label">Base Price</label>
+            <InputNumber id="price" class="form-control" @bind-Value="_model.Price" @bind-Value:format="F2"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="singleRoom" class="form-label">Single Room Supplement</label>
+            <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"
+                         @bind-Value:format="F2"/>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="regularBike" class="form-label">Regular Bike Price</label>
+            <InputNumber id="regularBike" class="form-control" @bind-Value="_model.RegularBikePrice"
+                         @bind-Value:format="F2"/>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="eBike" class="form-label">E-Bike Price</label>
+            <InputNumber id="eBike" class="form-control" @bind-Value="_model.EBikePrice" @bind-Value:format="F2"/>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="services" class="form-label">Included Services</label>
+        <InputTextArea id="services" class="form-control" @bind-Value="_model.ServicesInput" rows="5"
+                       placeholder="Enter one service per line, e.g.:
+Hotel
+Breakfast
+Lunch
+City Tour
+Bike rental"/>
+        <div class="form-text">Enter one service per line. Empty lines will be ignored.</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="minCustomers" class="form-label">Minimum Customers</label>
+            <InputNumber id="minCustomers" class="form-control" @bind-Value="_model.MinCustomers"/>
+            <div class="form-text">Minimum number of customers required (1-20)</div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="maxCustomers" class="form-label">Maximum Customers</label>
+            <InputNumber id="maxCustomers" class="form-control" @bind-Value="_model.MaxCustomers"/>
+            <div class="form-text">Maximum number of customers allowed (1-20)</div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
+        @if (_isSubmitting)
+        {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <text>Creating...</text>
+        }
+        else
+        {
+            <text>Create Tour</text>
+        }
+    </button>
+</EditForm>
+
+@code {
+    private TourFormModel _model = new();
+    private bool _isSubmitting;
+    private bool _success;
+    private string? _errorMessage;
+    private string? _createdTourUrl;
+
+    private async Task HandleSubmit()
+    {
+        _isSubmitting = true;
+        _success = false;
+        _errorMessage = null;
+
+        try
+        {
+            var tour = new CreateTourDto
+            {
+                    Identifier = _model.Identifier,
+                    Name = _model.Name,
+                    StartDate = DateTime.SpecifyKind(_model.StartDate, DateTimeKind.Utc),
+                    EndDate = DateTime.SpecifyKind(_model.EndDate, DateTimeKind.Utc),
+                    Currency = _model.Currency,
+                    Price = _model.Price,
+                    SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
+                    RegularBikePrice = _model.RegularBikePrice,
+                    EBikePrice = _model.EBikePrice,
+                    IncludedServices = _model.ServicesInput
+                        .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .ToList(),
+                    MinCustomers = _model.MinCustomers,
+                    MaxCustomers = _model.MaxCustomers
+            };
+
+            var response = await ToursApi.CreateTour(tour, CancellationToken.None);
+
+            _createdTourUrl = response.ToString();
+            _success = true;
+        }
+        catch (Exception)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("create the tour");
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void CreateAnother()
+    {
+        _model = new TourFormModel();
+        _success = false;
+        _createdTourUrl = null;
+        _errorMessage = null;
+    }
+
+    private sealed class TourFormModel : IValidatableObject
+    {
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
+        public string Identifier { get; set; } = string.Empty;
+
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, Display(Name = "Start Date")]
+        public DateTime StartDate { get; set; } = DateTime.Today.AddDays(30);
+
+        [Required, Display(Name = "End Date")]
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(40);
+
+        [Required]
+        public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Base Price")]
+        public decimal Price { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Single Room Supplement")]
+        public decimal SingleRoomSupplementPrice { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Regular Bike Price")]
+        public decimal RegularBikePrice { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "E-Bike Price")]
+        public decimal EBikePrice { get; set; }
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers), Display(Name = "Minimum Customers")]
+        public int MinCustomers { get; set; } = ContractConstants.MinTourCustomers;
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers), Display(Name = "Maximum Customers")]
+        public int MaxCustomers { get; set; } = ContractConstants.MaxTourCustomers;
+
+        [Required, Display(Name = "Included Services")]
+        public string ServicesInput { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var result = TourValidation.ValidateDuration(
+                    StartDate,
+                    EndDate,
+                    ContractConstants.MinimumTourDurationDays,
+                    nameof(StartDate),
+                    nameof(EndDate));
+
+            if (result is not null)
+            {
+                yield return result;
+            }
+        }
+    }
+
+}
