@@ -15,6 +15,6 @@ export function checkCollectionResponse(response, endpointName) {
   check(response, {
     [`${endpointName} status is 200`]: (r) => r.status === 200,
     [`${endpointName} uses json`]: (r) => hasJsonContentType(r),
-    [`${endpointName} body parses as array`]: (r) => Array.isArray(r.json()),
+    [`${endpointName} body parses as array`]: (r) => r.body ? Array.isArray(r.json()) : false,
   }, { endpoint: endpointName });
 }
