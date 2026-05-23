@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 
 IGNORED_PARTS = {"bin", "obj", "TestResults", "node_modules", ".sonarqube", ".vs", ".vscode"}
+FEATURE_GLOB = "*.feature"
 
 
 @dataclass(frozen=True)
@@ -65,30 +66,35 @@ def is_feature_path(path: pathlib.Path) -> bool:
     return path.suffix == ".feature" and not any(part in IGNORED_PARTS for part in path.parts)
 
 
+def collect_feature_files(root: pathlib.Path) -> list[pathlib.Path]:
+    return [path for path in root.rglob(FEATURE_GLOB) if is_feature_path(path)]
+
+
+def unique_sorted_paths(paths: list[pathlib.Path]) -> list[pathlib.Path]:
+    return sorted({path.resolve(): path for path in paths}.values(), key=lambda path: str(path))
+
+
 def iter_target_files(args: list[str]) -> list[pathlib.Path]:
-    if args:
-        files: list[pathlib.Path] = []
-        for arg in args:
-            if arg == "--":
-                continue
-            if arg == "tests/**/*.feature":
-                files.extend(path for path in pathlib.Path("tests").rglob("*.feature") if is_feature_path(path))
-                continue
+    if not args:
+        return unique_sorted_paths(collect_feature_files(pathlib.Path("tests")))
 
-            candidate = pathlib.Path(arg)
-            if candidate.is_dir():
-                files.extend(path for path in candidate.rglob("*.feature") if is_feature_path(path))
-                continue
+    files: list[pathlib.Path] = []
+    for arg in args:
+        if arg == "--":
+            continue
+        if arg == "tests/**/*.feature":
+            files.extend(collect_feature_files(pathlib.Path("tests")))
+            continue
 
-            if candidate.exists() and is_feature_path(candidate):
-                files.append(candidate)
+        candidate = pathlib.Path(arg)
+        if candidate.is_dir():
+            files.extend(collect_feature_files(candidate))
+            continue
 
-        return sorted({path.resolve(): path for path in files}.values(), key=lambda path: str(path))
+        if candidate.exists() and is_feature_path(candidate):
+            files.append(candidate)
 
-    return sorted(
-        (path for path in pathlib.Path("tests").rglob("*.feature") if is_feature_path(path)),
-        key=lambda path: str(path),
-    )
+    return unique_sorted_paths(files)
 
 
 def strip_inline_comment(value: str) -> str:
@@ -112,6 +118,70 @@ def starts_with_keyword(content: str, keyword: str) -> bool:
 
 def collect_tag_tokens(tag_line: str) -> list[str]:
     return [token for token in tag_line.split() if token.startswith("@")]
+
+
+def add_name_errors(
+    errors: list[str],
+    path: pathlib.Path,
+    index: int,
+    label: str,
+    name: str,
+    max_length: int,
+) -> bool:
+    if not name:
+        errors.append(f"{path}:{index}: {label} name is required")
+        return False
+
+    if len(name) > max_length:
+        errors.append(f"{path}:{index}: {label} name exceeds {max_length} characters")
+
+    return True
+
+
+def validate_tag_line(path: pathlib.Path, index: int, line: str, rules: RuleConfig, errors: list[str]) -> None:
+    for tag in collect_tag_tokens(line):
+        if not is_tag_allowed(tag, rules):
+            errors.append(f"{path}:{index}: tag '{tag}' is not allowed")
+        if tag in rules.restricted_tags:
+            errors.append(f"{path}:{index}: tag '{tag}' is forbidden; use @wip")
+
+
+def validate_feature_line(
+    path: pathlib.Path,
+    index: int,
+    line: str,
+    rules: RuleConfig,
+    seen_feature_names: Counter[str],
+    errors: list[str],
+) -> tuple[str | None, int | None]:
+    name = line.partition(":")[2].strip()
+    if not add_name_errors(errors, path, index, "Feature", name, rules.feature_name_max):
+        return None, None
+
+    seen_feature_names[name] += 1
+    return name, index
+
+
+def validate_scenario_line(
+    path: pathlib.Path,
+    index: int,
+    line: str,
+    rules: RuleConfig,
+    scenario_names: Counter[str],
+    errors: list[str],
+) -> None:
+    name = line.partition(":")[2].strip()
+    if not add_name_errors(errors, path, index, "Scenario", name, rules.scenario_name_max):
+        return
+
+    scenario_names[name] += 1
+    if scenario_names[name] > 1:
+        errors.append(f"{path}:{index}: duplicate scenario name '{name}'")
+
+
+def add_outline_examples_error(errors: list[str], path: pathlib.Path, index: int, rules: RuleConfig, inside_outline: bool, outline_has_examples: bool) -> None:
+    if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
+        errors.append(f"{path}:{index}: Scenario Outline must include an Examples section")
 
 
 def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: Counter[str]) -> list[str]:
@@ -148,38 +218,16 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
             errors.append(f"{path}:{index}: tabs are not allowed")
 
         if no_comment.startswith("@"):
-            for tag in collect_tag_tokens(no_comment):
-                if not is_tag_allowed(tag, rules):
-                    errors.append(f"{path}:{index}: tag '{tag}' is not allowed")
-                if tag in rules.restricted_tags:
-                    errors.append(f"{path}:{index}: tag '{tag}' is forbidden; use @wip")
+            validate_tag_line(path, index, no_comment, rules, errors)
             continue
 
         if starts_with_keyword(no_comment, "Feature"):
-            name = no_comment.partition(":")[2].strip()
-            if not name:
-                errors.append(f"{path}:{index}: Feature name is required")
-            else:
-                if len(name) > rules.feature_name_max:
-                    errors.append(f"{path}:{index}: Feature name exceeds {rules.feature_name_max} characters")
-                feature_name = name
-                feature_line = index
-                seen_feature_names[name] += 1
+            feature_name, feature_line = validate_feature_line(path, index, no_comment, rules, seen_feature_names, errors)
             continue
 
         if starts_with_keyword(no_comment, "Scenario Outline"):
-            if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
-                errors.append(f"{path}:{index}: Scenario Outline must include an Examples section")
-
-            name = no_comment.partition(":")[2].strip()
-            if not name:
-                errors.append(f"{path}:{index}: Scenario name is required")
-            else:
-                if len(name) > rules.scenario_name_max:
-                    errors.append(f"{path}:{index}: Scenario name exceeds {rules.scenario_name_max} characters")
-                scenario_names[name] += 1
-                if scenario_names[name] > 1:
-                    errors.append(f"{path}:{index}: duplicate scenario name '{name}'")
+            add_outline_examples_error(errors, path, index, rules, inside_outline, outline_has_examples)
+            validate_scenario_line(path, index, no_comment, rules, scenario_names, errors)
 
             inside_outline = True
             outline_has_examples = False
@@ -187,18 +235,8 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
             continue
 
         if starts_with_keyword(no_comment, "Scenario"):
-            if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
-                errors.append(f"{path}:{index}: Scenario Outline must include an Examples section")
-
-            name = no_comment.partition(":")[2].strip()
-            if not name:
-                errors.append(f"{path}:{index}: Scenario name is required")
-            else:
-                if len(name) > rules.scenario_name_max:
-                    errors.append(f"{path}:{index}: Scenario name exceeds {rules.scenario_name_max} characters")
-                scenario_names[name] += 1
-                if scenario_names[name] > 1:
-                    errors.append(f"{path}:{index}: duplicate scenario name '{name}'")
+            add_outline_examples_error(errors, path, index, rules, inside_outline, outline_has_examples)
+            validate_scenario_line(path, index, no_comment, rules, scenario_names, errors)
 
             inside_outline = False
             outline_has_examples = False
@@ -208,10 +246,8 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
         if starts_with_keyword(no_comment, "Examples"):
             if inside_outline:
                 outline_has_examples = True
-            continue
 
-    if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
-        errors.append(f"{path}:{len(lines)}: Scenario Outline must include an Examples section")
+    add_outline_examples_error(errors, path, len(lines), rules, inside_outline, outline_has_examples)
 
     if feature_name is None:
         errors.append(f"{path}:1: Feature declaration is required")
