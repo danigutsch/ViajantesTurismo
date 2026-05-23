@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+docker_uid="$(id -u)"
+docker_gid="$(id -g)"
+docker_user="${docker_uid}:${docker_gid}"
+
 if ! command -v docker >/dev/null 2>&1; then
     echo "docker is required for markdown lint" >&2
     exit 1
@@ -39,6 +43,8 @@ if [[ "${fix_mode}" == true ]]; then
 fi
 
 docker run --rm \
+    --user "${docker_user}" \
+    --env HOME=/tmp \
     --volume "${PWD}:/workspace" \
     --workdir /workspace \
     davidanson/markdownlint-cli2:v0.18.1 \

@@ -28,6 +28,15 @@ shellcheck_targets=(
     ./setup-dev.sh
 )
 
+docker_uid="$(id -u)"
+docker_gid="$(id -g)"
+docker_user="${docker_uid}:${docker_gid}"
+
+docker_user_args=(
+    --user "${docker_user}"
+    --env HOME=/tmp
+)
+
 run_shellcheck() {
     if command -v shellcheck >/dev/null 2>&1; then
         shellcheck \
@@ -39,9 +48,10 @@ run_shellcheck() {
 
     if command -v docker >/dev/null 2>&1; then
         docker run --rm \
+            "${docker_user_args[@]}" \
             --volume "${PWD}:/workspace" \
             --workdir /workspace \
-            koalaman/shellcheck:stable \
+            koalaman/shellcheck:v0.10.0 \
             --exclude=SC1091 \
             --source-path=SCRIPTDIR \
             "$@"
@@ -57,6 +67,7 @@ if [[ "${fix_mode}" == true ]]; then
         shfmt -w -i 4 -ci -bn -sr -- "${shellcheck_targets[@]}"
     elif command -v docker >/dev/null 2>&1; then
         docker run --rm \
+            "${docker_user_args[@]}" \
             --volume "${PWD}:/workspace" \
             --workdir /workspace \
             mvdan/shfmt:v3.11.0 \
@@ -86,6 +97,7 @@ if [[ "${skip_markdown}" != true ]]; then
     fi
 
     docker run --rm \
+        "${docker_user_args[@]}" \
         --volume "${PWD}:/workspace" \
         --workdir /workspace \
         davidanson/markdownlint-cli2:v0.18.1 \

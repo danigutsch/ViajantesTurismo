@@ -300,7 +300,7 @@ bash scripts/lint-markdown.sh                    # CI-owned markdown lint wrappe
 
 ```powershell
 shellcheck **/*.sh       # Lint shell scripts with ShellCheck
-shfmt -w -i 2 **/*.sh    # Format shell scripts with shfmt
+shfmt -w -i 4 -ci -bn -sr **/*.sh    # Format shell scripts with shfmt
 ```
 
 **Gherkin/Feature Files:**

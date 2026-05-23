@@ -17,15 +17,48 @@ IGNORED_PARTS = {"bin", "obj", "TestResults", "node_modules", ".sonarqube", ".vs
 class RuleConfig:
     tags: set[str]
     patterns: tuple[re.Pattern[str], ...]
+    restricted_tags: set[str]
+    feature_name_max: int
+    scenario_name_max: int
+    require_examples_for_outlines: bool
+
+
+def get_rule_payload(raw: dict[str, object], key: str) -> dict[str, object]:
+    rule_value = raw.get(key, ["off", {}])
+    if isinstance(rule_value, list) and len(rule_value) > 1 and isinstance(rule_value[1], dict):
+        return rule_value[1]
+
+    return {}
+
+
+def is_rule_enabled(raw: dict[str, object], key: str) -> bool:
+    rule_value = raw.get(key)
+    if rule_value == "on":
+        return True
+
+    return bool(isinstance(rule_value, list) and len(rule_value) > 0 and rule_value[0] == "on")
 
 
 def load_rules(config_path: pathlib.Path) -> RuleConfig:
     raw = json.loads(config_path.read_text(encoding="utf-8"))
-    allowed_tags = raw.get("allowed-tags", ["off", {}])
-    payload = allowed_tags[1] if isinstance(allowed_tags, list) and len(allowed_tags) > 1 else {}
+    payload = get_rule_payload(raw, "allowed-tags")
+    restricted_tags_payload = get_rule_payload(raw, "no-restricted-tags")
+    name_length_payload = get_rule_payload(raw, "name-length")
     tags = set(payload.get("tags", []))
     patterns = tuple(re.compile(pattern) for pattern in payload.get("patterns", []))
-    return RuleConfig(tags=tags, patterns=patterns)
+    restricted_tags = set(restricted_tags_payload.get("tags", []))
+    feature_name_max = int(name_length_payload.get("Feature", 250))
+    scenario_name_max = int(name_length_payload.get("Scenario", 150))
+    require_examples_for_outlines = is_rule_enabled(raw, "no-scenario-outlines-without-examples")
+
+    return RuleConfig(
+        tags=tags,
+        patterns=patterns,
+        restricted_tags=restricted_tags,
+        feature_name_max=feature_name_max,
+        scenario_name_max=scenario_name_max,
+        require_examples_for_outlines=require_examples_for_outlines,
+    )
 
 
 def is_feature_path(path: pathlib.Path) -> bool:
@@ -118,8 +151,8 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
             for tag in collect_tag_tokens(no_comment):
                 if not is_tag_allowed(tag, rules):
                     errors.append(f"{path}:{index}: tag '{tag}' is not allowed")
-                if tag == "@skip":
-                    errors.append(f"{path}:{index}: tag '@skip' is forbidden; use @wip")
+                if tag in rules.restricted_tags:
+                    errors.append(f"{path}:{index}: tag '{tag}' is forbidden; use @wip")
             continue
 
         if starts_with_keyword(no_comment, "Feature"):
@@ -127,23 +160,23 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
             if not name:
                 errors.append(f"{path}:{index}: Feature name is required")
             else:
-                if len(name) > 250:
-                    errors.append(f"{path}:{index}: Feature name exceeds 250 characters")
+                if len(name) > rules.feature_name_max:
+                    errors.append(f"{path}:{index}: Feature name exceeds {rules.feature_name_max} characters")
                 feature_name = name
                 feature_line = index
                 seen_feature_names[name] += 1
             continue
 
         if starts_with_keyword(no_comment, "Scenario Outline"):
-            if inside_outline and not outline_has_examples:
+            if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
                 errors.append(f"{path}:{index}: Scenario Outline must include an Examples section")
 
             name = no_comment.partition(":")[2].strip()
             if not name:
                 errors.append(f"{path}:{index}: Scenario name is required")
             else:
-                if len(name) > 150:
-                    errors.append(f"{path}:{index}: Scenario name exceeds 150 characters")
+                if len(name) > rules.scenario_name_max:
+                    errors.append(f"{path}:{index}: Scenario name exceeds {rules.scenario_name_max} characters")
                 scenario_names[name] += 1
                 if scenario_names[name] > 1:
                     errors.append(f"{path}:{index}: duplicate scenario name '{name}'")
@@ -154,15 +187,15 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
             continue
 
         if starts_with_keyword(no_comment, "Scenario"):
-            if inside_outline and not outline_has_examples:
+            if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
                 errors.append(f"{path}:{index}: Scenario Outline must include an Examples section")
 
             name = no_comment.partition(":")[2].strip()
             if not name:
                 errors.append(f"{path}:{index}: Scenario name is required")
             else:
-                if len(name) > 150:
-                    errors.append(f"{path}:{index}: Scenario name exceeds 150 characters")
+                if len(name) > rules.scenario_name_max:
+                    errors.append(f"{path}:{index}: Scenario name exceeds {rules.scenario_name_max} characters")
                 scenario_names[name] += 1
                 if scenario_names[name] > 1:
                     errors.append(f"{path}:{index}: duplicate scenario name '{name}'")
@@ -177,7 +210,7 @@ def validate_feature(path: pathlib.Path, rules: RuleConfig, seen_feature_names: 
                 outline_has_examples = True
             continue
 
-    if inside_outline and not outline_has_examples:
+    if rules.require_examples_for_outlines and inside_outline and not outline_has_examples:
         errors.append(f"{path}:{len(lines)}: Scenario Outline must include an Examples section")
 
     if feature_name is None:
