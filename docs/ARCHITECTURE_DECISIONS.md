@@ -33,6 +33,7 @@ Decisions about code quality standards and testing practices.
 - **[ADR-018](adr/20260228-test-parallelization-with-assembly-fixtures.md)** — Test Parallelization with xUnit v3
 Assembly Fixtures
 - **[ADR-019](adr/20260321-no-task-delay-in-production-code.md)** — No Direct Task.Delay in Production Code
+- **[ADR-020](adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)** — Web Frontends by Audience, Not by Bounded Context
 
 ### Architecture & Layers
 
