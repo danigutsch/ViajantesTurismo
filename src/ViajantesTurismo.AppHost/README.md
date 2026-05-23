@@ -18,14 +18,14 @@ development and deployment.
 
 - **MigrationService**: Database migrations and seeding
 - **Admin.ApiService**: REST API (waits for database + migrations)
-- **Admin.Web**: Blazor web UI (waits for API + cache)
+- **Management.Web**: Blazor web UI (waits for API + cache)
 
 ## Service Dependencies
 
 ```text
 PostgreSQL → Database → MigrationService
                      ↓
-                  ApiService → Admin.Web ← Redis
+                  ApiService → Management.Web ← Redis
 ```
 
 ## Features

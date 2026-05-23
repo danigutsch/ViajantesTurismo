@@ -1,0 +1,384 @@
+@page "/edittour/{id:guid}"
+@implements IAsyncDisposable
+@using System.ComponentModel.DataAnnotations
+@using ViajantesTurismo.Admin.Contracts
+@using ViajantesTurismo.Management.Web.Helpers
+@inject IToursApiClient ToursApi
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Edit Tour</PageTitle>
+
+<h1>Edit Tour</h1>
+
+@if (_loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (_notFound)
+{
+    <div class="alert alert-danger" role="alert">
+        Tour not found.
+    </div>
+    <NavLink href="/tours" class="btn btn-secondary">Back to Tours</NavLink>
+}
+else if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @_errorMessage
+    </div>
+    <NavLink href="/tours" class="btn btn-secondary">Back to Tours</NavLink>
+}
+else
+{
+    @if (_success)
+    {
+        <div class="alert alert-success" role="alert">
+            Tour updated successfully!
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @_errorMessage
+        </div>
+    }
+
+    <EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="editTour">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <div class="mb-3">
+            <label for="identifier" class="form-label">Tour Identifier</label>
+            <InputText id="identifier" class="form-control" @bind-Value="_model.Identifier"
+                       placeholder="e.g., CUBA2024" disabled="@_hasBookings"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Tour Name</label>
+            <InputText id="name" class="form-control" @bind-Value="_model.Name" placeholder="e.g., Isla de Cuba"/>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="startDate" class="form-label">Start Date</label>
+                <InputDate id="startDate" class="form-control" @bind-Value="_model.StartDate"/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="endDate" class="form-label">End Date</label>
+                <InputDate id="endDate" class="form-control" @bind-Value="_model.EndDate"/>
+            </div>
+        </div>
+
+        @if (_hasBookings)
+        {
+            <div class="alert alert-warning" role="alert">
+                This tour has existing bookings. Changing the schedule may affect booked customers.
+            </div>
+        }
+
+        <div class="mb-3">
+            <label for="currency" class="form-label">Currency</label>
+            <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency" disabled="@_hasBookings">
+                <option value="@CurrencyDto.Real">Brazilian Real (BRL)</option>
+                <option value="@CurrencyDto.Euro">Euro (EUR)</option>
+                <option value="@CurrencyDto.UsDollar">US Dollar (USD)</option>
+            </InputSelect>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="price" class="form-label">Base Price</label>
+                <InputNumber id="price" class="form-control" @bind-Value="_model.Price" @bind-Value:format="F2"/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="singleRoom" class="form-label">Single Room Supplement</label>
+                <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"
+                             @bind-Value:format="F2"/>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="regularBike" class="form-label">Regular Bike Price</label>
+                <InputNumber id="regularBike" class="form-control" @bind-Value="_model.RegularBikePrice"
+                             @bind-Value:format="F2"/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="eBike" class="form-label">E-Bike Price</label>
+                <InputNumber id="eBike" class="form-control" @bind-Value="_model.EBikePrice" @bind-Value:format="F2"/>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="services" class="form-label">Included Services</label>
+            <InputTextArea id="services" class="form-control" @bind-Value="_model.ServicesInput" rows="5"
+                           placeholder="Enter one service per line, e.g.:
+Hotel
+Breakfast
+Lunch
+City Tour
+Bike rental"/>
+            <div class="form-text">Enter one service per line. Empty lines will be ignored.</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="minCustomers" class="form-label">Minimum Customers</label>
+                <InputNumber id="minCustomers" class="form-control" @bind-Value="_model.MinCustomers"/>
+                <div class="form-text">Minimum number of customers required (1-20)</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="maxCustomers" class="form-label">Maximum Customers</label>
+                <InputNumber id="maxCustomers" class="form-control" @bind-Value="_model.MaxCustomers"/>
+                <div class="form-text">Maximum number of customers allowed (1-20)</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" disabled="@(_isSubmitting || _pendingRedirect)">
+                @if (_isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <text>Updating...</text>
+                }
+                else
+                {
+                    <text>Update Tour</text>
+                }
+            </button>
+            <NavLink href="/tours"
+                     class="@($"btn btn-secondary {(_isSubmitting || _pendingRedirect ? "disabled" : "")}")">
+                Cancel
+            </NavLink>
+        </div>
+    </EditForm>
+
+    @if (_pendingRedirect)
+    {
+        <div class="alert alert-info d-flex align-items-center justify-content-between mt-4" role="alert">
+            <span>
+                Redirecting to details page in 3 seconds...
+            </span>
+            <button class="btn btn-sm btn-outline-danger ms-3" @onclick="CancelRedirect">Cancel</button>
+        </div>
+    }
+    else if (_redirectCancelled)
+    {
+        <div class="alert alert-success d-flex align-items-center justify-content-between mt-4" role="alert">
+            <span>Tour updated successfully! You can go to the details page now.</span>
+            <button class="btn btn-sm btn-primary ms-3" @onclick="GoToDetails">Go to Details</button>
+        </div>
+    }
+}
+
+@code {
+
+    /// <summary>
+    /// The ID of the tour to edit.
+    /// </summary>
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private TourFormModel _model = new();
+    private bool _loading = true;
+    private bool _notFound;
+    private bool _hasBookings;
+    private bool _isSubmitting;
+    private bool _success;
+    private bool _pendingRedirect;
+    private bool _redirectCancelled;
+    private CancellationTokenSource? _redirectCts;
+    private string? _errorMessage;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tour = await ToursApi.GetTourById(Id, CancellationToken.None);
+
+            if (tour is null)
+            {
+                _notFound = true;
+                return;
+            }
+
+            _hasBookings = tour.CurrentCustomerCount > 0;
+
+            _model = new TourFormModel
+            {
+                Identifier = tour.Identifier,
+                Name = tour.Name,
+                StartDate = tour.StartDate,
+                EndDate = tour.EndDate,
+                Currency = tour.Currency,
+                Price = tour.Price,
+                SingleRoomSupplementPrice = tour.SingleRoomSupplementPrice,
+                RegularBikePrice = tour.RegularBikePrice,
+                EBikePrice = tour.EBikePrice,
+                ServicesInput = string.Join("\n", tour.IncludedServices),
+                MinCustomers = tour.MinCustomers,
+                MaxCustomers = tour.MaxCustomers
+            };
+        }
+        catch (Exception)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load the tour");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _isSubmitting = true;
+        _success = false;
+        _errorMessage = null;
+        _pendingRedirect = false;
+        _redirectCancelled = false;
+
+        await DisposeRedirectCancellation();
+
+        try
+        {
+            var tour = new UpdateTourDto
+            {
+                Identifier = _model.Identifier,
+                Name = _model.Name,
+                StartDate = DateTime.SpecifyKind(_model.StartDate, DateTimeKind.Utc),
+                EndDate = DateTime.SpecifyKind(_model.EndDate, DateTimeKind.Utc),
+                Currency = _model.Currency,
+                Price = _model.Price,
+                SingleRoomSupplementPrice = _model.SingleRoomSupplementPrice,
+                RegularBikePrice = _model.RegularBikePrice,
+                EBikePrice = _model.EBikePrice,
+                IncludedServices = _model.ServicesInput
+                        .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                MinCustomers = _model.MinCustomers,
+                MaxCustomers = _model.MaxCustomers
+            };
+
+            await ToursApi.UpdateTour(Id, tour, CancellationToken.None);
+
+            _success = true;
+            _pendingRedirect = true;
+            _redirectCts = new CancellationTokenSource();
+            var token = _redirectCts.Token;
+            StateHasChanged();
+            try
+            {
+                await Task.Delay(3000, token);
+                if (_pendingRedirect && !token.IsCancellationRequested)
+                {
+                    Navigation.NavigateTo($"/tours/{Id}");
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                /* Cancelled by the user */
+            }
+            finally
+            {
+                await DisposeRedirectCancellation();
+            }
+        }
+        catch (Exception)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("update the tour");
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task CancelRedirect()
+    {
+        _pendingRedirect = false;
+        _redirectCancelled = true;
+        await DisposeRedirectCancellation();
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeRedirectCancellation();
+    }
+
+    private async Task DisposeRedirectCancellation()
+    {
+        var redirectCts = _redirectCts;
+        if (redirectCts is null)
+        {
+            return;
+        }
+
+        _redirectCts = null;
+        await redirectCts.CancelAsync();
+        redirectCts.Dispose();
+    }
+
+    private void GoToDetails()
+    {
+        Navigation.NavigateTo($"/tours/{Id}");
+    }
+
+    private sealed class TourFormModel : IValidatableObject
+    {
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
+        public string Identifier { get; set; } = string.Empty;
+
+        [Required, MaxLength(ContractConstants.MaxNameLength)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, Display(Name = "Start Date")]
+        public DateTime StartDate { get; set; }
+
+        [Required, Display(Name = "End Date")]
+        public DateTime EndDate { get; set; }
+
+        [Required]
+        public CurrencyDto Currency { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Base Price")]
+        public decimal Price { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Single Room Supplement")]
+        public decimal SingleRoomSupplementPrice { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Regular Bike Price")]
+        public decimal RegularBikePrice { get; set; }
+
+        [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "E-Bike Price")]
+        public decimal EBikePrice { get; set; }
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers), Display(Name = "Minimum Customers")]
+        public int MinCustomers { get; set; }
+
+        [Required, Range(ContractConstants.MinTourCustomers, ContractConstants.MaxTourCustomers), Display(Name = "Maximum Customers")]
+        public int MaxCustomers { get; set; }
+
+        [Required, Display(Name = "Included Services")]
+        public string ServicesInput { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var result = TourValidation.ValidateDuration(
+                    StartDate,
+                    EndDate,
+                    ContractConstants.MinimumTourDurationDays,
+                    nameof(StartDate),
+                    nameof(EndDate));
+
+            if (result is not null)
+            {
+                yield return result;
+            }
+        }
+    }
+
+}

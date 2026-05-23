@@ -4,7 +4,8 @@
 
 ## Context
 
-The current web frontend project is `ViajantesTurismo.Admin.Web`, scoped to Admin use cases.
+The current internal web frontend project is `ViajantesTurismo.Management.Web`, scoped to
+management/back-office use cases.
 
 As the solution grows into more bounded contexts, creating one frontend per bounded context would increase:
 
@@ -24,7 +25,7 @@ Those audience boundaries are stable. Bounded contexts are backend/domain bounda
 
 Adopt audience-oriented web frontends:
 
-1. Rename and evolve `ViajantesTurismo.Admin.Web` into `ViajantesTurismo.Management.Web`.
+1. Keep `ViajantesTurismo.Management.Web` as the internal management portal.
 2. Use `ViajantesTurismo.Management.Web` as the internal frontend that can consume APIs across multiple bounded contexts.
 3. Introduce `ViajantesTurismo.Public.Web` as the public-facing website.
 4. Do not create one website per bounded context by default.
@@ -65,7 +66,7 @@ Adopt audience-oriented web frontends:
 2. **Single website for all audiences**
    Rejected: increases risk of coupling public and internal concerns and complicates security boundaries.
 
-3. **Keep Admin.Web and add more bounded-context-specific sites over time**
+3. **Keep the one-website-per-bounded-context model and add more bounded-context-specific sites over time**
    Rejected: naming and architecture direction conflict with intended multi-context internal portal.
 
 ## Links

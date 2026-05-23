@@ -1,0 +1,50 @@
+using System.ComponentModel.DataAnnotations;
+using ViajantesTurismo.Admin.Contracts;
+
+namespace ViajantesTurismo.Management.Web.Models;
+
+internal sealed class PersonalInfoFormModel
+{
+    [Required(ErrorMessage = "First name is required")]
+    [MaxLength(ContractConstants.MaxNameLength)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Last name is required")]
+    [MaxLength(ContractConstants.MaxNameLength)]
+    public string LastName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Birth date is required")]
+    public DateTime? BirthDate { get; set; }
+
+    [Required(ErrorMessage = "Gender is required")]
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string Gender { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Nationality is required")]
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string Nationality { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Occupation is required")]
+    [MaxLength(ContractConstants.MaxDefaultLength)]
+    public string Occupation { get; set; } = string.Empty;
+
+    public PersonalInfoDto ToDto() => new()
+    {
+        FirstName = FirstName,
+        LastName = LastName,
+        BirthDate = DateTime.SpecifyKind(BirthDate!.Value, DateTimeKind.Utc),
+        Gender = Gender,
+        Nationality = Nationality,
+        Occupation = Occupation
+    };
+
+    public static PersonalInfoFormModel FromDto(PersonalInfoDto dto) => new()
+    {
+        FirstName = dto.FirstName,
+        LastName = dto.LastName,
+        BirthDate = dto.BirthDate,
+        Gender = dto.Gender,
+        Nationality = dto.Nationality,
+        Occupation = dto.Occupation
+    };
+}
