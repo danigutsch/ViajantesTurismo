@@ -701,7 +701,7 @@
           "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
-      "viajantesturismo.admin.tests.shared": {
+      "viajantesturismo.admin.testing": {
         "type": "Project",
         "dependencies": {
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",

@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes;
+using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 

@@ -1,64 +1,57 @@
-# Integration/E2E Test Fixture Seam Best Practices
+# Fixture Seam Guidance
 
-## Unified Fixture Interface
+Fixture seams support the test taxonomy. They are not the taxonomy itself.
 
-```csharp
-public interface IAdminTestHost : IAsyncDisposable, IDisposable
-{
-    HttpClient Client { get; }
-    Uri BaseUri { get; }
-    Task Seed(CancellationToken cancellationToken = default);
-    Task Reset(CancellationToken cancellationToken = default);
-}
-```
+## Principles
 
-- No "Async" suffix for test-only helpers.
-- All test wiring unified on this seam.
+- Match fixture scope to the layer being tested.
+- Prefer named lifecycle operations over generic container access.
+- Keep test bodies dependent on business-visible entrypoints, not host internals.
+- Keep fixture seams aligned with Aspire-managed hosting for full-host Admin tests.
+- Do not expose public `IServiceProvider` access or generic "run inside scope" helpers from shared Admin fixtures.
 
-## Usage Pattern
+## Guidance by test type
 
-```csharp
-public class BookingTests(ApiFixture fixture)
-{
-    [Fact]
-    public async Task Can_GetTours_Smoke()
-    {
-        var resp = await fixture.Client.GetAsync(new Uri("/tours", UriKind.Relative));
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
-    }
-}
-```
+The Admin hosted seams are:
 
-- Prefer constructor injection from the assembly fixture over base classes.
-- Do not also implement `IClassFixture<ApiFixture>` when assembly fixture wiring is used.
-- All helpers come from the fixture, never from new/scattered clients.
+- API integration SUT seam expressed through typed contract clients
+- browser SUT seam expressed through a hosted web entrypoint only
+- deterministic support seam expressed through named lifecycle operations and typed setup clients
 
-## xUnit Wiring
+New full-host Admin fixtures must follow those exact seam boundaries instead of inventing broader host contracts.
 
-- Prefer `[assembly: AssemblyFixture(typeof(ApiFixture))]` (in one `.cs` per test assembly).
-- Eliminate `[Collection]` and `[CollectionDefinition]` unless true cross-assembly serial resources are needed.
+### Unit, behavior, component, and architecture tests
 
-## Fixture Implementation Musts
+- Prefer no heavyweight shared fixture at all.
+- Use local setup or narrow class fixtures only when they improve readability or cost.
+- Do not invent host abstractions for tests that do not host the app.
 
-- Expose `HttpClient Client { get; }` (from `CreateClient()` in WebApplicationFactory or equivalent).
-- Expose `Uri BaseUri { get; }` for constructing relative URIs.
-- Implement `Task Seed(CancellationToken)` and `Task Reset(CancellationToken)` for DB/test-data prep & teardown.
-- Keep fixture lifecycle async via xUnit (`IAsyncLifetime` on fixture implementations) and `DisposeAsync`.
+### API integration tests
 
-## Guidelines
+- Use fixture seams to provide:
+    - typed contract clients for bookings, customers, and tours
+    - only the minimal host metadata needed to create those clients
+    - named data lifecycle methods such as `Seed` and `Reset`
+- Do not expose `IServiceProvider`, generic scope runners, or arbitrary service lookup to test bodies.
+- Keep scope creation private inside fixture implementation.
 
-- All test helpers (seeding, reset, client) MUST come from the injected fixture.
-- Never append `Async` to test plumbing methods (except infrastructure frameworks requiring it, e.g., DisposeAsync).
-- Add new helpers to the fixture and keep the interface up to date.
+### System UI / E2E tests
 
-## Filtering
+- Keep browser entrypoints primary.
+- Allow narrow API-assisted setup only to create deterministic owned data or reset state.
+- Keep the browser SUT seam separate from the setup/reset support seam.
+- Keep host and infrastructure details behind fixture, page, and workflow helpers.
+- Express destructive or baseline-changing operations with named methods such as `Seed` and `ClearDatabase`, not generic plumbing helpers.
 
-- Prefer MTP trait filters for organization and targeted runs.
-- Example: `dotnet test --project tests/ViajantesTurismo.Admin.IntegrationTests --filter-trait "Category=smoke"`.
+## xUnit fixture scope
 
-## References
+- Use per-test class setup when isolation matters most.
+- Use class fixtures when one class intentionally shares expensive setup.
+- Use collection fixtures when multiple classes must intentionally share one context.
+- Use assembly fixtures only when the whole assembly truly shares one context and that context is safe under the required parallelism model.
 
-- xUnit: <https://xunit.net/docs/shared-context>
-- Microsoft: <https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests>
-- Aspire samples: <https://github.com/dotnet/aspire-samples>
-- Community pattern: Stephen Cleary, Martin Fowler
+Assembly-wide sharing is a specialized tool, not the default architecture.
+
+## Tagging reminder
+
+Use tag dimensions such as `Scope`, `Surface`, `Area`, `Category`, and `Host` so host migration does not force the taxonomy to change.

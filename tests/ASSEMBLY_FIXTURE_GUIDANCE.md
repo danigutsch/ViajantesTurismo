@@ -1,12 +1,22 @@
-# Assembly-wide Test Fixtures (Admin Integration Tests)
+# Assembly Fixture Guidance
 
-- Use `[assembly: AssemblyFixture(typeof(ApiFixture))]` for Admin integration tests only.
-    - Place this attribute in any `.cs` file in the Admin integration test assembly.
-    - This assigns the ApiFixture to all tests in the assembly, so [Collection] is not required on each class.
-- xUnit does not support sharing collection fixtures across assemblies; each test project/assembly must have its own fixture.
-- To control collection scope, see xUnit's [CollectionBehavior] attribute.
+Assembly fixtures are a sharing mechanism for expensive context. They are not the default answer for Admin test architecture.
 
-## TODO: Named/Permanent Container Support
+## Use an assembly fixture only when
 
-- Tests currently use ephemeral test containers (e.g., database, Redis) per run.
-- To allow container/service reuse across test assemblies, research best practices for Aspire/distributed test containers.
+- the whole test assembly intentionally shares one expensive context
+- that shared context is safe under the assembly's parallel execution model
+- narrower scope choices such as local setup, class fixtures, or collection fixtures would express the lifetime incorrectly
+
+## Do not use an assembly fixture to
+
+- expose generic host plumbing to every test
+- hide weak test boundaries
+- avoid designing named lifecycle operations
+- make a transitional host model look canonical
+
+## Admin direction
+
+- Existing assembly fixtures may remain while the repository is in transition.
+- New test infrastructure should justify assembly-wide lifetime explicitly.
+- Even under Aspire-managed hosting, fixture scope should be chosen deliberately rather than inherited by habit.

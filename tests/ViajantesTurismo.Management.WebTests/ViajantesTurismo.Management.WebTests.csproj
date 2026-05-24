@@ -15,8 +15,8 @@
         <Using Include="Microsoft.AspNetCore.Components.Forms"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
         <Using Include="ViajantesTurismo.Admin.Contracts"/>
-        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Builders.DtoBuilders" Static="True"/>
-        <Using Include="ViajantesTurismo.Admin.Tests.Shared.Fakes.ApiClients"/>
+        <Using Include="ViajantesTurismo.Admin.Testing.Builders.DtoBuilders" Static="True"/>
+        <Using Include="ViajantesTurismo.Admin.Testing.Fakes.ApiClients"/>
         <Using Include="ViajantesTurismo.Management.Web.Components.Shared"/>
         <Using Include="ViajantesTurismo.Management.Web.Services"/>
         <Using Include="Xunit"/>
@@ -32,7 +32,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Tests.Shared\ViajantesTurismo.Admin.Tests.Shared.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 
 
