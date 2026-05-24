@@ -30,11 +30,13 @@
         <Project Path="src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj" />
         <Project Path="src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj" />
     </Folder>
-    <Folder Name="/tests/">
-        <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Admin.Tests.Shared/ViajantesTurismo.Admin.Tests.Shared.csproj" />
-        <Project Path="tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj" />
+     <Folder Name="/tests/">
+         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
+         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
+         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
+         <Project Path="tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj" />
+         <Project Path="tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj" />
+         <Project Path="tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj" />
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj" />

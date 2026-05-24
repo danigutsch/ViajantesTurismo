@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Customers.Import;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes;
+using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
-using ViajantesTurismo.Admin.Tests.Shared.Fakes;
+using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 

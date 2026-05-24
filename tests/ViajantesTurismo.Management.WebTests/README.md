@@ -11,7 +11,7 @@ In-memory rendering tests for Razor components — fast, no browser required.
 - User interactions (clicks, form inputs)
 - Conditional rendering and edge cases (null, empty, all enum values)
 
-Business logic belongs in `Admin.UnitTests`; full-stack flows in `Admin.E2ETests`.
+Business logic belongs in `Admin.UnitTests`; full-stack flows in `Admin.SystemTests`.
 
 ## Project-Specific Notes
 

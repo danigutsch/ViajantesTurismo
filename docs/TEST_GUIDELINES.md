@@ -7,12 +7,36 @@ This document outlines the testing standards and best practices for the Viajante
 Our strategy follows a test pyramid approach:
 
 - **Unit Tests** (fast, in-memory) — Majority of tests
+- **UI Integration Tests** (hosted UI layer, no full browser workflow focus) — Key web composition and route scenarios
 - **Integration Tests** (database, HTTP) — Key API scenarios
 - **Behaviour Tests** (BDD/Gherkin) — Business-critical scenarios
-- **End-to-End/Acceptance** (future) — Thin layer of critical user journeys
+- **End-to-End/Acceptance** (Playwright) — Thin layer of critical user journeys through the real UI
 
-**Philosophy:** Fast feedback through comprehensive unit tests, confidence through integration tests, and business
-alignment through BDD scenarios.
+**Philosophy:** Fast feedback through comprehensive unit tests, confidence through API and UI integration tests,
+business alignment through BDD scenarios, and a small deterministic E2E lane for critical user flows.
+
+## Canonical Admin Test Boundaries
+
+Use `tests/README.md` as the canonical quick-reference matrix for Admin test scopes, host models, and tagging dimensions.
+
+The most important architectural distinction is:
+
+- **open-box test lanes** interact through in-process or fixture-owned seams such as direct type construction,
+  Reqnroll contexts, bUnit rendering, or typed API-client seams
+- **closed-box test lanes** interact with an externally hosted application surface, such as Playwright against the
+  running web app or the Aspire-hosted path proven in this repository
+
+Aspire-hosted testing is the canonical model for full-host Admin test execution.
+
+## Recommended Tagging Model
+
+When tags or traits are used, keep them orthogonal:
+
+- `Scope`: unit, behavior, component, ui-integration, integration, e2e, architecture
+- `Surface`: domain, application, api, web, workflow, solution
+- `Area`: bookings, customers, tours, payments, shared
+- `Category`: smoke, regression, happy-path, edge-case
+- `Host`: in-memory, aspire, browser
 
 ## Test Platform: MTP + xUnit v3
 
@@ -36,7 +60,7 @@ discovery and execution but delegates to the test-host process. This means:
 Example — run E2E tests in headed mode:
 
 ```powershell
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj -- Playwright.LaunchOptions.Headless=false
 ```
 
 Official references:
@@ -113,7 +137,7 @@ See [xUnit v3 MTP docs](https://xunit.net/docs/getting-started/v3/microsoft-test
 | `--filter-class`         | Run all tests in a class (fully-qualified name)   | `--filter-class "Namespace.TourCreationTests"`                |
 | `--filter-not-class`     | Exclude a class                                   | `--filter-not-class "SlowTests"`                              |
 | `--filter-namespace`     | Run all tests in a namespace                      | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
-| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.E2ETests"`    |
+| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.SystemTests"` |
 | `--filter-trait`         | Run tests matching a trait                        | `--filter-trait "Category=Fast"`                              |
 | `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Category=Slow"`                          |
 
@@ -128,7 +152,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*T
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-class "ViajantesTurismo.Admin.UnitTests.Tours.TourCreationTests"
 
 # Run multiple test classes at once
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class "ViajantesTurismo.Admin.E2ETests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.E2ETests.Tests.BookingDeleteAndDialogTests"
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class "ViajantesTurismo.Admin.SystemTests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.SystemTests.Tests.BookingDeleteAndDialogTests"
 
 # Run all tests in a namespace
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
@@ -156,7 +180,7 @@ These are built-in MTP options available on all test projects:
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --list-tests
 
 # Run with a 10-minute timeout
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --timeout 10m
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --timeout 10m
 
 # See all available options (including xUnit and extension switches)
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
@@ -173,9 +197,13 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 - **`ViajantesTurismo.Management.WebTests`** — Blazor Web components: Razor component rendering, UI state, user interactions.
   Uses bUnit for fast, in-memory component testing.
 - **`ViajantesTurismo.Admin.IntegrationTests`** — API endpoints with real PostgreSQL database. Slower, tests complete
-  request-response cycle.
+  request-response cycle through fixture-owned HTTP clients.
 - **`ViajantesTurismo.Admin.BehaviorTests`** — Behaviour-driven tests using Gherkin/SpecFlow for backend domain
   scenarios, written in business language.
+- **`ViajantesTurismo.Admin.SystemTests`** — Playwright-driven UI flows against the real Admin web app and supporting
+  backend resources.
+- **`ViajantesTurismo.Admin.Testing`** — Shared test-only contracts, traits, and reusable helpers; not a runtime
+  host in its own right.
 
 ### Suggested Structure (Future Evolution)
 
@@ -262,8 +290,7 @@ Assert.Equal("InvalidOperationException", span.GetTagItem("error.type"));
 
 ## Blazor Component Testing (bUnit)
 
-For testing Razor components in `ViajantesTurismo.Management.Web`, we use bUnit following Microsoft's recommended approach
-for components without complex JS interop.
+For web projects that use Razor components, bUnit is an appropriate lower-cost UI test tool for components without complex JS interop.
 
 ### Test Class Pattern
 
@@ -297,8 +324,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 - **No explicit Arrange** - Component rendering is the arrangement in bUnit tests
 - **Semantic Comparison** - Use `cut.MarkupMatches()` for HTML comparison
 
-See [ViajantesTurismo.Management.WebTests README](../tests/ViajantesTurismo.Management.WebTests/README.md) for detailed examples
-and patterns.
+See the relevant web test project's README for stack-specific examples and patterns.
 
 ## Test Patterns
 
@@ -354,15 +380,17 @@ public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception(
 ### Approach by Test Type
 
 - **Unit Tests:** Direct instantiation with factory methods (e.g., `Tour.Create()`)
-- **Integration Tests:** Seeded database using `Seeder` class with known data
+- **Integration Tests:** Fixture-owned HTTP entrypoints plus named lifecycle methods such as `Seed` and `Reset`
 - **Behaviour Tests:** Context objects to share state between steps
+- **E2E Tests:** Playwright plus deterministic helper/page abstractions backed by named fixture lifecycle methods
 
 ### Best Practices
 
 - **Prefer object mothers/builders** for complex aggregates and value objects
 - **Keep test data in code** (avoid external files unless absolutely necessary)
 - **Avoid shared mutable state** between tests
-- **Use ephemeral resources** for integration tests (e.g. Testcontainers, in-memory databases)
+- **Use fixture-owned ephemeral resources** for integration and E2E tests instead of exposing raw container or DI
+  plumbing to test bodies
 - **Use FakeTimeProvider** instead of `DateTime.UtcNow` for deterministic time-based tests
 
 **Example Object Mother:**
@@ -516,7 +544,9 @@ All mapper methods need three tests:
 2. **Coverage** (Iterate all enum values)
 3. **Error Handling** (Invalid value throws ArgumentOutOfRangeException)
 
-## Integration Test Essentials
+## Integration and E2E Host Essentials
+
+### Integration tests
 
 ```csharp
 [Collection("Api collection")]
@@ -534,6 +564,34 @@ public sealed class ToursApiTests : IDisposable
     Assert.NotNull(dbTour);
 }
 ```
+
+Integration tests should:
+
+- exercise the API through `HttpClient`
+- expose typed contract clients for bookings, customers, and tours as the ideal SUT entrypoints
+- keep database lifecycle operations behind named fixture methods
+- avoid direct test-body dependence on `IServiceProvider` or generic scope runners
+- prefer Aspire-managed host ownership as the target direction when full application hosting is required
+
+### UI integration tests
+
+UI integration tests should:
+
+- exercise the running web application below full browser E2E workflow depth
+- focus on hosted route/page composition and application wiring
+- keep the browser-system entrypoint separate from non-browser setup/reset support seams
+- avoid drifting into either raw component tests or full user-journey E2E coverage
+
+### E2E tests
+
+E2E tests should:
+
+- exercise the system through Playwright and visible business behavior
+- treat the browser-visible web entrypoint as the SUT seam
+- navigate by deterministic IDs, routes, and semantic selectors
+- keep application-host details behind `E2EFixture`, page objects, and workflow helpers
+- treat direct service access as fixture-internal plumbing, not as a public test seam
+- avoid expanding the hybrid host model further when Aspire-managed execution would better fit new work
 
 ## Behavior Test Patterns
 
@@ -720,7 +778,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*Mapper*"
 
 # Run specific test classes
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
 ```
 
 > **Reminder:** Do NOT use `--filter "FullyQualifiedName~..."` — that is VSTest syntax and

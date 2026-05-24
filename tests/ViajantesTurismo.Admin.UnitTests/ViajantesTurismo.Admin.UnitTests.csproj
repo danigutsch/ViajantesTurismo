@@ -25,7 +25,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Tests.Shared\ViajantesTurismo.Admin.Tests.Shared.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 
 </Project>
