@@ -21,6 +21,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />

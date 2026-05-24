@@ -15,11 +15,10 @@ builder.Services.AddProblemDetails();
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
-builder.Services.AddOpenApi();
+builder.Services.AddAdminOpenApiDocuments();
 
-builder
-    .AddApplication()
-    .AddInfrastructure();
+builder.AddApplication();
+builder.AddInfrastructure();
 
 var app = builder.Build();
 
