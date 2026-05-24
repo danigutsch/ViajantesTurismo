@@ -60,7 +60,7 @@ discovery and execution but delegates to the test-host process. This means:
 Example — run E2E tests in headed mode:
 
 ```powershell
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests/ViajantesTurismo.Admin.E2ETests.csproj -- Playwright.LaunchOptions.Headless=false
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj -- Playwright.LaunchOptions.Headless=false
 ```
 
 Official references:
@@ -137,7 +137,7 @@ See [xUnit v3 MTP docs](https://xunit.net/docs/getting-started/v3/microsoft-test
 | `--filter-class`         | Run all tests in a class (fully-qualified name)   | `--filter-class "Namespace.TourCreationTests"`                |
 | `--filter-not-class`     | Exclude a class                                   | `--filter-not-class "SlowTests"`                              |
 | `--filter-namespace`     | Run all tests in a namespace                      | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
-| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.E2ETests"`    |
+| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.SystemTests"` |
 | `--filter-trait`         | Run tests matching a trait                        | `--filter-trait "Category=Fast"`                              |
 | `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Category=Slow"`                          |
 
@@ -152,7 +152,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*T
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-class "ViajantesTurismo.Admin.UnitTests.Tours.TourCreationTests"
 
 # Run multiple test classes at once
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class "ViajantesTurismo.Admin.E2ETests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.E2ETests.Tests.BookingDeleteAndDialogTests"
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class "ViajantesTurismo.Admin.SystemTests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.SystemTests.Tests.BookingDeleteAndDialogTests"
 
 # Run all tests in a namespace
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
@@ -180,7 +180,7 @@ These are built-in MTP options available on all test projects:
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --list-tests
 
 # Run with a 10-minute timeout
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --timeout 10m
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --timeout 10m
 
 # See all available options (including xUnit and extension switches)
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
@@ -200,7 +200,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
   request-response cycle through fixture-owned HTTP clients.
 - **`ViajantesTurismo.Admin.BehaviorTests`** — Behaviour-driven tests using Gherkin/SpecFlow for backend domain
   scenarios, written in business language.
-- **`ViajantesTurismo.Admin.E2ETests`** — Playwright-driven UI flows against the real Admin web app and supporting
+- **`ViajantesTurismo.Admin.SystemTests`** — Playwright-driven UI flows against the real Admin web app and supporting
   backend resources.
 - **`ViajantesTurismo.Admin.Testing`** — Shared test-only contracts, traits, and reusable helpers; not a runtime
   host in its own right.
@@ -778,7 +778,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*Mapper*"
 
 # Run specific test classes
-dotnet test --project tests/ViajantesTurismo.Admin.E2ETests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
+dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
 ```
 
 > **Reminder:** Do NOT use `--filter "FullyQualifiedName~..."` — that is VSTest syntax and

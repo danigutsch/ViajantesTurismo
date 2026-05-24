@@ -19,7 +19,7 @@ Use nested `AGENTS.md` files for scoped rules.
     - `src/ViajantesTurismo.AppHost/AGENTS.md`
     - `tests/AGENTS.md`
     - `tests/ViajantesTurismo.Admin.BehaviorTests/AGENTS.md`
-    - `tests/ViajantesTurismo.Admin.E2ETests/AGENTS.md`
+    - `tests/ViajantesTurismo.Admin.SystemTests/AGENTS.md`
     - `tests/ViajantesTurismo.Admin.IntegrationTests/AGENTS.md`
 
 ## Repository-wide coding rules
