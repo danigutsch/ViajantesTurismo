@@ -2,19 +2,19 @@ using SharedKernel.OpenApi;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
+/// <summary>
+/// Registers the Admin API's boundary-specific OpenAPI documents.
+/// </summary>
 internal static class AdminOpenApiDocuments
 {
-    private static readonly OpenApiBoundaryDocument[] Documents =
-    [
-        new("tours", "tours"),
-        new("customers", "customers"),
-        new("bookings", "bookings")
-    ];
-
+    /// <summary>
+    /// Adds the Admin API's named OpenAPI documents to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
     public static void AddAdminOpenApiDocuments(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddBoundaryOpenApiDocuments(Documents);
+        services.AddBoundaryOpenApiDocuments(AdminRouteGroupExtensions.OpenApiDocumentNames);
     }
 }

@@ -4,6 +4,8 @@
         <IsAotCompatible>true</IsAotCompatible>
         <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+        <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +22,22 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server"/>
     </ItemGroup>
+
+    <Target Name="CopyAdminBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments">
+        <ItemGroup>
+            <GeneratedOpenApiArtifact Include="$(OpenApiDocumentsDirectory)/$(AssemblyName)_*.json">
+                <ArtifactName>$([System.String]::Copy('%(Filename)').Replace('$(AssemblyName)_', ''))</ArtifactName>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/%(ArtifactName).openapi.json</TargetPath>
+            </GeneratedOpenApiArtifact>
+        </ItemGroup>
+
+        <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi" />
+        <Copy
+            SourceFiles="@(GeneratedOpenApiArtifact)"
+            DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
+            SkipUnchangedFiles="true" />
+    </Target>
 
 </Project>

@@ -23,9 +23,7 @@ internal static class CustomerEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var customersGroup = app.MapGroup("/customers")
-            .WithGroupName("Customers")
-            .WithTags("Customers");
+        var customersGroup = app.MapCustomersGroup();
 
         customersGroup.MapGet("/", GetAllCustomers)
             .WithName("GetCustomers")

@@ -18,9 +18,7 @@ internal static class CustomerImportEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var importGroup = app.MapGroup("/customers/import")
-            .WithGroupName("Customers")
-            .WithTags("Customers");
+        var importGroup = app.MapCustomerImportsGroup();
 
         importGroup.MapPost("/", ImportCustomers)
             .WithName("ImportCustomers")

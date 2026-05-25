@@ -24,9 +24,7 @@ internal static class ToursEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var toursGroup = app.MapGroup("/tours")
-            .WithGroupName("Tours")
-            .WithTags("Tours");
+        var toursGroup = app.MapToursGroup();
 
         toursGroup.MapPost("/", CreateTour)
             .WithName("CreateTour")
