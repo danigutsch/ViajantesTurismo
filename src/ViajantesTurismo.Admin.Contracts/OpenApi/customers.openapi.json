@@ -240,22 +240,18 @@
             "multipart/form-data": {
               "schema": {
                 "required": [
-                  "file"
+                  "File"
                 ],
                 "type": "object",
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "file": {
-                        "$ref": "#/components/schemas/IFormFile"
-                      }
-                    }
+                "properties": {
+                  "File": {
+                    "type": "string",
+                    "format": "binary"
                   },
-                  {
+                  "conflictResolutions": {
                     "type": "string"
                   }
-                ]
+                }
               }
             }
           },
