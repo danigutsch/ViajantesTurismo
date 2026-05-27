@@ -126,7 +126,13 @@ public sealed class ToursOpenApiConsumerPactTests
 
             if (File.Exists(candidatePath))
             {
-                return Path.GetDirectoryName(candidatePath)!;
+                var projectDirectory = Path.GetDirectoryName(candidatePath);
+                if (string.IsNullOrWhiteSpace(projectDirectory))
+                {
+                    throw new InvalidOperationException($"Could not determine the project directory for '{candidatePath}'.");
+                }
+
+                return projectDirectory;
             }
 
             currentDirectory = currentDirectory.Parent;
