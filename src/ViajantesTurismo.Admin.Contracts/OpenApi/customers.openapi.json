@@ -242,6 +242,9 @@
                 "type": "object",
                 "allOf": [
                   {
+                    "required": [
+                      "file"
+                    ],
                     "type": "object",
                     "properties": {
                       "file": {

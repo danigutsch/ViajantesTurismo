@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -10,6 +11,7 @@ internal readonly record struct CommitCustomerImportFormDto
     /// <summary>
     /// Gets or sets the CSV file to import.
     /// </summary>
+    [Required]
     [FromForm(Name = "file")]
     public required IFormFile File { get; init; }
 
