@@ -27,17 +27,18 @@
 
     <Target Name="CopyAdminBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments">
         <ItemGroup>
-            <GeneratedOpenApiArtifact Include="$(OpenApiDocumentsDirectory)/$(AssemblyName)_*.json">
-                <ArtifactName>$([System.String]::Copy('%(Filename)').Replace('$(AssemblyName)_', ''))</ArtifactName>
-                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/%(ArtifactName).openapi.json</TargetPath>
+            <AdminOpenApiArtifact Include="tours;customers;bookings" />
+            <GeneratedOpenApiArtifact Include="@(AdminOpenApiArtifact)">
+                <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName)_%(Identity).json</SourcePath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/%(Identity).openapi.json</TargetPath>
             </GeneratedOpenApiArtifact>
         </ItemGroup>
 
         <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi" />
         <Copy
-            SourceFiles="@(GeneratedOpenApiArtifact)"
+            SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
             DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
-            SkipUnchangedFiles="true" />
+            SkipUnchangedFiles="false" />
     </Target>
 
 </Project>
