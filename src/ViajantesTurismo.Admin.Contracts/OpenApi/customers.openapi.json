@@ -239,12 +239,12 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "required": [
-                  "file"
-                ],
                 "type": "object",
                 "allOf": [
                   {
+                    "required": [
+                      "file"
+                    ],
                     "type": "object",
                     "properties": {
                       "file": {
@@ -253,7 +253,12 @@
                     }
                   },
                   {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                      "conflictResolutions": {
+                        "type": "string"
+                      }
+                    }
                   }
                 ]
               }

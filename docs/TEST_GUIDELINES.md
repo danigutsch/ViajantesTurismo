@@ -8,12 +8,13 @@ Our strategy follows a test pyramid approach:
 
 - **Unit Tests** (fast, in-memory) — Majority of tests
 - **UI Integration Tests** (hosted UI layer, no full browser workflow focus) — Key web composition and route scenarios
+- **Contract Tests** (published boundary artifacts) — Stable compatibility checks for external consumers
 - **Integration Tests** (database, HTTP) — Key API scenarios
 - **Behaviour Tests** (BDD/Gherkin) — Business-critical scenarios
 - **End-to-End/Acceptance** (Playwright) — Thin layer of critical user journeys through the real UI
 
 **Philosophy:** Fast feedback through comprehensive unit tests, confidence through API and UI integration tests,
-business alignment through BDD scenarios, and a small deterministic E2E lane for critical user flows.
+business alignment through BDD scenarios, durable boundary confidence through contract tests, and a small deterministic E2E lane for critical user flows.
 
 ## Canonical Admin Test Boundaries
 
@@ -28,11 +29,17 @@ The most important architectural distinction is:
 
 Aspire-hosted testing is the canonical model for full-host Admin test execution.
 
+Contract tests are different from full-host integration tests: they protect a
+published boundary artifact that matters to external consumers, such as an
+OpenAPI document, a serialized payload shape, or a schema fragment. If the goal
+is to prove runtime behavior through persistence and request handling, use
+integration tests instead.
+
 ## Recommended Tagging Model
 
 When tags or traits are used, keep them orthogonal:
 
-- `Scope`: unit, behavior, component, ui-integration, integration, e2e, architecture
+- `Scope`: unit, behavior, component, contract, ui-integration, integration, e2e, architecture
 - `Surface`: domain, application, api, web, workflow, solution
 - `Area`: bookings, customers, tours, payments, shared
 - `Category`: smoke, regression, happy-path, edge-case
@@ -198,6 +205,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
   Uses bUnit for fast, in-memory component testing.
 - **`ViajantesTurismo.Admin.IntegrationTests`** — API endpoints with real PostgreSQL database. Slower, tests complete
   request-response cycle through fixture-owned HTTP clients.
+- **`ViajantesTurismo.Admin.ContractTests`** — Public Admin API compatibility checks. Protects boundary artifacts such
+  as generated OpenAPI shapes or serialized contract slices without turning into a second integration lane.
 - **`ViajantesTurismo.Admin.BehaviorTests`** — Behaviour-driven tests using Gherkin/SpecFlow for backend domain
   scenarios, written in business language.
 - **`ViajantesTurismo.Admin.SystemTests`** — Playwright-driven UI flows against the real Admin web app and supporting
@@ -211,7 +220,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 - `tests/Admin.Application.Tests/` — Use cases, policies, application services (unit tests)
 - `tests/Management.Web.Tests/` — Blazor components (bUnit tests) ✅ *Already exists as `Management.WebTests`*
 - `tests/Admin.Acceptance.Tests/` — BDD scenarios calling the Application layer
-- `tests/Contract.Tests/` — Consumer-driven contract tests (if services integrate with others)
+- `tests/Contract.Tests/` — Public boundary compatibility tests such as OpenAPI, payload, schema, or consumer-provider checks
 - `tests/specs/` — Shared `.feature` files (if not colocated in acceptance tests)
 
 ## Naming Conventions

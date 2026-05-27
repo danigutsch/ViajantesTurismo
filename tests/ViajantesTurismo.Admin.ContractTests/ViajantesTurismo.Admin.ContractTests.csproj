@@ -9,12 +9,12 @@
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="PactNet" />
         <PackageReference Include="xunit.v3.mtp-v2" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj" />
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" />
     </ItemGroup>
 
 </Project>
