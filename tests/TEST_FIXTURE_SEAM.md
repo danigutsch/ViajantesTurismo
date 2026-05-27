@@ -35,6 +35,13 @@ New full-host Admin fixtures must follow those exact seam boundaries instead of 
 - Do not expose `IServiceProvider`, generic scope runners, or arbitrary service lookup to test bodies.
 - Keep scope creation private inside fixture implementation.
 
+### Contract tests
+
+- Prefer the published contract artifact itself as the seam, such as a generated OpenAPI document, a serialized payload sample, or a schema fragment.
+- If hosting is required to produce that artifact, keep the fixture focused on contract generation only.
+- Do not add seed/reset operations or generic API clients to a contract-test fixture unless that specific artifact truly requires them.
+- Do not broaden a contract fixture into a general-purpose integration host.
+
 ### System UI / E2E tests
 
 - Keep browser entrypoints primary.
