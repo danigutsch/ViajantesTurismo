@@ -239,19 +239,25 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "required": [
-                  "File"
-                ],
                 "type": "object",
-                "properties": {
-                  "File": {
-                    "type": "string",
-                    "format": "binary"
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
                   },
-                  "conflictResolutions": {
-                    "type": "string"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "conflictResolutions": {
+                        "type": "string"
+                      }
+                    }
                   }
-                }
+                ]
               }
             }
           },

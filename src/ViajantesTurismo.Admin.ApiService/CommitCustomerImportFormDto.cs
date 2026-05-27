@@ -10,7 +10,7 @@ internal readonly record struct CommitCustomerImportFormDto
     /// <summary>
     /// Gets or sets the CSV file to import.
     /// </summary>
-    [FromForm]
+    [FromForm(Name = "file")]
     public required IFormFile File { get; init; }
 
     /// <summary>
