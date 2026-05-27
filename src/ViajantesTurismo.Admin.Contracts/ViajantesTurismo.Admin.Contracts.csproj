@@ -4,4 +4,9 @@
         <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="OpenApi/**/*.openapi.json" Pack="true" PackagePath="OpenApi/" />
+        <None Include="OpenApi/README.md" Pack="true" PackagePath="OpenApi/" />
+    </ItemGroup>
+
 </Project>

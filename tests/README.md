@@ -40,6 +40,7 @@ justified.
 | `ViajantesTurismo.Admin.UnitTests` | Domain and application-facing logic that can run fully in memory | Direct type construction, factory methods, value objects, domain methods, small in-memory handlers | No external host | No | HTTP, browser, `IServiceProvider`, database, distributed app bootstrapping | Not applicable |
 | `ViajantesTurismo.Admin.BehaviorTests` | Business rules and workflows expressed in Gherkin | Reqnroll step definitions calling domain/application seams through focused test context | In-process scenario execution with Reqnroll/xUnit fixtures | No | Browser/UI automation, raw HTTP API calls, shared static scenario state | Not primary target |
 | Web UI test projects | Project-specific UI behavior below full browser workflow depth | The web application's UI surface for that project | Entry points appropriate to that web stack, such as component rendering, hosted route checks, or app-visible UI composition seams | Depends on project and layer | Cross-project assumptions about UI stack, host model, or test tooling | Project-specific |
+| `ViajantesTurismo.Admin.ContractTests` | Public Admin API compatibility at a boundary that matters independently | Boundary artifacts such as generated OpenAPI documents, serialized payload shapes, and schema compatibility checks | Prefer no real host; if hosting is required, keep it focused on the published contract artifact rather than business behavior | No by default | Database-backed behavior assertions, browser flows, generic DI reach-through, duplicating broad integration coverage | Prefer the cheapest artifact-focused path |
 | `ViajantesTurismo.Admin.IntegrationTests` | Admin API request/response behavior and persistence interactions | `HttpClient` against the Admin API, JSON contracts, deterministic database lifecycle methods | Aspire-managed host ownership for full-host execution | PostgreSQL, real API pipeline | Generic `IServiceProvider` escape hatches from test bodies, direct controller/endpoint invocation, browser assertions | Canonical |
 | `ViajantesTurismo.Admin.SystemTests` | End-user Admin flows through the real UI | Playwright page navigation, semantic UI assertions, helper pages/workflows, narrow API-assisted owned-data setup | Browser-driven tests against Aspire-managed running services | PostgreSQL, Redis, API, Blazor UI | Direct assertions on private service state, generic container access, non-deterministic list scanning | Canonical |
 | `ViajantesTurismo.Admin.Testing` | Shared test-only contracts, traits, and helper abstractions | Reusable helper types consumed by test projects | No standalone host | No | Business logic ownership, app runtime ownership, test-project-specific orchestration | Should stay host-agnostic |
@@ -99,6 +100,16 @@ These seams define the architecture.
 - Do not depend on generic service-container reach-through from test bodies.
 - Keep API integration focused on the API surface and Aspire-managed full-host execution.
 
+### Contract tests
+
+- Verify compatibility of a public or external boundary independently of broader runtime behavior.
+- Prefer boundary artifacts such as generated OpenAPI documents, serialized request or response payloads, schema fragments, or consumer-provider contracts.
+- Snapshot testing is allowed here when the snapshot represents the published contract artifact rather than private implementation structure.
+- Do not use this lane for seeded database behavior, end-to-end workflows, UI
+  rendering, or broad request lifecycle coverage that belongs in integration or
+  system tests.
+- If the test must prove business behavior through real HTTP plus persistence, it is an integration test instead.
+
 ### E2E tests
 
 - Verify real user journeys through Playwright against the Admin web app.
@@ -131,6 +142,7 @@ Keep tags orthogonal and stable across host-model migration.
 - `Scope=unit`
 - `Scope=behavior`
 - `Scope=component`
+- `Scope=contract`
 - `Scope=ui-integration`
 - `Scope=integration`
 - `Scope=e2e`
