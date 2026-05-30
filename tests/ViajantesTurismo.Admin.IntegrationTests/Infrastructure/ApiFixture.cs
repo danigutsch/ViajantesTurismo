@@ -7,12 +7,11 @@ using Npgsql;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
-using ViajantesTurismo.Admin.Testing.Integration;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, IAdminTestHost, IAsyncLifetime
+public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
     private const string LoopbackAddress = "http://127.0.0.1:0";
     private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(30);
