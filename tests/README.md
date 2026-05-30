@@ -54,16 +54,21 @@ The canonical seams for hosted Admin tests are:
 
 - API integration SUT seam:
     - typed contract clients `IBookingsApiClient`, `ICustomersApiClient`, and `IToursApiClient`
-    - exposed through a narrow integration host contract
+    - may be backed by a narrow host contract when a hosted fixture must expose shared lifecycle operations
     - lifecycle methods limited to named baseline operations such as `Seed(...)` and `Reset(...)`
 - UI integration and E2E browser SUT seam:
     - browser-visible web entrypoint only, such as `Uri WebAppUri`
     - no generic API or DI reach-through as part of the browser SUT seam
 - UI support seam for deterministic setup:
-    - typed contract clients plus named lifecycle methods such as `Seed(...)` and `ClearDatabase(...)`
+    - fixture-owned typed contract clients and named lifecycle methods such as `Seed(...)` and `Reset(...)`
+    - a narrow shared host contract only when it usefully standardizes a hosted support seam across fixtures
     - kept separate from the browser SUT seam
 
 These seams define the architecture.
+
+For hosted tests that need deterministic API-assisted setup across multiple fixtures, prefer a
+narrow shared contract over fixture-specific reset or host-access contracts. Do not treat any one
+fixture contract as a repository-wide test abstraction.
 
 ### Unit tests
 
@@ -96,6 +101,7 @@ These seams define the architecture.
 
 - Verify the API surface through real HTTP and persistence boundaries.
 - Canonical API SUT seam: typed contract clients (`IBookingsApiClient`, `ICustomersApiClient`, `IToursApiClient`)
+- Optional shared hosted-support seam: a narrow host contract when integration fixtures need the same lifecycle contract
 - Own state through named fixture lifecycle methods such as `Seed` and `Reset`.
 - Do not depend on generic service-container reach-through from test bodies.
 - Keep API integration focused on the API surface and Aspire-managed full-host execution.
@@ -114,7 +120,8 @@ These seams define the architecture.
 
 - Verify real user journeys through Playwright against the Admin web app.
 - Canonical browser SUT seam: hosted web entrypoint only.
-- Canonical support seam: typed contract clients plus named deterministic setup/reset operations.
+- Canonical support seam: fixture-owned typed contract clients plus named deterministic setup/reset operations.
+- A narrow shared host contract is optional here when it helps align hosted support seams across fixtures without broadening browser tests.
 - Prefer deterministic navigation by known IDs/routes and semantic UI assertions.
 - Use serial execution only for justified clean-slate or destructive-reset scenarios.
 - Keep infrastructure and host plumbing behind the fixture and helper layers.

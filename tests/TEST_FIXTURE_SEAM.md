@@ -15,6 +15,7 @@ Fixture seams support the test taxonomy. They are not the taxonomy itself.
 The Admin hosted seams are:
 
 - API integration SUT seam expressed through typed contract clients
+- optional shared hosted-support seam expressed through a narrow host contract when needed
 - browser SUT seam expressed through a hosted web entrypoint only
 - deterministic support seam expressed through named lifecycle operations and typed setup clients
 
@@ -30,6 +31,7 @@ New full-host Admin fixtures must follow those exact seam boundaries instead of 
 
 - Use fixture seams to provide:
     - typed contract clients for bookings, customers, and tours
+    - a narrow shared host contract only when multiple hosted fixtures benefit from the same lifecycle contract
     - only the minimal host metadata needed to create those clients
     - named data lifecycle methods such as `Seed` and `Reset`
 - Do not expose `IServiceProvider`, generic scope runners, or arbitrary service lookup to test bodies.
@@ -45,10 +47,19 @@ New full-host Admin fixtures must follow those exact seam boundaries instead of 
 ### System UI / E2E tests
 
 - Keep browser entrypoints primary.
-- Allow narrow API-assisted setup only to create deterministic owned data or reset state.
+- Allow narrow API-assisted setup through fixture-owned setup clients and named lifecycle methods to create deterministic owned data or reset state.
+- Use a narrow shared host contract only when it keeps multiple hosted fixtures aligned
+  without making browser tests depend on a universal host abstraction.
 - Keep the browser SUT seam separate from the setup/reset support seam.
 - Keep host and infrastructure details behind fixture, page, and workflow helpers.
-- Express destructive or baseline-changing operations with named methods such as `Seed` and `ClearDatabase`, not generic plumbing helpers.
+- Express destructive or baseline-changing operations with named methods such as `Seed` and `Reset`, not generic plumbing helpers.
+
+## Migration guidance
+
+- Prefer a narrow shared host contract only for hosted fixtures that genuinely share the same
+  lifecycle contract.
+- Existing hosted fixtures may converge on `Client`, `BaseUri`, `Seed`, and `Reset` when that improves reuse across fixtures.
+- Keep browser-only concerns such as `WebAppUrl`, page objects, and workflow helpers outside the shared host contract.
 
 ## xUnit fixture scope
 
