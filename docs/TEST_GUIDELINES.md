@@ -578,6 +578,7 @@ Integration tests should:
 
 - exercise the API through `HttpClient`
 - expose typed contract clients for bookings, customers, and tours as the ideal SUT entrypoints
+- use a narrow shared host seam only when multiple hosted fixtures need the same setup/reset contract
 - keep database lifecycle operations behind named fixture methods
 - avoid direct test-body dependence on `IServiceProvider` or generic scope runners
 - prefer Aspire-managed host ownership as the target direction when full application hosting is required
@@ -597,6 +598,8 @@ E2E tests should:
 
 - exercise the system through Playwright and visible business behavior
 - treat the browser-visible web entrypoint as the SUT seam
+- keep deterministic setup or reset work behind fixture-owned support seams, using a
+  shared hosted contract only when it is genuinely useful
 - navigate by deterministic IDs, routes, and semantic selectors
 - keep application-host details behind `E2EFixture`, page objects, and workflow helpers
 - treat direct service access as fixture-internal plumbing, not as a public test seam
