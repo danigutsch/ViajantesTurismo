@@ -38,7 +38,7 @@
         <Copy
             SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')"
             DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')"
-            SkipUnchangedFiles="false" />
+            SkipUnchangedFiles="true" />
     </Target>
 
 </Project>
