@@ -45,14 +45,14 @@ public class BookingTests(ApiFixture fixture)
         // Arrange
         var host = Assert.IsAssignableFrom<IAdminTestHost>(fixture);
         var cancellationToken = TestContext.Current.CancellationToken;
-        var originalBookings = await host.Client.GetAllBookingsAndReadAsync(cancellationToken);
+        var originalBookings = await host.Client.GetAllBookingsAndRead(cancellationToken);
 
         Assert.NotEmpty(originalBookings);
 
         // Act
         await host.Seed(cancellationToken);
 
-        var bookingsAfterSeed = await host.Client.GetAllBookingsAndReadAsync(cancellationToken);
+        var bookingsAfterSeed = await host.Client.GetAllBookingsAndRead(cancellationToken);
 
         // Assert
         Assert.Equal(originalBookings.Length, bookingsAfterSeed.Length);

@@ -49,7 +49,7 @@ public static class BookingsApiHelper
         return (await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken))!;
     }
 
-    public static async Task<HttpResponseMessage> GetAllBookingsAsync(
+    public static async Task<HttpResponseMessage> GetAllBookings(
         this HttpClient client,
         CancellationToken cancellationToken)
     {
@@ -58,11 +58,11 @@ public static class BookingsApiHelper
             cancellationToken);
     }
 
-    public static async Task<GetBookingDto[]> GetAllBookingsAndReadAsync(
+    public static async Task<GetBookingDto[]> GetAllBookingsAndRead(
         this HttpClient client,
         CancellationToken cancellationToken)
     {
-        var response = await GetAllBookingsAsync(client, cancellationToken);
+        var response = await GetAllBookings(client, cancellationToken);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(cancellationToken))!;
     }
