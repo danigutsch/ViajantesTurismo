@@ -21,6 +21,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />
@@ -31,8 +32,9 @@
         <Project Path="src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj" />
     </Folder>
      <Folder Name="/tests/">
-         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
-         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
+          <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
+          <Project Path="tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj" />
+          <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
          <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
          <Project Path="tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj" />
          <Project Path="tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj" />

@@ -30,9 +30,7 @@ internal static class BookingEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var bookingsGroup = app.MapGroup("/bookings")
-            .WithGroupName("Bookings")
-            .WithTags("Bookings");
+        var bookingsGroup = app.MapBookingsGroup();
 
         bookingsGroup.MapGet("/", GetAllBookings)
             .WithName("GetBookings")

@@ -1,0 +1,920 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "ViajantesTurismo.Admin.ApiService | customers",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Retrieves all customers.",
+        "description": "Retrieves all customers.",
+        "operationId": "GetCustomers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GetCustomerDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Creates a new customer.",
+        "description": "Creates a new customer with all required information.",
+        "operationId": "CreateCustomer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Retrieves a customer by their ID.",
+        "description": "Retrieves a customer by their ID.",
+        "operationId": "GetCustomerById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Updates an existing customer.",
+        "description": "Updates an existing customer.",
+        "operationId": "UpdateCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/import": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Imports customers from a CSV file.",
+        "description": "Imports customers from a CSV file.",
+        "operationId": "ImportCustomers",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/import/commit": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Commits customer import applying conflict resolutions.",
+        "description": "Commits customer import applying conflict resolutions.",
+        "operationId": "CommitImportWithResolutions",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "required": [
+                      "file"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "conflictResolutions": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccommodationPreferencesDto": {
+        "required": [
+          "roomType",
+          "bedType",
+          "companionId"
+        ],
+        "type": "object",
+        "properties": {
+          "roomType": {
+            "$ref": "#/components/schemas/RoomTypeDto"
+          },
+          "bedType": {
+            "$ref": "#/components/schemas/BedTypeDto"
+          },
+          "companionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "AddressDto": {
+        "required": [
+          "street",
+          "complement",
+          "neighborhood",
+          "postalCode",
+          "city",
+          "state",
+          "country"
+        ],
+        "type": "object",
+        "properties": {
+          "street": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "complement": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postalCode": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "city": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "state": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "country": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      "BedTypeDto": {
+        "type": "integer"
+      },
+      "BikeTypeDto": {
+        "type": "integer"
+      },
+      "ContactInfoDto": {
+        "required": [
+          "email",
+          "mobile",
+          "instagram",
+          "facebook"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "mobile": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "instagram": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "facebook": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CreateCustomerDto": {
+        "required": [
+          "personalInfo",
+          "identificationInfo",
+          "contactInfo",
+          "address",
+          "physicalInfo",
+          "accommodationPreferences",
+          "emergencyContact",
+          "medicalInfo"
+        ],
+        "type": "object",
+        "properties": {
+          "personalInfo": {
+            "$ref": "#/components/schemas/PersonalInfoDto"
+          },
+          "identificationInfo": {
+            "$ref": "#/components/schemas/IdentificationInfoDto"
+          },
+          "contactInfo": {
+            "$ref": "#/components/schemas/ContactInfoDto"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "physicalInfo": {
+            "$ref": "#/components/schemas/PhysicalInfoDto"
+          },
+          "accommodationPreferences": {
+            "$ref": "#/components/schemas/AccommodationPreferencesDto"
+          },
+          "emergencyContact": {
+            "$ref": "#/components/schemas/EmergencyContactDto"
+          },
+          "medicalInfo": {
+            "$ref": "#/components/schemas/MedicalInfoDto"
+          }
+        }
+      },
+      "CustomerDetailsDto": {
+        "required": [
+          "id",
+          "personalInfo",
+          "identificationInfo",
+          "contactInfo",
+          "address",
+          "physicalInfo",
+          "accommodationPreferences",
+          "emergencyContact",
+          "medicalInfo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "personalInfo": {
+            "$ref": "#/components/schemas/PersonalInfoDto"
+          },
+          "identificationInfo": {
+            "$ref": "#/components/schemas/IdentificationInfoDto"
+          },
+          "contactInfo": {
+            "$ref": "#/components/schemas/ContactInfoDto"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "physicalInfo": {
+            "$ref": "#/components/schemas/PhysicalInfoDto"
+          },
+          "accommodationPreferences": {
+            "$ref": "#/components/schemas/AccommodationPreferencesDto"
+          },
+          "emergencyContact": {
+            "$ref": "#/components/schemas/EmergencyContactDto"
+          },
+          "medicalInfo": {
+            "$ref": "#/components/schemas/MedicalInfoDto"
+          }
+        }
+      },
+      "EmergencyContactDto": {
+        "required": [
+          "name",
+          "mobile"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "mobile": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      "GetCustomerDto": {
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "mobile",
+          "nationality",
+          "bikeType"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "mobile": {
+            "type": "string"
+          },
+          "nationality": {
+            "type": "string"
+          },
+          "bikeType": {
+            "$ref": "#/components/schemas/BikeTypeDto"
+          }
+        }
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "IdentificationInfoDto": {
+        "required": [
+          "nationalId",
+          "idNationality"
+        ],
+        "type": "object",
+        "properties": {
+          "nationalId": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "idNationality": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "ImportConflictDto": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "ImportErrorRowDto": {
+        "required": [
+          "lineNumber",
+          "field",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "lineNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "field": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ImportResultDto": {
+        "required": [
+          "successCount",
+          "errorCount"
+        ],
+        "type": "object",
+        "properties": {
+          "successCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "errorCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "conflicts": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ImportConflictDto"
+            }
+          },
+          "successRows": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ImportSuccessRowDto"
+            }
+          },
+          "errorRows": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ImportErrorRowDto"
+            }
+          }
+        }
+      },
+      "ImportSuccessRowDto": {
+        "required": [
+          "email",
+          "outcome"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "MedicalInfoDto": {
+        "required": [
+          "allergies",
+          "additionalInfo"
+        ],
+        "type": "object",
+        "properties": {
+          "allergies": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "additionalInfo": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PersonalInfoDto": {
+        "required": [
+          "firstName",
+          "lastName",
+          "birthDate",
+          "gender",
+          "nationality",
+          "occupation"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "lastName": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gender": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "nationality": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "occupation": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      "PhysicalInfoDto": {
+        "required": [
+          "weightKg",
+          "heightCentimeters",
+          "bikeType"
+        ],
+        "type": "object",
+        "properties": {
+          "weightKg": {
+            "maximum": 500,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "heightCentimeters": {
+            "maximum": 300,
+            "minimum": 50,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "bikeType": {
+            "$ref": "#/components/schemas/BikeTypeDto"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "RoomTypeDto": {
+        "type": "integer"
+      },
+      "UpdateCustomerDto": {
+        "required": [
+          "personalInfo",
+          "identificationInfo",
+          "contactInfo",
+          "address",
+          "physicalInfo",
+          "accommodationPreferences",
+          "emergencyContact",
+          "medicalInfo"
+        ],
+        "type": "object",
+        "properties": {
+          "personalInfo": {
+            "$ref": "#/components/schemas/PersonalInfoDto"
+          },
+          "identificationInfo": {
+            "$ref": "#/components/schemas/IdentificationInfoDto"
+          },
+          "contactInfo": {
+            "$ref": "#/components/schemas/ContactInfoDto"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "physicalInfo": {
+            "$ref": "#/components/schemas/PhysicalInfoDto"
+          },
+          "accommodationPreferences": {
+            "$ref": "#/components/schemas/AccommodationPreferencesDto"
+          },
+          "emergencyContact": {
+            "$ref": "#/components/schemas/EmergencyContactDto"
+          },
+          "medicalInfo": {
+            "$ref": "#/components/schemas/MedicalInfoDto"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Customers"
+    }
+  ]
+}

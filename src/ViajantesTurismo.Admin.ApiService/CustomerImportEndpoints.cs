@@ -18,9 +18,7 @@ internal static class CustomerImportEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var importGroup = app.MapGroup("/customers/import")
-            .WithGroupName("Customers")
-            .WithTags("Customers");
+        var importGroup = app.MapCustomerImportsGroup();
 
         importGroup.MapPost("/", ImportCustomers)
             .WithName("ImportCustomers")
@@ -32,6 +30,7 @@ internal static class CustomerImportEndpoints
             .WithName("CommitImportWithResolutions")
             .WithDescription("Commits customer import applying conflict resolutions.")
             .WithSummary("Commits customer import applying conflict resolutions.")
+            .Accepts<CommitCustomerImportFormDto>("multipart/form-data")
             .DisableAntiforgery();
 
         return app;
@@ -50,16 +49,12 @@ internal static class CustomerImportEndpoints
     }
 
     private static async Task<Ok<ImportResultDto>> CommitImportWithResolutions(
-        IFormFile file,
-        [FromForm(Name = "conflictResolutions")]
-        string? conflictResolutions,
+        [AsParameters] CommitCustomerImportFormDto form,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(file);
-
-        var csvText = await ReadCsvAsync(file, ct);
-        var parsedConflictResolutions = ConflictResolutionSerialization.Parse(conflictResolutions);
+        var csvText = await ReadCsvAsync(form.File, ct);
+        var parsedConflictResolutions = ConflictResolutionSerialization.Parse(form.ConflictResolutions);
         var result = await workflow.Commit(
             csvText,
             parsedConflictResolutions,
