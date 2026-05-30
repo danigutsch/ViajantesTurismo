@@ -15,21 +15,21 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 
     protected HttpClient ApiClient => fixture.ApiClient;
 
-    protected Task ClearDatabase(CancellationToken cancellationToken) => fixture.ClearDatabase(cancellationToken);
+    protected Task ClearDatabase(CancellationToken cancellationToken) => fixture.Reset(cancellationToken);
 
     public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();
 
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await fixture.ClearDatabase(cts.Token);
+        await fixture.Reset(cts.Token);
         await fixture.Seed(cts.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await fixture.ClearDatabase(cts.Token);
+        await fixture.Reset(cts.Token);
 
         await base.DisposeAsync();
         GC.SuppressFinalize(this);

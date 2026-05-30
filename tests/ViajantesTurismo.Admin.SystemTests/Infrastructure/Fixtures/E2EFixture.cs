@@ -9,10 +9,11 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Testing.Integration;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 
-public sealed class E2EFixture : IAsyncLifetime
+public sealed class E2EFixture : IAdminTestHost, IAsyncLifetime
 {
     private const string LoopbackAddress = "http://127.0.0.1:0";
     private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(60);
@@ -47,6 +48,10 @@ public sealed class E2EFixture : IAsyncLifetime
         : new Uri(_webFactory.ServerAddress);
 
     public HttpClient ApiClient { get; private set; } = null!;
+
+    public HttpClient Client => ApiClient;
+
+    public Uri BaseUri => ApiClient.BaseAddress ?? throw new InvalidOperationException("API client base address is not configured.");
 
     public async ValueTask InitializeAsync()
     {
@@ -100,10 +105,15 @@ public sealed class E2EFixture : IAsyncLifetime
         await _app.DisposeAsync();
     }
 
+    public void Dispose()
+    {
+        DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
     /// <summary>
     /// Seeds the database with test data. Call at the start of each test.
     /// </summary>
-    public async Task Seed(CancellationToken cancellationToken)
+    public async Task Seed(CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(_apiFactory);
 
@@ -115,7 +125,7 @@ public sealed class E2EFixture : IAsyncLifetime
     /// <summary>
     /// Clears the database. Call for tests that need a clean slate.
     /// </summary>
-    public async Task ClearDatabase(CancellationToken cancellationToken)
+    public async Task Reset(CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(_apiFactory);
 

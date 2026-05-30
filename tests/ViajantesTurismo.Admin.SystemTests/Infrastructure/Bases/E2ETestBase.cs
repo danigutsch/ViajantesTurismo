@@ -1,4 +1,5 @@
 using Microsoft.Playwright.Xunit.v3;
+using ViajantesTurismo.Admin.Testing.Integration;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
@@ -9,6 +10,8 @@ namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 public abstract class E2ETestBase(E2EFixture fixture) : PageTest
 {
     protected HttpClient ApiClient => fixture.ApiClient;
+
+    protected IAdminTestHost Host => Assert.IsAssignableFrom<IAdminTestHost>(fixture);
 
     private protected BookingsListPage BookingsList => new(Page, NavigateTo, ApiClient.GetAllBookings);
 
