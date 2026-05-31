@@ -65,16 +65,16 @@ Suggested commit split:
 
 Branch name: `test/issue-115-admin-contract-boundary-expansion`
 
-- [ ] Extend the same pattern to `Customers`
-- [ ] Extend the same pattern to `Bookings`
-- [ ] Add guardrails so artifact drift is caught clearly in CI
+- [x] Extend the same pattern to `Customers`
+- [x] Extend the same pattern to `Bookings`
+- [x] Add guardrails so artifact drift is caught clearly in CI
 - [ ] Review whether generated artifacts should be committed, packed, or both
 
 Suggested commit split:
 
-- [ ] Commit 1: add customers contract validation
-- [ ] Commit 2: add bookings contract validation
-- [ ] Commit 3: add CI or validation guardrails for artifact drift
+- [x] Commit 1: add customers contract validation
+- [x] Commit 2: add bookings contract validation
+- [x] Commit 3: add CI or validation guardrails for artifact drift
 
 ## Notes
 
