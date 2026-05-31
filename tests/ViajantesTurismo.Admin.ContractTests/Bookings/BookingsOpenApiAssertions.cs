@@ -1,7 +1,13 @@
 namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 
+/// <summary>
+/// Shared assertions for the bookings OpenAPI contract slice.
+/// </summary>
 internal static class BookingsOpenApiAssertions
 {
+    /// <summary>
+    /// Verifies the canonical bookings contract slice values that consumers rely on.
+    /// </summary>
     public static void MatchesCanonicalConsumerSlice(BookingsOpenApiContractDto contract)
     {
         ArgumentNullException.ThrowIfNull(contract);
@@ -24,6 +30,9 @@ internal static class BookingsOpenApiAssertions
         Xunit.Assert.Equal("#/components/schemas/CreatePaymentDto", contract.RecordPaymentSchemaReference);
     }
 
+    /// <summary>
+    /// Verifies that the generated bookings artifact stays compatible with the canonical artifact.
+    /// </summary>
     public static void MatchesGeneratedArtifact(
         BookingsOpenApiContractDto canonicalContract,
         BookingsOpenApiContractDto generatedContract)
