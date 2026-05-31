@@ -15,6 +15,6 @@ public sealed class CustomersOpenApiGeneratedArtifactCompatibilityTests
         var canonicalContract = await CustomersOpenApiDocumentClient.GetContract(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(canonicalContract, generatedContract);
+        CustomersOpenApiAssertions.MatchesGeneratedArtifact(canonicalContract, generatedContract);
     }
 }
