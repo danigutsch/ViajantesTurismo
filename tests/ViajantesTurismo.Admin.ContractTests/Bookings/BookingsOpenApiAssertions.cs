@@ -16,12 +16,16 @@ internal static class BookingsOpenApiAssertions
         Xunit.Assert.Equal("ViajantesTurismo.Admin.ApiService | bookings", contract.Title);
         Xunit.Assert.Equal("GetBookings", contract.ListBookingsOperationId);
         Xunit.Assert.Equal("GetBookingById", contract.GetBookingByIdOperationId);
+        Xunit.Assert.Equal("CreateBooking", contract.CreateBookingOperationId);
         Xunit.Assert.Equal("#/components/schemas/CreateBookingDto", contract.CreateBookingSchemaReference);
         Xunit.Assert.Equal("DeleteBooking", contract.DeleteBookingOperationId);
         Xunit.Assert.Equal("GetBookingsByTourId", contract.GetBookingsByTourIdOperationId);
         Xunit.Assert.Equal("GetBookingsByCustomerId", contract.GetBookingsByCustomerIdOperationId);
+        Xunit.Assert.Equal("UpdateBookingDiscount", contract.UpdateBookingDiscountOperationId);
         Xunit.Assert.Equal("#/components/schemas/UpdateBookingDiscountDto", contract.UpdateBookingDiscountSchemaReference);
+        Xunit.Assert.Equal("UpdateBookingDetails", contract.UpdateBookingDetailsOperationId);
         Xunit.Assert.Equal("#/components/schemas/UpdateBookingDetailsDto", contract.UpdateBookingDetailsSchemaReference);
+        Xunit.Assert.Equal("UpdateBookingNotes", contract.UpdateBookingNotesOperationId);
         Xunit.Assert.Equal("#/components/schemas/UpdateBookingNotesDto", contract.UpdateBookingNotesSchemaReference);
         Xunit.Assert.Equal("ConfirmBooking", contract.ConfirmBookingOperationId);
         Xunit.Assert.Equal("CancelBooking", contract.CancelBookingOperationId);
