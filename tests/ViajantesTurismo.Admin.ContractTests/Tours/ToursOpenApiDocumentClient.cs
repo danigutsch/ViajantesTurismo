@@ -18,6 +18,12 @@ internal static class ToursOpenApiDocumentClient
     public static async Task<ToursOpenApiContractDto> GetContract(CancellationToken cancellationToken)
         => await GetContract(GetCanonicalDocumentPath(), cancellationToken);
 
+    /// <summary>
+    /// Retrieves the subset of the build-time generated tours OpenAPI contract used for
+    /// generated-vs-canonical compatibility validation.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token for the file read.</param>
+    /// <returns>The mapped tours OpenAPI contract slice from the generated artifact.</returns>
     public static async Task<ToursOpenApiContractDto> GetGeneratedContract(CancellationToken cancellationToken)
         => await GetContract(GetGeneratedDocumentPath(), cancellationToken);
 
