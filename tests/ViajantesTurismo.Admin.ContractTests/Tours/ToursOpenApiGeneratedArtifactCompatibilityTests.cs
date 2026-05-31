@@ -15,6 +15,6 @@ public sealed class ToursOpenApiGeneratedArtifactCompatibilityTests
         var canonicalContract = await ToursOpenApiDocumentClient.GetContract(TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(canonicalContract, generatedContract);
+        ToursOpenApiAssertions.MatchesGeneratedArtifact(canonicalContract, generatedContract);
     }
 }
