@@ -9,7 +9,7 @@ Use this project when the thing being protected is the published contract itself
 - generated OpenAPI compatibility checks
 - serialized request or response payload shape checks
 - schema or consumer-provider compatibility slices for one Admin boundary
-- PactNet-based consumer or provider verification when a boundary is best expressed as HTTP interactions
+- consumer/provider compatibility validation rooted in the canonical committed contract artifact
 
 ## What does not belong here
 
@@ -24,9 +24,9 @@ The allowed SUT seam in this project is a published Admin API contract artifact 
 
 For the first real slice, that seam is:
 
-- PactNet consumer contract for `GET /openapi/Tours.json`
-- consumed through HTTP as a published boundary artifact, not through direct endpoint method calls
-- persisted by PactNet as a pact file under this project for later provider verification work
+- the canonical `tours.openapi.json` artifact under `src/ViajantesTurismo.Admin.Contracts/OpenApi/`
+- consumed as the published contract artifact, not through direct endpoint method calls
+- validated through a consumer-owned contract slice that reads only the fields this consumer depends on
 
 Not allowed for this project:
 
@@ -43,3 +43,4 @@ Why this slice:
 - it is public and consumer-visible
 - it is narrower and more durable than a full API behavior suite
 - it protects the consumer-owned OpenAPI shape without duplicating integration behavior tests
+- it stays aligned with the committed canonical artifact already packed from `ViajantesTurismo.Admin.Contracts`
