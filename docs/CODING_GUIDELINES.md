@@ -44,6 +44,8 @@ All projects use `.editorconfig` for consistent formatting. Key settings:
 **Asynchronous methods:** Do not use the `Async` suffix. Name methods for their
 intent whether they are synchronous or asynchronous.
 
+The repository's SharedKernel style analyzer backs this rule with `SKSTYLE001`.
+
 **Error Classes:** Suffix with `Errors`
 
 ```csharp
