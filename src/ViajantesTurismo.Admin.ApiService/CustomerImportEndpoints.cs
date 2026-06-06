@@ -43,7 +43,7 @@ internal static class CustomerImportEndpoints
     {
         ArgumentNullException.ThrowIfNull(file);
 
-        var csvText = await ReadCsvAsync(file, ct);
+        var csvText = await ReadCsv(file, ct);
         var result = await workflow.Import(csvText, ct);
         return TypedResults.Ok(result);
     }
@@ -53,7 +53,7 @@ internal static class CustomerImportEndpoints
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
-        var csvText = await ReadCsvAsync(form.File, ct);
+        var csvText = await ReadCsv(form.File, ct);
         var parsedConflictResolutions = ConflictResolutionSerialization.Parse(form.ConflictResolutions);
         var result = await workflow.Commit(
             csvText,
@@ -63,7 +63,7 @@ internal static class CustomerImportEndpoints
         return TypedResults.Ok(result);
     }
 
-    private static async Task<string> ReadCsvAsync(IFormFile file, CancellationToken ct)
+    private static async Task<string> ReadCsv(IFormFile file, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(file);
 

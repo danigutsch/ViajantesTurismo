@@ -36,7 +36,7 @@ public static class TestFixtureHelpers
         }
 
         var tourRequest = DtoBuilders.BuildCreateTourDto(identifier: identifier, name: name);
-        var response = await client.CreateTourAsync(tourRequest, cancellationToken);
+        var response = await client.CreateTour(tourRequest, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -66,7 +66,7 @@ public static class TestFixtureHelpers
             email: TestDataGenerator.UniqueEmail($"{firstName}.{lastName}".ToUpperInvariant()),
             nationalId: TestDataGenerator.UniqueNationalId($"{firstName}{lastName}"));
 
-        var response = await client.CreateCustomerAsync(customerRequest, cancellationToken);
+        var response = await client.CreateCustomer(customerRequest, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {

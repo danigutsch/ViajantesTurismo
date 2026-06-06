@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;
 /// </summary>
 public static class ToursApiHelper
 {
-    public static async Task<HttpResponseMessage> CreateTourAsync(
+    public static async Task<HttpResponseMessage> CreateTour(
         this HttpClient client,
         CreateTourDto request,
         CancellationToken cancellationToken)
@@ -19,7 +19,7 @@ public static class ToursApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> GetAllToursAsync(
+    public static async Task<HttpResponseMessage> GetAllTours(
         this HttpClient client,
         CancellationToken cancellationToken)
     {
