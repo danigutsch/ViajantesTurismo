@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;
 /// </summary>
 public static class CustomersApiHelper
 {
-    public static async Task<HttpResponseMessage> CreateCustomerAsync(
+    public static async Task<HttpResponseMessage> CreateCustomer(
         this HttpClient client,
         CreateCustomerDto request,
         CancellationToken cancellationToken)
@@ -19,7 +19,7 @@ public static class CustomersApiHelper
             cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> GetAllCustomersAsync(
+    public static async Task<HttpResponseMessage> GetAllCustomers(
         this HttpClient client,
         CancellationToken cancellationToken)
     {
