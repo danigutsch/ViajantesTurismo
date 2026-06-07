@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class NotFoundPageTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class NotFoundPageTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Not_Found_Pages_Hide_Action_Links_And_Show_Consistent_Layout()

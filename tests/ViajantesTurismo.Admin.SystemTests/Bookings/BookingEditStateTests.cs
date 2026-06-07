@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class BookingEditStateTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Cancelled_Booking_Edit_Hides_Payment_And_Action_Buttons()

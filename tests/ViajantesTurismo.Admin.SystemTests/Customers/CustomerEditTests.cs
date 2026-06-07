@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
-public class CustomerEditTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class CustomerEditTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Customer_Edit_Renders_All_Sections_With_Populated_Data()

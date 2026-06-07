@@ -389,9 +389,9 @@ public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception(
 ### Approach by Test Type
 
 - **Unit Tests:** Direct instantiation with factory methods (e.g., `Tour.Create()`)
-- **Integration Tests:** Fixture-owned HTTP entrypoints plus named lifecycle methods such as `Seed` and `Reset`
+- **Integration Tests:** Fixture-owned HTTP entrypoints plus infrastructure-owned baseline control where clean-slate behavior is required
 - **Behaviour Tests:** Context objects to share state between steps
-- **E2E Tests:** Playwright plus deterministic helper/page abstractions backed by named fixture lifecycle methods
+- **E2E Tests:** Playwright plus deterministic helper/page abstractions backed by fixture-owned baseline control
 
 ### Best Practices
 
@@ -465,7 +465,7 @@ Antipatterns to avoid:
 ### E2E-specific base class guidance
 
 - Use `E2ETestBase` for tests that can safely run in parallel with owned data.
-- Use `E2ESerialTestBase` for tests that require per-test `ClearDatabase + Seed` isolation.
+- Use `E2ESerialTestBase` for tests that require infrastructure-owned clean-slate isolation.
 
 ### Intentional serial exception patterns
 
@@ -578,8 +578,8 @@ Integration tests should:
 
 - exercise the API through `HttpClient`
 - expose typed contract clients for bookings, customers, and tours as the ideal SUT entrypoints
-- use a narrow shared host seam only when multiple hosted fixtures need the same setup/reset contract
-- keep database lifecycle operations behind named fixture methods
+- use a narrow shared host seam only when multiple hosted fixtures need the same client/base-address contract
+- keep database lifecycle operations behind fixture or base-class infrastructure rather than exposing them to test bodies
 - avoid direct test-body dependence on `IServiceProvider` or generic scope runners
 - prefer Aspire-managed host ownership as the target direction when full application hosting is required
 
@@ -598,7 +598,7 @@ E2E tests should:
 
 - exercise the system through Playwright and visible business behavior
 - treat the browser-visible web entrypoint as the SUT seam
-- keep deterministic setup or reset work behind fixture-owned support seams, using a
+- keep deterministic setup or reset work behind fixture-owned support seams and base-class infrastructure, using a
   shared hosted contract only when it is genuinely useful
 - navigate by deterministic IDs, routes, and semantic selectors
 - keep application-host details behind `E2EFixture`, page objects, and workflow helpers

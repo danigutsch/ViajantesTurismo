@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class CrossEntityNavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string CustomerDetailsTitle = "Customer Details";
 

@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public partial class ConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
+public partial class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Tour_List_And_Details_Show_Consistent_Currency_And_Date_Formatting()

@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class NotFoundErrorTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class NotFoundErrorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Invalid_GUID_Format_Shows_404_Page()

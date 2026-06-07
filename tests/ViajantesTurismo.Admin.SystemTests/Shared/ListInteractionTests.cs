@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class ListInteractionTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
+public class ListInteractionTests(AspireSerialSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
 {
     private const string DescendingSortSelector = "th[aria-sort='descending']";
 

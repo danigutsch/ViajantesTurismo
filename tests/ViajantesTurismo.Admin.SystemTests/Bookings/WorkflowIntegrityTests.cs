@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class WorkflowIntegrityTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class WorkflowIntegrityTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private static readonly string[] TechnicalLeakIndicators =
     [

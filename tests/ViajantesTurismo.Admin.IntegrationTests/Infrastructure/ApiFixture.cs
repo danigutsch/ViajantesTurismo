@@ -39,14 +39,14 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTuri
 
     public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
-    public async Task Seed(CancellationToken cancellationToken = default)
+    private async Task SeedBaseline(CancellationToken cancellationToken = default)
     {
         using var scope = Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
         await seeder.Seed(cancellationToken);
     }
 
-    public async Task Reset(CancellationToken cancellationToken = default)
+    private async Task ResetDatabase(CancellationToken cancellationToken = default)
     {
         using var scope = Services.CreateScope();
         var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
@@ -70,7 +70,7 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTuri
         _databaseConnectionString = databaseConnectionStringBuilder.ConnectionString;
 
         _client = CreateClient();
-        await Seed(cts.Token);
+        await SeedBaseline(cts.Token);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -98,7 +98,7 @@ public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTuri
             if (_client is not null)
             {
                 using var cts = new CancellationTokenSource(ResourceStartupTimeout);
-                await Reset(cts.Token);
+                await ResetDatabase(cts.Token);
                 _client.Dispose();
                 _client = null;
             }
