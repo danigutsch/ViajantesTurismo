@@ -19,6 +19,14 @@ EOF
 
 main() {
     local playwright_script="${1:-}"
+    local -a browser_args=()
+
+    if [[ -n "${playwright_script}" && "${playwright_script}" != *.ps1 ]]; then
+        browser_args=("$@")
+        playwright_script=""
+    elif [[ $# -gt 1 ]]; then
+        browser_args=("${@:2}")
+    fi
 
     if [[ -z "${playwright_script}" ]]; then
         local -a search_roots=()
@@ -47,6 +55,11 @@ main() {
     fi
 
     local -a install_args=(install)
+
+    if [[ ${#browser_args[@]} -gt 0 ]]; then
+        install_args+=("${browser_args[@]}")
+    fi
+
     local os_name
     os_name="$(uname -s)"
 

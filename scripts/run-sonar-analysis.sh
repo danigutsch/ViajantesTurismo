@@ -108,7 +108,7 @@ if [[ -z "${playwright_script}" ]]; then
 fi
 
 run_with_log "Installing Playwright browsers" "${playwright_install_log}" \
-    bash scripts/install-playwright.sh "${playwright_script}"
+    bash scripts/install-playwright.sh "${playwright_script}" chromium
 
 run_with_log "Running tests with coverage" "${coverage_collection_log}" \
     bash scripts/collect-test-coverage.sh "${coverage_reports_file}"

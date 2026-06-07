@@ -23,7 +23,7 @@ protected branch keeps its post-merge validation history intact.
 
 **Steps:**
 
-1. Wait for both `detect-changes` and `lint` to complete successfully.
+1. Wait for `detect-changes` to complete successfully.
 2. Read the `build_required` decision from `detect-changes`.
 3. If only documentation changed, run a lightweight success step so the required
    `Build and Test` check resolves cleanly without starting the expensive validation
@@ -40,9 +40,9 @@ protected branch keeps its post-merge validation history intact.
 8. Run `dotnet tool restore` when build/test work is required.
 9. Cache SonarCloud packages under `~/.sonar/cache` when validation work is required.
 10. Run `bash scripts/run-sonar-analysis.sh` when validation work is required. This script
-  wraps the SonarScanner for .NET `begin` / `build` / `coverage collection` /
-  `coverage conversion` / `end` flow and produces both HTML coverage output and the
-  SonarQube XML coverage input.
+   wraps the SonarScanner for .NET `begin` / `build` / `Playwright Chromium install` /
+   `coverage collection` / `coverage conversion` / `end` flow and produces both HTML
+   coverage output and the SonarQube XML coverage input.
 11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
   quality gate status, SonarCloud link, and any parse warnings appear on the workflow
   run summary page without opening the full log.
@@ -121,8 +121,10 @@ This job is intentionally lightweight. It exists so branch protection can keep a
 1. Checkout repository (`actions/checkout`).
 2. On pull requests, detect changed Markdown files and lint only that set with `tj-actions/changed-files` and `DavidAnson/markdownlint-cli2-action`.
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
-4. Install `shellcheck` on the runner.
-5. Run `bash scripts/lint-all.sh`.
+4. On pull requests, detect changed shell, JSON, and Gherkin files and run only the
+   matching repository linters when that set is non-empty.
+5. On non-pull-request runs, run `bash scripts/lint-all.sh --skip-markdown` across the
+   full repository lint surface.
 
 ## Recommended workflow evolution
 

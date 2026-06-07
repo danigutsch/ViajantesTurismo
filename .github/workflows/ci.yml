@@ -48,7 +48,6 @@ jobs:
     name: Build and Test
     needs:
       - detect-changes
-      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -247,10 +246,70 @@ jobs:
             samples/**/*.md
           config: .markdownlint-cli2.jsonc
 
-      - name: Install shellcheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes shellcheck
+      - name: Get changed repository lint inputs
+        if: ${{ github.event_name == 'pull_request' }}
+        id: changed-lint-inputs
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            .devcontainer/*.sh
+            scripts/*.sh
+            setup-dev.sh
+            **/*.json
+            tests/**/*.feature
+          separator: ","
 
-      - name: Run repository linters
+      - name: Run repository linters on pull requests
+        if: ${{ github.event_name == 'pull_request' && steps.changed-lint-inputs.outputs.any_changed == 'true' }}
+        shell: bash
+        env:
+          CHANGED_LINT_FILES: ${{ steps.changed-lint-inputs.outputs.all_changed_files }}
+        run: |
+          IFS=',' read -r -a changed_files <<< "${CHANGED_LINT_FILES}"
+
+          shellcheck_targets=()
+          json_targets=()
+          gherkin_targets=()
+
+          for file in "${changed_files[@]}"; do
+              [[ -z "${file}" ]] && continue
+
+              case "${file}" in
+                  .devcontainer/*.sh|scripts/*.sh|setup-dev.sh)
+                      shellcheck_targets+=("${file}")
+                      ;;
+                  *.json)
+                      json_targets+=("${file}")
+                      ;;
+                  tests/*.feature|tests/*/*.feature|tests/*/*/*.feature|tests/*/*/*/*.feature|tests/*/*/*/*/*.feature)
+                      gherkin_targets+=("${file}")
+                      ;;
+              esac
+          done
+
+          if [[ ${#shellcheck_targets[@]} -gt 0 ]]; then
+              shellcheck --exclude=SC1091 --source-path=SCRIPTDIR -- "${shellcheck_targets[@]}"
+          fi
+
+          if [[ ${#json_targets[@]} -gt 0 ]]; then
+              bash scripts/lint-json.sh "${json_targets[@]}"
+          fi
+
+          if [[ ${#gherkin_targets[@]} -gt 0 ]]; then
+              bash scripts/lint-gherkin.sh "${gherkin_targets[@]}"
+          fi
+
+      - name: Report skipped repository linters on pull requests
+        if: ${{ github.event_name == 'pull_request' && steps.changed-lint-inputs.outputs.any_changed != 'true' }}
+        shell: bash
+        run: |
+          echo "No changed shell, JSON, or Gherkin files were detected."
+          {
+            echo "## Repository linters"
+            echo
+            echo "Shell, JSON, and Gherkin linting were skipped because no matching files changed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run repository linters on mainline runs
+        if: ${{ github.event_name != 'pull_request' }}
         run: bash scripts/lint-all.sh --skip-markdown

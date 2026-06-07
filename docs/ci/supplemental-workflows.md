@@ -33,9 +33,8 @@ A separate workflow (`.github/workflows/actionlint.yml`) runs Actionlint for cha
 **Steps:**
 
 1. Checkout repository (`actions/checkout`).
-2. Install `shellcheck`.
-3. Download the pinned `actionlint` release, verify its checksum, and install it locally.
-4. Run `actionlint` against workflow files and local composite actions.
+2. Download the pinned `actionlint` release, verify its checksum, and install it locally.
+3. Run `actionlint` against workflow files and local composite actions.
 
 This workflow is intentionally lightweight and targeted. It complements the main CI
 workflow by catching workflow syntax, expression, and embedded shell mistakes before a
