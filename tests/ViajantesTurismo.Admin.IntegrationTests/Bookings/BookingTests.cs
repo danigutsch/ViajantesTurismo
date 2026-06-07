@@ -1,5 +1,3 @@
-using ViajantesTurismo.Admin.Testing.Integration;
-
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
 [Trait(TestTraits.CategoryName, TestTraits.SmokeCategory)]
@@ -11,11 +9,10 @@ public class BookingTests(ApiFixture fixture)
     public async Task Can_GetBookings_Smoke()
     {
         // Arrange
-        var host = Assert.IsAssignableFrom<IAdminTestHost>(fixture);
         var cancellationToken = TestContext.Current.CancellationToken;
 
         // Act
-        var response = await host.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
+        var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -25,12 +22,11 @@ public class BookingTests(ApiFixture fixture)
     public async Task Exposes_A_Loopback_BaseUri_Through_The_Host_Seam()
     {
         // Arrange
-        var host = Assert.IsAssignableFrom<IAdminTestHost>(fixture);
         var cancellationToken = TestContext.Current.CancellationToken;
 
         // Act
-        var baseUri = host.BaseUri;
-        var response = await host.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
+        var baseUri = fixture.BaseUri;
+        var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
         Assert.Equal("127.0.0.1", baseUri.Host);
@@ -40,21 +36,18 @@ public class BookingTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Seed_Is_Idempotent_Through_The_Host_Seam()
+    public async Task Exposes_A_Seeded_Baseline_Without_Test_Control_Pruning_The_Host_Seam()
     {
         // Arrange
-        var host = Assert.IsAssignableFrom<IAdminTestHost>(fixture);
         var cancellationToken = TestContext.Current.CancellationToken;
-        var originalBookings = await host.Client.GetAllBookingsAndRead(cancellationToken);
+        var originalBookings = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
+
+        // Act
+        var bookingsAfterSecondRead = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
 
         Assert.NotEmpty(originalBookings);
 
-        // Act
-        await host.Seed(cancellationToken);
-
-        var bookingsAfterSeed = await host.Client.GetAllBookingsAndRead(cancellationToken);
-
         // Assert
-        Assert.Equal(originalBookings.Length, bookingsAfterSeed.Length);
+        Assert.Equal(originalBookings.Length, bookingsAfterSecondRead.Length);
     }
 }

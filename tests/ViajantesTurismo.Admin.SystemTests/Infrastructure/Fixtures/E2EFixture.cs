@@ -86,7 +86,7 @@ public sealed class E2EFixture : IAdminTestHost, IAsyncLifetime
 
         ApiClient = _apiFactory.CreateClient();
 
-        await Seed(cts.Token);
+        await SeedBaseline(cts.Token);
     }
 
     public async ValueTask DisposeAsync()
@@ -111,9 +111,9 @@ public sealed class E2EFixture : IAdminTestHost, IAsyncLifetime
     }
 
     /// <summary>
-    /// Seeds the database with test data. Call at the start of each test.
+    /// Applies the shared test baseline inside fixture infrastructure.
     /// </summary>
-    public async Task Seed(CancellationToken cancellationToken = default)
+    internal async Task SeedBaseline(CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(_apiFactory);
 
@@ -123,9 +123,9 @@ public sealed class E2EFixture : IAdminTestHost, IAsyncLifetime
     }
 
     /// <summary>
-    /// Clears the database. Call for tests that need a clean slate.
+    /// Clears the database for fixture-owned clean-slate infrastructure flows.
     /// </summary>
-    public async Task Reset(CancellationToken cancellationToken = default)
+    internal async Task ResetDatabase(CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(_apiFactory);
 

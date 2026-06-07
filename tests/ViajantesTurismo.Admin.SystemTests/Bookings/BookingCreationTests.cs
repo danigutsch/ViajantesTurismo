@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class BookingCreationTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Create_Booking_From_Customer_Details_With_Prefilled_Data()

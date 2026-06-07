@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
-public class CustomerTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()

@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public partial class NavigationTests(E2EFixture fixture) : E2ETestBase(fixture)
+public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string AddTourTitle = "Add Tour";
     private const string ToursTitle = "Tours";

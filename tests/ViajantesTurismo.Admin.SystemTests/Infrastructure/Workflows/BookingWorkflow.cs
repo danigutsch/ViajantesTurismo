@@ -40,10 +40,13 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         Assert.Equal("Tour Details", await page.TitleAsync());
         await page.GetByText(tour.Name).First.WaitForAsync();
 
-        await page.GetButton("Add Booking").ClickAsync();
-        await page.GetButton("Create Booking").WaitForAsync();
+        var addBookingButton = page.GetButton("Add Booking");
+        await addBookingButton.WaitForAsync();
+        await addBookingButton.ClickAsync();
 
         var bookingForm = page.Locator("form:has(button:text('Create Booking'))");
+        await bookingForm.WaitForAsync();
+        await bookingForm.GetButton("Create Booking").WaitForAsync();
 
         var customerField = bookingForm.Locator("div.mb-3")
             .Filter(new LocatorFilterOptions { HasText = "Customer" }).First;

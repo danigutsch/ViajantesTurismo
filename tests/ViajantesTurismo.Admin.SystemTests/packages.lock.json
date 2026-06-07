@@ -122,6 +122,45 @@
           "System.IO.Hashing": "10.0.3"
         }
       },
+      "Aspire.Hosting.Testing": {
+        "type": "Direct",
+        "requested": "[13.3.5, )",
+        "resolved": "13.3.5",
+        "contentHash": "uFZxuYaWaK4ddwfZ3XV8VQPbOsj/UWEalR5JVQG1nDOTc76eicCVAfWUTECx/fZ7nAi04JNV6yT0Ig+XkenbUg==",
+        "dependencies": {
+          "AspNetCore.HealthChecks.Uris": "9.0.0",
+          "Aspire.Hosting": "13.3.5",
+          "Aspire.Hosting.AppHost": "13.3.5",
+          "Google.Protobuf": "3.33.5",
+          "Grpc.AspNetCore": "2.76.0",
+          "Grpc.Net.ClientFactory": "2.76.0",
+          "Grpc.Tools": "2.78.0",
+          "Humanizer.Core": "2.14.1",
+          "JsonPatch.Net": "3.3.0",
+          "KubernetesClient": "18.0.13",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.7",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.7",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
+          "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.5.0",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.7",
+          "Microsoft.Extensions.FileSystemGlobbing": "10.0.7",
+          "Microsoft.Extensions.Hosting": "10.0.7",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.7",
+          "Microsoft.Extensions.Http": "10.0.7",
+          "Microsoft.Extensions.Http.Resilience": "10.5.0",
+          "Microsoft.Extensions.Logging": "10.0.7",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
+          "Microsoft.Extensions.Options": "10.0.7",
+          "Microsoft.Extensions.Primitives": "10.0.7",
+          "ModelContextProtocol": "1.0.0",
+          "Newtonsoft.Json": "13.0.4",
+          "Polly.Core": "8.6.5",
+          "Polly.Extensions": "8.6.5",
+          "Semver": "3.0.0",
+          "StreamJsonRpc": "2.22.23",
+          "System.IO.Hashing": "10.0.3"
+        }
+      },
       "Microsoft.AspNetCore.Mvc.Testing": {
         "type": "Direct",
         "requested": "[10.0.8, )",
@@ -1075,12 +1114,12 @@
       },
       "Polly.Extensions": {
         "type": "Transitive",
-        "resolved": "8.4.2",
-        "contentHash": "GZ9vRVmR0jV2JtZavt+pGUsQ1O1cuRKG7R7VOZI6ZDy9y6RNPvRvXK1tuS4ffUrv8L0FTea59oEuQzgS0R7zSA==",
+        "resolved": "8.6.5",
+        "contentHash": "Ui+qN9zCgcy0/YEthA0wVm1mrDQe7+ud82Vz5wedbk22t17t6G+6nm/Q3GYxyCyTl5UFVoO2MbfmDv7a0K6Zww==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
           "Microsoft.Extensions.Options": "8.0.0",
-          "Polly.Core": "8.4.2"
+          "Polly.Core": "8.6.5"
         }
       },
       "Polly.RateLimiting": {
@@ -1268,6 +1307,17 @@
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )"
+        }
+      },
+      "viajantesturismo.apphost": {
+        "type": "Project",
+        "dependencies": {
+          "Aspire.Dashboard.Sdk.linux-x64": "[13.3.4, )",
+          "Aspire.Hosting.AppHost": "[13.3.4, )",
+          "Aspire.Hosting.Orchestration.linux-x64": "[13.3.4, )",
+          "Aspire.Hosting.PostgreSQL": "[13.3.5, )",
+          "Aspire.Hosting.Redis": "[13.3.5, )",
+          "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
       "viajantesturismo.common": {

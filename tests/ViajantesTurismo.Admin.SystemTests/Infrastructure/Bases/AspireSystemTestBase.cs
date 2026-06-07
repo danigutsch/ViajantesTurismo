@@ -2,15 +2,18 @@ using Microsoft.Playwright.Xunit.v3;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
-[assembly: AssemblyFixture(typeof(E2EFixture))]
+[assembly: AssemblyFixture(typeof(AspireSystemTestFixture))]
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
-public abstract class E2ETestBase(E2EFixture fixture) : PageTest
+public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest
+    where TFixture : IAspireSystemTestFixture
 {
-    protected HttpClient ApiClient => fixture.ApiClient;
+    protected TFixture Fixture => fixture;
 
-    protected Uri ApiBaseUri => fixture.BaseUri;
+    protected HttpClient ApiClient => Fixture.ApiClient;
+
+    protected Uri ApiBaseUri => Fixture.ApiBaseUri;
 
     private protected BookingsListPage BookingsList => new(Page, NavigateTo, ApiClient.GetAllBookings);
 
@@ -18,12 +21,16 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
 
     private protected UiFeedbackAssertions UiFeedback => new(Page);
 
-    /// <summary>
-    /// Navigate to a path relative to the web app root, waiting for SignalR circuit.
-    /// </summary>
     protected async Task NavigateTo(string relativePath)
     {
-        await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        try
+        {
+            await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        }
+        catch (PlaywrightException exception) when (exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
+        {
+            await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+        }
     }
 
     protected async Task<string> ReadBookingDetailsBadgeText(Guid bookingId, string label)
@@ -40,7 +47,7 @@ public abstract class E2ETestBase(E2EFixture fixture) : PageTest
     {
         return new BrowserNewContextOptions
         {
-            BaseURL = fixture.WebAppUrl.ToString(),
+            BaseURL = Fixture.WebAppUrl.ToString(),
             ViewportSize = new ViewportSize { Width = 1920, Height = 1080 },
             IgnoreHTTPSErrors = true
         };

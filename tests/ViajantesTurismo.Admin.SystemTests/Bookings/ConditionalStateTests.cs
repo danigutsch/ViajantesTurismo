@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class ConditionalStateTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Tour_Edit_Disables_Locked_Fields_When_Bookings_Exist()

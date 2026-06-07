@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class PaymentStatusConsistencyTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Bookings_List_Payment_Status_Matches_Booking_Details()

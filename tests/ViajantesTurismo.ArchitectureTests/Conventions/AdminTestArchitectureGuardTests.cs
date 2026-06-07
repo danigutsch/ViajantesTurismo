@@ -31,11 +31,11 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure", "ApiFixture.cs"),
-            "public async Task Seed(CancellationToken cancellationToken = default)");
+            "private async Task SeedBaseline(CancellationToken cancellationToken = default)");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure", "ApiFixture.cs"),
-            "public async Task Reset(CancellationToken cancellationToken = default)");
+            "private async Task ResetDatabase(CancellationToken cancellationToken = default)");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
@@ -46,24 +46,40 @@ public sealed partial class AdminTestArchitectureGuardTests
             "public abstract class E2ETestBase(E2EFixture fixture) : PageTest");
 
         AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSystemTestBase.cs"),
+            "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
+
+        AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
-            "protected IAdminTestHost Host => Assert.IsAssignableFrom<IAdminTestHost>(fixture);");
+            "protected Uri ApiBaseUri => fixture.BaseUri;");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
             "[Collection(E2ETestCollections.Serial)]");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
-            "await fixture.Reset(cts.Token);");
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSerialSystemTestBase.cs"),
+            "public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
-            "await fixture.Seed(cts.Token);");
+            "await fixture.ResetDatabase(cts.Token);");
+
+        AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
+            "await fixture.SeedBaseline(cts.Token);");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "E2EFixture.cs"),
             "public sealed class E2EFixture : IAdminTestHost, IAsyncLifetime");
+
+        AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "AspireSystemTestFixture.cs"),
+            "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
+
+        AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "AspireSerialSystemTestFixture.cs"),
+            "public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
     }
 
     [Fact]
