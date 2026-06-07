@@ -5,7 +5,6 @@ set -euo pipefail
 main() {
     local validation_outcome="${1:-unknown}"
     local sonar_log_file="TestResults/sonar-analysis.log"
-    local timing_file="TestResults/ci-phase-timings.tsv"
     local summary_target="${GITHUB_STEP_SUMMARY:-}"
 
     if [[ -z "${summary_target}" ]]; then
@@ -14,7 +13,7 @@ main() {
     fi
 
     {
-        echo "## Build, test, coverage, and SonarCloud"
+        echo "## SonarCloud"
         echo
         echo "- Validation step outcome: \`${validation_outcome}\`"
 
@@ -45,32 +44,6 @@ main() {
             echo "- Sonar warnings in log: ${warning_count}"
             echo "- Uploaded artifacts: \`test-results\`, \`coverage-report\`, \`sonar-coverage\`, \`sonar-analysis-log\`"
             echo
-
-            if [[ -f "${timing_file}" ]]; then
-                echo "### Phase timings"
-                echo
-                echo "| Phase | Duration | Status | Log |"
-                echo "| --- | ---: | --- | --- |"
-
-                local phase
-                local duration_seconds
-                local status
-                local log_file
-
-                while IFS=$'\t' read -r phase _description _started_at_utc _completed_at_utc duration_seconds status log_file; do
-                    if [[ "${phase}" == "phase" ]]; then
-                        continue
-                    fi
-
-                    printf "| \`%s\` | %ss | \`%s\` | \`%s\` |\n" \
-                        "${phase}" \
-                        "${duration_seconds}" \
-                        "${status}" \
-                        "${log_file}"
-                done < "${timing_file}"
-
-                echo
-            fi
 
             local -a parse_warnings=()
             mapfile -t parse_warnings < <(grep -E 'WARN: Cannot parse ' "${sonar_log_file}" || true)
@@ -103,8 +76,8 @@ main() {
     } >> "${summary_target}"
 
     if [[ "${validation_outcome}" != "success" ]]; then
-        echo "::error title=Build and Test failed::Build, test, coverage, or SonarCloud validation failed. See the job summary and sonar-analysis-log artifact."
-        echo "Build, test, coverage, or SonarCloud validation failed. See the job summary and sonar-analysis-log artifact." >&2
+        echo "::error title=SonarCloud failed::Hosted analysis failed. See the job summary and sonar-analysis-log artifact."
+        echo "Hosted analysis failed. See the job summary and sonar-analysis-log artifact." >&2
     fi
 }
 

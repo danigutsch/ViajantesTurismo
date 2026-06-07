@@ -41,7 +41,10 @@ current schedules and grouping rules.
 
 The required merge-gate checks for `main` are:
 
-- `Build and Test`
+- `Fast Validation`
+- `Admin Integration Tests`
+- `Admin System Tests`
+- `Mediator Heavy Tests`
 - `Lint`
 - `Dependency Review`
 - `Secret Scan`
@@ -52,9 +55,8 @@ jobs.
 
 ## Next required work
 
-The near-term required governance work of consolidating duplicated validation and
-SonarCloud execution is complete. The next step is to monitor the merged workflow set in
-normal use and adjust only when there is a concrete operational reason.
+The near-term required work is to monitor the new split validation slices in normal use and
+adjust path gates only when measured CI timing or reliability data justifies it.
 
 ## Related documentation
 
