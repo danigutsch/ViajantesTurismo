@@ -43,9 +43,10 @@ protected branch keeps its post-merge validation history intact.
    wraps the SonarScanner for .NET `begin` / `build` / `Playwright Chromium install` /
    `coverage collection` / `coverage conversion` / `end` flow and produces both HTML
    coverage output and the SonarQube XML coverage input.
-11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` so the
-  quality gate status, SonarCloud link, and any parse warnings appear on the workflow
-  run summary page without opening the full log.
+11. Publish a GitHub Actions job summary from `TestResults/sonar-analysis.log` and
+   `TestResults/ci-phase-timings.tsv` so the quality gate status, SonarCloud link,
+   phase durations, and any parse warnings appear on the workflow run summary page
+   without opening the full log.
 12. When validation work fails, create a focused diagnostic summary under
    `TestResults/ci-diagnostics/`.
 13. Upload test result artifacts, HTML coverage artifacts, the Sonar coverage input

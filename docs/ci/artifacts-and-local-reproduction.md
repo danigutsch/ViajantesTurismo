@@ -19,7 +19,9 @@ The focused `build-test-diagnostics` artifact is uploaded only when the job fail
 | `build-test-diagnostics` | Focused summary file under `TestResults/ci-diagnostics/**` when build/test fails | 7 days |
 
 The artifact includes per-project `TestResults` folders, which contain `.trx` result files
-and `coverage.cobertura.xml` when coverage collection is enabled.
+and `coverage.cobertura.xml` when coverage collection is enabled. The root `TestResults`
+folder also includes `ci-phase-timings.tsv`, a machine-readable phase timing breakdown for
+the main validation step.
 
 For local validation, missing result files are treated as an error because that indicates
 the test infrastructure did not produce the expected outputs. In CI, artifact upload is
@@ -41,7 +43,8 @@ included. Do not broaden the upload glob without a clear reason.
 
 When the `Build and Test` job fails before full test artifacts are available, CI also
 uploads a small `build-test-diagnostics` artifact containing step outcomes, toolchain
-versions, and a `TestResults` inventory snapshot to speed up first-pass diagnosis.
+versions, a `TestResults` inventory snapshot, and the captured phase timing table to speed
+up first-pass diagnosis.
 
 ## Reproducing failures locally
 
