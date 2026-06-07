@@ -84,6 +84,10 @@ jobs:
         if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
 
+      - name: Build solution for fast validation
+        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
+        run: dotnet build ViajantesTurismo.slnx --no-restore
+
       - name: Run fast test slice
         if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
         id: run-fast-validation
@@ -169,6 +173,10 @@ jobs:
         if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
 
+      - name: Build solution for admin integration tests
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        run: dotnet build ViajantesTurismo.slnx --no-restore
+
       - name: Run admin integration test slice
         if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
         id: run-admin-integration
@@ -241,6 +249,10 @@ jobs:
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
+
+      - name: Build solution for mediator heavy tests
+        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
+        run: dotnet build ViajantesTurismo.slnx --no-restore
 
       - name: Run mediator heavy test slice
         if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
@@ -316,6 +328,10 @@ jobs:
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
+
+      - name: Build solution for admin system tests
+        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
+        run: dotnet build ViajantesTurismo.slnx --no-restore
 
       - name: Run admin system test slice
         if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
