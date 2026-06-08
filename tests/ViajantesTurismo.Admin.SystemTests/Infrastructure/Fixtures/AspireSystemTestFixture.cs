@@ -10,8 +10,9 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
     private IDistributedApplicationTestingBuilder? _appBuilder;
     private DistributedApplication? _app;
+    private HttpClient? _apiClient;
 
-    public HttpClient ApiClient { get; private set; } = null!;
+    public HttpClient ApiClient => _apiClient ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     public Uri ApiBaseUri => ApiClient.BaseAddress ?? throw new InvalidOperationException("API client base address is not configured.");
 
@@ -28,14 +29,14 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.WebApp, cts.Token);
 
-        ApiClient = _app.CreateHttpClient(ResourceNames.Api);
+        _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp);
-
     }
 
     public async ValueTask DisposeAsync()
     {
-        ApiClient.Dispose();
+        _apiClient?.Dispose();
+        _apiClient = null;
 
         if (_app is not null)
         {

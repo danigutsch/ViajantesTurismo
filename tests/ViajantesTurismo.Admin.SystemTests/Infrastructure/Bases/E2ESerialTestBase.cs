@@ -56,4 +56,4 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 /// </summary>
 [ExcludeFromCodeCoverage]
 [CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
-public sealed class E2ESerialTests;
+public sealed class E2ESerialTests : ICollectionFixture<E2EFixture>, ICollectionFixture<AspireSerialSystemTestFixture>;

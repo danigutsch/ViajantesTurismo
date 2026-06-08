@@ -11,9 +11,10 @@ public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IA
 
     private IDistributedApplicationTestingBuilder? _appBuilder;
     private DistributedApplication? _app;
+    private HttpClient? _apiClient;
     private string? _databaseConnectionString;
 
-    public HttpClient ApiClient { get; private set; } = null!;
+    public HttpClient ApiClient => _apiClient ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     public Uri ApiBaseUri => ApiClient.BaseAddress ?? throw new InvalidOperationException("API client base address is not configured.");
 
@@ -30,7 +31,7 @@ public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IA
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.WebApp, cts.Token);
 
-        ApiClient = _app.CreateHttpClient(ResourceNames.Api);
+        _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp);
         _databaseConnectionString = await _app.GetConnectionStringAsync(ResourceNames.Database, cts.Token)
             ?? throw new InvalidOperationException("Database connection string is not configured.");
@@ -38,7 +39,8 @@ public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IA
 
     public async ValueTask DisposeAsync()
     {
-        ApiClient.Dispose();
+        _apiClient?.Dispose();
+        _apiClient = null;
 
         if (_app is not null)
         {
