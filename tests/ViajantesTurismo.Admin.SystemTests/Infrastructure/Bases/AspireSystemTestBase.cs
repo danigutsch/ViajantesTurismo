@@ -23,14 +23,23 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     protected async Task NavigateTo(string relativePath)
     {
-        try
+        const int maxAttempts = 3;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            try
+            {
+                await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+                return;
+            }
+            catch (PlaywrightException exception) when (attempt < maxAttempts
+                && exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
+            {
+                await Page.WaitForTimeoutAsync(250);
+            }
         }
-        catch (PlaywrightException exception) when (exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
-        {
-            await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-        }
+
+        throw new InvalidOperationException($"Navigation to '{relativePath}' did not complete after {maxAttempts} attempts.");
     }
 
     protected async Task<string> ReadBookingDetailsBadgeText(Guid bookingId, string label)

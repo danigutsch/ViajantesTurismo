@@ -25,6 +25,8 @@ dotnet test --project tests/ViajantesTurismo.ArchitectureTests
 
 ## Maintenance tips
 
+- `AdminTestArchitectureGuardTests` is the canonical owner of the Admin test taxonomy guardrails;
+  keep this README aligned with `tests/README.md` when those conventions change.
 - **New layers or projects** &rarr; update `Infrastructure/ArchitectureProvider.cs` so assemblies are loaded and
   namespaces stay accurate.
 - **Exceptions to the rules** &rarr; prefer redesigning, but if a violation is intentional, document it and adjust the
