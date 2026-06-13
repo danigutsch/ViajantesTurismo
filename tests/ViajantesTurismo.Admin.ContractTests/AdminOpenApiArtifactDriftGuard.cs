@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace ViajantesTurismo.Admin.ContractTests;
@@ -48,10 +47,10 @@ internal static class AdminOpenApiArtifactDriftGuard
                 continue;
             }
 
-            var canonicalJson = NormalizeJson(canonicalFile);
-            var generatedJson = NormalizeJson(generatedFilePath);
+            var canonicalJson = ParseJson(canonicalFile);
+            var generatedJson = ParseJson(generatedFilePath);
 
-            if (!string.Equals(canonicalJson, generatedJson, StringComparison.Ordinal))
+            if (!JsonNode.DeepEquals(canonicalJson, generatedJson))
             {
                 failures.Add(
                     $"Canonical artifact '{Path.GetFileName(canonicalFile)}' drifted from generated artifact '{generatedFileName}'.");
@@ -76,13 +75,11 @@ internal static class AdminOpenApiArtifactDriftGuard
         }
     }
 
-    private static string NormalizeJson(string documentPath)
+    private static JsonNode ParseJson(string documentPath)
     {
         var documentText = File.ReadAllText(documentPath);
-        var node = JsonNode.Parse(documentText)
+        return JsonNode.Parse(documentText)
             ?? throw new InvalidOperationException($"OpenAPI artifact '{documentPath}' could not be parsed.");
-
-        return node.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
     }
 
     private static string GetBoundaryNameFromCanonicalPath(string canonicalPath)
