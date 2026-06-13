@@ -60,16 +60,16 @@ jobs:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
-      - name: Skip fast validation for docs-only changes
+      - name: Skip fast validation when not required
         if: ${{ needs.detect-changes.outputs.fast_validation_required != 'true' }}
         shell: bash
         run: |
-          echo "Only documentation changes were detected."
+          echo "Fast validation was not required for this change set."
           echo "Fast validation is intentionally skipped."
           {
             echo "## Fast validation"
             echo
-            echo "Only documentation changes were detected, so fast validation was skipped by design."
+            echo "Fast validation was not required for this change set, so it was skipped by design."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout repository
@@ -467,11 +467,11 @@ jobs:
           path: artifacts/admin-system
 
       - name: Generate Sonar coverage report from test slices
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
         run: bash scripts/generate-sonar-coverage-report.sh
 
       - name: Run SonarCloud analysis
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
         id: run-sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
