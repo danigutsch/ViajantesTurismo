@@ -33,6 +33,7 @@ coverage_collection_log="TestResults/sonar-coverage-collection.log"
 reportgenerator_log="TestResults/sonar-reportgenerator.log"
 sonar_begin_log="TestResults/sonarscanner-begin.log"
 sonar_end_log="TestResults/sonarscanner-end.log"
+skip_tests="${SONAR_ANALYSIS_SKIP_TESTS:-false}"
 
 mkdir -p TestResults
 
@@ -99,6 +100,16 @@ trap 'cleanup "$?"; exit $?' EXIT
 
 run_with_log "Building solution" "${build_log}" \
     dotnet build ViajantesTurismo.slnx --no-restore
+
+if [[ "${skip_tests}" == "true" ]]; then
+    if [[ ! -f "${coverage_report}" ]]; then
+        echo "Expected coverage report '${coverage_report}' was not found for Sonar reuse mode." >&2
+        exit 1
+    fi
+
+    echo "Skipping Playwright installation and test execution because SONAR_ANALYSIS_SKIP_TESTS=true."
+    exit 0
+fi
 
 playwright_script="$(find tests -name playwright.ps1 -path '*/bin/Debug/*' | head -1)"
 

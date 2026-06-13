@@ -12,11 +12,24 @@ main() {
 
     mkdir -p "$(dirname "${coverage_reports_file}")"
 
-    dotnet test --solution ViajantesTurismo.slnx --no-build -- \
-        --coverage \
-        --coverage-output-format cobertura \
-        --coverage-output coverage.cobertura.xml \
-        --coverage-settings coverage.settings.xml
+    shift
+
+    if [[ $# -eq 0 ]]; then
+        dotnet test --solution ViajantesTurismo.slnx --no-build -- \
+            --coverage \
+            --coverage-output-format cobertura \
+            --coverage-output coverage.cobertura.xml \
+            --coverage-settings coverage.settings.xml
+    else
+        local project_path
+        for project_path in "$@"; do
+            dotnet test --project "${project_path}" -- \
+                --coverage \
+                --coverage-output-format cobertura \
+                --coverage-output coverage.cobertura.xml \
+                --coverage-settings coverage.settings.xml
+        done
+    fi
 
     shopt -s globstar nullglob
     local -a coverage_files=(tests/**/TestResults/**/coverage.cobertura.xml)
