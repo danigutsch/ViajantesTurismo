@@ -7,9 +7,10 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Admin_Test_Architecture_Guide_Should_Declare_The_Canonical_Documentation_Owner()
     {
-        var guidePath = Path.Combine(GetRepositoryRoot(), "tests", "README.md");
+        var repositoryRoot = GetRepositoryRoot();
+        var guidePath = Path.Combine(repositoryRoot, "tests", "README.md");
         var guideText = File.ReadAllText(guidePath);
-        var architectureReadmePath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
+        var architectureReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
         var architectureReadmeText = File.ReadAllText(architectureReadmePath);
 
         Assert.Contains("This file is the canonical quick-reference for the Admin test taxonomy.", guideText, StringComparison.Ordinal);
@@ -21,58 +22,63 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Admin_Hosted_Test_Infrastructure_Should_Use_The_Approved_Fixture_And_Base_Class_Model()
     {
+        var repositoryRoot = GetRepositoryRoot();
+        var integrationInfrastructurePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure");
+        var systemTestBasesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases");
+        var systemTestFixturesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures");
+
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure", "AssemblyFixture.cs"),
+            Path.Combine(integrationInfrastructurePath, "AssemblyFixture.cs"),
             "[assembly: Xunit.AssemblyFixture(typeof(ViajantesTurismo.Admin.IntegrationTests.Infrastructure.ApiFixture))]");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure", "ApiFixture.cs"),
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
             "public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure", "ApiFixture.cs"),
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
             "private async Task SeedBaseline(CancellationToken cancellationToken = default)");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure", "ApiFixture.cs"),
+            Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
             "private async Task ResetDatabase(CancellationToken cancellationToken = default)");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSystemTestBase.cs"),
+            Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSystemTestBase.cs"),
+            Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
             "protected Uri ApiBaseUri => Fixture.ApiBaseUri;");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSerialSystemTestBase.cs"),
+            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "[Collection(E2ETestCollections.Serial)]");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSerialSystemTestBase.cs"),
+            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSerialSystemTestBase.cs"),
+            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "await Fixture.ResetDatabase(cts.Token);");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "AspireSystemTestFixture.cs"),
+            Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
             "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "AspireSerialSystemTestFixture.cs"),
+            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"),
             "public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
 
         AssertFileDoesNotExist(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"));
+            Path.Combine(systemTestBasesPath, "E2ETestBase.cs"));
 
         AssertFileDoesNotExist(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"));
+            Path.Combine(systemTestBasesPath, "E2ESerialTestBase.cs"));
 
         AssertFileDoesNotExist(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "E2EFixture.cs"));
+            Path.Combine(systemTestFixturesPath, "E2EFixture.cs"));
     }
 
     [Fact]
