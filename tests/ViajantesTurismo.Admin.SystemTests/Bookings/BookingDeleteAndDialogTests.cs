@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class BookingDeleteAndDialogTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class BookingDeleteAndDialogTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Delete_Booking_Via_Confirm_Dialog()

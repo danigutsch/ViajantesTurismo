@@ -2,14 +2,14 @@ using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
-public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Create_Booking_And_Show_Initial_Details()
     {
         // Arrange
-        var tour = await Host.Client.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
-        var customer = await Host.Client.CreateCustomer();
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
+        var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
 
@@ -18,8 +18,8 @@ public class BookingTests(E2EFixture fixture) : E2ETestBase(fixture)
         await BookingWorkflow.NavigateToDetails(createdBookingId);
 
         // Assert
-        Assert.Equal("127.0.0.1", Host.BaseUri.Host);
-        Assert.True(Host.BaseUri.Port > 0);
+        Assert.True(ApiBaseUri.IsLoopback);
+        Assert.True(ApiBaseUri.Port > 0);
         await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();

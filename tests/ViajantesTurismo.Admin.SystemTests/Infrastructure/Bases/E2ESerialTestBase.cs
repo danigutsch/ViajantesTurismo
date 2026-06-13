@@ -5,8 +5,8 @@ namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
 /// <summary>
 /// Base class for E2E tests that require sequential execution with a clean database.
-/// Seeds before each test and clears after. Use for tests that assert exact counts
-/// or call ClearDatabase() mid-test.
+/// Applies fixture-owned baseline control before each test and clears state after.
+/// Use for tests that assert exact counts or require true clean-slate isolation.
 /// </summary>
 [Collection(E2ETestCollections.Serial)]
 public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
@@ -15,21 +15,21 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 
     protected HttpClient ApiClient => fixture.ApiClient;
 
-    protected Task ClearDatabase(CancellationToken cancellationToken) => fixture.Reset(cancellationToken);
+    protected Task ClearDatabase(CancellationToken cancellationToken) => fixture.ResetDatabase(cancellationToken);
 
     public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();
 
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await fixture.Reset(cts.Token);
-        await fixture.Seed(cts.Token);
+        await fixture.ResetDatabase(cts.Token);
+        await fixture.SeedBaseline(cts.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await fixture.Reset(cts.Token);
+        await fixture.ResetDatabase(cts.Token);
 
         await base.DisposeAsync();
         GC.SuppressFinalize(this);
@@ -56,4 +56,4 @@ public abstract class E2ESerialTestBase(E2EFixture fixture) : PageTest
 /// </summary>
 [ExcludeFromCodeCoverage]
 [CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
-public sealed class E2ESerialTests;
+public sealed class E2ESerialTests : ICollectionFixture<E2EFixture>, ICollectionFixture<AspireSerialSystemTestFixture>;

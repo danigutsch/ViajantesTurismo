@@ -6,11 +6,13 @@ Issue links:
 - Follow-up issue [`#140`](https://github.com/danigutsch/ViajantesTurismo/issues/140)
 - Umbrella issue [`#59`](https://github.com/danigutsch/ViajantesTurismo/issues/59)
 
-- [x] Define `IAdminTestHost` interface with minimal operations shared by integration and E2E tests:
+- [x] Define `IAdminTestHost` interface with minimal shared host metadata for integration and E2E tests:
     - `HttpClient Client { get; }`
     - `Uri BaseUri { get; }`
-    - `Task Seed(CancellationToken cancellationToken = default)`
-    - `Task Reset(CancellationToken cancellationToken = default)`
+
+Note: the later seam direction tracked by `#137` intentionally removed public `Seed` / `Reset`
+from the shared host abstraction. Baseline control now belongs in fixture or base-class
+infrastructure rather than test bodies.
 
 ## PR Breakdown
 

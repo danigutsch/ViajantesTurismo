@@ -10,7 +10,7 @@ file static class CustomerImportRoutes
 /// <summary>
 /// E2E tests for the CSV customer import wizard.
 /// </summary>
-public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Navigate_To_Import_Page_And_Upload_Csv_Wizard_Opens()
@@ -109,7 +109,7 @@ public class CustomerImportTests(E2EFixture fixture) : E2ETestBase(fixture)
 /// Clean-slate tests that import actual data.
 /// </summary>
 [Collection(E2ETestCollections.Serial)]
-public partial class CustomerImportSerialTests(E2EFixture fixture) : E2ESerialTestBase(fixture)
+public partial class CustomerImportSerialTests(AspireSerialSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
 {
     [Fact]
     public async Task Can_Complete_Import_Flow_Show_Final_Summary_And_Open_Customer_Details()

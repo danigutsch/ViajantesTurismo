@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class UiFeedbackTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class UiFeedbackTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Confirm_Booking_Should_Show_Success_Toast()

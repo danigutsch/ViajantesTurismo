@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace ViajantesTurismo.Admin.SystemTests.Tours;
 
-public class TourTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Create_View_And_Edit_Tour()

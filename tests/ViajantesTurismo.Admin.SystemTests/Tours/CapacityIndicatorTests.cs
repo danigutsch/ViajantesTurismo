@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 
 namespace ViajantesTurismo.Admin.SystemTests.Tours;
 
-public class CapacityIndicatorTests(E2EFixture fixture) : E2ETestBase(fixture)
+public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private sealed record CapacityStateExpectation(
         string ListBadgeSelector,
