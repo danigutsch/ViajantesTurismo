@@ -27,6 +27,10 @@ jobs:
       contents: read
     outputs:
       build_required: ${{ steps.change-scope.outputs.build_required }}
+      fast_validation_required: ${{ steps.change-scope.outputs.fast_validation_required }}
+      admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
+      admin_system_required: ${{ steps.change-scope.outputs.admin_system_required }}
+      mediator_heavy_required: ${{ steps.change-scope.outputs.mediator_heavy_required }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -44,11 +48,10 @@ jobs:
           GITHUB_AFTER_SHA: ${{ github.event.after }}
         run: bash scripts/detect-changes.sh
 
-  build-and-test:
-    name: Build and Test
+  fast-validation:
+    name: Fast Validation
     needs:
       - detect-changes
-      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -57,16 +60,398 @@ jobs:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
-      - name: Skip expensive validation for docs-only changes
+      - name: Skip fast validation when not required
+        if: ${{ needs.detect-changes.outputs.fast_validation_required != 'true' }}
+        shell: bash
+        run: |
+          echo "Fast validation was not required for this change set."
+          echo "Fast validation is intentionally skipped."
+          {
+            echo "## Fast validation"
+            echo
+            echo "Fast validation was not required for this change set, so it was skipped by design."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
+            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj
+            tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj
+            tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj
+            tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj
+            tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
+            tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj
+            tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
+            tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
+            tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
+            tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
+            tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj
+            tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
+
+      - name: Run fast test slice
+        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
+        id: run-fast-validation
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          bash scripts/run-ci-test-slice.sh \
+            --slice-name "Fast Validation" \
+            tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj \
+            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj \
+            tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj \
+            tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj \
+            tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
+            tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj \
+            tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj \
+            tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj \
+            tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj \
+            tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj \
+            tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj \
+            tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj \
+            tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
+
+      - name: Capture fast validation diagnostics
+        if: ${{ failure() && steps.run-fast-validation.outcome != 'skipped' }}
+        env:
+          BUILD_OUTCOME: included-in-fast-validation
+          PLAYWRIGHT_OUTCOME: not-applicable
+          TEST_OUTCOME: ${{ steps.run-fast-validation.outcome }}
+        run: |
+          bash scripts/collect-ci-build-test-diagnostics.sh \
+            "$BUILD_OUTCOME" \
+            "$PLAYWRIGHT_OUTCOME" \
+            "$TEST_OUTCOME"
+
+      - name: Upload fast validation diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ failure() && steps.run-fast-validation.outcome != 'skipped' }}
+        with:
+          if-no-files-found: error
+          name: fast-validation-diagnostics
+          path: TestResults/ci-diagnostics/**
+          retention-days: 7
+
+      - name: Upload fast validation test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() && steps.run-fast-validation.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: fast-validation-results
+          path: |
+            **/TestResults/**
+            !TestResults/ci-diagnostics/**
+          retention-days: 7
+
+  admin-integration-tests:
+    name: Admin Integration Tests
+    needs:
+      - detect-changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Skip admin integration tests when paths do not require them
+        if: ${{ needs.detect-changes.outputs.admin_integration_required != 'true' }}
+        shell: bash
+        run: |
+          echo "Admin integration test paths were not changed."
+          {
+            echo "## Admin integration tests"
+            echo
+            echo "This slice was skipped because no matching paths changed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+
+      - name: Run admin integration test slice
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
+        id: run-admin-integration
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          bash scripts/run-ci-test-slice.sh \
+            --slice-name "Admin Integration Tests" \
+            tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+
+      - name: Capture admin integration diagnostics
+        if: ${{ failure() && steps.run-admin-integration.outcome != 'skipped' }}
+        env:
+          BUILD_OUTCOME: included-in-admin-integration-tests
+          PLAYWRIGHT_OUTCOME: not-applicable
+          TEST_OUTCOME: ${{ steps.run-admin-integration.outcome }}
+        run: |
+          bash scripts/collect-ci-build-test-diagnostics.sh \
+            "$BUILD_OUTCOME" \
+            "$PLAYWRIGHT_OUTCOME" \
+            "$TEST_OUTCOME"
+
+      - name: Upload admin integration diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ failure() && steps.run-admin-integration.outcome != 'skipped' }}
+        with:
+          if-no-files-found: error
+          name: admin-integration-test-diagnostics
+          path: TestResults/ci-diagnostics/**
+          retention-days: 7
+
+      - name: Upload admin integration test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() && steps.run-admin-integration.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: admin-integration-test-results
+          path: |
+            **/TestResults/**
+            !TestResults/ci-diagnostics/**
+          retention-days: 7
+
+  mediator-heavy-tests:
+    name: Mediator Heavy Tests
+    needs:
+      - detect-changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Skip mediator heavy tests when paths do not require them
+        if: ${{ needs.detect-changes.outputs.mediator_heavy_required != 'true' }}
+        shell: bash
+        run: |
+          echo "Mediator-heavy paths were not changed."
+          {
+            echo "## Mediator heavy tests"
+            echo
+            echo "This slice was skipped because no matching paths changed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: |
+            tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj
+            tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj
+            tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
+
+      - name: Run mediator heavy test slice
+        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
+        id: run-mediator-heavy
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          bash scripts/run-ci-test-slice.sh \
+            --slice-name "Mediator Heavy Tests" \
+            tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj \
+            tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj \
+            tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
+
+      - name: Capture mediator heavy diagnostics
+        if: ${{ failure() && steps.run-mediator-heavy.outcome != 'skipped' }}
+        env:
+          BUILD_OUTCOME: included-in-mediator-heavy-tests
+          PLAYWRIGHT_OUTCOME: not-applicable
+          TEST_OUTCOME: ${{ steps.run-mediator-heavy.outcome }}
+        run: |
+          bash scripts/collect-ci-build-test-diagnostics.sh \
+            "$BUILD_OUTCOME" \
+            "$PLAYWRIGHT_OUTCOME" \
+            "$TEST_OUTCOME"
+
+      - name: Upload mediator heavy diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ failure() && steps.run-mediator-heavy.outcome != 'skipped' }}
+        with:
+          if-no-files-found: error
+          name: mediator-heavy-test-diagnostics
+          path: TestResults/ci-diagnostics/**
+          retention-days: 7
+
+      - name: Upload mediator heavy test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() && steps.run-mediator-heavy.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: mediator-heavy-test-results
+          path: |
+            **/TestResults/**
+            !TestResults/ci-diagnostics/**
+          retention-days: 7
+
+  admin-system-tests:
+    name: Admin System Tests
+    needs:
+      - detect-changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Skip admin system tests when paths do not require them
+        if: ${{ needs.detect-changes.outputs.admin_system_required != 'true' }}
+        shell: bash
+        run: |
+          echo "Admin system test paths were not changed."
+          {
+            echo "## Admin system tests"
+            echo
+            echo "This slice was skipped because no matching paths changed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout repository
+        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
+
+      - name: Run admin system test slice
+        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
+        id: run-admin-system
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          bash scripts/run-ci-test-slice.sh \
+            --slice-name "Admin System Tests" \
+            --install-playwright \
+            tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
+
+      - name: Capture admin system diagnostics
+        if: ${{ failure() && steps.run-admin-system.outcome != 'skipped' }}
+        env:
+          BUILD_OUTCOME: included-in-admin-system-tests
+          PLAYWRIGHT_OUTCOME: included-in-admin-system-tests
+          TEST_OUTCOME: ${{ steps.run-admin-system.outcome }}
+        run: |
+          bash scripts/collect-ci-build-test-diagnostics.sh \
+            "$BUILD_OUTCOME" \
+            "$PLAYWRIGHT_OUTCOME" \
+            "$TEST_OUTCOME"
+
+      - name: Upload admin system diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ failure() && steps.run-admin-system.outcome != 'skipped' }}
+        with:
+          if-no-files-found: error
+          name: admin-system-test-diagnostics
+          path: TestResults/ci-diagnostics/**
+          retention-days: 7
+
+      - name: Upload admin system test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() && steps.run-admin-system.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: admin-system-test-results
+          path: |
+            **/TestResults/**
+            !TestResults/ci-diagnostics/**
+          retention-days: 7
+
+  build-and-test:
+    name: Build and Test
+    needs:
+      - detect-changes
+      - fast-validation
+      - admin-integration-tests
+      - mediator-heavy-tests
+      - admin-system-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Report Build and Test status
+        shell: bash
+        run: |
+          if [[ "${{ needs.detect-changes.outputs.build_required }}" != "true" ]]; then
+              echo "Build and Test was skipped because only documentation changes were detected."
+              exit 0
+          fi
+
+          if [[ "${{ needs.fast-validation.result }}" != "success" ]]; then
+              echo "Fast Validation failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-integration-tests.result }}" != "success" ]]; then
+              echo "Admin Integration Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.mediator-heavy-tests.result }}" != "success" ]]; then
+              echo "Mediator Heavy Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-system-tests.result }}" != "success" ]]; then
+              echo "Admin System Tests failed." >&2
+              exit 1
+          fi
+
+          echo "Build and Test completed successfully across the validation slices."
+          exit 0
+
+  sonarcloud:
+    name: SonarCloud
+    needs:
+      - detect-changes
+      - fast-validation
+      - admin-integration-tests
+      - mediator-heavy-tests
+      - admin-system-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+    steps:
+      - name: Skip SonarCloud for docs-only changes
         if: ${{ needs.detect-changes.outputs.build_required != 'true' }}
         shell: bash
         run: |
-          echo "Only documentation changes were detected."
-          echo "Build, test, coverage, and SonarCloud analysis are intentionally skipped."
+          echo "SonarCloud analysis was skipped because only documentation changes were detected."
           {
-            echo "## Build, test, coverage, and SonarCloud"
+            echo "## SonarCloud"
             echo
-            echo "Only documentation changes were detected, so validation was skipped by design."
+            echo "Only documentation changes were detected, so hosted analysis was skipped by design."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout repository
@@ -97,65 +482,68 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sonarcloud-cache-
 
-      - name: Run build, tests, coverage, and SonarCloud analysis
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
-        id: run-validation
+      - name: Download fast validation results
+        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' && needs.fast-validation.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: fast-validation-results
+          path: artifacts/fast-validation
+
+      - name: Download admin integration test results
+        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' && needs.admin-integration-tests.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: admin-integration-test-results
+          path: artifacts/admin-integration
+
+      - name: Download mediator heavy test results
+        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' && needs.mediator-heavy-tests.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: mediator-heavy-test-results
+          path: artifacts/mediator-heavy
+
+      - name: Download admin system test results
+        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' && needs.admin-system-tests.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: admin-system-test-results
+          path: artifacts/admin-system
+
+      - name: Generate Sonar coverage report from test slices
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
+        run: bash scripts/generate-sonar-coverage-report.sh
+
+      - name: Run SonarCloud analysis
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
+        id: run-sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ANALYSIS_SKIP_TESTS: true
         run: |
           set -o pipefail
           mkdir -p TestResults
           bash scripts/run-sonar-analysis.sh 2>&1 | tee TestResults/sonar-analysis.log
 
-      - name: Publish validation summary to GitHub
-        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+      - name: Publish SonarCloud summary to GitHub
+        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
         env:
-          VALIDATION_OUTCOME: ${{ steps.run-validation.outcome }}
+          VALIDATION_OUTCOME: ${{ steps.run-sonar.outcome }}
         run: bash scripts/write-github-sonar-summary.sh "$VALIDATION_OUTCOME"
-
-      - name: Capture build and test diagnostics
-        if: ${{ failure() }}
-        env:
-          BUILD_OUTCOME: ${{ steps.run-validation.outcome }}
-          PLAYWRIGHT_OUTCOME: included-in-validation
-          TEST_OUTCOME: included-in-validation
-        run: |
-          bash scripts/collect-ci-build-test-diagnostics.sh \
-            "$BUILD_OUTCOME" \
-            "$PLAYWRIGHT_OUTCOME" \
-            "$TEST_OUTCOME"
-
-      - name: Upload build and test diagnostics
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ failure() }}
-        with:
-          if-no-files-found: error
-          name: build-test-diagnostics
-          path: TestResults/ci-diagnostics/**
-          retention-days: 7
-
-      - name: Upload test results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
-        with:
-          if-no-files-found: ignore
-          name: test-results
-          path: "**/TestResults/**"
-          retention-days: 7
 
       - name: Upload coverage report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
         with:
           if-no-files-found: ignore
           name: coverage-report
-          path: "TestResults/CoverageReport/**"
+          path: TestResults/CoverageReport/**
           retention-days: 7
 
       - name: Upload Sonar coverage input
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
         with:
           if-no-files-found: ignore
           name: sonar-coverage
@@ -164,23 +552,13 @@ jobs:
 
       - name: Upload Sonar analysis log
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: ${{ always() && steps.run-validation.outcome != 'skipped' }}
+        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
         with:
           if-no-files-found: ignore
           name: sonar-analysis-log
           path: TestResults/sonar-analysis.log
           retention-days: 7
 
-  sonarcloud:
-    name: SonarCloud
-    needs:
-      - detect-changes
-      - build-and-test
-    if: ${{ always() }}
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    steps:
       - name: Report SonarCloud status
         shell: bash
         run: |
@@ -189,12 +567,32 @@ jobs:
               exit 0
           fi
 
-          if [[ "${{ needs.build-and-test.result }}" == "success" ]]; then
-              echo "SonarCloud analysis completed successfully within the Build and Test job."
+          if [[ "${{ needs.fast-validation.result }}" != "success" ]]; then
+              echo "Fast Validation failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-integration-tests.result }}" != "success" ]]; then
+              echo "Admin Integration Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.mediator-heavy-tests.result }}" != "success" ]]; then
+              echo "Mediator Heavy Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-system-tests.result }}" != "success" ]]; then
+              echo "Admin System Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ steps.run-sonar.outcome }}" == "success" ]]; then
+              echo "SonarCloud analysis completed successfully after aggregating the test slices."
               exit 0
           fi
 
-          echo "SonarCloud analysis failed within the Build and Test job." >&2
+          echo "SonarCloud analysis failed." >&2
           exit 1
 
   lint:
@@ -246,11 +644,6 @@ jobs:
             benchmarks/**/*.md
             samples/**/*.md
           config: .markdownlint-cli2.jsonc
-
-      - name: Install shellcheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes shellcheck
 
       - name: Run repository linters
         run: bash scripts/lint-all.sh --skip-markdown

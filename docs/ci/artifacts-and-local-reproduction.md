@@ -5,18 +5,25 @@ local commands used to reproduce common failures.
 
 ## Artifacts
 
-When the validation path of the `build-and-test` job runs, the `test-results`,
-`coverage-report`, and `sonar-coverage` artifacts are uploaded with `if: always()` so
-they are preserved regardless of test success or failure. For documentation-only changes
-that take the lightweight docs-only path, these artifacts are not produced or uploaded.
-The focused `build-test-diagnostics` artifact is uploaded only when the job fails.
+When CI executes a test slice, that job uploads its own `*-results` artifact with
+`if: always()` so test outputs and coverage XML survive both passing and failing runs.
+For documentation-only changes, the lightweight skip path runs instead and no slice
+artifacts are produced. Each slice also uploads a focused `*-diagnostics` artifact only
+when that job fails.
 
 | Artifact name | Contents | Retention |
 | --- | --- | --- |
-| `test-results` | `**/TestResults/**` from all test projects | 7 days |
-| `coverage-report` | Aggregated HTML report under `TestResults/CoverageReport/**` | 7 days |
+| `fast-validation-results` | `**/TestResults/**` produced by the fast test slice | 7 days |
+| `admin-integration-test-results` | `**/TestResults/**` produced by the admin integration slice | 7 days |
+| `admin-system-test-results` | `**/TestResults/**` produced by the admin system slice | 7 days |
+| `mediator-heavy-test-results` | `**/TestResults/**` produced by the mediator-heavy slice | 7 days |
 | `sonar-coverage` | Aggregated SonarCloud coverage input at `TestResults/sonar-coverage.xml` | 7 days |
-| `build-test-diagnostics` | Focused summary file under `TestResults/ci-diagnostics/**` when build/test fails | 7 days |
+| `sonar-analysis-log` | Raw SonarCloud analysis log from the dedicated Sonar job | 7 days |
+| `coverage-report` | Aggregated HTML coverage report under `TestResults/CoverageReport/**` from the Sonar aggregation job | 7 days |
+| `fast-validation-diagnostics` | Focused failure summary for the fast validation slice | 7 days |
+| `admin-integration-test-diagnostics` | Focused failure summary for the admin integration slice | 7 days |
+| `admin-system-test-diagnostics` | Focused failure summary for the admin system slice | 7 days |
+| `mediator-heavy-test-diagnostics` | Focused failure summary for the mediator-heavy slice | 7 days |
 
 The artifact includes per-project `TestResults` folders, which contain `.trx` result files
 and `coverage.cobertura.xml` when coverage collection is enabled.
@@ -31,23 +38,23 @@ repo's local `reportgenerator` tool manifest entry.
 
 Coverage now has two consumers inside the same workflow:
 
-- the main CI workflow publishes Cobertura XML inside `test-results` plus an aggregated
-  HTML `coverage-report` artifact for direct inspection
-- the `Build and Test` job also publishes a `sonar-coverage.xml` input file and sends
-  hosted analysis results to SonarCloud
+- the test-slice jobs publish Cobertura XML inside their `*-results` artifacts
+- the dedicated `SonarCloud` job downloads those slice artifacts, generates the aggregated
+  HTML `coverage-report`, creates `sonar-coverage.xml`, and sends the hosted analysis to
+  SonarCloud
 
 Artifact scope is kept narrow — only test outputs that materially help diagnose failures are
 included. Do not broaden the upload glob without a clear reason.
 
-When the `Build and Test` job fails before full test artifacts are available, CI also
-uploads a small `build-test-diagnostics` artifact containing step outcomes, toolchain
-versions, and a `TestResults` inventory snapshot to speed up first-pass diagnosis.
+When a validation slice fails before full test artifacts are available, CI also uploads a
+small `*-diagnostics` artifact containing step outcomes, toolchain versions, and a
+`TestResults` inventory snapshot to speed up first-pass diagnosis.
 
 ## Reproducing failures locally
 
 All CI commands map directly to local developer commands.
 
-### Build and Test job
+### Fast Validation job
 
 ```bash
 # From repository root
@@ -57,12 +64,72 @@ dotnet build ViajantesTurismo.slnx --no-restore
 bash scripts/install-playwright.sh
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
-bash scripts/run-tests-with-coverage.sh
+bash scripts/run-ci-test-slice.sh \
+  --slice-name "Fast Validation" \
+  tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj \
+  tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj \
+  tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj \
+  tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj \
+  tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
+  tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj \
+  tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj \
+  tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj \
+  tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj \
+  tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj \
+  tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj \
+  tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj \
+  tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
 ```
 
-`scripts/run-tests-with-coverage.sh` is a post-build helper. It assumes the
-restore/build steps above have already completed and then runs tests, verifies Cobertura
-output exists, and generates the aggregated HTML coverage report.
+`scripts/run-ci-test-slice.sh` is a post-restore helper. It builds only the selected test
+projects, runs them with coverage, and records per-slice timing information. Aggregated
+HTML coverage is generated once later by the `SonarCloud` job.
+
+### Admin Integration Tests job
+
+```bash
+# From repository root
+dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
+dotnet build ViajantesTurismo.slnx --no-restore
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
+bash scripts/run-ci-test-slice.sh \
+  --slice-name "Admin Integration Tests" \
+  tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+```
+
+### Admin System Tests job
+
+```bash
+# From repository root
+dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
+dotnet build ViajantesTurismo.slnx --no-restore
+bash scripts/install-playwright.sh
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
+bash scripts/run-ci-test-slice.sh \
+  --slice-name "Admin System Tests" \
+  --install-playwright \
+  tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
+```
+
+### Mediator Heavy Tests job
+
+```bash
+# From repository root
+dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
+dotnet build ViajantesTurismo.slnx --no-restore
+dotnet dev-certs https --trust || true
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
+bash scripts/run-ci-test-slice.sh \
+  --slice-name "Mediator Heavy Tests" \
+  tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj \
+  tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj \
+  tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
+```
 
 To reproduce the SonarCloud analysis flow locally after configuring the required
 environment variables, run:
@@ -79,9 +146,22 @@ export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
 bash scripts/run-sonar-analysis.sh
 ```
 
+To reproduce the Sonar aggregation path after the test slices have already produced
+coverage files, run:
+
+```bash
+export SONAR_TOKEN="..."
+export SONAR_ORGANIZATION="..."
+export SONAR_PROJECT_KEY="..."
+dotnet restore ViajantesTurismo.slnx
+dotnet tool restore
+bash scripts/generate-sonar-coverage-report.sh
+SONAR_ANALYSIS_SKIP_TESTS=true bash scripts/run-sonar-analysis.sh
+```
+
 For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), CI skips
-the build-and-test commands above but still records a successful `Build and Test` check
-through the lightweight docs-only path in the job.
+the validation commands above but still records successful required checks through the
+lightweight skip path in each affected job.
 
 ### Lint job
 

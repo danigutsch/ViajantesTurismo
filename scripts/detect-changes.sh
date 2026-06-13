@@ -76,6 +76,36 @@ shared_validation_patterns=(
     "ViajantesTurismo.slnx"
 )
 
+fast_validation_patterns=(
+    "src/SharedKernel/SharedKernel.Functional/**"
+    "src/SharedKernel/SharedKernel.Mediator/**"
+    "src/SharedKernel/SharedKernel.Mediator.Abstractions/**"
+    "src/SharedKernel/SharedKernel.Mediator.Analyzers/**"
+    "src/SharedKernel/SharedKernel.OpenApi/**"
+    "src/SharedKernel/SharedKernel.Observability/**"
+    "src/SharedKernel/SharedKernel.Style.Analyzers/**"
+    "src/SharedKernel/SharedKernel.Style.CodeFixes/**"
+    "src/ViajantesTurismo.Admin.ApiService/**"
+    "src/ViajantesTurismo.Admin.Application/**"
+    "src/ViajantesTurismo.Admin.Contracts/**"
+    "src/ViajantesTurismo.Admin.Domain/**"
+    "src/ViajantesTurismo.Common/**"
+    "src/ViajantesTurismo.Management.Web/**"
+    "tests/SharedKernel.Functional.Tests/**"
+    "tests/SharedKernel.Mediator.Analyzers.Tests/**"
+    "tests/SharedKernel.Mediator.Tests/**"
+    "tests/SharedKernel.OpenApi.Tests/**"
+    "tests/SharedKernel.Observability.Tests/**"
+    "tests/SharedKernel.Style.Analyzers.Tests/**"
+    "tests/SharedKernel.Style.CodeFixes.Tests/**"
+    "tests/ViajantesTurismo.Admin.BehaviorTests/**"
+    "tests/ViajantesTurismo.Admin.ContractTests/**"
+    "tests/ViajantesTurismo.Admin.UnitTests/**"
+    "tests/ViajantesTurismo.ArchitectureTests/**"
+    "tests/ViajantesTurismo.Common.UnitTests/**"
+    "tests/ViajantesTurismo.Management.WebTests/**"
+)
+
 admin_integration_patterns=(
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
@@ -158,7 +188,6 @@ while IFS= read -r file; do
         docs/** | README.md | CONTRIBUTING.md) ;;
         *)
             build_required=true
-            fast_validation_required=true
             ;;
     esac
 
@@ -172,10 +201,24 @@ while IFS= read -r file; do
     fi
 
     if [[ "${shared_validation_match}" == "true" ]]; then
+        fast_validation_required=true
         admin_integration_required=true
         admin_system_required=true
         mediator_heavy_required=true
         continue
+    fi
+
+    fast_validation_match=false
+    set +e
+    matches_any_pattern "${file}" "${fast_validation_patterns[@]}"
+    fast_validation_status=$?
+    set -e
+    if [[ ${fast_validation_status} -eq 0 ]]; then
+        fast_validation_match=true
+    fi
+
+    if [[ "${fast_validation_match}" == "true" ]]; then
+        fast_validation_required=true
     fi
 
     admin_integration_match=false
@@ -217,6 +260,11 @@ while IFS= read -r file; do
         mediator_heavy_required=true
     fi
 done <<< "${changed_files}"
+
+if [[ "${build_required}" == "true" ]] && [[ "${fast_validation_required}" != "true" ]] && [[ "${admin_integration_required}" != "true" ]] && [[ "${admin_system_required}" != "true" ]] && [[ "${mediator_heavy_required}" != "true" ]]; then
+    # Keep at least one validation lane active for unmatched non-doc changes.
+    fast_validation_required=true
+fi
 
 if [[ "${build_required}" == "true" ]]; then
     echo "Build and test will run because non-documentation changes were detected."

@@ -7,7 +7,10 @@ repository-owned CI settings, and required checks.
 
 Branch protection for `main` is configured to require the following status checks:
 
-- `Build and Test` (from `.github/workflows/ci.yml`)
+- `Fast Validation` (from `.github/workflows/ci.yml`)
+- `Admin Integration Tests` (from `.github/workflows/ci.yml`)
+- `Admin System Tests` (from `.github/workflows/ci.yml`)
+- `Mediator Heavy Tests` (from `.github/workflows/ci.yml`)
 - `Lint` (from `.github/workflows/ci.yml`)
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)

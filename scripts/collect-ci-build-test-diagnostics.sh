@@ -8,7 +8,7 @@ main() {
     local test_outcome="${3:-unknown}"
 
     local diagnostics_dir="TestResults/ci-diagnostics"
-    local summary_file="${diagnostics_dir}/build-and-test-summary.txt"
+    local summary_file="${diagnostics_dir}/ci-validation-summary.txt"
 
     mkdir -p "${diagnostics_dir}"
 

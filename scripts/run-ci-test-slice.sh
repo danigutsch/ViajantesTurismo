@@ -32,6 +32,18 @@ run_with_log() {
     return 1
 }
 
+build_projects() {
+    local project_path
+
+    for project_path in "$@"; do
+        if ! dotnet build --no-restore "${project_path}"; then
+            return 1
+        fi
+    done
+
+    return 0
+}
+
 find_playwright_script() {
     local playwright_script
 
@@ -117,62 +129,51 @@ main() {
     local slice_slug
     slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
 
+    local build_log="TestResults/${slice_slug}-build.log"
     local coverage_reports_file="TestResults/${slice_slug}-coverage-reports.txt"
     local coverage_collection_log="TestResults/${slice_slug}-coverage-collection.log"
     local playwright_install_log="TestResults/${slice_slug}-playwright-install.log"
-    local reportgenerator_log="TestResults/${slice_slug}-reportgenerator.log"
-    local coverage_output_dir="TestResults/CoverageReport/${slice_slug}"
     local timings_file="TestResults/${slice_slug}-phase-timings.tsv"
 
     mkdir -p TestResults
     printf 'phase\tduration_seconds\n' > "${timings_file}"
 
+    local start_seconds
+    start_seconds="$(date +%s)"
+
+    run_with_log "Building ${slice_name} test projects" "${build_log}" \
+        build_projects "${projects[@]}"
+
+    local end_seconds
+    end_seconds="$(date +%s)"
+    local build_projects_seconds
+    build_projects_seconds="$(( end_seconds - start_seconds ))"
+    append_timing "${timings_file}" "build_projects" "${build_projects_seconds}"
+
     if [[ "${install_playwright}" == "true" ]]; then
         local playwright_script
         playwright_script="$(find_playwright_script)"
 
-        local start_seconds
         start_seconds="$(date +%s)"
 
         run_with_log "Installing Playwright browsers for ${slice_name}" "${playwright_install_log}" \
             bash scripts/install-playwright.sh "${playwright_script}" chromium
 
-        local end_seconds
         end_seconds="$(date +%s)"
         local install_playwright_seconds
         install_playwright_seconds="$(( end_seconds - start_seconds ))"
         append_timing "${timings_file}" "install_playwright" "${install_playwright_seconds}"
     fi
 
-    local start_seconds
     start_seconds="$(date +%s)"
 
     run_with_log "Running ${slice_name} tests with coverage" "${coverage_collection_log}" \
         bash scripts/collect-test-coverage.sh "${coverage_reports_file}" "${projects[@]}"
 
-    local end_seconds
     end_seconds="$(date +%s)"
     local collect_test_coverage_seconds
     collect_test_coverage_seconds="$(( end_seconds - start_seconds ))"
     append_timing "${timings_file}" "collect_test_coverage" "${collect_test_coverage_seconds}"
-
-    local coverage_reports
-    coverage_reports="$(< "${coverage_reports_file}")"
-
-    rm -rf "${coverage_output_dir}"
-
-    start_seconds="$(date +%s)"
-
-    run_with_log "Generating coverage report for ${slice_name}" "${reportgenerator_log}" \
-        dotnet tool run reportgenerator \
-            "-reports:${coverage_reports}" \
-            "-targetdir:${coverage_output_dir}" \
-            "-reporttypes:Html"
-
-    end_seconds="$(date +%s)"
-    local generate_coverage_report_seconds
-    generate_coverage_report_seconds="$(( end_seconds - start_seconds ))"
-    append_timing "${timings_file}" "generate_coverage_report" "${generate_coverage_report_seconds}"
 
     write_summary "${slice_name}" "${timings_file}"
 
