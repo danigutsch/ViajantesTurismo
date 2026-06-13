@@ -89,7 +89,7 @@ Suggested commit split:
 
 Branch name: `test/issue-137-systemtests-aspire-first-slice`
 
-- [ ] Replace the current `E2EFixture` hybrid bootstrapping path with an
+- [x] Replace the current `E2EFixture` hybrid bootstrapping path with an
       Aspire-hosted path that discovers and uses the real AppHost-managed web and API
       resources.
 - [ ] Keep the browser seam limited to web entrypoint plus project-owned setup helpers.

@@ -48,7 +48,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 
 ## Notes
 
-- `E2eFixture` launches infrastructure once per session; each test gets a fresh `BrowserContext`.
+- `AspireSystemTestFixture` launches the distributed application once per session; each test gets a fresh `BrowserContext`.
 - Tests seed their own data and don't depend on each other.
 - Blazor Server uses SignalR — use `WaitUntil = WaitUntilState.NetworkIdle` and web-first assertions
   for async rendering.
@@ -56,8 +56,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 
 ## Parallel safety guidance
 
-- Default to `E2ETestBase` when a test owns its own data and does not require DB resets.
-- Use `E2ESerialTestBase` when a test needs strict baseline isolation (for example exact counts,
+- Default to `AspireSystemTestBase<TFixture>` when a test owns its own data and does not require DB resets.
+- Use `AspireSerialSystemTestBase` when a test needs strict baseline isolation (for example exact counts,
   per-test `ClearDatabase`, or destructive shared-state operations).
 - Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
 - Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
