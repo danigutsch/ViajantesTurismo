@@ -3,7 +3,7 @@ using Xunit;
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>
-/// Verifies that committed Admin OpenAPI artifacts do not drift from build-generated boundary artifacts.
+/// Verifies that canonical Admin OpenAPI artifacts do not drift from build-generated boundary artifacts.
 /// </summary>
 public sealed class AdminOpenApiArtifactDriftGuardTests
 {

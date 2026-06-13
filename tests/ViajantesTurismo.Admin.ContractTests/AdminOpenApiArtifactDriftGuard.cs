@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>
-/// Verifies that committed canonical Admin OpenAPI artifacts stay aligned with generated boundary artifacts.
+/// Verifies that canonical Admin OpenAPI artifacts stay aligned with generated boundary artifacts.
 /// </summary>
 internal static class AdminOpenApiArtifactDriftGuard
 {
@@ -18,6 +18,14 @@ internal static class AdminOpenApiArtifactDriftGuard
     {
         var openApiDirectory = GetOpenApiDirectory();
         var generatedDirectory = Path.Combine(openApiDirectory, ".generated");
+
+        EnsureDirectoryExists(
+            openApiDirectory,
+            "Canonical Admin OpenAPI artifacts were not found. Ensure the Admin contracts artifacts exist under 'src/ViajantesTurismo.Admin.Contracts/OpenApi/'.");
+        EnsureDirectoryExists(
+            generatedDirectory,
+            "Generated Admin OpenAPI artifacts were not found. Build the solution so the Admin API OpenAPI generation target populates 'src/ViajantesTurismo.Admin.Contracts/OpenApi/.generated/'.");
+
         var canonicalFiles = Directory.GetFiles(openApiDirectory, $"*{CanonicalArtifactSuffix}", SearchOption.TopDirectoryOnly)
             .OrderBy(Path.GetFileName, StringComparer.Ordinal)
             .ToArray();
@@ -107,5 +115,13 @@ internal static class AdminOpenApiArtifactDriftGuard
         }
 
         throw new InvalidOperationException("Could not locate the repository root for contract test artifacts.");
+    }
+
+    private static void EnsureDirectoryExists(string directoryPath, string message)
+    {
+        if (!Directory.Exists(directoryPath))
+        {
+            throw new Xunit.Sdk.XunitException(message);
+        }
     }
 }
