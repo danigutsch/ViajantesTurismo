@@ -382,6 +382,50 @@ jobs:
             !TestResults/ci-diagnostics/**
           retention-days: 7
 
+  build-and-test:
+    name: Build and Test
+    needs:
+      - detect-changes
+      - fast-validation
+      - admin-integration-tests
+      - mediator-heavy-tests
+      - admin-system-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Report Build and Test status
+        shell: bash
+        run: |
+          if [[ "${{ needs.detect-changes.outputs.build_required }}" != "true" ]]; then
+              echo "Build and Test was skipped because only documentation changes were detected."
+              exit 0
+          fi
+
+          if [[ "${{ needs.fast-validation.result }}" != "success" ]]; then
+              echo "Fast Validation failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-integration-tests.result }}" != "success" ]]; then
+              echo "Admin Integration Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.mediator-heavy-tests.result }}" != "success" ]]; then
+              echo "Mediator Heavy Tests failed." >&2
+              exit 1
+          fi
+
+          if [[ "${{ needs.admin-system-tests.result }}" != "success" ]]; then
+              echo "Admin System Tests failed." >&2
+              exit 1
+          fi
+
+          echo "Build and Test completed successfully across the validation slices."
+          exit 0
+
   sonarcloud:
     name: SonarCloud
     needs:
