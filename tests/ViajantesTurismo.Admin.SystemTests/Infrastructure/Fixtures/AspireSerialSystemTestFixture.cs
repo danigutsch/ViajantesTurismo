@@ -44,6 +44,7 @@ public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IA
 
         if (_app is not null)
         {
+            await _app.StopAsync();
             await _app.DisposeAsync();
         }
 

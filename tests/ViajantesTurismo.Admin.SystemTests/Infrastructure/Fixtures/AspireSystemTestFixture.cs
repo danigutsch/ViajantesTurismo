@@ -40,6 +40,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
         if (_app is not null)
         {
+            await _app.StopAsync();
             await _app.DisposeAsync();
         }
 

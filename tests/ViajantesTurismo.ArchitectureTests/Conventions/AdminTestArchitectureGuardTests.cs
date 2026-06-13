@@ -39,15 +39,15 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
-            "[assembly: AssemblyFixture(typeof(E2EFixture))]");
-
-        AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
             "public abstract class E2ETestBase(E2EFixture fixture) : PageTest");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSystemTestBase.cs"),
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
+
+        AssertFileDoesNotContain(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
+            "[assembly: AssemblyFixture(typeof(E2EFixture))]");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
@@ -106,6 +106,12 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         var fileContents = File.ReadAllText(filePath);
         Assert.Contains(expectedText, fileContents, StringComparison.Ordinal);
+    }
+
+    private static void AssertFileDoesNotContain(string filePath, string unexpectedText)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        Assert.DoesNotContain(unexpectedText, fileContents, StringComparison.Ordinal);
     }
 
     private static string[] FindGenericServiceProviderReachThrough(string filePath)

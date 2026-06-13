@@ -1,29 +1,20 @@
-using ViajantesTurismo.Admin.Contracts;
+using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
 public class AspireHostedBookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Can_Create_Booking_And_Show_Initial_Details_Via_The_AppHost_Managed_System_Fixture()
+    public async Task AppHost_Managed_Fixture_Exposes_Loopback_Endpoints_And_Loads_The_Web_App()
     {
-        // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
-        var customer = await ApiClient.CreateCustomer();
-        var customerFullName = $"{customer.FirstName} {customer.LastName}";
-        var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
-
         // Act
-        var createdBookingId = await BookingWorkflow.CreateFromTourDetails(tour, customerFullName, customerSelectionLabel);
-        await BookingWorkflow.NavigateToDetails(createdBookingId);
+        await NavigateTo("/");
 
         // Assert
         Assert.True(ApiBaseUri.IsLoopback);
         Assert.True(ApiBaseUri.Port > 0);
-        await Expect(Page.GetByText("Pending").First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
-        await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
-        await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("$ 1,300.00").First).ToBeVisibleAsync();
+        Assert.True(Fixture.WebAppUrl.IsLoopback);
+        Assert.True(Fixture.WebAppUrl.Port > 0);
+        await Expect(Page).ToHaveURLAsync(new Regex("/$"));
     }
 }

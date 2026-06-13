@@ -2,8 +2,6 @@ using Microsoft.Playwright.Xunit.v3;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
-[assembly: AssemblyFixture(typeof(E2EFixture))]
-
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
 public abstract class E2ETestBase(E2EFixture fixture) : PageTest
