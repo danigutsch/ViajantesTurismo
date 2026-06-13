@@ -32,6 +32,16 @@ run_with_log() {
     return 1
 }
 
+build_projects() {
+    local project_path
+
+    for project_path in "$@"; do
+        dotnet build --no-restore "${project_path}"
+    done
+
+    return 0
+}
+
 find_playwright_script() {
     local playwright_script
 
@@ -130,7 +140,7 @@ main() {
     start_seconds="$(date +%s)"
 
     run_with_log "Building ${slice_name} test projects" "${build_log}" \
-        dotnet build --no-restore "${projects[@]}"
+        build_projects "${projects[@]}"
 
     local end_seconds
     end_seconds="$(date +%s)"
