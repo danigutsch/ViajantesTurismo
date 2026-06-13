@@ -52,7 +52,6 @@ jobs:
     name: Fast Validation
     needs:
       - detect-changes
-      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -157,7 +156,6 @@ jobs:
     name: Admin Integration Tests
     needs:
       - detect-changes
-      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -233,7 +231,6 @@ jobs:
     name: Mediator Heavy Tests
     needs:
       - detect-changes
-      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -313,7 +310,6 @@ jobs:
     name: Admin System Tests
     needs:
       - detect-changes
-      - lint
     runs-on: ubuntu-24.04
     permissions:
       contents: read
