@@ -36,7 +36,9 @@ build_projects() {
     local project_path
 
     for project_path in "$@"; do
-        dotnet build --no-restore "${project_path}"
+        if ! dotnet build --no-restore "${project_path}"; then
+            return 1
+        fi
     done
 
     return 0
