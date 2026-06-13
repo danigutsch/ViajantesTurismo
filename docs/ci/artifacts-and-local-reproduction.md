@@ -81,9 +81,9 @@ bash scripts/run-ci-test-slice.sh \
   tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
 ```
 
-`scripts/run-ci-test-slice.sh` is a post-build helper. It assumes the restore/build steps
-above have already completed and then runs the selected projects, verifies Cobertura
-output exists, and generates a slice-local HTML coverage report.
+`scripts/run-ci-test-slice.sh` is a post-restore helper. It builds only the selected test
+projects, runs them with coverage, and records per-slice timing information. Aggregated
+HTML coverage is generated once later by the `SonarCloud` job.
 
 ### Admin Integration Tests job
 

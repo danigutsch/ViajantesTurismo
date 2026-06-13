@@ -36,7 +36,7 @@ protected branch keeps its post-merge validation history intact.
    required.
 7. Run `dotnet tool restore` when validation work is required.
 8. Run `bash scripts/run-ci-test-slice.sh --slice-name "Fast Validation" ...` to execute
-   the fast project set with per-slice timing and coverage output.
+   the fast project set with project-scoped build, per-slice timing, and coverage output.
 9. When validation work fails, create a focused diagnostic summary under
    `TestResults/ci-diagnostics/`.
 10. Upload the slice-local test results artifact and upload the focused diagnostics
@@ -56,7 +56,7 @@ part of the failure-investigation path.
 | Runner | `ubuntu-24.04` |
 
 This slice runs only when `detect-changes` reports that admin integration-sensitive paths
-changed. It restores and builds the shared solution, executes only
+changed. It restores shared prerequisites, then builds and executes only
 `tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj`,
 then uploads slice-local results and diagnostics.
 
@@ -80,9 +80,9 @@ not touch that surface.
 | Job name | `Admin System Tests` |
 | Runner | `ubuntu-24.04` |
 
-This slice runs only when hosted UI or system-test-sensitive paths changed. It performs the
-same shared restore/build flow, installs Playwright Chromium only, executes the system test
-project, and uploads slice-local results and diagnostics.
+This slice runs only when hosted UI or system-test-sensitive paths changed. It restores
+shared prerequisites, builds the system-test project, installs Playwright Chromium only,
+executes the system test project, and uploads slice-local results and diagnostics.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
@@ -93,7 +93,9 @@ For pull requests and pushes that only modify `docs/**`, `README.md`, or
 `CONTRIBUTING.md`, the affected validation jobs still run and report successful required
 checks through lightweight skip steps, but they skip the expensive restore, build,
 Playwright, and test steps. This avoids the pending required-check problem caused by
-trigger-level `paths` or `paths-ignore` filters.
+trigger-level `paths` or `paths-ignore` filters. `Fast Validation` is also path-gated now,
+so changes isolated to heavier hosted or mediator-specific surfaces do not automatically
+re-run the cheaper fast slice.
 
 The change classification logic is implemented in `scripts/detect-changes.sh`, not inline
 in the workflow YAML. If the script cannot determine the diff range reliably, it fails
