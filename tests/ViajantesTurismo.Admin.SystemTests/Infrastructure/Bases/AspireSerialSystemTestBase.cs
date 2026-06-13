@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
 [Collection(E2ETestCollections.Serial)]
@@ -24,3 +26,7 @@ public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture f
         GC.SuppressFinalize(this);
     }
 }
+
+[ExcludeFromCodeCoverage]
+[CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
+public sealed class AspireSerialSystemTests : ICollectionFixture<AspireSerialSystemTestFixture>;

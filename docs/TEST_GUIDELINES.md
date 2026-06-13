@@ -464,8 +464,8 @@ Antipatterns to avoid:
 
 ### E2E-specific base class guidance
 
-- Use `E2ETestBase` for tests that can safely run in parallel with owned data.
-- Use `E2ESerialTestBase` for tests that require infrastructure-owned clean-slate isolation.
+- Use `AspireSystemTestBase<TFixture>` for tests that can safely run in parallel with owned data.
+- Use `AspireSerialSystemTestBase` for tests that require infrastructure-owned clean-slate isolation.
 
 ### Intentional serial exception patterns
 
@@ -601,9 +601,9 @@ E2E tests should:
 - keep deterministic setup or reset work behind fixture-owned support seams and base-class infrastructure, using a
   shared hosted contract only when it is genuinely useful
 - navigate by deterministic IDs, routes, and semantic selectors
-- keep application-host details behind `E2EFixture`, page objects, and workflow helpers
+- keep application-host details behind Aspire-backed fixtures, page objects, and workflow helpers
 - treat direct service access as fixture-internal plumbing, not as a public test seam
-- avoid expanding the hybrid host model further when Aspire-managed execution would better fit new work
+- keep full-system browser execution on the Aspire-managed path rather than reintroducing hybrid host plumbing
 
 ## Behavior Test Patterns
 

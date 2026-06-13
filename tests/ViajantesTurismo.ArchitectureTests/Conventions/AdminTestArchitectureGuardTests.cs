@@ -38,23 +38,15 @@ public sealed partial class AdminTestArchitectureGuardTests
             "private async Task ResetDatabase(CancellationToken cancellationToken = default)");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
-            "public abstract class E2ETestBase(E2EFixture fixture) : PageTest");
-
-        AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSystemTestBase.cs"),
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
 
-        AssertFileDoesNotContain(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
-            "[assembly: AssemblyFixture(typeof(E2EFixture))]");
+        AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSystemTestBase.cs"),
+            "protected Uri ApiBaseUri => Fixture.ApiBaseUri;");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"),
-            "protected Uri ApiBaseUri => fixture.BaseUri;");
-
-        AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSerialSystemTestBase.cs"),
             "[Collection(E2ETestCollections.Serial)]");
 
         AssertFileContains(
@@ -62,16 +54,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             "public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
-            "await fixture.ResetDatabase(cts.Token);");
-
-        AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"),
-            "await fixture.SeedBaseline(cts.Token);");
-
-        AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "E2EFixture.cs"),
-            "public sealed class E2EFixture : IAdminTestHost, IAsyncLifetime");
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "AspireSerialSystemTestBase.cs"),
+            "await Fixture.ResetDatabase(cts.Token);");
 
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "AspireSystemTestFixture.cs"),
@@ -80,6 +64,15 @@ public sealed partial class AdminTestArchitectureGuardTests
         AssertFileContains(
             Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "AspireSerialSystemTestFixture.cs"),
             "public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
+
+        AssertFileDoesNotExist(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ETestBase.cs"));
+
+        AssertFileDoesNotExist(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases", "E2ESerialTestBase.cs"));
+
+        AssertFileDoesNotExist(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures", "E2EFixture.cs"));
     }
 
     [Fact]
@@ -108,10 +101,9 @@ public sealed partial class AdminTestArchitectureGuardTests
         Assert.Contains(expectedText, fileContents, StringComparison.Ordinal);
     }
 
-    private static void AssertFileDoesNotContain(string filePath, string unexpectedText)
+    private static void AssertFileDoesNotExist(string filePath)
     {
-        var fileContents = File.ReadAllText(filePath);
-        Assert.DoesNotContain(unexpectedText, fileContents, StringComparison.Ordinal);
+        Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
     }
 
     private static string[] FindGenericServiceProviderReachThrough(string filePath)
