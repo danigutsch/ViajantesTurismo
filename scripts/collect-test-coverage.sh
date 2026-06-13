@@ -23,7 +23,7 @@ main() {
     else
         local project_path
         for project_path in "$@"; do
-            dotnet test --project "${project_path}" -- \
+            dotnet test --project "${project_path}" --no-build -- \
                 --coverage \
                 --coverage-output-format cobertura \
                 --coverage-output coverage.cobertura.xml \

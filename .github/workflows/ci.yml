@@ -83,10 +83,21 @@ jobs:
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
-
-      - name: Build solution for fast validation
-        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
-        run: dotnet build ViajantesTurismo.slnx --no-restore
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
+            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj
+            tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj
+            tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj
+            tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj
+            tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
+            tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj
+            tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
+            tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
+            tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
+            tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
+            tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj
+            tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
 
       - name: Run fast test slice
         if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
@@ -172,10 +183,9 @@ jobs:
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
-
-      - name: Build solution for admin integration tests
-        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
-        run: dotnet build ViajantesTurismo.slnx --no-restore
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
 
       - name: Run admin integration test slice
         if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
@@ -249,10 +259,11 @@ jobs:
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
-
-      - name: Build solution for mediator heavy tests
-        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
-        run: dotnet build ViajantesTurismo.slnx --no-restore
+        with:
+          restore-targets: |
+            tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj
+            tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj
+            tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
 
       - name: Run mediator heavy test slice
         if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
@@ -328,10 +339,9 @@ jobs:
       - name: Set up CI prerequisites
         if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
-
-      - name: Build solution for admin system tests
-        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
-        run: dotnet build ViajantesTurismo.slnx --no-restore
+        with:
+          restore-targets: |
+            tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
 
       - name: Run admin system test slice
         if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}

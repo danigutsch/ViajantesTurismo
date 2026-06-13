@@ -2,8 +2,8 @@ name: Setup CI Prerequisites
 description: Set up the repository toolchains and restore shared prerequisites for CI jobs.
 
 inputs:
-  solution-path:
-    description: Path to the solution file to restore.
+  restore-targets:
+    description: Newline-delimited solution or project paths to restore.
     required: false
     default: ViajantesTurismo.slnx
   dotnet-global-json:
@@ -33,8 +33,12 @@ runs:
     - name: Restore .NET dependencies
       shell: bash
       env:
-        SOLUTION_PATH: ${{ inputs.solution-path }}
-      run: dotnet restore "$SOLUTION_PATH" --locked-mode
+        RESTORE_TARGETS: ${{ inputs.restore-targets }}
+      run: |
+        while IFS= read -r restore_target; do
+          [[ -z "$restore_target" ]] && continue
+          dotnet restore "$restore_target" --locked-mode
+        done <<< "$RESTORE_TARGETS"
 
     - name: Restore .NET local tools
       shell: bash
