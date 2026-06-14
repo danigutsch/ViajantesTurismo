@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributor guidance
+    url: https://github.com/danigutsch/ViajantesTurismo/blob/main/CONTRIBUTING.md
+    about: Review contribution workflow, validation expectations, and PR guidance before opening issues or pull requests.
