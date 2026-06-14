@@ -4,6 +4,8 @@ namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
 public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
+    private const float WizardStepTransitionTimeoutMilliseconds = 15000;
+
     [Fact]
     public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()
     {
@@ -48,8 +50,8 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(ContactStepRegex(), new() { Timeout = 15000 });
-        await Expect(Page.Locator("#email")).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(ContactStepRegex(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page.Locator("#email")).ToBeVisibleAsync(new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
