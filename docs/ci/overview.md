@@ -55,8 +55,9 @@ jobs.
 
 ## Next required work
 
-The near-term required work is to monitor the new split validation slices in normal use and
-adjust path gates only when measured CI timing or reliability data justifies it.
+The near-term required work is to monitor the new split validation slices in normal use,
+review the emitted timing data, and adjust path gates only when measured CI timing or
+reliability data justifies it.
 
 ## Related documentation
 

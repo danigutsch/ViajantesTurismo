@@ -34,32 +34,109 @@ reportgenerator_log="TestResults/sonar-reportgenerator.log"
 sonar_begin_log="TestResults/sonarscanner-begin.log"
 sonar_end_log="TestResults/sonarscanner-end.log"
 skip_tests="${SONAR_ANALYSIS_SKIP_TESTS:-false}"
+timing_file="TestResults/ci-phase-timings.tsv"
 
 mkdir -p TestResults
 
-run_with_log() {
-    local description="$1"
-    local log_file="$2"
+workflow_started_epoch=$(date +%s)
+workflow_started_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-    shift 2
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "phase" \
+    "description" \
+    "started_at_utc" \
+    "completed_at_utc" \
+    "duration_seconds" \
+    "status" \
+    "log_file" > "${timing_file}"
+
+write_timing_row() {
+    local phase="$1"
+    local description="$2"
+    local started_at_utc="$3"
+    local completed_at_utc="$4"
+    local duration_seconds="$5"
+    local status="$6"
+    local log_file="$7"
+
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "${phase}" \
+        "${description}" \
+        "${started_at_utc}" \
+        "${completed_at_utc}" \
+        "${duration_seconds}" \
+        "${status}" \
+        "${log_file}" >> "${timing_file}"
+}
+
+run_with_log() {
+    local phase="$1"
+    local description="$2"
+    local log_file="$3"
+
+    shift 3
+
+    local started_at_epoch
+    started_at_epoch=$(date +%s)
+
+    local started_at_utc
+    started_at_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+    local completed_at_epoch
+    local completed_at_utc
+    local duration_seconds
+    local exit_code
+    local status
 
     echo "==> ${description}"
 
     if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
-        if "$@" 2>&1 | tee "${log_file}"; then
-            return 0
-        fi
+        echo "::group::${description}"
+    fi
+
+    set +e
+
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        "$@" 2>&1 | tee "${log_file}"
+        exit_code="${PIPESTATUS[0]}"
     else
-        if "$@" >"${log_file}" 2>&1; then
-            return 0
-        fi
+        "$@" >"${log_file}" 2>&1
+        exit_code="$?"
+    fi
+
+    set -e
+
+    completed_at_epoch=$(date +%s)
+    completed_at_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+    duration_seconds=$((completed_at_epoch - started_at_epoch))
+    status="success"
+
+    if [[ ${exit_code} -ne 0 ]]; then
+        status="failure"
+    fi
+
+    write_timing_row \
+        "${phase}" \
+        "${description}" \
+        "${started_at_utc}" \
+        "${completed_at_utc}" \
+        "${duration_seconds}" \
+        "${status}" \
+        "${log_file}"
+
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        echo "::endgroup::"
+    fi
+
+    if [[ ${exit_code} -eq 0 ]]; then
+        return 0
     fi
 
     echo "${description} failed. See ${log_file}." >&2
-    return 1
+    return "${exit_code}"
 }
 
-run_with_log "Starting SonarScanner" "${sonar_begin_log}" \
+run_with_log "sonar_begin" "Starting SonarScanner" "${sonar_begin_log}" \
     dotnet tool run dotnet-sonarscanner begin \
         "/o:${sonar_organization}" \
         "/k:${sonar_project_key}" \
@@ -74,6 +151,10 @@ run_with_log "Starting SonarScanner" "${sonar_begin_log}" \
 
 cleanup() {
     local exit_code="$1"
+    local completed_at_epoch
+    local completed_at_utc
+    local duration_seconds
+    local total_status="success"
 
     trap - EXIT
 
@@ -81,7 +162,7 @@ cleanup() {
         local sonar_end_exit_code
 
         set +e
-        run_with_log "Finalizing SonarScanner" "${sonar_end_log}" \
+        run_with_log "sonar_end" "Finalizing SonarScanner" "${sonar_end_log}" \
             dotnet tool run dotnet-sonarscanner end "/d:sonar.token=${sonar_token}"
         sonar_end_exit_code="$?"
         set -e
@@ -93,12 +174,29 @@ cleanup() {
         fi
     fi
 
+    completed_at_epoch=$(date +%s)
+    completed_at_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+    duration_seconds=$((completed_at_epoch - workflow_started_epoch))
+
+    if [[ ${exit_code} -ne 0 ]]; then
+        total_status="failure"
+    fi
+
+    write_timing_row \
+        "total_validation" \
+        "Build, test, coverage, and SonarCloud analysis" \
+        "${workflow_started_utc}" \
+        "${completed_at_utc}" \
+        "${duration_seconds}" \
+        "${total_status}" \
+        "-"
+
     return "${exit_code}"
 }
 
 trap 'cleanup "$?"; exit $?' EXIT
 
-run_with_log "Building solution" "${build_log}" \
+run_with_log "build_solution" "Building solution" "${build_log}" \
     dotnet build ViajantesTurismo.slnx --no-restore
 
 if [[ "${skip_tests}" == "true" ]]; then
@@ -118,17 +216,17 @@ if [[ -z "${playwright_script}" ]]; then
     exit 1
 fi
 
-run_with_log "Installing Playwright browsers" "${playwright_install_log}" \
-    bash scripts/install-playwright.sh "${playwright_script}"
+run_with_log "install_playwright" "Installing Playwright browsers" "${playwright_install_log}" \
+    bash scripts/install-playwright.sh "${playwright_script}" chromium
 
-run_with_log "Running tests with coverage" "${coverage_collection_log}" \
+run_with_log "collect_test_coverage" "Running tests with coverage" "${coverage_collection_log}" \
     bash scripts/collect-test-coverage.sh "${coverage_reports_file}"
 
 coverage_reports="$(< "${coverage_reports_file}")"
 
 rm -rf "${coverage_html_dir}"
 
-run_with_log "Generating coverage report" "${reportgenerator_log}" \
+run_with_log "generate_coverage_report" "Generating coverage report" "${reportgenerator_log}" \
     dotnet tool run reportgenerator \
         "-reports:${coverage_reports}" \
         "-targetdir:${coverage_html_dir}" \

@@ -47,8 +47,9 @@ Artifact scope is kept narrow — only test outputs that materially help diagnos
 included. Do not broaden the upload glob without a clear reason.
 
 When a validation slice fails before full test artifacts are available, CI also uploads a
-small `*-diagnostics` artifact containing step outcomes, toolchain versions, and a
-`TestResults` inventory snapshot to speed up first-pass diagnosis.
+small `*-diagnostics` artifact containing step outcomes, toolchain versions, a
+`TestResults` inventory snapshot, and the captured phase timing table to speed up
+first-pass diagnosis.
 
 ## Reproducing failures locally
 

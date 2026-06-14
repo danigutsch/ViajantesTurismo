@@ -9,6 +9,7 @@ main() {
 
     local diagnostics_dir="TestResults/ci-diagnostics"
     local summary_file="${diagnostics_dir}/ci-validation-summary.txt"
+    local timing_file="TestResults/ci-phase-timings.tsv"
 
     mkdir -p "${diagnostics_dir}"
 
@@ -59,6 +60,15 @@ main() {
             find tests -path '*/TestResults/*' -type f | sort || true
         else
             echo "tests directory was not found."
+        fi
+        echo
+        echo "CI phase timings"
+        echo "----------------"
+
+        if [[ -f "${timing_file}" ]]; then
+            cat "${timing_file}"
+        else
+            echo "${timing_file} was not created."
         fi
     } > "${summary_file}"
 
