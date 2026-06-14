@@ -77,7 +77,7 @@ documents **GPG signing** as the recommended contributor path.
 
 ## Pull Requests
 
-- Use the pull request template
+- Use the pull request template in `docs/pull_request_template.md`
 - Summarize the user-visible change and the technical approach
 - List the checks you ran locally
 - Link related backlog items, issues, or ADRs when applicable
