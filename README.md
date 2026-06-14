@@ -115,6 +115,7 @@ Optional local tools by task:
 - `PSScriptAnalyzer`: optional local PowerShell linting
 - `k6`: optional performance/load testing under `tests/performance/`
 - `shellcheck`: optional unless you want to run CI-owned lint scripts locally
+- `gitleaks`: optional local secret scanning when using the repository's pre-commit hook helper
 
 CI-only tools by default:
 
@@ -171,6 +172,9 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 # 8. Optional local commit validation
 printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
 bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
+
+# 9. Optional local hook installation
+bash scripts/install-git-hooks.sh
 ```
 
 On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS
