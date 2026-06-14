@@ -95,6 +95,8 @@ bash scripts/run-devcontainer-smoke.sh --run-tests
 The script:
 
 - builds and starts the repository devcontainer with the pinned Dev Container CLI
+- installs the pinned Dev Container CLI through a repo-owned verified download path rather
+  than a remote installer pipe
 - lets the configured lifecycle hooks run
 - verifies `.NET`, Git, and Docker access inside the container
 - optionally runs `dotnet test --solution ViajantesTurismo.slnx --no-build` inside the
