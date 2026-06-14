@@ -32,6 +32,8 @@ current schedules and grouping rules.
   expectations
 - [Artifacts and local reproduction](artifacts-and-local-reproduction.md) — CI artifacts
   and the local commands used to reproduce failures
+- [CI output UX](output-ux.md) — readability and machine-consumability guidance for logs,
+  summaries, annotations, and artifacts
 - [Governance](governance.md) — action pinning, CODEOWNERS, Dependabot, and branch
   protection
 - [Supplemental workflows](supplemental-workflows.md) — dependency review, Actionlint,
@@ -56,8 +58,8 @@ jobs.
 ## Next required work
 
 The near-term required work is to monitor the new split validation slices in normal use,
-review the emitted timing data, and adjust path gates only when measured CI timing or
-reliability data justifies it.
+review the emitted timing data, improve CI output readability and machine consumability,
+and adjust path gates only when measured CI timing or reliability data justifies it.
 
 ## Related documentation
 
