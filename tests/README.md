@@ -56,7 +56,7 @@ The canonical seams for hosted Admin tests are:
     - typed contract clients `IBookingsApiClient`, `ICustomersApiClient`, and `IToursApiClient`
     - may be backed by a narrow host contract when a hosted fixture must expose shared client/base-address metadata
     - baseline control stays inside fixture or base-class infrastructure, not in test bodies
-- UI integration and E2E browser SUT seam:
+- UI integration and system browser SUT seam:
     - browser-visible web entrypoint only, such as `Uri WebAppUri`
     - no generic API or DI reach-through as part of the browser SUT seam
 - UI support seam for deterministic setup:
@@ -116,7 +116,7 @@ fixture contract as a repository-wide test abstraction.
   system tests.
 - If the test must prove business behavior through real HTTP plus persistence, it is an integration test instead.
 
-### E2E tests
+### System tests
 
 - Verify real user journeys through Playwright against the Admin web app.
 - Canonical browser SUT seam: hosted web entrypoint only.
