@@ -19,9 +19,10 @@ We implement test parallelization using:
 1. **Assembly Fixtures**: Use a shared Aspire-hosted `ApiFixture` for the parallel-safe Admin integration lane and
    a shared Aspire-hosted `AspireSystemTestFixture` for the parallel-safe browser lane:
 
-   ```csharp
-   [assembly: AssemblyFixture(typeof(ApiFixture))]
-   ```
+    ```csharp
+    [assembly: AssemblyFixture(typeof(ApiFixture))]
+    [assembly: AssemblyFixture(typeof(AspireSystemTestFixture))]
+    ```
 
 2. **Hybrid Parallel/Serial Shape**:
    - **Parallel Tests**: ordinary integration and browser system classes run concurrently by default.
