@@ -7,6 +7,7 @@ Use this project when the thing being protected is the published contract itself
 ## What belongs here
 
 - generated OpenAPI compatibility checks
+- canonical-versus-generated artifact drift guards
 - serialized request or response payload shape checks
 - schema or consumer-provider compatibility slices for one Admin boundary
 - consumer/provider compatibility validation rooted in the canonical committed contract artifact
@@ -27,6 +28,9 @@ For the first real slice, that seam is:
 - the canonical `tours.openapi.json` artifact under `src/ViajantesTurismo.Admin.Contracts/OpenApi/`
 - consumed as the published contract artifact, not through direct endpoint method calls
 - validated through a consumer-owned contract slice that reads only the fields this consumer depends on
+
+Generated Admin boundary artifacts under `src/ViajantesTurismo.Admin.Contracts/OpenApi/.generated/` are allowed as
+comparison inputs for drift guards, but the committed canonical artifacts remain the published source of truth.
 
 Not allowed for this project:
 

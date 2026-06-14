@@ -67,7 +67,7 @@ Branch name: `test/issue-115-admin-contract-boundary-expansion`
 
 - [ ] Extend the same pattern to `Customers`
 - [ ] Extend the same pattern to `Bookings`
-- [ ] Add guardrails so artifact drift is caught clearly in CI
+- [x] Add guardrails so artifact drift is caught clearly in CI
 - [ ] Review whether generated artifacts should be committed, packed, or both
 
 Suggested commit split:
