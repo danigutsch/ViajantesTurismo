@@ -23,7 +23,6 @@
         <PackageReference Include="Aspire.Hosting.Testing" />
         <PackageReference Include="Aspire.Hosting.PostgreSQL" />
         <PackageReference Include="Aspire.Hosting.Redis" />
-        <PackageReference Include="Npgsql" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
