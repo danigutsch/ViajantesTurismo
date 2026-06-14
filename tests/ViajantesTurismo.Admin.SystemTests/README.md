@@ -57,8 +57,9 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 ## Parallel safety guidance
 
 - Default to `AspireSystemTestBase<TFixture>` when a test owns its own data and does not require DB resets.
-- Use `AspireSerialSystemTestBase` when a test needs strict baseline isolation (for example exact counts,
-  per-test `ClearDatabase`, or destructive shared-state operations).
+- Use `AspireSerialSystemTestBase` when a test needs strict baseline isolation (for example exact counts or
+  destructive shared-state operations). The serial base owns the reset automatically; test bodies should not call
+  reset helpers directly.
 - Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
 - Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
   explicit search/filter state, or other stable semantic locators.

@@ -5,11 +5,6 @@ public class ErrorHandlingTests(AspireSerialSystemTestFixture fixture) : AspireS
     [Fact]
     public async Task Can_Show_Destructive_Reset_Empty_State_Smoke_On_Customers_List()
     {
-        // Arrange
-        // Clear the database to test empty states.
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await ClearDatabase(cts.Token);
-
         // Act
         await NavigateTo("/customers");
         await Expect(Page).ToHaveTitleAsync("Customers");

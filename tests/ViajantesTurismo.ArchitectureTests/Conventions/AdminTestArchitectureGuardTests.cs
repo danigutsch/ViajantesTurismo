@@ -63,6 +63,10 @@ public sealed partial class AdminTestArchitectureGuardTests
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "await Fixture.ResetDatabase(cts.Token);");
 
+        AssertFileDoesNotContain(
+            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
+            ProtectedClearDatabaseMemberRegex());
+
         AssertFileContains(
             Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
             "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
@@ -112,6 +116,12 @@ public sealed partial class AdminTestArchitectureGuardTests
         Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
     }
 
+    private static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        Assert.DoesNotMatch(unexpectedPattern, fileContents);
+    }
+
     private static string[] FindGenericServiceProviderReachThrough(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();
@@ -158,4 +168,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
     private static partial Regex PublicServiceProviderReachThroughRegex();
+
+    [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
+    private static partial Regex ProtectedClearDatabaseMemberRegex();
 }
