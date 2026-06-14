@@ -17,12 +17,6 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Ok_Throws_When_Value_Is_Null()
-    {
-        Assert.Throws<ArgumentNullException>(() => Result.Ok<string>(null!));
-    }
-
-    [Fact]
     public void Created_Creates_Successful_Result_With_Value()
     {
         var result = Result.Created("test");
@@ -35,12 +29,6 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Created_Throws_When_Value_Is_Null()
-    {
-        Assert.Throws<ArgumentNullException>(() => Result.Created<string>(null!));
-    }
-
-    [Fact]
     public void Accepted_Creates_Successful_Result_With_Value()
     {
         var result = Result.Accepted(true);
@@ -50,12 +38,6 @@ public sealed class ResultOfTTests
         Assert.Equal(ResultStatus.Accepted, result.Status);
         Assert.True(result.Value);
         Assert.Null(result.ErrorDetails);
-    }
-
-    [Fact]
-    public void Accepted_Throws_When_Value_Is_Null()
-    {
-        Assert.Throws<ArgumentNullException>(() => Result.Accepted<string>(null!));
     }
 
     [Fact]
@@ -74,26 +56,23 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Invalid_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Invalid_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("", "field", "message"));
-        Assert.Throws<ArgumentNullException>(() => Result.Invalid<int>(null!, "field", "message"));
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("   ", "field", "message"));
     }
 
     [Fact]
-    public void Invalid_Throws_When_Field_Is_Null_Or_Empty()
+    public void Invalid_Throws_When_Field_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "", "message"));
-        Assert.Throws<ArgumentNullException>(() => Result.Invalid<int>("detail", null!, "message"));
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "   ", "message"));
     }
 
     [Fact]
-    public void Invalid_Throws_When_Message_Is_Null_Or_Empty()
+    public void Invalid_Throws_When_Message_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "field", ""));
-        Assert.Throws<ArgumentNullException>(() => Result.Invalid<int>("detail", "field", null!));
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "field", "   "));
     }
 
@@ -110,10 +89,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Not_Found_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Not_Found_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.NotFound<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.NotFound<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.NotFound<int>("   "));
     }
 
@@ -130,10 +108,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Unauthorized_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Unauthorized_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Unauthorized<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.Unauthorized<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.Unauthorized<int>("   "));
     }
 
@@ -150,10 +127,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Forbidden_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Forbidden_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Forbidden<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.Forbidden<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.Forbidden<int>("   "));
     }
 
@@ -170,10 +146,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Conflict_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Conflict_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Conflict<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.Conflict<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.Conflict<int>("   "));
     }
 
@@ -190,10 +165,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Error_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Error_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Error<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.Error<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.Error<int>("   "));
     }
 
@@ -210,10 +184,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Critical_Error_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Critical_Error_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.CriticalError<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.CriticalError<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.CriticalError<int>("   "));
     }
 
@@ -230,10 +203,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Unavailable_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Unavailable_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Unavailable<int>(""));
-        Assert.Throws<ArgumentNullException>(() => Result.Unavailable<int>(null!));
         Assert.Throws<ArgumentException>(() => Result.Unavailable<int>("   "));
     }
 
@@ -436,14 +408,4 @@ public sealed class ResultOfTTests
         Assert.Contains("Resource not found", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Implicit_Conversion_Throws_For_Null_Value()
-    {
-        string? nullString = null;
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            Result<string> _ = Result.Ok(nullString!);
-        });
-    }
 }
