@@ -3,9 +3,8 @@
 This document records the repository's GitHub Actions supply-chain baseline for CI and the
 concrete controls currently implemented in workflow and helper-script paths.
 
-It answers the parent research question in `#112` by recording which controls the repository
-adopts now, which ones it explicitly avoids, and which ones remain deferred for a later
-implementation or tooling decision.
+It records which controls the repository adopts now, which ones it explicitly avoids, and
+which ones remain deferred for a later implementation or tooling decision.
 
 ## Current posture
 
@@ -112,12 +111,12 @@ Current state:
 
 ## Follow-up tasks after this baseline
 
-- `#113` should continue the trust-boundary track by narrowing where secret-dependent CI paths
-  may run and how fork pull requests are skipped.
-- `#130` should decide whether local lint and helper-tool execution must match the same
-  acquisition and trust restrictions documented here for hosted CI.
-- Any future provenance upgrade for downloaded binaries should land as a dedicated follow-up
-  issue so the repository can compare security gain against workflow complexity.
+- Continue the trust-boundary track by narrowing where secret-dependent CI paths may run and
+  how fork pull requests are skipped.
+- Decide whether local lint and helper-tool execution must match the same acquisition and trust
+  restrictions documented here for hosted CI.
+- Treat any future provenance upgrade for downloaded binaries as a dedicated follow-up change so
+  the repository can compare security gain against workflow complexity.
 
 ## Trust boundaries and follow-up
 
