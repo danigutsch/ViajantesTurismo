@@ -10,6 +10,7 @@ main() {
     local diagnostics_dir="TestResults/ci-diagnostics"
     local summary_file="${diagnostics_dir}/ci-validation-summary.txt"
     local timing_file="TestResults/ci-phase-timings.tsv"
+    local manifest_file="TestResults/ci-validation-manifest.json"
 
     mkdir -p "${diagnostics_dir}"
 
@@ -68,7 +69,7 @@ main() {
         local -a timing_files=()
 
         if [[ -d TestResults ]]; then
-            mapfile -t timing_files < <(find TestResults -maxdepth 1 -type f -name '*-phase-timings.tsv' | sort || true)
+            mapfile -t timing_files < <(find TestResults -maxdepth 1 -type f -name '*-phase-timings.tsv' ! -path "${timing_file}" | sort || true)
 
             if [[ -f "${timing_file}" ]]; then
                 timing_files=("${timing_file}" "${timing_files[@]}")
@@ -82,6 +83,30 @@ main() {
             for timing_path in "${timing_files[@]}"; do
                 echo ">>> ${timing_path}"
                 cat "${timing_path}"
+                echo
+            done
+        fi
+        echo
+        echo "CI manifests"
+        echo "------------"
+
+        local -a manifest_files=()
+
+        if [[ -d TestResults ]]; then
+            mapfile -t manifest_files < <(find TestResults -maxdepth 1 -type f -name '*-manifest.json' ! -path "${manifest_file}" | sort || true)
+
+            if [[ -f "${manifest_file}" ]]; then
+                manifest_files=("${manifest_file}" "${manifest_files[@]}")
+            fi
+        fi
+
+        if [[ ${#manifest_files[@]} -eq 0 ]]; then
+            echo "No manifest files were created under TestResults/."
+        else
+            local manifest_path
+            for manifest_path in "${manifest_files[@]}"; do
+                echo ">>> ${manifest_path}"
+                cat "${manifest_path}"
                 echo
             done
         fi

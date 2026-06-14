@@ -36,7 +36,8 @@ protected branch keeps its post-merge validation history intact.
    required.
 7. Run `dotnet tool restore` when validation work is required.
 8. Run `bash scripts/run-ci-test-slice.sh --slice-name "Fast Validation" ...` to execute
-   the fast project set with project-scoped build, per-slice timing, and coverage output.
+   the fast project set with project-scoped build, normalized per-slice timing output,
+   machine-readable manifest output, and coverage collection.
 9. When validation work fails, create a focused diagnostic summary under
    `TestResults/ci-diagnostics/`.
 10. Upload the slice-local test results artifact and upload the focused diagnostics
@@ -135,7 +136,8 @@ command for that maintenance step.
    build and end step but does not rerun tests.
 8. Publish a GitHub summary from `TestResults/sonar-analysis.log` that includes the
    quality gate status, SonarCloud link, warning count, and captured phase timings, then
-   upload the coverage report, `sonar-coverage`, and `sonar-analysis-log` artifacts.
+   upload the coverage report, `sonar-coverage`, `sonar-analysis-log`, and
+   `sonar-analysis-manifest` artifacts.
 
 This job remains the dedicated required `SonarCloud` check, but it now aggregates coverage
 from the parallel test slices before performing hosted analysis.
