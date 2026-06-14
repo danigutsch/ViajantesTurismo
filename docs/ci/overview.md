@@ -38,6 +38,8 @@ current schedules and grouping rules.
   protection
 - [Security hardening baseline](security-hardening.md) — CI dependency acquisition,
   checksum expectations, and low-trust execution rules
+- [Telemetry and generated guardrails](telemetry-generated-guardrails.md) — generated-output,
+  package-consumption, and telemetry contract safety model
 - [Trust boundaries](trust-boundaries.md) — fork PR, same-repo branch, and privileged
   automation boundaries
 - [Supplemental workflows](supplemental-workflows.md) — dependency review, Actionlint,
