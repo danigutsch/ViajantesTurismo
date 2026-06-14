@@ -7,8 +7,6 @@ public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture f
 {
     private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
 
-    protected Task ClearDatabase(CancellationToken cancellationToken) => Fixture.ResetDatabase(cancellationToken);
-
     public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();

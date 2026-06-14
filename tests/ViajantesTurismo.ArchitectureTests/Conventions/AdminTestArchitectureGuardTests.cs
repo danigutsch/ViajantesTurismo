@@ -63,6 +63,10 @@ public sealed partial class AdminTestArchitectureGuardTests
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "await Fixture.ResetDatabase(cts.Token);");
 
+        AssertFileDoesNotContain(
+            Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
+            "protected Task ClearDatabase");
+
         AssertFileContains(
             Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
             "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
@@ -110,6 +114,12 @@ public sealed partial class AdminTestArchitectureGuardTests
     private static void AssertFileDoesNotExist(string filePath)
     {
         Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
+    }
+
+    private static void AssertFileDoesNotContain(string filePath, string unexpectedText)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        Assert.DoesNotContain(unexpectedText, fileContents, StringComparison.Ordinal);
     }
 
     private static string[] FindGenericServiceProviderReachThrough(string filePath)

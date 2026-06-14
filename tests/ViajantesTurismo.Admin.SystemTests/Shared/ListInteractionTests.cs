@@ -8,8 +8,6 @@ public class ListInteractionTests(AspireSerialSystemTestFixture fixture) : Aspir
     public async Task Tour_List_Sort_Smoke_Works_For_Name_Column()
     {
         // Arrange
-        await ClearDatabase(TestContext.Current.CancellationToken);
-
         _ = await ApiClient.CreateTour(new CreateTourOptions
         {
             Identifier = "AAA-SORT",
@@ -48,8 +46,6 @@ public class ListInteractionTests(AspireSerialSystemTestFixture fixture) : Aspir
     public async Task Customer_List_Paginator_Smoke_Works_And_Preserves_Sort()
     {
         // Arrange
-        await ClearDatabase(TestContext.Current.CancellationToken);
-
         for (var index = 0; index <= 10; index++)
         {
             await ApiClient.CreateCustomer(firstName: $"User{index:00}", lastName: "List");
