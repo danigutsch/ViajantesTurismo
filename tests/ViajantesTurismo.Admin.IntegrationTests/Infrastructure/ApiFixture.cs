@@ -33,15 +33,23 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
         _client?.Dispose();
         _client = null;
 
-        if (_app is not null)
+        try
         {
-            await _app.StopAsync();
-            await _app.DisposeAsync();
+            if (_app is not null)
+            {
+                await _app.StopAsync();
+                await _app.DisposeAsync();
+            }
         }
-
-        if (_appBuilder is not null)
+        finally
         {
-            await _appBuilder.DisposeAsync();
+            _app = null;
+
+            if (_appBuilder is not null)
+            {
+                await _appBuilder.DisposeAsync();
+                _appBuilder = null;
+            }
         }
     }
 
