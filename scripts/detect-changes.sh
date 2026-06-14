@@ -303,7 +303,7 @@ if [[ "${build_required}" == "true" ]] && [[ "${fast_validation_required}" != "t
 fi
 
 if [[ "${build_required}" == "true" ]]; then
-    echo "Build and test will run because non-documentation changes were detected."
+    echo "Build and test will run because runtime-affecting changes were detected."
 else
     echo "Build and test will be skipped because only documentation or low-risk repository maintenance changes were detected."
 fi
