@@ -12,11 +12,17 @@ public sealed partial class AdminTestArchitectureGuardTests
         var guideText = File.ReadAllText(guidePath);
         var architectureReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
         var architectureReadmeText = File.ReadAllText(architectureReadmePath);
+        var uiIntegrationReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "README.md");
+        var uiIntegrationReadmeText = File.ReadAllText(uiIntegrationReadmePath);
+        var uiIntegrationScaffoldTestPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "ScaffoldTests.cs");
+        var uiIntegrationScaffoldTestText = File.ReadAllText(uiIntegrationScaffoldTestPath);
 
         Assert.Contains("This file is the canonical quick-reference for the Admin test taxonomy.", guideText, StringComparison.Ordinal);
         Assert.Contains("docs/TEST_GUIDELINES.md", guideText, StringComparison.Ordinal);
         Assert.Contains("AdminTestArchitectureGuardTests", architectureReadmeText, StringComparison.Ordinal);
         Assert.Contains("tests/README.md", architectureReadmeText, StringComparison.Ordinal);
+        Assert.Contains("Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here", uiIntegrationReadmeText, StringComparison.Ordinal);
+        Assert.Contains("Project_Remains_A_Scaffold_Until_A_Real_Admin_UI_Integration_Slice_Exists", uiIntegrationScaffoldTestText, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -44,6 +50,34 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.Testing", "Integration", "Helpers", "DatabaseResetHelper.cs"),
+            "public static async Task ResetPublicTables(DbConnection connection, CancellationToken ct)");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
+            "public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
+            "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            "public abstract class AspireSerialIntegrationTestBase(");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            "AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            "await fixture.ResetDatabase(cts.Token);");
+
+        AssertFileDoesNotContain(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            new Regex(@"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(", RegexOptions.Singleline | RegexOptions.CultureInvariant));
+
+        AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
 
@@ -58,6 +92,10 @@ public sealed partial class AdminTestArchitectureGuardTests
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)");
+
+        AssertFileContains(
+            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"),
+            "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),

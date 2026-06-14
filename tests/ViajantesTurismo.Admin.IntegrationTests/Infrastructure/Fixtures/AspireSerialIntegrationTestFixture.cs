@@ -3,22 +3,20 @@ using Npgsql;
 using Projects;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures;
 
-public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable
+public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable
 {
     private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(90);
 
     private IDistributedApplicationTestingBuilder? _appBuilder;
     private DistributedApplication? _app;
-    private HttpClient? _apiClient;
+    private HttpClient? _client;
     private string? _databaseConnectionString;
 
-    public HttpClient ApiClient => _apiClient ?? throw new InvalidOperationException("Fixture is not initialized.");
+    public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
-    public Uri ApiBaseUri => ApiClient.BaseAddress ?? throw new InvalidOperationException("API client base address is not configured.");
-
-    public Uri WebAppUrl { get; private set; } = null!;
+    public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
     public async ValueTask InitializeAsync()
     {
@@ -27,30 +25,39 @@ public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IA
         await _app.StartAsync();
 
         using var cts = new CancellationTokenSource(ResourceStartupTimeout);
-
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
-        await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.WebApp, cts.Token);
 
-        _apiClient = _app.CreateHttpClient(ResourceNames.Api);
-        WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp);
+        _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionStringAsync(ResourceNames.Database, cts.Token)
             ?? throw new InvalidOperationException("Database connection string is not configured.");
     }
 
     public async ValueTask DisposeAsync()
     {
-        _apiClient?.Dispose();
-        _apiClient = null;
+        var client = _client;
+        var app = _app;
+        var appBuilder = _appBuilder;
+        _client = null;
+        _app = null;
+        _appBuilder = null;
+        _databaseConnectionString = null;
 
-        if (_app is not null)
+        client?.Dispose();
+
+        try
         {
-            await _app.StopAsync();
-            await _app.DisposeAsync();
+            if (app is not null)
+            {
+                await app.StopAsync();
+                await app.DisposeAsync();
+            }
         }
-
-        if (_appBuilder is not null)
+        finally
         {
-            await _appBuilder.DisposeAsync();
+            if (appBuilder is not null)
+            {
+                await appBuilder.DisposeAsync();
+            }
         }
     }
 
