@@ -5,9 +5,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersConflictLoaderTests
 {
-    private static readonly string AllCanonicalHeaders =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(field => field.Name));
-
     [Fact]
     public async Task LoadConflictStates_When_Existing_Customer_Is_Found_Populates_Existing_And_Incoming_Values()
     {
@@ -30,7 +27,7 @@ public sealed class ImportCustomersConflictLoaderTests
         });
         customersApi.AddCustomerDetails(BuildCustomerDetails(customerId, conflictEmail, existingLastName));
 
-        var mappedFileBytes = Encoding.UTF8.GetBytes(AllCanonicalHeaders + "\n" + BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var mappedFileBytes = Encoding.UTF8.GetBytes(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             [CustomerImportFieldNames.FirstName] = incomingFirstName,
             [CustomerImportFieldNames.LastName] = "IncomingLast",
@@ -69,7 +66,7 @@ public sealed class ImportCustomersConflictLoaderTests
             BikeType = BikeTypeDto.Regular,
         });
 
-        var mappedFileBytes = Encoding.UTF8.GetBytes(AllCanonicalHeaders + "\n" + BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var mappedFileBytes = Encoding.UTF8.GetBytes(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             [CustomerImportFieldNames.FirstName] = "IncomingFirst",
             [CustomerImportFieldNames.Email] = conflictEmail,
@@ -87,15 +84,6 @@ public sealed class ImportCustomersConflictLoaderTests
         Assert.Equal(string.Empty, conflictState.GetExistingValue(CustomerImportFieldNames.FirstName));
         Assert.Equal(string.Empty, conflictState.GetExistingValue(CustomerImportFieldNames.Email));
     }
-
-    private static string BuildCsvRow(IReadOnlyDictionary<string, string> valuesByField)
-    {
-        var values = CustomerImportHeaderMatcher.Fields
-            .Select(field => valuesByField.GetValueOrDefault(field.Name, "v"));
-
-        return string.Join(",", values);
-    }
-
     private static CustomerDetailsDto BuildCustomerDetails(Guid customerId, string email, string lastName)
     {
         return new CustomerDetailsDto

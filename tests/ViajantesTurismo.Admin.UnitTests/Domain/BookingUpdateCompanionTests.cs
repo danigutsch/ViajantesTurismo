@@ -1,5 +1,4 @@
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using SharedKernel.Functional;
 
@@ -11,8 +10,8 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Booking_Is_Cancelled_Returns_Conflict_And_Does_Not_Add_Companion()
     {
         // Arrange
-        var booking = CreateSingleBooking();
-        var companionCustomer = CreateValidCompanionCustomer();
+        var booking = BookingDomainTestDataFactory.CreateSingleBooking();
+        var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer();
         var cancelResult = booking.Cancel();
         Assert.True(cancelResult.IsSuccess);
 
@@ -31,8 +30,8 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Booking_Is_Completed_Returns_Conflict_And_Does_Not_Add_Companion()
     {
         // Arrange
-        var booking = CreateSingleBooking();
-        var companionCustomer = CreateValidCompanionCustomer();
+        var booking = BookingDomainTestDataFactory.CreateSingleBooking();
+        var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer();
         Assert.True(booking.Confirm().IsSuccess);
         Assert.True(booking.Complete().IsSuccess);
 
@@ -51,8 +50,8 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Companion_Matches_Principal_Returns_Invalid()
     {
         // Arrange
-        var booking = CreateSingleBooking();
-        var companionCustomer = CreateValidCompanionCustomer(booking.PrincipalCustomer.CustomerId);
+        var booking = BookingDomainTestDataFactory.CreateSingleBooking();
+        var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer(booking.PrincipalCustomer.CustomerId);
 
         // Act
         var result = booking.UpdateCompanion(companionCustomer);
@@ -72,8 +71,8 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Single_Room_Booking_Has_Companion_Returns_Invalid()
     {
         // Arrange
-        var booking = CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
-        var companionCustomer = CreateValidCompanionCustomer();
+        var booking = BookingDomainTestDataFactory.CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
+        var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer();
 
         // Act
         var result = booking.UpdateCompanion(companionCustomer);
@@ -93,8 +92,8 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Companion_Matches_Principal_On_Single_Room_Returns_Aggregated_Validation_Errors()
     {
         // Arrange
-        var booking = CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
-        var companionCustomer = CreateValidCompanionCustomer(booking.PrincipalCustomer.CustomerId);
+        var booking = BookingDomainTestDataFactory.CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
+        var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer(booking.PrincipalCustomer.CustomerId);
 
         // Act
         var result = booking.UpdateCompanion(companionCustomer);
@@ -120,8 +119,8 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Double_Room_And_Valid_Companion_Succeeds()
     {
         // Arrange
-        var booking = CreateSingleBooking();
-        var companionCustomer = CreateValidCompanionCustomer();
+        var booking = BookingDomainTestDataFactory.CreateSingleBooking();
+        var companionCustomer = BookingDomainTestDataFactory.CreateValidCompanionCustomer();
 
         // Act
         var result = booking.UpdateCompanion(companionCustomer);
@@ -138,7 +137,7 @@ public class BookingUpdateCompanionTests
     public void UpdateCompanion_When_Companion_Is_Null_Removes_Existing_Companion()
     {
         // Arrange
-        var booking = CreateDoubleBooking();
+        var booking = BookingDomainTestDataFactory.CreateDoubleBooking();
         Assert.NotNull(booking.CompanionCustomer);
 
         // Act
@@ -149,32 +148,4 @@ public class BookingUpdateCompanionTests
         Assert.Null(booking.CompanionCustomer);
     }
 
-    private static Booking CreateSingleBooking(SingleBookingOptions? options = null)
-    {
-        var tour = EntityBuilders.BuildTour();
-        var bookingResult = BookingTestHelpers.AddSingleCustomerBooking(tour, options);
-
-        Assert.True(bookingResult.IsSuccess, "Failed to create single booking for test setup.");
-        return bookingResult.Value;
-    }
-
-    private static Booking CreateDoubleBooking(DoubleBookingOptions? options = null)
-    {
-        var tour = EntityBuilders.BuildTour();
-        var bookingResult = BookingTestHelpers.AddDoubleCustomerBooking(tour, options);
-
-        Assert.True(bookingResult.IsSuccess, "Failed to create double booking for test setup.");
-        return bookingResult.Value;
-    }
-
-    private static BookingCustomer CreateValidCompanionCustomer(Guid? customerId = null)
-    {
-        var companionCustomerResult = BookingCustomer.Create(
-            customerId ?? Guid.CreateVersion7(),
-            BikeType.EBike,
-            200m);
-
-        Assert.True(companionCustomerResult.IsSuccess, "Failed to create companion customer for test setup.");
-        return companionCustomerResult.Value;
-    }
 }

@@ -4,12 +4,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersSummaryTests : BunitContext
 {
-    private static readonly string AllCanonicalHeaders =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(f => f.Name));
-
-    private static readonly string AllCanonicalValues =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(_ => "v"));
-
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
 
     public ImportCustomersSummaryTests()
@@ -32,7 +26,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     private IRenderedComponent<ImportCustomers> ConfirmImportWithoutConflicts(ImportResultDto result)
     {
         _fakeCustomersApi.SetImportCustomersResult(result);
-        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Import complete.", cut.Markup, StringComparison.Ordinal));
         return cut;
@@ -50,7 +44,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(2, 1));
-        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 

@@ -4,9 +4,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersHeaderMappingTests : BunitContext
 {
-    private static readonly string AllCanonicalHeaders =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(f => f.Name));
-
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
 
     public ImportCustomersHeaderMappingTests()
@@ -20,7 +17,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -35,7 +32,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -96,7 +93,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -111,7 +108,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".card-header")));
 
@@ -127,7 +124,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "my-import.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "my-import.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);

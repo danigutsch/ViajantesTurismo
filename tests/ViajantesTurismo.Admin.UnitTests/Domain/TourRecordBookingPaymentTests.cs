@@ -32,7 +32,9 @@ public class TourRecordBookingPaymentTests
     public void RecordBookingPayment_When_Amount_Exceeds_Remaining_Balance_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for payment test setup.");
 
         // Act
         var result = tour.RecordBookingPayment(
@@ -54,7 +56,9 @@ public class TourRecordBookingPaymentTests
     public void RecordBookingPayment_When_Amount_Is_Invalid_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for payment test setup.");
 
         // Act
         var result = tour.RecordBookingPayment(
@@ -76,7 +80,9 @@ public class TourRecordBookingPaymentTests
     public void RecordBookingPayment_When_Payment_Method_Is_Invalid_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for payment test setup.");
 
         // Act
         var result = tour.RecordBookingPayment(
@@ -98,7 +104,9 @@ public class TourRecordBookingPaymentTests
     public void RecordBookingPayment_When_Payment_Date_Is_In_The_Future_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for payment test setup.");
 
         // Act
         var result = tour.RecordBookingPayment(
@@ -120,7 +128,9 @@ public class TourRecordBookingPaymentTests
     public void RecordBookingPayment_When_Request_Is_Valid_Records_Payment()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for payment test setup.");
         var paymentDate = DateTime.UtcNow.AddDays(-2);
 
         // Act
@@ -144,14 +154,4 @@ public class TourRecordBookingPaymentTests
         Assert.Equal("Paid at reception", payment.Notes);
     }
 
-    private static (Tour Tour, Booking Booking) CreateSingleBooking()
-    {
-        var tour = EntityBuilders.BuildTour();
-        var bookingResult = BookingTestHelpers.AddSingleCustomerBooking(
-            tour,
-            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy));
-
-        Assert.True(bookingResult.IsSuccess, "Failed to create booking for payment test setup.");
-        return (tour, bookingResult.Value);
-    }
 }

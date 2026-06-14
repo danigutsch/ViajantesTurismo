@@ -4,12 +4,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersPreviewTests : BunitContext
 {
-    private static readonly string AllCanonicalHeaders =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(f => f.Name));
-
-    private static readonly string AllCanonicalValues =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(_ => "v"));
-
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
 
     public ImportCustomersPreviewTests()
@@ -33,7 +27,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     public void Clicking_Preview_Advances_To_Preview_Step()
     {
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\n" + AllCanonicalValues, "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 
@@ -45,7 +39,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     [Fact]
     public void Preview_Step_Shows_File_Name()
     {
-        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues, "my-data.csv");
+        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "my-data.csv");
 
         Assert.Contains("my-data.csv", cut.Markup, StringComparison.Ordinal);
     }
@@ -53,7 +47,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     [Fact]
     public void Preview_Shows_Data_Rows()
     {
-        var csvContent = AllCanonicalHeaders + "\n" + AllCanonicalValues + "\n" + AllCanonicalValues;
+        var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues + "\n" + CustomerImportCsvTestData.AllCanonicalValues;
         var cut = GoToPreview(csvContent);
 
         var rows = cut.FindAll("table.preview-table tbody tr");
@@ -63,8 +57,8 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     [Fact]
     public void Preview_Shows_At_Most_Five_Rows()
     {
-        var manyRows = string.Join("\n", Enumerable.Repeat(AllCanonicalValues, 10));
-        var csvContent = AllCanonicalHeaders + "\n" + manyRows;
+        var manyRows = string.Join("\n", Enumerable.Repeat(CustomerImportCsvTestData.AllCanonicalValues, 10));
+        var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + manyRows;
         var cut = GoToPreview(csvContent);
 
         var rows = cut.FindAll("table.preview-table tbody tr");
@@ -76,7 +70,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     {
         // FirstName (index 0) is required — a row starting with "," leaves it empty
         var rowWithEmptyFirst = "," + string.Join(",", CustomerImportHeaderMatcher.Fields.Skip(1).Select(_ => "v"));
-        var csvContent = AllCanonicalHeaders + "\n" + rowWithEmptyFirst;
+        var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + rowWithEmptyFirst;
         var cut = GoToPreview(csvContent);
 
         Assert.NotEmpty(cut.FindAll("tr.table-warning"));
@@ -85,7 +79,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     [Fact]
     public void Preview_Row_With_All_Required_Values_Has_No_Warning()
     {
-        var csvContent = AllCanonicalHeaders + "\n" + AllCanonicalValues;
+        var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues;
         var cut = GoToPreview(csvContent);
 
         Assert.Empty(cut.FindAll("tr.table-warning"));
@@ -94,7 +88,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     [Fact]
     public void Back_To_Mapping_Returns_To_Header_Mapping_Step()
     {
-        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
 
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Back to Mapping").Click();
 
@@ -106,7 +100,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     public void Confirm_Import_Triggers_Api_Call_And_Shows_Result()
     {
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));
-        var cut = GoToPreview(AllCanonicalHeaders + "\n" + AllCanonicalValues);
+        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
 
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 

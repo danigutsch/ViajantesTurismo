@@ -17,7 +17,7 @@ public class TourAddBookingTests
             new SingleBookingOptions(CustomerId: Guid.CreateVersion7()));
         Assert.True(existingBookingResult.IsSuccess, "Failed to create existing booking for test setup.");
         Assert.True(existingBookingResult.Value.Confirm().IsSuccess);
-        var request = CreateValidSingleRequest();
+        var request = BookingDomainTestDataFactory.CreateValidSingleRequest();
 
         // Act
         var result = tour.AddBooking(request);
@@ -149,7 +149,7 @@ public class TourAddBookingTests
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
-        var request = CreateValidDoubleRequest(roomType: RoomType.SingleOccupancy);
+        var request = BookingDomainTestDataFactory.CreateValidDoubleRequest(roomType: RoomType.SingleOccupancy);
 
         // Act
         var result = tour.AddBooking(request);
@@ -168,7 +168,7 @@ public class TourAddBookingTests
         // Arrange
         var tour = EntityBuilders.BuildTour();
         var customerId = Guid.CreateVersion7();
-        var request = CreateValidDoubleRequest(
+        var request = BookingDomainTestDataFactory.CreateValidDoubleRequest(
             principalCustomerId: customerId,
             companionCustomerId: customerId);
 
@@ -256,7 +256,7 @@ public class TourAddBookingTests
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
-        var request = CreateValidDoubleRequest();
+        var request = BookingDomainTestDataFactory.CreateValidDoubleRequest();
 
         // Act
         var result = tour.AddBooking(request);
@@ -271,28 +271,4 @@ public class TourAddBookingTests
         Assert.Equal(request.RoomType, booking.RoomType);
     }
 
-    private static TourBookingRequest CreateValidSingleRequest(Guid? customerId = null)
-    {
-        return TourBookingRequest.CreateSingle(
-            customerId ?? Guid.CreateVersion7(),
-            BikeType.Regular,
-            RoomType.DoubleOccupancy,
-            BookingDiscountDefinition.None,
-            notes: "Window seat preference");
-    }
-
-    private static TourBookingRequest CreateValidDoubleRequest(
-        Guid? principalCustomerId = null,
-        Guid? companionCustomerId = null,
-        RoomType roomType = RoomType.DoubleOccupancy)
-    {
-        return TourBookingRequest.CreateDouble(
-            principalCustomerId ?? Guid.CreateVersion7(),
-            BikeType.Regular,
-            companionCustomerId ?? Guid.CreateVersion7(),
-            BikeType.EBike,
-            roomType,
-            BookingDiscountDefinition.None,
-            notes: "Near elevator");
-    }
 }
