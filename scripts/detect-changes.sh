@@ -88,6 +88,7 @@ shared_validation_patterns=(
 )
 
 low_risk_maintenance_patterns=(
+    "scripts/commitlint.sh"
     "scripts/lint-all.sh"
     "scripts/lint-gherkin.sh"
     "scripts/lint-gherkin.py"
@@ -213,16 +214,8 @@ while IFS= read -r file; do
     case "${file}" in
         docs/** | README.md | CONTRIBUTING.md) ;;
         *)
-            low_risk_maintenance_match=false
-            set +e
-            matches_any_pattern "${file}" "${low_risk_maintenance_patterns[@]}"
-            low_risk_maintenance_status=$?
-            set -e
-            if [[ ${low_risk_maintenance_status} -eq 0 ]]; then
-                low_risk_maintenance_match=true
-            fi
-
-            if [[ "${low_risk_maintenance_match}" != "true" ]]; then
+            # shellcheck disable=SC2310
+            if ! matches_any_pattern "${file}" "${low_risk_maintenance_patterns[@]}"; then
                 build_required=true
             fi
             ;;
