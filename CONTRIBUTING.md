@@ -3,6 +3,8 @@
 ## Workflow
 
 1. Install local tooling with `./setup-dev.ps1` on Windows or `bash ./setup-dev.sh` on Unix.
+   Treat `README.md` as the canonical tooling inventory for required local tools,
+   optional local tools, CI-only tools, and devcontainer-provided tools.
 2. Agents should always work from repository-local Git worktrees under `.worktrees/`; that directory is ignored and only meant for local workspace management.
 3. Read the nearest applicable `AGENTS.md` file before making changes; repository customization guidance lives in the `AGENTS.md` hierarchy.
 4. Do not add duplicate repository guidance files (for example, replacement `.github/copilot-instructions.md` or ad hoc `.github/instructions/*.instructions.md`
@@ -91,6 +93,10 @@ Run the checks relevant to your changes:
 - `.NET`: `dotnet build ViajantesTurismo.slnx`
 - Tests: `dotnet test --solution ViajantesTurismo.slnx`
 - Docs, scripts, specs: CI runs `bash scripts/lint-all.sh`
+
+Use the tooling inventory in `README.md` when deciding whether a missing tool is
+required locally, optional for a specific task, CI-only, or already provided by
+the documented devcontainer workflow.
 
 If you change NuGet dependencies or project references that affect package
 resolution, regenerate and commit the affected `packages.lock.json` files:
