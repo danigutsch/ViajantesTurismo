@@ -155,8 +155,13 @@ check_powershell() {
     if command -v pwsh > /dev/null 2>&1; then
         printf "%b" "   ${GREEN}✅ pwsh (PowerShell 7+) installed${NC}\n"
         printf "%b" "   ${GREEN}✅ Playwright browser installation can use scripts/install-playwright.sh after build${NC}\n"
-        printf "%b" "   ${CYAN}💡 To install PSScriptAnalyzer:${NC}\n"
-        printf "%b" "   ${CYAN}   pwsh -Command 'Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force'${NC}\n"
+        if pwsh -NoLogo -NoProfile -Command "if (Get-Module -ListAvailable -Name PSScriptAnalyzer) { exit 0 } else { exit 1 }" > /dev/null 2>&1; then
+            printf "%b" "   ${GREEN}✅ PSScriptAnalyzer already installed${NC}\n"
+        else
+            printf "%b" "   ${YELLOW}⚠️ PSScriptAnalyzer not available - local PowerShell linting will be skipped${NC}\n"
+            printf "%b" "   ${CYAN}💡 Install it only if you plan to lint PowerShell scripts:${NC}\n"
+            printf "%b" "   ${CYAN}   pwsh -Command 'Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force'${NC}\n"
+        fi
         printf "%b" "   ${CYAN}💡 After dotnet build, install Playwright browsers with: bash scripts/install-playwright.sh${NC}\n"
     else
         printf "%b" "   ${YELLOW}⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped${NC}\n"

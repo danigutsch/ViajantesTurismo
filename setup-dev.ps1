@@ -116,14 +116,9 @@ function Test-PowerShellAndPlaywrightPrerequisites {
         Write-Host "   ✅ PSScriptAnalyzer already installed" -ForegroundColor Green
     }
     else {
-        Write-Host "   📦 Installing PSScriptAnalyzer..." -ForegroundColor Yellow
-        try {
-            Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
-            Write-Host "   ✅ PSScriptAnalyzer installed" -ForegroundColor Green
-        }
-        catch {
-            Write-Host "   ⚠️ Failed to install PSScriptAnalyzer: $_" -ForegroundColor Yellow
-        }
+        Write-Host "   ⚠️ PSScriptAnalyzer not available - local PowerShell linting will be skipped" -ForegroundColor Yellow
+        Write-Host "   💡 Install it only if you plan to lint PowerShell scripts:" -ForegroundColor Cyan
+        Write-Host "      Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force" -ForegroundColor Cyan
     }
 }
 
