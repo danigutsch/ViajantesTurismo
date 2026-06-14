@@ -1,7 +1,8 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bases;
 
-[Collection(IntegrationTestCollections.Serial)]
-public abstract class AspireSerialIntegrationTestBase(AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime
+[Collection(ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures.IntegrationTestCollections.Serial)]
+public abstract class AspireSerialIntegrationTestBase(
+    ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures.AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime
 {
     private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
 
@@ -14,10 +15,10 @@ public abstract class AspireSerialIntegrationTestBase(AspireSerialIntegrationTes
         await ResetDatabase();
     }
 
-    public virtual async ValueTask DisposeAsync()
+    public virtual ValueTask DisposeAsync()
     {
-        await ResetDatabase();
         GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
     }
 
     private async Task ResetDatabase()

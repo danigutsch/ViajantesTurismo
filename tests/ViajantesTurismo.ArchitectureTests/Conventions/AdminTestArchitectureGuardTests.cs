@@ -63,11 +63,19 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "public abstract class AspireSerialIntegrationTestBase(AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime");
+            "public abstract class AspireSerialIntegrationTestBase(");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            "AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
             "await fixture.ResetDatabase(cts.Token);");
+
+        AssertFileDoesNotContain(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            new Regex(@"public\s+virtual\s+async\s+ValueTask\s+DisposeAsync\s*\(\s*\)\s*\{[^}]*ResetDatabase\(", RegexOptions.Singleline | RegexOptions.CultureInvariant));
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
