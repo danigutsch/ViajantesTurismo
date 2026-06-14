@@ -21,9 +21,8 @@ Decisions captured for this plan:
 ## Target end state
 
 - `IntegrationTests` use Aspire-hosted execution as the canonical full-host path.
-- `SystemTests` use Aspire-hosted execution as the canonical browser path without the
-  current hybrid `DistributedApplicationBuilder` + local `WebApplicationFactory`
-  layering.
+- `SystemTests` use Aspire-hosted execution as the canonical browser path without hybrid
+  host layering.
 - Test bodies depend on business-visible seams only:
     - `IntegrationTests`: typed API clients and domain-visible assertions
     - `SystemTests`: browser-visible routes and semantic UI assertions
@@ -36,10 +35,10 @@ Decisions captured for this plan:
 
 Current state that this plan intends to retire:
 
-- `ApiFixture` exposes `Seed(...)` and `Reset(...)` through `IAdminTestHost`.
-- `E2EFixture` exposes API client plus `Seed(...)` and `Reset(...)` to browser tests.
-- `E2ESerialTestBase` performs direct reset/seed calls per test.
-- architecture guards currently lock that model in place.
+- a scaffold-only `UiIntegrationTests` lane that must stay empty until a real hosted UI
+  composition slice appears
+- temporary migration notes that still describe retired hybrid host plumbing
+- any architecture drift that would let deleted `E2E*` fixtures or direct reset seams return
 
 Target seam direction:
 

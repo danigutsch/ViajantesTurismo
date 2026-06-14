@@ -16,27 +16,25 @@ enabling tests to run concurrently.
 
 We implement test parallelization using:
 
-1. **Assembly Fixtures**: Replace collection-based fixture sharing with a single `E2EFixture` and `ApiFixture` instance
-   shared across all tests via the assembly attribute:
+1. **Assembly Fixtures**: Use a shared Aspire-hosted `ApiFixture` for the parallel-safe Admin integration lane and
+   a shared Aspire-hosted `AspireSystemTestFixture` for the parallel-safe browser lane:
 
    ```csharp
-   [assembly: AssemblyFixture(typeof(E2EFixture))]
+   [assembly: AssemblyFixture(typeof(ApiFixture))]
    ```
 
-2. **Hybrid Configuration**:
-   - **Parallel Tests**: 15 E2E test classes + 20 integration test classes run concurrently by default (xUnit's implicit
-     per-class collection behavior).
-   - **Serial Tests**: 3 E2E test classes + 3 integration test classes opt-in to sequential execution via
-     `[Collection("E2E.Serial")]` or `[Collection("Integration.Serial")]` (these test database edge cases and exact
-     counts).
+2. **Hybrid Parallel/Serial Shape**:
+   - **Parallel Tests**: ordinary integration and browser system classes run concurrently by default.
+   - **Serial Tests**: only the narrow clean-slate lanes opt in to sequential execution via
+     `AspireSerialSystemTestBase` or the corresponding serial integration collection.
 
-3. **Idempotent Seeding**: The database is seeded once per assembly (during fixture initialization) with a guard check
-   to prevent duplicate seeding on fixture reuse.
+3. **Fixture-Owned Baseline Control**: Seeded defaults can be shared for parallel-safe reads, while destructive
+   clean-slate reset stays inside serial fixture or base-class infrastructure.
 
 4. **Parallel-Safe Patterns**:
    - Read-only tests use shared seeded data without mutation.
    - Data-mutator tests create unique data via HTTP API helpers rather than modifying seeded records.
-   - Serial tests use per-test seed/clear for exact-count assertions and database destructive operations.
+   - Serial tests use infrastructure-owned reset paths for exact-count assertions and destructive database operations.
 
 5. **API Helpers**: A new `ApiTestHelper` class provides methods to create data (tours, customers, bookings) via the
    Admin API, enabling tests to be independent and concurrent.
@@ -51,7 +49,7 @@ improved.
   collection.
 - **Maintainability**: No per-test fixture lifecycle overhead; shared infrastructure is initialized once.
 - **Scalability**: New tests naturally run in parallel unless they need serial execution.
-- **Single Source of Truth**: One Aspire app, one PostgreSQL instance, one Redis for all tests.
+- **Single Source of Truth**: Aspire-managed fixtures define the canonical hosted test model.
 
 ### Cons
 
@@ -64,8 +62,8 @@ records. Code review and the ADR documentation enforce this.
 
 ## Alternatives Considered
 
-1. **Two Collection Fixtures** — Each collection would get its own `E2EFixture` instance, creating two Aspire apps and
-   two databases. Rejected: defeats the purpose of parallelization and increases infrastructure overhead.
+1. **Two Collection Fixtures** — Each collection would get its own hosted fixture instance, creating extra Aspire apps
+   and databases. Rejected: defeats the purpose of parallelization and increases infrastructure overhead.
 
 2. **IClassFixture per Test** — Each test class gets its own fixture. Rejected: same overhead as above, and no parallel
    benefit.
