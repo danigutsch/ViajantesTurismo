@@ -33,15 +33,15 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime");
+            "public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "private async Task SeedBaseline(CancellationToken cancellationToken = default)");
+            "_appBuilder = await DistributedApplicationTestingBuilder.CreateAsync<ViajantesTurismo_AppHost>();");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "private async Task ResetDatabase(CancellationToken cancellationToken = default)");
+            "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),

@@ -19,7 +19,7 @@ public class BookingTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Exposes_A_Loopback_BaseUri_Through_The_Host_Seam()
+    public async Task Exposes_The_AppHost_Managed_BaseUri_Through_The_Host_Seam()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -29,7 +29,8 @@ public class BookingTests(ApiFixture fixture)
         var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
-        Assert.Equal("127.0.0.1", baseUri.Host);
+        Assert.Equal(Uri.UriSchemeHttp, baseUri.Scheme);
+        Assert.False(string.IsNullOrWhiteSpace(baseUri.Host));
         Assert.True(baseUri.Port > 0);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
