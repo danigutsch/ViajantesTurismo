@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
     cat >&2 <<'EOF'
-Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] [--projects-file <path>] <project> [<project> ...]
+Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] [--projects-file <path>] [<project> ...]
 EOF
 
     return 1
@@ -356,6 +356,10 @@ main() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --slice-name)
+                if [[ $# -lt 2 ]]; then
+                    usage
+                fi
+
                 slice_name="$2"
                 shift 2
                 ;;
@@ -364,6 +368,10 @@ main() {
                 shift
                 ;;
             --projects-file)
+                if [[ $# -lt 2 ]]; then
+                    usage
+                fi
+
                 projects_file="$2"
                 shift 2
                 ;;
