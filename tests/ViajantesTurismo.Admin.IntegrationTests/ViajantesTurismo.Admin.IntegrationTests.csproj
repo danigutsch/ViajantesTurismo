@@ -10,7 +10,9 @@
         <Using Include="System.Net" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="ViajantesTurismo.Admin.Contracts" />
+        <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bases" />
         <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure" />
+        <Using Include="ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Fixtures" />
         <Using Include="ViajantesTurismo.Admin.Testing" />
         <Using Include="ViajantesTurismo.Admin.Testing.Builders" />
         <Using Include="ViajantesTurismo.Admin.Testing.Integration.Helpers" />
@@ -21,6 +23,7 @@
         <PackageReference Include="Aspire.Hosting.Testing" />
         <PackageReference Include="Aspire.Hosting.PostgreSQL" />
         <PackageReference Include="Aspire.Hosting.Redis" />
+        <PackageReference Include="Npgsql" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

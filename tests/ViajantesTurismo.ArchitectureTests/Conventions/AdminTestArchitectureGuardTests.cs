@@ -44,6 +44,22 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
+            "public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
+            "await command.ExecuteNonQueryAsync(cancellationToken);");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            "public abstract class AspireSerialIntegrationTestBase(AspireSerialIntegrationTestFixture fixture) : IAsyncLifetime");
+
+        AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
+            "await fixture.ResetDatabase(cts.Token);");
+
+        AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
             "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest");
 
