@@ -23,8 +23,8 @@ Relevant local references:
 
 ### Current evidence
 
-- Stryker.NET documentation exposes an `mtp` test-runner option, but marks Microsoft Test
-  Platform support as **preview**.
+- Stryker.NET documentation exposes an `mtp` test-runner option, but marks Microsoft
+  Testing Platform support as **preview**.
 - The upstream issue `stryker-mutator/stryker-net#3117` reports that Stryker.NET does not
   handle xUnit v3 properly even without MTP enabled, producing unexpected test-case warnings
   and unusable mutation results.
@@ -35,8 +35,6 @@ Relevant local references:
 
 Even though Stryker.NET has an `mtp` mode in documentation, current upstream evidence does
 not justify treating xUnit v3 + MTP mutation runs as trustworthy for this repository.
-
-## Evaluation outcome
 
 ## Decision
 
