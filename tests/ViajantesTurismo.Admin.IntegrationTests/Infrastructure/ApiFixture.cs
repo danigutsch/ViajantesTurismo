@@ -10,9 +10,8 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
 
     private IDistributedApplicationTestingBuilder? _appBuilder;
     private DistributedApplication? _app;
-    private HttpClient? _client;
 
-    public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
+    public HttpClient Client { get; private set; } = null!;
 
     public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
@@ -25,30 +24,30 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
         using var cts = new CancellationTokenSource(ResourceStartupTimeout);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
 
-        _client = _app.CreateHttpClient(ResourceNames.Api);
+        Client = _app.CreateHttpClient(ResourceNames.Api);
     }
 
     public async ValueTask DisposeAsync()
     {
-        _client?.Dispose();
-        _client = null;
+        var app = _app;
+        var appBuilder = _appBuilder;
+        Client = null!;
+        _app = null;
+        _appBuilder = null;
 
         try
         {
-            if (_app is not null)
+            if (app is not null)
             {
-                await _app.StopAsync();
-                await _app.DisposeAsync();
+                await app.StopAsync();
+                await app.DisposeAsync();
             }
         }
         finally
         {
-            _app = null;
-
-            if (_appBuilder is not null)
+            if (appBuilder is not null)
             {
-                await _appBuilder.DisposeAsync();
-                _appBuilder = null;
+                await appBuilder.DisposeAsync();
             }
         }
     }
