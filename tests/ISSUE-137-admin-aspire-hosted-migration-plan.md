@@ -92,17 +92,24 @@ Branch name: `test/issue-137-systemtests-aspire-first-slice`
 - [x] Replace the current `E2EFixture` hybrid bootstrapping path with an
       Aspire-hosted path that discovers and uses the real AppHost-managed web and API
       resources.
-- [ ] Keep the browser seam limited to web entrypoint plus project-owned setup helpers.
-- [ ] Move any reset/baseline behavior behind fixture/base-class infrastructure.
-- [ ] Keep default test execution parallel-safe.
-- [ ] Preserve a dedicated serial base path only for scenarios that truly require exclusive baseline control.
-- [ ] Migrate one owned-data, non-serial system-test slice first.
-- [ ] Validate repeated runs to measure reliability impact for `#100`.
+- [x] Keep the browser seam limited to web entrypoint plus project-owned setup helpers.
+- [x] Move any reset/baseline behavior behind fixture/base-class infrastructure.
+- [x] Keep default test execution parallel-safe.
+- [x] Preserve a dedicated serial base path only for scenarios that truly require exclusive baseline control.
+- [x] Migrate one owned-data, non-serial system-test slice first.
+- [x] Validate repeated runs to measure reliability impact for `#100`.
 
 Suggested first migration targets:
 
 - shared navigation or feedback tests that already use owned data
 - a tours or customers slice that navigates directly by known IDs
+
+Implemented first slice:
+
+- `ViajantesTurismo.Admin.SystemTests.Shared.NavigationTests`
+- Traits: `Category=migration`, `Scope=system`, `Area=shared`, `Host=aspire`
+- Validation command: run the `NavigationTests` class in
+  `tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj`
 
 Suggested commit split:
 

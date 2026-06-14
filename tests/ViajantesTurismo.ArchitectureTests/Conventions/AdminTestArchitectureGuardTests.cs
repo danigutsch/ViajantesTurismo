@@ -86,6 +86,23 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
+    public void SystemTests_Should_Keep_Serial_Collection_Control_In_Base_Classes_Only()
+    {
+        var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
+
+        var violatingFiles = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
+                && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
+            .Where(path => File.ReadAllText(path).Contains("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal))
+            .Select(path => Path.GetRelativePath(GetRepositoryRoot(), path).Replace('\\', '/'))
+            .ToArray();
+
+        Assert.False(
+            violatingFiles.Length != 0,
+            $"Expected serial collection ownership to stay in base-class infrastructure, but found direct usage in:{Environment.NewLine}{string.Join(Environment.NewLine, violatingFiles)}");
+    }
+
+    [Fact]
     public void Admin_Hosted_Test_Infrastructure_Should_Not_Expose_Generic_ServiceProvider_Reach_Through()
     {
         var infrastructureRoots = new[]
