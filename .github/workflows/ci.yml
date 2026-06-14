@@ -96,6 +96,7 @@ jobs:
             tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
             tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
             tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj
+            tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj
             tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
 
       - name: Run fast test slice
@@ -118,6 +119,7 @@ jobs:
             tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj \
             tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj \
             tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj \
+            tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj \
             tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
 
       - name: Capture fast validation diagnostics
