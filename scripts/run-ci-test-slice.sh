@@ -15,7 +15,7 @@ json_escape_into() {
     local value="$2"
 
     value=${value//\\/\\\\}
-    value=${value//"/\\"}
+    value=${value//\"/\\\"}
     value=${value//$'\n'/\\n}
     value=${value//$'\r'/\\r}
     value=${value//$'\t'/\\t}
@@ -376,7 +376,7 @@ main() {
         usage
     fi
 
-    declare -a projects=("$@")
+    projects=("$@")
     slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
 
     build_log="TestResults/${slice_slug}-build.log"

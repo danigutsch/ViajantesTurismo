@@ -56,7 +56,7 @@ json_escape_into() {
     local value="$2"
 
     value=${value//\\/\\\\}
-    value=${value//"/\\"}
+    value=${value//\"/\\\"}
     value=${value//$'\n'/\\n}
     value=${value//$'\r'/\\r}
     value=${value//$'\t'/\\t}
