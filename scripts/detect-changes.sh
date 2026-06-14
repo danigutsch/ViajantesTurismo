@@ -95,6 +95,7 @@ low_risk_maintenance_patterns=(
     "scripts/lint-json.py"
     "scripts/lint-markdown.sh"
     "scripts/validate-commit-message.sh"
+    "setup-dev.ps1"
     "setup-dev.sh"
 )
 
