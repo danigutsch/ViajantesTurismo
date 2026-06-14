@@ -31,6 +31,18 @@ The current lifecycle flow is:
 By default, the post-create script restores NuGet packages and builds `ViajantesTurismo.slnx` unless
 `DEVCONTAINER_VERIFY_BUILD=0` is set.
 
+## Tooling taxonomy alignment
+
+- The devcontainer covers the main required contributor path by providing `.NET 10`,
+  Git, Docker access, and the repo-pinned `.NET` local tools after
+  `dotnet tool restore`.
+- Optional host tools from the README taxonomy, such as `pwsh`,
+  `PSScriptAnalyzer`, and `k6`, do not all need to be installed on the host
+  when you use the devcontainer workflow.
+- CI-owned validation such as GitHub Actions policy checks, secret scanning, and
+  workflow enforcement remains owned by CI even when you develop inside the
+  container.
+
 ## Local VS Code Dev Container workflow
 
 ### Prerequisites
