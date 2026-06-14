@@ -35,7 +35,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
             catch (PlaywrightException exception) when (attempt < maxAttempts
                 && exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
             {
-                await Page.WaitForTimeoutAsync(250);
+                // Retry immediately on transient AppHost network switches instead of relying on a fixed delay.
             }
         }
 
