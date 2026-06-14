@@ -49,8 +49,9 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Page.GetButton("Next").ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(ContactStepRegex(), new() { Timeout = 15000 });
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
+        await Expect(Page.Locator("#email")).ToBeVisibleAsync();
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
+        await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
         await Page.FillAsync("#email", email);
         await Page.FillAsync("#mobile", "+5511999990001");
