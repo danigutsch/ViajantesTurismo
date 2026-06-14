@@ -44,12 +44,16 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.Testing", "Integration", "Helpers", "DatabaseResetHelper.cs"),
+            "public static async Task ResetPublicTables(DbConnection connection, CancellationToken ct)");
+
+        AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
             "public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
-            "await command.ExecuteNonQueryAsync(cancellationToken);");
+            "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -74,6 +78,10 @@ public sealed partial class AdminTestArchitectureGuardTests
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
             "public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)");
+
+        AssertFileContains(
+            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"),
+            "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
