@@ -3,6 +3,9 @@
 This document records the repository's GitHub Actions supply-chain baseline for CI and the
 concrete controls currently implemented in workflow and helper-script paths.
 
+It records which controls the repository adopts now, which ones it explicitly avoids, and
+which ones remain deferred for a later implementation or tooling decision.
+
 ## Current posture
 
 - External GitHub Actions are SHA-pinned in `.github/workflows/**`.
@@ -33,6 +36,40 @@ Avoid these patterns in CI unless a follow-up issue explicitly approves them:
 - `curl | sh` or similar remote-script execution.
 - Ad hoc `npm`, `npx`, `pnpm`, or `yarn` installs in workflow `run` steps.
 - Unpinned package-manager installs for tools that affect required checks.
+
+## Control decisions
+
+### Adopt now
+
+- Keep external GitHub Actions pinned to full commit SHAs.
+- Keep workflow permissions read-only by default and isolate any required write scope to a
+  separate follow-up job.
+- Keep required validation paths on repository-owned scripts, locked NuGet restore, and
+  repo-pinned local tools where practical.
+- Keep direct binary downloads limited to pinned versions with checksum or registry-integrity
+  verification before execution.
+- Keep `npm` lifecycle scripts and ad hoc package-manager installs out of required CI paths.
+- Keep contributor-facing reusable logic in repository scripts or composite actions rather than
+  long workflow `run` blocks.
+
+### Reject for this repository
+
+- Do not introduce `pull_request_target` into build, test, lint, or analysis jobs that execute
+  pull request code.
+- Do not add `curl | sh` bootstrap patterns to required CI jobs.
+- Do not allow direct `npm install`, `npx`, `pnpm dlx`, or equivalent ephemeral package
+  execution in required CI checks.
+- Do not expand write-scoped automation into the primary scan or test jobs when a split
+  artifact-producing and artifact-publishing model is sufficient.
+
+### Defer for later review
+
+- Publisher provenance stronger than upstream checksums for downloaded release binaries remains
+  desirable, but current upstreams do not offer a simple repository-wide replacement path.
+- Action-source governance beyond SHA pinning and CODEOWNERS review remains deferred until the
+  repository has a concrete need for stronger organization-level policy enforcement.
+- Additional automation for action-pin freshness or download provenance auditing remains deferred
+  until maintenance cost is justified by real drift or incident pressure.
 
 ## SHA pinning policy
 
@@ -71,6 +108,15 @@ Current state:
   paths without a separate threat and maintenance review.
 - Keep workflow `run` steps thin and push reusable logic into repository scripts or local
   composite actions.
+
+## Follow-up tasks after this baseline
+
+- Continue the trust-boundary track by narrowing where secret-dependent CI paths may run and
+  how fork pull requests are skipped.
+- Decide whether local lint and helper-tool execution must match the same acquisition and trust
+  restrictions documented here for hosted CI.
+- Treat any future provenance upgrade for downloaded binaries as a dedicated follow-up change so
+  the repository can compare security gain against workflow complexity.
 
 ## Trust boundaries and follow-up
 
