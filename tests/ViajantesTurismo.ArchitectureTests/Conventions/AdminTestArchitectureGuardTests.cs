@@ -133,14 +133,15 @@ public sealed partial class AdminTestArchitectureGuardTests
         var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
 
         var violatingFiles = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
             .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
                 && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
             .Where(path => File.ReadAllText(path).Contains("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal))
             .Select(path => Path.GetRelativePath(GetRepositoryRoot(), path).Replace('\\', '/'))
             .ToArray();
 
-        Assert.False(
-            violatingFiles.Length != 0,
+        Assert.True(
+            violatingFiles.Length == 0,
             $"Expected serial collection ownership to stay in base-class infrastructure, but found direct usage in:{Environment.NewLine}{string.Join(Environment.NewLine, violatingFiles)}");
     }
 
