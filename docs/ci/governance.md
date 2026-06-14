@@ -3,6 +3,9 @@
 This document describes the repository policies that govern GitHub Actions usage,
 repository-owned CI settings, and required checks.
 
+For workflow event trust boundaries, fork PR handling, and privileged follow-up job notes,
+see [`trust-boundaries.md`](trust-boundaries.md).
+
 ## Branch protection rules
 
 Branch protection for `main` is configured to require the following status checks:
