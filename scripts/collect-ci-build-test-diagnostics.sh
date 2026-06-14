@@ -65,10 +65,25 @@ main() {
         echo "CI phase timings"
         echo "----------------"
 
-        if [[ -f "${timing_file}" ]]; then
-            cat "${timing_file}"
+        local -a timing_files=()
+
+        if [[ -d TestResults ]]; then
+            mapfile -t timing_files < <(find TestResults -maxdepth 1 -type f -name '*-phase-timings.tsv' | sort || true)
+
+            if [[ -f "${timing_file}" ]]; then
+                timing_files=("${timing_file}" "${timing_files[@]}")
+            fi
+        fi
+
+        if [[ ${#timing_files[@]} -eq 0 ]]; then
+            echo "No phase timing files were created under TestResults/."
         else
-            echo "${timing_file} was not created."
+            local timing_path
+            for timing_path in "${timing_files[@]}"; do
+                echo ">>> ${timing_path}"
+                cat "${timing_path}"
+                echo
+            done
         fi
     } > "${summary_file}"
 

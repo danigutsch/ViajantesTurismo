@@ -136,19 +136,6 @@ run_with_log() {
     return "${exit_code}"
 }
 
-run_with_log "sonar_begin" "Starting SonarScanner" "${sonar_begin_log}" \
-    dotnet tool run dotnet-sonarscanner begin \
-        "/o:${sonar_organization}" \
-        "/k:${sonar_project_key}" \
-        "/d:sonar.token=${sonar_token}" \
-        "/d:sonar.projectBaseDir=${repo_root}" \
-        "/d:sonar.coverageReportPaths=${coverage_report}" \
-        "/d:sonar.exclusions=${sonar_exclusions}" \
-        "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
-        "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
-        "/d:sonar.qualitygate.wait=true" \
-        "/d:sonar.qualitygate.timeout=300"
-
 cleanup() {
     local exit_code="$1"
     local completed_at_epoch
@@ -195,6 +182,19 @@ cleanup() {
 }
 
 trap 'cleanup "$?"; exit $?' EXIT
+
+run_with_log "sonar_begin" "Starting SonarScanner" "${sonar_begin_log}" \
+    dotnet tool run dotnet-sonarscanner begin \
+        "/o:${sonar_organization}" \
+        "/k:${sonar_project_key}" \
+        "/d:sonar.token=${sonar_token}" \
+        "/d:sonar.projectBaseDir=${repo_root}" \
+        "/d:sonar.coverageReportPaths=${coverage_report}" \
+        "/d:sonar.exclusions=${sonar_exclusions}" \
+        "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
+        "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
+        "/d:sonar.qualitygate.wait=true" \
+        "/d:sonar.qualitygate.timeout=300"
 
 run_with_log "build_solution" "Building solution" "${build_log}" \
     dotnet build ViajantesTurismo.slnx --no-restore
