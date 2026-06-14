@@ -12,11 +12,17 @@ public sealed partial class AdminTestArchitectureGuardTests
         var guideText = File.ReadAllText(guidePath);
         var architectureReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
         var architectureReadmeText = File.ReadAllText(architectureReadmePath);
+        var uiIntegrationReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "README.md");
+        var uiIntegrationReadmeText = File.ReadAllText(uiIntegrationReadmePath);
+        var uiIntegrationScaffoldTestPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "ScaffoldTests.cs");
+        var uiIntegrationScaffoldTestText = File.ReadAllText(uiIntegrationScaffoldTestPath);
 
         Assert.Contains("This file is the canonical quick-reference for the Admin test taxonomy.", guideText, StringComparison.Ordinal);
         Assert.Contains("docs/TEST_GUIDELINES.md", guideText, StringComparison.Ordinal);
         Assert.Contains("AdminTestArchitectureGuardTests", architectureReadmeText, StringComparison.Ordinal);
         Assert.Contains("tests/README.md", architectureReadmeText, StringComparison.Ordinal);
+        Assert.Contains("Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here", uiIntegrationReadmeText, StringComparison.Ordinal);
+        Assert.Contains("Project_Remains_A_Scaffold_Until_A_Real_Admin_UI_Integration_Slice_Exists", uiIntegrationScaffoldTestText, StringComparison.Ordinal);
     }
 
     [Fact]

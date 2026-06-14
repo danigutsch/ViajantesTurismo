@@ -3,6 +3,8 @@
 Hosted UI integration tests for Admin-facing surfaces.
 
 This project is intentionally scaffolded before the first real tests are moved.
+Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here instead
+of in `ViajantesTurismo.Management.WebTests` or browser-driven `ViajantesTurismo.Admin.SystemTests`.
 
 Target scope:
 
