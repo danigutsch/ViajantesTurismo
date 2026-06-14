@@ -1,7 +1,11 @@
+using System.Text.RegularExpressions;
+
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
-public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
+    private const float WizardStepTransitionTimeoutMilliseconds = 15000;
+
     [Fact]
     public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()
     {
@@ -46,8 +50,10 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
+        await Expect(Page).ToHaveURLAsync(ContactStepRegex(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page.Locator("#email")).ToBeVisibleAsync(new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
+        await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
         await Page.FillAsync("#email", email);
         await Page.FillAsync("#mobile", "+5511999990001");
@@ -153,4 +159,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
     }
+
+    [GeneratedRegex("/customers/create/contact$")]
+    private static partial Regex ContactStepRegex();
 }

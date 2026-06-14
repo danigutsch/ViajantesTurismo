@@ -73,6 +73,10 @@ This slice runs only when mediator/analyzer/source-generator paths changed. It i
 slow mediator-specific test projects so they no longer delay ordinary pull requests that do
 not touch that surface.
 
+This lane is also the repository's primary generated-output guardrail path: it owns the
+source-generator-heavy, package-consumption, and code-fix validation projects that are meant
+to catch generated-source regressions before they surface later in broader validation.
+
 ### Admin System Tests
 
 | Attribute | Value |
@@ -90,18 +94,24 @@ that CI can combine `actions/setup-dotnet` built-in caching with locked-mode res
 keeps the dependency graph reproducible across pull requests and merge commits while giving
 the cache a stable key source.
 
-For pull requests and pushes that only modify `docs/**`, `README.md`, or
-`CONTRIBUTING.md`, the affected validation jobs still run and report successful required
-checks through lightweight skip steps, but they skip the expensive restore, build,
-Playwright, and test steps. This avoids the pending required-check problem caused by
-trigger-level `paths` or `paths-ignore` filters. `Fast Validation` is also path-gated now,
-so changes isolated to heavier hosted or mediator-specific surfaces do not automatically
-re-run the cheaper fast slice.
+For pull requests and pushes that only modify `docs/**`, `README.md`, `CONTRIBUTING.md`, or
+the small allowlist of low-risk contributor-maintenance scripts in
+`scripts/detect-changes.sh` (for example `scripts/lint-all.sh` or
+`scripts/validate-commit-message.sh`), the affected validation jobs still run and report
+successful required checks through lightweight skip steps, but they skip the expensive
+restore, build, Playwright, and test steps. This avoids the pending required-check problem
+caused by trigger-level `paths` or `paths-ignore` filters. `Fast Validation` is also
+path-gated now, so changes isolated to heavier hosted or mediator-specific surfaces do not
+automatically re-run the cheaper fast slice.
 
 The change classification logic is implemented in `scripts/detect-changes.sh`, not inline
 in the workflow YAML. If the script cannot determine the diff range reliably, it fails
 open by setting all validation outputs to `true` so CI prefers extra work over a false
 skip.
+
+Test-slice project membership is now centralized under `scripts/ci-test-slices/*.txt` so the
+restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
+duplicating project lists in multiple workflow locations.
 
 SDK bump pull requests must refresh committed `packages.lock.json` files when `global.json`
 changes. The repository provides `bash scripts/refresh-sdk-lockfiles.sh` as the canonical
