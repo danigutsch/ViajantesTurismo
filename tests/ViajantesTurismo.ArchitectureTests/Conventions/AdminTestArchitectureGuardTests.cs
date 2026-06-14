@@ -65,7 +65,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileDoesNotContain(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            "protected Task ClearDatabase");
+            ProtectedClearDatabaseMemberRegex());
 
         AssertFileContains(
             Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
@@ -116,10 +116,10 @@ public sealed partial class AdminTestArchitectureGuardTests
         Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
     }
 
-    private static void AssertFileDoesNotContain(string filePath, string unexpectedText)
+    private static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
     {
         var fileContents = File.ReadAllText(filePath);
-        Assert.DoesNotContain(unexpectedText, fileContents, StringComparison.Ordinal);
+        Assert.DoesNotMatch(unexpectedPattern, fileContents);
     }
 
     private static string[] FindGenericServiceProviderReachThrough(string filePath)
@@ -168,4 +168,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
     private static partial Regex PublicServiceProviderReachThroughRegex();
+
+    [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
+    private static partial Regex ProtectedClearDatabaseMemberRegex();
 }
