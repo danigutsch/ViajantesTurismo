@@ -491,6 +491,8 @@ See [Test Guidelines](TEST_GUIDELINES.md#bdd-coverage--ci) for coverage goals an
 
 ## Related Documentation
 
+- [Analyzer Hardening Roadmap](ANALYZER_HARDENING_ROADMAP.md) - Phased analyzer adoption,
+  SharedKernel analyzer family ownership, and rollout guidance
 - [CI Overview](ci/overview.md) - GitHub Actions workflow structure, required checks, and
   links to maintainer-facing CI operations docs
 - [Test Guidelines](TEST_GUIDELINES.md) - Testing strategy and coverage goals
