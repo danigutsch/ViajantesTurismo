@@ -63,7 +63,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 
 | Area | Rule or family | Source | Current state | Current severity | Exception policy | Next step |
 | --- | --- | --- | --- | --- | --- | --- |
-| Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; suppressed in tests via `tests/Directory.Build.props` and in migrations via scoped `.editorconfig` | Tests and migrations stay scoped out through separate mechanisms today | Keep as-is and prefer `.editorconfig` scoping when future cleanup allows |
+| Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; suppressed in tests via `tests/Directory.Build.props` and in migrations via scoped `.editorconfig` | Tests and migrations stay scoped out through separate mechanisms today | Remove the broad test-project suppression and replace it with narrower policy-aligned exceptions |
 | Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Overrides and interface implementations allowed through config | Raise after remaining cleanup is low-risk |
 | CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Keep narrow scoped exceptions only when external contracts force a different name | Raise after repo cleanup |
 | CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Same as above | Raise after repo cleanup |
