@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
     cat >&2 <<'EOF'
-Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] <project> [<project> ...]
+Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] [--projects-file <path>] [<project> ...]
 EOF
 
     return 1
@@ -194,6 +194,7 @@ write_manifest() {
     local build_log="$9"
     local coverage_collection_log="${10}"
     local playwright_install_log="${11}"
+    local projects_list_file="${12}"
     local escaped_slice_name
     local escaped_slice_slug
     local escaped_status
@@ -237,18 +238,22 @@ write_manifest() {
         echo '  },'
         echo '  "projects": ['
 
-        local index
+        local first_project=true
         local escaped_project
-        for index in "${!projects[@]}"; do
-            json_escape_into escaped_project "${projects[${index}]}"
-            printf '    "%s"' "${escaped_project}"
 
-            if (( index + 1 < ${#projects[@]} )); then
-                printf ','
+        while IFS= read -r project_path; do
+            [[ -z "${project_path}" ]] && continue
+            json_escape_into escaped_project "${project_path}"
+
+            if [[ "${first_project}" == "false" ]]; then
+                printf ',\n'
             fi
 
-            printf '\n'
-        done
+            printf '    "%s"' "${escaped_project}"
+            first_project=false
+        done < "${projects_list_file}"
+
+        printf '\n'
 
         echo '  ],'
         echo '  "phases": ['
@@ -343,7 +348,8 @@ cleanup() {
         "${timings_file}" \
         "${build_log}" \
         "${coverage_collection_log}" \
-        "${playwright_install_log}"
+        "${playwright_install_log}" \
+        "${projects_list_file}"
 
     return "${exit_code}"
 }
@@ -351,16 +357,30 @@ cleanup() {
 main() {
     slice_name=""
     install_playwright=false
+    local projects_file=""
+    local -a projects=()
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --slice-name)
+                if [[ $# -lt 2 ]]; then
+                    usage
+                fi
+
                 slice_name="$2"
                 shift 2
                 ;;
             --install-playwright)
                 install_playwright=true
                 shift
+                ;;
+            --projects-file)
+                if [[ $# -lt 2 ]]; then
+                    usage
+                fi
+
+                projects_file="$2"
+                shift 2
                 ;;
             --)
                 shift
@@ -372,11 +392,28 @@ main() {
         esac
     done
 
-    if [[ -z "${slice_name}" || $# -eq 0 ]]; then
+    if [[ -z "${slice_name}" ]]; then
         usage
     fi
 
-    projects=("$@")
+    if [[ -n "${projects_file}" ]]; then
+        if [[ $# -gt 0 ]]; then
+            echo "Do not pass positional project paths when --projects-file is used." >&2
+            usage
+        fi
+
+        while IFS= read -r project_path; do
+            [[ -z "${project_path}" ]] && continue
+            projects+=("${project_path}")
+        done < "${projects_file}"
+    else
+        projects=("$@")
+    fi
+
+    if [[ ${#projects[@]} -eq 0 ]]; then
+        usage
+    fi
+
     slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
 
     build_log="TestResults/${slice_slug}-build.log"
@@ -385,8 +422,10 @@ main() {
     playwright_install_log="TestResults/${slice_slug}-playwright-install.log"
     timings_file="TestResults/${slice_slug}-phase-timings.tsv"
     manifest_file="TestResults/${slice_slug}-manifest.json"
+    projects_list_file="TestResults/${slice_slug}-projects.txt"
 
     mkdir -p TestResults
+    printf '%s\n' "${projects[@]}" > "${projects_list_file}"
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "phase" \
         "description" \

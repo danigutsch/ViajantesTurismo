@@ -83,21 +83,7 @@ jobs:
         if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-targets: |
-            tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
-            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj
-            tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj
-            tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj
-            tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj
-            tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
-            tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj
-            tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
-            tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
-            tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
-            tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
-            tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj
-            tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj
-            tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
+          restore-targets-file: scripts/ci-test-slices/fast-validation.txt
 
       - name: Run fast test slice
         if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' }}
@@ -107,20 +93,7 @@ jobs:
           mkdir -p TestResults
           bash scripts/run-ci-test-slice.sh \
             --slice-name "Fast Validation" \
-            tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj \
-            tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj \
-            tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj \
-            tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj \
-            tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
-            tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj \
-            tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj \
-            tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj \
-            tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj \
-            tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj \
-            tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj \
-            tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj \
-            tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj \
-            tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
+            --projects-file scripts/ci-test-slices/fast-validation.txt
 
       - name: Capture fast validation diagnostics
         if: ${{ failure() && steps.run-fast-validation.outcome != 'skipped' }}
@@ -184,8 +157,7 @@ jobs:
         if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-targets: |
-            tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+          restore-targets-file: scripts/ci-test-slices/admin-integration.txt
 
       - name: Run admin integration test slice
         if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' }}
@@ -195,7 +167,7 @@ jobs:
           mkdir -p TestResults
           bash scripts/run-ci-test-slice.sh \
             --slice-name "Admin Integration Tests" \
-            tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+            --projects-file scripts/ci-test-slices/admin-integration.txt
 
       - name: Capture admin integration diagnostics
         if: ${{ failure() && steps.run-admin-integration.outcome != 'skipped' }}
@@ -259,10 +231,7 @@ jobs:
         if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-targets: |
-            tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj
-            tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj
-            tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
+          restore-targets-file: scripts/ci-test-slices/mediator-heavy.txt
 
       - name: Run mediator heavy test slice
         if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' }}
@@ -272,9 +241,7 @@ jobs:
           mkdir -p TestResults
           bash scripts/run-ci-test-slice.sh \
             --slice-name "Mediator Heavy Tests" \
-            tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj \
-            tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj \
-            tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj
+            --projects-file scripts/ci-test-slices/mediator-heavy.txt
 
       - name: Capture mediator heavy diagnostics
         if: ${{ failure() && steps.run-mediator-heavy.outcome != 'skipped' }}
@@ -338,8 +305,7 @@ jobs:
         if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
-          restore-targets: |
-            tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
+          restore-targets-file: scripts/ci-test-slices/admin-system.txt
 
       - name: Run admin system test slice
         if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' }}
@@ -350,7 +316,7 @@ jobs:
           bash scripts/run-ci-test-slice.sh \
             --slice-name "Admin System Tests" \
             --install-playwright \
-            tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj
+            --projects-file scripts/ci-test-slices/admin-system.txt
 
       - name: Capture admin system diagnostics
         if: ${{ failure() && steps.run-admin-system.outcome != 'skipped' }}
