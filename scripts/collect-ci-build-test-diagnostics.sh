@@ -9,6 +9,7 @@ main() {
 
     local diagnostics_dir="TestResults/ci-diagnostics"
     local summary_file="${diagnostics_dir}/ci-validation-summary.txt"
+    local timing_file="TestResults/ci-phase-timings.tsv"
 
     mkdir -p "${diagnostics_dir}"
 
@@ -59,6 +60,30 @@ main() {
             find tests -path '*/TestResults/*' -type f | sort || true
         else
             echo "tests directory was not found."
+        fi
+        echo
+        echo "CI phase timings"
+        echo "----------------"
+
+        local -a timing_files=()
+
+        if [[ -d TestResults ]]; then
+            mapfile -t timing_files < <(find TestResults -maxdepth 1 -type f -name '*-phase-timings.tsv' | sort || true)
+
+            if [[ -f "${timing_file}" ]]; then
+                timing_files=("${timing_file}" "${timing_files[@]}")
+            fi
+        fi
+
+        if [[ ${#timing_files[@]} -eq 0 ]]; then
+            echo "No phase timing files were created under TestResults/."
+        else
+            local timing_path
+            for timing_path in "${timing_files[@]}"; do
+                echo ">>> ${timing_path}"
+                cat "${timing_path}"
+                echo
+            done
         fi
     } > "${summary_file}"
 

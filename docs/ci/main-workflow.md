@@ -23,7 +23,7 @@ protected branch keeps its post-merge validation history intact.
 
 **Steps:**
 
-1. Wait for both `detect-changes` and `lint` to complete successfully.
+1. Wait for `detect-changes` to complete successfully.
 2. Read the `fast_validation_required` decision from `detect-changes`.
 3. If only documentation changed, run a lightweight success step so the required
    `Fast Validation` check resolves cleanly without starting the expensive validation
@@ -133,8 +133,9 @@ command for that maintenance step.
    artifacts.
 7. Run `bash scripts/run-sonar-analysis.sh` in reuse mode so SonarScanner performs a fresh
    build and end step but does not rerun tests.
-8. Publish a GitHub summary from `TestResults/sonar-analysis.log` and upload the coverage
-   report, `sonar-coverage`, and `sonar-analysis-log` artifacts.
+8. Publish a GitHub summary from `TestResults/sonar-analysis.log` that includes the
+   quality gate status, SonarCloud link, warning count, and captured phase timings, then
+   upload the coverage report, `sonar-coverage`, and `sonar-analysis-log` artifacts.
 
 This job remains the dedicated required `SonarCloud` check, but it now aggregates coverage
 from the parallel test slices before performing hosted analysis.
