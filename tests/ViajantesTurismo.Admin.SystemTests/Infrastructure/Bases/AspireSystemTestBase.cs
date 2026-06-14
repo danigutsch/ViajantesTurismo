@@ -27,19 +27,28 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            try
+            if (await TryNavigate(relativePath, canRetry: attempt < maxAttempts))
             {
-                await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
                 return;
-            }
-            catch (PlaywrightException exception) when (attempt < maxAttempts
-                && exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
-            {
-                await Page.WaitForTimeoutAsync(250);
             }
         }
 
         throw new InvalidOperationException($"Navigation to '{relativePath}' did not complete after {maxAttempts} attempts.");
+    }
+
+    private async Task<bool> TryNavigate(string relativePath, bool canRetry)
+    {
+        try
+        {
+            await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            return true;
+        }
+        catch (PlaywrightException exception) when (canRetry
+            && exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
+        {
+            // Retry immediately on transient AppHost network switches instead of relying on a fixed delay.
+            return false;
+        }
     }
 
     protected async Task<string> ReadBookingDetailsBadgeText(Guid bookingId, string label)
