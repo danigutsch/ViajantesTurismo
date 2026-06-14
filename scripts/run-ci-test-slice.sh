@@ -194,6 +194,7 @@ write_manifest() {
     local build_log="$9"
     local coverage_collection_log="${10}"
     local playwright_install_log="${11}"
+    local projects_list_file="${12}"
     local escaped_slice_name
     local escaped_slice_slug
     local escaped_status
@@ -237,18 +238,21 @@ write_manifest() {
         echo '  },'
         echo '  "projects": ['
 
-        local index
+        local index=0
         local escaped_project
-        for index in "${!projects[@]}"; do
-            json_escape_into escaped_project "${projects[${index}]}"
+
+        while IFS= read -r project_path; do
+            [[ -z "${project_path}" ]] && continue
+            json_escape_into escaped_project "${project_path}"
             printf '    "%s"' "${escaped_project}"
 
-            if (( index + 1 < ${#projects[@]} )); then
+            if (( index + 1 < project_count )); then
                 printf ','
             fi
 
             printf '\n'
-        done
+            index=$((index + 1))
+        done < "${projects_list_file}"
 
         echo '  ],'
         echo '  "phases": ['
@@ -343,7 +347,8 @@ cleanup() {
         "${timings_file}" \
         "${build_log}" \
         "${coverage_collection_log}" \
-        "${playwright_install_log}"
+        "${playwright_install_log}" \
+        "${projects_list_file}"
 
     return "${exit_code}"
 }
@@ -351,7 +356,8 @@ cleanup() {
 main() {
     slice_name=""
     install_playwright=false
-    projects_file=""
+    local projects_file=""
+    local -a projects=()
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -389,8 +395,6 @@ main() {
         usage
     fi
 
-    projects=()
-
     if [[ -n "${projects_file}" ]]; then
         while IFS= read -r project_path; do
             [[ -z "${project_path}" ]] && continue
@@ -412,8 +416,11 @@ main() {
     playwright_install_log="TestResults/${slice_slug}-playwright-install.log"
     timings_file="TestResults/${slice_slug}-phase-timings.tsv"
     manifest_file="TestResults/${slice_slug}-manifest.json"
+    projects_list_file="TestResults/${slice_slug}-projects.txt"
+    project_count=${#projects[@]}
 
     mkdir -p TestResults
+    printf '%s\n' "${projects[@]}" > "${projects_list_file}"
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "phase" \
         "description" \
