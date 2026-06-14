@@ -56,8 +56,8 @@ This direction is already effectively adopted.
 
 The public sender contract today is:
 
-- `ISender.Send<TResponse>(IRequest<TResponse> request, CancellationToken ct)`
-- `ISender.Send<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct)`
+- `ValueTask<TResponse> ISender.Send<TResponse>(IRequest<TResponse> request, CancellationToken ct)`
+- `IAsyncEnumerable<TResponse> ISender.Send<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct)`
 
 The generator still emits strongly typed overloads on `AppMediator`, but those are an
 implementation detail of the generated mediator shell rather than a separate public routing
