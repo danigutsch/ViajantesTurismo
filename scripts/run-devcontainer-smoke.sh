@@ -92,6 +92,24 @@ PY
     return 0
 }
 
+get_cli_tarball_url() {
+    local metadata_file="$1"
+
+    python3 - "${metadata_file}" <<'PY'
+import json
+import sys
+
+metadata_path = sys.argv[1]
+
+with open(metadata_path, encoding="utf-8") as metadata_stream:
+    metadata = json.load(metadata_stream)
+
+print(metadata["dist"]["tarball"])
+PY
+
+    return 0
+}
+
 print_step() {
     local message="$1"
 
@@ -146,6 +164,7 @@ ensure_devcontainer_cli() {
     local cli_archive
     local node_root
     local cli_root
+    local cli_tarball_url
 
     require_command curl
     require_command python3
@@ -179,8 +198,9 @@ ensure_devcontainer_cli() {
         download_with_tls \
             "https://registry.npmjs.org/@devcontainers/cli/${devcontainer_cli_version}" \
             "${cli_metadata}"
+        cli_tarball_url="$(get_cli_tarball_url "${cli_metadata}")"
         download_with_tls \
-            "https://registry.npmjs.org/@devcontainers/cli/-/cli-${devcontainer_cli_version}.tgz" \
+            "${cli_tarball_url}" \
             "${cli_archive}"
         verify_cli_archive "${cli_archive}" "${cli_metadata}"
 

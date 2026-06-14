@@ -1,7 +1,7 @@
 # CI security hardening baseline
 
 This document records the repository's GitHub Actions supply-chain baseline for CI and the
- concrete controls currently implemented in workflow and helper-script paths.
+concrete controls currently implemented in workflow and helper-script paths.
 
 ## Current posture
 
