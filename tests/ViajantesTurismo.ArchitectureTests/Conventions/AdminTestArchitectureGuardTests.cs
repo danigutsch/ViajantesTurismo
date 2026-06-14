@@ -58,6 +58,10 @@ public sealed partial class AdminTestArchitectureGuardTests
             "public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDisposable");
 
         AssertFileContains(
+            Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestCollection.cs"),
+            "[CollectionDefinition(IntegrationTestCollections.Serial, DisableParallelization = true)]");
+
+        AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
             "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
 
