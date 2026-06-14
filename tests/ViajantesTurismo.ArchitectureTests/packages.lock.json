@@ -705,6 +705,9 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.8, )"
         }
       },
+      "sharedkernel.testing": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.apiservice": {
         "type": "Project",
         "dependencies": {

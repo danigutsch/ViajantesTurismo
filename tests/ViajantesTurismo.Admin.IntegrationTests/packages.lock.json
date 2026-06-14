@@ -952,6 +952,9 @@
       "sharedkernel.functional": {
         "type": "Project"
       },
+      "sharedkernel.testing": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {

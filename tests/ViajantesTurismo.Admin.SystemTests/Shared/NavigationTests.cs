@@ -1,7 +1,12 @@
 using System.Text.RegularExpressions;
+using TestTraits = ViajantesTurismo.Admin.SystemTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
+[Trait(TestTraits.CategoryName, TestTraits.MigrationCategory)]
+[Trait(TestTraits.ScopeName, TestTraits.SystemScope)]
+[Trait(TestTraits.AreaName, TestTraits.SharedArea)]
+[Trait(TestTraits.HostName, TestTraits.AspireHost)]
 public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string AddTourTitle = "Add Tour";

@@ -106,9 +106,9 @@ public class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystem
 
 /// <summary>
 /// Serial E2E tests for the full import commit flow (UI-4).
-/// Clean-slate tests that import actual data.
+/// This path stays serial because it commits real imported rows and validates the
+/// resulting clean-slate summary state after infrastructure-owned resets.
 /// </summary>
-[Collection(E2ETestCollections.Serial)]
 public partial class CustomerImportSerialTests(AspireSerialSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
 {
     [Fact]
