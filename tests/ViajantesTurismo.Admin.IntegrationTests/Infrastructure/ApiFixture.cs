@@ -10,8 +10,9 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
 
     private IDistributedApplicationTestingBuilder? _appBuilder;
     private DistributedApplication? _app;
+    private HttpClient? _client;
 
-    public HttpClient Client { get; private set; } = null!;
+    public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
@@ -24,16 +25,19 @@ public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdm
         using var cts = new CancellationTokenSource(ResourceStartupTimeout);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
 
-        Client = _app.CreateHttpClient(ResourceNames.Api);
+        _client = _app.CreateHttpClient(ResourceNames.Api);
     }
 
     public async ValueTask DisposeAsync()
     {
+        var client = _client;
         var app = _app;
         var appBuilder = _appBuilder;
-        Client = null!;
+        _client = null;
         _app = null;
         _appBuilder = null;
+
+        client?.Dispose();
 
         try
         {
