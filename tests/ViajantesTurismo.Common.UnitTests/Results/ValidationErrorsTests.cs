@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
@@ -19,7 +19,7 @@ public sealed class ValidationErrorsTests
     public void Add_Generic_Accepts_Invalid_Result()
     {
         var errors = new ValidationErrors();
-        var error = Result<int>.Invalid("Validation failed", "Age", "Age must be positive");
+        var error = Result.Invalid<int>("Validation failed", "Age", "Age must be positive");
 
         errors.Add(error);
 
@@ -40,7 +40,7 @@ public sealed class ValidationErrorsTests
     public void Add_Generic_Throws_When_Result_Is_Not_Invalid()
     {
         var errors = new ValidationErrors();
-        var successResult = Result<int>.Ok(42);
+        var successResult = Result.Ok(42);
 
         var exception = Assert.Throws<InvalidOperationException>(() => errors.Add(successResult));
         Assert.Contains("Only validation errors can be added", exception.Message, StringComparison.Ordinal);
@@ -68,7 +68,7 @@ public sealed class ValidationErrorsTests
     public void To_Result_Generic_Returns_Single_Error_When_Only_One_Error_Exists()
     {
         var errors = new ValidationErrors();
-        var singleError = Result<int>.Invalid("Validation failed", "Age", "Age must be positive");
+        var singleError = Result.Invalid<int>("Validation failed", "Age", "Age must be positive");
         errors.Add(singleError);
 
         var result = errors.ToResult<int>();
@@ -104,8 +104,8 @@ public sealed class ValidationErrorsTests
     public void To_Result_Generic_Merges_Multiple_Errors_From_Different_Fields()
     {
         var errors = new ValidationErrors();
-        errors.Add(Result<int>.Invalid("Error 1", "Name", "Name is required"));
-        errors.Add(Result<int>.Invalid("Error 2", "Age", "Age must be positive"));
+        errors.Add(Result.Invalid<int>("Error 1", "Name", "Name is required"));
+        errors.Add(Result.Invalid<int>("Error 2", "Age", "Age must be positive"));
 
         var result = errors.ToResult<int>();
 
@@ -133,7 +133,7 @@ public sealed class ValidationErrorsTests
         Assert.Equal("Multiple validation errors occurred.", result.ErrorDetails.Detail);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.Single(result.ErrorDetails.ValidationErrors);
-        Assert.Equal(2, result.ErrorDetails.ValidationErrors["Name"].Length);
+        Assert.Equal(2, result.ErrorDetails.ValidationErrors["Name"].Count);
         Assert.Contains("Name is required", result.ErrorDetails.ValidationErrors["Name"]);
         Assert.Contains("Name must be at least 3 characters", result.ErrorDetails.ValidationErrors["Name"]);
     }
@@ -178,7 +178,7 @@ public sealed class ValidationErrorsTests
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error 1", "Name", "Name is required"));
-        errors.Add(Result<int>.Invalid("Error 2", "Age", "Age must be positive"));
+        errors.Add(Result.Invalid<int>("Error 2", "Age", "Age must be positive"));
 
         var result = errors.ToResult();
 

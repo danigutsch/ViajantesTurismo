@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
@@ -73,7 +73,7 @@ public sealed class Discount
     {
         if (type == DiscountType.None)
         {
-            return new Discount(DiscountType.None, 0m, null);
+            return Result.Ok(new Discount(DiscountType.None, 0m, null));
         }
 
         var sanitizedAmount = NumericSanitizer.SanitizePrice(amount);
@@ -113,6 +113,6 @@ public sealed class Discount
             return errors.ToResult<Discount>();
         }
 
-        return new Discount(type, sanitizedAmount, sanitizedReason);
+        return Result.Ok(new Discount(type, sanitizedAmount, sanitizedReason));
     }
 }

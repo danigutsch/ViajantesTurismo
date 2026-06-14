@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Common.BuildingBlocks;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
@@ -250,8 +250,8 @@ public sealed class Booking : Entity<Guid>
             return DiscountErrors.FinalPriceNotPositive(finalPrice).ConvertError<Booking>();
         }
 
-        return new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
-            discount, notes);
+        return Result.Ok(new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
+            discount, notes));
     }
 
 
@@ -525,6 +525,6 @@ public sealed class Booking : Entity<Guid>
         var payment = paymentResult.Value;
         _payments.Add(payment);
 
-        return payment;
+        return Result.Ok(payment);
     }
 }

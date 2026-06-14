@@ -52,4 +52,4 @@ Each `Handle` method should:
 
 - `AGENTS.md` (repository root)
 - `docs/CODING_GUIDELINES.md`
-- `src/ViajantesTurismo.Common/FUNCTIONAL_PATTERNS.md`
+- `src/SharedKernel/SharedKernel.Functional/README.md`

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Common.BuildingBlocks;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
@@ -132,6 +132,6 @@ public sealed class Payment : Entity<Guid>
             return errors.ToResult<Payment>();
         }
 
-        return new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, now);
+        return Result.Ok(new Payment(bookingId, amount, paymentDate, method, referenceNumber, notes, now));
     }
 }

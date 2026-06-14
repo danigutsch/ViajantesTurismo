@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
@@ -8,7 +8,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Failed_Result_Returns_Failed_Result_With_Same_Errors()
     {
         // Arrange
-        var sourceResult = Result<string>.Invalid("Original error", "field", "message");
+        var sourceResult = Result.Invalid<string>("Original error", "field", "message");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -28,7 +28,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Not_Found_Result_Preserves_Not_Found_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.NotFound("Resource not found");
+        var sourceResult = Result.NotFound<string>("Resource not found");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -44,7 +44,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Conflict_Result_Preserves_Conflict_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.Conflict("Conflict occurred");
+        var sourceResult = Result.Conflict<string>("Conflict occurred");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -60,7 +60,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Unauthorized_Result_Preserves_Unauthorized_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.Unauthorized("Unauthorized access");
+        var sourceResult = Result.Unauthorized<string>("Unauthorized access");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -76,7 +76,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Forbidden_Result_Preserves_Forbidden_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.Forbidden("Access forbidden");
+        var sourceResult = Result.Forbidden<string>("Access forbidden");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -92,7 +92,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Error_Result_Preserves_Error_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.Error("Internal error");
+        var sourceResult = Result.Error<string>("Internal error");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -108,7 +108,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Critical_Error_Result_Preserves_Critical_Error_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.CriticalError("Critical failure");
+        var sourceResult = Result.CriticalError<string>("Critical failure");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -124,7 +124,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Unavailable_Result_Preserves_Unavailable_Status()
     {
         // Arrange
-        var sourceResult = Result<string>.Unavailable("Service unavailable");
+        var sourceResult = Result.Unavailable<string>("Service unavailable");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, int>();
@@ -140,7 +140,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_With_Successful_Result_Throws_Invalid_Operation_Exception()
     {
         // Arrange
-        var sourceResult = Result<string>.Ok("Success");
+        var sourceResult = Result.Ok("Success");
 
         // Act
         // Assert
@@ -155,9 +155,9 @@ public class ResultConvertErrorGenericToGenericTests
     {
         // Arrange
         var errors = new ValidationErrors();
-        errors.Add(Result<string>.Invalid("Error 1", "field1", "message1"));
-        errors.Add(Result<string>.Invalid("Error 2", "field2", "message2"));
-        errors.Add(Result<string>.Invalid("Error 3", "field3", "message3"));
+        errors.Add(Result.Invalid<string>("Error 1", "field1", "message1"));
+        errors.Add(Result.Invalid<string>("Error 2", "field2", "message2"));
+        errors.Add(Result.Invalid<string>("Error 3", "field3", "message3"));
         var sourceResult = errors.ToResult<string>();
 
         // Act
@@ -178,7 +178,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_Between_Different_Types_Converts_Successfully()
     {
         // Arrange
-        var sourceResult = Result<string>.NotFound("Entity not found");
+        var sourceResult = Result.NotFound<string>("Entity not found");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, List<int>>();
@@ -194,7 +194,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_From_Value_Type_To_Reference_Type_Converts_Successfully()
     {
         // Arrange
-        var sourceResult = Result<int>.Invalid("Invalid number", "number", "Must be positive");
+        var sourceResult = Result.Invalid<int>("Invalid number", "number", "Must be positive");
 
         // Act
         var convertedResult = sourceResult.ConvertError<int, string>();
@@ -213,7 +213,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_From_Reference_Type_To_Value_Type_Converts_Successfully()
     {
         // Arrange
-        var sourceResult = Result<string>.Conflict("Duplicate entry");
+        var sourceResult = Result.Conflict<string>("Duplicate entry");
 
         // Act
         var convertedResult = sourceResult.ConvertError<string, decimal>();
@@ -229,7 +229,7 @@ public class ResultConvertErrorGenericToGenericTests
     public void Convert_Error_Chained_Conversion_Preserves_Original_Errors()
     {
         // Arrange
-        var originalResult = Result<string>.Invalid("Original error", "field", "message");
+        var originalResult = Result.Invalid<string>("Original error", "field", "message");
 
         // Act
         var firstConversion = originalResult.ConvertError<string, int>();

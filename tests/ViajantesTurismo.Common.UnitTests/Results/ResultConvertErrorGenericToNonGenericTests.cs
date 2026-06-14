@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
@@ -8,7 +8,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Invalid_Result()
     {
         // Arrange
-        var sourceResult = Result<string>.Invalid("Validation error", "field", "message");
+        var sourceResult = Result.Invalid<string>("Validation error", "field", "message");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -27,7 +27,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_NotFound_Result()
     {
         // Arrange
-        var sourceResult = Result<int>.NotFound("Entity not found");
+        var sourceResult = Result.NotFound<int>("Entity not found");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -43,7 +43,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Conflict_Result()
     {
         // Arrange
-        var sourceResult = Result<decimal>.Conflict("Duplicate key");
+        var sourceResult = Result.Conflict<decimal>("Duplicate key");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -59,7 +59,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Unauthorized_Result()
     {
         // Arrange
-        var sourceResult = Result<bool>.Unauthorized("Not authorized");
+        var sourceResult = Result.Unauthorized<bool>("Not authorized");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -75,7 +75,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Forbidden_Result()
     {
         // Arrange
-        var sourceResult = Result<string>.Forbidden("Forbidden access");
+        var sourceResult = Result.Forbidden<string>("Forbidden access");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -91,7 +91,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Error_Result()
     {
         // Arrange
-        var sourceResult = Result<List<int>>.Error("Processing error");
+        var sourceResult = Result.Error<List<int>>("Processing error");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -107,7 +107,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_CriticalError_Result()
     {
         // Arrange
-        var sourceResult = Result<Dictionary<string, int>>.CriticalError("Critical failure");
+        var sourceResult = Result.CriticalError<Dictionary<string, int>>("Critical failure");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -123,7 +123,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Unavailable_Result()
     {
         // Arrange
-        var sourceResult = Result<DateTime>.Unavailable("Service unavailable");
+        var sourceResult = Result.Unavailable<DateTime>("Service unavailable");
 
         // Act
         var convertedResult = sourceResult.ConvertError();
@@ -139,7 +139,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     public void Generic_ConvertError_To_NonGeneric_With_Successful_Result_Throws_InvalidOperationException()
     {
         // Arrange
-        var sourceResult = Result<string>.Ok("Success");
+        var sourceResult = Result.Ok("Success");
 
         // Act
         // Assert
@@ -154,9 +154,9 @@ public class ResultConvertErrorGenericToNonGenericTests
     {
         // Arrange
         var errors = new ValidationErrors();
-        errors.Add(Result<int>.Invalid("Error 1", "field1", "message1"));
-        errors.Add(Result<int>.Invalid("Error 2", "field2", "message2"));
-        errors.Add(Result<int>.Invalid("Error 3", "field3", "message3"));
+        errors.Add(Result.Invalid<int>("Error 1", "field1", "message1"));
+        errors.Add(Result.Invalid<int>("Error 2", "field2", "message2"));
+        errors.Add(Result.Invalid<int>("Error 3", "field3", "message3"));
         var sourceResult = errors.ToResult<int>();
 
         // Act
