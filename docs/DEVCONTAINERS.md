@@ -104,6 +104,12 @@ The script:
 - writes logs to `TestResults/devcontainer-smoke`
 - removes the temporary container automatically when it finishes
 
+Current host support note:
+
+- the repo-owned Dev Container CLI bootstrap path currently supports Linux `x86_64` hosts
+- on other host OS or architecture combinations, set `DEVCONTAINER_CLI_PREFIX` to a
+  compatible preinstalled Dev Container CLI path before running the script
+
 If you want to keep the container around for inspection after a failure, set
 `DEVCONTAINER_SMOKE_KEEP_CONTAINER=1` before running the script.
 

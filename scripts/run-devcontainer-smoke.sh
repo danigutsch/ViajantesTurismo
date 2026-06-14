@@ -110,6 +110,23 @@ require_command() {
     return 0
 }
 
+require_supported_devcontainer_cli_host() {
+    local os_name
+    local architecture_name
+
+    os_name="$(uname -s)"
+    architecture_name="$(uname -m)"
+
+    if [[ "${os_name}" != "Linux" || "${architecture_name}" != "x86_64" ]]; then
+        printf "The repo-owned Dev Container CLI bootstrap currently supports only Linux x86_64 hosts.\n" >&2
+        printf "Current host: %s %s\n" "${os_name}" "${architecture_name}" >&2
+        printf "Set DEVCONTAINER_CLI_PREFIX to a compatible preinstalled CLI path or use the supported host path.\n" >&2
+        exit 1
+    fi
+
+    return 0
+}
+
 run_devcontainer_cli() {
     local args=("$@")
 
@@ -134,6 +151,7 @@ ensure_devcontainer_cli() {
     require_command python3
     require_command tar
     require_command sha256sum
+    require_supported_devcontainer_cli_host
 
     (
         set -euo pipefail
