@@ -23,7 +23,7 @@ We implement test parallelization using:
     Integration test assembly:
 
     ```csharp
-    [assembly: AssemblyFixture(typeof(ApiFixture))]
+    [assembly: Xunit.AssemblyFixture(typeof(ApiFixture))]
     ```
 
     System test assembly:
