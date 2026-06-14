@@ -23,7 +23,8 @@ The repository already has a stronger analyzer baseline than when `#132` was ope
 - `Directory.Build.props` enables `TreatWarningsAsErrors`, `CodeAnalysisTreatWarningsAsErrors`,
   `EnforceCodeStyleInBuild`, `AnalysisLevel=latest`, and `AnalysisMode=All`.
 - `SonarAnalyzer.CSharp` is referenced centrally for ordinary builds.
-- `.editorconfig` owns scoped severity tuning and exception policy.
+- `.editorconfig` owns most scoped severity tuning and exception policy, while test-project-wide
+  exceptions still include a small `NoWarn` set in `tests/Directory.Build.props`.
 
 ### SharedKernel analyzer families already shipped
 
@@ -62,7 +63,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 
 | Area | Rule or family | Source | Current state | Current severity | Exception policy | Next step |
 | --- | --- | --- | --- | --- | --- | --- |
-| Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production, `none` in tests/migrations | Tests and migrations stay scoped out | Keep as-is |
+| Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; suppressed in tests via `tests/Directory.Build.props` and in migrations via scoped `.editorconfig` | Tests and migrations stay scoped out through separate mechanisms today | Keep as-is and prefer `.editorconfig` scoping when future cleanup allows |
 | Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Overrides and interface implementations allowed through config | Raise after remaining cleanup is low-risk |
 | CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Keep narrow scoped exceptions only when external contracts force a different name | Raise after repo cleanup |
 | CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Same as above | Raise after repo cleanup |
@@ -96,7 +97,9 @@ Concrete Phase 1 backlog:
 2. Shrink file-specific `SKSTYLE004` exceptions as grouped top-level-type files are refactored.
 3. Measure remaining repository violations before raising `SKSTYLE001`, `SKSTYLE002`, or
    `SKSTYLE003` above `suggestion`.
-4. Keep all exceptions in `.editorconfig` file-scoped where possible; avoid `NoWarn` expansion as
+4. Remove the broad test-project `CA1062` suppression from `tests/Directory.Build.props` once the
+   remaining test violations are cleaned up or narrowed to truly intentional exceptions.
+5. Keep all exceptions in `.editorconfig` file-scoped where possible; avoid `NoWarn` expansion as
    the default answer.
 
 ### Phase 2: extend SharedKernel custom analyzers and code fixes
@@ -190,9 +193,11 @@ When adopting or tightening analyzer rules:
    top-level types.
 2. Measure repository violations for `SKSTYLE001` through `SKSTYLE003` and decide whether any can
    move from `suggestion` to `warning`.
-3. Review existing `IDE*` and `CA*` severities for additional high-signal candidates that can be
+3. Remove the broad test-project `CA1062` `NoWarn` suppression and replace it with narrower
+   exceptions only where test code still has a justified boundary reason.
+4. Review existing `IDE*` and `CA*` severities for additional high-signal candidates that can be
    promoted without broad churn.
-4. Evaluate the next repo-specific custom style rules only after that built-in and already-shipped
+5. Evaluate the next repo-specific custom style rules only after that built-in and already-shipped
    analyzer adoption work is complete.
 
 ## Recommendation summary
