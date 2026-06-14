@@ -53,7 +53,8 @@ write-scoped GitHub token permissions.
 
 ## Follow-up direction
 
-- `#112` remains the broader CI supply-chain baseline for tool acquisition and pinning.
+- The CI supply-chain baseline for tool acquisition and pinning is now documented in
+  [security-hardening.md](security-hardening.md).
 - `#130` should decide whether local lint and helper-tool execution needs the same trust
   restrictions and documentation level as hosted CI.
 - `#131` should stay blocked until the repository accepts both the CI supply-chain baseline
