@@ -5,6 +5,9 @@ internal static class CustomerImportCsvTestData
     public static string AllCanonicalHeaders =>
         string.Join(",", CustomerImportHeaderMatcher.Fields.Select(importField => importField.Name));
 
+    public static string AllCanonicalValues =>
+        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(_ => "v"));
+
     public static string BuildCsvWithEmail(string email)
     {
         var values = CustomerImportHeaderMatcher.Fields
