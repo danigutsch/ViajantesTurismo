@@ -116,6 +116,10 @@ Optional local tools by task:
 - `k6`: optional performance/load testing under `tests/performance/`
 - `shellcheck`: optional unless you want to run CI-owned lint scripts locally
 
+The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
+`.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package
+execution. See [docs/local-tool-security.md](docs/local-tool-security.md).
+
 ### Manual Setup (Alternative)
 
 If you prefer manual setup or the automated script doesn't work:
