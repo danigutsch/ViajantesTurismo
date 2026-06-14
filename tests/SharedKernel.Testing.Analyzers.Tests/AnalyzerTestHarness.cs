@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using SharedKernel.Testing.Roslyn;
 
-namespace SharedKernel.Style.Analyzers.Tests;
+namespace SharedKernel.Testing.Analyzers.Tests;
 
 internal static class AnalyzerTestHarness
 {
@@ -20,7 +20,7 @@ internal static class AnalyzerTestHarness
 
     public static CSharpCompilation CreateCompilation(
         string source,
-        string assemblyName = "SharedKernel.Style.Analyzers.Tests.Dynamic")
+        string assemblyName = "SharedKernel.Testing.Analyzers.Tests.Dynamic")
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(DefaultUsings + source, new CSharpParseOptions(LanguageVersion.Preview));
 
@@ -33,12 +33,11 @@ internal static class AnalyzerTestHarness
 
     public static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnostics(
         string source,
-        ImmutableDictionary<string, string>? globalOptions = null,
-        string assemblyName = "SharedKernel.Style.Analyzers.Tests.Dynamic")
+        string assemblyName = "SharedKernel.Testing.Analyzers.Tests.Dynamic")
     {
         var compilation = CreateCompilation(source, assemblyName);
-        var analyzer = new SharedKernelStyleAnalyzer();
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider(globalOptions);
+        var analyzer = new SharedKernelTestingAnalyzer();
+        var optionsProvider = new TestAnalyzerConfigOptionsProvider(ImmutableDictionary<string, string>.Empty);
         var analyzerOptions = new AnalyzerOptions([]);
         var compilationOptions = new CompilationWithAnalyzersOptions(
             analyzerOptions,
