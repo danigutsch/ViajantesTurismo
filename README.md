@@ -116,16 +116,17 @@ Optional local tools by task:
 - `k6`: optional performance/load testing under `tests/performance/`
 - `shellcheck`: optional unless you want to run CI-owned lint scripts locally
 
-CI-only tooling by default:
+CI-only tools by default:
 
-- Markdown, Gherkin, and JSON linting remain CI-owned unless you intentionally run the repository wrappers locally
-- GitHub Actions validation, secret scanning, and workflow policy checks are CI-owned
+- Markdown/Gherkin/JSON lint containers and wrappers used by `bash scripts/lint-all.sh`
+- SonarCloud scanner and hosted quality-gate processing
+- dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
 
 Devcontainer-provided tools:
 
-- The documented devcontainer supplies `.NET 10`, Git, Docker-in-Docker, and repository VS Code extensions
-- The documented devcontainer also restores the repo-pinned `.NET` local tools, including the Aspire CLI
-- Use this path when you want a containerized setup without installing every optional helper tool on the host
+- the repo-pinned .NET SDK and restored local .NET tools inside the container
+- Git and Docker access inside the documented VS Code Dev Container workflow
+- repository-specific VS Code extensions and settings from `.devcontainer/**`
 
 Local worktree convention:
 
