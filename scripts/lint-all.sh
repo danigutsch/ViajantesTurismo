@@ -106,6 +106,6 @@ if [[ "${skip_markdown}" != true ]]; then
     if command -v mdspell >/dev/null 2>&1; then
         mdspell --en-us --report "docs/**/*.md" || true
     else
-        echo "Optional: Install markdown-spellcheck (mdspell) to enable spell checking. Skipping..." >&2
+        echo "Optional: mdspell is best-effort only; prefer the repo's npm-minimized lint model and skip it unless you already trust a local install. See docs/local-tool-security.md." >&2
     fi
 fi

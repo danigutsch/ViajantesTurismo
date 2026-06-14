@@ -17,6 +17,18 @@ This project uses automated tools to enforce consistent formatting and style acr
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code
   formatting (.NET SDK tool)
 
+## Local Tool Security Model
+
+The repository's local lint and helper-tool posture is intentionally npm-minimized.
+
+- Prefer repo-pinned `.NET` local tools, repository-owned scripts, and Dockerized wrappers.
+- Prefer vendor or OS package installs for optional standalone tools.
+- Avoid adding `npx`, global npm installs, or other transient package execution to supported
+  local lint flows unless a dedicated review approves that exception.
+
+See [Local tool security model](local-tool-security.md) for the explicit allowed/blocked
+patterns and follow-up checklist.
+
 ## Why Automated Quality Checks?
 
 Following industry best practices from projects
@@ -348,6 +360,8 @@ The repository no longer installs git hooks by default.
 - If you previously installed repository hooks from an older revision, remove or replace the copied
   files under `git rev-parse --git-path hooks` so commits do not keep calling deleted npm-based
   hook scripts.
+- For the repository's explicit local helper-tool acquisition rules, see
+  [Local tool security model](local-tool-security.md).
 
 ## Commit Message Conventions
 
