@@ -5,36 +5,10 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Bookings;
 [Binding]
 public sealed class BookingEntitySteps(BookingContext bookingContext)
 {
-    private static Result<Booking> CreateBookingWithNotes(int length)
-    {
-        var principal = CreatePrincipalCustomer();
-        var notes = new string('x', length);
-        return Booking.Create(
-            Guid.CreateVersion7(),
-            1000m,
-            new BookingRoom(RoomType.SingleOccupancy, 0m),
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            notes);
-    }
-
-    private static BookingCustomer CreatePrincipalCustomer(decimal bikePrice = 100m, BikeType bikeType = BikeType.Regular)
-    {
-        var result = BookingCustomer.Create(Guid.CreateVersion7(), bikeType, bikePrice);
-        return result.Value;
-    }
-
-    private static BookingCustomer CreateCompanionCustomer(decimal bikePrice = 200m, BikeType bikeType = BikeType.EBike)
-    {
-        var result = BookingCustomer.Create(Guid.CreateVersion7(), bikeType, bikePrice);
-        return result.Value;
-    }
-
     [When(@"I create a booking with base price (.*), room type ""(.*)"", room cost (.*), and regular bike (.*) for principal")]
     public void WhenICreateABookingWithBasePriceRoomTypeRoomCostAndRegularBikeForPrincipal(decimal basePrice, string roomType, decimal roomCost, decimal bikePrice)
     {
-        var principal = CreatePrincipalCustomer(bikePrice);
+        var principal = BookingStepDataFactory.CreatePrincipalCustomer(bikePrice);
         var room = Enum.Parse<RoomType>(roomType);
         var result = Booking.Create(
             Guid.CreateVersion7(),
@@ -53,8 +27,8 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void WhenICreateABookingWithBasePriceRoomTypeRoomCostRegularBikeForPrincipalAndEBikeForCompanion(decimal basePrice, string roomType, decimal roomCost, decimal principalBikePrice,
         decimal companionBikePrice)
     {
-        var principal = CreatePrincipalCustomer(principalBikePrice);
-        var companion = CreateCompanionCustomer(companionBikePrice);
+        var principal = BookingStepDataFactory.CreatePrincipalCustomer(principalBikePrice);
+        var companion = BookingStepDataFactory.CreateCompanionCustomer(companionBikePrice);
         var room = Enum.Parse<RoomType>(roomType);
         var result = Booking.Create(
             Guid.CreateVersion7(),
@@ -72,7 +46,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [When("I try to create a booking with base price (.*)")]
     public void WhenITryToCreateABookingWithBasePrice(decimal basePrice)
     {
-        var principal = CreatePrincipalCustomer();
+        var principal = BookingStepDataFactory.CreatePrincipalCustomer();
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
@@ -92,7 +66,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [When("I try to create a booking with base price (.*) and room cost (.*)")]
     public void WhenITryToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
-        var principal = CreatePrincipalCustomer();
+        var principal = BookingStepDataFactory.CreatePrincipalCustomer();
         var result = Booking.Create(
             Guid.CreateVersion7(),
             basePrice,
@@ -109,7 +83,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [When("I try to create a booking with notes of (.*) characters")]
     public void WhenITryToCreateABookingWithNotesOfCharacters(int length)
     {
-        bookingContext.BookingCreationResult = CreateBookingWithNotes(length);
+        bookingContext.BookingCreationResult = BookingStepDataFactory.CreateBookingWithNotes(length);
         bookingContext.Action = null!;
     }
 
@@ -122,7 +96,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [When(@"I create a booking with notes ""(.*)""")]
     public void WhenICreateABookingWithNotes(string notes)
     {
-        var principal = CreatePrincipalCustomer();
+        var principal = BookingStepDataFactory.CreatePrincipalCustomer();
         var result = Booking.Create(Guid.CreateVersion7(),
             1000m,
             new BookingRoom(RoomType.SingleOccupancy, 0m),
@@ -138,7 +112,7 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     [When(@"I try to create a booking with invalid room type (-?\d+)")]
     public void WhenITryToCreateABookingWithInvalidRoomTypeD(int invalidRoomType)
     {
-        var principal = CreatePrincipalCustomer();
+        var principal = BookingStepDataFactory.CreatePrincipalCustomer();
         var result = Booking.Create(
             Guid.CreateVersion7(),
             1000m,

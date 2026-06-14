@@ -31,7 +31,9 @@ public class TourUpdateBookingDiscountTests
     public void UpdateBookingDiscount_When_Discount_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
-        var (tour, _) = CreateSingleBooking();
+        var (tour, _) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for discount test setup.");
         var booking = tour.Bookings.Single();
 
         // Act
@@ -52,7 +54,9 @@ public class TourUpdateBookingDiscountTests
     public void UpdateBookingDiscount_When_Percentage_Exceeds_Maximum_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for discount test setup.");
 
         // Act
         var result = tour.UpdateBookingDiscount(
@@ -72,7 +76,9 @@ public class TourUpdateBookingDiscountTests
     public void UpdateBookingDiscount_When_Reason_Is_Too_Short_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for discount test setup.");
 
         // Act
         var result = tour.UpdateBookingDiscount(
@@ -92,7 +98,9 @@ public class TourUpdateBookingDiscountTests
     public void UpdateBookingDiscount_When_Absolute_Discount_Exceeds_Subtotal_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for discount test setup.");
 
         // Act
         var result = tour.UpdateBookingDiscount(
@@ -112,7 +120,9 @@ public class TourUpdateBookingDiscountTests
     public void UpdateBookingDiscount_When_Booking_Is_Cancelled_Returns_Conflict()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for discount test setup.");
         Assert.True(booking.Cancel().IsSuccess);
 
         // Act
@@ -133,7 +143,9 @@ public class TourUpdateBookingDiscountTests
     public void UpdateBookingDiscount_When_Request_Is_Valid_Updates_Discount()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
+            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy),
+            "Failed to create booking for discount test setup.");
 
         // Act
         var result = tour.UpdateBookingDiscount(
@@ -149,14 +161,4 @@ public class TourUpdateBookingDiscountTests
         Assert.Equal("Seasonal sale", booking.Discount.Reason);
     }
 
-    private static (Tour Tour, Booking Booking) CreateSingleBooking()
-    {
-        var tour = EntityBuilders.BuildTour();
-        var bookingResult = BookingTestHelpers.AddSingleCustomerBooking(
-            tour,
-            new SingleBookingOptions(BikeType: BikeType.Regular, RoomType: RoomType.DoubleOccupancy));
-
-        Assert.True(bookingResult.IsSuccess, "Failed to create booking for discount test setup.");
-        return (tour, bookingResult.Value);
-    }
 }
