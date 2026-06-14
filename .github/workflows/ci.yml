@@ -445,8 +445,35 @@ jobs:
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
       SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     steps:
+      - name: Determine SonarCloud trust boundary
+        id: sonar-boundary
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [[ "${EVENT_NAME}" == "pull_request" && "${HEAD_REPO}" != "${REPOSITORY}" ]]; then
+            echo "can_run=false" >> "$GITHUB_OUTPUT"
+            echo "reason=fork-pull-request" >> "$GITHUB_OUTPUT"
+          else
+            echo "can_run=true" >> "$GITHUB_OUTPUT"
+            echo "reason=trusted-ref" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip SonarCloud for fork pull requests
+        if: ${{ steps.sonar-boundary.outputs.can_run != 'true' }}
+        shell: bash
+        run: |
+          echo "SonarCloud analysis is skipped for fork pull requests because SONAR_TOKEN is not exposed to untrusted forks."
+          {
+            echo "## SonarCloud"
+            echo
+            echo "SonarCloud analysis was skipped because this pull request comes from a fork and the job depends on repository secrets."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Skip SonarCloud for docs-only changes
-        if: ${{ needs.detect-changes.outputs.build_required != 'true' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required != 'true' }}
         shell: bash
         run: |
           echo "SonarCloud analysis was skipped because only documentation changes were detected."
@@ -457,14 +484,14 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout repository
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Validate SonarCloud configuration
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
         env:
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
@@ -472,11 +499,11 @@ jobs:
         run: bash scripts/validate-sonar-analysis-config.sh
 
       - name: Set up CI prerequisites
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
 
       - name: Cache SonarCloud packages
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' }}
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.sonar/cache
@@ -485,39 +512,39 @@ jobs:
             ${{ runner.os }}-sonarcloud-cache-
 
       - name: Download fast validation results
-        if: ${{ needs.detect-changes.outputs.fast_validation_required == 'true' && needs.fast-validation.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.fast_validation_required == 'true' && needs.fast-validation.result == 'success' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: fast-validation-results
           path: artifacts/fast-validation
 
       - name: Download admin integration test results
-        if: ${{ needs.detect-changes.outputs.admin_integration_required == 'true' && needs.admin-integration-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.admin_integration_required == 'true' && needs.admin-integration-tests.result == 'success' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-integration-test-results
           path: artifacts/admin-integration
 
       - name: Download mediator heavy test results
-        if: ${{ needs.detect-changes.outputs.mediator_heavy_required == 'true' && needs.mediator-heavy-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.mediator_heavy_required == 'true' && needs.mediator-heavy-tests.result == 'success' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: mediator-heavy-test-results
           path: artifacts/mediator-heavy
 
       - name: Download admin system test results
-        if: ${{ needs.detect-changes.outputs.admin_system_required == 'true' && needs.admin-system-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.admin_system_required == 'true' && needs.admin-system-tests.result == 'success' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: admin-system-test-results
           path: artifacts/admin-system
 
       - name: Generate Sonar coverage report from test slices
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
         run: bash scripts/generate-sonar-coverage-report.sh
 
       - name: Run SonarCloud analysis
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
+        if: ${{ steps.sonar-boundary.outputs.can_run == 'true' && needs.detect-changes.outputs.build_required == 'true' && needs.fast-validation.result == 'success' && needs.admin-integration-tests.result == 'success' && needs.mediator-heavy-tests.result == 'success' && needs.admin-system-tests.result == 'success' }}
         id: run-sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -573,6 +600,11 @@ jobs:
       - name: Report SonarCloud status
         shell: bash
         run: |
+          if [[ "${{ steps.sonar-boundary.outputs.can_run }}" != "true" ]]; then
+              echo "SonarCloud analysis was skipped for a fork pull request because the job depends on repository secrets."
+              exit 0
+          fi
+
           if [[ "${{ needs.detect-changes.outputs.build_required }}" != "true" ]]; then
               echo "SonarCloud analysis was skipped because only documentation changes were detected."
               exit 0

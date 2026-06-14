@@ -3,6 +3,9 @@
 This document covers the repository's governance and environment-parity workflows that run
 outside the main `.github/workflows/ci.yml` validation path.
 
+For the repository-wide workflow trust model, see
+[`trust-boundaries.md`](trust-boundaries.md).
+
 ## Dependency review workflow
 
 A separate workflow (`.github/workflows/dependency-review.yml`) runs the

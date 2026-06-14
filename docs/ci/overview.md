@@ -36,6 +36,8 @@ current schedules and grouping rules.
   summaries, annotations, and artifacts
 - [Governance](governance.md) — action pinning, CODEOWNERS, Dependabot, and branch
   protection
+- [Trust boundaries](trust-boundaries.md) — fork PR, same-repo branch, and privileged
+  automation boundaries
 - [Supplemental workflows](supplemental-workflows.md) — dependency review, Actionlint,
   secret scan, and devcontainer smoke
 
