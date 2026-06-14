@@ -3,6 +3,9 @@
 This document describes the repository policies that govern GitHub Actions usage,
 repository-owned CI settings, and required checks.
 
+For the current CI dependency acquisition and downloaded-tool baseline, see
+[`security-hardening.md`](security-hardening.md).
+
 For workflow event trust boundaries, fork PR handling, and privileged follow-up job notes,
 see [`trust-boundaries.md`](trust-boundaries.md).
 
