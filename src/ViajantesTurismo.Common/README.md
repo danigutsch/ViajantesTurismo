@@ -4,12 +4,7 @@ Shared types and patterns used across all projects.
 
 ## Contents
 
-### Functional Patterns
-
-- **`Result` / `Result<T>`** — Railway-oriented error handling for operations that can fail
-- **`Option<T>`** — Type-safe handling of optional values
-
-See [FUNCTIONAL_PATTERNS.md](FUNCTIONAL_PATTERNS.md) for usage guide.
+See [SharedKernel.Functional](../SharedKernel/SharedKernel.Functional/README.md) for result and option usage guidance.
 
 ### Base Types
 

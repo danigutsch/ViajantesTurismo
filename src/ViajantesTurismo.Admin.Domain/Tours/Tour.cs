@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
@@ -172,13 +172,13 @@ public sealed class Tour : Entity<Guid>
             return errors.ToResult<Tour>();
         }
 
-        return new Tour(
+        return Result.Ok(new Tour(
             identifier,
             name,
             scheduleResult.Value,
             pricingResult.Value,
             capacityResult.Value,
-            sanitizedServices);
+            sanitizedServices));
     }
 
     /// <summary>
@@ -450,7 +450,7 @@ public sealed class Tour : Entity<Guid>
 
         var booking = result.Value;
         _bookings.Add(booking);
-        return booking;
+        return Result.Ok(booking);
     }
 
     private static Result ValidatePrincipalBikeType(BikeType principalBikeType)
@@ -718,7 +718,7 @@ public sealed class Tour : Entity<Guid>
 
         if (!companionCustomerId.HasValue)
         {
-            return Option<BookingCustomer>.Empty();
+            return Result.Ok(Option.None<BookingCustomer>());
         }
 
         if (!companionBikeType.HasValue)
@@ -742,7 +742,7 @@ public sealed class Tour : Entity<Guid>
             return companionCustomerResult.ConvertError<BookingCustomer, Option<BookingCustomer>>();
         }
 
-        return Option<BookingCustomer>.Of(companionCustomerResult.Value);
+        return Result.Ok(Option.Some(companionCustomerResult.Value));
     }
 
     /// <summary>

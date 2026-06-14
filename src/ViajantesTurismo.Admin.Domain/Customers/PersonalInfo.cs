@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -146,7 +146,7 @@ public sealed class PersonalInfo
             return errors.ToResult<PersonalInfo>();
         }
 
-        return new PersonalInfo(firstName, lastName, gender, birthDate, nationality, occupation);
+        return Result.Ok(new PersonalInfo(firstName, lastName, gender, birthDate, nationality, occupation));
     }
 
     private static int CalculateAge(DateTime birthDate, DateTime currentDate)

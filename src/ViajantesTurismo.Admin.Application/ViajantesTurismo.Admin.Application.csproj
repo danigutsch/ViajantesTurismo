@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Functional\SharedKernel.Functional.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
@@ -113,7 +113,7 @@ public sealed class TourPricing : ValueObject
             return errors.ToResult<TourPricing>();
         }
 
-        return new TourPricing(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency);
+        return Result.Ok(new TourPricing(basePrice, singleRoomSupplementPrice, regularBikePrice, eBikePrice, currency));
     }
 
     /// <inheritdoc />

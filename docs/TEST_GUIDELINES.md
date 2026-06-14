@@ -197,7 +197,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 ### Current Projects
 
-- **`ViajantesTurismo.Common.UnitTests`** — Shared utilities: building blocks, Result pattern, sanitisers, extensions.
+- **`ViajantesTurismo.Common.UnitTests`** — Shared utilities: building blocks, `SharedKernel.Functional` result/option primitives, sanitisers, extensions.
   Fast, no dependencies.
 - **`ViajantesTurismo.Admin.UnitTests`** — Domain logic: entities, aggregates, mappers, business rules. Fast, in-memory
   only.

@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
@@ -106,7 +106,7 @@ public class BookingUpdateCompanionTests
         Assert.Equal("Multiple validation errors occurred.", result.ErrorDetails.Detail);
         Assert.NotNull(result.ErrorDetails.ValidationErrors);
         Assert.Single(result.ErrorDetails.ValidationErrors);
-        Assert.Equal(2, result.ErrorDetails.ValidationErrors["companionCustomerId"].Length);
+        Assert.Equal(2, result.ErrorDetails.ValidationErrors["companionCustomerId"].Count);
         Assert.Contains(
             "Principal and companion customers cannot be the same person.",
             result.ErrorDetails.ValidationErrors["companionCustomerId"]);

@@ -1,5 +1,5 @@
 using ViajantesTurismo.Common.BuildingBlocks;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 

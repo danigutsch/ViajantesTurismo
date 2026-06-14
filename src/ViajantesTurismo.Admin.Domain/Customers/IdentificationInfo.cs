@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -73,6 +73,6 @@ public sealed class IdentificationInfo
             return errors.ToResult<IdentificationInfo>();
         }
 
-        return new IdentificationInfo(sanitizedNationalId, sanitizedIdNationality);
+        return Result.Ok(new IdentificationInfo(sanitizedNationalId, sanitizedIdNationality));
     }
 }

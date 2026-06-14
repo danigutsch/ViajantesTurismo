@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.BuildingBlocks;
 
@@ -38,13 +38,13 @@ public sealed class DateRange : ValueObject
     {
         if (endDate <= startDate)
         {
-            return Result<DateRange>.Invalid(
+            return Result.Invalid<DateRange>(
                 detail: "End date must be after start date.",
                 field: "schedule",
                 message: "End date must be after start date.");
         }
 
-        return new DateRange(startDate, endDate);
+        return Result.Ok(new DateRange(startDate, endDate));
     }
 
     /// <inheritdoc />

@@ -4,4 +4,8 @@
         <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Functional\SharedKernel.Functional.csproj" />
+    </ItemGroup>
+
 </Project>
