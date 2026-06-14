@@ -5,9 +5,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersCsvProcessorTests
 {
-    private static readonly string AllCanonicalHeaders =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(f => f.Name));
-
     [Fact]
     public void BuildImportSummary_When_Result_And_Conflict_Decisions_Are_Provided_Returns_Expected_Counts()
     {
@@ -59,7 +56,7 @@ public sealed class ImportCustomersCsvProcessorTests
     public void ApplyMixedFieldSelections_When_Existing_Source_Is_Selected_Uses_Existing_Field_Value()
     {
         // Arrange
-        var mappedCsv = Encoding.UTF8.GetBytes(AllCanonicalHeaders + "\n" + BuildCsvWithOverrides(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var mappedCsv = Encoding.UTF8.GetBytes(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["FirstName"] = "IncomingFirst",
             ["LastName"] = "IncomingLast",
@@ -101,13 +98,5 @@ public sealed class ImportCustomersCsvProcessorTests
         Assert.Equal("IncomingFirst", committedValues[headerIndexes["FirstName"]]);
         Assert.Equal("ExistingLast", committedValues[headerIndexes["LastName"]]);
         Assert.Equal("mixed@example.com", committedValues[headerIndexes["Email"]]);
-    }
-
-    private static string BuildCsvWithOverrides(IReadOnlyDictionary<string, string> valuesByField)
-    {
-        var values = CustomerImportHeaderMatcher.Fields
-            .Select(field => valuesByField.GetValueOrDefault(field.Name, "v"));
-
-        return string.Join(",", values);
     }
 }
