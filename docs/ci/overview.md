@@ -40,6 +40,8 @@ current schedules and grouping rules.
   checksum expectations, and low-trust execution rules
 - [Telemetry and generated guardrails](telemetry-generated-guardrails.md) — generated-output,
   package-consumption, and telemetry contract safety model
+- [Generated dispatching evaluation](../GENERATED_DISPATCHING_EVALUATION.md) — decision record for
+  preserved pre-mediator dispatching experiments reviewed in `#180`
 - [Trust boundaries](trust-boundaries.md) — fork PR, same-repo branch, and privileged
   automation boundaries
 - [Supplemental workflows](supplemental-workflows.md) — dependency review, Actionlint,
