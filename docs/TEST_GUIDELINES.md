@@ -76,6 +76,11 @@ Official references:
 - [MTP overview](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
 - [xUnit v3 on MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform)
 
+Mutation-testing note:
+
+- See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository decision on
+  `Stryker.NET` with xUnit v3 + Microsoft.Testing.Platform.
+
 ### Code Coverage with MTP + xUnit v3
 
 This repository uses the MTP-native coverage collection for xUnit v3 test projects.
