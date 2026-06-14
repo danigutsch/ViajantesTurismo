@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
@@ -175,7 +175,7 @@ public sealed class CustomerImportWorkflowService(
         if (details?.ValidationErrors is { Count: > 0 } validationErrors)
         {
             var first = validationErrors.First();
-            var message = first.Value.FirstOrDefault() ?? details.Detail;
+            var message = first.Value.Count > 0 ? first.Value[0] : details.Detail;
             return (first.Key, message);
         }
 

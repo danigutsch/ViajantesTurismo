@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

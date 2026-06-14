@@ -59,7 +59,8 @@ Cancelled ←───┘
 
 ## Dependencies
 
-- **ViajantesTurismo.Common** — Result pattern, base types
+- **SharedKernel.Functional** — Result pattern and option primitives
+- **ViajantesTurismo.Common** — Base types and shared domain utilities
 - **ViajantesTurismo.Admin.Contracts** — Validation constants
 
 ## See Also

@@ -12,7 +12,7 @@ using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.ApiService;
 

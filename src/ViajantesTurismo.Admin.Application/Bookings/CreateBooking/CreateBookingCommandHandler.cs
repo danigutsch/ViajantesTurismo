@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 
@@ -66,6 +66,6 @@ public sealed class CreateBookingCommandHandler(
 
         await unitOfWork.SaveEntities(ct);
 
-        return result.Value.Id;
+        return Result.Ok(result.Value.Id);
     }
 }

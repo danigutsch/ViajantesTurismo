@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
@@ -90,6 +90,6 @@ public sealed class CreateCustomerCommandHandler(
         customerStore.Add(customer);
         await unitOfWork.SaveEntities(ct);
 
-        return Result<Guid>.Ok(customer.Id);
+        return Result.Ok(customer.Id);
     }
 }

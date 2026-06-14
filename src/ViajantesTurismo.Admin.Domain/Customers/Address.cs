@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -150,6 +150,6 @@ public sealed class Address
             return errors.ToResult<Address>();
         }
 
-        return new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, sanitizedCountry!);
+        return Result.Ok(new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, sanitizedCountry!));
     }
 }

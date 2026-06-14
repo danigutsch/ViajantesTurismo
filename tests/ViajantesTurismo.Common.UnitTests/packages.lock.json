@@ -528,6 +528,9 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.functional": {
+        "type": "Project"
+      },
       "sharedkernel.mediator": {
         "type": "Project",
         "dependencies": {
@@ -549,7 +552,10 @@
         }
       },
       "viajantesturismo.common": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Functional": "[1.0.0, )"
+        }
       },
       "viajantesturismo.servicedefaults": {
         "type": "Project",

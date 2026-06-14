@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 
@@ -49,6 +49,6 @@ public sealed class CreateTourCommandHandler(
         tourStore.Add(tourResult.Value);
         await unitOfWork.SaveEntities(ct);
 
-        return Result<Guid>.Ok(tourResult.Value.Id);
+        return Result.Ok(tourResult.Value.Id);
     }
 }

@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.RecordPayment;
 
@@ -44,6 +44,6 @@ public sealed class RecordPaymentCommandHandler(
 
         await unitOfWork.SaveEntities(ct);
 
-        return Result<Guid>.Ok(result.Value.Id);
+        return Result.Ok(result.Value.Id);
     }
 }

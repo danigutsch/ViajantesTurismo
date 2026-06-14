@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
@@ -85,6 +85,6 @@ public sealed class BookingCustomer
             return errors.ToResult<BookingCustomer>();
         }
 
-        return new BookingCustomer(customerId, bikeType, bikePrice);
+        return Result.Ok(new BookingCustomer(customerId, bikeType, bikePrice));
     }
 }

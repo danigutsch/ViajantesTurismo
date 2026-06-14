@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
@@ -21,7 +21,7 @@ public sealed class ResultErrorTests
             ["Name"] = ["Name is required"],
             ["Email"] = ["Email is invalid"]
         };
-        var error = new ResultError("Validation failed", validationErrors);
+        var error = new ResultError("Validation failed", ResultErrorCodes.Invalid, validationErrors);
 
         Assert.Equal("Validation failed", error.Detail);
         Assert.NotNull(error.ValidationErrors);
@@ -55,8 +55,8 @@ public sealed class ResultErrorTests
         {
             ["Field"] = ["Message"]
         };
-        var error1 = new ResultError("Error", validationErrors);
-        var error2 = new ResultError("Error", validationErrors);
+        var error1 = new ResultError("Error", ResultErrorCodes.Invalid, validationErrors);
+        var error2 = new ResultError("Error", ResultErrorCodes.Invalid, validationErrors);
 
         Assert.Equal(error1, error2);
     }
