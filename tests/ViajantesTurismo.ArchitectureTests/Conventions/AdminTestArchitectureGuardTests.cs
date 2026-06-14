@@ -41,7 +41,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "_client = _app.CreateHttpClient(ResourceNames.Api);");
+            "Client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"),
