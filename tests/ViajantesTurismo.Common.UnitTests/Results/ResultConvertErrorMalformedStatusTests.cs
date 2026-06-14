@@ -1,5 +1,5 @@
 using System.Reflection;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 

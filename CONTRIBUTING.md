@@ -3,12 +3,21 @@
 ## Workflow
 
 1. Install local tooling with `./setup-dev.ps1` on Windows or `bash ./setup-dev.sh` on Unix.
-2. Read the nearest applicable `AGENTS.md` file before making changes; repository customization guidance lives in the `AGENTS.md` hierarchy.
-3. Do not add duplicate repository guidance files (for example, replacement `.github/copilot-instructions.md` or ad hoc `.github/instructions/*.instructions.md`
+   Treat `README.md` as the canonical tooling inventory for required local tools,
+   optional local tools, CI-only tools, and devcontainer-provided tools.
+2. Agents should always work from repository-local Git worktrees under `.worktrees/`; that directory is ignored and only meant for local workspace management.
+3. Read the nearest applicable `AGENTS.md` file before making changes; repository customization guidance lives in the `AGENTS.md` hierarchy.
+4. Do not add duplicate repository guidance files (for example, replacement `.github/copilot-instructions.md` or ad hoc `.github/instructions/*.instructions.md`
  files) unless there is a clear scoped need that the existing `AGENTS.md` hierarchy cannot express.
-4. Make focused changes and keep commits small enough to describe clearly.
-5. Run the relevant checks before opening a pull request.
-6. Open a pull request using the repository template and complete the checklist.
+5. Make focused changes and keep commits small enough to describe clearly.
+6. Run the relevant checks before opening a pull request.
+7. Open a pull request using the repository template and complete the checklist.
+
+Optional local hook path:
+
+- Run `bash scripts/install-git-hooks.sh` to enable the repository-owned `commit-msg` and `pre-commit` hooks.
+- The `commit-msg` hook runs `scripts/validate-commit-message.sh`.
+- The `pre-commit` hook runs an optional local secret scan when `gitleaks` is installed; otherwise it warns and continues.
 
 ## Commit Messages
 
@@ -77,7 +86,7 @@ documents **GPG signing** as the recommended contributor path.
 
 ## Pull Requests
 
-- Use the pull request template
+- Use the pull request template in `docs/pull_request_template.md`
 - Summarize the user-visible change and the technical approach
 - List the checks you ran locally
 - Link related backlog items, issues, or ADRs when applicable
@@ -90,6 +99,10 @@ Run the checks relevant to your changes:
 - `.NET`: `dotnet build ViajantesTurismo.slnx`
 - Tests: `dotnet test --solution ViajantesTurismo.slnx`
 - Docs, scripts, specs: CI runs `bash scripts/lint-all.sh`
+
+Use the tooling inventory in `README.md` when deciding whether a missing tool is
+required locally, optional for a specific task, CI-only, or already provided by
+the documented devcontainer workflow.
 
 If you change NuGet dependencies or project references that affect package
 resolution, regenerate and commit the affected `packages.lock.json` files:

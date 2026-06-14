@@ -31,6 +31,18 @@ The current lifecycle flow is:
 By default, the post-create script restores NuGet packages and builds `ViajantesTurismo.slnx` unless
 `DEVCONTAINER_VERIFY_BUILD=0` is set.
 
+## Tooling taxonomy alignment
+
+- The devcontainer covers the main required contributor path by providing `.NET 10`,
+  Git, Docker access, and the repo-pinned `.NET` local tools after
+  `dotnet tool restore`.
+- Optional host tools from the README taxonomy, such as `pwsh`,
+  `PSScriptAnalyzer`, and `k6`, do not all need to be installed on the host
+  when you use the devcontainer workflow.
+- CI-owned validation such as GitHub Actions policy checks, secret scanning, and
+  workflow enforcement remains owned by CI even when you develop inside the
+  container.
+
 ## Local VS Code Dev Container workflow
 
 ### Prerequisites
@@ -95,12 +107,20 @@ bash scripts/run-devcontainer-smoke.sh --run-tests
 The script:
 
 - builds and starts the repository devcontainer with the pinned Dev Container CLI
+- installs the pinned Dev Container CLI through a repo-owned verified download path rather
+  than a remote installer pipe
 - lets the configured lifecycle hooks run
 - verifies `.NET`, Git, and Docker access inside the container
 - optionally runs `dotnet test --solution ViajantesTurismo.slnx --no-build` inside the
   container when `--run-tests` is passed
 - writes logs to `TestResults/devcontainer-smoke`
 - removes the temporary container automatically when it finishes
+
+Current host support note:
+
+- the repo-owned Dev Container CLI bootstrap path currently supports Linux `x86_64` hosts
+- on other host OS or architecture combinations, set `DEVCONTAINER_CLI_PREFIX` to a
+  compatible preinstalled Dev Container CLI path before running the script
 
 If you want to keep the container around for inspection after a failure, set
 `DEVCONTAINER_SMOKE_KEEP_CONTAINER=1` before running the script.

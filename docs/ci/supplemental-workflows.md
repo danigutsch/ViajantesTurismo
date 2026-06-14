@@ -3,6 +3,9 @@
 This document covers the repository's governance and environment-parity workflows that run
 outside the main `.github/workflows/ci.yml` validation path.
 
+For the current repository-wide CI tool acquisition baseline, see
+[`security-hardening.md`](security-hardening.md).
+
 For the repository-wide workflow trust model, see
 [`trust-boundaries.md`](trust-boundaries.md).
 

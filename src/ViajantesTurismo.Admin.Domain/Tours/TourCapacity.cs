@@ -1,5 +1,5 @@
 using ViajantesTurismo.Common.BuildingBlocks;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
@@ -54,7 +54,7 @@ public sealed class TourCapacity : ValueObject
             return errors.ToResult<TourCapacity>();
         }
 
-        return new TourCapacity(minCustomers, maxCustomers);
+        return Result.Ok(new TourCapacity(minCustomers, maxCustomers));
     }
 
     /// <inheritdoc />

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -67,6 +67,6 @@ public sealed class MedicalInfo
             return errors.ToResult<MedicalInfo>();
         }
 
-        return new MedicalInfo(sanitizedAllergies, sanitizedAdditionalInfo);
+        return Result.Ok(new MedicalInfo(sanitizedAllergies, sanitizedAdditionalInfo));
     }
 }

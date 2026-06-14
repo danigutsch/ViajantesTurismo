@@ -96,10 +96,10 @@ This script will:
 
 - ✅ Verify the exact .NET SDK version pinned in `global.json`
 - ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
-- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
+- ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI)
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
-- ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
+- ✅ Detect optional PSScriptAnalyzer for PowerShell linting (PowerShell only)
 - ✅ Detect optional `k6` availability for `tests/performance/`
 - ✅ Explain that Markdown and Gherkin lint tooling remains CI-owned for now
 - ✅ Explain CI-owned linting and optional local commit validation
@@ -115,6 +115,25 @@ Optional local tools by task:
 - `PSScriptAnalyzer`: optional local PowerShell linting
 - `k6`: optional performance/load testing under `tests/performance/`
 - `shellcheck`: optional unless you want to run CI-owned lint scripts locally
+- `gitleaks`: optional local secret scanning when using the repository's pre-commit hook helper
+
+CI-only tools by default:
+
+- Markdown/Gherkin/JSON lint containers and wrappers used by `bash scripts/lint-all.sh`
+- SonarCloud scanner and hosted quality-gate processing
+- dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
+
+Devcontainer-provided tools:
+
+- the repo-pinned .NET SDK and restored local .NET tools inside the container
+- Git and Docker access inside the documented VS Code Dev Container workflow
+- repository-specific VS Code extensions and settings from `.devcontainer/**`
+
+Local worktree convention:
+
+- Put repository-local Git worktrees under `.worktrees/`
+- Agents should always use repository-local Git worktrees for issue work
+- `.worktrees/` is ignored and intended only for local workspace management, not committed project structure
 
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
 `.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package
@@ -153,6 +172,9 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 # 8. Optional local commit validation
 printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
 bash scripts/validate-commit-message.sh /tmp/commit-msg.txt
+
+# 9. Optional local hook installation
+bash scripts/install-git-hooks.sh
 ```
 
 On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS

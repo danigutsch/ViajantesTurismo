@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    printf '%s\n' "pre-commit: gitleaks not found; skipping optional local secret scan." >&2
+    exit 0
+fi
+
+staged_dir="$(mktemp -d)"
+cleanup() {
+    rm -rf "$staged_dir"
+}
+trap cleanup EXIT
+
+has_staged_files=false
+
+while IFS= read -r -d '' relative_path; do
+    has_staged_files=true
+    target_path="$staged_dir/$relative_path"
+    mkdir -p "$(dirname "$target_path")"
+    git show ":$relative_path" > "$target_path"
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [[ "$has_staged_files" != true ]]; then
+    exit 0
+fi
+
+if command -v timeout >/dev/null 2>&1; then
+    timeout 30s gitleaks detect --source "$staged_dir" --no-git --redact
+else
+    gitleaks detect --source "$staged_dir" --no-git --redact
+fi

@@ -82,3 +82,9 @@ Exporter wiring remains service-default driven and exporter-neutral:
 - Shared OTel pipeline setup: `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
 - Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/SeederWorker.cs`
 - Migration custom source registration: `src/ViajantesTurismo.MigrationService/Program.cs`
+
+## Related package grouping guidance
+
+For the repository-wide review of what observability and runtime code looks reusable enough for
+future `SharedKernel.*` extraction, see
+`docs/SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md`.

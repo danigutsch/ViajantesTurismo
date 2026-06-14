@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -37,7 +37,7 @@ internal static class ResultExtensions
             throw new InvalidOperationException("Validation errors are required to convert to a ValidationProblem.");
         }
 
-        return TypedResults.ValidationProblem(result.ErrorDetails.ValidationErrors, result.ErrorDetails.Detail);
+        return TypedResults.ValidationProblem(ToValidationProblemDictionary(result.ErrorDetails.ValidationErrors), result.ErrorDetails.Detail);
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ internal static class ResultExtensions
             throw new InvalidOperationException("Validation errors are required to convert to a ValidationProblem.");
         }
 
-        return TypedResults.ValidationProblem(result.ErrorDetails.ValidationErrors, result.ErrorDetails.Detail);
+        return TypedResults.ValidationProblem(ToValidationProblemDictionary(result.ErrorDetails.ValidationErrors), result.ErrorDetails.Detail);
     }
 
     /// <summary>
@@ -184,5 +184,18 @@ internal static class ResultExtensions
         };
 
         return TypedResults.Conflict(problemDetails);
+    }
+
+    private static Dictionary<string, string[]> ToValidationProblemDictionary(
+        IReadOnlyDictionary<string, IReadOnlyList<string>> validationErrors)
+    {
+        var result = new Dictionary<string, string[]>(validationErrors.Count, StringComparer.Ordinal);
+
+        foreach (var (field, messages) in validationErrors)
+        {
+            result[field] = [.. messages];
+        }
+
+        return result;
     }
 }

@@ -55,10 +55,14 @@
         "resolved": "10.0.8",
         "contentHash": "OBPo4nYhMyIbtueoC10CBm6AGAbo/A9IV8QQ/6ryZS7VvmqpGT7hunazeHLxFawRzn3oLOq4jhqhpBX4tfswWQ=="
       },
+      "sharedkernel.functional": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.8, )",
+          "SharedKernel.Functional": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )"
         }
       },
@@ -69,12 +73,16 @@
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2025.2.4, )",
+          "SharedKernel.Functional": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Common": "[1.0.0, )"
         }
       },
       "viajantesturismo.common": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Functional": "[1.0.0, )"
+        }
       },
       "JetBrains.Annotations": {
         "type": "CentralTransitive",

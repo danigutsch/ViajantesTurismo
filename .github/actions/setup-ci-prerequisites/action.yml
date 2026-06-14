@@ -6,6 +6,10 @@ inputs:
     description: Newline-delimited solution or project paths to restore.
     required: false
     default: ViajantesTurismo.slnx
+  restore-targets-file:
+    description: Path to a newline-delimited file of solution or project paths to restore.
+    required: false
+    default: ""
   dotnet-global-json:
     description: Path to the global.json file used to select the .NET SDK.
     required: false
@@ -34,7 +38,16 @@ runs:
       shell: bash
       env:
         RESTORE_TARGETS: ${{ inputs.restore-targets }}
+        RESTORE_TARGETS_FILE: ${{ inputs.restore-targets-file }}
       run: |
+        if [[ -n "${RESTORE_TARGETS_FILE}" ]]; then
+          while IFS= read -r restore_target; do
+            [[ -z "$restore_target" ]] && continue
+            dotnet restore "$restore_target" --locked-mode
+          done < "${RESTORE_TARGETS_FILE}"
+          exit 0
+        fi
+
         while IFS= read -r restore_target; do
           [[ -z "$restore_target" ]] && continue
           dotnet restore "$restore_target" --locked-mode

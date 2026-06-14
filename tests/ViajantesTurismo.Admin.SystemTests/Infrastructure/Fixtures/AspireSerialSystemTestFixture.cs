@@ -59,31 +59,11 @@ public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IA
         DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
-    internal async Task ResetDatabase(CancellationToken cancellationToken = default)
+    internal async Task ResetDatabase(CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
 
-        const string sql = """
-                           DO $$
-                           DECLARE
-                               tables_to_truncate text;
-                           BEGIN
-                               SELECT string_agg('"' || tablename || '"', ', ')
-                               INTO tables_to_truncate
-                               FROM pg_tables
-                               WHERE schemaname = 'public'
-                                 AND tablename <> '__EFMigrationsHistory';
-
-                               IF tables_to_truncate IS NOT NULL THEN
-                                   EXECUTE 'TRUNCATE TABLE ' || tables_to_truncate || ' RESTART IDENTITY CASCADE';
-                               END IF;
-                           END $$;
-                           """;
-
         await using var connection = new NpgsqlConnection(_databaseConnectionString);
-        await connection.OpenAsync(cancellationToken);
-
-        await using var command = new NpgsqlCommand(sql, connection);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        await DatabaseResetHelper.ResetPublicTables(connection, ct);
     }
 }

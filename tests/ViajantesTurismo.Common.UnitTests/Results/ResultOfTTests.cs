@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
@@ -7,7 +7,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void Ok_Creates_Successful_Result_With_Value()
     {
-        var result = Result<int>.Ok(42);
+        var result = Result.Ok(42);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.IsFailure);
@@ -17,15 +17,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Ok_Throws_When_Value_Is_Null()
-    {
-        Assert.Throws<ArgumentNullException>(() => Result<string>.Ok(null!));
-    }
-
-    [Fact]
     public void Created_Creates_Successful_Result_With_Value()
     {
-        var result = Result<string>.Created("test");
+        var result = Result.Created("test");
 
         Assert.True(result.IsSuccess);
         Assert.False(result.IsFailure);
@@ -35,15 +29,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Created_Throws_When_Value_Is_Null()
-    {
-        Assert.Throws<ArgumentNullException>(() => Result<string>.Created(null!));
-    }
-
-    [Fact]
     public void Accepted_Creates_Successful_Result_With_Value()
     {
-        var result = Result<bool>.Accepted(true);
+        var result = Result.Accepted(true);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.IsFailure);
@@ -53,15 +41,9 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Accepted_Throws_When_Value_Is_Null()
-    {
-        Assert.Throws<ArgumentNullException>(() => Result<string>.Accepted(null!));
-    }
-
-    [Fact]
     public void Invalid_Creates_Failed_Result_With_Single_Validation_Error()
     {
-        var result = Result<int>.Invalid("Validation failed", "Age", "Age must be positive");
+        var result = Result.Invalid<int>("Validation failed", "Age", "Age must be positive");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -74,33 +56,30 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Invalid_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Invalid_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Invalid("", "field", "message"));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Invalid(null!, "field", "message"));
-        Assert.Throws<ArgumentException>(() => Result<int>.Invalid("   ", "field", "message"));
+        Assert.Throws<ArgumentException>(() => Result.Invalid<int>("", "field", "message"));
+        Assert.Throws<ArgumentException>(() => Result.Invalid<int>("   ", "field", "message"));
     }
 
     [Fact]
-    public void Invalid_Throws_When_Field_Is_Null_Or_Empty()
+    public void Invalid_Throws_When_Field_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Invalid("detail", "", "message"));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Invalid("detail", null!, "message"));
-        Assert.Throws<ArgumentException>(() => Result<int>.Invalid("detail", "   ", "message"));
+        Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "", "message"));
+        Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "   ", "message"));
     }
 
     [Fact]
-    public void Invalid_Throws_When_Message_Is_Null_Or_Empty()
+    public void Invalid_Throws_When_Message_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Invalid("detail", "field", ""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Invalid("detail", "field", null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.Invalid("detail", "field", "   "));
+        Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "field", ""));
+        Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "field", "   "));
     }
 
     [Fact]
     public void Not_Found_Creates_Failed_Result()
     {
-        var result = Result<string>.NotFound("User not found");
+        var result = Result.NotFound<string>("User not found");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -110,17 +89,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Not_Found_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Not_Found_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.NotFound(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.NotFound(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.NotFound("   "));
+        Assert.Throws<ArgumentException>(() => Result.NotFound<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.NotFound<int>("   "));
     }
 
     [Fact]
     public void Unauthorized_Creates_Failed_Result()
     {
-        var result = Result<string>.Unauthorized("Access denied");
+        var result = Result.Unauthorized<string>("Access denied");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -130,17 +108,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Unauthorized_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Unauthorized_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Unauthorized(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Unauthorized(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.Unauthorized("   "));
+        Assert.Throws<ArgumentException>(() => Result.Unauthorized<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.Unauthorized<int>("   "));
     }
 
     [Fact]
     public void Forbidden_Creates_Failed_Result()
     {
-        var result = Result<string>.Forbidden("Operation forbidden");
+        var result = Result.Forbidden<string>("Operation forbidden");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -150,17 +127,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Forbidden_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Forbidden_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Forbidden(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Forbidden(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.Forbidden("   "));
+        Assert.Throws<ArgumentException>(() => Result.Forbidden<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.Forbidden<int>("   "));
     }
 
     [Fact]
     public void Conflict_Creates_Failed_Result()
     {
-        var result = Result<string>.Conflict("Resource conflict");
+        var result = Result.Conflict<string>("Resource conflict");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -170,17 +146,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Conflict_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Conflict_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Conflict(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Conflict(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.Conflict("   "));
+        Assert.Throws<ArgumentException>(() => Result.Conflict<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.Conflict<int>("   "));
     }
 
     [Fact]
     public void Error_Creates_Failed_Result()
     {
-        var result = Result<string>.Error("An error occurred");
+        var result = Result.Error<string>("An error occurred");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -190,17 +165,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Error_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Error_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Error(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Error(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.Error("   "));
+        Assert.Throws<ArgumentException>(() => Result.Error<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.Error<int>("   "));
     }
 
     [Fact]
     public void Critical_Error_Creates_Failed_Result()
     {
-        var result = Result<string>.CriticalError("Critical failure");
+        var result = Result.CriticalError<string>("Critical failure");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -210,17 +184,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Critical_Error_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Critical_Error_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.CriticalError(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.CriticalError(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.CriticalError("   "));
+        Assert.Throws<ArgumentException>(() => Result.CriticalError<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.CriticalError<int>("   "));
     }
 
     [Fact]
     public void Unavailable_Creates_Failed_Result()
     {
-        var result = Result<string>.Unavailable("Service unavailable");
+        var result = Result.Unavailable<string>("Service unavailable");
 
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFailure);
@@ -230,17 +203,16 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Unavailable_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Unavailable_Throws_When_Detail_Is_Empty_Or_Whitespace()
     {
-        Assert.Throws<ArgumentException>(() => Result<int>.Unavailable(""));
-        Assert.Throws<ArgumentNullException>(() => Result<int>.Unavailable(null!));
-        Assert.Throws<ArgumentException>(() => Result<int>.Unavailable("   "));
+        Assert.Throws<ArgumentException>(() => Result.Unavailable<int>(""));
+        Assert.Throws<ArgumentException>(() => Result.Unavailable<int>("   "));
     }
 
     [Fact]
     public void Value_Throws_Invalid_Operation_Exception_When_Accessing_Failed_Result()
     {
-        var result = Result<int>.Error("Failed");
+        var result = Result.Error<int>("Failed");
 
         var exception = Assert.Throws<InvalidOperationException>(() => result.Value);
         Assert.Contains("Cannot access Value of a failed result", exception.Message, StringComparison.Ordinal);
@@ -250,7 +222,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void Implicit_Conversion_From_Value_Creates_Success_Result()
     {
-        Result<int> result = 42;
+        Result<int> result = Result.Ok(42);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(42, result.Value);
@@ -260,7 +232,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void To_Result_Converts_Success_Result_To_Non_Generic()
     {
-        var result = Result<int>.Ok(42);
+        var result = Result.Ok(42);
 
         var nonGeneric = result.ToResult();
 
@@ -272,7 +244,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void To_Result_Converts_Failed_Result_To_Non_Generic()
     {
-        var result = Result<int>.Error("Failed");
+        var result = Result.Error<int>("Failed");
 
         var nonGeneric = result.ToResult();
 
@@ -285,8 +257,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equality_Works_For_Success_Results_With_Same_Value()
     {
-        var result1 = Result<int>.Ok(42);
-        var result2 = Result<int>.Ok(42);
+        var result1 = Result.Ok(42);
+        var result2 = Result.Ok(42);
 
         Assert.Equal(result1, result2);
         Assert.True(result1 == result2);
@@ -296,8 +268,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equality_Fails_For_Success_Results_With_Different_Values()
     {
-        var result1 = Result<int>.Ok(42);
-        var result2 = Result<int>.Ok(43);
+        var result1 = Result.Ok(42);
+        var result2 = Result.Ok(43);
 
         Assert.NotEqual(result1, result2);
         Assert.False(result1 == result2);
@@ -307,8 +279,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equality_Works_For_Failed_Results_With_Same_Error()
     {
-        var result1 = Result<int>.NotFound("Not found");
-        var result2 = Result<int>.NotFound("Not found");
+        var result1 = Result.NotFound<int>("Not found");
+        var result2 = Result.NotFound<int>("Not found");
 
         Assert.Equal(result1, result2);
         Assert.True(result1 == result2);
@@ -318,8 +290,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equality_Fails_For_Failed_Results_With_Different_Errors()
     {
-        var result1 = Result<int>.NotFound("Not found");
-        var result2 = Result<int>.Error("Error");
+        var result1 = Result.NotFound<int>("Not found");
+        var result2 = Result.Error<int>("Error");
 
         Assert.NotEqual(result1, result2);
         Assert.False(result1 == result2);
@@ -329,8 +301,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equality_Fails_For_Success_And_Failure_Results()
     {
-        var result1 = Result<int>.Ok(42);
-        var result2 = Result<int>.Error("Failed");
+        var result1 = Result.Ok(42);
+        var result2 = Result.Error<int>("Failed");
 
         Assert.NotEqual(result1, result2);
         Assert.False(result1 == result2);
@@ -340,7 +312,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void Get_Hash_Code_Is_Consistent()
     {
-        var result = Result<int>.Ok(42);
+        var result = Result.Ok(42);
 
         var hash1 = result.GetHashCode();
         var hash2 = result.GetHashCode();
@@ -351,8 +323,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Get_Hash_Code_Differs_For_Different_Values()
     {
-        var result1 = Result<int>.Ok(42);
-        var result2 = Result<int>.Ok(43);
+        var result1 = Result.Ok(42);
+        var result2 = Result.Ok(43);
 
         Assert.NotEqual(result1.GetHashCode(), result2.GetHashCode());
     }
@@ -360,7 +332,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void To_String_Returns_Success_Status_And_Value_For_Success()
     {
-        var result = Result<int>.Ok(42);
+        var result = Result.Ok(42);
 
         var str = result.ToString();
 
@@ -372,7 +344,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void To_String_Returns_Failure_Status_And_Error_For_Failure()
     {
-        var result = Result<string>.Error("Something went wrong");
+        var result = Result.Error<string>("Something went wrong");
 
         var str = result.ToString();
 
@@ -384,8 +356,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Different_Success_Statuses_Are_Not_Equal()
     {
-        var result1 = Result<int>.Ok(42);
-        var result2 = Result<int>.Created(42);
+        var result1 = Result.Ok(42);
+        var result2 = Result.Created(42);
 
         Assert.NotEqual(result1, result2);
     }
@@ -394,7 +366,7 @@ public sealed class ResultOfTTests
     public void Success_Result_With_Reference_Type_Stores_Value()
     {
         var list = new List<int> { 1, 2, 3 };
-        var result = Result<List<int>>.Ok(list);
+        var result = Result.Ok(list);
 
         Assert.Same(list, result.Value);
     }
@@ -402,7 +374,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equals_Object_Returns_False_For_Non_Result_Object()
     {
-        var result = Result<int>.Ok(42);
+        var result = Result.Ok(42);
 
         Assert.False(result.Equals(new object()));
         Assert.False(result.Equals(null));
@@ -413,8 +385,8 @@ public sealed class ResultOfTTests
     [Fact]
     public void Equals_Object_Returns_True_For_Boxed_Equal_Result()
     {
-        var result1 = Result<int>.Ok(42);
-        object result2 = Result<int>.Ok(42);
+        var result1 = Result.Ok(42);
+        object result2 = Result.Ok(42);
 
         Assert.True(result1.Equals(result2));
     }
@@ -422,7 +394,7 @@ public sealed class ResultOfTTests
     [Fact]
     public void Success_Result_Error_Details_Returns_Null()
     {
-        var result = Result<int>.Ok(42);
+        var result = Result.Ok(42);
 
         Assert.Null(result.ErrorDetails);
     }
@@ -430,20 +402,10 @@ public sealed class ResultOfTTests
     [Fact]
     public void Failed_Result_Value_Access_Shows_Error_Detail_In_Exception()
     {
-        var result = Result<int>.NotFound("Resource not found");
+        var result = Result.NotFound<int>("Resource not found");
 
         var exception = Assert.Throws<InvalidOperationException>(() => result.Value);
         Assert.Contains("Resource not found", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Implicit_Conversion_Throws_For_Null_Value()
-    {
-        string? nullString = null;
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            Result<string> _ = nullString!;
-        });
-    }
 }

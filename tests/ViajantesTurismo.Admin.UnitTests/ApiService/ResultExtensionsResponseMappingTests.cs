@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ViajantesTurismo.Admin.ApiService;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
@@ -81,7 +81,7 @@ public class ResultExtensionsResponseMappingTests
     public void ToValidationProblem_When_Generic_Result_Is_Invalid_Returns_Bad_Request_Validation_Details()
     {
         // Arrange
-        var failedResult = Result<string>.Invalid("Validation failed.", "Email", "Email is invalid.");
+        var failedResult = Result.Invalid<string>("Validation failed.", "Email", "Email is invalid.");
 
         // Act
         var validationProblem = failedResult.ToValidationProblem();
@@ -98,7 +98,7 @@ public class ResultExtensionsResponseMappingTests
     public void ToValidationProblem_When_Generic_Result_Is_Successful_Throws_InvalidOperationException()
     {
         // Arrange
-        var successfulResult = Result<string>.Ok("done");
+        var successfulResult = Result.Ok("done");
 
         // Act
         var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToValidationProblem());
@@ -193,7 +193,7 @@ public class ResultExtensionsResponseMappingTests
     public void ToNotFound_When_Generic_Result_Is_NotFound_Returns_Not_Found_Problem_Details()
     {
         // Arrange
-        var failedResult = Result<string>.NotFound("Customer was not found.");
+        var failedResult = Result.NotFound<string>("Customer was not found.");
 
         // Act
         var notFoundResult = failedResult.ToNotFound();
@@ -210,7 +210,7 @@ public class ResultExtensionsResponseMappingTests
     public void ToNotFound_When_Generic_Result_Is_Successful_Throws_InvalidOperationException()
     {
         // Arrange
-        var successfulResult = Result<string>.Ok("done");
+        var successfulResult = Result.Ok("done");
 
         // Act
         var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToNotFound());
@@ -279,7 +279,7 @@ public class ResultExtensionsResponseMappingTests
     public void ToConflict_When_Generic_Result_Is_Conflict_Returns_Conflict_Problem_Details()
     {
         // Arrange
-        var failedResult = Result<string>.Conflict("Customer already exists.");
+        var failedResult = Result.Conflict<string>("Customer already exists.");
 
         // Act
         var conflictResult = failedResult.ToConflict();
@@ -296,7 +296,7 @@ public class ResultExtensionsResponseMappingTests
     public void ToConflict_When_Generic_Result_Is_Successful_Throws_InvalidOperationException()
     {
         // Arrange
-        var successfulResult = Result<string>.Ok("done");
+        var successfulResult = Result.Ok("done");
 
         // Act
         var exception = Assert.Throws<InvalidOperationException>(() => successfulResult.ToConflict());

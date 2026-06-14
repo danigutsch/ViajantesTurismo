@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
@@ -107,6 +107,6 @@ public sealed partial class ContactInfo
             return errors.ToResult<ContactInfo>();
         }
 
-        return new ContactInfo(email, mobile, instagram, facebook);
+        return Result.Ok(new ContactInfo(email, mobile, instagram, facebook));
     }
 }

@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Application.Import;
 
@@ -106,6 +106,6 @@ public sealed class CsvDocument : IImportDocument
             return CsvErrors.HeaderCountMustMatchRowColumnCount(csvLineNumber).ConvertError<CsvDocument>();
         }
 
-        return new CsvDocument(headers, rows);
+        return Result.Ok(new CsvDocument(headers, rows));
     }
 }

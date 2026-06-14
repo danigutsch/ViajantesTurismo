@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
@@ -69,6 +69,6 @@ public sealed class PhysicalInfo
             return errors.ToResult<PhysicalInfo>();
         }
 
-        return new PhysicalInfo(weightKg, heightCentimeters, bikeType);
+        return Result.Ok(new PhysicalInfo(weightKg, heightCentimeters, bikeType));
     }
 }

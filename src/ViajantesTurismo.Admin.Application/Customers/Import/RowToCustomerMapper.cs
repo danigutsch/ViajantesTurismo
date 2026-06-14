@@ -2,7 +2,7 @@ using System.Globalization;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Common.Results;
+using SharedKernel.Functional;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 
@@ -82,7 +82,7 @@ public static class RowToCustomerMapper
             return errors.ToResult<Customer>();
         }
 
-        return new Customer(
+        return Result.Ok(new Customer(
             personalInfoResult.Value,
             identificationInfoResult.Value,
             contactInfoResult.Value,
@@ -90,7 +90,7 @@ public static class RowToCustomerMapper
             physicalInfoResult.Value,
             accommodationPreferencesResult.Value,
             emergencyContactResult.Value,
-            medicalInfoResult.Value);
+            medicalInfoResult.Value));
     }
 
     private static Result<PersonalInfo> MapPersonalInfo(IImportDocument document, IImportRow row, TimeProvider timeProvider)
