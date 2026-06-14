@@ -72,8 +72,30 @@ shared_validation_patterns=(
     "NuGet.Config"
     "global.json"
     "coverage.settings.xml"
-    "scripts/**"
+    "scripts/collect-ci-build-test-diagnostics.sh"
+    "scripts/collect-test-coverage.sh"
+    "scripts/detect-changes.sh"
+    "scripts/generate-sonar-coverage-report.sh"
+    "scripts/install-playwright.sh"
+    "scripts/refresh-sdk-lockfiles.sh"
+    "scripts/run-ci-test-slice.sh"
+    "scripts/run-devcontainer-smoke.sh"
+    "scripts/run-sonar-analysis.sh"
+    "scripts/run-tests-with-coverage.sh"
+    "scripts/validate-sonar-analysis-config.sh"
+    "scripts/write-github-sonar-summary.sh"
     "ViajantesTurismo.slnx"
+)
+
+low_risk_maintenance_patterns=(
+    "scripts/lint-all.sh"
+    "scripts/lint-gherkin.sh"
+    "scripts/lint-gherkin.py"
+    "scripts/lint-json.sh"
+    "scripts/lint-json.py"
+    "scripts/lint-markdown.sh"
+    "scripts/validate-commit-message.sh"
+    "setup-dev.sh"
 )
 
 fast_validation_patterns=(
@@ -190,7 +212,18 @@ while IFS= read -r file; do
     case "${file}" in
         docs/** | README.md | CONTRIBUTING.md) ;;
         *)
-            build_required=true
+            low_risk_maintenance_match=false
+            set +e
+            matches_any_pattern "${file}" "${low_risk_maintenance_patterns[@]}"
+            low_risk_maintenance_status=$?
+            set -e
+            if [[ ${low_risk_maintenance_status} -eq 0 ]]; then
+                low_risk_maintenance_match=true
+            fi
+
+            if [[ "${low_risk_maintenance_match}" != "true" ]]; then
+                build_required=true
+            fi
             ;;
     esac
 
@@ -272,7 +305,7 @@ fi
 if [[ "${build_required}" == "true" ]]; then
     echo "Build and test will run because non-documentation changes were detected."
 else
-    echo "Build and test will be skipped because only documentation changes were detected."
+    echo "Build and test will be skipped because only documentation or low-risk repository maintenance changes were detected."
 fi
 
 set_change_outputs \

@@ -164,9 +164,10 @@ bash scripts/generate-sonar-coverage-report.sh
 SONAR_ANALYSIS_SKIP_TESTS=true bash scripts/run-sonar-analysis.sh
 ```
 
-For documentation-only changes (`docs/**`, `README.md`, or `CONTRIBUTING.md`), CI skips
-the validation commands above but still records successful required checks through the
-lightweight skip path in each affected job.
+For documentation-only or low-risk contributor-maintenance changes (`docs/**`, `README.md`,
+`CONTRIBUTING.md`, and the allowlisted scripts documented in
+`docs/ci/main-workflow.md`), CI skips the validation commands above but still records
+successful required checks through the lightweight skip path in each affected job.
 
 ### Lint job
 
