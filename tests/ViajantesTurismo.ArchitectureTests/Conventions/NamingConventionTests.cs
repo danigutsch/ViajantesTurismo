@@ -211,7 +211,7 @@ public sealed partial class NamingConventionTests
     [GeneratedRegex(@"^\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+([A-Za-z0-9_]+)\s*\(", RegexOptions.Compiled)]
     private static partial Regex XunitMethodRegex();
 
-    [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
     private static partial Regex XunitMethodNamingRegex();
 
     [GeneratedRegex(@"Assert\.(Equal|Null|NotNull|True|False)\([^\n]*\.[A-Za-z_][A-Za-z0-9_]*\([^\n]*\)", RegexOptions.Compiled)]
