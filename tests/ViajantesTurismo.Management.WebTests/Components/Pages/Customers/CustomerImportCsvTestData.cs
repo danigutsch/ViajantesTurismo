@@ -11,7 +11,7 @@ internal static class CustomerImportCsvTestData
     public static string BuildCsvWithEmail(string email)
     {
         var values = CustomerImportHeaderMatcher.Fields
-            .Select(field => field.Name.Equals("Email", StringComparison.OrdinalIgnoreCase) ? email : "v");
+            .Select(field => field.Name.Equals(CustomerImportFieldNames.Email, StringComparison.OrdinalIgnoreCase) ? email : "v");
 
         return AllCanonicalHeaders + "\n" + string.Join(",", values);
     }
