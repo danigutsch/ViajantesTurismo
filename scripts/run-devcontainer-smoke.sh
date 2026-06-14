@@ -7,7 +7,7 @@ workspace_folder="${repo_root}"
 log_dir="${DEVCONTAINER_SMOKE_LOG_DIR:-${repo_root}/TestResults/devcontainer-smoke}"
 devcontainer_cli_version="${DEVCONTAINER_CLI_VERSION:-0.84.1}"
 devcontainer_node_version="${DEVCONTAINER_NODE_VERSION:-20.20.1}"
-devcontainer_cli_prefix="${DEVCONTAINER_CLI_PREFIX:-${repo_root}/.build/devcontainers-cli-${devcontainer_cli_version}}"
+devcontainer_cli_prefix="${DEVCONTAINER_CLI_PREFIX:-${repo_root}/TestResults/devcontainer-tools/devcontainers-cli-${devcontainer_cli_version}}"
 keep_container="${DEVCONTAINER_SMOKE_KEEP_CONTAINER:-0}"
 run_tests="${DEVCONTAINER_SMOKE_RUN_TESTS:-0}"
 container_id=""
@@ -48,10 +48,12 @@ EOF
 verify_node_archive() {
     local node_archive="$1"
     local checksums_file="$2"
-    local archive_name
 
-    archive_name="$(basename "${node_archive}")"
-    grep "  ${archive_name}$" "${checksums_file}" | sha256sum --check --status
+    (
+        cd -- "$(dirname "${node_archive}")"
+        grep "  $(basename "${node_archive}")$" "${checksums_file}" | sha256sum --check --status
+    )
+
     return 0
 }
 
@@ -133,43 +135,48 @@ ensure_devcontainer_cli() {
     require_command tar
     require_command sha256sum
 
-    tmp_dir="$(mktemp -d)"
-    trap 'rm -rf "${tmp_dir}"' RETURN
-    node_archive="${tmp_dir}/node-v${devcontainer_node_version}-linux-x64.tar.xz"
-    node_checksums="${tmp_dir}/SHASUMS256.txt"
-    cli_metadata="${tmp_dir}/devcontainer-cli-metadata.json"
-    cli_archive="${tmp_dir}/cli-${devcontainer_cli_version}.tgz"
-    node_root="${devcontainer_cli_prefix}/node/v${devcontainer_node_version}"
-    cli_root="${devcontainer_cli_prefix}/cli/${devcontainer_cli_version}"
+    (
+        set -euo pipefail
 
-    mkdir -p "${devcontainer_cli_prefix}/bin" "${devcontainer_cli_prefix}/node" "${devcontainer_cli_prefix}/cli"
+        tmp_dir="$(mktemp -d)"
+        trap 'rm -rf "${tmp_dir}"' EXIT
 
-    download_with_tls \
-        "https://nodejs.org/dist/v${devcontainer_node_version}/$(basename "${node_archive}")" \
-        "${node_archive}"
-    download_with_tls \
-        "https://nodejs.org/dist/v${devcontainer_node_version}/SHASUMS256.txt" \
-        "${node_checksums}"
-    verify_node_archive "${node_archive}" "${node_checksums}"
+        node_archive="${tmp_dir}/node-v${devcontainer_node_version}-linux-x64.tar.xz"
+        node_checksums="${tmp_dir}/SHASUMS256.txt"
+        cli_metadata="${tmp_dir}/devcontainer-cli-metadata.json"
+        cli_archive="${tmp_dir}/cli-${devcontainer_cli_version}.tgz"
+        node_root="${devcontainer_cli_prefix}/node/v${devcontainer_node_version}"
+        cli_root="${devcontainer_cli_prefix}/cli/${devcontainer_cli_version}"
 
-    download_with_tls \
-        "https://registry.npmjs.org/@devcontainers/cli/${devcontainer_cli_version}" \
-        "${cli_metadata}"
-    download_with_tls \
-        "https://registry.npmjs.org/@devcontainers/cli/-/cli-${devcontainer_cli_version}.tgz" \
-        "${cli_archive}"
-    verify_cli_archive "${cli_archive}" "${cli_metadata}"
+        mkdir -p "${devcontainer_cli_prefix}/bin" "${devcontainer_cli_prefix}/node" "${devcontainer_cli_prefix}/cli"
 
-    rm -rf "${node_root}" "${cli_root}"
-    mkdir -p "${node_root}" "${cli_root}"
+        download_with_tls \
+            "https://nodejs.org/dist/v${devcontainer_node_version}/$(basename "${node_archive}")" \
+            "${node_archive}"
+        download_with_tls \
+            "https://nodejs.org/dist/v${devcontainer_node_version}/SHASUMS256.txt" \
+            "${node_checksums}"
+        verify_node_archive "${node_archive}" "${node_checksums}"
 
-    tar -xJf "${node_archive}" --strip-components=1 -C "${node_root}"
-    tar -xzf "${cli_archive}" -C "${cli_root}"
+        download_with_tls \
+            "https://registry.npmjs.org/@devcontainers/cli/${devcontainer_cli_version}" \
+            "${cli_metadata}"
+        download_with_tls \
+            "https://registry.npmjs.org/@devcontainers/cli/-/cli-${devcontainer_cli_version}.tgz" \
+            "${cli_archive}"
+        verify_cli_archive "${cli_archive}" "${cli_metadata}"
 
-    write_devcontainer_wrapper \
-        "${devcontainer_cli_prefix}/bin/devcontainer" \
-        "${node_root}" \
-        "${cli_root}"
+        rm -rf "${node_root}" "${cli_root}"
+        mkdir -p "${node_root}" "${cli_root}"
+
+        tar -xJf "${node_archive}" --strip-components=1 -C "${node_root}"
+        tar -xzf "${cli_archive}" -C "${cli_root}"
+
+        write_devcontainer_wrapper \
+            "${devcontainer_cli_prefix}/bin/devcontainer" \
+            "${node_root}" \
+            "${cli_root}"
+    )
 
     return 0
 }
