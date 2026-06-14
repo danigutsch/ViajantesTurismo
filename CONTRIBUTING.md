@@ -3,7 +3,7 @@
 ## Workflow
 
 1. Install local tooling with `./setup-dev.ps1` on Windows or `bash ./setup-dev.sh` on Unix.
-2. When using repository-local Git worktrees, place them under `.worktrees/`; that directory is ignored and only meant for local workspace management.
+2. Agents should always work from repository-local Git worktrees under `.worktrees/`; that directory is ignored and only meant for local workspace management.
 3. Read the nearest applicable `AGENTS.md` file before making changes; repository customization guidance lives in the `AGENTS.md` hierarchy.
 4. Do not add duplicate repository guidance files (for example, replacement `.github/copilot-instructions.md` or ad hoc `.github/instructions/*.instructions.md`
  files) unless there is a clear scoped need that the existing `AGENTS.md` hierarchy cannot express.

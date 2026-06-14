@@ -129,6 +129,7 @@ Devcontainer-provided tools:
 Local worktree convention:
 
 - Put repository-local Git worktrees under `.worktrees/`
+- Agents should always use repository-local Git worktrees for issue work
 - `.worktrees/` is ignored and intended only for local workspace management, not committed project structure
 
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned

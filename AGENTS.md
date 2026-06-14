@@ -57,7 +57,7 @@ Use nested `AGENTS.md` files for scoped rules.
 
 ## Local worktrees
 
-- Prefer repository-local Git worktrees under `.worktrees/` when parallel issue work is useful.
+- Agents should always work from repository-local Git worktrees under `.worktrees/`.
 - `.worktrees/` is a local-only workspace area and is ignored by Git at the repository root.
 - Do not add committed documentation or code that depends on a specific `.worktrees/*` path.
 
