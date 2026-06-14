@@ -150,6 +150,7 @@ function Write-SetupSummary {
     Write-Host "  4. Optional performance smoke run: VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh" -ForegroundColor White
     Write-Host "  5. Validate a commit message: bash scripts/validate-commit-message.sh /path/to/message.txt" -ForegroundColor White
     Write-Host "     (If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)" -ForegroundColor DarkGray
+    Write-Host "  6. Tool inventory reference: README.md (required local, optional local, CI-only, and devcontainer-provided tools)" -ForegroundColor White
     Write-Host ""
 }
 
