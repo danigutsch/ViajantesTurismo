@@ -99,7 +99,7 @@ This script will:
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator)
 - ✅ Verify PowerShell availability for Playwright browser installation
 - ✅ Explain the Playwright browser install step (`bash scripts/install-playwright.sh` after build)
-- ✅ Install PSScriptAnalyzer for PowerShell linting (PowerShell only)
+- ✅ Detect optional PSScriptAnalyzer for PowerShell linting (PowerShell only)
 - ✅ Detect optional `k6` availability for `tests/performance/`
 - ✅ Explain that Markdown and Gherkin lint tooling remains CI-owned for now
 - ✅ Explain CI-owned linting and optional local commit validation
@@ -115,6 +115,21 @@ Optional local tools by task:
 - `PSScriptAnalyzer`: optional local PowerShell linting
 - `k6`: optional performance/load testing under `tests/performance/`
 - `shellcheck`: optional unless you want to run CI-owned lint scripts locally
+
+CI-only tooling by default:
+
+- Markdown, Gherkin, and JSON linting remain CI-owned unless you intentionally run the repository wrappers locally
+- GitHub Actions validation, secret scanning, and workflow policy checks are CI-owned
+
+Devcontainer-provided tools:
+
+- The documented devcontainer supplies `.NET 10`, Git, Docker-in-Docker, and repository VS Code extensions
+- Use this path when you want a containerized setup without installing every optional helper tool on the host
+
+Local worktree convention:
+
+- Put repository-local Git worktrees under `.worktrees/`
+- `.worktrees/` is ignored and intended only for local workspace management, not committed project structure
 
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
 `.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package

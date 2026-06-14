@@ -3,12 +3,13 @@
 ## Workflow
 
 1. Install local tooling with `./setup-dev.ps1` on Windows or `bash ./setup-dev.sh` on Unix.
-2. Read the nearest applicable `AGENTS.md` file before making changes; repository customization guidance lives in the `AGENTS.md` hierarchy.
-3. Do not add duplicate repository guidance files (for example, replacement `.github/copilot-instructions.md` or ad hoc `.github/instructions/*.instructions.md`
+2. When using repository-local Git worktrees, place them under `.worktrees/`; that directory is ignored and only meant for local workspace management.
+3. Read the nearest applicable `AGENTS.md` file before making changes; repository customization guidance lives in the `AGENTS.md` hierarchy.
+4. Do not add duplicate repository guidance files (for example, replacement `.github/copilot-instructions.md` or ad hoc `.github/instructions/*.instructions.md`
  files) unless there is a clear scoped need that the existing `AGENTS.md` hierarchy cannot express.
-4. Make focused changes and keep commits small enough to describe clearly.
-5. Run the relevant checks before opening a pull request.
-6. Open a pull request using the repository template and complete the checklist.
+5. Make focused changes and keep commits small enough to describe clearly.
+6. Run the relevant checks before opening a pull request.
+7. Open a pull request using the repository template and complete the checklist.
 
 ## Commit Messages
 
