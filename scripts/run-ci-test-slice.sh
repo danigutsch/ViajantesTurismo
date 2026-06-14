@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
     cat >&2 <<'EOF'
-Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] <project> [<project> ...]
+Usage: bash scripts/run-ci-test-slice.sh --slice-name <name> [--install-playwright] [--projects-file <path>] <project> [<project> ...]
 EOF
 
     return 1
@@ -351,6 +351,7 @@ cleanup() {
 main() {
     slice_name=""
     install_playwright=false
+    projects_file=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -362,6 +363,10 @@ main() {
                 install_playwright=true
                 shift
                 ;;
+            --projects-file)
+                projects_file="$2"
+                shift 2
+                ;;
             --)
                 shift
                 break
@@ -372,11 +377,25 @@ main() {
         esac
     done
 
-    if [[ -z "${slice_name}" || $# -eq 0 ]]; then
+    if [[ -z "${slice_name}" ]]; then
         usage
     fi
 
-    projects=("$@")
+    projects=()
+
+    if [[ -n "${projects_file}" ]]; then
+        while IFS= read -r project_path; do
+            [[ -z "${project_path}" ]] && continue
+            projects+=("${project_path}")
+        done < "${projects_file}"
+    else
+        projects=("$@")
+    fi
+
+    if [[ ${#projects[@]} -eq 0 ]]; then
+        usage
+    fi
+
     slice_slug="$(printf '%s' "${slice_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
 
     build_log="TestResults/${slice_slug}-build.log"
