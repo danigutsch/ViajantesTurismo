@@ -238,21 +238,22 @@ write_manifest() {
         echo '  },'
         echo '  "projects": ['
 
-        local index=0
+        local first_project=true
         local escaped_project
 
         while IFS= read -r project_path; do
             [[ -z "${project_path}" ]] && continue
             json_escape_into escaped_project "${project_path}"
-            printf '    "%s"' "${escaped_project}"
 
-            if (( index + 1 < project_count )); then
-                printf ','
+            if [[ "${first_project}" == "false" ]]; then
+                printf ',\n'
             fi
 
-            printf '\n'
-            index=$((index + 1))
+            printf '    "%s"' "${escaped_project}"
+            first_project=false
         done < "${projects_list_file}"
+
+        printf '\n'
 
         echo '  ],'
         echo '  "phases": ['
@@ -396,6 +397,11 @@ main() {
     fi
 
     if [[ -n "${projects_file}" ]]; then
+        if [[ $# -gt 0 ]]; then
+            echo "Do not pass positional project paths when --projects-file is used." >&2
+            usage
+        fi
+
         while IFS= read -r project_path; do
             [[ -z "${project_path}" ]] && continue
             projects+=("${project_path}")
@@ -417,7 +423,6 @@ main() {
     timings_file="TestResults/${slice_slug}-phase-timings.tsv"
     manifest_file="TestResults/${slice_slug}-manifest.json"
     projects_list_file="TestResults/${slice_slug}-projects.txt"
-    project_count=${#projects[@]}
 
     mkdir -p TestResults
     printf '%s\n' "${projects[@]}" > "${projects_list_file}"
