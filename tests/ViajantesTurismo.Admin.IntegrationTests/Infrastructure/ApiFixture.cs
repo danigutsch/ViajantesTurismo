@@ -1,113 +1,63 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Npgsql;
-using ViajantesTurismo.Admin.ApiService;
-using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Infrastructure;
+using Aspire.Hosting.Testing;
+using Projects;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-public sealed class ApiFixture : WebApplicationFactory<ApiMarker>, ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
+public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
-    private const string LoopbackAddress = "http://127.0.0.1:0";
-    private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(90);
 
-    private readonly DistributedApplication _app;
-    private string? _databaseConnectionString;
+    private IDistributedApplicationTestingBuilder? _appBuilder;
+    private DistributedApplication? _app;
     private HttpClient? _client;
-
-    public ApiFixture()
-    {
-        UseKestrel();
-
-        var options = new DistributedApplicationOptions { AssemblyName = typeof(ApiFixture).Assembly.FullName, DisableDashboard = true };
-        var appBuilder = new DistributedApplicationBuilder(options);
-        DatabaseServer = appBuilder.AddPostgres(ResourceNames.DatabaseServer);
-        Database = DatabaseServer.AddDatabase(ResourceNames.Database);
-
-        _app = appBuilder.Build();
-    }
-
-    public IResourceBuilder<PostgresServerResource> DatabaseServer { get; }
-    public IResourceBuilder<PostgresDatabaseResource> Database { get; }
 
     public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     public Uri BaseUri => Client.BaseAddress ?? throw new InvalidOperationException("Client base address is not configured.");
 
-    private async Task SeedBaseline(CancellationToken cancellationToken = default)
-    {
-        using var scope = Services.CreateScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.Seed(cancellationToken);
-    }
-
-    private async Task ResetDatabase(CancellationToken cancellationToken = default)
-    {
-        using var scope = Services.CreateScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-        await seeder.ClearDatabase(cancellationToken);
-    }
-
     public async ValueTask InitializeAsync()
     {
+        _appBuilder = await DistributedApplicationTestingBuilder.CreateAsync<ViajantesTurismo_AppHost>();
+        _app = await _appBuilder.BuildAsync();
         await _app.StartAsync();
 
         using var cts = new CancellationTokenSource(ResourceStartupTimeout);
-        await _app.ResourceNotifications.WaitForResourceHealthyAsync(Database.Resource.Name, cts.Token);
+        await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
 
-        var databaseConnectionString = await DatabaseServer.Resource.GetConnectionStringAsync(cts.Token) ?? throw new InvalidOperationException("Failed to get database connection string.");
-        var databaseConnectionStringBuilder = new NpgsqlConnectionStringBuilder(databaseConnectionString)
-        {
-            Database = Database.Resource.Name,
-            IncludeErrorDetail = true
-        };
-
-        _databaseConnectionString = databaseConnectionStringBuilder.ConnectionString;
-
-        _client = CreateClient();
-        await SeedBaseline(cts.Token);
+        _client = _app.CreateHttpClient(ResourceNames.Api);
     }
 
-    protected override IHost CreateHost(IHostBuilder builder)
+    public async ValueTask DisposeAsync()
     {
-        ArgumentNullException.ThrowIfNull(builder);
+        var client = _client;
+        var app = _app;
+        var appBuilder = _appBuilder;
+        _client = null;
+        _app = null;
+        _appBuilder = null;
 
-        builder.ConfigureWebHost(webBuilder => webBuilder.UseUrls(LoopbackAddress));
+        client?.Dispose();
 
-        builder.ConfigureHostConfiguration(config =>
-        {
-            config.AddInMemoryCollection([
-                new KeyValuePair<string, string?>($"ConnectionStrings:{Database.Resource.Name}", _databaseConnectionString)
-            ]);
-        });
-
-        builder.ConfigureServices(services => { services.AddSeeding(); });
-
-        return base.CreateHost(builder);
-    }
-
-    public override async ValueTask DisposeAsync()
-    {
         try
         {
-            if (_client is not null)
+            if (app is not null)
             {
-                using var cts = new CancellationTokenSource(ResourceStartupTimeout);
-                await ResetDatabase(cts.Token);
-                _client.Dispose();
-                _client = null;
+                await app.StopAsync();
+                await app.DisposeAsync();
             }
         }
         finally
         {
-            await base.DisposeAsync();
-            await _app.StopAsync();
-            await _app.DisposeAsync();
+            if (appBuilder is not null)
+            {
+                await appBuilder.DisposeAsync();
+            }
         }
+    }
+
+    public void Dispose()
+    {
+        DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }

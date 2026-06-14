@@ -48,7 +48,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 
 ## Notes
 
-- `AspireSystemTestFixture` launches the distributed application once per session; each test gets a fresh `BrowserContext`.
+- `AspireSystemTestFixture` and `AspireSerialSystemTestFixture` launch the AppHost-managed stack once per fixture; each test gets a fresh `BrowserContext`.
 - Tests seed their own data and don't depend on each other.
 - Blazor Server uses SignalR — use `WaitUntil = WaitUntilState.NetworkIdle` and web-first assertions
   for async rendering.
