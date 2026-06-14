@@ -73,6 +73,10 @@ This slice runs only when mediator/analyzer/source-generator paths changed. It i
 slow mediator-specific test projects so they no longer delay ordinary pull requests that do
 not touch that surface.
 
+This lane is also the repository's primary generated-output guardrail path: it owns the
+source-generator-heavy, package-consumption, and code-fix validation projects that are meant
+to catch generated-source regressions before they surface later in broader validation.
+
 ### Admin System Tests
 
 | Attribute | Value |
