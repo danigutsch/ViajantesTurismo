@@ -19,14 +19,17 @@ when that job fails.
 | `mediator-heavy-test-results` | `**/TestResults/**` produced by the mediator-heavy slice | 7 days |
 | `sonar-coverage` | Aggregated SonarCloud coverage input at `TestResults/sonar-coverage.xml` | 7 days |
 | `sonar-analysis-log` | Raw SonarCloud analysis log from the dedicated Sonar job | 7 days |
+| `sonar-analysis-manifest` | Machine-readable Sonar job manifest at `TestResults/ci-validation-manifest.json` | 7 days |
 | `coverage-report` | Aggregated HTML coverage report under `TestResults/CoverageReport/**` from the Sonar aggregation job | 7 days |
 | `fast-validation-diagnostics` | Focused failure summary for the fast validation slice | 7 days |
 | `admin-integration-test-diagnostics` | Focused failure summary for the admin integration slice | 7 days |
 | `admin-system-test-diagnostics` | Focused failure summary for the admin system slice | 7 days |
 | `mediator-heavy-test-diagnostics` | Focused failure summary for the mediator-heavy slice | 7 days |
 
-The artifact includes per-project `TestResults` folders, which contain `.trx` result files
-and `coverage.cobertura.xml` when coverage collection is enabled.
+The slice result artifacts also include machine-readable helper outputs such as
+`*-phase-timings.tsv` and `*-manifest.json`, alongside the per-project `TestResults`
+folders that contain `.trx` result files and `coverage.cobertura.xml` when coverage
+collection is enabled.
 
 For local validation, missing result files are treated as an error because that indicates
 the test infrastructure did not produce the expected outputs. In CI, artifact upload is
@@ -48,8 +51,8 @@ included. Do not broaden the upload glob without a clear reason.
 
 When a validation slice fails before full test artifacts are available, CI also uploads a
 small `*-diagnostics` artifact containing step outcomes, toolchain versions, a
-`TestResults` inventory snapshot, and the captured phase timing table to speed up
-first-pass diagnosis.
+`TestResults` inventory snapshot, the captured phase timing tables, and any generated
+manifest files to speed up first-pass diagnosis.
 
 ## Reproducing failures locally
 

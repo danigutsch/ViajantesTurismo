@@ -35,6 +35,7 @@ sonar_begin_log="TestResults/sonarscanner-begin.log"
 sonar_end_log="TestResults/sonarscanner-end.log"
 skip_tests="${SONAR_ANALYSIS_SKIP_TESTS:-false}"
 timing_file="TestResults/ci-phase-timings.tsv"
+manifest_file="TestResults/ci-validation-manifest.json"
 
 mkdir -p TestResults
 
@@ -49,6 +50,19 @@ printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
     "duration_seconds" \
     "status" \
     "log_file" > "${timing_file}"
+
+json_escape_into() {
+    local target_var_name="$1"
+    local value="$2"
+
+    value=${value//\\/\\\\}
+    value=${value//"/\\"}
+    value=${value//$'\n'/\\n}
+    value=${value//$'\r'/\\r}
+    value=${value//$'\t'/\\t}
+
+    printf -v "${target_var_name}" '%s' "${value}"
+}
 
 write_timing_row() {
     local phase="$1"
@@ -67,6 +81,126 @@ write_timing_row() {
         "${duration_seconds}" \
         "${status}" \
         "${log_file}" >> "${timing_file}"
+}
+
+write_manifest() {
+    local manifest_file="$1"
+    local status="$2"
+    local workflow_started_utc="$3"
+    local completed_at_utc="$4"
+    local skip_tests="$5"
+    local timing_file="$6"
+    local build_log="$7"
+    local playwright_install_log="$8"
+    local coverage_collection_log="$9"
+    local reportgenerator_log="${10}"
+    local sonar_begin_log="${11}"
+    local sonar_end_log="${12}"
+    local coverage_report="${13}"
+    local coverage_reports_file="${14}"
+    local escaped_status
+    local escaped_workflow_started_utc
+    local escaped_completed_at_utc
+    local escaped_timing_file
+    local escaped_build_log
+    local escaped_playwright_install_log
+    local escaped_coverage_collection_log
+    local escaped_reportgenerator_log
+    local escaped_sonar_begin_log
+    local escaped_sonar_end_log
+    local escaped_coverage_report
+    local escaped_coverage_reports_file
+
+    json_escape_into escaped_status "${status}"
+    json_escape_into escaped_workflow_started_utc "${workflow_started_utc}"
+    json_escape_into escaped_completed_at_utc "${completed_at_utc}"
+    json_escape_into escaped_timing_file "${timing_file}"
+    json_escape_into escaped_build_log "${build_log}"
+    json_escape_into escaped_playwright_install_log "${playwright_install_log}"
+    json_escape_into escaped_coverage_collection_log "${coverage_collection_log}"
+    json_escape_into escaped_reportgenerator_log "${reportgenerator_log}"
+    json_escape_into escaped_sonar_begin_log "${sonar_begin_log}"
+    json_escape_into escaped_sonar_end_log "${sonar_end_log}"
+    json_escape_into escaped_coverage_report "${coverage_report}"
+    json_escape_into escaped_coverage_reports_file "${coverage_reports_file}"
+
+    {
+        echo '{'
+        printf '  "job_type": "sonarcloud",\n'
+        printf '  "status": "%s",\n' "${escaped_status}"
+        printf '  "workflow_started_at_utc": "%s",\n' "${escaped_workflow_started_utc}"
+        printf '  "completed_at_utc": "%s",\n' "${escaped_completed_at_utc}"
+        printf '  "skip_tests": %s,\n' "${skip_tests}"
+        echo '  "files": {'
+        printf '    "timing_file": "%s",\n' "${escaped_timing_file}"
+        printf '    "coverage_report": "%s",\n' "${escaped_coverage_report}"
+        printf '    "coverage_reports_file": "%s",\n' "${escaped_coverage_reports_file}"
+        printf '    "build_log": "%s",\n' "${escaped_build_log}"
+        printf '    "playwright_install_log": "%s",\n' "${escaped_playwright_install_log}"
+        printf '    "coverage_collection_log": "%s",\n' "${escaped_coverage_collection_log}"
+        printf '    "reportgenerator_log": "%s",\n' "${escaped_reportgenerator_log}"
+        printf '    "sonar_begin_log": "%s",\n' "${escaped_sonar_begin_log}"
+        printf '    "sonar_end_log": "%s"\n' "${escaped_sonar_end_log}"
+        echo '  },'
+        echo '  "artifacts": ['
+        echo '    "coverage-report",'
+        echo '    "sonar-coverage",'
+        echo '    "sonar-analysis-log",'
+        echo '    "sonar-analysis-manifest"'
+        echo '  ],'
+        echo '  "phases": ['
+
+        local first_phase=true
+        local phase
+        local description
+        local started_at_utc
+        local phase_completed_at_utc
+        local duration_seconds
+        local phase_status
+        local log_file
+        local escaped_phase
+        local escaped_description
+        local escaped_started_at_utc
+        local escaped_phase_completed_at_utc
+        local escaped_duration_seconds
+        local escaped_phase_status
+        local escaped_log_file
+
+        while IFS=$'\t' read -r phase description started_at_utc phase_completed_at_utc duration_seconds phase_status log_file; do
+            if [[ "${phase}" == "phase" ]]; then
+                continue
+            fi
+
+            json_escape_into escaped_phase "${phase}"
+            json_escape_into escaped_description "${description}"
+            json_escape_into escaped_started_at_utc "${started_at_utc}"
+            json_escape_into escaped_phase_completed_at_utc "${phase_completed_at_utc}"
+            json_escape_into escaped_duration_seconds "${duration_seconds}"
+            json_escape_into escaped_phase_status "${phase_status}"
+            json_escape_into escaped_log_file "${log_file}"
+
+            if [[ "${first_phase}" == "false" ]]; then
+                printf ',\n'
+            fi
+
+            printf '    {"name":"%s","description":"%s","started_at_utc":"%s","completed_at_utc":"%s","duration_seconds":%s,"status":"%s","log_file":"%s"}' \
+                "${escaped_phase}" \
+                "${escaped_description}" \
+                "${escaped_started_at_utc}" \
+                "${escaped_phase_completed_at_utc}" \
+                "${escaped_duration_seconds}" \
+                "${escaped_phase_status}" \
+                "${escaped_log_file}"
+
+            first_phase=false
+        done < "${timing_file}"
+
+        printf '\n'
+        echo '  ]'
+        echo '}'
+    } > "${manifest_file}"
+
+    return 0
 }
 
 run_with_log() {
@@ -177,6 +311,22 @@ cleanup() {
         "${duration_seconds}" \
         "${total_status}" \
         "-"
+
+    write_manifest \
+        "${manifest_file}" \
+        "${total_status}" \
+        "${workflow_started_utc}" \
+        "${completed_at_utc}" \
+        "${skip_tests}" \
+        "${timing_file}" \
+        "${build_log}" \
+        "${playwright_install_log}" \
+        "${coverage_collection_log}" \
+        "${reportgenerator_log}" \
+        "${sonar_begin_log}" \
+        "${sonar_end_log}" \
+        "${coverage_report}" \
+        "${coverage_reports_file}"
 
     return "${exit_code}"
 }
