@@ -21,7 +21,7 @@ all listed code. The goal is to separate:
 | OpenTelemetry resource/service identity setup | `src/SharedKernel/SharedKernel.Observability/ObservabilityBuilderExtensions.cs` | Cross-cutting and already package-shaped. |
 | Explicit `service.name` detector | `src/SharedKernel/SharedKernel.Observability/ExplicitServiceNameDetector.cs` | Cross-cutting and already package-shaped. |
 | Mediator telemetry names | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Feature-specific to mediator, but reusable across mediator consumers. |
-| Mediator runtime instrumentation | `src/SharedKernel/SharedKernel.Mediator/*` | Feature-specific runtime helper layer, not general observability infrastructure. |
+| Mediator runtime instrumentation | `src/SharedKernel/SharedKernel.Mediator/` | Feature-specific runtime helper layer, not general observability infrastructure. |
 
 ### Reusable but not yet in the final package boundary
 
@@ -35,7 +35,7 @@ all listed code. The goal is to separate:
 
 ## Recommended grouping
 
-## 1. Core runtime package
+### 1. Core runtime package
 
 Recommended boundary: `SharedKernel.Observability`
 
@@ -63,7 +63,7 @@ Keep out of this package:
 - exporter policy tied to application startup conventions
 - mediator-specific telemetry names or middleware-like behaviors
 
-## 2. Feature-focused observability bundles
+### 2. Feature-focused observability bundles
 
 These packages are reusable, but only inside a more specific technical or feature boundary.
 
@@ -125,7 +125,7 @@ Why separate from `SharedKernel.Observability`:
 - they combine hosting, HTTP, discovery, resilience, and observability concerns
 - consumers that only want observability should not have to pull full service-default behavior
 
-## 3. Application-specific code that should stay local
+### 3. Application-specific code that should stay local
 
 Keep local to the application/service unless a second concrete consumer appears.
 
@@ -173,8 +173,9 @@ directions:
 2. Consider extracting the ASP.NET Core and host-composition pieces from
    `ViajantesTurismo.ServiceDefaults` into a separate hosting-focused package if a second
    consumer appears.
-3. Keep mediator telemetry inside `SharedKernel.Mediator*` packages rather than moving it into
-   the generic observability package.
+3. Keep mediator telemetry inside `SharedKernel.Mediator` and
+   `SharedKernel.Mediator.Abstractions` rather than moving it into the generic
+   observability package.
 4. Treat migration-worker telemetry as an application-local pattern until another background
    worker needs the same abstraction.
 
