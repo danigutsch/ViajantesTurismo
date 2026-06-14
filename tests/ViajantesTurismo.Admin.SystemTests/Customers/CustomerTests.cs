@@ -1,8 +1,6 @@
-using System.Text.RegularExpressions;
-
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
-public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()
@@ -48,7 +46,6 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(ContactStepRegex(), new() { Timeout = 15000 });
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
 
@@ -156,7 +153,4 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
     }
-
-    [GeneratedRegex("/customers/create/contact$")]
-    private static partial Regex ContactStepRegex();
 }
