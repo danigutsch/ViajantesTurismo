@@ -33,9 +33,9 @@ Decisions captured for this plan:
 
 ## Explicit seam changes from current state
 
-Current state that this plan intends to retire:
+Current state concerns that this plan addresses:
 
-- a scaffold-only `UiIntegrationTests` lane that must stay empty until a real hosted UI
+- a scaffold-only `UiIntegrationTests` lane that must remain empty until a real hosted UI
   composition slice appears
 - temporary migration notes that still describe retired hybrid host plumbing
 - any architecture drift that would let deleted `E2E*` fixtures or direct reset seams return
