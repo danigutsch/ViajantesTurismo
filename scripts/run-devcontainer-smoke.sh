@@ -6,10 +6,109 @@ repo_root="$(cd -- "${script_dir}/.." && pwd)"
 workspace_folder="${repo_root}"
 log_dir="${DEVCONTAINER_SMOKE_LOG_DIR:-${repo_root}/TestResults/devcontainer-smoke}"
 devcontainer_cli_version="${DEVCONTAINER_CLI_VERSION:-0.84.1}"
-devcontainer_cli_prefix="${DEVCONTAINER_CLI_PREFIX:-/tmp/opencode/devcontainers-cli-${devcontainer_cli_version}}"
+devcontainer_node_version="${DEVCONTAINER_NODE_VERSION:-20.20.1}"
+devcontainer_cli_prefix="${DEVCONTAINER_CLI_PREFIX:-${repo_root}/TestResults/devcontainer-tools/devcontainers-cli-${devcontainer_cli_version}}"
 keep_container="${DEVCONTAINER_SMOKE_KEEP_CONTAINER:-0}"
 run_tests="${DEVCONTAINER_SMOKE_RUN_TESTS:-0}"
 container_id=""
+
+download_with_tls() {
+    local url="$1"
+    local output_path="$2"
+
+    curl \
+        --fail \
+        --silent \
+        --show-error \
+        --location \
+        --proto '=https' \
+        --proto-redir '=https' \
+        --tlsv1.2 \
+        --output "${output_path}" \
+        "${url}"
+
+    return 0
+}
+
+write_devcontainer_wrapper() {
+    local wrapper_path="$1"
+    local node_version_dir="$2"
+    local cli_version_dir="$3"
+
+    cat >"${wrapper_path}" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec "${node_version_dir}/bin/node" "${cli_version_dir}/package/devcontainer.js" "\$@"
+EOF
+
+    chmod +x "${wrapper_path}"
+    return 0
+}
+
+verify_node_archive() {
+    local node_archive="$1"
+    local checksums_file="$2"
+
+    (
+        cd -- "$(dirname "${node_archive}")"
+        grep "  $(basename "${node_archive}")$" "${checksums_file}" | sha256sum --check --status
+    )
+
+    return 0
+}
+
+verify_cli_archive() {
+    local cli_archive="$1"
+    local metadata_file="$2"
+
+    python3 - "${cli_archive}" "${metadata_file}" <<'PY'
+import base64
+import hashlib
+import json
+import sys
+
+archive_path = sys.argv[1]
+metadata_path = sys.argv[2]
+
+with open(metadata_path, encoding="utf-8") as metadata_stream:
+    metadata = json.load(metadata_stream)
+
+integrity = metadata["dist"]["integrity"]
+algorithm, encoded_digest = integrity.split("-", 1)
+if algorithm != "sha512":
+    raise SystemExit(f"Unsupported npm integrity algorithm: {algorithm}")
+
+expected_digest = base64.b64decode(encoded_digest)
+
+archive_hash = hashlib.sha512()
+with open(archive_path, "rb") as archive_stream:
+    for chunk in iter(lambda: archive_stream.read(1024 * 1024), b""):
+        archive_hash.update(chunk)
+
+if archive_hash.digest() != expected_digest:
+    raise SystemExit("Dev Container CLI archive integrity check failed.")
+PY
+
+    return 0
+}
+
+get_cli_tarball_url() {
+    local metadata_file="$1"
+
+    python3 - "${metadata_file}" <<'PY'
+import json
+import sys
+
+metadata_path = sys.argv[1]
+
+with open(metadata_path, encoding="utf-8") as metadata_stream:
+    metadata = json.load(metadata_stream)
+
+print(metadata["dist"]["tarball"])
+PY
+
+    return 0
+}
 
 print_step() {
     local message="$1"
@@ -29,6 +128,23 @@ require_command() {
     return 0
 }
 
+require_supported_devcontainer_cli_host() {
+    local os_name
+    local architecture_name
+
+    os_name="$(uname -s)"
+    architecture_name="$(uname -m)"
+
+    if [[ "${os_name}" != "Linux" || "${architecture_name}" != "x86_64" ]]; then
+        printf "The repo-owned Dev Container CLI bootstrap currently supports only Linux x86_64 hosts.\n" >&2
+        printf "Current host: %s %s\n" "${os_name}" "${architecture_name}" >&2
+        printf "Set DEVCONTAINER_CLI_PREFIX to a compatible preinstalled CLI path or use the supported host path.\n" >&2
+        exit 1
+    fi
+
+    return 0
+}
+
 run_devcontainer_cli() {
     local args=("$@")
 
@@ -41,11 +157,64 @@ ensure_devcontainer_cli() {
         return 0
     fi
 
-    mkdir -p "${devcontainer_cli_prefix}"
+    local tmp_dir
+    local node_archive
+    local node_checksums
+    local cli_metadata
+    local cli_archive
+    local node_root
+    local cli_root
+    local cli_tarball_url
 
-    curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --tlsv1.2 \
-        "https://raw.githubusercontent.com/devcontainers/cli/71fb1401a9706133637c03dfaf2ad7d595952c7d/scripts/install.sh" |
-        sh -s -- --version "${devcontainer_cli_version}" --prefix "${devcontainer_cli_prefix}"
+    require_command curl
+    require_command python3
+    require_command tar
+    require_command sha256sum
+    require_supported_devcontainer_cli_host
+
+    (
+        set -euo pipefail
+
+        tmp_dir="$(mktemp -d)"
+        trap 'rm -rf "${tmp_dir}"' EXIT
+
+        node_archive="${tmp_dir}/node-v${devcontainer_node_version}-linux-x64.tar.xz"
+        node_checksums="${tmp_dir}/SHASUMS256.txt"
+        cli_metadata="${tmp_dir}/devcontainer-cli-metadata.json"
+        cli_archive="${tmp_dir}/cli-${devcontainer_cli_version}.tgz"
+        node_root="${devcontainer_cli_prefix}/node/v${devcontainer_node_version}"
+        cli_root="${devcontainer_cli_prefix}/cli/${devcontainer_cli_version}"
+
+        mkdir -p "${devcontainer_cli_prefix}/bin" "${devcontainer_cli_prefix}/node" "${devcontainer_cli_prefix}/cli"
+
+        download_with_tls \
+            "https://nodejs.org/dist/v${devcontainer_node_version}/$(basename "${node_archive}")" \
+            "${node_archive}"
+        download_with_tls \
+            "https://nodejs.org/dist/v${devcontainer_node_version}/SHASUMS256.txt" \
+            "${node_checksums}"
+        verify_node_archive "${node_archive}" "${node_checksums}"
+
+        download_with_tls \
+            "https://registry.npmjs.org/@devcontainers/cli/${devcontainer_cli_version}" \
+            "${cli_metadata}"
+        cli_tarball_url="$(get_cli_tarball_url "${cli_metadata}")"
+        download_with_tls \
+            "${cli_tarball_url}" \
+            "${cli_archive}"
+        verify_cli_archive "${cli_archive}" "${cli_metadata}"
+
+        rm -rf "${node_root}" "${cli_root}"
+        mkdir -p "${node_root}" "${cli_root}"
+
+        tar -xJf "${node_archive}" --strip-components=1 -C "${node_root}"
+        tar -xzf "${cli_archive}" -C "${cli_root}"
+
+        write_devcontainer_wrapper \
+            "${devcontainer_cli_prefix}/bin/devcontainer" \
+            "${node_root}" \
+            "${cli_root}"
+    )
 
     return 0
 }
