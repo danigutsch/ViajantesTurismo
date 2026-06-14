@@ -109,6 +109,10 @@ in the workflow YAML. If the script cannot determine the diff range reliably, it
 open by setting all validation outputs to `true` so CI prefers extra work over a false
 skip.
 
+Test-slice project membership is now centralized under `scripts/ci-test-slices/*.txt` so the
+restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
+duplicating project lists in multiple workflow locations.
+
 SDK bump pull requests must refresh committed `packages.lock.json` files when `global.json`
 changes. The repository provides `bash scripts/refresh-sdk-lockfiles.sh` as the canonical
 command for that maintenance step.
