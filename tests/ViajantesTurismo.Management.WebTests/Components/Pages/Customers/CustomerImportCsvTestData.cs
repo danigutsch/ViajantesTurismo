@@ -2,10 +2,10 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 internal static class CustomerImportCsvTestData
 {
-    public static string AllCanonicalHeaders =>
+    public static readonly string AllCanonicalHeaders =
         string.Join(",", CustomerImportHeaderMatcher.Fields.Select(importField => importField.Name));
 
-    public static string AllCanonicalValues =>
+    public static readonly string AllCanonicalValues =
         string.Join(",", CustomerImportHeaderMatcher.Fields.Select(_ => "v"));
 
     public static string BuildCsvWithEmail(string email)
