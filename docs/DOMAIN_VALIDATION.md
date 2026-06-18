@@ -46,7 +46,7 @@ for the rationale and patterns.
 
 All domain operations that can fail return `Result` or `Result<T>`.
 
-**Reference:** See [SharedKernel.Functional](../src/SharedKernel/SharedKernel.Functional/README.md)
+**Reference:** See [SharedKernel.Results](../src/SharedKernel/SharedKernel.Results/README.md)
 and [ADR-002: Result Pattern Over Exceptions](adr/20251108-result-pattern-over-exceptions.md).
 
 ## Factory Method Pattern
@@ -278,7 +278,7 @@ await unitOfWork.SaveEntities(ct);
 - [Architectural Decision Records](ARCHITECTURE_DECISIONS.md) — Core architectural patterns and decisions
 - [Coding Guidelines](CODING_GUIDELINES.md) — C# coding standards and conventions
 - [Test Guidelines](TEST_GUIDELINES.md) — Testing patterns and BDD scenarios
-- [SharedKernel.Functional](../src/SharedKernel/SharedKernel.Functional/README.md) — Result\<T>
+- [SharedKernel.Results](../src/SharedKernel/SharedKernel.Results/README.md) — Result\<T>
   and Option\<T> usage
 - [Aggregates](domain/AGGREGATES.md) — Business invariants and domain operations
 - [Glossary](domain/GLOSSARY.md) — Domain terminology and concepts

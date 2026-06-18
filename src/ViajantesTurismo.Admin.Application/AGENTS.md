@@ -52,4 +52,4 @@ Each `Handle` method should:
 
 - `AGENTS.md` (repository root)
 - `docs/CODING_GUIDELINES.md`
-- `src/SharedKernel/SharedKernel.Functional/README.md`
+- `src/SharedKernel/SharedKernel.Results/README.md`
