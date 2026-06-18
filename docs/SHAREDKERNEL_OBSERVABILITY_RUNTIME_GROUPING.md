@@ -1,6 +1,6 @@
 # SharedKernel Observability And Runtime Grouping
 
-Repository inventory for issue `#119`.
+Repository inventory for issue [#119](https://github.com/danigutsch/ViajantesTurismo/issues/119).
 
 This document reviews the current repository for reusable observability, logging, runtime,
 and startup configuration code that could live in logical `SharedKernel.*` packages.
