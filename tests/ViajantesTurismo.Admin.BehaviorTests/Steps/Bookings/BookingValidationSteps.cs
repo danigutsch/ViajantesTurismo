@@ -8,59 +8,6 @@ public sealed class BookingValidationSteps(
     TourContext tourContext,
     CustomerContext customerContext)
 {
-    private static Result<Booking> CreateBookingWithBasePrice(decimal basePrice)
-    {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        return Booking.Create(
-            Guid.CreateVersion7(),
-            basePrice,
-            new BookingRoom(RoomType.SingleOccupancy, 0m),
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
-    }
-
-    private static Result<Booking> CreateBookingWithRoomCost(decimal basePrice, decimal roomCost)
-    {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        return Booking.Create(
-            Guid.CreateVersion7(),
-            basePrice,
-            new BookingRoom(RoomType.DoubleOccupancy, roomCost),
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
-    }
-
-    private static Result<Booking> CreateBookingWithInvalidRoomType(int invalidRoomType)
-    {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        return Booking.Create(
-            Guid.CreateVersion7(),
-            2000m,
-            new BookingRoom((RoomType)invalidRoomType, 0m),
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            null);
-    }
-
-    private static Result<Booking> CreateBookingWithNotes(int characterCount)
-    {
-        var principal = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m).Value;
-        var notes = new string('x', characterCount);
-        return Booking.Create(
-            Guid.CreateVersion7(),
-            1000m,
-            new BookingRoom(RoomType.SingleOccupancy, 0m),
-            principal,
-            null,
-            Discount.Create(DiscountType.None, 0m, null).Value,
-            notes);
-    }
-
     private void AssertBookingCreationFailed()
     {
         Assert.NotNull(bookingContext.BookingCreationResult);
@@ -213,25 +160,25 @@ public sealed class BookingValidationSteps(
     [When(@"I attempt to create a booking with base price (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithBasePrice(decimal basePrice)
     {
-        bookingContext.BookingCreationResult = CreateBookingWithBasePrice(basePrice);
+        bookingContext.BookingCreationResult = BookingStepDataFactory.CreateBookingWithBasePrice(basePrice);
     }
 
     [When(@"I attempt to create a booking with base price (-?\d+) and room cost (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithBasePriceAndRoomCost(decimal basePrice, decimal roomCost)
     {
-        bookingContext.BookingCreationResult = CreateBookingWithRoomCost(basePrice, roomCost);
+        bookingContext.BookingCreationResult = BookingStepDataFactory.CreateBookingWithRoomCost(basePrice, roomCost);
     }
 
     [When(@"I attempt to create a booking with invalid room type (-?\d+)")]
     public void WhenIAttemptToCreateABookingWithInvalidRoomType(int invalidRoomType)
     {
-        bookingContext.BookingCreationResult = CreateBookingWithInvalidRoomType(invalidRoomType);
+        bookingContext.BookingCreationResult = BookingStepDataFactory.CreateBookingWithInvalidRoomType(invalidRoomType);
     }
 
     [When(@"I attempt to create a booking with notes of (\d+) characters")]
     public void WhenIAttemptToCreateABookingWithNotesOfCharacters(int characterCount)
     {
-        bookingContext.BookingCreationResult = CreateBookingWithNotes(characterCount);
+        bookingContext.BookingCreationResult = BookingStepDataFactory.CreateBookingWithNotes(characterCount);
     }
 
     [Then("I should be informed that the room type is invalid")]

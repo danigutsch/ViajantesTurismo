@@ -4,9 +4,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersInteractiveMappingTests : BunitContext
 {
-    private static readonly string AllCanonicalHeaders =
-        string.Join(",", CustomerImportHeaderMatcher.Fields.Select(f => f.Name));
-
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
 
     public ImportCustomersInteractiveMappingTests()
@@ -20,7 +17,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -38,7 +35,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -77,7 +74,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     {
         // Arrange — all canonical headers: all required fields matched → import enabled
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 
@@ -94,7 +91,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         // Arrange — all canonical headers present: all required matched, import enabled
         const string optionalFieldName = "Instagram";
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 

@@ -1,5 +1,4 @@
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using SharedKernel.Functional;
 
@@ -32,7 +31,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Room_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -53,7 +52,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Principal_Bike_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -74,7 +73,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Companion_Bike_Type_Is_Invalid_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -95,7 +94,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Companion_Bike_Type_Is_Provided_Without_Companion_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -116,7 +115,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Companion_Is_Provided_Without_Bike_Type_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -137,7 +136,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Principal_And_Companion_Are_The_Same_Returns_Invalid()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
 
         // Act
         var result = tour.UpdateBookingDetails(
@@ -158,7 +157,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Booking_Is_Cancelled_Returns_Conflict()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
         Assert.True(booking.Cancel().IsSuccess);
 
         // Act
@@ -180,7 +179,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Request_Is_Valid_Adds_Companion_And_Updates_Principal_Bike()
     {
         // Arrange
-        var (tour, booking) = CreateSingleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
         var companionCustomerId = Guid.CreateVersion7();
 
         // Act
@@ -204,7 +203,7 @@ public class TourUpdateBookingDetailsTests
     public void UpdateBookingDetails_When_Request_Removes_Companion_Allows_Single_Room()
     {
         // Arrange
-        var (tour, booking) = CreateDoubleBooking();
+        var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithDoubleBooking();
         Assert.NotNull(booking.CompanionCustomer);
 
         // Act
@@ -222,21 +221,4 @@ public class TourUpdateBookingDetailsTests
         Assert.Equal(BikeType.Regular, booking.PrincipalCustomer.BikeType);
     }
 
-    private static (Tour Tour, Booking Booking) CreateSingleBooking()
-    {
-        var tour = EntityBuilders.BuildTour();
-        var bookingResult = BookingTestHelpers.AddSingleCustomerBooking(tour);
-
-        Assert.True(bookingResult.IsSuccess, "Failed to create single booking for test setup.");
-        return (tour, bookingResult.Value);
-    }
-
-    private static (Tour Tour, Booking Booking) CreateDoubleBooking()
-    {
-        var tour = EntityBuilders.BuildTour();
-        var bookingResult = BookingTestHelpers.AddDoubleCustomerBooking(tour, null);
-
-        Assert.True(bookingResult.IsSuccess, "Failed to create double booking for test setup.");
-        return (tour, bookingResult.Value);
-    }
 }
