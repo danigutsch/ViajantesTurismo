@@ -528,9 +528,6 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
-      "sharedkernel.functional": {
-        "type": "Project"
-      },
       "sharedkernel.mediator": {
         "type": "Project",
         "dependencies": {
@@ -551,10 +548,13 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "sharedkernel.results": {
+        "type": "Project"
+      },
       "viajantesturismo.common": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Functional": "[1.0.0, )"
+          "SharedKernel.Results": "[1.0.0, )"
         }
       },
       "viajantesturismo.servicedefaults": {

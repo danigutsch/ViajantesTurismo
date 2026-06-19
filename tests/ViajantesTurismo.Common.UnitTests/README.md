@@ -11,5 +11,5 @@ Unit tests for shared types — Result pattern, Option pattern, and common enume
 ## See Also
 
 - [tests/README.md](../README.md) — Running tests, coverage, conventions
-- [SharedKernel.Functional](../../src/SharedKernel/SharedKernel.Functional/README.md) — Result and Option usage guidance
+- [SharedKernel.Results](../../src/SharedKernel/SharedKernel.Results/README.md) — Result and Option usage guidance
 - [Common README](../../src/ViajantesTurismo.Common/README.md) — Base type definitions

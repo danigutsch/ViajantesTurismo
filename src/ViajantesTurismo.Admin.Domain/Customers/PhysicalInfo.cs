@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;

@@ -703,9 +703,6 @@
         "resolved": "8.0.0",
         "contentHash": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q=="
       },
-      "sharedkernel.functional": {
-        "type": "Project"
-      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -718,11 +715,14 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "sharedkernel.results": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.8, )",
-          "SharedKernel.Functional": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )"
         }
       },
@@ -733,7 +733,7 @@
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2025.2.4, )",
-          "SharedKernel.Functional": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Common": "[1.0.0, )"
         }
@@ -750,7 +750,7 @@
       "viajantesturismo.common": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Functional": "[1.0.0, )"
+          "SharedKernel.Results": "[1.0.0, )"
         }
       },
       "viajantesturismo.resources": {

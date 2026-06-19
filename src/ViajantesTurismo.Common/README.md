@@ -4,7 +4,7 @@ Shared types and patterns used across all projects.
 
 ## Contents
 
-See [SharedKernel.Functional](../SharedKernel/SharedKernel.Functional/README.md) for result and option usage guidance.
+See [SharedKernel.Results](../SharedKernel/SharedKernel.Results/README.md) for result and option usage guidance.
 
 ### Base Types
 

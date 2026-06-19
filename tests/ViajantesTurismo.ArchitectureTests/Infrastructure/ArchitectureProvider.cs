@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 using Assembly = System.Reflection.Assembly;
 
 namespace ViajantesTurismo.ArchitectureTests.Infrastructure;

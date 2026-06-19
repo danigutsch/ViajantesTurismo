@@ -1,4 +1,4 @@
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Common.BuildingBlocks;
 
