@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;

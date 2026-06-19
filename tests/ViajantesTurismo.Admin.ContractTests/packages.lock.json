@@ -310,9 +310,6 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
-      "sharedkernel.functional": {
-        "type": "Project"
-      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -330,13 +327,16 @@
           "Microsoft.AspNetCore.OpenApi": "[10.0.8, )"
         }
       },
+      "sharedkernel.results": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.apiservice": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.8, )",
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.8, )",
-          "SharedKernel.Functional": "[1.0.0, )",
           "SharedKernel.OpenApi": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Admin.Infrastructure": "[1.0.0, )",
@@ -346,7 +346,7 @@
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Functional": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )"
         }
       },
@@ -357,7 +357,7 @@
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2025.2.4, )",
-          "SharedKernel.Functional": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Common": "[1.0.0, )"
         }
@@ -374,7 +374,7 @@
       "viajantesturismo.common": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Functional": "[1.0.0, )"
+          "SharedKernel.Results": "[1.0.0, )"
         }
       },
       "viajantesturismo.resources": {

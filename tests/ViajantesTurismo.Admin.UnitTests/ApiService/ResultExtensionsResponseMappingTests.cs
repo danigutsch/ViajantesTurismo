@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ViajantesTurismo.Admin.ApiService;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 

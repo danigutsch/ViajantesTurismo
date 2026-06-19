@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Testing.Behavior;
 

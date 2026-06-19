@@ -21,7 +21,7 @@
         <Using Include="ViajantesTurismo.Admin.Domain.Customers"/>
         <Using Include="ViajantesTurismo.Admin.Domain.Tours"/>
         <Using Include="ViajantesTurismo.Admin.Testing.Behavior"/>
-        <Using Include="SharedKernel.Functional"/>
+        <Using Include="SharedKernel.Results"/>
         <Using Include="Xunit" />
     </ItemGroup>
 

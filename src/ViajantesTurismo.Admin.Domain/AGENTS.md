@@ -37,4 +37,4 @@ This file overrides root guidance where domain-specific behavior is needed.
 - `docs/CODING_GUIDELINES.md`
 - `docs/ARCHITECTURE_DECISIONS.md`
 - `docs/adr/`
-- `src/SharedKernel/SharedKernel.Functional/README.md`
+- `src/SharedKernel/SharedKernel.Results/README.md`

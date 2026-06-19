@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;

@@ -1,3 +1,5 @@
+using SharedKernel.Testing;
+
 namespace SharedKernel.Functional.Tests;
 
 /// <summary>
@@ -8,37 +10,37 @@ public static class TestTraits
     /// <summary>
     /// Trait name for test scope.
     /// </summary>
-    public const string ScopeName = SharedKernel.Testing.SharedKernelTestTraitNames.ScopeName;
+    public const string ScopeName = SharedKernelTestTraitNames.ScopeName;
 
     /// <summary>
     /// Trait name for test component.
     /// </summary>
-    public const string ComponentName = SharedKernel.Testing.SharedKernelTestTraitNames.ComponentName;
+    public const string ComponentName = SharedKernelTestTraitNames.ComponentName;
 
     /// <summary>
     /// Trait name for test capability.
     /// </summary>
-    public const string CapabilityName = SharedKernel.Testing.SharedKernelTestTraitNames.CapabilityName;
+    public const string CapabilityName = SharedKernelTestTraitNames.CapabilityName;
 
     /// <summary>
     /// Trait name for test category.
     /// </summary>
-    public const string CategoryName = SharedKernel.Testing.SharedKernelTestTraitNames.CategoryName;
+    public const string CategoryName = SharedKernelTestTraitNames.CategoryName;
 
     /// <summary>
     /// Trait name for test theory classification.
     /// </summary>
-    public const string TheoryName = SharedKernel.Testing.SharedKernelTestTraitNames.TheoryName;
+    public const string TheoryName = SharedKernelTestTraitNames.TheoryName;
 
     /// <summary>
     /// Scope value for unit tests.
     /// </summary>
-    public const string UnitScope = SharedKernel.Testing.SharedKernelTestTraitNames.UnitScope;
+    public const string UnitScope = SharedKernelTestTraitNames.UnitScope;
 
     /// <summary>
     /// Component value for SharedKernel functional tests.
     /// </summary>
-    public const string ResultsComponent = "SharedKernel.Functional";
+    public const string ResultsComponent = "SharedKernel.Results";
 
     /// <summary>
     /// Capability value for option tests.

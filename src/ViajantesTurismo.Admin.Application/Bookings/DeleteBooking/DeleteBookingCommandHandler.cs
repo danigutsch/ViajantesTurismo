@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Tours;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 

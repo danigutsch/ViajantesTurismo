@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 

@@ -1,5 +1,5 @@
 using ViajantesTurismo.Common.BuildingBlocks;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

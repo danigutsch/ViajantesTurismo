@@ -17,7 +17,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Functional\SharedKernel.Functional.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj"/>
     </ItemGroup>
 

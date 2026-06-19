@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using SharedKernel.Functional;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers;
 
