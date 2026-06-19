@@ -76,7 +76,7 @@ bash scripts/run-ci-test-slice.sh \
   tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj \
   tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
   tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj \
-  tests/SharedKernel.Results.Tests/SharedKernel.Results.Tests.csproj \
+  tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj \
   tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj \
   tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj \
   tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj \
