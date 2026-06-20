@@ -33,9 +33,6 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.AddException(ex);
-            activity?.SetTag("exception.type", ex.GetType().FullName);
-            activity?.SetTag("exception.message", ex.Message);
-            activity?.SetTag("exception.stacktrace", ex.StackTrace);
 
             logger.SeedingFailed(ex);
             throw;
