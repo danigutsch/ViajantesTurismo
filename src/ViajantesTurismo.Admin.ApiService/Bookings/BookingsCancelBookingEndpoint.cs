@@ -27,19 +27,13 @@ internal static class BookingsCancelBookingEndpoint
 
         var result = await handler.Handle(command, ct);
 
-        if (result.IsFailure)
-        {
-            return AdminEndpointResults.MatchNotFoundConflictFailure<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>(
-                result,
-                () => result.ToNotFound(),
-                () => result.ToConflict());
-        }
-
-        return await AdminEndpointResults.GetBookingResponse<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>(
+        return await AdminEndpointResults.MatchNotFoundConflictBookingResponse<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>(
+            result,
             id,
             queryService,
             booking => TypedResults.Ok(booking),
-            bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
+            () => BookingErrors.BookingNotFound(id).ToNotFound(),
+            () => result.ToConflict(),
             ct);
     }
 }

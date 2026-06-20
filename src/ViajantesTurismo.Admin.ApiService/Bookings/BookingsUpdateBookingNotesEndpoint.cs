@@ -30,19 +30,13 @@ internal static class BookingsUpdateBookingNotesEndpoint
 
         var result = await handler.Handle(command, ct);
 
-        if (result.IsFailure)
-        {
-            return AdminEndpointResults.MatchNotFoundValidationFailure<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>>(
-                result,
-                () => result.ToNotFound(),
-                () => result.ToValidationProblem());
-        }
-
-        return await AdminEndpointResults.GetBookingResponse<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>>(
+        return await AdminEndpointResults.MatchNotFoundValidationBookingResponse<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>>(
+            result,
             id,
             queryService,
             booking => TypedResults.Ok(booking),
-            bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
+            () => BookingErrors.BookingNotFound(id).ToNotFound(),
+            () => result.ToValidationProblem(),
             ct);
     }
 }

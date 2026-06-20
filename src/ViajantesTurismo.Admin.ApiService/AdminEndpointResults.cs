@@ -6,6 +6,49 @@ namespace ViajantesTurismo.Admin.ApiService;
 
 internal static class AdminEndpointResults
 {
+    public static Task<TResult> MatchNotFoundConflictBookingResponse<TResult>(
+        Result result,
+        Guid bookingId,
+        IQueryService queryService,
+        Func<GetBookingDto, TResult> whenFound,
+        Func<TResult> whenNotFound,
+        Func<TResult> whenConflict,
+        CancellationToken ct)
+    {
+        return result.IsFailure
+            ? Task.FromResult(MatchNotFoundConflictFailure(result, whenNotFound, whenConflict))
+            : GetBookingResponse(bookingId, queryService, whenFound, _ => whenNotFound(), ct);
+    }
+
+    public static Task<TResult> MatchNotFoundConflictValidationBookingResponse<TResult>(
+        Result result,
+        Guid bookingId,
+        IQueryService queryService,
+        Func<GetBookingDto, TResult> whenFound,
+        Func<TResult> whenNotFound,
+        Func<TResult> whenConflict,
+        Func<TResult> whenInvalid,
+        CancellationToken ct)
+    {
+        return result.IsFailure
+            ? Task.FromResult(MatchNotFoundConflictValidationFailure(result, whenNotFound, whenConflict, whenInvalid))
+            : GetBookingResponse(bookingId, queryService, whenFound, _ => whenNotFound(), ct);
+    }
+
+    public static Task<TResult> MatchNotFoundValidationBookingResponse<TResult>(
+        Result result,
+        Guid bookingId,
+        IQueryService queryService,
+        Func<GetBookingDto, TResult> whenFound,
+        Func<TResult> whenNotFound,
+        Func<TResult> whenInvalid,
+        CancellationToken ct)
+    {
+        return result.IsFailure
+            ? Task.FromResult(MatchNotFoundValidationFailure(result, whenNotFound, whenInvalid))
+            : GetBookingResponse(bookingId, queryService, whenFound, _ => whenNotFound(), ct);
+    }
+
     public static async Task<TResult> GetBookingResponse<TResult>(
         Guid bookingId,
         IQueryService queryService,

@@ -159,6 +159,61 @@ public class AdminEndpointResultsTests
         Assert.Equal(paymentId.ToString(), response);
     }
 
+    [Fact]
+    public async Task Match_Not_Found_Conflict_Booking_Response_When_Result_Succeeds_Returns_Found_Response()
+    {
+        var booking = DtoBuilders.BuildBookingDto();
+        var queryService = new FakeQueryService(booking, null);
+
+        var response = await AdminEndpointResults.MatchNotFoundConflictBookingResponse(
+            Result.Ok(),
+            booking.Id,
+            queryService,
+            foundBooking => foundBooking.Id.ToString(),
+            () => "not-found",
+            () => "conflict",
+            CancellationToken.None);
+
+        Assert.Equal(booking.Id.ToString(), response);
+    }
+
+    [Fact]
+    public async Task Match_Not_Found_Conflict_Validation_Booking_Response_When_Result_Is_Invalid_Returns_Invalid_Response()
+    {
+        var booking = DtoBuilders.BuildBookingDto();
+        var queryService = new FakeQueryService(booking, null);
+
+        var response = await AdminEndpointResults.MatchNotFoundConflictValidationBookingResponse(
+            Result.Invalid("invalid", "field", "error"),
+            booking.Id,
+            queryService,
+            foundBooking => foundBooking.Id.ToString(),
+            () => "not-found",
+            () => "conflict",
+            () => "invalid",
+            CancellationToken.None);
+
+        Assert.Equal("invalid", response);
+    }
+
+    [Fact]
+    public async Task Match_Not_Found_Validation_Booking_Response_When_Query_Misses_Booking_Returns_Not_Found_Response()
+    {
+        var bookingId = Guid.CreateVersion7();
+        var queryService = new FakeQueryService(null, null);
+
+        var response = await AdminEndpointResults.MatchNotFoundValidationBookingResponse(
+            Result.Ok(),
+            bookingId,
+            queryService,
+            foundBooking => foundBooking.Id.ToString(),
+            () => "not-found",
+            () => "invalid",
+            CancellationToken.None);
+
+        Assert.Equal("not-found", response);
+    }
+
     public static TheoryData<Result, string> NotFoundConflictFailures =>
         new()
         {
