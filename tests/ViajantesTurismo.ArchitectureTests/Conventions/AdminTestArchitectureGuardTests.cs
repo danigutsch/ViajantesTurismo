@@ -75,7 +75,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
-            "await fixture.ResetDatabase(cts.Token);");
+            "await fixture.ResetToKnownBaseline(cts.Token);");
 
         AssertFileDoesNotContain(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -103,7 +103,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            "await Fixture.ResetDatabase(cts.Token);");
+            "await Fixture.ResetToKnownBaseline(cts.Token);");
 
         AssertFileDoesNotContain(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),

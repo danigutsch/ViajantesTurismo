@@ -12,7 +12,7 @@ public abstract class AspireSerialIntegrationTestBase(
 
     public virtual async ValueTask InitializeAsync()
     {
-        await ResetDatabase();
+        await ResetToKnownBaseline();
     }
 
     public virtual ValueTask DisposeAsync()
@@ -21,9 +21,9 @@ public abstract class AspireSerialIntegrationTestBase(
         return ValueTask.CompletedTask;
     }
 
-    private async Task ResetDatabase()
+    private async Task ResetToKnownBaseline()
     {
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await fixture.ResetDatabase(cts.Token);
+        await fixture.ResetToKnownBaseline(cts.Token);
     }
 }

@@ -66,7 +66,7 @@ public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDispos
         DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
-    internal async Task ResetDatabase(CancellationToken ct)
+    internal async Task ResetToKnownBaseline(CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
 
