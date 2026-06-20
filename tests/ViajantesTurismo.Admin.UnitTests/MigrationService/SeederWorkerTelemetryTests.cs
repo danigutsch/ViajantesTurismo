@@ -25,7 +25,7 @@ public sealed class SeederWorkerTelemetryTests
             hostLifetime);
 
         // Act
-        await InvokeExecuteAsync(worker, CancellationToken.None);
+        await ExecuteWorker(worker, CancellationToken.None);
 
         // Assert
         var activity = Assert.Single(stoppedActivities);
@@ -55,7 +55,7 @@ public sealed class SeederWorkerTelemetryTests
             hostLifetime);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => InvokeExecuteAsync(worker, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
         Assert.Equal("boom", exception.Message);
@@ -86,7 +86,7 @@ public sealed class SeederWorkerTelemetryTests
         return services.BuildServiceProvider();
     }
 
-    private static async Task InvokeExecuteAsync(SeederWorker worker, CancellationToken cancellationToken)
+    private static async Task ExecuteWorker(SeederWorker worker, CancellationToken cancellationToken)
     {
         var executeAsync = typeof(SeederWorker).GetMethod(
             "ExecuteAsync",
