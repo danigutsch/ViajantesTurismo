@@ -19,6 +19,8 @@ public static class TestFixtureHelpers
         string? name = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         // Ensure identifier and name uniqueness for parallel test safety
         if (identifier is not null || name is not null)
         {
@@ -60,6 +62,10 @@ public static class TestFixtureHelpers
         string lastName,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(firstName);
+        ArgumentNullException.ThrowIfNull(lastName);
+
         var customerRequest = DtoBuilders.BuildCreateCustomerDto(
             firstName: firstName,
             lastName: lastName,
@@ -89,6 +95,8 @@ public static class TestFixtureHelpers
         Guid? companionId = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var bookingRequest = DtoBuilders.BuildCreateBookingDto(
             tourId: tourId,
             principalCustomerId: customerId,

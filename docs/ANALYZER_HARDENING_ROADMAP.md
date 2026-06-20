@@ -63,7 +63,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 
 | Area | Rule or family | Source | Current state | Current severity | Exception policy | Next step |
 | --- | --- | --- | --- | --- | --- | --- |
-| Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; suppressed in tests via `tests/Directory.Build.props` and in migrations via scoped `.editorconfig` | Tests and migrations stay scoped out through separate mechanisms today | Remove the broad test-project suppression and replace it with narrower policy-aligned exceptions |
+| Public guard clauses | `CA1062` validate arguments of public methods | Built-in .NET analyzers | Adopted | `error` in production; scoped exceptions only in migrations and Admin BDD step-definition files | Reusable test helpers follow the same guard-clause expectations as production support code; framework-owned step bindings stay on a narrow file-scope exception path | Keep the exception list narrow and avoid reintroducing project-wide suppression |
 | Async naming | `SKSTYLE001` no `Async` suffix | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Overrides and interface implementations allowed through config | Raise after remaining cleanup is low-risk |
 | CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Keep narrow scoped exceptions only when external contracts force a different name | Raise after repo cleanup |
 | CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Same as above | Raise after repo cleanup |
@@ -97,8 +97,9 @@ Concrete Phase 1 backlog:
 2. Shrink file-specific `SKSTYLE004` exceptions as grouped top-level-type files are refactored.
 3. Measure remaining repository violations before raising `SKSTYLE001`, `SKSTYLE002`, or
    `SKSTYLE003` above `suggestion`.
-4. Remove the broad test-project `CA1062` suppression from `tests/Directory.Build.props` once the
-   remaining test violations are cleaned up or narrowed to truly intentional exceptions.
+4. Keep `CA1062` out of `tests/Directory.Build.props`; use real guards in reusable test support
+   code and only narrow file-scoped exceptions where framework-owned binding entrypoints would
+   otherwise force low-value boilerplate.
 5. Keep all exceptions in `.editorconfig` file-scoped where possible; avoid `NoWarn` expansion as
    the default answer.
 

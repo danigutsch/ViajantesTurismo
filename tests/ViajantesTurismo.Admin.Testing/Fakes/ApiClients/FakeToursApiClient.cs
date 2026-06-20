@@ -33,6 +33,8 @@ public sealed class FakeToursApiClient : IToursApiClient
 
     public Task<Uri> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         if (_createTourException is not null)
         {
             throw _createTourException;
@@ -63,6 +65,8 @@ public sealed class FakeToursApiClient : IToursApiClient
 
     public Task UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         if (_updateTourException is not null)
         {
             throw _updateTourException;

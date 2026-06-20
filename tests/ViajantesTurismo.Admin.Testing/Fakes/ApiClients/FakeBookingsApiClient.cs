@@ -36,6 +36,8 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
     public Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         var newBooking = DtoBuilders.BuildBookingDto(
             tourId: dto.TourId,
             customerId: dto.PrincipalCustomerId,

@@ -20,20 +20,33 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
 
     public void Delete(Customer customer) => _customers.Remove(customer);
 
-    public Task<bool> EmailExists(string email, CancellationToken ct) =>
-        Task.FromResult(
+    public Task<bool> EmailExists(string email, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(email);
+
+        return Task.FromResult(
             _seededEmails.Contains(email.Trim().ToUpperInvariant()) ||
             _customers.Any(c => c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
+    }
 
-    public Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct) =>
-        Task.FromResult(
+    public Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(email);
+
+        return Task.FromResult(
             _seededEmails.Contains(email.Trim().ToUpperInvariant()) ||
             _customers.Any(c =>
                 c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && c.Id != excludeCustomerId));
+    }
 
     public void AddExistingCustomer(Customer customer) => _customers.Add(customer);
 
     public void Seed(Customer customer) => _customers.Add(customer);
 
-    public void SeedEmail(string email) => _seededEmails.Add(email.Trim().ToUpperInvariant());
+    public void SeedEmail(string email)
+    {
+        ArgumentNullException.ThrowIfNull(email);
+
+        _seededEmails.Add(email.Trim().ToUpperInvariant());
+    }
 }

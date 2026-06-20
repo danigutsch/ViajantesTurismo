@@ -13,6 +13,9 @@ public static class CustomersApiHelper
         CreateCustomerDto request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(request);
+
         return await client.PostAsJsonAsync(
             new Uri("/customers", UriKind.Relative),
             request,
@@ -23,6 +26,8 @@ public static class CustomersApiHelper
         this HttpClient client,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.GetAsync(
             new Uri("/customers", UriKind.Relative),
             cancellationToken);

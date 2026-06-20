@@ -23,6 +23,8 @@ public static class DatabaseResetHelper
 
     public static async Task ResetPublicTables(DbConnection connection, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(connection);
+
         if (connection.State != System.Data.ConnectionState.Open)
         {
             await connection.OpenAsync(ct);

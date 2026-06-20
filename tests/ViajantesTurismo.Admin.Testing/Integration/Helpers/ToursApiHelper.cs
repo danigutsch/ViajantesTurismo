@@ -13,6 +13,9 @@ public static class ToursApiHelper
         CreateTourDto request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(request);
+
         return await client.PostAsJsonAsync(
             new Uri("/tours", UriKind.Relative),
             request,
@@ -23,6 +26,8 @@ public static class ToursApiHelper
         this HttpClient client,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.GetAsync(
             new Uri("/tours", UriKind.Relative),
             cancellationToken);
