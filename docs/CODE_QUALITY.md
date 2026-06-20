@@ -200,7 +200,8 @@ Enable guard checks for production code.
 Use `CA1062` for required null validation on public methods and constructors.
 
 - **Production projects:** enable it as `error`
-- **Test projects:** keep it suppressed
+- **Test projects:** do not use a broad project-wide suppression; add real guards in reusable test
+  support code and keep any remaining exceptions file-scoped to framework-owned binding surfaces
 - **Generated code and migrations:** exclude
 
 Preferred patterns:

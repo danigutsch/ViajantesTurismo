@@ -184,6 +184,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task<GetBookingDto> CreateBooking(this HttpClient client, Guid tourId, Guid customerId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var dto = new CreateBookingDto
         {
             TourId = tourId,
@@ -204,6 +206,8 @@ public static class ApiTestExtensions
     /// <returns>The current booking representation.</returns>
     public static async Task<GetBookingDto> GetBooking(this HttpClient client, Guid bookingId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var response = await client.GetAsync(new Uri($"/bookings/{bookingId}", UriKind.Relative));
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
     }
@@ -213,6 +217,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task<GetBookingDto[]> GetAllBookings(this HttpClient client)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var response = await client.GetAsync(new Uri("/bookings", UriKind.Relative));
         return await response.ReadRequiredJson<GetBookingDto[]>(HttpStatusCode.OK);
     }
@@ -222,6 +228,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task<GetTourDto[]> GetAllTours(this HttpClient client)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var response = await client.GetAsync(new Uri("/tours", UriKind.Relative));
         return await response.ReadRequiredJson<GetTourDto[]>(HttpStatusCode.OK);
     }
@@ -231,6 +239,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task<GetBookingDto> ConfirmBooking(this HttpClient client, Guid bookingId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var response = await client.PostAsync(
             new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative), null);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
@@ -245,6 +255,8 @@ public static class ApiTestExtensions
     /// <returns>The confirmed booking.</returns>
     public static async Task<GetBookingDto> CreateConfirmedBooking(this HttpClient client, Guid tourId, Guid customerId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var booking = await client.CreateBooking(tourId, customerId);
         return await client.ConfirmBooking(booking.Id);
     }
@@ -254,6 +266,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task<GetBookingDto> CancelBooking(this HttpClient client, Guid bookingId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var response = await client.PostAsync(
             new Uri($"/bookings/{bookingId}/cancel", UriKind.Relative), null);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
@@ -268,6 +282,8 @@ public static class ApiTestExtensions
     /// <returns>The cancelled booking.</returns>
     public static async Task<GetBookingDto> CreateCancelledBooking(this HttpClient client, Guid tourId, Guid customerId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var booking = await client.CreateBooking(tourId, customerId);
         return await client.CancelBooking(booking.Id);
     }
@@ -277,6 +293,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task<GetBookingDto> CompleteBooking(this HttpClient client, Guid bookingId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var response = await client.PostAsync(
             new Uri($"/bookings/{bookingId}/complete", UriKind.Relative), null);
         return await response.ReadRequiredJson<GetBookingDto>(HttpStatusCode.OK);
@@ -291,6 +309,8 @@ public static class ApiTestExtensions
     /// <returns>The completed booking.</returns>
     public static async Task<GetBookingDto> CreateCompletedBooking(this HttpClient client, Guid tourId, Guid customerId)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var booking = await client.CreateConfirmedBooking(tourId, customerId);
         return await client.CompleteBooking(booking.Id);
     }
@@ -300,6 +320,8 @@ public static class ApiTestExtensions
     /// </summary>
     public static async Task RecordPayment(this HttpClient client, Guid bookingId, decimal amount)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         var dto = new CreatePaymentDto
         {
             Amount = amount,

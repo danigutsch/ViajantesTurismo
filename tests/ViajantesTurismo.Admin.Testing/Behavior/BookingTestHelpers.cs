@@ -15,6 +15,8 @@ public static class BookingTestHelpers
     /// </summary>
     public static Result<Booking> AddSingleCustomerBooking(Tour tour, SingleBookingOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(tour);
+
         options ??= new SingleBookingOptions();
         var discount = options.Discount ?? BookingDiscountDefinition.None;
 
@@ -31,6 +33,8 @@ public static class BookingTestHelpers
     /// </summary>
     public static Result<Booking> AddDoubleCustomerBooking(Tour tour, DoubleBookingOptions? options)
     {
+        ArgumentNullException.ThrowIfNull(tour);
+
         options ??= new DoubleBookingOptions();
         var discount = options.Discount ?? BookingDiscountDefinition.None;
 
@@ -50,6 +54,9 @@ public static class BookingTestHelpers
     /// </summary>
     public static IReadOnlyList<Customer> CreateConfirmedSingleBookings(Tour tour, int count, string namePrefix = "Customer")
     {
+        ArgumentNullException.ThrowIfNull(tour);
+        ArgumentNullException.ThrowIfNull(namePrefix);
+
         var customers = new List<Customer>();
 
         for (var i = 0; i < count; i++)
@@ -79,6 +86,10 @@ public static class BookingTestHelpers
         string principalPrefix = "Principal",
         string companionPrefix = "Companion")
     {
+        ArgumentNullException.ThrowIfNull(tour);
+        ArgumentNullException.ThrowIfNull(principalPrefix);
+        ArgumentNullException.ThrowIfNull(companionPrefix);
+
         var customers = new List<Customer>();
 
         for (var i = 0; i < count; i++)
@@ -109,6 +120,9 @@ public static class BookingTestHelpers
     /// </summary>
     public static IReadOnlyList<Customer> CreatePendingSingleBookings(Tour tour, int count, string namePrefix = "PendingCustomer")
     {
+        ArgumentNullException.ThrowIfNull(tour);
+        ArgumentNullException.ThrowIfNull(namePrefix);
+
         var customers = new List<Customer>();
 
         for (var i = 0; i < count; i++)
@@ -130,6 +144,9 @@ public static class BookingTestHelpers
     /// </summary>
     public static IReadOnlyList<Customer> CreateCancelledSingleBookings(Tour tour, int count, string namePrefix = "CancelledCustomer")
     {
+        ArgumentNullException.ThrowIfNull(tour);
+        ArgumentNullException.ThrowIfNull(namePrefix);
+
         var customers = new List<Customer>();
 
         for (var i = 0; i < count; i++)

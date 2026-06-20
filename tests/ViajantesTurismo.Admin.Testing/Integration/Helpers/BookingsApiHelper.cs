@@ -13,6 +13,9 @@ public static class BookingsApiHelper
         CreateBookingDto request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(request);
+
         return await client.PostAsJsonAsync(
             new Uri("/bookings", UriKind.Relative),
             request,
@@ -34,6 +37,8 @@ public static class BookingsApiHelper
         Guid bookingId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.GetAsync(
             new Uri($"/bookings/{bookingId}", UriKind.Relative),
             cancellationToken);
@@ -53,6 +58,8 @@ public static class BookingsApiHelper
         this HttpClient client,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.GetAsync(
             new Uri("/bookings", UriKind.Relative),
             cancellationToken);
@@ -72,6 +79,8 @@ public static class BookingsApiHelper
         Guid tourId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.GetAsync(
             new Uri($"/bookings/tour/{tourId}", UriKind.Relative),
             cancellationToken);
@@ -92,6 +101,8 @@ public static class BookingsApiHelper
         Guid customerId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.GetAsync(
             new Uri($"/bookings/customer/{customerId}", UriKind.Relative),
             cancellationToken);
@@ -113,6 +124,9 @@ public static class BookingsApiHelper
         CreatePaymentDto payment,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(payment);
+
         return await client.PostAsJsonAsync(
             new Uri($"/bookings/{bookingId}/payments", UriKind.Relative),
             payment,
@@ -124,6 +138,8 @@ public static class BookingsApiHelper
         Guid bookingId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.PostAsync(
             new Uri($"/bookings/{bookingId}/confirm", UriKind.Relative),
             null,
@@ -135,6 +151,8 @@ public static class BookingsApiHelper
         Guid bookingId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.PostAsync(
             new Uri($"/bookings/{bookingId}/cancel", UriKind.Relative),
             null,
@@ -146,6 +164,8 @@ public static class BookingsApiHelper
         Guid bookingId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.PostAsync(
             new Uri($"/bookings/{bookingId}/complete", UriKind.Relative),
             null,
@@ -158,6 +178,9 @@ public static class BookingsApiHelper
         UpdateBookingNotesDto request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(request);
+
         return await client.PatchAsJsonAsync(
             new Uri($"/bookings/{bookingId}/notes", UriKind.Relative),
             request,
@@ -170,6 +193,9 @@ public static class BookingsApiHelper
         UpdateBookingDiscountDto request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(request);
+
         return await client.PutAsJsonAsync(
             new Uri($"/bookings/{bookingId}/discount", UriKind.Relative),
             request,
@@ -182,6 +208,9 @@ public static class BookingsApiHelper
         UpdateBookingDetailsDto request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(request);
+
         return await client.PutAsJsonAsync(
             new Uri($"/bookings/{bookingId}/details", UriKind.Relative),
             request,
@@ -193,6 +222,8 @@ public static class BookingsApiHelper
         Guid bookingId,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(client);
+
         return await client.DeleteAsync(
             new Uri($"/bookings/{bookingId}", UriKind.Relative),
             cancellationToken);

@@ -11,6 +11,8 @@ public static class ContextHelpers
     /// </summary>
     public static void SetupValidTour(TourContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.Identifier = "TEST2024";
         context.Name = "Test Tour";
         context.StartDate = DateTime.UtcNow.AddMonths(1);

@@ -11,6 +11,8 @@ public static class TestDataGenerator
     /// </summary>
     public static string UniqueEmail(string prefix = "test")
     {
+        ArgumentNullException.ThrowIfNull(prefix);
+
         var cleanPrefix = prefix.Replace(" ", "", StringComparison.Ordinal).Replace("\t", "", StringComparison.Ordinal);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         return $"{cleanPrefix}.{suffix}@example.com";
@@ -21,6 +23,8 @@ public static class TestDataGenerator
     /// </summary>
     public static string UniqueNationalId(string prefix = "ID")
     {
+        ArgumentNullException.ThrowIfNull(prefix);
+
         var suffix = Random.Shared.Next(10000000, 99999999);
         return $"{prefix}{suffix}";
     }
@@ -30,6 +34,8 @@ public static class TestDataGenerator
     /// </summary>
     public static string UniqueTourIdentifier(string prefix = "TOUR")
     {
+        ArgumentNullException.ThrowIfNull(prefix);
+
         var suffix = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
         return $"{prefix}{suffix}";
     }

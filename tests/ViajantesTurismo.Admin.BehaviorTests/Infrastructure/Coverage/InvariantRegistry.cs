@@ -11,13 +11,17 @@ public static class InvariantRegistry
     /// <summary>
     /// Get all invariant IDs for an aggregate.
     /// </summary>
-    public static string[] GetInvariantsForAggregate(Type aggregateType) =>
-        aggregateType.Name switch
+    public static string[] GetInvariantsForAggregate(Type aggregateType)
+    {
+        ArgumentNullException.ThrowIfNull(aggregateType);
+
+        return aggregateType.Name switch
         {
             "Tour" => [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)],
             "Customer" => [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)],
             _ => []
         };
+    }
 
     /// <summary>
     /// Get all Tour invariants.
