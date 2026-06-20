@@ -47,6 +47,8 @@ Exporter wiring remains service-default driven and exporter-neutral:
 Custom repository spans should follow one consistent failure contract:
 
 - set `ActivityStatusCode.Error` when the operation fails
+- use the exception message as the status description for error spans
+- keep the status description `null` for success and cancellation paths
 - record an exception event on the activity
 - keep any repo-specific outcome or error-type tags alongside the exception event when they are part
   of the surface contract
