@@ -35,7 +35,7 @@ internal static class ErrorDocumentationCatalog
         {
             foreach (var entry in GetProviderEntries(attribute.ProviderType))
             {
-                entries[entry.Identifier] = new GetErrorDocumentationDto
+                var dto = new GetErrorDocumentationDto
                 {
                     Identifier = entry.Identifier,
                     DocumentationPath = entry.DocumentationPath,
@@ -47,6 +47,12 @@ internal static class ErrorDocumentationCatalog
                     DetailTemplate = entry.DetailTemplate,
                     Summary = entry.Summary,
                 };
+
+                if (!entries.TryAdd(entry.Identifier, dto))
+                {
+                    throw new InvalidOperationException(
+                        $"Duplicate error documentation identifier '{entry.Identifier}' was discovered while aggregating generated catalogs.");
+                }
             }
         }
     }

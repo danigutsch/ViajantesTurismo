@@ -32,6 +32,10 @@ public sealed class ErrorDocumentationCatalogTests
             string.Equals(entry.ProviderType, "ViajantesTurismo.Admin.Application.Import.CsvErrors", StringComparison.Ordinal)
             && string.Equals(entry.MemberName, "RequiredHeaderMissing", StringComparison.Ordinal)
             && string.Equals(entry.Code, "invalid", StringComparison.Ordinal));
+        Assert.Contains(entries, static entry =>
+            string.Equals(entry.ProviderType, "ViajantesTurismo.Admin.Domain.Customers.CustomerErrors", StringComparison.Ordinal)
+            && string.Equals(entry.MemberName, "EmailAlreadyExists", StringComparison.Ordinal)
+            && entry.HttpStatusCode == 409);
         Assert.All(entries, static entry => Assert.Equal("docs/errors/README.md", entry.DocumentationPath));
     }
 }
