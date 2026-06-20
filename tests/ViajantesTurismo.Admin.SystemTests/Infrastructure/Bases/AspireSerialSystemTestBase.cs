@@ -12,13 +12,13 @@ public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture f
         await base.InitializeAsync();
 
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await Fixture.ResetDatabase(cts.Token);
+        await Fixture.ResetToKnownBaseline(cts.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
         using var cts = new CancellationTokenSource(DatabaseResetTimeout);
-        await Fixture.ResetDatabase(cts.Token);
+        await Fixture.ResetToKnownBaseline(cts.Token);
 
         await base.DisposeAsync();
         GC.SuppressFinalize(this);
