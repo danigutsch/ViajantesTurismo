@@ -42,22 +42,60 @@ Exporter wiring remains service-default driven and exporter-neutral:
 - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
 - OTLP exporter is enabled only when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured.
 
-## Failure semantics
+## Repository custom span contract
 
-Custom repository spans should follow one consistent failure contract:
+Repository-owned custom spans should follow one explicit contract across success,
+cancellation, and failure paths.
 
-- set `ActivityStatusCode.Error` when the operation fails
-- use the exception message as the status description for error spans
-- keep the status description `null` for success and cancellation paths
-- record an exception event on the activity
-- keep any repo-specific outcome or error-type tags alongside the exception event when they are part
-  of the surface contract
+| Path | Activity status | Status description | Exception event | Repo-specific tags |
+| --- | --- | --- | --- | --- |
+| Success | `ActivityStatusCode.Ok` | `null` | Do not record one | Keep the surface's success/outcome tags when that surface defines them |
+| Cancellation | Leave status unset | `null` | Do not record one | Keep the surface's cancellation/outcome tags when that surface defines them |
+| Failure | `ActivityStatusCode.Error` | Use the thrown exception message | Record exactly one exception event | Keep the surface's error/outcome tags when that surface defines them |
 
-Current repository examples:
+### Status description rules
 
-- mediator request, notification, and stream spans use `AddException(ex)` plus
-  `SetStatus(ActivityStatusCode.Error, ...)`
-- migration service seeding span uses the same pattern for failed seeding runs
+- Success spans must leave `StatusDescription` as `null`.
+- Cancellation spans must leave `StatusDescription` as `null`.
+- Failure spans must populate `StatusDescription` with the thrown exception message.
+
+### Exception recording rules
+
+- Failure spans must record one exception event with OpenTelemetry-standard exception tags.
+- Success and cancellation spans must not record exception events.
+- Repo-specific error tags do not replace the exception event; they complement it.
+
+### Repo-specific tag policy
+
+Repo-specific tags are required only when a span surface already defines a stable,
+surface-owned tag contract.
+
+- `SharedKernel.Mediator` runtime pipeline spans require:
+    - `sharedkernel.mediator.outcome`
+    - `error.type` on failures only
+- `SharedKernel.Mediator` generated spans require:
+    - `mediator.outcome`
+    - `error.type` on failures only
+- `ViajantesTurismo.MigrationService.SeederWorker` spans require:
+    - `operation.type=database_seeding`
+    - `worker.type=migration`
+
+Surfaces that do not define a stable repository tag contract should still follow the
+status and exception-event rules above without inventing extra tags.
+
+### Current repository examples
+
+- Mediator request, notification, and stream spans use `AddException(ex)` plus
+  `SetStatus(ActivityStatusCode.Error, ...)` on failures, leave cancellation status unset,
+  and emit outcome tags.
+- Migration service seeding spans use the same failure-status and exception-event pattern,
+  while keeping seeding-specific operation tags on all paths.
+
+### Helper abstraction decision
+
+The repository currently keeps this contract documentation-first. No shared helper is added
+in this issue because the active span producers do not share the same repo-specific tag set,
+and the direct tests already provide the drift protection needed for the current surfaces.
 
 ## Local verification (Aspire)
 
