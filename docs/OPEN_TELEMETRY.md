@@ -42,6 +42,23 @@ Exporter wiring remains service-default driven and exporter-neutral:
 - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
 - OTLP exporter is enabled only when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured.
 
+## Failure semantics
+
+Custom repository spans should follow one consistent failure contract:
+
+- set `ActivityStatusCode.Error` when the operation fails
+- use the exception message as the status description for error spans
+- keep the status description `null` for success and cancellation paths
+- record an exception event on the activity
+- keep any repo-specific outcome or error-type tags alongside the exception event when they are part
+  of the surface contract
+
+Current repository examples:
+
+- mediator request, notification, and stream spans use `AddException(ex)` plus
+  `SetStatus(ActivityStatusCode.Error, ...)`
+- migration service seeding span uses the same pattern for failed seeding runs
+
 ## Local verification (Aspire)
 
 1. Start the full application stack:
