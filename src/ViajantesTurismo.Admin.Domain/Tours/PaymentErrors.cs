@@ -57,5 +57,5 @@ public static class PaymentErrors
     /// </summary>
     /// <param name="id">The ID of the payment that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result PaymentNotFound(long id) => Result.NotFound(detail: $"Payment with ID {id} was not found.");
+    public static Result PaymentNotFound(Guid id) => Result.NotFound(detail: $"Payment with ID {id} was not found.");
 }
