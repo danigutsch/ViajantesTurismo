@@ -9,7 +9,14 @@ namespace ViajantesTurismo.Admin.ApiService;
 
 internal static class ErrorDocumentationCatalog
 {
+    private static readonly Lazy<GetErrorDocumentationDto[]> EntriesCache = new(CreateEntries);
+
     public static IReadOnlyList<GetErrorDocumentationDto> GetEntries()
+    {
+        return EntriesCache.Value;
+    }
+
+    private static GetErrorDocumentationDto[] CreateEntries()
     {
         var entries = new Dictionary<string, GetErrorDocumentationDto>(StringComparer.Ordinal);
 
