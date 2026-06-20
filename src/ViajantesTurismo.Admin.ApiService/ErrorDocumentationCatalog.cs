@@ -65,11 +65,8 @@ internal static class ErrorDocumentationCatalog
         ArgumentNullException.ThrowIfNull(providerType);
 
         var entriesProperty = providerType.GetProperty("Entries", BindingFlags.Instance | BindingFlags.Public);
-        if (entriesProperty?.GetValue(Activator.CreateInstance(providerType)) is not IEnumerable<ResultErrorCatalogEntry> providerEntries)
-        {
-            return [];
-        }
-
-        return providerEntries;
+        return entriesProperty?.GetValue(Activator.CreateInstance(providerType)) is IEnumerable<ResultErrorCatalogEntry> providerEntries
+            ? providerEntries
+            : [];
     }
 }

@@ -35,16 +35,13 @@ internal static class ErrorDocumentationEndpoints
         var entry = ErrorDocumentationCatalog.GetEntries().FirstOrDefault(
             candidate => string.Equals(candidate.Identifier, identifier, StringComparison.Ordinal));
 
-        if (entry is null)
-        {
-            return TypedResults.NotFound(new ProblemDetails
+        return entry is null
+            ? TypedResults.NotFound(new ProblemDetails
             {
                 Title = "Error Documentation Not Found",
                 Detail = $"Error documentation entry '{identifier}' was not found.",
                 Status = StatusCodes.Status404NotFound,
-            });
-        }
-
-        return TypedResults.Ok(entry);
+            })
+            : TypedResults.Ok(entry);
     }
 }
