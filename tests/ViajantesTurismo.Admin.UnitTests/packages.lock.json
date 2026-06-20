@@ -730,6 +730,14 @@
           "SharedKernel.Results": "[1.0.0, )"
         }
       },
+      "viajantesturismo.migrationservice": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting": "[10.0.8, )",
+          "ViajantesTurismo.Admin.Infrastructure": "[1.0.0, )",
+          "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
+        }
+      },
       "viajantesturismo.resources": {
         "type": "Project"
       },

@@ -29,12 +29,15 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
             activity?.SetStatus(ActivityStatusCode.Ok);
             logger.SeedingCompleted();
         }
+        catch (OperationCanceledException)
+        {
+            logger.SeedingCancelled();
+            throw;
+        }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.SetTag("exception.type", ex.GetType().FullName);
-            activity?.SetTag("exception.message", ex.Message);
-            activity?.SetTag("exception.stacktrace", ex.StackTrace);
+            activity?.AddException(ex);
 
             logger.SeedingFailed(ex);
             throw;
@@ -56,4 +59,7 @@ internal static partial class SeederWorkerLogger
 
     [LoggerMessage(3, LogLevel.Error, "Database seeding failed")]
     public static partial void SeedingFailed(this ILogger logger, Exception exception);
+
+    [LoggerMessage(4, LogLevel.Information, "Database seeding cancelled.")]
+    public static partial void SeedingCancelled(this ILogger logger);
 }
