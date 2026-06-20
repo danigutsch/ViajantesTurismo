@@ -17,8 +17,8 @@ public static class InvariantRegistry
 
         return aggregateType.Name switch
         {
-            "Tour" => [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)],
-            "Customer" => [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)],
+            "Tour" => [.. typeof(Tour).GetFields().Select(ReadInvariantValue)],
+            "Customer" => [.. typeof(Customer).GetFields().Select(ReadInvariantValue)],
             _ => []
         };
     }
@@ -27,19 +27,27 @@ public static class InvariantRegistry
     /// Get all Tour invariants.
     /// </summary>
     public static string[] GetTourInvariants() =>
-        [.. typeof(Tour).GetFields().Select(f => (string)f.GetValue(null)!)];
+        [.. typeof(Tour).GetFields().Select(ReadInvariantValue)];
 
     /// <summary>
     /// Get all Customer invariants.
     /// </summary>
     public static string[] GetCustomerInvariants() =>
-        [.. typeof(Customer).GetFields().Select(f => (string)f.GetValue(null)!)];
+        [.. typeof(Customer).GetFields().Select(ReadInvariantValue)];
 
     /// <summary>
     /// Get all invariants across all aggregates.
     /// </summary>
     public static string[] GetAllInvariants() =>
         [.. GetTourInvariants().Concat(GetCustomerInvariants())];
+
+    private static string ReadInvariantValue(System.Reflection.FieldInfo field)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+
+        return field.GetValue(null) as string
+            ?? throw new InvalidOperationException($"Invariant field '{field.Name}' must expose a non-null string value.");
+    }
 
     /// <summary>
     /// All Tour aggregate invariants from docs/bounded-contexts/Admin.md
