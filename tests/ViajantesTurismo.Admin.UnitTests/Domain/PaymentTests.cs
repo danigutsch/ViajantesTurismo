@@ -106,7 +106,7 @@ public class PaymentTests
     public void Payment_Not_Found_Should_Return_Not_Found_Result()
     {
         // Arrange
-        const long paymentId = 12345L;
+        var paymentId = Guid.CreateVersion7();
 
         // Act
         var result = PaymentErrors.PaymentNotFound(paymentId);
@@ -115,7 +115,7 @@ public class PaymentTests
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorDetails);
         Assert.Contains("Payment with ID", result.ErrorDetails.Detail, StringComparison.Ordinal);
-        Assert.Contains("12345", result.ErrorDetails.Detail, StringComparison.Ordinal);
+        Assert.Contains(paymentId.ToString(), result.ErrorDetails.Detail, StringComparison.Ordinal);
         Assert.Contains("was not found", result.ErrorDetails.Detail, StringComparison.Ordinal);
     }
 }
