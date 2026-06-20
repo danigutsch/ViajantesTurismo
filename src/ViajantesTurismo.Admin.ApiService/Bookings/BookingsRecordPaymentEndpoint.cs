@@ -48,20 +48,13 @@ internal static class BookingsRecordPaymentEndpoint
 
         var paymentId = result.Value;
 
-        var updatedBooking = await queryService.GetBookingById(id, ct);
-
-        if (updatedBooking is null)
-        {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
-        }
-
-        var paymentDto = updatedBooking.Payments.FirstOrDefault(p => p.Id == paymentId);
-
-        if (paymentDto is null)
-        {
-            return PaymentErrors.PaymentNotFound(paymentId).ToNotFound();
-        }
-
-        return TypedResults.Created($"/bookings/{id}/payments/{paymentId}", paymentDto);
+        return await AdminEndpointResults.GetPaymentResponse<Results<Created<GetPaymentDto>, NotFound<ProblemDetails>, ValidationProblem>>(
+            id,
+            paymentId,
+            queryService,
+            payment => TypedResults.Created($"/bookings/{id}/payments/{paymentId}", payment),
+            bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
+            missingPaymentId => PaymentErrors.PaymentNotFound(missingPaymentId).ToNotFound(),
+            ct);
     }
 }

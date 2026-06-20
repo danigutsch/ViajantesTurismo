@@ -35,13 +35,11 @@ internal static class BookingsConfirmBookingEndpoint
                 () => result.ToConflict());
         }
 
-        var updatedBooking = await queryService.GetBookingById(id, ct);
-
-        if (updatedBooking is null)
-        {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
-        }
-
-        return TypedResults.Ok(updatedBooking);
+        return await AdminEndpointResults.GetBookingResponse<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>(
+            id,
+            queryService,
+            booking => TypedResults.Ok(booking),
+            bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
+            ct);
     }
 }
