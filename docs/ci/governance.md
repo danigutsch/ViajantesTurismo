@@ -31,6 +31,24 @@ separate dependency review workflow, and the separate secret scanning workflow. 
 `Devcontainer Smoke` workflow remains supplemental, does not run on ordinary pull requests,
 and is not part of the required merge gate.
 
+## Recovery for missing PR checks
+
+If a protected pull request shows required checks as "Expected" on the latest head SHA, verify
+whether GitHub created any `pull_request` workflow runs for that exact SHA before assuming the
+code or tests are at fault.
+
+Repository recovery order:
+
+1. confirm the current PR head SHA,
+2. confirm whether `pull_request` runs exist for that SHA,
+3. if none exist, trigger another PR activity event by editing the PR,
+4. if editing does not create fresh PR-context runs, close and reopen the PR.
+
+The required workflows in this repository listen to `pull_request.edited` specifically so a
+small metadata edit can be used as the first recovery step. Manual `workflow_dispatch` runs may
+be helpful for diagnostics, but they are not the preferred recovery path for satisfying branch
+protection on the current PR head SHA.
+
 ## Signed commit policy
 
 The repository policy is to require verified signed commits for merges to the protected

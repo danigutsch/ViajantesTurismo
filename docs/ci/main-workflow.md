@@ -5,9 +5,10 @@ Operational details for the primary GitHub Actions workflow in
 
 ## Workflow jobs
 
-The CI workflow runs on every pull request targeting `main`, every push to `main`, on
-merge queue checks (`merge_group`), and on `workflow_dispatch`. It defines multiple test
-slices, a SonarCloud aggregation job, a lint job, and the shared change-detection gate.
+The CI workflow runs on pull request activity targeting `main` (`opened`, `edited`,
+`synchronize`, `reopened`, and `ready_for_review`), every push to `main`, on merge queue
+checks (`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a
+SonarCloud aggregation job, a lint job, and the shared change-detection gate.
 
 The workflow-level concurrency policy cancels stale runs for non-`main` refs but preserves
 in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
@@ -214,6 +215,25 @@ confirms the actual branch state rather than only the pre-merge PR state.
 - existing workflow-level `concurrency` remains appropriate for canceling stale runs on
   the same ref, but `main` should be exempt from cancellation so post-merge validation is
   not interrupted
+
+### Recovery path for missing PR-context checks
+
+GitHub should create fresh `pull_request` workflow runs whenever the PR head branch changes,
+but in practice maintainers may occasionally see a PR head SHA with no matching
+`pull_request` runs or with required checks stuck at "Expected".
+
+Repository policy for this situation:
+
+1. First confirm the latest PR head SHA.
+2. Check whether any `pull_request` workflow run exists for that exact SHA.
+3. If no `pull_request` run exists for the latest SHA, treat it as a PR-event dispatch miss.
+4. Recover by triggering another real `pull_request` event on the same PR, preferring a small
+   PR edit because this workflow now listens to `pull_request.edited`.
+5. Use close/reopen only when an edit does not create fresh PR-context runs.
+
+`workflow_dispatch` remains useful for manual diagnostics, but it is not the repository's
+preferred recovery path for protected-branch PR checks because branch protection may continue
+waiting for PR-context check runs on the current head SHA.
 
 ### Recommended target state
 
