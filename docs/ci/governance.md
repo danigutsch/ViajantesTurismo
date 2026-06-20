@@ -39,10 +39,10 @@ code or tests are at fault.
 
 Repository recovery order:
 
-1. confirm the current PR head SHA,
-2. confirm whether `pull_request` runs exist for that SHA,
-3. if none exist, trigger another PR activity event by editing the PR,
-4. if editing does not create fresh PR-context runs, close and reopen the PR.
+1. Confirm the current PR head SHA.
+2. Confirm whether `pull_request` runs exist for that SHA.
+3. If none exist, trigger another PR activity event by editing the PR.
+4. If editing does not create fresh PR-context runs, close and reopen the PR.
 
 The required workflows in this repository listen to `pull_request.edited` specifically so a
 small metadata edit can be used as the first recovery step. Manual `workflow_dispatch` runs may
