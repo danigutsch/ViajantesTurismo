@@ -29,6 +29,11 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
             activity?.SetStatus(ActivityStatusCode.Ok);
             logger.SeedingCompleted();
         }
+        catch (OperationCanceledException)
+        {
+            logger.SeedingCancelled();
+            throw;
+        }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
@@ -52,6 +57,9 @@ internal static partial class SeederWorkerLogger
     [LoggerMessage(2, LogLevel.Information, "Database seeding completed.")]
     public static partial void SeedingCompleted(this ILogger logger);
 
-    [LoggerMessage(3, LogLevel.Error, "Database seeding failed")]
+    [LoggerMessage(3, LogLevel.Information, "Database seeding cancelled.")]
+    public static partial void SeedingCancelled(this ILogger logger);
+
+    [LoggerMessage(4, LogLevel.Error, "Database seeding failed")]
     public static partial void SeedingFailed(this ILogger logger, Exception exception);
 }

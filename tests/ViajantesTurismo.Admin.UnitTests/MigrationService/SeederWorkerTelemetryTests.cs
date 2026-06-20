@@ -79,6 +79,36 @@ public sealed class SeederWorkerTelemetryTests
         Assert.True(seeder.SeedCalled);
     }
 
+    [Fact]
+    public async Task Does_Not_Record_An_Error_For_A_Cancelled_Seeding_Span()
+    {
+        // Arrange
+        List<Activity> stoppedActivities = [];
+        using var listener = CreateCapturingListener(stoppedActivities);
+        var seeder = new CancelledSeeder();
+        var hostLifetime = new TestHostApplicationLifetime();
+        using var serviceProvider = CreateServiceProvider(seeder);
+        using var worker = new SeederWorker(
+            serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<SeederWorker>.Instance,
+            hostLifetime);
+
+        // Act
+        await Assert.ThrowsAsync<OperationCanceledException>(() => ExecuteWorker(worker, CancellationToken.None));
+
+        // Assert
+        var activity = Assert.Single(stoppedActivities);
+        Assert.Equal("DatabaseSeeding", activity.OperationName);
+        Assert.Equal(SeederWorker.ActivitySourceName, activity.Source.Name);
+        Assert.Equal(ActivityStatusCode.Unset, activity.Status);
+        Assert.Null(activity.StatusDescription);
+        Assert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
+        Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
+        Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
+        Assert.True(hostLifetime.StopApplicationCalled);
+        Assert.True(seeder.SeedCalled);
+    }
+
     private static ServiceProvider CreateServiceProvider(ISeeder seeder)
     {
         var services = new ServiceCollection();
@@ -133,6 +163,19 @@ public sealed class SeederWorkerTelemetryTests
         {
             SeedCalled = true;
             return Task.FromException(new InvalidOperationException("boom"));
+        }
+
+        public Task ClearDatabase(CancellationToken ct) => Task.CompletedTask;
+    }
+
+    private sealed class CancelledSeeder : ISeeder
+    {
+        public bool SeedCalled { get; private set; }
+
+        public Task Seed(CancellationToken ct)
+        {
+            SeedCalled = true;
+            return Task.FromException(new OperationCanceledException("cancelled"));
         }
 
         public Task ClearDatabase(CancellationToken ct) => Task.CompletedTask;
