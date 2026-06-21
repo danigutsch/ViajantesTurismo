@@ -1,0 +1,14 @@
+#nullable enable
+SharedKernel.DomainEvents.DomainEventNotification<TDomainEvent>
+SharedKernel.DomainEvents.DomainEventNotification<TDomainEvent>.DomainEvent.get -> TDomainEvent
+SharedKernel.DomainEvents.DomainEventNotification<TDomainEvent>.DomainEventNotification(TDomainEvent domainEvent) -> void
+SharedKernel.DomainEvents.DomainEventNotificationHandler<TDomainEvent>
+SharedKernel.DomainEvents.DomainEventNotificationHandler<TDomainEvent>.DomainEventNotificationHandler(SharedKernel.DomainEvents.IDomainEventHandler<TDomainEvent>! handler) -> void
+SharedKernel.DomainEvents.DomainEventNotificationHandler<TDomainEvent>.Handle(SharedKernel.DomainEvents.DomainEventNotification<TDomainEvent>! notification, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.DomainEvents.IDomainEventDispatcher
+SharedKernel.DomainEvents.IDomainEventDispatcher.Dispatch<TDomainEvent>(TDomainEvent domainEvent, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.DomainEvents.IDomainEventHandler<TDomainEvent>
+SharedKernel.DomainEvents.IDomainEventHandler<TDomainEvent>.Handle(TDomainEvent domainEvent, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.DomainEvents.MediatorDomainEventDispatcher
+SharedKernel.DomainEvents.MediatorDomainEventDispatcher.Dispatch<TDomainEvent>(TDomainEvent domainEvent, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.DomainEvents.MediatorDomainEventDispatcher.MediatorDomainEventDispatcher(SharedKernel.Mediator.IPublisher! publisher) -> void

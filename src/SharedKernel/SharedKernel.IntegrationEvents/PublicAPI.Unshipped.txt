@@ -1,0 +1,12 @@
+#nullable enable
+SharedKernel.IntegrationEvents.IIntegrationEvent
+SharedKernel.IntegrationEvents.IIntegrationEvent.EventId.get -> System.Guid
+SharedKernel.IntegrationEvents.IIntegrationEvent.EventType.get -> string!
+SharedKernel.IntegrationEvents.IIntegrationEvent.EventVersion.get -> int
+SharedKernel.IntegrationEvents.IIntegrationEvent.OccurredAt.get -> System.DateTimeOffset
+SharedKernel.IntegrationEvents.IIntegrationEventDispatcher
+SharedKernel.IntegrationEvents.IIntegrationEventDispatcher.Dispatch<TIntegrationEvent>(TIntegrationEvent integrationEvent, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.IntegrationEvents.IIntegrationEventHandler<TIntegrationEvent>
+SharedKernel.IntegrationEvents.MediatorIntegrationEventDispatcher
+SharedKernel.IntegrationEvents.MediatorIntegrationEventDispatcher.Dispatch<TIntegrationEvent>(TIntegrationEvent integrationEvent, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.IntegrationEvents.MediatorIntegrationEventDispatcher.MediatorIntegrationEventDispatcher(SharedKernel.Mediator.IPublisher! publisher) -> void
