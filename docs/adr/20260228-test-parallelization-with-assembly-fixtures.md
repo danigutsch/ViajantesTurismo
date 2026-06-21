@@ -35,7 +35,7 @@ We implement test parallelization using:
 2. **Hybrid Parallel/Serial Shape**:
    - **Parallel Tests**: ordinary integration and browser system classes run concurrently by default.
    - **Serial Tests**: only the narrow clean-slate lanes opt in to sequential execution via
-     `AspireSerialSystemTestBase` or the corresponding serial integration collection.
+      `AspireSerialSystemTestBase` or the corresponding serial integration collection.
 
 3. **Fixture-Owned Baseline Control**: Seeded defaults can be shared for parallel-safe reads, while destructive
    clean-slate reset stays inside serial fixture or base-class infrastructure.
@@ -64,8 +64,8 @@ improved.
 
 - **Discipline Required**: Developers must ensure parallel tests don't assert exact data counts or mutate seeded
 records. Code review and the ADR documentation enforce this.
-- **Serial Tests Slower**: The 6 serial tests run sequentially after all parallel tests finish, but they are in the
-  minority.
+- **Serial Tests Slower**: Serial tests run sequentially after all parallel tests finish, but they are intentionally
+  kept in the minority and must document why reset isolation is still required.
 - **Debugging Concurrency Issues**: Race conditions in parallel tests are harder to diagnose than in sequential tests
   (though well-designed tests should not have them).
 

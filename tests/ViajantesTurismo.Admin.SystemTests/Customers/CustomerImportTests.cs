@@ -10,7 +10,7 @@ file static class CustomerImportRoutes
 /// <summary>
 /// E2E tests for the CSV customer import wizard.
 /// </summary>
-public class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+public partial class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Can_Navigate_To_Import_Page_And_Upload_Csv_Wizard_Opens()
@@ -102,15 +102,7 @@ public class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystem
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "Import complete" }))
             .ToBeVisibleAsync();
     }
-}
 
-/// <summary>
-/// Serial E2E tests for the full import commit flow (UI-4).
-/// This path stays serial because it commits real imported rows and validates the
-/// resulting clean-slate summary state after infrastructure-owned resets.
-/// </summary>
-public partial class CustomerImportSerialTests(AspireSerialSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
-{
     [Fact]
     public async Task Can_Complete_Import_Flow_Show_Final_Summary_And_Open_Customer_Details()
     {

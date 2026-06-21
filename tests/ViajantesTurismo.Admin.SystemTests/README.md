@@ -48,7 +48,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 
 ## Notes
 
-- `AspireSystemTestFixture` and `AspireSerialSystemTestFixture` launch the AppHost-managed stack once per fixture; each test gets a fresh `BrowserContext`.
+- `AspireSystemTestFixture` launches the AppHost-managed stack once for the assembly; each test gets a fresh `BrowserContext`.
 - Tests seed their own data and don't depend on each other.
 - `Shared.NavigationTests` is the canonical first parallel-safe Aspire-hosted migration slice for narrow reliability checks under `#157`.
 - Blazor Server uses SignalR — use `WaitUntil = WaitUntilState.NetworkIdle` and web-first assertions
@@ -67,8 +67,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.
 - Use `AspireSerialSystemTestBase` when a test needs strict baseline isolation (for example exact counts or
   destructive shared-state operations). The serial base owns the reset automatically; test bodies should not call
   reset helpers directly.
-- Current intentional serial cases are narrow: empty-state smoke checks, pagination/count assertions against a clean
-  dataset, and the full customer import commit flow that validates clean-slate summary results after a real import.
+- Current intentional browser serial cases are narrow: empty-state smoke checks that must verify a real clean database
+  response after destructive reset.
 - Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
 - Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
   explicit search/filter state, or other stable semantic locators.

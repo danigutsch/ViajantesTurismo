@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 
 [Collection(E2ETestCollections.Serial)]
-public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)
+public abstract class AspireSerialSystemTestBase(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
 
@@ -27,4 +27,4 @@ public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture f
 
 [ExcludeFromCodeCoverage]
 [CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
-public sealed class AspireSerialSystemTests : ICollectionFixture<AspireSerialSystemTestFixture>;
+public sealed class AspireSerialSystemTests;
