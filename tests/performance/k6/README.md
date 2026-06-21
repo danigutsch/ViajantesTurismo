@@ -6,19 +6,22 @@ This folder contains the first performance/load testing implementation for this 
 
 - `scenarios/admin-smoke.js`: small Admin API smoke/repro scenario
 
-## Supported profile
+## Supported Profiles
 
-The current scenario uses a single conservative smoke profile.
+The scenario supports these profiles through `VT_K6_PROFILE`:
 
-It is intended for:
+- `smoke`: default, 1 VU for 30 seconds
+- `average-load`: conservative regular validation, 5 VUs for 2 minutes
+- `stress`: manual investigation, 15 VUs for 5 minutes
+
+The `smoke` and `average-load` profiles are intended for:
 
 - local repeatable verification
 - lightweight reliability investigation
 - support work for flaky E2E investigation
 
-It is not intended for:
+The `stress` profile is manual-only for now. These assets are not intended for:
 
-- large stress testing
 - soak testing
 - CI release gates
 
@@ -37,6 +40,7 @@ Optional overrides:
 - `VT_K6_PROFILE`: defaults to `smoke`
 - `VT_K6_VUS`: override VU count
 - `VT_K6_DURATION`: override duration for duration-based profiles
+- `VT_K6_RESULTS_DIR`: relative output folder for k6 summary JSON, defaults to `tests/performance/results`
 - `VT_K6_USE_DOCKER`: `auto` (default), `0` (force local k6), `1` (force Docker k6)
 - `VT_K6_DOCKER_IMAGE`: Docker image used in Docker mode, defaults to `grafana/k6:0.49.0`
 
@@ -46,10 +50,21 @@ Optional overrides:
 VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
 ```
 
+## Run from Aspire
+
+Start AppHost with `dotnet tool run aspire run`, then start the explicit `admin-performance-smoke`
+resource from the Aspire dashboard. AppHost sets `VT_API_BASE_URL` from the Admin API HTTP endpoint
+and waits for the API before the smoke resource can run.
+
+Use Aspire execution when you want the run captured alongside local stack logs, resource state, and
+dashboard diagnostics. Use the standalone wrapper when reproducing against an already-running API or
+when Aspire is not the process owner.
+
 Wrapper behavior:
 
 - uses local `k6` when available
 - falls back to Docker when `k6` is missing
+- exports summary JSON to the ignored `tests/performance/results/` folder by default
 - rewrites `http://127.0.0.1:*`, `http://localhost:*`, `https://127.0.0.1:*`, `https://localhost:*` to `host.docker.internal` in Docker mode
 - forwards `VT_K6_VUS` and `VT_K6_DURATION` into Docker mode
 - uses `VT_K6_DOCKER_IMAGE` or `grafana/k6:0.49.0` by default in Docker mode

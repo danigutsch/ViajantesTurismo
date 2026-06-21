@@ -39,4 +39,9 @@ public static class ResourceNames
     /// The name of the migration service resource.
     /// </summary>
     public const string MigrationService = "migration";
+
+    /// <summary>
+    /// The name of the Admin API performance smoke resource.
+    /// </summary>
+    public const string AdminPerformanceSmoke = "admin-performance-smoke";
 }

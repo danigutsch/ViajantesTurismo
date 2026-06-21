@@ -18,6 +18,16 @@ profile="${VT_K6_PROFILE:-smoke}"
 use_docker="${VT_K6_USE_DOCKER:-auto}"
 api_base_url="${VT_API_BASE_URL%/}"
 docker_k6_image="${VT_K6_DOCKER_IMAGE:-grafana/k6:0.49.0}"
+results_dir="${VT_K6_RESULTS_DIR:-tests/performance/results}"
+
+if [[ "${results_dir}" = /* ]]; then
+  printf 'VT_K6_RESULTS_DIR must be relative to the repository root.\n' >&2
+  exit 1
+fi
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+summary_file="${results_dir}/admin-smoke-${profile}-${timestamp}.json"
+mkdir -p "${repo_root}/${results_dir}"
 
 if [[ "${use_docker}" == "auto" ]]; then
   if command -v k6 >/dev/null 2>&1; then
@@ -55,6 +65,7 @@ if [[ "${use_docker}" == "0" ]]; then
   fi
 
   k6 run \
+    --summary-export "${summary_file}" \
     -e "VT_API_BASE_URL=${api_base_url}" \
     -e "VT_K6_PROFILE=${profile}" \
     "$@" \
@@ -93,6 +104,7 @@ docker run --rm \
   -v "${repo_root}:/work" \
   -w /work \
   "${docker_k6_image}" run \
+  --summary-export "${summary_file}" \
   "${docker_env_args[@]}" \
   "$@" \
   tests/performance/k6/scenarios/admin-smoke.js
