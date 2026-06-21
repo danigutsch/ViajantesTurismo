@@ -23,6 +23,10 @@ if ([System.IO.Path]::IsPathRooted($resultsDirectory)) {
 }
 
 $normalizedResultsDirectory = $resultsDirectory.Replace('\', '/').TrimEnd('/')
+if ($normalizedResultsDirectory.Contains(':')) {
+    Write-Error 'VT_K6_RESULTS_DIR must be relative to the repository root.'
+}
+
 if ([string]::IsNullOrWhiteSpace($normalizedResultsDirectory) -or $normalizedResultsDirectory.Contains('..') -or $normalizedResultsDirectory.Contains('//')) {
     Write-Error 'VT_K6_RESULTS_DIR must stay inside the repository root and must not contain .. segments.'
 }

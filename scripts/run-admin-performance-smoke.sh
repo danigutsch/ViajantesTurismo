@@ -30,6 +30,8 @@ if [[ -z "${results_dir}" || "${results_dir}" == *".."* || "${results_dir}" == *
   exit 1
 fi
 
+results_dir="${results_dir%/}"
+
 if [[ ! "${profile}" =~ ^[A-Za-z0-9_-]+$ ]]; then
   printf 'VT_K6_PROFILE may contain only letters, numbers, underscores, and hyphens.\n' >&2
   exit 1
