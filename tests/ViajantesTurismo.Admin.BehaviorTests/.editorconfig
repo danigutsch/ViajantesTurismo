@@ -1,0 +1,8 @@
+# Behavior-test analyzer hardening exceptions.
+#
+# These files produce test-run reports and console diagnostics intended for
+# developer feedback, not localizable product UI. Remove these entries when the
+# reporting hook is replaced with structured test output that avoids literals.
+
+[Hooks/InvariantCoverageHooks.cs]
+dotnet_diagnostic.CA1303.severity = none

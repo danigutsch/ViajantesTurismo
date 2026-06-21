@@ -2,8 +2,6 @@ using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
-#pragma warning disable CA1508
-
 public sealed class ValueObjectTests
 {
     [Fact]
@@ -33,7 +31,7 @@ public sealed class ValueObjectTests
     {
         var address = new TestAddress("123 Main St", "Springfield");
 
-        var result = address.Equals(null);
+        var result = EqualsObject(address, null);
 
         Assert.False(result);
     }
@@ -255,5 +253,10 @@ public sealed class ValueObjectTests
             yield return Price;
             yield return Address;
         }
+    }
+
+    private static bool EqualsObject(object instance, object? other)
+    {
+        return instance.Equals(other);
     }
 }

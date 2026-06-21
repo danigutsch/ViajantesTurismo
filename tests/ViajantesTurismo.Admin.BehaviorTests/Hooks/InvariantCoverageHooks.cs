@@ -1,5 +1,3 @@
-#pragma warning disable CA1303
-
 using System.Text;
 using System.Text.Json;
 using ViajantesTurismo.Admin.BehaviorTests.Infrastructure.Coverage;
