@@ -136,7 +136,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
 
-    [GeneratedRegex(@"<NoWarn>\s*\$?\(?NoWarn\)?;?([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"<NoWarn>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
     private static partial Regex NoWarnRegex();
 
     [GeneratedRegex(@"^\s*#pragma\s+warning\s+(?:disable|restore)\b", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
