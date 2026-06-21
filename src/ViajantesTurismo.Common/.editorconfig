@@ -1,0 +1,7 @@
+# ViajantesTurismo.Common analyzer hardening exceptions.
+#
+# These are intentional domain building-block shapes. Remove these entries only
+# with a deliberate redesign of the shared domain modeling primitives.
+
+[BuildingBlocks/ValueObject.cs]
+dotnet_diagnostic.S4035.severity = none
