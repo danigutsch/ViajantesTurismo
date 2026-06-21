@@ -46,14 +46,17 @@ governance described by [issue #128](https://github.com/danigutsch/ViajantesTuri
 
 ### Folder Ownership
 
-Keep page-level workflow code under the existing Blazor component structure:
+Keep page-level workflow code under the existing Blazor component structure. Existing typed clients currently live at
+the project root; use `Clients/<Context>/` as the target location for new context-owned clients and for future client
+relocation work.
 
 - `Components/Pages/<Workflow>/`: routable pages and page-specific child components for one operator workflow.
 - `Components/Shared/`: reusable UI components that are not owned by a single workflow.
 - `Components/Layout/`: app shell, navigation, and layout-only components.
 - `Models/<Workflow>/`: form and view models used by one workflow.
 - `Services/<Workflow>/`: UI state or orchestration services used by one workflow.
-- `Clients/<Context>/`: typed API client interfaces and implementations for one backend bounded context.
+- `Clients/<Context>/`: target location for typed API client interfaces and implementations owned by one backend
+  bounded context.
 
 Avoid sharing workflow-specific components by moving them to `Components/Shared/` prematurely. Promote a component only
 after a second workflow needs the same behavior and the shared API can stay independent of the original workflow.
@@ -93,7 +96,8 @@ Avoid these dependency directions:
 
 ### Concrete Example
 
-A future Catalog presentation editor should keep Catalog-specific code separate from existing Admin booking UI:
+A future Catalog presentation editor should keep Catalog-specific code separate from existing Admin booking UI. The
+`Clients/` folders below show the target structure for new clients, not the current location of every existing client:
 
 ```text
 src/ViajantesTurismo.Management.Web/
