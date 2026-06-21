@@ -33,6 +33,19 @@ app.MapGet("/", () => Results.Content(
     """,
     "text/html"));
 
+app.MapGet("/Error", () => Results.Problem())
+    .ExcludeFromDescription();
+
 app.MapDefaultEndpoints();
 
 await app.RunAsync();
+
+/// <summary>
+/// Exposes the public web application entry point for integration tests.
+/// </summary>
+internal partial class Program
+{
+    protected Program()
+    {
+    }
+}
