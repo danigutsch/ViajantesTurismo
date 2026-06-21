@@ -102,6 +102,7 @@ low_risk_maintenance_patterns=(
 
 fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Functional/**"
+    "src/SharedKernel/SharedKernel.Idempotency/**"
     "src/SharedKernel/SharedKernel.Mediator/**"
     "src/SharedKernel/SharedKernel.Mediator.Abstractions/**"
     "src/SharedKernel/SharedKernel.Mediator.Analyzers/**"
@@ -119,6 +120,7 @@ fast_validation_patterns=(
     "src/ViajantesTurismo.Management.Web/**"
     "src/ViajantesTurismo.Public.Web/**"
     "tests/SharedKernel.Functional.Tests/**"
+    "tests/SharedKernel.Idempotency.Tests/**"
     "tests/SharedKernel.Mediator.Analyzers.Tests/**"
     "tests/SharedKernel.Mediator.Tests/**"
     "tests/SharedKernel.OpenApi.Tests/**"

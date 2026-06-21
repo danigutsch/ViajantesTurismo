@@ -6,6 +6,7 @@ tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.
 tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj
 tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
 tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj
+tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj
 tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj
 tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj
 tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
