@@ -49,6 +49,21 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         Assert.Contains(importSchema.AllOf, static item => item.Properties?.ContainsKey("conflictResolutions") == true);
     }
 
+    [Fact]
+    public async Task Generates_A_V1_Document_Including_Error_Documentation_Paths()
+    {
+        var document = await CreateDocument(
+            "v1",
+            "MapToursEndpoints",
+            "MapCustomerEndpoints",
+            "MapCustomerImportEndpoints",
+            "MapBookingEndpoints",
+            "MapErrorDocumentationEndpoints");
+
+        Assert.Contains("/docs/errors", document.Paths.Keys);
+        Assert.Contains("/docs/errors/{identifier}", document.Paths.Keys);
+    }
+
     private static async Task<OpenApiDocument> CreateDocument(string documentName, params string[] endpointMapperNames)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(documentName);

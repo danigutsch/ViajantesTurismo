@@ -7,6 +7,11 @@
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+            PrivateAssets="all"
+            IsAspireProjectResource="false" />
     </ItemGroup>
 
     <ItemGroup>

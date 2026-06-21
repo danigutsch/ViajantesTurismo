@@ -330,6 +330,12 @@
       "sharedkernel.results": {
         "type": "Project"
       },
+      "sharedkernel.results.aspnet": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "viajantesturismo.admin.apiservice": {
         "type": "Project",
         "dependencies": {
@@ -337,6 +343,7 @@
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.8, )",
           "SharedKernel.OpenApi": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
+          "SharedKernel.Results.AspNet": "[1.0.0, )",
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Admin.Infrastructure": "[1.0.0, )",

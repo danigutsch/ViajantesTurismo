@@ -25,7 +25,9 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Results.SourceGenerator/SharedKernel.Results.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Results.AspNet/SharedKernel.Results.AspNet.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
@@ -38,9 +40,9 @@
     </Folder>
      <Folder Name="/tests/">
          <Project Path="tests/SharedKernel.Testing/SharedKernel.Testing.csproj" />
-          <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
-          <Project Path="tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj" />
-          <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
+         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
+         <Project Path="tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj" />
+         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
          <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
          <Project Path="tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj" />
          <Project Path="tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj" />
@@ -48,7 +50,9 @@
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj" />
-        <Project Path="tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj" />
+          <Project Path="tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj" />
+         <Project Path="tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj" />
+         <Project Path="tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj" />
         <Project Path="tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj" />

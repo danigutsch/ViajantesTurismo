@@ -33,6 +33,7 @@ app.MapToursEndpoints();
 app.MapCustomerEndpoints()
     .MapCustomerImportEndpoints();
 app.MapBookingEndpoints();
+app.MapErrorDocumentationEndpoints();
 
 app.MapDefaultEndpoints();
 
