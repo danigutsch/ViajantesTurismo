@@ -57,6 +57,36 @@ The repository already has a stronger analyzer baseline than when `#132` was ope
 That means `#132` is now primarily a roadmap, adoption, and coordination item rather than a
 greenfield analyzer implementation issue.
 
+## Canonical severity policy
+
+`.editorconfig` is the canonical severity matrix for C#, style, Sonar, and SharedKernel analyzer
+policy. Project files and `Directory.Build.props` can temporarily carry approved `NoWarn` entries
+only when the exception is tracked by this roadmap and guarded by architecture tests.
+
+Severity ownership rules:
+
+- `.editorconfig` owns ordinary diagnostic severity, generated-code exceptions, and file/path-scoped
+  rollout exceptions.
+- `Directory.Build.props` owns analyzer package references and build enforcement switches, not
+  diagnostic-specific suppressions.
+- Project files should avoid `NoWarn`; any remaining entry must have an issue owner, removal path,
+  and suppression-regression allowlist entry.
+- Generated files, migrations, code-generation fixtures, and analyzer test fixtures should be
+  separated from hand-written source policy.
+
+Approved broad suppression owners:
+
+The architecture test uses these allowlists as the approved broad-suppression inventory. `NoWarn`
+entries must exactly match current repository suppressions so removed suppressions cannot be
+reintroduced without review. No approved `NoWarn` broad suppressions remain.
+
+| Surface | Suppression kind | Owner | Removal path |
+| --- | --- | --- | --- |
+| None | `NoWarn` | Not applicable | Not applicable |
+
+The architecture-test suppression guard owns this allowlist and should fail if new broad
+suppression surfaces appear without review.
+
 ## Adoption matrix
 
 The matrix below focuses on the high-value rules and families that matter to repository policy.
@@ -75,6 +105,57 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | CQRS strict handler-to-handler send | `SKMED500` | `SharedKernel.Mediator.Analyzers` | Adopted | `suggestion` | disabled by config if needed | Keep staged |
 | General built-in code style | selected `IDE*` rules such as `IDE0005`, `IDE0028` | Built-in Roslyn style analyzers | Adopted selectively | mixed `warning`/`suggestion` | `.editorconfig`-owned | Keep tuning by signal |
 | Sonar repository rules | selected `S*` rules | `SonarAnalyzer.CSharp` | Adopted selectively | mixed | narrow file-scope suppressions in tests/steps | Keep scoped and documented |
+
+## Fixer-first rollout workflow
+
+Every analyzer hardening issue should follow the same remediation order:
+
+1. Inventory current diagnostics and suppression surfaces.
+2. Run `dotnet format analyzers` for the target diagnostic when the rule is fixable by the SDK or
+   installed analyzer packages.
+3. Prefer existing Roslyn, IDE, Sonar, or package-provided code fixes before manual edits.
+4. If violations are recurring and mechanical but no safe existing fixer exists, create or extend a
+   SharedKernel code-fix package before raising severity.
+5. If the rule is generated-code-only or a one-off exception, document the exception instead of
+   creating a custom fixer.
+6. Avoid broad suppression as the default remediation. Use file/path-scoped `.editorconfig` entries
+   with owner and removal conditions when exceptions are justified.
+
+Issue updates and PR descriptions should record which fixer path was tried. A rule may move to
+`warning` or `error` only after its existing baseline is either fixed or explicitly scoped.
+
+## Suppression regression guard
+
+`ViajantesTurismo.ArchitectureTests` includes a repository-level analyzer suppression policy guard.
+It blocks unreviewed additions of:
+
+- project or props `NoWarn` entries
+- local `#pragma warning` suppression in hand-written source
+- `SuppressMessage` attributes outside approved exception surfaces
+
+Allowed suppression surfaces must remain explicit in the architecture test. Additions require an
+issue owner, a removal condition, and a narrow scope. Generated EF migrations, analyzer test
+fixtures, and the current mediator sample assembly suppression are the only approved pragma or
+attribute surfaces at this stage. The guard excludes build outputs, package restore folders, local
+worktrees, and Reqnroll-generated `.feature.cs` files so the policy is applied to maintained
+repository source instead of generated or external code.
+
+## Code-fix backlog
+
+Custom code fixes should be reserved for recurring repository patterns where the remediation is
+local, deterministic, and safe.
+
+| Candidate | Owning package | Priority | Rationale | Status |
+| --- | --- | --- | --- | --- |
+| `SKSTYLE004` split one top-level type per file | `SharedKernel.Style.CodeFixes` | Medium | Repeated staged rollout cleanup; can offer safe file extraction only when names and paths are obvious | Candidate |
+| `CA1062` guard insertion for repository public APIs | None yet | Low | Built-in IDE fixes exist in many cases; custom fixer risks low-value boilerplate | Defer unless recurring non-fixable cases remain |
+| `CS1591` XML documentation generation | None | Low | Existing IDE support is adequate; generated comments are often low-signal | Defer |
+| `S107` constructor/test-helper parameter reduction | None | Low | Requires design judgment, not mechanical code fix | Do not automate |
+| `CA2007` ConfigureAwait insertion | None | Low | SDK/IDE fixes generally exist; app-layer policy differs from reusable-library policy | Use existing fixes only |
+| `CA5394` deterministic randomness in tests | `SharedKernel.Testing.CodeFixes` | Low | Test cases usually need intent-specific random/data-builder decisions | Defer unless repeated safe pattern emerges |
+
+Accepted custom fixer work must include analyzer/code-fix tests and README/`AnalyzerReleases.*`
+updates in the owning SharedKernel package.
 
 ## Phase plan
 
