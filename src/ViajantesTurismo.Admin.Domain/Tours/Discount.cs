@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using ViajantesTurismo.Common.Sanitizers;
@@ -16,11 +15,6 @@ public sealed class Discount
         Type = type;
         Amount = amount;
         Reason = reason;
-    }
-
-    [UsedImplicitly]
-    private Discount()
-    {
     }
 
     /// <summary>
