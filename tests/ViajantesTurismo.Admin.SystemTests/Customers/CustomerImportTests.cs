@@ -102,10 +102,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "Import complete" }))
             .ToBeVisibleAsync();
     }
-}
 
-public partial class CustomerImportTests
-{
     [Fact]
     public async Task Can_Complete_Import_Flow_Show_Final_Summary_And_Open_Customer_Details()
     {
