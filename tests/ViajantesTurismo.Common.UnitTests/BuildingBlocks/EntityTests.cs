@@ -2,7 +2,6 @@ using ViajantesTurismo.Common.BuildingBlocks;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
-#pragma warning disable CA1508
 // ReSharper disable EqualExpressionComparison
 // ReSharper disable SuspiciousTypeConversion.Global
 public sealed class EntityTests
@@ -34,7 +33,7 @@ public sealed class EntityTests
     {
         var entity = new TestEntity(1);
 
-        var result = entity.Equals(null);
+        var result = EqualsObject(entity, null);
 
         Assert.False(result);
     }
@@ -152,4 +151,9 @@ public sealed class EntityTests
     private sealed class AnotherTestEntity(int id) : Entity<int>(id);
 
     private sealed class TestEntityNullableId(string? id) : Entity<string?>(id);
+
+    private static bool EqualsObject(object instance, object? other)
+    {
+        return instance.Equals(other);
+    }
 }
