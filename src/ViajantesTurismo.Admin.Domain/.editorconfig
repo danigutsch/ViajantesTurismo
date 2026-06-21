@@ -26,16 +26,10 @@ dotnet_diagnostic.CS8618.severity = none
 [Customers/MedicalInfo.cs]
 dotnet_diagnostic.CS8618.severity = none
 
-[Customers/PersonalInfo.cs]
-dotnet_diagnostic.CS8618.severity = none
-
 [Customers/PhysicalInfo.cs]
 dotnet_diagnostic.CS8618.severity = none
 
 [Tours/Booking.cs]
-dotnet_diagnostic.CS8618.severity = none
-
-[Tours/Discount.cs]
 dotnet_diagnostic.CS8618.severity = none
 
 [Tours/Tour.cs]
