@@ -27,12 +27,10 @@ public sealed class PhysicalInfo
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
-#pragma warning disable CS8618
     [UsedImplicitly]
     private PhysicalInfo()
     {
     }
-#pragma warning restore CS8618
 
     /// <summary>Weight in kilograms.</summary>
     public decimal WeightKg { get; private set; }

@@ -1,0 +1,42 @@
+# Domain analyzer hardening exceptions.
+#
+# These aggregate/entity/value-object files use private constructors for EF Core
+# materialization while public creation remains guarded by domain factories.
+# Owner: Domain maintainers. Remove when the domain model no longer needs
+# EF materialization constructors or uses constructor binding for these members.
+
+[Customers/AccommodationPreferences.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/Address.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/ContactInfo.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/Customer.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/EmergencyContact.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/IdentificationInfo.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/MedicalInfo.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/PersonalInfo.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Customers/PhysicalInfo.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Tours/Booking.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Tours/Discount.cs]
+dotnet_diagnostic.CS8618.severity = none
+
+[Tours/Tour.cs]
+dotnet_diagnostic.CS8618.severity = none

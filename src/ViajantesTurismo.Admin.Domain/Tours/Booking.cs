@@ -51,9 +51,7 @@ public sealed class Booking : Entity<Guid>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
     [UsedImplicitly]
-#pragma warning disable CS8618
     private Booking()
-#pragma warning restore CS8618
     {
     }
 

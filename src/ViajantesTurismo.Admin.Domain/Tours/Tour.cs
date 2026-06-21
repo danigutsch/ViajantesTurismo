@@ -42,11 +42,9 @@ public sealed class Tour : Entity<Guid>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
     [UsedImplicitly]
-#pragma warning disable CS8618
     private Tour()
     {
     }
-#pragma warning restore CS8618
 
     /// <summary>
     /// Gets the unique business identifier for the tour.
