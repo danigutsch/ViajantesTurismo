@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
 using ViajantesTurismo.Common.Sanitizers;
@@ -19,14 +18,6 @@ public sealed class PersonalInfo
         BirthDate = birthDate;
         Nationality = nationality;
         Occupation = occupation;
-    }
-
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-    [UsedImplicitly]
-    private PersonalInfo()
-    {
     }
 
     /// <summary>Full first name of the customer.</summary>

@@ -54,6 +54,8 @@ Decisions about application architecture and layer responsibilities.
   Integration Event Adapter
 - **[ADR-025](adr/20260621-event-source-catalog-tour-presentation.md)** — Event Source Catalog Tour
   Presentation
+- **[ADR-026](adr/20260621-domain-materialization-and-sharedkernel-persistence-boundaries.md)** —
+  Domain Materialization and SharedKernel Persistence Boundaries
 
 ### Business Logic & Pricing
 
