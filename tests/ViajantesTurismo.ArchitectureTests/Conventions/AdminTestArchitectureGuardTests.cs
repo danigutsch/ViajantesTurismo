@@ -303,6 +303,11 @@ public sealed partial class AdminTestArchitectureGuardTests
         foreach (Match match in SerialTestMethodRegex().Matches(fileContents))
         {
             var attributes = match.Groups["attributes"].Value;
+            if (!TestAttributeRegex().IsMatch(attributes))
+            {
+                continue;
+            }
+
             if (SerialReasonAttributeRegex().IsMatch(attributes))
             {
                 continue;
@@ -353,8 +358,11 @@ public sealed partial class AdminTestArchitectureGuardTests
     [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
     private static partial Regex ProtectedClearDatabaseMemberRegex();
 
-    [GeneratedRegex(@"(?<attributes>(?:\s*\[(?:Fact|Theory|SerialE2EReason)[^\]]*\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
+    [GeneratedRegex(@"(?<attributes>(?:\s*\[[^\]]+\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
     private static partial Regex SerialTestMethodRegex();
+
+    [GeneratedRegex(@"\[(?:Fact|Theory)(?:\(|\])", RegexOptions.Compiled)]
+    private static partial Regex TestAttributeRegex();
 
     [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
     private static partial Regex SerialReasonAttributeRegex();
