@@ -8,12 +8,12 @@ eol_output="$(git ls-files --eol)"
 while IFS= read -r line; do
     path="${line#*$'\t'}"
 
-    if [[ "${line}" == *"attr/text eol=lf"* && ("${line}" == i/crlf* || "${line}" == i/mixed* || "${line}" == *" w/crlf "* || "${line}" == *" w/mixed "*) ]]; then
+    if [[ "${line}" == *" eol=lf"* && ("${line}" == i/crlf* || "${line}" == i/mixed* || "${line}" == *" w/crlf "* || "${line}" == *" w/mixed "*) ]]; then
         echo "Expected LF line endings: ${path}" >&2
         status=1
     fi
 
-    if [[ "${line}" == *"attr/text eol=crlf"* && ("${line}" == i/lf* || "${line}" == i/mixed* || "${line}" == *" w/lf "* || "${line}" == *" w/mixed "*) ]]; then
+    if [[ "${line}" == *" eol=crlf"* && ("${line}" == i/lf* || "${line}" == i/mixed* || "${line}" == *" w/lf "* || "${line}" == *" w/mixed "*) ]]; then
         echo "Expected CRLF line endings: ${path}" >&2
         status=1
     fi
