@@ -15,7 +15,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
-#pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
@@ -563,7 +562,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 {
                     b.Navigation("Bookings");
                 });
-#pragma warning restore 612, 618
         }
     }
 }
