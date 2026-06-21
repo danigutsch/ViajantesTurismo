@@ -22,7 +22,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            modelBuilder.UseIdentityByDefaultColumns();
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Customers.Customer", b =>
                 {
