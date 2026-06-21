@@ -6,7 +6,7 @@ namespace SharedKernel.Mediator.Testing.ReferenceDispatcher;
 internal static class ReferenceDispatcherAssemblyMarker
 {
     /// <summary>
-    /// Gets the reference-dispatcher assembly name.
+    /// Gets the reference-dispatcher assembly.
     /// </summary>
-    public static string AssemblyName { get; } = typeof(ReferenceDispatcherAssemblyMarker).Assembly.GetName().Name!;
+    internal static System.Reflection.Assembly Assembly => typeof(ReferenceDispatcherAssemblyMarker).Assembly;
 }

@@ -5,5 +5,8 @@ namespace ViajantesTurismo.Management.Web;
 /// </summary>
 internal static class WebMarker
 {
+    /// <summary>
+    /// Gets the Web assembly.
+    /// </summary>
     internal static System.Reflection.Assembly Assembly => typeof(WebMarker).Assembly;
 }
