@@ -2,6 +2,8 @@
 #
 # ApiMarker is intentionally public because architecture tests need a stable
 # public type to locate the API assembly.
+# Owner: API layer and architecture test maintainers.
+# Remove when architecture tests no longer require a public API assembly marker.
 
 [ApiMarker.cs]
 dotnet_diagnostic.CA1515.severity = none
