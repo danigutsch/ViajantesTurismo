@@ -3,7 +3,6 @@
     <PropertyGroup>
         <IsAotCompatible>true</IsAotCompatible>
         <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
-        <NoWarn>$(NoWarn);CS1591</NoWarn>
         <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
         <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
