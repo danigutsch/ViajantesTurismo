@@ -64,11 +64,16 @@ after a second workflow needs the same behavior and the shared API can stay inde
 ### Typed API Clients
 
 All backend calls must go through typed clients; components and UI state services should not call raw `HttpClient`
-directly. Name clients by backend/context ownership, not by page ownership:
+directly. Current Admin clients use concise names because Admin is the only implemented backend context today:
 
-- `IAdminToursApiClient` for Admin tour operations.
-- `IAdminBookingsApiClient` for Admin booking operations.
+- `IToursApiClient` for Admin tour operations.
+- `IBookingsApiClient` for Admin booking operations.
+- `ICustomersApiClient` for Admin customer operations.
+
+Use context-prefixed names for new backend contexts or when a name would otherwise collide:
+
 - `ICatalogTourPresentationApiClient` for future Catalog presentation operations.
+- `IAdminToursApiClient` only if an additional `IToursApiClient` owner makes the current concise name ambiguous.
 
 Typed clients own HTTP paths, request/response DTO calls, validation-error parsing, and service-discovery endpoint names.
 Components own user interaction, loading state, and presentation-specific mapping. If one page needs data from two
