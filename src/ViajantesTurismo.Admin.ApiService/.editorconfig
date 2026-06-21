@@ -1,0 +1,7 @@
+# API analyzer hardening exceptions.
+#
+# ApiMarker is intentionally public because architecture tests need a stable
+# public type to locate the API assembly.
+
+[ApiMarker.cs]
+dotnet_diagnostic.CA1515.severity = none
