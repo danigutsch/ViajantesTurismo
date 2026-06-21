@@ -3,6 +3,7 @@ using ArchUnitNET.Domain;
 using ArchUnitNET.Fluent.Syntax.Elements.Types;
 using ArchUnitNET.xUnitV3;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
+using Assembly = System.Reflection.Assembly;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace ViajantesTurismo.ArchitectureTests.Dependencies;
@@ -50,6 +51,33 @@ public sealed class LayerDependencyTests
             .Because("infrastructure should expose persistence and integration adapters independently of transport");
 
         ArchRuleAssert.CheckRule(Architecture, rule);
+    }
+
+    [Fact]
+    public void Public_Web_Should_Not_Depend_On_Admin_Or_Management_Web()
+    {
+        // Arrange
+        var forbiddenReferences = new[]
+        {
+            "ViajantesTurismo.Management.Web",
+            "ViajantesTurismo.Admin.ApiService",
+            "ViajantesTurismo.Admin.Application",
+            "ViajantesTurismo.Admin.Contracts",
+            "ViajantesTurismo.Admin.Domain",
+            "ViajantesTurismo.Admin.Infrastructure"
+        };
+        var publicWebAssembly = Assembly.Load("ViajantesTurismo.Public.Web");
+
+        // Act
+        var referencedAssemblyNames = publicWebAssembly.GetReferencedAssemblies()
+            .Select(reference => reference.Name)
+            .ToHashSet(StringComparer.Ordinal);
+        var unexpectedReferences = forbiddenReferences
+            .Where(referencedAssemblyNames.Contains)
+            .ToArray();
+
+        // Assert
+        Assert.Empty(unexpectedReferences);
     }
 
     private static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)

@@ -763,6 +763,12 @@
           "SharedKernel.Results": "[1.0.0, )"
         }
       },
+      "viajantesturismo.public.web": {
+        "type": "Project",
+        "dependencies": {
+          "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
+        }
+      },
       "viajantesturismo.resources": {
         "type": "Project"
       },
