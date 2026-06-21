@@ -78,6 +78,7 @@ if [[ "${fix_mode}" == true ]]; then
 fi
 
 run_shellcheck "${shellcheck_targets[@]}"
+bash scripts/check-line-endings.sh
 bash scripts/lint-json.sh
 bash scripts/lint-gherkin.sh tests/**/*.feature
 
