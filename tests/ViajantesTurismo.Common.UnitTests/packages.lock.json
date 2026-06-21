@@ -557,6 +557,9 @@
           "SharedKernel.Results": "[1.0.0, )"
         }
       },
+      "viajantesturismo.resources": {
+        "type": "Project"
+      },
       "viajantesturismo.servicedefaults": {
         "type": "Project",
         "dependencies": {
@@ -571,7 +574,8 @@
           "OpenTelemetry.Instrumentation.Http": "[1.15.1, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
           "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
-          "SharedKernel.Observability": "[1.0.0, )"
+          "SharedKernel.Observability": "[1.0.0, )",
+          "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection": {

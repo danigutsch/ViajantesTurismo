@@ -8,6 +8,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SharedKernel.Observability;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ServiceDefaults;
 
@@ -18,9 +19,6 @@ namespace ViajantesTurismo.ServiceDefaults;
 [PublicAPI]
 public static class ServiceDefaultsExtensions
 {
-    private const string HealthEndpointPath = "/health";
-    private const string AlivenessEndpointPath = "/alive";
-
     /// <summary>
     /// Adds a set of default services and configurations to the host builder, including OpenTelemetry,
     /// health checks, and service discovery.
@@ -81,8 +79,8 @@ public static class ServiceDefaultsExtensions
                     .AddSharedKernelMediatorTracing()
                     .AddAspNetCoreInstrumentation(options =>
                         options.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(HealthEndpointPath, StringComparison.OrdinalIgnoreCase)
-                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath, StringComparison.OrdinalIgnoreCase)
+                            !context.Request.Path.StartsWithSegments(EndpointPaths.Health, StringComparison.OrdinalIgnoreCase)
+                            && !context.Request.Path.StartsWithSegments(EndpointPaths.Aliveness, StringComparison.OrdinalIgnoreCase)
                     )
                     .AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation()
@@ -129,9 +127,9 @@ public static class ServiceDefaultsExtensions
 
         if (app.Environment.IsDevelopment())
         {
-            app.MapHealthChecks(HealthEndpointPath);
+            app.MapHealthChecks(EndpointPaths.Health);
 
-            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
+            app.MapHealthChecks(EndpointPaths.Aliveness, new HealthCheckOptions
             {
                 Predicate = r => r.Tags.Contains("live")
             });

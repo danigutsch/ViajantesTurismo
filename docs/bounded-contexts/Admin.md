@@ -1,6 +1,6 @@
 # Admin Bounded Context
 
-The Admin bounded context manages the core tour operations business for ViajantesTurismo, including tour catalog
+The Admin bounded context manages the core tour operations business for ViajantesTurismo, including tour operations
 management, customer relationship management, and booking lifecycle.
 
 ## Context Overview
@@ -11,7 +11,7 @@ management, customer relationship management, and booking lifecycle.
 
 ## Responsibilities
 
-- **Tour Catalog Management** — Define and maintain cycling tour offerings with schedules, pricing, and capacity
+- **Tour Operations Management** — Define and maintain cycling tour offerings with schedules, pricing, and capacity
 - **Customer Relationship Management** — Maintain comprehensive customer profiles and preferences
 - **Booking Lifecycle** — Handle reservations from creation through confirmation, payment, and completion
 - **Payment Tracking** — Record and track payments against bookings
@@ -24,7 +24,7 @@ None (Admin is a core context)
 
 ### Downstream Consumers
 
-- **Sales/Marketing** (future) — Consumes tour catalog for public website
+- **Catalog** — Consumes selected tour operation facts for public website presentation
 - **Operations** (future) — Consumes confirmed bookings for logistics planning
 - **Accounting** (future) — Consumes payment records for financial reporting
 

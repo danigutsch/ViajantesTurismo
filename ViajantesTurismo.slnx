@@ -38,6 +38,9 @@
         <Project Path="src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj" />
         <Project Path="src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj" />
     </Folder>
+    <Folder Name="/src/Public/">
+        <Project Path="src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj" />
+    </Folder>
      <Folder Name="/tests/">
          <Project Path="tests/SharedKernel.Testing/SharedKernel.Testing.csproj" />
          <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />

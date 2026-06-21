@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
     <ProjectReference Include="..\SharedKernel\SharedKernel.Observability\SharedKernel.Observability.csproj" />
+    <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
   </ItemGroup>
 
 </Project>

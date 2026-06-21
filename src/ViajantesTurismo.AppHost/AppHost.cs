@@ -15,17 +15,21 @@ var migrationService = builder.AddProject<ViajantesTurismo_MigrationService>(Res
     .WaitFor(database);
 
 var apiService = builder.AddProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
-    .WithHttpHealthCheck("/health")
+    .WithHttpHealthCheck(EndpointPaths.Health)
     .WithReference(database)
     .WaitFor(database)
     .WaitForCompletion(migrationService);
 
 builder.AddProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()
-    .WithHttpHealthCheck("/health")
+    .WithHttpHealthCheck(EndpointPaths.Health)
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)
     .WaitFor(apiService);
+
+builder.AddProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
+    .WithExternalHttpEndpoints()
+    .WithHttpHealthCheck(EndpointPaths.Health);
 
 await builder.Build().RunAsync();
