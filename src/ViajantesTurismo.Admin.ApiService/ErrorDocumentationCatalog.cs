@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using SharedKernel.Results;
+using SharedKernel.Results.AspNet;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -42,7 +43,7 @@ internal static class ErrorDocumentationCatalog
                     ProviderType = entry.ProviderType,
                     MemberName = entry.MemberName,
                     Status = entry.Status.ToString(),
-                    HttpStatusCode = entry.HttpStatusCode,
+                    HttpStatusCode = entry.Status.ToHttpStatusCode(),
                     Code = entry.Code,
                     DetailTemplate = entry.DetailTemplate,
                     Summary = entry.Summary,

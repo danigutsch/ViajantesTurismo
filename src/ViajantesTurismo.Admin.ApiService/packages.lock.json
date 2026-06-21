@@ -217,6 +217,12 @@
       "sharedkernel.results": {
         "type": "Project"
       },
+      "sharedkernel.results.aspnet": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
