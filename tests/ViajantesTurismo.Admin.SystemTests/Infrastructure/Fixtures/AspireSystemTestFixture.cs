@@ -30,6 +30,7 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
 
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.Api, cts.Token);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.WebApp, cts.Token);
+        await _app.ResourceNotifications.WaitForResourceHealthyAsync(ResourceNames.PublicWebApp, cts.Token);
 
         _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");

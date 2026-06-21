@@ -43,6 +43,16 @@ Decisions about application architecture and layer responsibilities.
 - **[ADR-015](adr/20251115-iqueryable-query-service-frontend-optimization.md)** — IQueryable in Query
   Service for Frontend Optimization
 - **[ADR-020](adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)** — Web Frontends by Audience, Not by Bounded Context
+- **[ADR-021](adr/20260621-catalog-bounded-context-for-public-tour-presentation.md)** — Catalog
+  Bounded Context for Public Tour Presentation
+- **[ADR-022](adr/20260621-split-sharedkernel-domain-and-building-blocks.md)** — Split
+  SharedKernel Domain and Building Blocks
+- **[ADR-023](adr/20260621-separate-domain-and-integration-event-dispatch.md)** — Separate Domain
+  and Integration Event Dispatch
+- **[ADR-024](adr/20260621-cloudevents-as-integration-event-adapter.md)** — CloudEvents as
+  Integration Event Adapter
+- **[ADR-025](adr/20260621-event-source-catalog-tour-presentation.md)** — Event Source Catalog Tour
+  Presentation
 
 ### Business Logic & Pricing
 

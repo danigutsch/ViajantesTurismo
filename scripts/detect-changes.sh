@@ -117,6 +117,7 @@ fast_validation_patterns=(
     "src/ViajantesTurismo.Admin.Domain/**"
     "src/ViajantesTurismo.Common/**"
     "src/ViajantesTurismo.Management.Web/**"
+    "src/ViajantesTurismo.Public.Web/**"
     "tests/SharedKernel.Functional.Tests/**"
     "tests/SharedKernel.Mediator.Analyzers.Tests/**"
     "tests/SharedKernel.Mediator.Tests/**"
@@ -131,6 +132,7 @@ fast_validation_patterns=(
     "tests/ViajantesTurismo.ArchitectureTests/**"
     "tests/ViajantesTurismo.Common.UnitTests/**"
     "tests/ViajantesTurismo.Management.WebTests/**"
+    "tests/ViajantesTurismo.Public.WebTests/**"
 )
 
 admin_integration_patterns=(

@@ -31,6 +31,11 @@ public static class ResourceNames
     public const string WebApp = "web-app";
 
     /// <summary>
+    /// The name of the public web application resource.
+    /// </summary>
+    public const string PublicWebApp = "public-web-app";
+
+    /// <summary>
     /// The name of the migration service resource.
     /// </summary>
     public const string MigrationService = "migration";

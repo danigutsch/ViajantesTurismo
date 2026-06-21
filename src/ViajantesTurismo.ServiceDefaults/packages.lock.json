@@ -203,6 +203,9 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "viajantesturismo.resources": {
+        "type": "Project"
+      },
       "OpenTelemetry": {
         "type": "CentralTransitive",
         "requested": "[1.15.3, )",
