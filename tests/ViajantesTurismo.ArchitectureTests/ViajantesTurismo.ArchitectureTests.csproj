@@ -29,6 +29,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
     </ItemGroup>
 
 </Project>
