@@ -28,6 +28,7 @@ fi
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 summary_file="${results_dir}/admin-smoke-${profile}-${timestamp}.json"
 mkdir -p "${repo_root}/${results_dir}"
+cd "${repo_root}"
 
 if [[ "${use_docker}" == "auto" ]]; then
   if command -v k6 >/dev/null 2>&1; then

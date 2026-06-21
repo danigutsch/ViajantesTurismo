@@ -3,6 +3,10 @@ using ViajantesTurismo.Resources;
 
 var builder = DistributedApplication.CreateBuilder(args);
 var repositoryRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", ".."));
+var performanceSmokeCommand = OperatingSystem.IsWindows() ? "pwsh" : "bash";
+var performanceSmokeArguments = OperatingSystem.IsWindows()
+    ? new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/run-admin-performance-smoke.ps1" }
+    : ["scripts/run-admin-performance-smoke.sh"];
 
 var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer)
     .WithPgWeb();
@@ -33,7 +37,7 @@ builder.AddProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck(EndpointPaths.Health);
 
-builder.AddExecutable(ResourceNames.AdminPerformanceSmoke, "bash", repositoryRoot, "scripts/run-admin-performance-smoke.sh")
+builder.AddExecutable(ResourceNames.AdminPerformanceSmoke, performanceSmokeCommand, repositoryRoot, performanceSmokeArguments)
     .WithEnvironment("VT_API_BASE_URL", apiService.GetEndpoint("http"))
     .WaitFor(apiService)
     .WithExplicitStart();

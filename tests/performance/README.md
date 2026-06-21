@@ -30,6 +30,7 @@ Current workload profiles:
 Current wrapper:
 
 - `../../scripts/run-admin-performance-smoke.sh`
+- `../../scripts/run-admin-performance-smoke.ps1`
 
 Current Aspire resource:
 
@@ -53,6 +54,13 @@ Start the local stack first, then point the wrapper at the Admin API endpoint:
 
 ```bash
 VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
+scripts/run-admin-performance-smoke.ps1
 ```
 
 ### Aspire Dashboard
