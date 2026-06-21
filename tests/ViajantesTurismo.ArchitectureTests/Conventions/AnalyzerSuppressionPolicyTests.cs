@@ -31,9 +31,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Project_And_Props_NoWarn_Entries_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
     {
         var repositoryRoot = GetRepositoryRoot();
-        var noWarnEntries = Directory
-            .EnumerateFiles(repositoryRoot, "*.csproj", SearchOption.AllDirectories)
-            .Concat(Directory.EnumerateFiles(repositoryRoot, "*.props", SearchOption.AllDirectories))
+        var noWarnEntries = EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
+            .Concat(EnumerateRepositoryFiles(repositoryRoot, "*.props"))
             .Where(path => !IsIgnoredPath(path))
             .SelectMany(path => FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
@@ -51,8 +50,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Pragma_Warning_Suppressions_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
     {
         var repositoryRoot = GetRepositoryRoot();
-        var filesWithPragmas = Directory
-            .GetFiles(repositoryRoot, "*.cs", SearchOption.AllDirectories)
+        var filesWithPragmas = EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !IsIgnoredPath(path))
             .Where(path => PragmaWarningDirectiveRegex().IsMatch(File.ReadAllText(path)))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
@@ -68,8 +66,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void SuppressMessage_Attributes_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
     {
         var repositoryRoot = GetRepositoryRoot();
-        var filesWithSuppressMessage = Directory
-            .GetFiles(repositoryRoot, "*.cs", SearchOption.AllDirectories)
+        var filesWithSuppressMessage = EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !IsIgnoredPath(path))
             .Where(path => SuppressMessageAttributeRegex().IsMatch(File.ReadAllText(path)))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
@@ -100,6 +97,32 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         return [.. entries];
     }
 
+    private static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
+    {
+        return EnumerateRepositoryFiles(new DirectoryInfo(repositoryRoot), searchPattern);
+    }
+
+    private static IEnumerable<string> EnumerateRepositoryFiles(DirectoryInfo directory, string searchPattern)
+    {
+        foreach (var file in directory.EnumerateFiles(searchPattern))
+        {
+            yield return file.FullName;
+        }
+
+        foreach (var childDirectory in directory.EnumerateDirectories())
+        {
+            if (IsIgnoredDirectoryName(childDirectory.Name))
+            {
+                continue;
+            }
+
+            foreach (var file in EnumerateRepositoryFiles(childDirectory, searchPattern))
+            {
+                yield return file;
+            }
+        }
+    }
+
     private static bool IsIgnoredPath(string path)
     {
         return ContainsDirectorySegment(path, "bin")
@@ -108,6 +131,11 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             || ContainsDirectorySegment(path, ".nuget")
             || ContainsDirectorySegment(path, ".worktrees")
             || path.EndsWith(".feature.cs", StringComparison.Ordinal);
+    }
+
+    private static bool IsIgnoredDirectoryName(string directoryName)
+    {
+        return directoryName is "bin" or "obj" or ".git" or ".nuget" or ".worktrees";
     }
 
     private static bool ContainsDirectorySegment(string path, string directoryName)
@@ -135,12 +163,14 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
 
-    [GeneratedRegex(@"<NoWarn>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
     private static partial Regex NoWarnRegex();
 
-    [GeneratedRegex(@"^\s*#pragma\s+warning\s+(?:disable|restore)\b", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^\s*#pragma\s+warning\s+disable\b", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
     private static partial Regex PragmaWarningDirectiveRegex();
 
-    [GeneratedRegex(@"^\s*\[\s*(?:assembly:\s*)?SuppressMessage\s*\(", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(
+        @"^\s*\[\s*(?:assembly:\s*)?(?:(?:global::)?System\.Diagnostics\.CodeAnalysis\.)?SuppressMessage(?:Attribute)?\s*\(",
+        RegexOptions.Multiline | RegexOptions.CultureInvariant)]
     private static partial Regex SuppressMessageAttributeRegex();
 }

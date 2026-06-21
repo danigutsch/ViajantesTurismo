@@ -74,7 +74,10 @@ Severity ownership rules:
 - Generated files, migrations, code-generation fixtures, and analyzer test fixtures should be
   separated from hand-written source policy.
 
-Current broad suppression owners:
+Approved broad suppression owners:
+
+The architecture test uses this allowlist as the approved broad-suppression inventory. Entries may
+represent current suppressions or staged removals that remain approved during branch transitions.
 
 | Surface | Diagnostics | Owner | Removal path |
 | --- | --- | --- | --- |
