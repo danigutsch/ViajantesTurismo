@@ -47,5 +47,38 @@ public sealed class PublicWebEndpointTests
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
     }
 
-    private static WebApplicationFactory<PublicWebProgram> CreateFactory() => new();
+    [Fact]
+    public async Task Production_Root_Returns_Public_Landing_Page()
+    {
+        await using var factory = CreateFactory("Production");
+        using var client = factory.CreateClient();
+
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/health")]
+    [InlineData("/alive")]
+    public async Task Production_Default_Health_Endpoint_Is_Not_Exposed(string path)
+    {
+        await using var factory = CreateFactory("Production");
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private static WebApplicationFactory<PublicWebProgram> CreateFactory(string? environment = null)
+    {
+        var factory = new WebApplicationFactory<PublicWebProgram>();
+        return environment is null
+            ? factory
+            : factory.WithWebHostBuilder(builder => builder.UseEnvironment(environment));
+    }
 }
