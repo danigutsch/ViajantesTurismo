@@ -20,7 +20,7 @@ api_base_url="${VT_API_BASE_URL%/}"
 docker_k6_image="${VT_K6_DOCKER_IMAGE:-grafana/k6:0.49.0}"
 results_dir="${VT_K6_RESULTS_DIR:-tests/performance/results}"
 
-if [[ "${results_dir}" = /* ]]; then
+if [[ "${results_dir}" = /* || "${results_dir}" == *":"* || "${results_dir}" == *"\\"* ]]; then
   printf 'VT_K6_RESULTS_DIR must be relative to the repository root.\n' >&2
   exit 1
 fi
