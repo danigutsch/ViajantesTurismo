@@ -25,7 +25,6 @@ public sealed class AccommodationPreferences
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
     /// </summary>
-#pragma warning disable CS8618
     [UsedImplicitly]
     private AccommodationPreferences()
     {

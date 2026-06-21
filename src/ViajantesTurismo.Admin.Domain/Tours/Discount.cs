@@ -19,11 +19,9 @@ public sealed class Discount
     }
 
     [UsedImplicitly]
-#pragma warning disable CS8618
     private Discount()
     {
     }
-#pragma warning restore CS8618
 
     /// <summary>
     /// Gets the type of discount (Percentage or Absolute).
