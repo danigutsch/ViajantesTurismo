@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 /// <summary>
 /// Helper class for formatting currency values with proper symbols based on the currency type.
 /// </summary>
-public static class CurrencyFormatter
+internal static class CurrencyFormatter
 {
     /// <summary>
     /// Formats a decimal amount with the appropriate currency symbol.
