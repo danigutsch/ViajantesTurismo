@@ -30,7 +30,15 @@ internal static class ErrorDocumentationEndpoints
 
     private static Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>> GetErrorDocumentationByIdentifier(string identifier)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return TypedResults.NotFound(new ProblemDetails
+            {
+                Title = "Error Documentation Not Found",
+                Detail = "Error documentation entry identifier was not provided.",
+                Status = StatusCodes.Status404NotFound,
+            });
+        }
 
         var entry = ErrorDocumentationCatalog.GetEntries().FirstOrDefault(
             candidate => string.Equals(candidate.Identifier, identifier, StringComparison.Ordinal));
