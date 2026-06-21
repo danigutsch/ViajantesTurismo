@@ -1,5 +1,8 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
+/// <summary>
+/// Serial E2E smoke tests that require a clean database baseline to verify empty-state UI behavior.
+/// </summary>
 public class ErrorHandlingTests(AspireSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
 {
     [Fact]

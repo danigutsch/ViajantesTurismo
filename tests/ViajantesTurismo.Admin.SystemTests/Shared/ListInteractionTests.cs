@@ -1,28 +1,32 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
+/// <summary>
+/// E2E smoke tests for list sorting and pagination behavior using owned setup data.
+/// </summary>
+public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string DescendingSortSelector = "th[aria-sort='descending']";
 
     [Fact]
-    [SerialE2EReason(
-        "/tours renders the full unfiltered QuickGrid dataset; this test asserts absolute first-row " +
-        "Name ordering after sorting, so unrelated rows can change the visible first row.")]
     public async Task Tour_List_Sort_Smoke_Works_For_Name_Column()
     {
         // Arrange
+        var uid = Guid.NewGuid().ToString("N")[..8];
         _ = await ApiClient.CreateTour(new CreateTourOptions
         {
-            Identifier = "AAA-SORT",
-            Name = "Aaa Sort Tour",
+            Identifier = $"SRT-{uid}-A",
+            Name = $"Sort Smoke {uid} A",
             StartDate = DateTime.UtcNow.AddDays(10),
             EndDate = DateTime.UtcNow.AddDays(17),
             Price = 500m
         });
         _ = await ApiClient.CreateTour(new CreateTourOptions
         {
-            Identifier = "ZZZ-SORT",
-            Name = "Zzz Sort Tour",
+            Identifier = $"SRT-{uid}-Z",
+            Name = $"Sort Smoke {uid} Z",
             StartDate = DateTime.UtcNow.AddDays(40),
             EndDate = DateTime.UtcNow.AddDays(47),
             Price = 1500m
@@ -33,28 +37,26 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSeria
         await Expect(Page).ToHaveTitleAsync("Tours");
 
         var toursTable = Page.Locator("table");
-        var firstTourCell = toursTable.Locator("tbody tr td:nth-child(2)").First;
+        var tourNameCells = toursTable.Locator("tbody tr td:nth-child(2)");
 
         // Assert: tours sort by Name ascending / descending.
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
-        await Expect(firstTourCell).ToHaveTextAsync("Aaa Sort Tour");
+        await AssertVisibleCellTextsAreSorted(tourNameCells, descending: false);
 
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
-        await Expect(firstTourCell).ToHaveTextAsync("Zzz Sort Tour");
+        await AssertVisibleCellTextsAreSorted(tourNameCells, descending: true);
     }
 
     [Fact]
-    [SerialE2EReason(
-        "/customers renders the full unfiltered QuickGrid dataset with pagination only when total rows " +
-        "exceed ten; this test asserts exact page count and first-row positions across pages.")]
     public async Task Customer_List_Paginator_Smoke_Works_And_Preserves_Sort()
     {
         // Arrange
+        var uid = Guid.NewGuid().ToString("N")[..8];
         for (var index = 0; index <= 10; index++)
         {
-            await ApiClient.CreateCustomer(firstName: $"User{index:00}", lastName: "List");
+            await ApiClient.CreateCustomer(firstName: $"List{uid}{index:00}", lastName: "Smoke");
         }
 
         // Act
@@ -66,23 +68,62 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSeria
         var paginator = Page.Locator(".paginator");
         var paginationText = paginator.Locator(".pagination-text");
 
-        await Expect(paginationText).ToContainTextAsync("Page 1 of 2");
+        var firstPage = await ReadPaginationState(paginationText);
+        Assert.Equal(1, firstPage.CurrentPage);
+        Assert.True(firstPage.TotalPages >= 2, $"Expected at least 2 pages, but found {firstPage.TotalPages}.");
 
         await customersTable.GetButton("Name").ClickAsync();
         await customersTable.GetButton("Name").ClickAsync();
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         var firstNameCell = customersTable.Locator("tbody tr td:nth-child(1)").First;
-        await Expect(firstNameCell).ToHaveTextAsync("User10 List");
+        var customerNameCells = customersTable.Locator("tbody tr td:nth-child(1)");
+        var firstPageFirstName = await firstNameCell.InnerTextAsync();
+        await AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
 
         await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
-        await Expect(paginationText).ToContainTextAsync("Page 2 of 2");
-        await Expect(firstNameCell).ToHaveTextAsync("User00 List");
+        await Expect(paginationText).ToContainTextAsync("Page 2 of");
+        var secondPage = await ReadPaginationState(paginationText);
+        Assert.Equal(2, secondPage.CurrentPage);
+        Assert.Equal(firstPage.TotalPages, secondPage.TotalPages);
+        Assert.NotEqual(firstPageFirstName, await firstNameCell.InnerTextAsync());
+        await AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
-        await Expect(paginationText).ToContainTextAsync("Page 1 of 2");
-        await Expect(firstNameCell).ToHaveTextAsync("User10 List");
+        await Expect(paginationText).ToContainTextAsync("Page 1 of");
+        var returnedPage = await ReadPaginationState(paginationText);
+        Assert.Equal(1, returnedPage.CurrentPage);
+        Assert.Equal(firstPage.TotalPages, returnedPage.TotalPages);
+        Assert.Equal(firstPageFirstName, await firstNameCell.InnerTextAsync());
+        await AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
+    }
+
+    private static async Task AssertVisibleCellTextsAreSorted(ILocator cells, bool descending)
+    {
+        var visibleTexts = (await cells.AllInnerTextsAsync())
+            .Select(text => text.Trim())
+            .Where(text => text.Length > 0)
+            .ToArray();
+
+        Assert.True(visibleTexts.Length > 1, "Expected at least two visible rows to verify sorting.");
+
+        var sortedTexts = descending
+            ? visibleTexts.OrderByDescending(text => text, StringComparer.OrdinalIgnoreCase).ToArray()
+            : visibleTexts.OrderBy(text => text, StringComparer.OrdinalIgnoreCase).ToArray();
+
+        Assert.Equal(sortedTexts, visibleTexts);
+    }
+
+    private static async Task<(int CurrentPage, int TotalPages)> ReadPaginationState(ILocator paginationText)
+    {
+        var text = await paginationText.InnerTextAsync();
+        var match = Regex.Match(text, @"Page\s+(?<current>\d+)\s+of\s+(?<total>\d+)");
+
+        Assert.True(match.Success, $"Expected pagination text in 'Page N of M' format, but found '{text}'.");
+
+        return (int.Parse(match.Groups["current"].Value, CultureInfo.InvariantCulture),
+            int.Parse(match.Groups["total"].Value, CultureInfo.InvariantCulture));
     }
 }

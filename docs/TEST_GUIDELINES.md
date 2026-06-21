@@ -479,10 +479,6 @@ When a test stays serial on purpose, it should be both thin and clearly justifie
 
 In this repository, the acceptable survivor patterns are:
 
-- **exact-dataset browser interaction smokes** when cheaper layers do not prove the
-  same signal, such as real sort-click or paginator-preserves-sort behaviour
-- **single clean-slate import commit smokes** when the workflow confidence depends
-  on a real browser upload, preview, commit, and final summary path
 - **destructive-reset browser smokes** when the UI must be verified after a true
   database clear/reset rather than component-only rendering
 - **explicit empty-list API contract smokes** when a real empty database response
@@ -490,9 +486,7 @@ In this repository, the acceptable survivor patterns are:
 
 The current audited repository survivors are:
 
-- `ListInteractionTests` for exact-dataset browser list interaction smokes
 - `ErrorHandlingTests` for destructive-reset browser empty-state smoke coverage
-- `CustomerImportSerialTests` for the single clean-slate browser import commit smoke
 - `GetAllToursEmptyListTests`, `GetAllCustomersEmptyListTests`, and `GetAllBookingsEmptyListTests`
   for explicit empty-list API contract smokes
 
