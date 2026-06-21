@@ -1,8 +1,3 @@
-using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Xunit;
 
@@ -16,8 +11,9 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Fact]
     public async Task Generates_A_Tours_Document_Containing_Only_Tours_Paths()
     {
-        var document = await CreateDocument(
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "tours",
+            TestContext.Current.CancellationToken,
             "MapToursEndpoints",
             "MapCustomerEndpoints",
             "MapBookingEndpoints");
@@ -31,8 +27,9 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Fact]
     public async Task Generates_A_Customers_Document_Including_Import_Paths()
     {
-        var document = await CreateDocument(
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "customers",
+            TestContext.Current.CancellationToken,
             "MapCustomerEndpoints",
             "MapCustomerImportEndpoints",
             "MapToursEndpoints");
@@ -52,8 +49,9 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Fact]
     public async Task Generates_A_V1_Document_Including_Error_Documentation_Paths()
     {
-        var document = await CreateDocument(
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "v1",
+            TestContext.Current.CancellationToken,
             "MapToursEndpoints",
             "MapCustomerEndpoints",
             "MapCustomerImportEndpoints",
@@ -62,53 +60,6 @@ public sealed class AdminOpenApiDocumentRegistrationTests
 
         Assert.Contains("/docs/errors", document.Paths.Keys);
         Assert.Contains("/docs/errors/{identifier}", document.Paths.Keys);
-    }
-
-    private static async Task<OpenApiDocument> CreateDocument(string documentName, params string[] endpointMapperNames)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(documentName);
-
-        var assembly = Assembly.Load("ViajantesTurismo.Admin.ApiService");
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseUrls("http://127.0.0.1:0");
-        builder.Services.AddEndpointsApiExplorer();
-
-        InvokeInternalStaticMethod(
-            assembly,
-            "ViajantesTurismo.Admin.ApiService.AdminOpenApiDocuments",
-            "AddAdminOpenApiDocuments",
-            builder.Services);
-
-        await using var app = builder.Build();
-
-        foreach (var endpointMapperName in endpointMapperNames)
-        {
-            InvokeInternalStaticMethod(
-                assembly,
-                $"ViajantesTurismo.Admin.ApiService.{endpointMapperName[3..]}",
-                endpointMapperName,
-                app);
-        }
-
-        await app.StartAsync(TestContext.Current.CancellationToken);
-
-        using var scope = app.Services.CreateScope();
-        var provider = scope.ServiceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName);
-        return await provider.GetOpenApiDocumentAsync(TestContext.Current.CancellationToken);
-    }
-
-    private static void InvokeInternalStaticMethod(Assembly assembly, string typeName, string methodName, object argument)
-    {
-        ArgumentNullException.ThrowIfNull(assembly);
-        ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(methodName);
-        ArgumentNullException.ThrowIfNull(argument);
-
-        var type = assembly.GetType(typeName) ?? throw new InvalidOperationException($"Type '{typeName}' was not found.");
-        var method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException($"Method '{typeName}.{methodName}' was not found.");
-
-        _ = method.Invoke(null, [argument]);
     }
 
     private static OpenApiSchema GetMultipartSchema(OpenApiDocument document, string path)

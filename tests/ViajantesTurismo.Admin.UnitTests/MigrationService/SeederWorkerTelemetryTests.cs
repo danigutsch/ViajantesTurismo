@@ -1,8 +1,5 @@
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.MigrationService;
 
@@ -17,12 +14,8 @@ public sealed class SeederWorkerTelemetryTests
         List<Activity> stoppedActivities = [];
         using var listener = CreateCapturingListener(stoppedActivities);
         var seeder = new SuccessfulSeeder();
-        var hostLifetime = new TestHostApplicationLifetime();
-        using var serviceProvider = CreateServiceProvider(seeder);
-        using var worker = new SeederWorker(
-            serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<SeederWorker>.Instance,
-            hostLifetime);
+        using var harness = SeederWorkerHarness.Create(seeder);
+        using var worker = harness.CreateWorker();
 
         // Act
         await ExecuteWorker(worker, CancellationToken.None);
@@ -36,7 +29,7 @@ public sealed class SeederWorkerTelemetryTests
         Assert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
         Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
         Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
-        Assert.True(hostLifetime.StopApplicationCalled);
+        Assert.True(harness.HostLifetime.StopApplicationCalled);
         Assert.True(seeder.SeedCalled);
     }
 
@@ -47,12 +40,8 @@ public sealed class SeederWorkerTelemetryTests
         List<Activity> stoppedActivities = [];
         using var listener = CreateCapturingListener(stoppedActivities);
         var seeder = new FailingSeeder();
-        var hostLifetime = new TestHostApplicationLifetime();
-        using var serviceProvider = CreateServiceProvider(seeder);
-        using var worker = new SeederWorker(
-            serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<SeederWorker>.Instance,
-            hostLifetime);
+        using var harness = SeederWorkerHarness.Create(seeder);
+        using var worker = harness.CreateWorker();
 
         // Act
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => ExecuteWorker(worker, CancellationToken.None));
@@ -75,7 +64,7 @@ public sealed class SeederWorkerTelemetryTests
             tag.Key == "exception.type" && string.Equals(tag.Value as string, typeof(InvalidOperationException).FullName, StringComparison.Ordinal));
         Assert.Contains(exceptionTags, static tag =>
             tag.Key == "exception.message" && string.Equals(tag.Value as string, "boom", StringComparison.Ordinal));
-        Assert.True(hostLifetime.StopApplicationCalled);
+        Assert.True(harness.HostLifetime.StopApplicationCalled);
         Assert.True(seeder.SeedCalled);
     }
 
@@ -86,12 +75,8 @@ public sealed class SeederWorkerTelemetryTests
         List<Activity> stoppedActivities = [];
         using var listener = CreateCapturingListener(stoppedActivities);
         var seeder = new CancelledSeeder();
-        var hostLifetime = new TestHostApplicationLifetime();
-        using var serviceProvider = CreateServiceProvider(seeder);
-        using var worker = new SeederWorker(
-            serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<SeederWorker>.Instance,
-            hostLifetime);
+        using var harness = SeederWorkerHarness.Create(seeder);
+        using var worker = harness.CreateWorker();
 
         // Act
         await Assert.ThrowsAsync<OperationCanceledException>(() => ExecuteWorker(worker, CancellationToken.None));
@@ -105,15 +90,8 @@ public sealed class SeederWorkerTelemetryTests
         Assert.Contains(activity.Tags, static tag => tag.Key == "operation.type" && tag.Value == "database_seeding");
         Assert.Contains(activity.Tags, static tag => tag.Key == "worker.type" && tag.Value == "migration");
         Assert.DoesNotContain(activity.Events, static activityEvent => activityEvent.Name == "exception");
-        Assert.True(hostLifetime.StopApplicationCalled);
+        Assert.True(harness.HostLifetime.StopApplicationCalled);
         Assert.True(seeder.SeedCalled);
-    }
-
-    private static ServiceProvider CreateServiceProvider(ISeeder seeder)
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton(seeder);
-        return services.BuildServiceProvider();
     }
 
     private static async Task ExecuteWorker(SeederWorker worker, CancellationToken cancellationToken)
@@ -181,19 +159,4 @@ public sealed class SeederWorkerTelemetryTests
         public Task ClearDatabase(CancellationToken ct) => Task.CompletedTask;
     }
 
-    private sealed class TestHostApplicationLifetime : IHostApplicationLifetime
-    {
-        public bool StopApplicationCalled { get; private set; }
-
-        public CancellationToken ApplicationStarted => CancellationToken.None;
-
-        public CancellationToken ApplicationStopping => CancellationToken.None;
-
-        public CancellationToken ApplicationStopped => CancellationToken.None;
-
-        public void StopApplication()
-        {
-            StopApplicationCalled = true;
-        }
-    }
 }

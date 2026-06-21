@@ -165,6 +165,20 @@ public sealed partial class AdminTestArchitectureGuardTests
             $"Expected Admin hosted test infrastructure to avoid public generic service-provider reach-through, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingMembers)}");
     }
 
+    [Fact]
+    public void Concrete_Test_Methods_Should_Not_Own_Raw_ServiceProvider_Or_Scope_Plumbing()
+    {
+        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
+        var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .SelectMany(FindRawServiceProviderPlumbingInTestMethods)
+            .ToArray();
+
+        Assert.False(
+            offendingLines.Length != 0,
+            $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
+    }
+
     private static void AssertFileContains(string filePath, string expectedText)
     {
         var fileContents = File.ReadAllText(filePath);
@@ -201,6 +215,65 @@ public sealed partial class AdminTestArchitectureGuardTests
         return [.. offenses];
     }
 
+    private static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+        var insideTestMethod = false;
+        var awaitingMethodSignature = false;
+        var braceDepth = 0;
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            var trimmedLine = line.TrimStart();
+
+            if (!insideTestMethod && !awaitingMethodSignature && IsTestAttributeLine(trimmedLine))
+            {
+                awaitingMethodSignature = true;
+                continue;
+            }
+
+            if (awaitingMethodSignature && TestMethodSignatureRegex().IsMatch(trimmedLine))
+            {
+                insideTestMethod = true;
+                awaitingMethodSignature = false;
+                braceDepth = CountBraceDelta(line);
+                continue;
+            }
+
+            if (!insideTestMethod)
+            {
+                continue;
+            }
+
+            if (RawServiceProviderPlumbingRegex().IsMatch(line))
+            {
+                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {trimmedLine.Trim()}");
+            }
+
+            braceDepth += CountBraceDelta(line);
+            if (braceDepth <= 0)
+            {
+                insideTestMethod = false;
+            }
+        }
+
+        return [.. offenses];
+    }
+
+    private static bool IsTestAttributeLine(string trimmedLine)
+    {
+        return trimmedLine.StartsWith("[Fact", StringComparison.Ordinal)
+            || trimmedLine.StartsWith("[Theory", StringComparison.Ordinal);
+    }
+
+    private static int CountBraceDelta(string line)
+    {
+        return line.Count(static character => character == '{') - line.Count(static character => character == '}');
+    }
+
     private static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -223,8 +296,16 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         var normalizedPath = path.Replace('\\', '/');
         return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
-            || normalizedPath.Contains("/obj/", StringComparison.Ordinal);
+            || normalizedPath.Contains("/obj/", StringComparison.Ordinal)
+            || normalizedPath.Contains("/Snapshots/", StringComparison.Ordinal)
+            || normalizedPath.EndsWith(".feature.cs", StringComparison.Ordinal);
     }
+
+    [GeneratedRegex(@"\b(?:new\s+ServiceCollection\s*\(|BuildServiceProvider\s*\(|CreateScope\s*\(|CreateAsyncScope\s*\()", RegexOptions.Compiled)]
+    private static partial Regex RawServiceProviderPlumbingRegex();
+
+    [GeneratedRegex(@"^public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+\w+\s*\(", RegexOptions.Compiled)]
+    private static partial Regex TestMethodSignatureRegex();
 
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
     private static partial Regex PublicServiceProviderReachThroughRegex();
