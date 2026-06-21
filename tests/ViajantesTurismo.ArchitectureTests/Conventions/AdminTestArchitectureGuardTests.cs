@@ -95,10 +95,10 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),
-            "public abstract class AspireSerialSystemTestBase(AspireSerialSystemTestFixture fixture) : AspireSystemTestBase<AspireSerialSystemTestFixture>(fixture)");
+            "public abstract class AspireSerialSystemTestBase(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)");
 
         AssertFileContains(
-            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"),
+            Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
             "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
 
         AssertFileContains(
@@ -113,9 +113,8 @@ public sealed partial class AdminTestArchitectureGuardTests
             Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
             "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
 
-        AssertFileContains(
-            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"),
-            "public sealed class AspireSerialSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime, IDisposable");
+        AssertFileDoesNotExist(
+            Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"));
 
         AssertFileDoesNotExist(
             Path.Combine(systemTestBasesPath, "E2ETestBase.cs"));
@@ -143,6 +142,23 @@ public sealed partial class AdminTestArchitectureGuardTests
         Assert.True(
             violatingFiles.Length == 0,
             $"Expected serial collection ownership to stay in base-class infrastructure, but found direct usage in:{Environment.NewLine}{string.Join(Environment.NewLine, violatingFiles)}");
+    }
+
+    [Fact]
+    public void SystemTests_Should_Document_Each_Serial_Test_With_A_Reason()
+    {
+        var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
+
+        var undocumentedSerialTests = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
+                && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
+            .SelectMany(FindUndocumentedSerialTests)
+            .ToArray();
+
+        Assert.True(
+            undocumentedSerialTests.Length == 0,
+            $"Expected each serial E2E test to declare [SerialE2EReason], but found:{Environment.NewLine}{string.Join(Environment.NewLine, undocumentedSerialTests)}");
     }
 
     [Fact]
@@ -274,6 +290,30 @@ public sealed partial class AdminTestArchitectureGuardTests
         return line.Count(static character => character == '{') - line.Count(static character => character == '}');
     }
 
+    private static string[] FindUndocumentedSerialTests(string filePath)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        if (!fileContents.Contains("AspireSerialSystemTestBase", StringComparison.Ordinal))
+        {
+            return [];
+        }
+
+        var repositoryRoot = GetRepositoryRoot();
+        var offenses = new List<string>();
+        foreach (Match match in SerialTestMethodRegex().Matches(fileContents))
+        {
+            var attributes = match.Groups["attributes"].Value;
+            if (SerialReasonAttributeRegex().IsMatch(attributes))
+            {
+                continue;
+            }
+
+            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}: {match.Groups["method"].Value}");
+        }
+
+        return [.. offenses];
+    }
+
     private static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -312,4 +352,10 @@ public sealed partial class AdminTestArchitectureGuardTests
 
     [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
     private static partial Regex ProtectedClearDatabaseMemberRegex();
+
+    [GeneratedRegex(@"(?<attributes>(?:\s*\[(?:Fact|Theory|SerialE2EReason)[^\]]*\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
+    private static partial Regex SerialTestMethodRegex();
+
+    [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
+    private static partial Regex SerialReasonAttributeRegex();
 }

@@ -9,6 +9,8 @@ namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest
     where TFixture : IAspireSystemTestFixture
 {
+    private const float DefaultTimeoutMilliseconds = 15000;
+
     protected TFixture Fixture => fixture;
 
     protected HttpClient ApiClient => Fixture.ApiClient;
@@ -20,6 +22,15 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
     private protected UiFeedbackAssertions UiFeedback => new(Page);
+
+    public override async ValueTask InitializeAsync()
+    {
+        await base.InitializeAsync();
+
+        Page.SetDefaultTimeout(DefaultTimeoutMilliseconds);
+        Page.SetDefaultNavigationTimeout(DefaultTimeoutMilliseconds);
+        Assertions.SetDefaultExpectTimeout(DefaultTimeoutMilliseconds);
+    }
 
     protected async Task NavigateTo(string relativePath)
     {
@@ -43,13 +54,17 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
             await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             return true;
         }
-        catch (PlaywrightException exception) when (canRetry
-            && exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal))
+        catch (PlaywrightException exception) when (canRetry && IsRetryableNavigationFailure(exception))
         {
             // Retry immediately on transient AppHost network switches instead of relying on a fixed delay.
             return false;
         }
     }
+
+    private static bool IsRetryableNavigationFailure(PlaywrightException exception) =>
+        exception.Message.Contains("ERR_NETWORK_CHANGED", StringComparison.Ordinal)
+        || exception.Message.Contains("chrome-error://chromewebdata/", StringComparison.Ordinal)
+        || exception.Message.Contains("is interrupted by another navigation", StringComparison.Ordinal);
 
     protected async Task<string> ReadBookingDetailsBadgeText(Guid bookingId, string label)
     {

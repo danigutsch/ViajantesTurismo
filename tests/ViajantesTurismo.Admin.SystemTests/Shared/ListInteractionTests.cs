@@ -1,10 +1,13 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public class ListInteractionTests(AspireSerialSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
+public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
 {
     private const string DescendingSortSelector = "th[aria-sort='descending']";
 
     [Fact]
+    [SerialE2EReason(
+        "/tours renders the full unfiltered QuickGrid dataset; this test asserts absolute first-row " +
+        "Name ordering after sorting, so unrelated rows can change the visible first row.")]
     public async Task Tour_List_Sort_Smoke_Works_For_Name_Column()
     {
         // Arrange
@@ -43,6 +46,9 @@ public class ListInteractionTests(AspireSerialSystemTestFixture fixture) : Aspir
     }
 
     [Fact]
+    [SerialE2EReason(
+        "/customers renders the full unfiltered QuickGrid dataset with pagination only when total rows " +
+        "exceed ten; this test asserts exact page count and first-row positions across pages.")]
     public async Task Customer_List_Paginator_Smoke_Works_And_Preserves_Sort()
     {
         // Arrange
