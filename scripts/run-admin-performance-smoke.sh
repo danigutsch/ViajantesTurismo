@@ -25,6 +25,16 @@ if [[ "${results_dir}" = /* ]]; then
   exit 1
 fi
 
+if [[ -z "${results_dir}" || "${results_dir}" == *".."* || "${results_dir}" == *"//"* ]]; then
+  printf 'VT_K6_RESULTS_DIR must stay inside the repository root and must not contain .. segments.\n' >&2
+  exit 1
+fi
+
+if [[ ! "${profile}" =~ ^[A-Za-z0-9_-]+$ ]]; then
+  printf 'VT_K6_PROFILE may contain only letters, numbers, underscores, and hyphens.\n' >&2
+  exit 1
+fi
+
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 summary_file="${results_dir}/admin-smoke-${profile}-${timestamp}.json"
 mkdir -p "${repo_root}/${results_dir}"

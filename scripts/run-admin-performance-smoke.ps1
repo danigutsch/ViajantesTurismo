@@ -23,6 +23,14 @@ if ([System.IO.Path]::IsPathRooted($resultsDirectory)) {
 }
 
 $normalizedResultsDirectory = $resultsDirectory.Replace('\', '/').TrimEnd('/')
+if ([string]::IsNullOrWhiteSpace($normalizedResultsDirectory) -or $normalizedResultsDirectory.Contains('..') -or $normalizedResultsDirectory.Contains('//')) {
+    Write-Error 'VT_K6_RESULTS_DIR must stay inside the repository root and must not contain .. segments.'
+}
+
+if ($profile -notmatch '^[A-Za-z0-9_-]+$') {
+    Write-Error 'VT_K6_PROFILE may contain only letters, numbers, underscores, and hyphens.'
+}
+
 $timestamp = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ')
 $summaryFile = "$normalizedResultsDirectory/admin-smoke-$profile-$timestamp.json"
 New-Item -ItemType Directory -Force -Path (Join-Path $repositoryRoot $resultsDirectory) | Out-Null
