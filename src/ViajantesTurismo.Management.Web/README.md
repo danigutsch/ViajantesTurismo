@@ -55,8 +55,8 @@ relocation work.
 - `Components/Layout/`: app shell, navigation, and layout-only components.
 - `Models/<Workflow>/`: form and view models used by one workflow.
 - `Services/<Workflow>/`: UI state or orchestration services used by one workflow.
-- `Clients/<Context>/`: target location for typed API client interfaces and implementations owned by one backend
-  bounded context.
+- `Clients/<Context>/`: target location for web-side typed client implementations and helpers owned by one backend
+  bounded context. Keep `I*ApiClient` interfaces and DTOs in the owning context's `*.Contracts` project.
 
 Avoid sharing workflow-specific components by moving them to `Components/Shared/` prematurely. Promote a component only
 after a second workflow needs the same behavior and the shared API can stay independent of the original workflow.
@@ -75,9 +75,10 @@ Use context-prefixed names for new backend contexts or when a name would otherwi
 - `ICatalogTourPresentationApiClient` for future Catalog presentation operations.
 - `IAdminToursApiClient` only if an additional `IToursApiClient` owner makes the current concise name ambiguous.
 
-Typed clients own HTTP paths, request/response DTO calls, validation-error parsing, and service-discovery endpoint names.
-Components own user interaction, loading state, and presentation-specific mapping. If one page needs data from two
-contexts, inject two typed clients into a page-level service or component instead of creating one mixed-purpose client.
+Typed client implementations own HTTP paths, request/response DTO calls, validation-error parsing, and service-discovery
+endpoint names. Client interfaces and DTOs stay in the owning backend context's `*.Contracts` project. Components own
+user interaction, loading state, and presentation-specific mapping. If one page needs data from two contexts, inject two
+typed clients into a page-level service or component instead of creating one mixed-purpose client.
 
 ### Cross-Context Composition
 
@@ -102,16 +103,15 @@ Avoid these dependency directions:
 ### Concrete Example
 
 A future Catalog presentation editor should keep Catalog-specific code separate from existing Admin booking UI. The
-`Clients/` folders below show the target structure for new clients, not the current location of every existing client:
+`Clients/` folders below show the target structure for web-side implementations, while interfaces and DTOs remain in
+the owning `*.Contracts` projects:
 
 ```text
 src/ViajantesTurismo.Management.Web/
 ├── Clients/
 │   ├── Admin/
-│   │   ├── IAdminToursApiClient.cs
-│   │   └── AdminToursApiClient.cs
+│   │   └── ToursApiClient.cs
 │   └── Catalog/
-│       ├── ICatalogTourPresentationApiClient.cs
 │       └── CatalogTourPresentationApiClient.cs
 ├── Components/
 │   ├── Pages/
@@ -126,7 +126,7 @@ src/ViajantesTurismo.Management.Web/
     └── CatalogPresentation/
 ```
 
-If a `CatalogPresentation` page needs Admin tour facts, it should use `IAdminToursApiClient` alongside
+If a `CatalogPresentation` page needs Admin tour facts, it should use `IToursApiClient` alongside
 `ICatalogTourPresentationApiClient`. It should not move Admin tour calls into the Catalog client.
 
 ### PR Review Checklist
