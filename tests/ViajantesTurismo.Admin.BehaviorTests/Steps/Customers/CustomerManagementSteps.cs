@@ -157,9 +157,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create address information from sanitization inputs")]
-#pragma warning disable CA1822
     public void WhenICreateAddressInformationFromSanitizationInputs()
-#pragma warning restore CA1822
     {
         // Result already stored in context by Given step.
     }
@@ -183,9 +181,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create contact information")]
-#pragma warning disable CA1822
     public void WhenICreateContactInformation()
-#pragma warning restore CA1822
     {
         // Result already stored in context by Given step.
     }
@@ -209,9 +205,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create contact information with social media")]
-#pragma warning disable CA1822
     public void WhenICreateContactInformationWithSocialMedia()
-#pragma warning restore CA1822
     {
         // Result already stored in context by Given step.
     }
@@ -235,9 +229,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create identification information")]
-#pragma warning disable CA1822
     public void WhenICreateIdentificationInformation()
-#pragma warning restore CA1822
     {
         // Result already stored in context by Given step.
     }
@@ -261,9 +253,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create emergency contact information")]
-#pragma warning disable CA1822
     public void WhenICreateEmergencyContactInformation()
-#pragma warning restore CA1822
     {
         // Result already stored in context by Given step.
     }
@@ -287,9 +277,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create medical information")]
-#pragma warning disable CA1822
     public void WhenICreateMedicalInformation()
-#pragma warning restore CA1822
     {
         // Result already stored in context by Given step.
     }
