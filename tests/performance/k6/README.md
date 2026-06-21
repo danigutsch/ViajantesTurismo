@@ -57,22 +57,11 @@ $env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
 scripts/run-admin-performance-smoke.ps1
 ```
 
-## Run from Aspire
-
-Start AppHost with `dotnet tool run aspire run`, then start the explicit `admin-performance-smoke`
-resource from the Aspire dashboard. AppHost sets `VT_API_BASE_URL` from the Admin API HTTP endpoint
-and waits for the API before the smoke resource can run.
-
-Use Aspire execution when you want the run captured alongside local stack logs, resource state, and
-dashboard diagnostics. Use the standalone wrapper when reproducing against an already-running API or
-when Aspire is not the process owner.
-
 Wrapper behavior:
 
 - uses local `k6` when available
 - falls back to Docker when `k6` is missing
 - exports summary JSON to the ignored `tests/performance/results/` folder by default
-- uses `scripts/run-admin-performance-smoke.ps1` from AppHost on Windows and the Bash wrapper elsewhere
 - rewrites `http://127.0.0.1:*`, `http://localhost:*`, `https://127.0.0.1:*`, `https://localhost:*` to `host.docker.internal` in Docker mode
 - forwards `VT_K6_VUS` and `VT_K6_DURATION` into Docker mode
 - uses `VT_K6_DOCKER_IMAGE` or `grafana/k6:0.49.0` by default in Docker mode

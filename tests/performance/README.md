@@ -32,10 +32,6 @@ Current wrapper:
 - `../../scripts/run-admin-performance-smoke.sh`
 - `../../scripts/run-admin-performance-smoke.ps1`
 
-Current Aspire resource:
-
-- `admin-performance-smoke`, registered in `ViajantesTurismo.AppHost` as an explicit-start executable
-
 ## Intent
 
 This initial slice is for:
@@ -46,9 +42,7 @@ This initial slice is for:
 
 This is not yet a full load-testing suite.
 
-## Run Modes
-
-### Standalone
+## Run
 
 Start the local stack first, then point the wrapper at the Admin API endpoint:
 
@@ -62,21 +56,6 @@ On Windows PowerShell:
 $env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
 scripts/run-admin-performance-smoke.ps1
 ```
-
-### Aspire Dashboard
-
-Start the AppHost:
-
-```bash
-dotnet tool run aspire run
-```
-
-The AppHost registers `admin-performance-smoke` as an explicit-start executable. Start it from the
-Aspire dashboard after the Admin API is healthy. The resource uses service discovery to set
-`VT_API_BASE_URL` and waits for the API resource before running.
-
-Keep this resource explicit-start only. Performance smoke runs are investigation and pre-release
-tools, not a default part of every local application startup.
 
 ## Results
 
