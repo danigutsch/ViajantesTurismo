@@ -21,9 +21,16 @@ Current implementation path:
 
 - `k6/scenarios/admin-smoke.js`
 
+Current workload profiles:
+
+- `smoke`: default local/repro profile
+- `average-load`: conservative regular validation profile
+- `stress`: manual stress profile for investigation, not CI gating
+
 Current wrapper:
 
 - `../../scripts/run-admin-performance-smoke.sh`
+- `../../scripts/run-admin-performance-smoke.ps1`
 
 ## Intent
 
@@ -34,3 +41,28 @@ This initial slice is for:
 - validating the toolchain and conventions before broader profiles are added
 
 This is not yet a full load-testing suite.
+
+## Run
+
+Start the local stack first, then point the wrapper at the Admin API endpoint:
+
+```bash
+VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
+scripts/run-admin-performance-smoke.ps1
+```
+
+## Results
+
+The wrapper exports k6 summaries to `tests/performance/results/` by default. That folder is ignored
+by Git so local investigation output does not become source. Override the relative output folder with
+`VT_K6_RESULTS_DIR` when comparing runs or collecting artifacts manually.
+
+Start with `smoke` for local repro. Use `average-load` for broader pre-release validation after the
+smoke profile is stable. Keep `stress` manual until thresholds and environment assumptions are proven
+stable enough for automation.

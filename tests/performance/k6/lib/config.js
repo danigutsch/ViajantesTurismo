@@ -8,6 +8,20 @@ const defaultSmokeProfile = Object.freeze({
 
 const profiles = Object.freeze({
   smoke: defaultSmokeProfile,
+  'average-load': Object.freeze({
+    scenarioName: 'admin_average_load',
+    executor: 'constant-vus',
+    vus: 5,
+    duration: '2m',
+    gracefulStop: '10s',
+  }),
+  stress: Object.freeze({
+    scenarioName: 'admin_stress',
+    executor: 'constant-vus',
+    vus: 15,
+    duration: '5m',
+    gracefulStop: '15s',
+  }),
 });
 
 function trimTrailingSlash(value) {
