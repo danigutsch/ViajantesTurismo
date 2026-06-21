@@ -57,6 +57,8 @@ Adopt audience-oriented web frontends:
 - Enforce feature/module ownership inside `Management.Web` to avoid a new monolith.
 - Prefer typed API clients per backend/context integration.
 - Keep public-facing concerns isolated to `Public.Web`; do not leak operator-only dependencies.
+- Apply the concrete `Management.Web` folder, client ownership, and review checklist in
+  [`src/ViajantesTurismo.Management.Web/README.md`](../../src/ViajantesTurismo.Management.Web/README.md).
 
 ## Alternatives Considered
 
@@ -72,5 +74,7 @@ Adopt audience-oriented web frontends:
 ## Links
 
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
+- [Management.Web module boundary governance](../../src/ViajantesTurismo.Management.Web/README.md#module-boundary-governance)
 - Related: [Epic #45 — vertical slice migration](https://github.com/danigutsch/ViajantesTurismo/issues/45)
 - Related: [Issue #43 — Admin BC vertical-slice alignment](https://github.com/danigutsch/ViajantesTurismo/issues/43)
+- Related: [Issue #128 — Management.Web module boundaries](https://github.com/danigutsch/ViajantesTurismo/issues/128)

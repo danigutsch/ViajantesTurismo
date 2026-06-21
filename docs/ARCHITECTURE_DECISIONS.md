@@ -43,6 +43,7 @@ Decisions about application architecture and layer responsibilities.
 - **[ADR-015](adr/20251115-iqueryable-query-service-frontend-optimization.md)** — IQueryable in Query
   Service for Frontend Optimization
 - **[ADR-020](adr/20260523-web-frontends-by-audience-not-by-bounded-context.md)** — Web Frontends by Audience, Not by Bounded Context
+    - Guidance: [`Management.Web` module boundary governance](../src/ViajantesTurismo.Management.Web/README.md#module-boundary-governance)
 - **[ADR-021](adr/20260621-catalog-bounded-context-for-public-tour-presentation.md)** — Catalog
   Bounded Context for Public Tour Presentation
 - **[ADR-022](adr/20260621-split-sharedkernel-domain-and-building-blocks.md)** — Split
@@ -104,3 +105,4 @@ These architectural decisions establish a robust foundation:
 - Data consistency and correctness
 - Testability and maintainability
 - Frontend performance optimization through deferred query execution
+- Audience-oriented frontend boundaries with typed backend clients and explicit module ownership
