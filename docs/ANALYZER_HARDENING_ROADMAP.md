@@ -76,15 +76,13 @@ Severity ownership rules:
 
 Approved broad suppression owners:
 
-The architecture test uses this allowlist as the approved broad-suppression inventory. Entries may
-represent current suppressions or staged removals that remain approved during branch transitions.
+The architecture test uses these allowlists as the approved broad-suppression inventory. `NoWarn`
+entries must exactly match current repository suppressions so removed suppressions cannot be
+reintroduced without review. No approved `NoWarn` broad suppressions remain.
 
-| Surface | Diagnostics | Owner | Removal path |
+| Surface | Suppression kind | Owner | Removal path |
 | --- | --- | --- | --- |
-| `tests/Directory.Build.props` | `CA2007`, `CA5394`, `CS1591`, `S107` | Test maintainers | Move into source-scoped `.editorconfig` policy or fix test patterns |
-| `src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj` | `CS1591` | API maintainers | Document public framework entrypoints or move to scoped `.editorconfig` |
-| `src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj` | `CS1591` | Management Web maintainers | Document public component/model surfaces or move to scoped `.editorconfig` |
-| `tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj` | `CA1812` | Behavior-test maintainers | Move to scoped `.editorconfig` for Reqnroll-discovered binding types |
+| None | `NoWarn` | Not applicable | Not applicable |
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

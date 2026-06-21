@@ -6,13 +6,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 {
     private static readonly HashSet<string> ApprovedNoWarnEntries =
     [
-        "src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj:CS1591",
-        "src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj:CS1591",
-        "tests/Directory.Build.props:CA2007",
-        "tests/Directory.Build.props:CA5394",
-        "tests/Directory.Build.props:CS1591",
-        "tests/Directory.Build.props:S107",
-        "tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj:CA1812"
     ];
 
     private static readonly HashSet<string> ApprovedPragmaFiles =
@@ -40,10 +33,16 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var unapprovedEntries = noWarnEntries
             .Where(entry => !ApprovedNoWarnEntries.Contains(entry))
             .ToArray();
+        var staleApprovedEntries = ApprovedNoWarnEntries
+            .Where(entry => !noWarnEntries.Contains(entry))
+            .ToArray();
 
         Assert.True(
             unapprovedEntries.Length == 0,
             $"Expected NoWarn entries to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, unapprovedEntries)}");
+        Assert.True(
+            staleApprovedEntries.Length == 0,
+            $"Expected approved NoWarn entries to match current suppressions, but found stale allowlist entries:{Environment.NewLine}{string.Join(Environment.NewLine, staleApprovedEntries)}");
     }
 
     [Fact]
