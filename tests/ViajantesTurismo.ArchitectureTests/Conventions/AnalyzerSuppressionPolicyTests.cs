@@ -103,9 +103,19 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 
     private static bool IsIgnoredPath(string path)
     {
-        return path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-            || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-            || path.Contains($"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+        return ContainsDirectorySegment(path, "bin")
+            || ContainsDirectorySegment(path, "obj")
+            || ContainsDirectorySegment(path, ".git")
+            || ContainsDirectorySegment(path, ".nuget")
+            || ContainsDirectorySegment(path, ".worktrees")
+            || path.EndsWith(".feature.cs", StringComparison.Ordinal);
+    }
+
+    private static bool ContainsDirectorySegment(string path, string directoryName)
+    {
+        return path.Contains(
+            $"{Path.DirectorySeparatorChar}{directoryName}{Path.DirectorySeparatorChar}",
+            StringComparison.Ordinal);
     }
 
     private static string GetRepositoryRoot()

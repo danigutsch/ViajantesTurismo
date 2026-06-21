@@ -135,7 +135,9 @@ It blocks unreviewed additions of:
 Allowed suppression surfaces must remain explicit in the architecture test. Additions require an
 issue owner, a removal condition, and a narrow scope. Generated EF migrations, analyzer test
 fixtures, and the current mediator sample assembly suppression are the only approved pragma or
-attribute surfaces at this stage.
+attribute surfaces at this stage. The guard excludes build outputs, package restore folders, local
+worktrees, and Reqnroll-generated `.feature.cs` files so the policy is applied to maintained
+repository source instead of generated or external code.
 
 ## Code-fix backlog
 
