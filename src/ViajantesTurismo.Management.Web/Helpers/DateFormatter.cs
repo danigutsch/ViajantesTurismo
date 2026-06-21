@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 /// formatting (e.g., via request localization) requires changes in
 /// only one place.
 /// </summary>
-public static class DateFormatter
+internal static class DateFormatter
 {
     public const string DateFormat = "dd/MM/yyyy";
     public const string DateTimeFormat = "dd/MM/yyyy HH:mm";

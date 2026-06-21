@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.Web.Exceptions;
 /// <summary>
 /// Exception thrown when API returns validation errors (400 Bad Request with ValidationProblemDetails).
 /// </summary>
-public class ApiValidationException : HttpRequestException
+internal class ApiValidationException : HttpRequestException
 {
     /// <summary>
     /// Initialises a new instance of the <see cref="ApiValidationException"/> class. Prefer to use <see cref="ApiValidationException(string, IDictionary{string, string[]})"/> instead.
