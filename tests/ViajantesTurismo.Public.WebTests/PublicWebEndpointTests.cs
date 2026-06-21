@@ -1,18 +1,23 @@
-using PublicWebProgram = Program;
+using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
 
+[Trait(TestTraits.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraits.HostName, TestTraits.TestServerHost)]
 public sealed class PublicWebEndpointTests
 {
     [Fact]
     public async Task Root_Returns_Public_Landing_Page()
     {
-        await using var factory = CreateFactory();
+        // Arrange
+        await using var factory = PublicWebTestHost.Create();
         using var client = factory.CreateClient();
 
+        // Act
         using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
         Assert.Contains("Viajantes Turismo", content, StringComparison.Ordinal);
@@ -24,25 +29,31 @@ public sealed class PublicWebEndpointTests
     [InlineData("/alive")]
     public async Task Default_Health_Endpoint_Returns_Success(string path)
     {
-        await using var factory = CreateFactory();
+        // Arrange
+        await using var factory = PublicWebTestHost.Create();
         using var client = factory.CreateClient();
 
+        // Act
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
     public async Task Error_Endpoint_Returns_Problem_Response()
     {
-        await using var factory = CreateFactory();
+        // Arrange
+        await using var factory = PublicWebTestHost.Create();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
         });
 
+        // Act
         using var response = await client.GetAsync(new Uri("/Error", UriKind.Relative), TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
     }
@@ -50,11 +61,14 @@ public sealed class PublicWebEndpointTests
     [Fact]
     public async Task Production_Root_Returns_Public_Landing_Page()
     {
-        await using var factory = CreateFactory("Production");
+        // Arrange
+        await using var factory = PublicWebTestHost.Create("Production");
         using var client = factory.CreateClient();
 
+        // Act
         using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -63,22 +77,17 @@ public sealed class PublicWebEndpointTests
     [InlineData("/alive")]
     public async Task Production_Default_Health_Endpoint_Is_Not_Exposed(string path)
     {
-        await using var factory = CreateFactory("Production");
+        // Arrange
+        await using var factory = PublicWebTestHost.Create("Production");
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
         });
 
+        // Act
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    private static WebApplicationFactory<PublicWebProgram> CreateFactory(string? environment = null)
-    {
-        var factory = new WebApplicationFactory<PublicWebProgram>();
-        return environment is null
-            ? factory
-            : factory.WithWebHostBuilder(builder => builder.UseEnvironment(environment));
     }
 }

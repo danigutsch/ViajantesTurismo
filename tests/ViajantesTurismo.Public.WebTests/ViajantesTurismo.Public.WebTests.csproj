@@ -9,6 +9,7 @@
         <Using Include="System.Net" />
         <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <Using Include="ViajantesTurismo.Public.WebTests.Infrastructure" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -22,6 +23,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj" />
+        <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
     </ItemGroup>
 
 </Project>

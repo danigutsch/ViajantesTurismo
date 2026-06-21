@@ -545,6 +545,9 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "sharedkernel.testing": {
+        "type": "Project"
+      },
       "viajantesturismo.public.web": {
         "type": "Project",
         "dependencies": {
