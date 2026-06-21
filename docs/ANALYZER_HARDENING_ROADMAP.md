@@ -79,9 +79,9 @@ Current broad suppression owners:
 | Surface | Diagnostics | Owner | Removal path |
 | --- | --- | --- | --- |
 | `tests/Directory.Build.props` | `CA2007`, `CA5394`, `CS1591`, `S107` | Test maintainers | Move into source-scoped `.editorconfig` policy or fix test patterns |
-| `ViajantesTurismo.Admin.ApiService.csproj` | `CS1591` | API maintainers | Document public framework entrypoints or move to scoped `.editorconfig` |
-| `ViajantesTurismo.Management.Web.csproj` | `CS1591` | Management Web maintainers | Document public component/model surfaces or move to scoped `.editorconfig` |
-| `ViajantesTurismo.Admin.BehaviorTests.csproj` | `CA1812` | Behavior-test maintainers | Move to scoped `.editorconfig` for Reqnroll-discovered binding types |
+| `src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj` | `CS1591` | API maintainers | Document public framework entrypoints or move to scoped `.editorconfig` |
+| `src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj` | `CS1591` | Management Web maintainers | Document public component/model surfaces or move to scoped `.editorconfig` |
+| `tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj` | `CA1812` | Behavior-test maintainers | Move to scoped `.editorconfig` for Reqnroll-discovered binding types |
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

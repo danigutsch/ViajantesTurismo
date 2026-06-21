@@ -32,9 +32,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     {
         var repositoryRoot = GetRepositoryRoot();
         var noWarnEntries = Directory
-            .GetFiles(repositoryRoot, "*.*", SearchOption.AllDirectories)
-            .Where(path => path.EndsWith(".csproj", StringComparison.Ordinal)
-                || path.EndsWith(".props", StringComparison.Ordinal))
+            .EnumerateFiles(repositoryRoot, "*.csproj", SearchOption.AllDirectories)
+            .Concat(Directory.EnumerateFiles(repositoryRoot, "*.props", SearchOption.AllDirectories))
             .Where(path => !IsIgnoredPath(path))
             .SelectMany(path => FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
@@ -43,8 +42,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Where(entry => !ApprovedNoWarnEntries.Contains(entry))
             .ToArray();
 
-        Assert.False(
-            unapprovedEntries.Length != 0,
+        Assert.True(
+            unapprovedEntries.Length == 0,
             $"Expected NoWarn entries to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, unapprovedEntries)}");
     }
 
@@ -60,8 +59,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Where(path => !ApprovedPragmaFiles.Contains(path))
             .ToArray();
 
-        Assert.False(
-            filesWithPragmas.Length != 0,
+        Assert.True(
+            filesWithPragmas.Length == 0,
             $"Expected pragma warning suppressions to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
     }
 
@@ -77,8 +76,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .Where(path => !ApprovedSuppressMessageFiles.Contains(path))
             .ToArray();
 
-        Assert.False(
-            filesWithSuppressMessage.Length != 0,
+        Assert.True(
+            filesWithSuppressMessage.Length == 0,
             $"Expected SuppressMessage attributes to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithSuppressMessage)}");
     }
 
