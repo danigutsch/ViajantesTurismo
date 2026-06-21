@@ -9,7 +9,7 @@ public sealed record CustomerImportFieldMapping(CustomerImportField Field, strin
     public bool IsAutoMatched => MatchedCsvHeader is not null;
 }
 
-public static class CustomerImportHeaderMatcher
+internal static class CustomerImportHeaderMatcher
 {
     public static IReadOnlyList<CustomerImportField> Fields { get; } =
     [

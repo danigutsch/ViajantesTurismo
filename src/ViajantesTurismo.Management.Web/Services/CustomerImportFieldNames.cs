@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Management.Web.Services;
 /// <summary>
 /// Provides the canonical field names used by the customer import workflow.
 /// </summary>
-public static class CustomerImportFieldNames
+internal static class CustomerImportFieldNames
 {
     public const string FirstName = nameof(FirstName);
     public const string LastName = nameof(LastName);

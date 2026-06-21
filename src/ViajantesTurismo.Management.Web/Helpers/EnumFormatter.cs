@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 /// <summary>
 /// Helper class for formatting enum values into human-readable labels.
 /// </summary>
-public static partial class EnumFormatter
+internal static partial class EnumFormatter
 {
     /// <summary>
     /// Formats an enum value by inserting spaces before uppercase letters.

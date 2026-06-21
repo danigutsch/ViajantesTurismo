@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 /// <summary>
 /// Helper class for calculating booking prices.
 /// </summary>
-public static class BookingPriceCalculator
+internal static class BookingPriceCalculator
 {
     public static decimal CalculateSubtotal(
         RoomTypeDto roomType,
