@@ -59,7 +59,9 @@ public static class TestFixtureHelpers
 
         var location = response.Headers.Location;
         var getResponse = await client.GetAsync(location, ct);
-        return (await getResponse.Content.ReadFromJsonAsync<GetTourDto>(ct))!;
+        var createdTour = await getResponse.Content.ReadFromJsonAsync<GetTourDto>(ct);
+
+        return createdTour ?? throw new InvalidOperationException("The created tour response body was empty.");
     }
 
     /// <summary>
@@ -100,7 +102,9 @@ public static class TestFixtureHelpers
                 $"Status: {response.StatusCode}, Error: {errorContent}");
         }
 
-        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(ct))!;
+        var createdCustomer = await response.Content.ReadFromJsonAsync<GetCustomerDto>(ct);
+
+        return createdCustomer ?? throw new InvalidOperationException("The created customer response body was empty.");
     }
 
     /// <summary>
@@ -134,6 +138,8 @@ public static class TestFixtureHelpers
 
         var response = await client.CreateBooking(bookingRequest, ct);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto>(ct))!;
+        var createdBooking = await response.Content.ReadFromJsonAsync<GetBookingDto>(ct);
+
+        return createdBooking ?? throw new InvalidOperationException("The created booking response body was empty.");
     }
 }
