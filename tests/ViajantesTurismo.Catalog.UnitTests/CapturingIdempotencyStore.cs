@@ -12,7 +12,7 @@ public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotenc
         IdempotencyOperation operation,
         DateTimeOffset startedAt,
         TimeSpan? lockDuration,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct)
     {
         if (entries.TryGetValue(operation, out var existingEntry))
         {
@@ -45,8 +45,8 @@ public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotenc
     public ValueTask Complete(
         IdempotencyOperation operation,
         DateTimeOffset completedAt,
-        string? resultFingerprint = null,
-        CancellationToken cancellationToken = default)
+        string? resultFingerprint,
+        CancellationToken ct)
     {
         CompletedState = IdempotencyEntryState.Completed;
         entries[operation] = new IdempotencyEntry(
@@ -59,9 +59,17 @@ public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotenc
         return ValueTask.CompletedTask;
     }
 
+    public ValueTask Complete(
+        IdempotencyOperation operation,
+        DateTimeOffset completedAt,
+        CancellationToken ct)
+    {
+        return Complete(operation, completedAt, resultFingerprint: null, ct);
+    }
+
     public ValueTask<IdempotencyEntry?> Get(
         IdempotencyOperation operation,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct)
     {
         entries.TryGetValue(operation, out var entry);
 
