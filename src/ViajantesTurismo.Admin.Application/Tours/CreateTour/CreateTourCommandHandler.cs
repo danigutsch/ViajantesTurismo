@@ -12,7 +12,8 @@ namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 public sealed class CreateTourCommandHandler(
     ITourStore tourStore,
     IUnitOfWork unitOfWork,
-    IIntegrationEventDispatcher integrationEventDispatcher)
+    IIntegrationEventDispatcher integrationEventDispatcher,
+    TimeProvider timeProvider)
 {
     /// <summary>
     /// Handles the CreateTourCommand and returns the ID of the created tour.
@@ -54,7 +55,7 @@ public sealed class CreateTourCommandHandler(
         await integrationEventDispatcher.Dispatch(
             new AdminTourCreatedIntegrationEvent(
                 Guid.CreateVersion7(),
-                DateTimeOffset.UtcNow,
+                timeProvider.GetUtcNow(),
                 tourResult.Value.Id,
                 tourResult.Value.Identifier,
                 tourResult.Value.Name),

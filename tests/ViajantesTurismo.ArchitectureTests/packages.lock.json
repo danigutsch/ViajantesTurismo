@@ -807,7 +807,8 @@
         "type": "Project",
         "dependencies": {
           "SharedKernel.Domain": "[1.0.0, )",
-          "SharedKernel.EventSourcing": "[1.0.0, )"
+          "SharedKernel.EventSourcing": "[1.0.0, )",
+          "ViajantesTurismo.Common": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.infrastructure": {

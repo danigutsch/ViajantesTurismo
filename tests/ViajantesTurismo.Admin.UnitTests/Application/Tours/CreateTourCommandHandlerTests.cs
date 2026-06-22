@@ -14,7 +14,9 @@ public sealed class CreateTourCommandHandlerTests
         var tourStore = new FakeTourStore();
         var unitOfWork = new FakeUnitOfWork();
         var dispatcher = new CapturingIntegrationEventDispatcher(unitOfWork);
-        var handler = new CreateTourCommandHandler(tourStore, unitOfWork, dispatcher);
+        var now = new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero);
+        var timeProvider = new FakeTimeProvider(now);
+        var handler = new CreateTourCommandHandler(tourStore, unitOfWork, dispatcher, timeProvider);
         var command = new CreateTourCommand(
             "andes-2026",
             "Andes 2026",
@@ -37,6 +39,7 @@ public sealed class CreateTourCommandHandlerTests
         Assert.Equal(result.Value, integrationEvent.AdminTourId);
         Assert.Equal(command.Identifier, integrationEvent.Identifier);
         Assert.Equal(command.Name, integrationEvent.Name);
+        Assert.Equal(now, integrationEvent.OccurredAt);
         Assert.NotEqual(Guid.Empty, integrationEvent.EventId);
         Assert.True(dispatcher.WasDispatchedAfterSave);
     }

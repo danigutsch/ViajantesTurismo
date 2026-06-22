@@ -1,4 +1,5 @@
 using SharedKernel.EventSourcing;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.Domain.Tours;
 
@@ -39,12 +40,15 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
 
+        var sanitizedIdentifier = StringSanitizer.Sanitize(identifier);
+        var sanitizedTitle = StringSanitizer.Sanitize(title);
+
         var catalogTour = new CatalogTour();
         catalogTour.AddEvent(new CatalogTourDraftCreated(
             Guid.CreateVersion7(),
             adminTourId,
-            identifier.Trim(),
-            title.Trim(),
+            sanitizedIdentifier,
+            sanitizedTitle,
             sourceEventId));
 
         return catalogTour;

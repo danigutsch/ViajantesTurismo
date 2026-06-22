@@ -26,7 +26,12 @@ public sealed class TourContext
 
     public FakeTourStore TourStore { get; } = new();
     public FakeUnitOfWork UnitOfWork { get; } = new();
-    public CreateTourCommandHandler CreateTourCommandHandler => new(TourStore, UnitOfWork, IntegrationEventDispatcher);
+    public FakeTimeProvider TimeProvider { get; } = new(new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero));
+    public CreateTourCommandHandler CreateTourCommandHandler => new(
+        TourStore,
+        UnitOfWork,
+        IntegrationEventDispatcher,
+        TimeProvider);
     public DeleteTourCommandHandler DeleteTourCommandHandler => new(TourStore, UnitOfWork);
     public UpdateTourCommandHandler UpdateTourCommandHandler => new(TourStore, UnitOfWork);
     public CapturingIntegrationEventDispatcher IntegrationEventDispatcher { get; } = new();

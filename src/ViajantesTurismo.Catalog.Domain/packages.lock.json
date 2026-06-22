@@ -19,6 +19,15 @@
       },
       "sharedkernel.eventsourcing": {
         "type": "Project"
+      },
+      "sharedkernel.results": {
+        "type": "Project"
+      },
+      "viajantesturismo.common": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
       }
     }
   }

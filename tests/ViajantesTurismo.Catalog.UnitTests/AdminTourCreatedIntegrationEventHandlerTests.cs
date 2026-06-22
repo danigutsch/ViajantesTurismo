@@ -38,6 +38,29 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
     }
 
     [Fact]
+    public async Task Handle_sanitizes_catalog_tour_identifier_and_title()
+    {
+        var idempotencyStore = new CapturingIdempotencyStore();
+        var eventStore = new CapturingEventStore();
+        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationEventConsumer(eventStore),
+            idempotencyStore);
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "  andes\u0000   2026  ",
+            "  Andes\u0001   2026  ");
+
+        await handler.Handle(integrationEvent, CancellationToken.None);
+
+        var draftCreated = Assert.Single(eventStore.Events);
+        var typedEvent = Assert.IsType<CatalogTourDraftCreated>(draftCreated);
+        Assert.Equal("andes 2026", typedEvent.Identifier);
+        Assert.Equal("Andes 2026", typedEvent.Title);
+    }
+
+    [Fact]
     public async Task Handle_ignores_duplicate_event_delivery()
     {
         var idempotencyStore = new CapturingIdempotencyStore();
