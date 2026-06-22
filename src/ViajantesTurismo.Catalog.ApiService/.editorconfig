@@ -1,0 +1,9 @@
+# API analyzer hardening exceptions.
+#
+# CatalogApiMarker is intentionally public because architecture tests need a stable
+# public type to locate the API assembly.
+# Owner: API layer and architecture test maintainers.
+# Remove when architecture tests no longer require a public API assembly marker.
+
+[CatalogApiMarker.cs]
+dotnet_diagnostic.CA1515.severity = none

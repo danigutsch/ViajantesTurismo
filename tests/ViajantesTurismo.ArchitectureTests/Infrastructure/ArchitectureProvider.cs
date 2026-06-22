@@ -5,6 +5,11 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Application;
+using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Domain;
+using ViajantesTurismo.Catalog.Infrastructure;
 using SharedKernel.Results;
 using Assembly = System.Reflection.Assembly;
 
@@ -23,7 +28,12 @@ internal static class ArchitectureProvider
         typeof(InfrastructureDependencyInjection).Assembly,
         ApiMarker.Assembly,
         typeof(Result).Assembly,
-        typeof(UpdateTourDto).Assembly
+        typeof(UpdateTourDto).Assembly,
+        CatalogApiMarker.Assembly,
+        CatalogApplicationMarker.Assembly,
+        CatalogContractsMarker.Assembly,
+        CatalogDomainMarker.Assembly,
+        CatalogInfrastructureMarker.Assembly
     ];
 
     private static Architecture BuildArchitecture()
@@ -41,5 +51,11 @@ internal static class ArchitectureProvider
         internal const string Api = "ViajantesTurismo.Admin.ApiService";
         internal const string Contracts = "ViajantesTurismo.Admin.Contracts";
         internal const string Common = "ViajantesTurismo.Common";
+
+        internal const string CatalogDomain = "ViajantesTurismo.Catalog.Domain";
+        internal const string CatalogApplication = "ViajantesTurismo.Catalog.Application";
+        internal const string CatalogInfrastructure = "ViajantesTurismo.Catalog.Infrastructure";
+        internal const string CatalogApi = "ViajantesTurismo.Catalog.ApiService";
+        internal const string CatalogContracts = "ViajantesTurismo.Catalog.Contracts";
     }
 }
