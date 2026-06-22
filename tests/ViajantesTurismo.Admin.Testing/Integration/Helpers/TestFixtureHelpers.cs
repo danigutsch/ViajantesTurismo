@@ -15,9 +15,9 @@ public static class TestFixtureHelpers
     /// </summary>
     public static async Task<GetTourDto> CreateTestTour(
         this HttpClient client,
-        string? identifier = null,
-        string? name = null,
-        CancellationToken cancellationToken = default)
+        string? identifier,
+        string? name,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -60,7 +60,7 @@ public static class TestFixtureHelpers
         this HttpClient client,
         string firstName,
         string lastName,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(firstName);
@@ -92,8 +92,8 @@ public static class TestFixtureHelpers
         this HttpClient client,
         Guid tourId,
         Guid customerId,
-        Guid? companionId = null,
-        CancellationToken cancellationToken = default)
+        Guid? companionId,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(client);
 
