@@ -113,6 +113,18 @@
       "sharedkernel.domain": {
         "type": "Project"
       },
+      "sharedkernel.eventsourcing": {
+        "type": "Project"
+      },
+      "sharedkernel.idempotency": {
+        "type": "Project"
+      },
+      "sharedkernel.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -127,10 +139,22 @@
       "sharedkernel.results": {
         "type": "Project"
       },
+      "viajantesturismo.admin.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.IntegrationEvents": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
+      },
       "viajantesturismo.catalog.application": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.EventSourcing": "[1.0.0, )",
+          "SharedKernel.Idempotency": "[1.0.0, )",
+          "SharedKernel.IntegrationEvents": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
+          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Domain": "[1.0.0, )"
         }
@@ -141,7 +165,9 @@
       "viajantesturismo.catalog.domain": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Domain": "[1.0.0, )"
+          "SharedKernel.Domain": "[1.0.0, )",
+          "SharedKernel.EventSourcing": "[1.0.0, )",
+          "ViajantesTurismo.Common": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.infrastructure": {
@@ -149,6 +175,12 @@
         "dependencies": {
           "ViajantesTurismo.Catalog.Application": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Domain": "[1.0.0, )"
+        }
+      },
+      "viajantesturismo.common": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
         }
       },
       "viajantesturismo.resources": {

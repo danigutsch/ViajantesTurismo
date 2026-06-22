@@ -13,6 +13,15 @@
         "requested": "[10.26.0.140279, )",
         "resolved": "10.26.0.140279",
         "contentHash": "n6+KDAbvKCJs0oYIQlxFdsmvcj1YSJ7TiqEd5jYq58T1s1Q4bwymFMeVFGDUyDKqSH9YO/7Fobvm0u9WJ7MaRQ=="
+      },
+      "sharedkernel.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
+      },
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
       }
     }
   }

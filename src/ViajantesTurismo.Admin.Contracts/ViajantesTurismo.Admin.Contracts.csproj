@@ -9,4 +9,9 @@
         <None Include="OpenApi/README.md" Pack="true" PackagePath="OpenApi/" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents\SharedKernel.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
+    </ItemGroup>
+
 </Project>

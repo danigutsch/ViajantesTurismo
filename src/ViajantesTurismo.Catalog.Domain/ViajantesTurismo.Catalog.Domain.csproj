@@ -5,7 +5,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj" />
     </ItemGroup>
 
 </Project>

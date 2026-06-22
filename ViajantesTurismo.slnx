@@ -88,6 +88,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj" />
     </Folder>
     <Folder Name="/benchmarks/">
