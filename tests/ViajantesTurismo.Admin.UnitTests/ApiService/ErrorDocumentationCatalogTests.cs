@@ -1,5 +1,6 @@
 using System.Reflection;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.ApiService;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
@@ -9,8 +10,8 @@ public sealed class ErrorDocumentationCatalogTests
     public void GetEntries_Collects_Generated_Error_Catalogs_From_Admin_Domain_And_Application()
     {
         // Arrange
-        var catalogType = typeof(ViajantesTurismo.Admin.ApiService.ResultExtensions).Assembly
-            .GetType("ViajantesTurismo.Admin.ApiService.ErrorDocumentationCatalog");
+        var catalogType = typeof(ResultExtensions).Assembly
+            .GetType("ViajantesTurismo.Admin.ApiService.Errors.ErrorDocumentationCatalog");
         Assert.NotNull(catalogType);
 
         var getEntries = catalogType.GetMethod(
