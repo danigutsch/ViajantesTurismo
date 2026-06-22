@@ -45,6 +45,13 @@
         <Project Path="src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj" />
         <Project Path="src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj" />
     </Folder>
+    <Folder Name="/src/Catalog/">
+        <Project Path="src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj" />
+        <Project Path="src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj" />
+        <Project Path="src/ViajantesTurismo.Catalog.Contracts/ViajantesTurismo.Catalog.Contracts.csproj" />
+        <Project Path="src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj" />
+        <Project Path="src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj" />
+    </Folder>
     <Folder Name="/src/Public/">
         <Project Path="src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj" />
     </Folder>

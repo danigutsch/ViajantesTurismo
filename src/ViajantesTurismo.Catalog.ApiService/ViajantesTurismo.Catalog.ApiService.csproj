@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <IsAotCompatible>true</IsAotCompatible>
+        <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+</Project>

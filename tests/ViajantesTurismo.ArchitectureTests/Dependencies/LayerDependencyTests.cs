@@ -20,6 +20,14 @@ public sealed class LayerDependencyTests
 
     private static IObjectProvider<IType> ApiTypes => TypesInNamespace(ArchitectureProvider.Namespaces.Api, "API layer");
 
+    private static IObjectProvider<IType> CatalogDomainTypes => TypesInNamespace(ArchitectureProvider.Namespaces.CatalogDomain, "Catalog domain layer");
+
+    private static IObjectProvider<IType> CatalogApplicationTypes => TypesInNamespace(ArchitectureProvider.Namespaces.CatalogApplication, "Catalog application layer");
+
+    private static IObjectProvider<IType> CatalogInfrastructureTypes => TypesInNamespace(ArchitectureProvider.Namespaces.CatalogInfrastructure, "Catalog infrastructure layer");
+
+    private static IObjectProvider<IType> CatalogApiTypes => TypesInNamespace(ArchitectureProvider.Namespaces.CatalogApi, "Catalog API layer");
+
     [Fact]
     public void Domain_Should_Not_Depend_On_Application_Infrastructure_Or_Api()
     {
@@ -74,6 +82,66 @@ public sealed class LayerDependencyTests
             .ToHashSet(StringComparer.Ordinal);
         var unexpectedReferences = forbiddenReferences
             .Where(referencedAssemblyNames.Contains)
+            .ToArray();
+
+        // Assert
+        Assert.Empty(unexpectedReferences);
+    }
+
+    [Fact]
+    public void Catalog_Domain_Should_Not_Depend_On_Application_Infrastructure_Or_Api()
+    {
+        var rule = Types().That().Are(CatalogDomainTypes)
+            .Should().NotDependOnAny(CatalogApplicationTypes)
+            .AndShould().NotDependOnAny(CatalogInfrastructureTypes)
+            .AndShould().NotDependOnAny(CatalogApiTypes)
+            .Because("the Catalog domain layer must stay persistence and transport agnostic");
+
+        ArchRuleAssert.CheckRule(Architecture, rule);
+    }
+
+    [Fact]
+    public void Catalog_Application_Should_Not_Depend_On_Infrastructure_Or_Api()
+    {
+        var rule = Types().That().Are(CatalogApplicationTypes)
+            .Should().NotDependOnAny(CatalogApiTypes)
+            .AndShould().NotDependOnAny(CatalogInfrastructureTypes)
+            .Because("Catalog application services should not reference adapters");
+
+        ArchRuleAssert.CheckRule(Architecture, rule);
+    }
+
+    [Fact]
+    public void Catalog_Infrastructure_Should_Not_Depend_On_Api()
+    {
+        var rule = Types().That().Are(CatalogInfrastructureTypes)
+            .Should().NotDependOnAny(CatalogApiTypes)
+            .Because("Catalog infrastructure should remain independent of transport");
+
+        ArchRuleAssert.CheckRule(Architecture, rule);
+    }
+
+    [Fact]
+    public void Catalog_Should_Not_Depend_On_Admin_Implementation_Projects()
+    {
+        // Arrange
+        var forbiddenReferences = new[]
+        {
+            "ViajantesTurismo.Admin.ApiService",
+            "ViajantesTurismo.Admin.Application",
+            "ViajantesTurismo.Admin.Domain",
+            "ViajantesTurismo.Admin.Infrastructure"
+        };
+        var catalogAssemblies = ArchitectureProvider.Assemblies
+            .Where(assembly => assembly.GetName().Name?.StartsWith("ViajantesTurismo.Catalog.", StringComparison.Ordinal) == true)
+            .ToArray();
+
+        // Act
+        var unexpectedReferences = catalogAssemblies
+            .SelectMany(assembly => assembly.GetReferencedAssemblies()
+                .Select(reference => new { CatalogAssembly = assembly.GetName().Name, ReferencedAssembly = reference.Name }))
+            .Where(reference => forbiddenReferences.Contains(reference.ReferencedAssembly, StringComparer.Ordinal))
+            .Select(reference => $"{reference.CatalogAssembly} -> {reference.ReferencedAssembly}")
             .ToArray();
 
         // Assert

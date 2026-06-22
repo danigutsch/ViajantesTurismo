@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
