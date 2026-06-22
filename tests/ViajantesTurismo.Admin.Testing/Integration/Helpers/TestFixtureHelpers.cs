@@ -22,12 +22,6 @@ public static class TestFixtureHelpers
     /// <summary>
     /// Creates a test tour and returns the created tour DTO.
     /// </summary>
-    public static Task<GetTourDto> CreateTestTour(this HttpClient client, CancellationToken cancellationToken) =>
-        CreateTestTour(client, identifier: null, name: null, cancellationToken: cancellationToken);
-
-    /// <summary>
-    /// Creates a test tour and returns the created tour DTO.
-    /// </summary>
     public static async Task<GetTourDto> CreateTestTour(
         this HttpClient client,
         string? identifier,
@@ -71,6 +65,15 @@ public static class TestFixtureHelpers
     /// <summary>
     /// Creates a test customer and returns the created customer DTO.
     /// </summary>
+    public static Task<GetCustomerDto> CreateTestCustomer(
+        this HttpClient client,
+        string firstName,
+        string lastName) =>
+        CreateTestCustomer(client, firstName, lastName, CancellationToken.None);
+
+    /// <summary>
+    /// Creates a test customer and returns the created customer DTO.
+    /// </summary>
     public static async Task<GetCustomerDto> CreateTestCustomer(
         this HttpClient client,
         string firstName,
@@ -109,16 +112,6 @@ public static class TestFixtureHelpers
         Guid customerId,
         Guid? companionId = null) =>
         CreateTestBooking(client, tourId, customerId, companionId, CancellationToken.None);
-
-    /// <summary>
-    /// Creates a test booking and returns the created booking DTO.
-    /// </summary>
-    public static Task<GetBookingDto> CreateTestBooking(
-        this HttpClient client,
-        Guid tourId,
-        Guid customerId,
-        CancellationToken cancellationToken) =>
-        CreateTestBooking(client, tourId, customerId, companionId: null, cancellationToken: cancellationToken);
 
     /// <summary>
     /// Creates a test booking and returns the created booking DTO.
