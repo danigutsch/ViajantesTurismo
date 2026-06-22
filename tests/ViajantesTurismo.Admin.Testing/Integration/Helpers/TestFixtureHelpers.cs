@@ -13,6 +13,12 @@ public static class TestFixtureHelpers
     /// <summary>
     /// Creates a test tour and returns the created tour DTO.
     /// </summary>
+    public static Task<GetTourDto> CreateTestTour(this HttpClient client, CancellationToken cancellationToken) =>
+        CreateTestTour(client, identifier: null, name: null, cancellationToken);
+
+    /// <summary>
+    /// Creates a test tour and returns the created tour DTO.
+    /// </summary>
     public static async Task<GetTourDto> CreateTestTour(
         this HttpClient client,
         string? identifier,
@@ -84,6 +90,16 @@ public static class TestFixtureHelpers
 
         return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(cancellationToken))!;
     }
+
+    /// <summary>
+    /// Creates a test booking and returns the created booking DTO.
+    /// </summary>
+    public static Task<GetBookingDto> CreateTestBooking(
+        this HttpClient client,
+        Guid tourId,
+        Guid customerId,
+        CancellationToken cancellationToken) =>
+        CreateTestBooking(client, tourId, customerId, companionId: null, cancellationToken);
 
     /// <summary>
     /// Creates a test booking and returns the created booking DTO.
