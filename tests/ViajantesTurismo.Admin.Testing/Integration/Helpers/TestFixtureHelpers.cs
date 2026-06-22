@@ -23,7 +23,7 @@ public static class TestFixtureHelpers
     /// Creates a test tour and returns the created tour DTO.
     /// </summary>
     public static Task<GetTourDto> CreateTestTour(this HttpClient client, CancellationToken cancellationToken) =>
-        CreateTestTour(client, identifier: null, name: null, cancellationToken);
+        CreateTestTour(client, identifier: null, name: null, cancellationToken: cancellationToken);
 
     /// <summary>
     /// Creates a test tour and returns the created tour DTO.
@@ -118,7 +118,7 @@ public static class TestFixtureHelpers
         Guid tourId,
         Guid customerId,
         CancellationToken cancellationToken) =>
-        CreateTestBooking(client, tourId, customerId, companionId: null, cancellationToken);
+        CreateTestBooking(client, tourId, customerId, companionId: null, cancellationToken: cancellationToken);
 
     /// <summary>
     /// Creates a test booking and returns the created booking DTO.
