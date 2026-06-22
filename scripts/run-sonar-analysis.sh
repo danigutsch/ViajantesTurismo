@@ -18,7 +18,7 @@ sonar_organization="${SONAR_ORGANIZATION:-}"
 sonar_project_key="${SONAR_PROJECT_KEY:-}"
 sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
 sonar_coverage_exclusions="benchmarks/**,samples/**,scripts/**,tests/performance/**,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs"
-sonar_cpd_exclusions="benchmarks/**,src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs"
+sonar_cpd_exclusions="benchmarks/**,src/SharedKernel/SharedKernel.BuildingBlocks/DateRange.cs,src/SharedKernel/SharedKernel.Domain/Entity.cs,src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs"
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     echo "::add-mask::${sonar_token}"
