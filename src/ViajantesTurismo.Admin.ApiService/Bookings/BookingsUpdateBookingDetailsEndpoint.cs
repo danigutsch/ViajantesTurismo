@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 using ViajantesTurismo.Admin.Contracts;
@@ -13,8 +14,8 @@ internal static class BookingsUpdateBookingDetailsEndpoint
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
-        bookingsGroup.MapPut("/{id:guid}/details", UpdateBookingDetails)
-            .WithAdminMetadata("UpdateBookingDetails", "Updates booking details (room type, bikes, companion).", "Updates booking details.");
+        bookingsGroup.MapPut(AdminEndpoints.Bookings.UpdateDetails.Pattern, UpdateBookingDetails)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.UpdateDetails);
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> UpdateBookingDetails(

@@ -197,6 +197,9 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.aspnet": {
+        "type": "Project"
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },

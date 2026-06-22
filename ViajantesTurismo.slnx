@@ -34,6 +34,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Results.SourceGenerator/SharedKernel.Results.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.AspNet/SharedKernel.Results.AspNet.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.AspNet/SharedKernel.AspNet.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Idempotency/SharedKernel.Idempotency.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
     </Folder>
@@ -65,6 +66,7 @@
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
         <Project Path="tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj" />
+        <Project Path="tests/SharedKernel.AspNet.Tests/SharedKernel.AspNet.Tests.csproj" />
         <Project Path="tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />

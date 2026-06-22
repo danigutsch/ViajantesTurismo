@@ -310,6 +310,9 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.aspnet": {
+        "type": "Project"
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -341,6 +344,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.8, )",
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.8, )",
+          "SharedKernel.AspNet": "[1.0.0, )",
           "SharedKernel.OpenApi": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
           "SharedKernel.Results.AspNet": "[1.0.0, )",

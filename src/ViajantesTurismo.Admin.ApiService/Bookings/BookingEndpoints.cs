@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -22,17 +23,17 @@ internal static class BookingEndpoints
 
         var bookingsGroup = app.MapBookingsGroup();
 
-        bookingsGroup.MapGet("/", GetAllBookings)
-            .WithAdminMetadata("GetBookings", "Retrieves all bookings.", "Retrieves all bookings.");
+        bookingsGroup.MapGet(AdminEndpoints.Bookings.GetAll.Pattern, GetAllBookings)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.GetAll);
 
-        bookingsGroup.MapGet("/{id:guid}", GetBookingById)
-            .WithAdminMetadata("GetBookingById", "Retrieves a booking by its ID.", "Retrieves a booking by its ID.");
+        bookingsGroup.MapGet(AdminEndpoints.Bookings.GetById.Pattern, GetBookingById)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.GetById);
 
-        bookingsGroup.MapGet("/tour/{tourId:guid}", GetBookingsByTourId)
-            .WithAdminMetadata("GetBookingsByTourId", "Retrieves all bookings for a specific tour.", "Retrieves all bookings for a specific tour.");
+        bookingsGroup.MapGet(AdminEndpoints.Bookings.GetByTourId.Pattern, GetBookingsByTourId)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.GetByTourId);
 
-        bookingsGroup.MapGet("/customer/{customerId:guid}", GetBookingsByCustomerId)
-            .WithAdminMetadata("GetBookingsByCustomerId", "Retrieves all bookings for a specific customer (as primary or companion).", "Retrieves all bookings for a specific customer.");
+        bookingsGroup.MapGet(AdminEndpoints.Bookings.GetByCustomerId.Pattern, GetBookingsByCustomerId)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.GetByCustomerId);
 
         bookingsGroup.MapCreateBookingEndpoint();
 

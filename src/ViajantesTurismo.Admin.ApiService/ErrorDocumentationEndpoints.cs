@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.ApiService;
@@ -12,15 +13,11 @@ internal static class ErrorDocumentationEndpoints
 
         var group = app.MapGroup("/docs/errors");
 
-        group.MapGet("/", GetAllErrorDocumentation)
-            .WithName("GetErrorDocumentation")
-            .WithDescription("Retrieves generated documentation metadata for centralized error providers.")
-            .WithSummary("Retrieves generated error documentation metadata.");
+        group.MapGet(AdminEndpoints.ErrorDocumentation.GetAll.Pattern, GetAllErrorDocumentation)
+            .WithEndpointMetadata(AdminEndpoints.ErrorDocumentation.GetAll);
 
-        group.MapGet("/{identifier}", GetErrorDocumentationByIdentifier)
-            .WithName("GetErrorDocumentationByIdentifier")
-            .WithDescription("Retrieves one generated centralized error documentation entry by identifier.")
-            .WithSummary("Retrieves one generated error documentation entry.");
+        group.MapGet(AdminEndpoints.ErrorDocumentation.GetByIdentifier.Pattern, GetErrorDocumentationByIdentifier)
+            .WithEndpointMetadata(AdminEndpoints.ErrorDocumentation.GetByIdentifier);
     }
 
     private static Ok<IReadOnlyList<GetErrorDocumentationDto>> GetAllErrorDocumentation()

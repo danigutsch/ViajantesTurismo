@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -26,25 +27,17 @@ internal static class ToursEndpoints
 
         var toursGroup = app.MapToursGroup();
 
-        toursGroup.MapPost("/", CreateTour)
-            .WithName("CreateTour")
-            .WithDescription("Creates a new tour.")
-            .WithSummary("Creates a new tour.");
+        toursGroup.MapPost(AdminEndpoints.Tours.Create.Pattern, CreateTour)
+            .WithEndpointMetadata(AdminEndpoints.Tours.Create);
 
-        toursGroup.MapGet("/", GetAllTours)
-            .WithName("GetTours")
-            .WithDescription("Retrieves all available tours.")
-            .WithSummary("Retrieves all available tours.");
+        toursGroup.MapGet(AdminEndpoints.Tours.GetAll.Pattern, GetAllTours)
+            .WithEndpointMetadata(AdminEndpoints.Tours.GetAll);
 
-        toursGroup.MapGet("/{id:guid}", GetTourById)
-            .WithName("GetTourById")
-            .WithDescription("Retrieves a tour by its ID.")
-            .WithSummary("Retrieves a tour by its ID.");
+        toursGroup.MapGet(AdminEndpoints.Tours.GetById.Pattern, GetTourById)
+            .WithEndpointMetadata(AdminEndpoints.Tours.GetById);
 
-        toursGroup.MapPut("/{id:guid}", UpdateTour)
-            .WithName("UpdateTour")
-            .WithDescription("Updates an existing tour.")
-            .WithSummary("Updates an existing tour.");
+        toursGroup.MapPut(AdminEndpoints.Tours.Update.Pattern, UpdateTour)
+            .WithEndpointMetadata(AdminEndpoints.Tours.Update);
     }
 
     private static async Task<Results<Created<GetTourDto>, ValidationProblem, Conflict<ProblemDetails>>> CreateTour(

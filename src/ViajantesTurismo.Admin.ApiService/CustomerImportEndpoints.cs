@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts;
 
@@ -20,16 +21,12 @@ internal static class CustomerImportEndpoints
 
         var importGroup = app.MapCustomerImportsGroup();
 
-        importGroup.MapPost("/", ImportCustomers)
-            .WithName("ImportCustomers")
-            .WithDescription("Imports customers from a CSV file.")
-            .WithSummary("Imports customers from a CSV file.")
+        importGroup.MapPost(AdminEndpoints.CustomerImports.Import.Pattern, ImportCustomers)
+            .WithEndpointMetadata(AdminEndpoints.CustomerImports.Import)
             .DisableAntiforgery();
 
-        importGroup.MapPost("/commit", CommitImportWithResolutions)
-            .WithName("CommitImportWithResolutions")
-            .WithDescription("Commits customer import applying conflict resolutions.")
-            .WithSummary("Commits customer import applying conflict resolutions.")
+        importGroup.MapPost(AdminEndpoints.CustomerImports.Commit.Pattern, CommitImportWithResolutions)
+            .WithEndpointMetadata(AdminEndpoints.CustomerImports.Commit)
             .Accepts<CommitCustomerImportFormDto>("multipart/form-data")
             .DisableAntiforgery();
 

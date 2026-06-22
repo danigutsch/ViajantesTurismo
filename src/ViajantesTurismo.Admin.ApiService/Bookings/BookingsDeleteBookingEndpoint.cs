@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 
 namespace ViajantesTurismo.Admin.ApiService;
@@ -10,8 +11,8 @@ internal static class BookingsDeleteBookingEndpoint
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
-        bookingsGroup.MapDelete("/{id:guid}", DeleteBooking)
-            .WithAdminMetadata("DeleteBooking", "Deletes a booking.", "Deletes a booking.");
+        bookingsGroup.MapDelete(AdminEndpoints.Bookings.Delete.Pattern, DeleteBooking)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.Delete);
     }
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> DeleteBooking(

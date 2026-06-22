@@ -1,0 +1,14 @@
+#nullable enable
+
+SharedKernel.AspNet.EndpointDefinition
+SharedKernel.AspNet.EndpointDefinition.EndpointDefinition(string! pattern, SharedKernel.AspNet.EndpointMetadata! metadata) -> void
+SharedKernel.AspNet.EndpointDefinition.Metadata.get -> SharedKernel.AspNet.EndpointMetadata!
+SharedKernel.AspNet.EndpointDefinition.Pattern.get -> string!
+SharedKernel.AspNet.EndpointMetadata
+SharedKernel.AspNet.EndpointMetadata.EndpointMetadata(string! name, string! summary, string! description) -> void
+SharedKernel.AspNet.EndpointMetadata.Description.get -> string!
+SharedKernel.AspNet.EndpointMetadata.Name.get -> string!
+SharedKernel.AspNet.EndpointMetadata.Summary.get -> string!
+SharedKernel.AspNet.EndpointMetadataRouteHandlerBuilderExtensions
+static SharedKernel.AspNet.EndpointMetadataRouteHandlerBuilderExtensions.WithEndpointMetadata(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, SharedKernel.AspNet.EndpointDefinition! definition) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static SharedKernel.AspNet.EndpointMetadataRouteHandlerBuilderExtensions.WithEndpointMetadata(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, SharedKernel.AspNet.EndpointMetadata! metadata) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!

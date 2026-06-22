@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Contracts;
@@ -13,8 +14,8 @@ internal static class BookingsCompleteBookingEndpoint
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
-        bookingsGroup.MapPost("/{id:guid}/complete", CompleteBooking)
-            .WithAdminMetadata("CompleteBooking", "Completes a booking by transitioning its status to Completed.", "Completes a booking.");
+        bookingsGroup.MapPost(AdminEndpoints.Bookings.Complete.Pattern, CompleteBooking)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.Complete);
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> CompleteBooking(

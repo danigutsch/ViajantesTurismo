@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.RecordPayment;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -14,8 +15,8 @@ internal static class BookingsRecordPaymentEndpoint
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
-        bookingsGroup.MapPost("/{id:guid}/payments", RecordPayment)
-            .WithAdminMetadata("RecordPayment", "Records a payment for a booking.", "Records a payment.");
+        bookingsGroup.MapPost(AdminEndpoints.Bookings.RecordPayment.Pattern, RecordPayment)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.RecordPayment);
     }
 
     private static async Task<Results<Created<GetPaymentDto>, NotFound<ProblemDetails>, ValidationProblem>> RecordPayment(

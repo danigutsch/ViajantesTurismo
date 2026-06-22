@@ -18,6 +18,7 @@
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results.AspNet\SharedKernel.Results.AspNet.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.AspNet\SharedKernel.AspNet.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj"/>
     </ItemGroup>
 

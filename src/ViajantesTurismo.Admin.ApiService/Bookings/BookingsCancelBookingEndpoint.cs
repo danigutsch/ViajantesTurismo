@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Contracts;
@@ -13,8 +14,8 @@ internal static class BookingsCancelBookingEndpoint
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
-        bookingsGroup.MapPost("/{id:guid}/cancel", CancelBooking)
-            .WithAdminMetadata("CancelBooking", "Cancels a booking by transitioning its status to Cancelled.", "Cancels a booking.");
+        bookingsGroup.MapPost(AdminEndpoints.Bookings.Cancel.Pattern, CancelBooking)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.Cancel);
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>>> CancelBooking(

@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -25,25 +26,17 @@ internal static class CustomerEndpoints
 
         var customersGroup = app.MapCustomersGroup();
 
-        customersGroup.MapGet("/", GetAllCustomers)
-            .WithName("GetCustomers")
-            .WithDescription("Retrieves all customers.")
-            .WithSummary("Retrieves all customers.");
+        customersGroup.MapGet(AdminEndpoints.Customers.GetAll.Pattern, GetAllCustomers)
+            .WithEndpointMetadata(AdminEndpoints.Customers.GetAll);
 
-        customersGroup.MapGet("/{id:guid}", GetCustomerById)
-            .WithName("GetCustomerById")
-            .WithDescription("Retrieves a customer by their ID.")
-            .WithSummary("Retrieves a customer by their ID.");
+        customersGroup.MapGet(AdminEndpoints.Customers.GetById.Pattern, GetCustomerById)
+            .WithEndpointMetadata(AdminEndpoints.Customers.GetById);
 
-        customersGroup.MapPost("/", CreateCustomer)
-            .WithName("CreateCustomer")
-            .WithDescription("Creates a new customer with all required information.")
-            .WithSummary("Creates a new customer.");
+        customersGroup.MapPost(AdminEndpoints.Customers.Create.Pattern, CreateCustomer)
+            .WithEndpointMetadata(AdminEndpoints.Customers.Create);
 
-        customersGroup.MapPut("/{id:guid}", UpdateCustomer)
-            .WithName("UpdateCustomer")
-            .WithDescription("Updates an existing customer.")
-            .WithSummary("Updates an existing customer.");
+        customersGroup.MapPut(AdminEndpoints.Customers.Update.Pattern, UpdateCustomer)
+            .WithEndpointMetadata(AdminEndpoints.Customers.Update);
 
         return app;
     }

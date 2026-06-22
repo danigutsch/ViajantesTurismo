@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.AspNet;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
@@ -21,8 +22,8 @@ internal static class BookingsCreateBookingEndpoint
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);
 
-        bookingsGroup.MapPost("/", CreateBooking)
-            .WithAdminMetadata("CreateBooking", "Creates a new booking for a tour.", "Creates a new booking.");
+        bookingsGroup.MapPost(AdminEndpoints.Bookings.Create.Pattern, CreateBooking)
+            .WithEndpointMetadata(AdminEndpoints.Bookings.Create);
     }
 
     private static async Task<Results<Created<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> CreateBooking(
