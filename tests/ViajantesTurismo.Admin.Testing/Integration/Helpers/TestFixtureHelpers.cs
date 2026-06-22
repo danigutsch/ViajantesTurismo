@@ -26,7 +26,7 @@ public static class TestFixtureHelpers
         this HttpClient client,
         string? identifier,
         string? name,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -47,19 +47,19 @@ public static class TestFixtureHelpers
         }
 
         var tourRequest = DtoBuilders.BuildCreateTourDto(identifier: identifier, name: name);
-        var response = await client.CreateTour(tourRequest, cancellationToken);
+        var response = await client.CreateTour(tourRequest, ct);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var errorContent = await response.Content.ReadAsStringAsync(ct);
             throw new InvalidOperationException(
                 $"Failed to create test tour '{identifier}'. " +
                 $"Status: {response.StatusCode}, Error: {errorContent}");
         }
 
         var location = response.Headers.Location;
-        var getResponse = await client.GetAsync(location, cancellationToken);
-        return (await getResponse.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken))!;
+        var getResponse = await client.GetAsync(location, ct);
+        return (await getResponse.Content.ReadFromJsonAsync<GetTourDto>(ct))!;
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public static class TestFixtureHelpers
         this HttpClient client,
         string firstName,
         string lastName,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(firstName);
@@ -90,17 +90,17 @@ public static class TestFixtureHelpers
             email: TestDataGenerator.UniqueEmail($"{firstName}.{lastName}".ToUpperInvariant()),
             nationalId: TestDataGenerator.UniqueNationalId($"{firstName}{lastName}"));
 
-        var response = await client.CreateCustomer(customerRequest, cancellationToken);
+        var response = await client.CreateCustomer(customerRequest, ct);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var errorContent = await response.Content.ReadAsStringAsync(ct);
             throw new InvalidOperationException(
                 $"Failed to create test customer {firstName} {lastName}. " +
                 $"Status: {response.StatusCode}, Error: {errorContent}");
         }
 
-        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(cancellationToken))!;
+        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(ct))!;
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public static class TestFixtureHelpers
         Guid tourId,
         Guid customerId,
         Guid? companionId,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -132,8 +132,8 @@ public static class TestFixtureHelpers
             companionBikeType: companionId.HasValue ? BikeTypeDto.Regular : null,
             roomType: RoomTypeDto.DoubleOccupancy);
 
-        var response = await client.CreateBooking(bookingRequest, cancellationToken);
+        var response = await client.CreateBooking(bookingRequest, ct);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken))!;
+        return (await response.Content.ReadFromJsonAsync<GetBookingDto>(ct))!;
     }
 }
