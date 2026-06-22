@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.ArchitectureTests" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
