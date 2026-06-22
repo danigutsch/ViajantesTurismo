@@ -13,11 +13,20 @@ public static class TestFixtureHelpers
     /// <summary>
     /// Creates a test tour and returns the created tour DTO.
     /// </summary>
-    public static async Task<GetTourDto> CreateTestTour(
+    public static Task<GetTourDto> CreateTestTour(
         this HttpClient client,
         string? identifier = null,
-        string? name = null,
-        CancellationToken cancellationToken = default)
+        string? name = null) =>
+        CreateTestTour(client, identifier, name, CancellationToken.None);
+
+    /// <summary>
+    /// Creates a test tour and returns the created tour DTO.
+    /// </summary>
+    public static async Task<GetTourDto> CreateTestTour(
+        this HttpClient client,
+        string? identifier,
+        string? name,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -38,20 +47,31 @@ public static class TestFixtureHelpers
         }
 
         var tourRequest = DtoBuilders.BuildCreateTourDto(identifier: identifier, name: name);
-        var response = await client.CreateTour(tourRequest, cancellationToken);
+        var response = await client.CreateTour(tourRequest, ct);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var errorContent = await response.Content.ReadAsStringAsync(ct);
             throw new InvalidOperationException(
                 $"Failed to create test tour '{identifier}'. " +
                 $"Status: {response.StatusCode}, Error: {errorContent}");
         }
 
         var location = response.Headers.Location;
-        var getResponse = await client.GetAsync(location, cancellationToken);
-        return (await getResponse.Content.ReadFromJsonAsync<GetTourDto>(cancellationToken))!;
+        var getResponse = await client.GetAsync(location, ct);
+        var createdTour = await getResponse.Content.ReadFromJsonAsync<GetTourDto>(ct);
+
+        return createdTour ?? throw new InvalidOperationException("The created tour response body was empty.");
     }
+
+    /// <summary>
+    /// Creates a test customer and returns the created customer DTO.
+    /// </summary>
+    public static Task<GetCustomerDto> CreateTestCustomer(
+        this HttpClient client,
+        string firstName,
+        string lastName) =>
+        CreateTestCustomer(client, firstName, lastName, CancellationToken.None);
 
     /// <summary>
     /// Creates a test customer and returns the created customer DTO.
@@ -60,7 +80,7 @@ public static class TestFixtureHelpers
         this HttpClient client,
         string firstName,
         string lastName,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(firstName);
@@ -72,18 +92,30 @@ public static class TestFixtureHelpers
             email: TestDataGenerator.UniqueEmail($"{firstName}.{lastName}".ToUpperInvariant()),
             nationalId: TestDataGenerator.UniqueNationalId($"{firstName}{lastName}"));
 
-        var response = await client.CreateCustomer(customerRequest, cancellationToken);
+        var response = await client.CreateCustomer(customerRequest, ct);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var errorContent = await response.Content.ReadAsStringAsync(ct);
             throw new InvalidOperationException(
                 $"Failed to create test customer {firstName} {lastName}. " +
                 $"Status: {response.StatusCode}, Error: {errorContent}");
         }
 
-        return (await response.Content.ReadFromJsonAsync<GetCustomerDto>(cancellationToken))!;
+        var createdCustomer = await response.Content.ReadFromJsonAsync<GetCustomerDto>(ct);
+
+        return createdCustomer ?? throw new InvalidOperationException("The created customer response body was empty.");
     }
+
+    /// <summary>
+    /// Creates a test booking and returns the created booking DTO.
+    /// </summary>
+    public static Task<GetBookingDto> CreateTestBooking(
+        this HttpClient client,
+        Guid tourId,
+        Guid customerId,
+        Guid? companionId = null) =>
+        CreateTestBooking(client, tourId, customerId, companionId, CancellationToken.None);
 
     /// <summary>
     /// Creates a test booking and returns the created booking DTO.
@@ -92,8 +124,8 @@ public static class TestFixtureHelpers
         this HttpClient client,
         Guid tourId,
         Guid customerId,
-        Guid? companionId = null,
-        CancellationToken cancellationToken = default)
+        Guid? companionId,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
@@ -104,8 +136,10 @@ public static class TestFixtureHelpers
             companionBikeType: companionId.HasValue ? BikeTypeDto.Regular : null,
             roomType: RoomTypeDto.DoubleOccupancy);
 
-        var response = await client.CreateBooking(bookingRequest, cancellationToken);
+        var response = await client.CreateBooking(bookingRequest, ct);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto>(cancellationToken))!;
+        var createdBooking = await response.Content.ReadFromJsonAsync<GetBookingDto>(ct);
+
+        return createdBooking ?? throw new InvalidOperationException("The created booking response body was empty.");
     }
 }

@@ -99,6 +99,11 @@ public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSys
         await Page.Locator("#minCustomers").FillAsync(minCustomers.ToString(CultureInfo.InvariantCulture));
         await Page.Locator("#maxCustomers").FillAsync(maxCustomers.ToString(CultureInfo.InvariantCulture));
         await Page.GetButton("Update Tour").ClickAsync();
+
+        var editSuccess = Page.Locator(".alert-success");
+        await Expect(editSuccess).ToBeVisibleAsync();
+        await Expect(editSuccess).ToContainTextAsync("Tour updated successfully!");
+
         await Page.CancelTimedRedirect();
     }
 
