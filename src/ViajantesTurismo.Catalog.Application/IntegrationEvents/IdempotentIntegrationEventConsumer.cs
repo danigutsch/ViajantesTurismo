@@ -13,7 +13,7 @@ public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
     where TIntegrationEvent : IIntegrationEvent
 {
     private static readonly IdempotencyScope Scope = IdempotencyScope.From(
-        $"catalog.integration-event.{typeof(TIntegrationEvent).Name}");
+        $"catalog.integration-event.{TIntegrationEvent.EventType}.v{TIntegrationEvent.EventVersion}");
 
     /// <inheritdoc />
     public async ValueTask Handle(TIntegrationEvent notification, CancellationToken ct)

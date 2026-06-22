@@ -53,12 +53,17 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <inheritdoc />
     protected override void ApplyEvent(object domainEvent)
     {
-        if (domainEvent is CatalogTourDraftCreated created)
+        ArgumentNullException.ThrowIfNull(domainEvent);
+
+        if (domainEvent is not CatalogTourDraftCreated created)
         {
-            id = created.CatalogTourId;
-            AdminTourId = created.AdminTourId;
-            Identifier = created.Identifier;
-            Title = created.Title;
+            throw new InvalidOperationException(
+                $"Catalog tour cannot apply event type '{domainEvent.GetType().FullName}'.");
         }
+
+        id = created.CatalogTourId;
+        AdminTourId = created.AdminTourId;
+        Identifier = created.Identifier;
+        Title = created.Title;
     }
 }

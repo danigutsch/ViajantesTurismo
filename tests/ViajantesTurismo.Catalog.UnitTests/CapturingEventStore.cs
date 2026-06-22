@@ -4,11 +4,13 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class CapturingEventStore : IEventStore
 {
+    private readonly List<object> appendedEvents = [];
+
     public StreamId StreamId { get; private set; }
 
     public ExpectedStreamRevision ExpectedRevision { get; private set; }
 
-    public IReadOnlyCollection<object> Events { get; private set; } = [];
+    public IReadOnlyCollection<object> Events => appendedEvents;
 
     public ValueTask Append(
         StreamId streamId,
@@ -18,7 +20,7 @@ public sealed class CapturingEventStore : IEventStore
     {
         StreamId = streamId;
         ExpectedRevision = expectedRevision;
-        Events = [.. events];
+        appendedEvents.AddRange(events);
 
         return ValueTask.CompletedTask;
     }

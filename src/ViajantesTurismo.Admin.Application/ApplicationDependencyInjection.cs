@@ -52,7 +52,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();
-        builder.Services.AddScoped<IIntegrationEventDispatcher, DiscardingIntegrationEventDispatcher>();
+        builder.Services.AddScoped<IIntegrationEventDispatcher, ServiceProviderIntegrationEventDispatcher>();
 
         return builder;
     }

@@ -40,7 +40,7 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
     [Fact]
     public async Task Handle_ignores_duplicate_event_delivery()
     {
-        var idempotencyStore = new CapturingIdempotencyStore(started: false);
+        var idempotencyStore = new CapturingIdempotencyStore();
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
@@ -53,8 +53,11 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
             "Andes 2026");
 
         await handler.Handle(integrationEvent, CancellationToken.None);
+        await handler.Handle(integrationEvent, CancellationToken.None);
 
-        Assert.Empty(eventStore.Events);
-        Assert.Null(idempotencyStore.CompletedState);
+        var draftCreated = Assert.Single(eventStore.Events);
+        var typedEvent = Assert.IsType<CatalogTourDraftCreated>(draftCreated);
+        Assert.Equal(integrationEvent.EventId, typedEvent.SourceEventId);
+        Assert.Equal(IdempotencyEntryState.Completed, idempotencyStore.CompletedState);
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -39,6 +40,7 @@ public sealed partial class NamingConventionTests
             .Where(type => type.IsClass)
             .Where(type => !IsStaticClass(type))
             .Where(type => !typeof(Attribute).IsAssignableFrom(type))
+            .Where(type => !typeof(IIntegrationEvent).IsAssignableFrom(type))
             .Where(type => !type.Name.EndsWith("Dto", StringComparison.Ordinal))
             .ToArray();
 
