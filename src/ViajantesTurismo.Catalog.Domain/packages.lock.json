@@ -16,6 +16,9 @@
       },
       "sharedkernel.domain": {
         "type": "Project"
+      },
+      "sharedkernel.eventsourcing": {
+        "type": "Project"
       }
     }
   }

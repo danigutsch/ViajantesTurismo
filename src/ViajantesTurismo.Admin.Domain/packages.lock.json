@@ -20,11 +20,24 @@
         "resolved": "10.26.0.140279",
         "contentHash": "n6+KDAbvKCJs0oYIQlxFdsmvcj1YSJ7TiqEd5jYq58T1s1Q4bwymFMeVFGDUyDKqSH9YO/7Fobvm0u9WJ7MaRQ=="
       },
+      "sharedkernel.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
+      },
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
+      },
       "sharedkernel.results": {
         "type": "Project"
       },
       "viajantesturismo.admin.contracts": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.IntegrationEvents": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
       },
       "viajantesturismo.common": {
         "type": "Project",

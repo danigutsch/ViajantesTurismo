@@ -178,6 +178,12 @@
         "resolved": "10.0.3",
         "contentHash": "La6ICwsdTKhVX+LKN+pvFjQRR3LhLwq3uKdi2knjLzRyPYBSydF4cjXidYxIiTcDD6XVYdsBWQEI8ZxiZ/OdIg=="
       },
+      "sharedkernel.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -190,7 +196,11 @@
         }
       },
       "viajantesturismo.admin.contracts": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.IntegrationEvents": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
       },
       "viajantesturismo.resources": {
         "type": "Project"
