@@ -11,14 +11,11 @@ DOTNET_ROOT_MARKER_BEGIN="# >>> ViajantesTurismo DOTNET_ROOT >>>"
 DOTNET_ROOT_MARKER_END="# <<< ViajantesTurismo DOTNET_ROOT <<<"
 DOTNET_ENV_FILE="${WORKSPACE_FOLDER}/.devcontainer/.dotnet-env"
 
-required_sdk_version="$(python3 - "${WORKSPACE_FOLDER}/global.json" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], 'r', encoding='utf-8') as file:
-    print(json.load(file)['sdk']['version'])
-PY
-)"
+required_sdk_version="$(sed -nE 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' "${WORKSPACE_FOLDER}/global.json" | head -n 1)"
+if [[ -z "${required_sdk_version}" ]]; then
+    echo "Could not read the required .NET SDK version from ${WORKSPACE_FOLDER}/global.json." >&2
+    exit 1
+fi
 
 # Ensure expected writable caches/directories exist for the non-root user.
 sudo mkdir -p \

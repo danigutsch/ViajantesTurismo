@@ -11,6 +11,7 @@ devcontainer_cli_prefix="${DEVCONTAINER_CLI_PREFIX:-${repo_root}/TestResults/dev
 keep_container="${DEVCONTAINER_SMOKE_KEEP_CONTAINER:-0}"
 run_tests="${DEVCONTAINER_SMOKE_RUN_TESTS:-0}"
 container_id=""
+devcontainer_up_args=()
 
 download_with_tls() {
     local url="$1"
@@ -149,7 +150,6 @@ run_devcontainer_cli() {
     local args=("$@")
 
     "${devcontainer_cli_prefix}/bin/devcontainer" "${args[@]}"
-    return 0
 }
 
 ensure_devcontainer_cli() {
@@ -226,6 +226,36 @@ extract_container_id() {
     return 0
 }
 
+devcontainer_up_reported_error() {
+    local up_log_path="$1"
+
+    grep -q '"outcome":"error"' "${up_log_path}"
+    return $?
+}
+
+configure_git_worktree_mount() {
+    local git_common_dir=""
+    local git_common_dir_absolute=""
+
+    if [[ ! -f "${workspace_folder}/.git" ]]; then
+        return 0
+    fi
+
+    git_common_dir="$(git -C "${workspace_folder}" rev-parse --git-common-dir 2>/dev/null || true)"
+    if [[ -z "${git_common_dir}" ]]; then
+        return 0
+    fi
+
+    if [[ "${git_common_dir}" == /* ]]; then
+        git_common_dir_absolute="${git_common_dir}"
+    else
+        git_common_dir_absolute="$(cd -- "${workspace_folder}/${git_common_dir}" && pwd)"
+    fi
+
+    devcontainer_up_args+=(--mount "type=bind,source=${git_common_dir_absolute},target=${git_common_dir_absolute}")
+    return 0
+}
+
 write_metadata() {
     local metadata_path="$1"
 
@@ -268,6 +298,7 @@ main() {
     local test_log_path="${log_dir}/devcontainer-test.log"
     local metadata_path="${log_dir}/metadata.txt"
     local up_exit_code="0"
+    local up_reported_error="1"
     local workspace_folder_override=""
     local current_arg=""
 
@@ -311,6 +342,7 @@ main() {
 
     require_command docker
     ensure_devcontainer_cli
+    configure_git_worktree_mount
 
     mkdir -p "${log_dir}"
 
@@ -318,7 +350,7 @@ main() {
 
     print_step "Building and starting the devcontainer"
     set +e
-    run_devcontainer_cli devcontainer up --workspace-folder "${workspace_folder}" --log-level trace \
+    run_devcontainer_cli up --workspace-folder "${workspace_folder}" --log-level trace "${devcontainer_up_args[@]}" \
         2>&1 | tee "${up_log_path}"
     up_exit_code="${PIPESTATUS[0]}"
     set -e
@@ -328,9 +360,18 @@ main() {
         write_metadata "${metadata_path}"
     fi
 
-    if [[ "${up_exit_code}" -ne 0 ]]; then
+    set +e
+    devcontainer_up_reported_error "${up_log_path}"
+    up_reported_error="$?"
+    set -e
+
+    if [[ "${up_exit_code}" -ne 0 || "${up_reported_error}" -eq 0 ]]; then
         printf "devcontainer up failed. Inspect '%s' for details.\n" "${up_log_path}" >&2
-        return "${up_exit_code}"
+        if [[ "${up_exit_code}" -ne 0 ]]; then
+            return "${up_exit_code}"
+        fi
+
+        return 1
     fi
 
     if [[ -z "${container_id}" ]]; then
@@ -339,7 +380,7 @@ main() {
     fi
 
     print_step "Verifying toolchains inside the devcontainer"
-    run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
+    run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
         set -euo pipefail
         dotnet --version
         git --version
@@ -348,13 +389,13 @@ main() {
 
     if [[ "${run_tests}" == "1" ]]; then
         print_step "Installing Playwright browsers inside the devcontainer"
-        run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
+        run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
             bash scripts/install-playwright.sh
         ' 2>&1 | tee "${playwright_log_path}"
 
         print_step "Running test suite inside the devcontainer"
-        run_devcontainer_cli devcontainer exec --workspace-folder "${workspace_folder}" bash -lc '
+        run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
             dotnet test --solution ViajantesTurismo.slnx --no-build
         ' 2>&1 | tee "${test_log_path}"

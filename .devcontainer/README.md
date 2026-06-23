@@ -10,6 +10,9 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running
 - [Visual Studio Code](https://code.visualstudio.com/) with the
  [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+- Network access to the container image registries, Dev Container Feature registry,
+  .NET install script and SDK download endpoints, OS package feeds used by Dev Container
+  Features, and NuGet package feeds used by this repository
 
 ## What's Included
 

@@ -52,6 +52,9 @@ Use this documented path when working locally with Visual Studio Code.
 - Visual Studio Code
 - Dev Containers extension
 - A Docker-compatible container runtime available to the Dev Containers extension
+- Network access to `mcr.microsoft.com`, `ghcr.io`, `nodejs.org`, `registry.npmjs.org`,
+  `dot.net`, `builds.dotnet.microsoft.com`, Ubuntu and Microsoft package feeds used by
+  Dev Container Features, and NuGet package feeds used by the solution
 - Enough local resources to satisfy the requested devcontainer host requirements
 
 ### Open the repository in the container
