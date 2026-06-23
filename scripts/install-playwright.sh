@@ -17,6 +17,50 @@ EOF
     return 0
 }
 
+install_ubuntu_26_chromium_dependencies() {
+    local -a apt_command=()
+    local current_user_id=""
+    local -a packages=(
+        libasound2t64
+        libatk-bridge2.0-0t64
+        libatk1.0-0t64
+        libatspi2.0-0t64
+        libcairo2
+        libcups2t64
+        libdbus-1-3
+        libdrm2
+        libgbm1
+        libglib2.0-0t64
+        libnspr4
+        libnss3
+        libpango-1.0-0
+        libx11-6
+        libxcb1
+        libxcomposite1
+        libxdamage1
+        libxext6
+        libxfixes3
+        libxkbcommon0
+        libxrandr2
+    )
+
+    current_user_id="$(id -u)"
+
+    if [[ "${current_user_id}" = "0" ]]; then
+        apt_command=(apt-get)
+    elif command -v sudo >/dev/null 2>&1; then
+        apt_command=(sudo apt-get)
+    else
+        echo "sudo is required to install Ubuntu 26.04 Playwright Chromium dependencies." >&2
+        return 1
+    fi
+
+    "${apt_command[@]}" update
+    "${apt_command[@]}" install -y --no-install-recommends "${packages[@]}"
+
+    return 0
+}
+
 main() {
     local playwright_script="${1:-}"
     local -a browser_args=()
@@ -79,6 +123,7 @@ main() {
             fi
 
             if [[ "${VERSION_ID:-}" = "26.04" && "${DEVCONTAINER_SMOKE:-}" = "1" ]]; then
+                install_ubuntu_26_chromium_dependencies
                 echo "Skipping Playwright --with-deps inside Ubuntu 26.04 devcontainers because Playwright 1.60.0 still uses Ubuntu 24.04 dependency manifests." >&2
             else
                 install_args+=(--with-deps)
