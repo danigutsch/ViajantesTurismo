@@ -391,7 +391,7 @@ main() {
         print_step "Installing Playwright browsers inside the devcontainer"
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
-            bash scripts/install-playwright.sh
+            DEVCONTAINER_SMOKE=1 bash scripts/install-playwright.sh
         ' 2>&1 | tee "${playwright_log_path}"
 
         print_step "Running test suite inside the devcontainer"

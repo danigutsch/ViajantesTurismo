@@ -78,7 +78,11 @@ main() {
                 esac
             fi
 
-            install_args+=(--with-deps)
+            if [[ "${VERSION_ID:-}" = "26.04" && "${DEVCONTAINER_SMOKE:-}" = "1" ]]; then
+                echo "Skipping Playwright --with-deps inside Ubuntu 26.04 devcontainers because Playwright 1.60.0 still uses Ubuntu 24.04 dependency manifests." >&2
+            else
+                install_args+=(--with-deps)
+            fi
         else
             echo "Playwright system dependency installation is only used automatically on supported Ubuntu versions (22.04, 24.04, 26.04)." >&2
             echo "Current OS: ${PRETTY_NAME:-unknown}. Installing browsers without --with-deps." >&2
