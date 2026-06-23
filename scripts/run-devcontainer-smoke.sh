@@ -235,17 +235,24 @@ devcontainer_up_reported_error() {
 
 configure_git_worktree_mount() {
     local git_common_dir=""
+    local git_common_dir_absolute=""
 
     if [[ ! -f "${workspace_folder}/.git" ]]; then
         return 0
     fi
 
     git_common_dir="$(git -C "${workspace_folder}" rev-parse --git-common-dir 2>/dev/null || true)"
-    if [[ -z "${git_common_dir}" || "${git_common_dir}" != /* ]]; then
+    if [[ -z "${git_common_dir}" ]]; then
         return 0
     fi
 
-    devcontainer_up_args+=(--mount "type=bind,source=${git_common_dir},target=${git_common_dir}")
+    if [[ "${git_common_dir}" == /* ]]; then
+        git_common_dir_absolute="${git_common_dir}"
+    else
+        git_common_dir_absolute="$(cd -- "${workspace_folder}/${git_common_dir}" && pwd)"
+    fi
+
+    devcontainer_up_args+=(--mount "type=bind,source=${git_common_dir_absolute},target=${git_common_dir_absolute}")
     return 0
 }
 
