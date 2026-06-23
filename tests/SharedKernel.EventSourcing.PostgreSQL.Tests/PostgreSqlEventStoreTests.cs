@@ -157,6 +157,42 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         Assert.Equal(27, savedCheckpoint.Position);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Save_Rejects_Missing_Projection_Name(string projectionName)
+    {
+        // Arrange
+        var options = CreateOptions();
+        await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var checkpoint = new ProjectionCheckpoint(projectionName, 12);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(
+            () => store.Save(checkpoint, TestContext.Current.CancellationToken).AsTask());
+
+        // Assert
+        Assert.Equal("checkpoint.ProjectionName", exception.ParamName);
+    }
+
+    [Fact]
+    public async Task Save_Rejects_Negative_Position()
+    {
+        // Arrange
+        var options = CreateOptions();
+        await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var checkpoint = new ProjectionCheckpoint("catalog-public-listing", -1);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => store.Save(checkpoint, TestContext.Current.CancellationToken).AsTask());
+
+        // Assert
+        Assert.Equal("checkpoint.Position", exception.ParamName);
+    }
+
     [Fact]
     public async Task Append_With_Concurrent_No_Stream_Writers_Reports_Conflicts()
     {

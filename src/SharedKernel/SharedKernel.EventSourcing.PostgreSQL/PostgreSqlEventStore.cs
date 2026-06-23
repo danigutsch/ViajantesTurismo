@@ -1,3 +1,6 @@
+using System.Buffers.Binary;
+using System.Security.Cryptography;
+using System.Text;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -8,8 +11,6 @@ namespace SharedKernel.EventSourcing.PostgreSQL;
 /// </summary>
 public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 {
-    private const long AppendLockKey = 781682906472579283;
-
     private readonly NpgsqlDataSource dataSource;
     private readonly IEventSerializer serializer;
     private readonly PostgreSqlEventSourcingOptions options;
@@ -103,11 +104,12 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
         }
 
         var schema = PostgreSqlNames.Schema(options);
+        var appendLockKey = GetAppendLockKey(PostgreSqlNames.SchemaName(options));
         try
         {
             await using var connection = await dataSource.OpenConnectionAsync(ct);
             await using var transaction = await connection.BeginTransactionAsync(ct);
-            await AcquireAppendLock(connection, transaction, ct);
+            await AcquireAppendLock(connection, transaction, appendLockKey, ct);
 
             var currentRevision = await GetCurrentRevision(connection, transaction, schema, streamId, ct);
             if (currentRevision is null)
@@ -294,13 +296,20 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
     private static async ValueTask AcquireAppendLock(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
+        long lockKey,
         CancellationToken ct)
     {
         const string sql = "SELECT pg_advisory_xact_lock(@lockKey);";
 
         await using var command = new NpgsqlCommand(sql, connection, transaction);
-        command.Parameters.AddWithValue("lockKey", AppendLockKey);
+        command.Parameters.AddWithValue("lockKey", lockKey);
         _ = await command.ExecuteNonQueryAsync(ct);
+    }
+
+    private static long GetAppendLockKey(string schemaName)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"SharedKernel.EventSourcing.PostgreSQL:{schemaName}"));
+        return BinaryPrimitives.ReadInt64LittleEndian(hash);
     }
 
     private static async ValueTask CreateStream(

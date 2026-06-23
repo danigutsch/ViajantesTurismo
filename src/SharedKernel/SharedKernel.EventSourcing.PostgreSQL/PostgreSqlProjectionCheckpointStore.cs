@@ -96,6 +96,8 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
     public async ValueTask Save(ProjectionCheckpoint checkpoint, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(checkpoint);
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkpoint.ProjectionName);
+        ArgumentOutOfRangeException.ThrowIfNegative(checkpoint.Position);
 
         var schema = PostgreSqlNames.Schema(options);
         var sql = $"""
