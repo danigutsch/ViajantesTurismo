@@ -1,4 +1,8 @@
 using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.ApiService.Bookings;
+using ViajantesTurismo.Admin.ApiService.Customers;
+using ViajantesTurismo.Admin.ApiService.Errors;
+using ViajantesTurismo.Admin.ApiService.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;

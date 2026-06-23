@@ -1,14 +1,15 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
 public sealed class ErrorDocumentationEndpointsTests
 {
-    private static readonly Type EndpointsType = typeof(ViajantesTurismo.Admin.ApiService.ResultExtensions).Assembly
-        .GetType("ViajantesTurismo.Admin.ApiService.ErrorDocumentationEndpoints")
+    private static readonly Type EndpointsType = typeof(ResultExtensions).Assembly
+        .GetType("ViajantesTurismo.Admin.ApiService.Errors.ErrorDocumentationEndpoints")
         ?? throw new InvalidOperationException("Could not locate ErrorDocumentationEndpoints type.");
 
     [Fact]
@@ -39,8 +40,8 @@ public sealed class ErrorDocumentationEndpointsTests
     [Fact]
     public void GetErrorDocumentationByIdentifier_Returns_Entry_For_Known_Identifier()
     {
-        var entries = typeof(ViajantesTurismo.Admin.ApiService.ResultExtensions).Assembly
-            .GetType("ViajantesTurismo.Admin.ApiService.ErrorDocumentationCatalog")?
+        var entries = typeof(ResultExtensions).Assembly
+            .GetType("ViajantesTurismo.Admin.ApiService.Errors.ErrorDocumentationCatalog")?
             .GetMethod("GetEntries", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
             .Invoke(null, []) as IReadOnlyList<GetErrorDocumentationDto>;
         Assert.NotNull(entries);
