@@ -1,0 +1,26 @@
+#nullable enable
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions.PostgreSqlEventSourcingOptions() -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions.Schema.get -> string!
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions.Schema.set -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingSchema
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingSchema.Initialize(Npgsql.NpgsqlDataSource! dataSource, SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions? options, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.PostgreSqlEventStore(Npgsql.NpgsqlDataSource! dataSource, SharedKernel.EventSourcing.IEventSerializer! serializer) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.PostgreSqlEventStore(Npgsql.NpgsqlDataSource! dataSource, SharedKernel.EventSourcing.IEventSerializer! serializer, SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions? options) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.PostgreSqlEventStore(string! connectionString, SharedKernel.EventSourcing.IEventSerializer! serializer) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.PostgreSqlEventStore(string! connectionString, SharedKernel.EventSourcing.IEventSerializer! serializer, SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions? options) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.Append(SharedKernel.EventSourcing.StreamId streamId, SharedKernel.EventSourcing.ExpectedStreamRevision expectedRevision, System.Collections.Generic.IReadOnlyCollection<object!>! events, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.DisposeAsync() -> System.Threading.Tasks.ValueTask
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.Initialize(System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.Load(SharedKernel.EventSourcing.StreamId streamId, SharedKernel.EventSourcing.StreamRevision? afterRevision, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<SharedKernel.EventSourcing.EventEnvelope!>!>
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventStore.LoadAfter(long position, int maxCount, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<SharedKernel.EventSourcing.EventEnvelope!>!>
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.PostgreSqlProjectionCheckpointStore(Npgsql.NpgsqlDataSource! dataSource) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.PostgreSqlProjectionCheckpointStore(Npgsql.NpgsqlDataSource! dataSource, SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions? options) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.PostgreSqlProjectionCheckpointStore(string! connectionString) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.PostgreSqlProjectionCheckpointStore(string! connectionString, SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions? options) -> void
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.DisposeAsync() -> System.Threading.Tasks.ValueTask
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.GetCheckpoint(string! projectionName, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask<SharedKernel.EventSourcing.ProjectionCheckpoint?>
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.Initialize(System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlProjectionCheckpointStore.Save(SharedKernel.EventSourcing.ProjectionCheckpoint! checkpoint, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
