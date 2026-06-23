@@ -14,11 +14,11 @@ The workflow-level concurrency policy cancels stale runs for non-`main` refs but
 in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
 protected branch keeps its post-merge validation history intact.
 
-All jobs in this workflow run on `ubuntu-26.04`, which is the current repository
-CI baseline.
+All jobs in this workflow use the repository `CI_UBUNTU_RUNNER` Actions variable.
+Set that variable to the current repository CI baseline runner.
 
-> **Note:** GitHub currently lists the `ubuntu-26.04` hosted runner image as public
-> preview, so queue time and image behavior may be less stable than GA runner images.
+> **Note:** When `CI_UBUNTU_RUNNER` points to a preview hosted runner image, queue time
+> and image behavior may be less stable than GA runner images.
 
 ### Fast Validation
 
@@ -26,7 +26,7 @@ CI baseline.
 | --- | --- |
 | Job key | `fast-validation` |
 | Job name | `Fast Validation` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 
 **Steps:**
 
@@ -61,7 +61,7 @@ part of the failure-investigation path.
 | --- | --- |
 | Job key | `admin-integration-tests` |
 | Job name | `Admin Integration Tests` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 
 This slice runs only when `detect-changes` reports that admin integration-sensitive paths
 changed. It restores shared prerequisites, then builds and executes only
@@ -74,7 +74,7 @@ then uploads slice-local results and diagnostics.
 | --- | --- |
 | Job key | `mediator-heavy-tests` |
 | Job name | `Mediator Heavy Tests` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 
 This slice runs only when mediator/analyzer/source-generator paths changed. It isolates the
 slow mediator-specific test projects so they no longer delay ordinary pull requests that do
@@ -90,7 +90,7 @@ to catch generated-source regressions before they surface later in broader valid
 | --- | --- |
 | Job key | `admin-system-tests` |
 | Job name | `Admin System Tests` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 
 This slice runs only when hosted UI or system-test-sensitive paths changed. It restores
 shared prerequisites, builds the system-test project, installs Playwright Chromium only,
@@ -137,7 +137,7 @@ command for that maintenance step.
 | --- | --- |
 | Job key | `sonarcloud` |
 | Job name | `SonarCloud` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 
 **Steps:**
 
@@ -165,7 +165,7 @@ from the parallel test slices before performing hosted analysis.
 | --- | --- |
 | Job key | `lint` |
 | Job name | `Lint` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 
 **Steps:**
 

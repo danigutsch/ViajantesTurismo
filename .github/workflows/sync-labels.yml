@@ -16,7 +16,7 @@ permissions:
 jobs:
   sync-labels:
     name: Sync Labels
-    runs-on: ubuntu-26.04
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
 
     steps:
       - name: Checkout repository

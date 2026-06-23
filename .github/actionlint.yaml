@@ -1,3 +1,4 @@
-self-hosted-runner:
-  labels:
-    - ubuntu-26.04
+config-variables:
+  - CI_UBUNTU_RUNNER
+  - SONAR_ORGANIZATION
+  - SONAR_PROJECT_KEY

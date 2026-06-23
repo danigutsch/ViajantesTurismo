@@ -9,11 +9,11 @@ For the current repository-wide CI tool acquisition baseline, see
 For the repository-wide workflow trust model, see
 [`trust-boundaries.md`](trust-boundaries.md).
 
-Supplemental GitHub-hosted Linux workflows run on `ubuntu-26.04`, which is the current
-repository CI baseline.
+Supplemental GitHub-hosted Linux workflows use the repository `CI_UBUNTU_RUNNER`
+Actions variable. Set that variable to the current repository CI baseline runner.
 
-> **Note:** GitHub currently lists the `ubuntu-26.04` hosted runner image as public
-> preview, so queue time and image behavior may be less stable than GA runner images.
+> **Note:** When `CI_UBUNTU_RUNNER` points to a preview hosted runner image, queue time
+> and image behavior may be less stable than GA runner images.
 
 ## Dependency review workflow
 
@@ -39,7 +39,7 @@ A separate workflow (`.github/workflows/actionlint.yml`) runs Actionlint for cha
 | --- | --- |
 | Workflow file | `.github/workflows/actionlint.yml` |
 | Primary job name | `Actionlint` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 | Merge gate | Not required |
 
 **Steps:**
@@ -64,7 +64,7 @@ secret scanning using the pinned `gitleaks` release binary.
 | --- | --- |
 | Workflow file | `.github/workflows/secret-scan.yml` |
 | Primary job name | `Secret Scan` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 | Merge gate | Required |
 
 **Steps:**
@@ -111,7 +111,7 @@ packages.
 | --- | --- |
 | Workflow file | `.github/workflows/devcontainer-smoke.yml` |
 | Primary job name | `Devcontainer Smoke` |
-| Runner | `ubuntu-26.04` |
+| Runner | Repository CI baseline |
 | Merge gate | Not required |
 
 **Steps:**
