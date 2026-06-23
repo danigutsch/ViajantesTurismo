@@ -69,6 +69,8 @@ main() {
 
         if [[ "${ID:-}" = "ubuntu" ]] && [[ "${VERSION_ID:-}" =~ ^(22\.04|24\.04|26\.04)$ ]]; then
             if [[ "${VERSION_ID:-}" = "26.04" && -z "${PLAYWRIGHT_HOST_PLATFORM_OVERRIDE:-}" ]]; then
+                # Playwright docs list Ubuntu 26.04 as supported, but the pinned 1.60.0 package
+                # still lacks ubuntu26.04 browser and dependency manifests.
                 case "$(uname -m)" in
                     x86_64 | amd64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu24.04-x64" ;;
                     aarch64 | arm64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu24.04-arm64" ;;
