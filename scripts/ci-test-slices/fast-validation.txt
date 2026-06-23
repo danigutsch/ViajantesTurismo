@@ -7,6 +7,7 @@ tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.
 tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj
 tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
 tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj
+tests/SharedKernel.EventSourcing.PostgreSQL.Tests/SharedKernel.EventSourcing.PostgreSQL.Tests.csproj
 tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj
 tests/SharedKernel.Domain.Tests/SharedKernel.Domain.Tests.csproj
 tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj

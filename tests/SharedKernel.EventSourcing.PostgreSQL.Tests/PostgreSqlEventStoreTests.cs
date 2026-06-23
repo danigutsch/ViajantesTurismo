@@ -182,6 +182,52 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Append_With_Concurrent_Any_Writers_Appends_All_Events()
+    {
+        // Arrange
+        var options = CreateOptions();
+        await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var streamId = StreamId.From("catalog-tour-any-concurrent");
+
+        // Act
+        var appendTasks = Enumerable.Range(1, 10)
+            .Select(index => store.Append(
+                streamId,
+                ExpectedStreamRevision.Any,
+                [new TestEvent($"event-{index}")],
+                TestContext.Current.CancellationToken).AsTask())
+            .ToArray();
+        await Task.WhenAll(appendTasks);
+
+        // Assert
+        var envelopes = await store.Load(streamId, afterRevision: null, TestContext.Current.CancellationToken);
+        Assert.Equal(10, envelopes.Count);
+        Assert.Equal(Enumerable.Range(1, 10), envelopes.Select(envelope => (int)envelope.Revision.Value));
+    }
+
+    [Fact]
+    public async Task Append_With_Specific_Revision_After_Empty_Stream_Reports_Conflict()
+    {
+        // Arrange
+        var options = CreateOptions();
+        await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var streamId = StreamId.From("catalog-tour-empty-conflict");
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ExpectedStreamRevisionConflictException>(
+            () => store.Append(
+                streamId,
+                ExpectedStreamRevision.From(StreamRevision.From(1)),
+                [new TestEvent("published")],
+                TestContext.Current.CancellationToken).AsTask());
+
+        // Assert
+        Assert.Null(exception.ActualRevision);
+    }
+
+    [Fact]
     public async Task Load_After_Loads_Events_In_Global_Position_Order()
     {
         // Arrange

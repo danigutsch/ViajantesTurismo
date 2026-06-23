@@ -95,6 +95,11 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(events);
 
+        if (events.Count == 0)
+        {
+            return;
+        }
+
         var schema = PostgreSqlNames.Schema(options);
         try
         {
@@ -102,19 +107,14 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
             await using var transaction = await connection.BeginTransactionAsync(ct);
 
             var currentRevision = await GetCurrentRevision(connection, transaction, schema, streamId, ct);
-            EnsureExpectedRevision(streamId, expectedRevision, currentRevision);
-
-            if (events.Count == 0)
-            {
-                await transaction.CommitAsync(ct);
-                return;
-            }
-
             if (currentRevision is null)
             {
                 await CreateStream(connection, transaction, schema, streamId, ct);
-                currentRevision = 0;
+                currentRevision = await GetCurrentRevision(connection, transaction, schema, streamId, ct)
+                    ?? throw new InvalidOperationException("Event stream row could not be created or loaded.");
             }
+
+            EnsureExpectedRevision(streamId, expectedRevision, currentRevision);
 
             var recordedAt = DateTimeOffset.UtcNow;
             foreach (var eventData in events)
@@ -259,7 +259,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
         command.Parameters.AddWithValue("streamId", streamId.Value);
         var result = await command.ExecuteScalarAsync(ct);
 
-        return result is null or DBNull ? null : StreamRevision.From((long)result);
+        return result is null or DBNull ? null : ToStreamRevision((long)result);
     }
 
     private static void EnsureExpectedRevision(
@@ -272,7 +272,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
             return;
         }
 
-        if (expectedRevision.RequiresEmptyStream && currentRevision is null)
+        if (expectedRevision.RequiresEmptyStream && currentRevision is null or 0)
         {
             return;
         }
@@ -282,9 +282,11 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
             return;
         }
 
-        StreamRevision? actualRevision = currentRevision is null ? null : StreamRevision.From(currentRevision.Value);
+        var actualRevision = currentRevision is > 0 ? StreamRevision.From(currentRevision.Value) : default(StreamRevision?);
         throw new ExpectedStreamRevisionConflictException(streamId, expectedRevision, actualRevision);
     }
+
+    private static StreamRevision? ToStreamRevision(long value) => value > 0 ? StreamRevision.From(value) : default(StreamRevision?);
 
     private static async ValueTask CreateStream(
         NpgsqlConnection connection,
@@ -295,7 +297,8 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
     {
         var sql = $"""
             INSERT INTO {schema}.event_streams (stream_id, stream_revision, created_at_utc, updated_at_utc)
-            VALUES (@streamId, 0, @recordedAt, @recordedAt);
+            VALUES (@streamId, 0, @recordedAt, @recordedAt)
+            ON CONFLICT (stream_id) DO NOTHING;
             """;
 
         await using var command = new NpgsqlCommand(sql, connection, transaction);
