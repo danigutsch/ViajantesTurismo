@@ -67,10 +67,10 @@ main() {
         # shellcheck disable=SC1091
         . /etc/os-release
 
-        if [[ "${ID:-}" = "ubuntu" ]] && [[ "${VERSION_ID:-}" =~ ^(22\.04|24\.04)$ ]]; then
+        if [[ "${ID:-}" = "ubuntu" ]] && [[ "${VERSION_ID:-}" =~ ^(22\.04|24\.04|26\.04)$ ]]; then
             install_args+=(--with-deps)
         else
-            echo "Playwright system dependency installation is only used automatically on supported Ubuntu versions (22.04, 24.04)." >&2
+            echo "Playwright system dependency installation is only used automatically on supported Ubuntu versions (22.04, 24.04, 26.04)." >&2
             echo "Current OS: ${PRETTY_NAME:-unknown}. Installing browsers without --with-deps." >&2
             print_linux_dependency_guidance
         fi

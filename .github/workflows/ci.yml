@@ -23,7 +23,7 @@ concurrency:
 jobs:
   detect-changes:
     name: Detect Changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     outputs:
@@ -53,7 +53,7 @@ jobs:
     name: Fast Validation
     needs:
       - detect-changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: read
@@ -132,7 +132,7 @@ jobs:
     name: Admin Integration Tests
     needs:
       - detect-changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -206,7 +206,7 @@ jobs:
     name: Mediator Heavy Tests
     needs:
       - detect-changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -280,7 +280,7 @@ jobs:
     name: Admin System Tests
     needs:
       - detect-changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -360,7 +360,7 @@ jobs:
       - mediator-heavy-tests
       - admin-system-tests
     if: ${{ always() }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -404,7 +404,7 @@ jobs:
       - mediator-heavy-tests
       - admin-system-tests
     if: ${{ always() }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: read
@@ -607,7 +607,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
