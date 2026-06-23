@@ -17,6 +17,9 @@ protected branch keeps its post-merge validation history intact.
 All jobs in this workflow run on `ubuntu-26.04`, which is the current repository
 CI baseline.
 
+> **Note:** GitHub currently lists the `ubuntu-26.04` hosted runner image as public
+> preview, so queue time and image behavior may be less stable than GA runner images.
+
 ### Fast Validation
 
 | Attribute | Value |
