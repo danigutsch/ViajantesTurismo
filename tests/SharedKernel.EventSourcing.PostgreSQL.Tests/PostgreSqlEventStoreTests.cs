@@ -259,6 +259,33 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         Assert.Equal("second", eventData.Name);
     }
 
+    [Fact]
+    public async Task Load_After_Can_Checkpoint_Concurrent_Cross_Stream_Appends()
+    {
+        // Arrange
+        var options = CreateOptions();
+        await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+
+        // Act
+        var appendTasks = Enumerable.Range(1, 10)
+            .Select(index => store.Append(
+                StreamId.From($"catalog-tour-global-concurrent-{index}"),
+                ExpectedStreamRevision.NoStream,
+                [new TestEvent($"event-{index}")],
+                TestContext.Current.CancellationToken).AsTask())
+            .ToArray();
+        await Task.WhenAll(appendTasks);
+        var firstBatch = await store.LoadAfter(position: 0, maxCount: 5, TestContext.Current.CancellationToken);
+        var checkpoint = firstBatch.Max(envelope => envelope.Position);
+        var secondBatch = await store.LoadAfter(checkpoint, maxCount: 10, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(5, firstBatch.Count);
+        Assert.Equal(5, secondBatch.Count);
+        Assert.Equal(10, firstBatch.Concat(secondBatch).Select(envelope => envelope.EventId).Distinct().Count());
+    }
+
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     private static PostgreSqlEventSourcingOptions CreateOptions() => new()

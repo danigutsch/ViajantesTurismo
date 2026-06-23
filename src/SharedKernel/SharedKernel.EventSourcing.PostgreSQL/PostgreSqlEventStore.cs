@@ -8,6 +8,8 @@ namespace SharedKernel.EventSourcing.PostgreSQL;
 /// </summary>
 public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 {
+    private const long AppendLockKey = 781682906472579283;
+
     private readonly NpgsqlDataSource dataSource;
     private readonly IEventSerializer serializer;
     private readonly PostgreSqlEventSourcingOptions options;
@@ -105,6 +107,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
         {
             await using var connection = await dataSource.OpenConnectionAsync(ct);
             await using var transaction = await connection.BeginTransactionAsync(ct);
+            await AcquireAppendLock(connection, transaction, ct);
 
             var currentRevision = await GetCurrentRevision(connection, transaction, schema, streamId, ct);
             if (currentRevision is null)
@@ -287,6 +290,18 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
     }
 
     private static StreamRevision? ToStreamRevision(long value) => value > 0 ? StreamRevision.From(value) : default(StreamRevision?);
+
+    private static async ValueTask AcquireAppendLock(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        const string sql = "SELECT pg_advisory_xact_lock(@lockKey);";
+
+        await using var command = new NpgsqlCommand(sql, connection, transaction);
+        command.Parameters.AddWithValue("lockKey", AppendLockKey);
+        _ = await command.ExecuteNonQueryAsync(ct);
+    }
 
     private static async ValueTask CreateStream(
         NpgsqlConnection connection,
