@@ -20,7 +20,7 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 
 Ubuntu 26.04 LTS-based container with the following tools installed via features:
 
-- **Exact .NET 10 SDK from `global.json`**: For building and running the application with the same toolchain as CI
+- **Exact .NET SDK from `global.json`**: Installed by `on-create.sh` for the same toolchain as CI
 - **Python 3**: Required by lifecycle setup scripts
 - **Git**: Version control
 - **Docker-in-Docker**: Run a Docker daemon inside the dev container for Aspire-managed resources
