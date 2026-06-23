@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.ApiService;
+namespace ViajantesTurismo.Admin.ApiService.Bookings;
 
 internal static class BookingsUpdateBookingDiscountEndpoint
 {

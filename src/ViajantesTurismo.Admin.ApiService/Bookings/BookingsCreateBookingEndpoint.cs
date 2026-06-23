@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
 using SharedKernel.Results;
 
-namespace ViajantesTurismo.Admin.ApiService;
+namespace ViajantesTurismo.Admin.ApiService.Bookings;
 
 /// <summary>
 /// Maps the booking creation endpoint as its own vertical slice.

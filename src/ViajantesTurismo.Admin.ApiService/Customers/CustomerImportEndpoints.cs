@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts;
 
-namespace ViajantesTurismo.Admin.ApiService;
+namespace ViajantesTurismo.Admin.ApiService.Customers;
 
 /// <summary>
 /// Defines endpoints for bulk customer import operations.
