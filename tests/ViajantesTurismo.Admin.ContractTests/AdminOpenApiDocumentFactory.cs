@@ -51,10 +51,24 @@ internal static class AdminOpenApiDocumentFactory
         string methodName,
         object argument)
     {
-        var type = assembly.GetType(typeName) ?? throw new InvalidOperationException($"Type '{typeName}' was not found.");
+        var type = assembly.GetType(typeName) ?? FindTypeContainingMethod(assembly, methodName)
+            ?? throw new InvalidOperationException($"Type '{typeName}' with method '{methodName}' was not found.");
         var method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException($"Method '{typeName}.{methodName}' was not found.");
+            ?? throw new InvalidOperationException($"Method '{type.FullName}.{methodName}' was not found.");
 
         _ = method.Invoke(null, [argument]);
+    }
+
+    private static Type? FindTypeContainingMethod(Assembly assembly, string methodName)
+    {
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) is not null)
+            {
+                return type;
+            }
+        }
+
+        return null;
     }
 }
