@@ -395,9 +395,16 @@ main() {
         ' 2>&1 | tee "${playwright_log_path}"
 
         print_step "Running test suite inside the devcontainer"
+        # shellcheck disable=SC2016
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
             export GITHUB_ACTIONS=true
+            for projects_file in scripts/ci-test-slices/*.txt; do
+                while IFS= read -r project_path; do
+                    [[ -z "${project_path}" ]] && continue
+                    dotnet restore "${project_path}"
+                done < "${projects_file}"
+            done
             bash scripts/run-ci-test-slice.sh \
                 --slice-name "Devcontainer Fast Validation" \
                 --projects-file scripts/ci-test-slices/fast-validation.txt
