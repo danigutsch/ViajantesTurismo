@@ -150,7 +150,6 @@ run_devcontainer_cli() {
     local args=("$@")
 
     "${devcontainer_cli_prefix}/bin/devcontainer" "${args[@]}"
-    return 0
 }
 
 ensure_devcontainer_cli() {
