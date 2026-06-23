@@ -397,6 +397,7 @@ main() {
         print_step "Running test suite inside the devcontainer"
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
+            export GITHUB_ACTIONS=true
             bash scripts/run-ci-test-slice.sh \
                 --slice-name "Devcontainer Fast Validation" \
                 --projects-file scripts/ci-test-slices/fast-validation.txt
