@@ -24,7 +24,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
 
-- OS: [e.g. Windows 11, macOS Sonoma, Ubuntu 24.04]
+- OS: [e.g. Windows 11, macOS Sonoma, Ubuntu 26.04]
 - Browser [e.g. Chrome, Safari, Firefox]
 - Version [e.g. 123]
 

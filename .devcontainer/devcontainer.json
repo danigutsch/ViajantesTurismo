@@ -1,16 +1,21 @@
 {
   "name": "ViajantesTurismo",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute",
 
   "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "os-provided",
+      "installTools": false
+    },
     "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest",
-      "ppa": true
+      "version": "os-provided",
+      "ppa": false
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
+      "version": "29.6.0",
+      "moby": false,
       "enableNonRootDocker": true,
-      "dockerDashComposeVersion": "latest"
+      "dockerDashComposeVersion": "v2"
     }
   },
 

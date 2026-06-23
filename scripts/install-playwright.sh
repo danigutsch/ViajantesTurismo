@@ -67,10 +67,20 @@ main() {
         # shellcheck disable=SC1091
         . /etc/os-release
 
-        if [[ "${ID:-}" = "ubuntu" ]] && [[ "${VERSION_ID:-}" =~ ^(22\.04|24\.04)$ ]]; then
+        if [[ "${ID:-}" = "ubuntu" ]] && [[ "${VERSION_ID:-}" =~ ^(22\.04|24\.04|26\.04)$ ]]; then
+            if [[ "${VERSION_ID:-}" = "26.04" && -z "${PLAYWRIGHT_HOST_PLATFORM_OVERRIDE:-}" ]]; then
+                # Playwright docs list Ubuntu 26.04 as supported, but the pinned 1.60.0 package
+                # still lacks ubuntu26.04 manifests. Track v1.61 support in microsoft/playwright#40117.
+                case "$(uname -m)" in
+                    x86_64 | amd64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu24.04-x64" ;;
+                    aarch64 | arm64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu24.04-arm64" ;;
+                    *) echo "Unknown Ubuntu 26.04 architecture; using Playwright default platform detection." >&2 ;;
+                esac
+            fi
+
             install_args+=(--with-deps)
         else
-            echo "Playwright system dependency installation is only used automatically on supported Ubuntu versions (22.04, 24.04)." >&2
+            echo "Playwright system dependency installation is only used automatically on supported Ubuntu versions (22.04, 24.04, 26.04)." >&2
             echo "Current OS: ${PRETTY_NAME:-unknown}. Installing browsers without --with-deps." >&2
             print_linux_dependency_guidance
         fi
