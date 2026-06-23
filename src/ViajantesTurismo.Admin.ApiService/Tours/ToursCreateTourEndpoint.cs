@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Admin.Domain.Tours;
 using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.ApiService.Tours;
@@ -24,7 +25,7 @@ internal static class ToursCreateTourEndpoint
             .WithAdminMetadata("CreateTour", "Creates a new tour.", "Creates a new tour.");
     }
 
-    private static async Task<Results<Created<GetTourDto>, ValidationProblem, Conflict<ProblemDetails>>> CreateTour(
+    private static async Task<Results<Created<GetTourDto>, NotFound<ProblemDetails>, ValidationProblem, Conflict<ProblemDetails>>> CreateTour(
         [FromBody] CreateTourDto tourDto,
         [FromServices] CreateTourCommandHandler handler,
         [FromServices] IQueryService queryService,
@@ -60,6 +61,11 @@ internal static class ToursCreateTourEndpoint
         var tourId = result.Value;
         var createdTour = await queryService.GetTourById(tourId, ct);
 
-        return TypedResults.Created($"/tours/{tourId}", createdTour!);
+        if (createdTour is null)
+        {
+            return TourErrors.TourNotFound(tourId).ToNotFound();
+        }
+
+        return TypedResults.Created($"/tours/{tourId}", createdTour);
     }
 }
