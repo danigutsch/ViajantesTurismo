@@ -68,6 +68,14 @@ main() {
         . /etc/os-release
 
         if [[ "${ID:-}" = "ubuntu" ]] && [[ "${VERSION_ID:-}" =~ ^(22\.04|24\.04|26\.04)$ ]]; then
+            if [[ "${VERSION_ID:-}" = "26.04" && -z "${PLAYWRIGHT_HOST_PLATFORM_OVERRIDE:-}" ]]; then
+                case "$(uname -m)" in
+                    x86_64 | amd64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu24.04-x64" ;;
+                    aarch64 | arm64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu24.04-arm64" ;;
+                    *) echo "Unknown Ubuntu 26.04 architecture; using Playwright default platform detection." >&2 ;;
+                esac
+            fi
+
             install_args+=(--with-deps)
         else
             echo "Playwright system dependency installation is only used automatically on supported Ubuntu versions (22.04, 24.04, 26.04)." >&2

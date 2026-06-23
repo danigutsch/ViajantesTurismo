@@ -163,12 +163,12 @@
       },
       "Microsoft.Playwright.Xunit.v3": {
         "type": "Direct",
-        "requested": "[1.59.0, )",
-        "resolved": "1.59.0",
-        "contentHash": "i/qOJuR8L5E1dRcjOVEWH1dypgP/2GLtrOInLBbePjog5hHGFwVsU7Gu1ie0iLrMp1gtpxBQlbe5xUscGGgt+A==",
+        "requested": "[1.60.0, )",
+        "resolved": "1.60.0",
+        "contentHash": "LhmAFcAg3t4jjXzdWV7fepUCXgwAmDsaFsvIZOf7bFnQPvT5rwNR4PTLp4w2ei4fYKOrJANOZepXJeSf2X5mWw==",
         "dependencies": {
-          "Microsoft.Playwright": "1.59.0",
-          "Microsoft.Playwright.TestAdapter": "1.59.0",
+          "Microsoft.Playwright": "1.60.0",
+          "Microsoft.Playwright.TestAdapter": "1.60.0",
           "xunit.v3.extensibility.core": "1.0.1"
         }
       },
@@ -737,8 +737,8 @@
       },
       "Microsoft.Playwright": {
         "type": "Transitive",
-        "resolved": "1.59.0",
-        "contentHash": "igqHbZMmXI6cYNPg1X1o5/51U3CQp83lvvov/d/zmus2wlG1LjvpEL6i1Jx51pRahPtSyppvwq+ZoBfxeSjiew==",
+        "resolved": "1.60.0",
+        "contentHash": "RTwlxpmCsCMD8yCu8a9+/B+ce1axSVuRu3Ew4GI493g84bWxC323u69Tw8najJ/5uZ+cQVU3eDhB4GvubM9yHg==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "System.ComponentModel.Annotations": "5.0.0"
@@ -746,10 +746,10 @@
       },
       "Microsoft.Playwright.TestAdapter": {
         "type": "Transitive",
-        "resolved": "1.59.0",
-        "contentHash": "/1BaG9hz5eU5o8AWGgB9IY6vkV/VSTnkXYq9hX7ef6dRV8q+vo+NvmkvFhJasy3g/Ge3/7WGmnxfbHlC1CfN+w==",
+        "resolved": "1.60.0",
+        "contentHash": "CvyAsA5GSiYKCtkvXxBJ9TLfJJIRJbptqh8WafHXjN4/ZUUxovBl3D6ctkE9XA9thlHTjO907rdEBaDtwzDwGA==",
         "dependencies": {
-          "Microsoft.Playwright": "1.59.0",
+          "Microsoft.Playwright": "1.60.0",
           "Microsoft.TestPlatform.ObjectModel": "17.3.0"
         }
       },
