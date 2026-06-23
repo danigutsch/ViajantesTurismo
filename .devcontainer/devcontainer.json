@@ -1,6 +1,6 @@
 {
   "name": "ViajantesTurismo",
-  "image": "mcr.microsoft.com/devcontainers/base:resolute",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute",
 
   "features": {
     "ghcr.io/devcontainers/features/python:1": {

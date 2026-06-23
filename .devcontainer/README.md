@@ -18,7 +18,7 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 
 ### Development Container
 
-Ubuntu 26.04 LTS-based container with the following tools installed via features:
+Ubuntu 26.04 LTS-based .NET container with the following tools installed via features:
 
 - **Exact .NET SDK from `global.json`**: Installed by `on-create.sh` for the same toolchain as CI
 - **Python 3**: Required by lifecycle setup scripts
