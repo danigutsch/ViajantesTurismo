@@ -30,6 +30,7 @@
         <Project Path="src/SharedKernel/SharedKernel.IntegrationEvents/SharedKernel.IntegrationEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.IntegrationEvents.CloudEvents/SharedKernel.IntegrationEvents.CloudEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing/SharedKernel.EventSourcing.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/SharedKernel.EventSourcing.PostgreSQL.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.SourceGenerator/SharedKernel.Results.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
@@ -63,6 +64,8 @@
         <Project Path="tests/SharedKernel.IntegrationEvents.Tests/SharedKernel.IntegrationEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.IntegrationEvents.CloudEvents.Tests/SharedKernel.IntegrationEvents.CloudEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
+        <Project Path="tests/SharedKernel.EventSourcing.PostgreSQL.AppHost/SharedKernel.EventSourcing.PostgreSQL.AppHost.csproj" />
+        <Project Path="tests/SharedKernel.EventSourcing.PostgreSQL.Tests/SharedKernel.EventSourcing.PostgreSQL.Tests.csproj" />
         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
         <Project Path="tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj" />
         <Project Path="tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj" />
