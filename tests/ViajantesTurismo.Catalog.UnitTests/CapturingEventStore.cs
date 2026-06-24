@@ -5,12 +5,17 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class CapturingEventStore : IEventStore
 {
     private readonly List<object> appendedEvents = [];
+    private readonly List<EventEnvelope> replayEvents = [];
 
     public StreamId StreamId { get; private set; }
 
     public ExpectedStreamRevision ExpectedRevision { get; private set; }
 
     public IReadOnlyCollection<object> Events => appendedEvents;
+
+    public long? LoadedAfterPosition { get; private set; }
+
+    public void AddReplayEvent(EventEnvelope envelope) => replayEvents.Add(envelope);
 
     public ValueTask Append(
         StreamId streamId,
@@ -33,5 +38,14 @@ public sealed class CapturingEventStore : IEventStore
     public ValueTask<IReadOnlyCollection<EventEnvelope>> LoadAfter(
         long position,
         int maxCount,
-        CancellationToken ct) => ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
+        CancellationToken ct)
+    {
+        LoadedAfterPosition = position;
+        var events = replayEvents
+            .Where(envelope => envelope.Position > position)
+            .Take(maxCount)
+            .ToArray();
+
+        return ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>(events);
+    }
 }
