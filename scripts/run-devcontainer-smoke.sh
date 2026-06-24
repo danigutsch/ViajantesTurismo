@@ -391,13 +391,38 @@ main() {
         print_step "Installing Playwright browsers inside the devcontainer"
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
-            bash scripts/install-playwright.sh
+            DEVCONTAINER_SMOKE=1 bash scripts/install-playwright.sh chromium
         ' 2>&1 | tee "${playwright_log_path}"
 
         print_step "Running test suite inside the devcontainer"
+        # shellcheck disable=SC2016
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
-            dotnet test --solution ViajantesTurismo.slnx --no-build
+
+            run_test_projects() {
+                local slice_name="$1"
+                local projects_file="$2"
+
+                echo "==> Running ${slice_name}"
+
+                while IFS= read -r project_path; do
+                    [[ -z "${project_path}" ]] && continue
+                    dotnet build "${project_path}" --no-restore
+                    dotnet test --project "${project_path}" --no-restore --no-build
+                done < "${projects_file}"
+            }
+
+            for projects_file in scripts/ci-test-slices/*.txt; do
+                while IFS= read -r project_path; do
+                    [[ -z "${project_path}" ]] && continue
+                    dotnet restore "${project_path}"
+                done < "${projects_file}"
+            done
+
+            run_test_projects "Devcontainer Fast Validation" scripts/ci-test-slices/fast-validation.txt
+            run_test_projects "Devcontainer Admin Integration Tests" scripts/ci-test-slices/admin-integration.txt
+            run_test_projects "Devcontainer Mediator Heavy Tests" scripts/ci-test-slices/mediator-heavy.txt
+            run_test_projects "Devcontainer Admin System Tests" scripts/ci-test-slices/admin-system.txt
         ' 2>&1 | tee "${test_log_path}"
     fi
 

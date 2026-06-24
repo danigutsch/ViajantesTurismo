@@ -45,10 +45,8 @@ elif ! dotnet --list-sdks | grep -q "^${required_sdk_version} "; then
 fi
 
 if [[ "${use_local_dotnet}" == "true" ]]; then
-    export DOTNET_ROOT="${DOTNET_INSTALL_DIR}"
     export PATH="${DOTNET_INSTALL_DIR}:${PATH}"
     cat > "${DOTNET_ENV_FILE}" <<EOF
-export DOTNET_ROOT="${DOTNET_INSTALL_DIR}"
 export PATH="${DOTNET_INSTALL_DIR}:\$PATH"
 EOF
 else
@@ -70,8 +68,7 @@ use_local_dotnet = sys.argv[4] == "true"
 content = profile_path.read_text(encoding='utf-8') if profile_path.exists() else ""
 block = (
     f"{marker_begin}\n"
-    'export DOTNET_ROOT="/home/vscode/.dotnet"\n'
-    'export PATH="$DOTNET_ROOT:$PATH"\n'
+    'export PATH="/home/vscode/.dotnet:$PATH"\n'
     f"{marker_end}\n"
 )
 
