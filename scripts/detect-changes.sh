@@ -102,6 +102,7 @@ low_risk_maintenance_patterns=(
 
 fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing/**"
+    "src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/**"
     "src/SharedKernel/SharedKernel.BuildingBlocks/**"
     "src/SharedKernel/SharedKernel.Domain/**"
     "src/SharedKernel/SharedKernel.DomainEvents/**"
@@ -126,6 +127,8 @@ fast_validation_patterns=(
     "src/ViajantesTurismo.Management.Web/**"
     "src/ViajantesTurismo.Public.Web/**"
     "tests/SharedKernel.EventSourcing.Tests/**"
+    "tests/SharedKernel.EventSourcing.PostgreSQL.Tests/**"
+    "tests/SharedKernel.EventSourcing.PostgreSQL.AppHost/**"
     "tests/SharedKernel.BuildingBlocks.Tests/**"
     "tests/SharedKernel.Domain.Tests/**"
     "tests/SharedKernel.DomainEvents.Tests/**"

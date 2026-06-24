@@ -29,4 +29,9 @@ public sealed class CapturingEventStore : IEventStore
         StreamId streamId,
         StreamRevision? afterRevision,
         CancellationToken ct) => ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
+
+    public ValueTask<IReadOnlyCollection<EventEnvelope>> LoadAfter(
+        long position,
+        int maxCount,
+        CancellationToken ct) => ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
 }
