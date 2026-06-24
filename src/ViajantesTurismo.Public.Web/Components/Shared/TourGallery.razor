@@ -1,0 +1,15 @@
+@foreach (var image in Images)
+{
+    <figure>
+        <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
+        @if (!string.IsNullOrWhiteSpace(image.Caption))
+        {
+            <figcaption>@image.Caption</figcaption>
+        }
+    </figure>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CatalogTourImageDto> Images { get; set; } = [];
+}

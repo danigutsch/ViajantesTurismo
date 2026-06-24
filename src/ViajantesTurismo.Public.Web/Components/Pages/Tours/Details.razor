@@ -27,16 +27,7 @@ else
             <section aria-labelledby="tour-gallery">
                 <h2 id="tour-gallery">Galeria</h2>
                 <div class="tour-gallery">
-                    @foreach (var image in _tour.Images)
-                    {
-                        <figure>
-                            <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
-                            @if (!string.IsNullOrWhiteSpace(image.Caption))
-                            {
-                                <figcaption>@image.Caption</figcaption>
-                            }
-                        </figure>
-                    }
+                    <TourGallery Images="_tour.Images" />
                 </div>
             </section>
         }

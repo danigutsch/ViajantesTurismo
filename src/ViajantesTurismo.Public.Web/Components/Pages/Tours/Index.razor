@@ -23,14 +23,7 @@ else
         @foreach (var tour in _tours)
         {
             <article>
-                @if (tour.Images.Count > 0)
-                {
-                    <img src="@tour.Images[0].Uri" alt="@tour.Images[0].AltText" loading="lazy" />
-                }
-
-                <h2><a href="@TourUrl(tour)">@tour.Title</a></h2>
-                <p>@tour.Identifier</p>
-                <a href="@TourUrl(tour)">Saiba mais</a>
+                <TourCard Tour="tour" />
             </article>
         }
     </div>
@@ -53,6 +46,4 @@ else
             _tours = [];
         }
     }
-
-    private static string TourUrl(CatalogTourDto tour) => $"/viagens-de-bicicleta-em-grupo/{Uri.EscapeDataString(tour.Slug)}";
 }
