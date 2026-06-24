@@ -1,0 +1,58 @@
+@page "/viagens-de-bicicleta-em-grupo"
+@inject IPublicCatalogApiClient CatalogApi
+
+<PageTitle>Viagens de Bicicleta em Grupo - Viajantes Turismo</PageTitle>
+
+<h1>Viagens de Bicicleta em Grupo</h1>
+
+@if (_loadFailed)
+{
+    <p>As viagens não puderam ser carregadas agora. Tente novamente mais tarde.</p>
+}
+else if (_tours is null)
+{
+    <p><em>Carregando viagens...</em></p>
+}
+else if (_tours.Length == 0)
+{
+    <p>Novas viagens serão publicadas em breve.</p>
+}
+else
+{
+    <div class="tour-list">
+        @foreach (var tour in _tours)
+        {
+            <article>
+                @if (tour.Images.Count > 0)
+                {
+                    <img src="@tour.Images[0].Uri" alt="@tour.Images[0].AltText" loading="lazy" />
+                }
+
+                <h2><a href="@TourUrl(tour)">@tour.Title</a></h2>
+                <p>@tour.Identifier</p>
+                <a href="@TourUrl(tour)">Saiba mais</a>
+            </article>
+        }
+    </div>
+}
+
+@code {
+    private CatalogTourDto[]? _tours;
+    private bool _loadFailed;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _tours = await CatalogApi.GetPublishedTours(CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _loadFailed = true;
+            _tours = [];
+        }
+    }
+
+    private static string TourUrl(CatalogTourDto tour) => $"/viagens-de-bicicleta-em-grupo/{Uri.EscapeDataString(tour.Slug)}";
+}

@@ -1,0 +1,65 @@
+@page "/viagens-de-bicicleta-em-grupo/{Slug}"
+@inject IPublicCatalogApiClient CatalogApi
+
+@if (_loadFailed)
+{
+    <PageTitle>Viagem indisponível - Viajantes Turismo</PageTitle>
+    <h1>Viagem indisponível</h1>
+    <p>Esta viagem não pôde ser carregada agora. Tente novamente mais tarde.</p>
+}
+else if (_tour is null)
+{
+    <PageTitle>Viagem não encontrada - Viajantes Turismo</PageTitle>
+    <h1>Viagem não encontrada</h1>
+    <p>A viagem solicitada não está publicada.</p>
+}
+else
+{
+    <PageTitle>@_tour.Title - Viajantes Turismo</PageTitle>
+
+    <article>
+        <a href="/">Todas as viagens</a>
+        <h1>@_tour.Title</h1>
+        <p>@_tour.Identifier</p>
+
+        @if (_tour.Images.Count > 0)
+        {
+            <section aria-labelledby="tour-gallery">
+                <h2 id="tour-gallery">Galeria</h2>
+                <div class="tour-gallery">
+                    @foreach (var image in _tour.Images)
+                    {
+                        <figure>
+                            <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
+                            @if (!string.IsNullOrWhiteSpace(image.Caption))
+                            {
+                                <figcaption>@image.Caption</figcaption>
+                            }
+                        </figure>
+                    }
+                </div>
+            </section>
+        }
+    </article>
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private CatalogTourDto? _tour;
+    private bool _loadFailed;
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            _tour = await CatalogApi.GetPublishedTourBySlug(Slug, CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _loadFailed = true;
+        }
+    }
+}

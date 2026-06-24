@@ -9,6 +9,9 @@
         <Using Include="System.Net" />
         <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <Using Include="Microsoft.AspNetCore.TestHost" />
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="ViajantesTurismo.Catalog.Contracts" />
         <Using Include="ViajantesTurismo.Public.WebTests.Infrastructure" />
         <Using Include="Xunit" />
     </ItemGroup>

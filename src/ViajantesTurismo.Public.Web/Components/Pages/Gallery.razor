@@ -1,0 +1,62 @@
+@page "/galeria"
+@inject IPublicCatalogApiClient CatalogApi
+
+<PageTitle>Galeria - Viajantes Turismo</PageTitle>
+
+<h1>Galeria</h1>
+<p>Momentos das viagens de cicloturismo da Viajantes Turismo.</p>
+
+@if (_loadFailed)
+{
+    <p>A galeria não pôde ser carregada agora. Tente novamente mais tarde.</p>
+}
+else if (_tours is null)
+{
+    <p><em>Carregando galeria...</em></p>
+}
+else if (!_tours.Any(tour => tour.Images.Count > 0))
+{
+    <p>Novas fotos serão publicadas em breve.</p>
+}
+else
+{
+    @foreach (var tour in _tours.Where(tour => tour.Images.Count > 0))
+    {
+        <section aria-labelledby="@GalleryHeadingId(tour)">
+            <h2 id="@GalleryHeadingId(tour)">@tour.Title</h2>
+            <div class="tour-gallery">
+                @foreach (var image in tour.Images)
+                {
+                    <figure>
+                        <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
+                        @if (!string.IsNullOrWhiteSpace(image.Caption))
+                        {
+                            <figcaption>@image.Caption</figcaption>
+                        }
+                    </figure>
+                }
+            </div>
+        </section>
+    }
+}
+
+@code {
+    private CatalogTourDto[]? _tours;
+    private bool _loadFailed;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _tours = await CatalogApi.GetPublishedTours(CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _loadFailed = true;
+            _tours = [];
+        }
+    }
+
+    private static string GalleryHeadingId(CatalogTourDto tour) => $"gallery-{tour.Id:N}";
+}

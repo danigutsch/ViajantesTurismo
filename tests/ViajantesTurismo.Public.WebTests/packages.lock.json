@@ -548,9 +548,14 @@
       "sharedkernel.testing": {
         "type": "Project"
       },
+      "viajantesturismo.catalog.contracts": {
+        "type": "Project"
+      },
       "viajantesturismo.public.web": {
         "type": "Project",
         "dependencies": {
+          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
+          "ViajantesTurismo.Resources": "[1.0.0, )",
           "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
         }
       },

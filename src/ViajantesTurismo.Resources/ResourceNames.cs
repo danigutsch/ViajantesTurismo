@@ -26,6 +26,11 @@ public static class ResourceNames
     public const string Api = "api";
 
     /// <summary>
+    /// The name of the Catalog API service resource.
+    /// </summary>
+    public const string CatalogApi = "catalog-api";
+
+    /// <summary>
     /// The name of the web application resource.
     /// </summary>
     public const string WebApp = "web-app";

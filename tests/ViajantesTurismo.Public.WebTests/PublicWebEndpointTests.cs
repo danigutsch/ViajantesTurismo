@@ -21,7 +21,8 @@ public sealed class PublicWebEndpointTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
         Assert.Contains("Viajantes Turismo", content, StringComparison.Ordinal);
-        Assert.Contains("Public travel discovery experience coming soon.", content, StringComparison.Ordinal);
+        Assert.Contains("Cicloturismo ao redor do mundo!", content, StringComparison.Ordinal);
+        Assert.Contains("Novas viagens serão publicadas em breve.", content, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -90,4 +91,5 @@ public sealed class PublicWebEndpointTests
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
 }

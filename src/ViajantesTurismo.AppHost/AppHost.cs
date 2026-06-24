@@ -21,17 +21,27 @@ var apiService = builder.AddProject<ViajantesTurismo_Admin_ApiService>(ResourceN
     .WaitFor(database)
     .WaitForCompletion(migrationService);
 
+var catalogApiService = builder.AddProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
+    .WithHttpHealthCheck(EndpointPaths.Health)
+    .WithReference(database)
+    .WaitFor(database)
+    .WaitForCompletion(migrationService);
+
 builder.AddProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck(EndpointPaths.Health)
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)
-    .WaitFor(apiService);
+    .WaitFor(apiService)
+    .WithReference(catalogApiService)
+    .WaitFor(catalogApiService);
 
 builder.AddProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
     .WithExternalHttpEndpoints()
-    .WithHttpHealthCheck(EndpointPaths.Health);
+    .WithHttpHealthCheck(EndpointPaths.Health)
+    .WithReference(catalogApiService)
+    .WaitFor(catalogApiService);
 
 builder.AddAdminPerformanceSmoke(apiService);
 

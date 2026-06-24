@@ -1,0 +1,79 @@
+@page "/catalog/tours"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using ViajantesTurismo.Catalog.Contracts
+@rendermode InteractiveServer
+
+@inject ICatalogToursApiClient CatalogToursApi
+
+<PageTitle>Catalog Tours</PageTitle>
+
+<h1><i class="bi bi-card-list"></i> Catalog Tours</h1>
+
+<p class="text-muted">Manage customer-facing tour presentation separately from Admin tour operations.</p>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+else if (_tours is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (_tours.Length == 0)
+{
+    <div class="alert alert-info" role="status">
+        No Catalog tours are available yet. Catalog drafts are created after Admin tour events are ingested.
+    </div>
+}
+else
+{
+    <div class="table-responsive-wrapper">
+        <QuickGrid Items="@_tours.AsQueryable()" Class="table table-hover" Pagination="@(_tours.Length > 10 ? _pagination : null)">
+            <PropertyColumn Property="@(tour => tour.Identifier)" Title="Identifier" Sortable="true" />
+            <PropertyColumn Property="@(tour => tour.Title)" Title="Public Title" Sortable="true" />
+            <PropertyColumn Property="@(tour => tour.Slug)" Title="Slug" Sortable="true" />
+
+            <TemplateColumn Title="Status" Sortable="true" SortBy="GridSort<CatalogTourDto>.ByAscending(tour => tour.IsPublished)">
+                @if (context.IsPublished)
+                {
+                    <span class="badge bg-success">Published</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Draft</span>
+                }
+            </TemplateColumn>
+
+            <TemplateColumn Title="Updated">
+                <span>@context.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+
+    @if (_tours.Length > 10)
+    {
+        <Paginator State="@_pagination" />
+    }
+}
+
+@code {
+    private CatalogTourDto[]? _tours;
+    private string? _errorMessage;
+    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        _errorMessage = null;
+
+        try
+        {
+            _tours = await CatalogToursApi.GetTours(CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Catalog tours could not be loaded. Try again later.";
+            _tours = [];
+        }
+    }
+}

@@ -202,6 +202,9 @@
           "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
+      "viajantesturismo.catalog.contracts": {
+        "type": "Project"
+      },
       "viajantesturismo.resources": {
         "type": "Project"
       },
