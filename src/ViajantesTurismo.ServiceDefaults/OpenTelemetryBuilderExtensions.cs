@@ -4,6 +4,8 @@ namespace ViajantesTurismo.ServiceDefaults;
 
 internal static class OpenTelemetryBuilderExtensions
 {
+    private const string SharedKernelPostgreSqlEventSourcingName = "SharedKernel.EventSourcing.PostgreSQL";
+
     public static MeterProviderBuilder AddSharedKernelMediatorMetrics(this MeterProviderBuilder metrics)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -16,5 +18,19 @@ internal static class OpenTelemetryBuilderExtensions
         ArgumentNullException.ThrowIfNull(tracing);
 
         return tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name);
+    }
+
+    public static MeterProviderBuilder AddSharedKernelProviderMetrics(this MeterProviderBuilder metrics)
+    {
+        ArgumentNullException.ThrowIfNull(metrics);
+
+        return metrics.AddMeter(SharedKernelPostgreSqlEventSourcingName);
+    }
+
+    public static TracerProviderBuilder AddSharedKernelProviderTracing(this TracerProviderBuilder tracing)
+    {
+        ArgumentNullException.ThrowIfNull(tracing);
+
+        return tracing.AddSource(SharedKernelPostgreSqlEventSourcingName);
     }
 }

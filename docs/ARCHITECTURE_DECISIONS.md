@@ -56,6 +56,8 @@ Decisions about application architecture and layer responsibilities.
   Presentation
 - **[ADR-026](adr/20260621-domain-materialization-and-sharedkernel-persistence-boundaries.md)** —
   Domain Materialization and SharedKernel Persistence Boundaries
+- **[ADR-027](adr/20260624-provider-specific-sharedkernel-infrastructure-modules.md)** —
+  Provider-Specific SharedKernel Infrastructure Modules
 
 ### Business Logic & Pricing
 

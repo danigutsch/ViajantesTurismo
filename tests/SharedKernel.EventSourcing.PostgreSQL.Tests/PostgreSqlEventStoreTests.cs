@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Text.Json;
 using Aspire.Hosting.Testing;
 
@@ -322,6 +325,104 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         Assert.Equal(10, firstBatch.Concat(secondBatch).Select(envelope => envelope.EventId).Distinct().Count());
     }
 
+    [Fact]
+    public async Task Append_And_Load_Emit_Telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CreateActivityListener(stoppedActivities);
+        using var meterListener = CreateMeterListener(measurements);
+        var options = CreateOptions();
+        await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var streamId = StreamId.From("catalog-tour-telemetry");
+
+        // Act
+        await store.Append(
+            streamId,
+            ExpectedStreamRevision.NoStream,
+            [new TestEvent("draft-created")],
+            TestContext.Current.CancellationToken);
+        _ = await store.Load(streamId, afterRevision: null, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Contains(stoppedActivities, activity =>
+            string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityAppend, StringComparison.Ordinal)
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeSuccess)
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagExpectedRevisionMode, PostgreSqlEventSourcingTelemetry.ExpectedRevisionNoStream));
+        Assert.Contains(stoppedActivities, activity =>
+            string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityLoad, StringComparison.Ordinal)
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagEventCount, 1));
+        Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricAppendDuration, measurements, StringComparer.Ordinal);
+        Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricLoadDuration, measurements, StringComparer.Ordinal);
+        Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricEventsAppended, measurements, StringComparer.Ordinal);
+        Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricEventsLoaded, measurements, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Append_Conflict_Emits_Error_Telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CreateActivityListener(stoppedActivities);
+        using var meterListener = CreateMeterListener(measurements);
+        var options = CreateOptions();
+        await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var streamId = StreamId.From("catalog-tour-telemetry-conflict");
+        await store.Append(
+            streamId,
+            ExpectedStreamRevision.NoStream,
+            [new TestEvent("draft-created")],
+            TestContext.Current.CancellationToken);
+
+        // Act
+        _ = await Assert.ThrowsAsync<ExpectedStreamRevisionConflictException>(
+            () => store.Append(
+                streamId,
+                ExpectedStreamRevision.NoStream,
+                [new TestEvent("published")],
+                TestContext.Current.CancellationToken).AsTask());
+
+        // Assert
+        Assert.Contains(stoppedActivities, activity =>
+            string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityAppend, StringComparison.Ordinal)
+            && activity.Status == ActivityStatusCode.Error
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeConflict)
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagActualRevision, 1L));
+        Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricAppendConflicts, measurements, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Checkpoint_Store_Emits_Telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CreateActivityListener(stoppedActivities);
+        using var meterListener = CreateMeterListener(measurements);
+        var options = CreateOptions();
+        await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
+        await store.Initialize(TestContext.Current.CancellationToken);
+        var checkpoint = new ProjectionCheckpoint("catalog-public-listing", 27);
+
+        // Act
+        await store.Save(checkpoint, TestContext.Current.CancellationToken);
+        _ = await store.GetCheckpoint(checkpoint.ProjectionName, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Contains(stoppedActivities, activity =>
+            string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityCheckpoint, StringComparison.Ordinal)
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOperation, "save_checkpoint")
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagCheckpointPosition, 27L));
+        Assert.Contains(stoppedActivities, activity =>
+            string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityCheckpoint, StringComparison.Ordinal)
+            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOperation, "get_checkpoint"));
+        Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricCheckpointDuration, measurements, StringComparer.Ordinal);
+    }
+
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     private static PostgreSqlEventSourcingOptions CreateOptions() => new()
@@ -350,6 +451,54 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         {
             return exception;
         }
+    }
+
+    private static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
+    {
+        var listener = new ActivityListener
+        {
+            ShouldListenTo = static source => string.Equals(
+                source.Name,
+                PostgreSqlEventSourcingTelemetry.Name,
+                StringComparison.Ordinal),
+            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => stoppedActivities.Enqueue(activity),
+        };
+
+        ActivitySource.AddActivityListener(listener);
+        return listener;
+    }
+
+    private static MeterListener CreateMeterListener(ConcurrentQueue<string> measurements)
+    {
+        var listener = new MeterListener
+        {
+            InstrumentPublished = static (instrument, listener) =>
+            {
+                if (string.Equals(instrument.Meter.Name, PostgreSqlEventSourcingTelemetry.Name, StringComparison.Ordinal))
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
+            },
+        };
+
+        listener.SetMeasurementEventCallback<double>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
+        listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
+        listener.Start();
+        return listener;
+    }
+
+    private static bool HasTag(Activity activity, string key, object expectedValue)
+    {
+        foreach (var tag in activity.TagObjects)
+        {
+            if (string.Equals(tag.Key, key, StringComparison.Ordinal) && Equals(tag.Value, expectedValue))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private sealed class TestEventSerializer : IEventSerializer

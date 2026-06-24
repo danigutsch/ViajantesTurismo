@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
@@ -12,6 +13,10 @@ namespace ViajantesTurismo.Common.UnitTests.Observability;
 
 public sealed class ServiceDefaultsTelemetryTests
 {
+    private const string PostgreSqlEventSourcingTelemetryName = "SharedKernel.EventSourcing.PostgreSQL";
+    private const string PostgreSqlEventSourcingActivityAppend = "eventsourcing.postgresql.append";
+    private const string PostgreSqlEventSourcingMetricEventsAppended = "eventsourcing.postgresql.event.appended";
+
     [Fact]
     public void Add_Service_Defaults_Exports_Mediator_Custom_Tracing_And_Metrics()
     {
@@ -60,6 +65,50 @@ public sealed class ServiceDefaultsTelemetryTests
             string.Equals(activity.Source.Name, SharedKernelMediatorActivitySource.ActivitySourceName, StringComparison.Ordinal));
         Assert.Equal("test.dispatch", mediatorActivity.OperationName);
         Assert.Contains("mediator.requests", exportedMetricNames, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Add_Service_Defaults_Exports_SharedKernel_Provider_Tracing_And_Metrics()
+    {
+        // Arrange
+        var exportedActivities = new ConcurrentQueue<Activity>();
+        var exportedMetricNames = new ConcurrentQueue<string>();
+        using var activitySource = new ActivitySource(PostgreSqlEventSourcingTelemetryName);
+        using var meter = new Meter(PostgreSqlEventSourcingTelemetryName);
+        var counter = meter.CreateCounter<long>(PostgreSqlEventSourcingMetricEventsAppended);
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+
+        builder.AddServiceDefaults();
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities)));
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
+            });
+
+        using var host = builder.Build();
+        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
+        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+
+        // Act
+        using (var activity = activitySource.StartActivity(PostgreSqlEventSourcingActivityAppend, ActivityKind.Internal))
+        {
+            activity?.SetStatus(ActivityStatusCode.Ok);
+        }
+
+        counter.Add(1);
+        tracerProvider.ForceFlush();
+        meterProvider.ForceFlush();
+
+        // Assert
+        var providerActivity = Assert.Single(exportedActivities, activity =>
+            string.Equals(activity.Source.Name, PostgreSqlEventSourcingTelemetryName, StringComparison.Ordinal));
+        Assert.Equal(PostgreSqlEventSourcingActivityAppend, providerActivity.OperationName);
+        Assert.Contains(PostgreSqlEventSourcingMetricEventsAppended, exportedMetricNames, StringComparer.Ordinal);
     }
 
     private sealed class CollectingActivityExporter(ConcurrentQueue<Activity> exportedActivities) : BaseExporter<Activity>
