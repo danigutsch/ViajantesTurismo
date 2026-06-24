@@ -29,7 +29,7 @@ public sealed class CatalogProjectionRunner(
             }
 
             var lastPosition = position;
-            foreach (var envelope in envelopes)
+            foreach (var envelope in envelopes.OrderBy(static envelope => envelope.Position))
             {
                 await projection.Apply(envelope, ct);
                 lastPosition = envelope.Position;

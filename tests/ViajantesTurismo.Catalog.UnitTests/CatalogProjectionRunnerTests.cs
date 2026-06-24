@@ -64,6 +64,42 @@ public sealed class CatalogProjectionRunnerTests
         Assert.Null(checkpointStore.SavedCheckpoint);
     }
 
+    [Fact]
+    public async Task Project_applies_events_in_position_order_and_checkpoints_the_highest_position()
+    {
+        // Arrange
+        var eventStore = new CapturingEventStore();
+        var checkpointStore = new CapturingProjectionCheckpointStore();
+        var readModelStore = new CapturingCatalogTourReadModelStore();
+        var projection = new CatalogTourReadModelProjection(readModelStore);
+        var runner = new CatalogProjectionRunner(eventStore, checkpointStore, [projection]);
+        var firstDraftCreated = new CatalogTourDraftCreated(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026",
+            Guid.CreateVersion7());
+        var secondDraftCreated = new CatalogTourDraftCreated(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            "patagonia-2026",
+            "Patagonia 2026",
+            Guid.CreateVersion7());
+        eventStore.AddReplayEvent(CreateEnvelope(12, secondDraftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CreateEnvelope(11, firstDraftCreated, DateTimeOffset.UtcNow));
+
+        // Act
+        await runner.Project(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Collection(
+            readModelStore.Drafts,
+            first => Assert.Equal(11, first.Position),
+            second => Assert.Equal(12, second.Position));
+        Assert.NotNull(checkpointStore.SavedCheckpoint);
+        Assert.Equal(12, checkpointStore.SavedCheckpoint.Position);
+    }
+
     private static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
     {
         return new EventEnvelope(
