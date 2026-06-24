@@ -407,7 +407,8 @@ main() {
 
                 while IFS= read -r project_path; do
                     [[ -z "${project_path}" ]] && continue
-                    dotnet test --project "${project_path}" --no-restore
+                    dotnet build "${project_path}" --no-restore
+                    dotnet test --project "${project_path}" --no-restore --no-build
                 done < "${projects_file}"
             }
 
