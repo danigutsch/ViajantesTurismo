@@ -13,7 +13,7 @@ else
 }
 
 <p>@Tour.Identifier</p>
-<a href="@TourUrl(Tour)">Saiba mais</a>
+<a href="@TourUrl(Tour)">Learn more</a>
 
 @code {
     [Parameter, EditorRequired]
@@ -22,5 +22,5 @@ else
     [Parameter]
     public int HeadingLevel { get; set; } = 2;
 
-    private static string TourUrl(CatalogTourDto tour) => $"/viagens-de-bicicleta-em-grupo/{Uri.EscapeDataString(tour.Slug)}";
+    private static string TourUrl(CatalogTourDto tour) => $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}";
 }

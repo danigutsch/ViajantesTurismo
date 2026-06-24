@@ -21,8 +21,27 @@ public sealed class PublicWebEndpointTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
         Assert.Contains("Viajantes Turismo", content, StringComparison.Ordinal);
-        Assert.Contains("Cicloturismo ao redor do mundo!", content, StringComparison.Ordinal);
-        Assert.Contains("Novas viagens serão publicadas em breve.", content, StringComparison.Ordinal);
+        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
+        Assert.Contains("New tours will be published soon.", content, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("/group-bike-tours", "Group Bike Tours")]
+    [InlineData("/gallery", "Gallery")]
+    public async Task Public_Ssr_Routes_Return_Expected_Content(string path, string expectedHeading)
+    {
+        // Arrange
+        await using var factory = PublicWebTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+        Assert.Contains($"<h1>{expectedHeading}</h1>", content, StringComparison.Ordinal);
     }
 
     [Theory]

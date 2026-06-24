@@ -1,25 +1,25 @@
 @page "/"
 @inject IPublicCatalogApiClient CatalogApi
 
-<PageTitle>Cicloturismo ao redor do globo - Viajantes Turismo</PageTitle>
+<PageTitle>Cycle Tourism Around the World - Viajantes Turismo</PageTitle>
 
-<h1>Cicloturismo ao redor do mundo!</h1>
-<p>Viaje diferente! A ViajantesTurismo é cultura, é saúde, é diversão.</p>
+<h1>Cycle tourism around the world!</h1>
+<p>Travel differently. ViajantesTurismo is culture, health, and fun.</p>
 
 <section aria-labelledby="published-tours">
-    <h2 id="published-tours">Nossas viagens</h2>
+    <h2 id="published-tours">Our tours</h2>
 
     @if (_loadFailed)
     {
-        <p>As viagens não puderam ser carregadas agora. Tente novamente mais tarde.</p>
+        <p>Tours could not be loaded right now. Try again later.</p>
     }
     else if (_tours is null)
     {
-        <p><em>Carregando viagens...</em></p>
+        <p><em>Loading tours...</em></p>
     }
     else if (_tours.Length == 0)
     {
-        <p>Novas viagens serão publicadas em breve.</p>
+        <p>New tours will be published soon.</p>
     }
     else
     {

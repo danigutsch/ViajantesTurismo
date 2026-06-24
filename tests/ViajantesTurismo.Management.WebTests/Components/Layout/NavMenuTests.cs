@@ -53,6 +53,18 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
+    public void Renders_Catalog_NavLink()
+    {
+        // Act
+        var cut = Render<NavMenu>();
+
+        // Assert
+        var catalogLink = cut.Find("a[href='catalog/tours']");
+        Assert.Contains("Catalog", catalogLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-card-list", catalogLink.InnerHtml, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Renders_Bookings_NavLink()
     {
         // Act
@@ -96,7 +108,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navLinks = cut.FindAll(".nav-link");
-        Assert.Equal(6, navLinks.Count);
+        Assert.Equal(7, navLinks.Count);
     }
 
     [Fact]
@@ -156,7 +168,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navItems = cut.FindAll(".nav-item.px-3");
-        Assert.Equal(6, navItems.Count);
+        Assert.Equal(7, navItems.Count);
     }
 
     [Fact]

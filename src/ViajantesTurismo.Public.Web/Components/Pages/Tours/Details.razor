@@ -1,31 +1,31 @@
-@page "/viagens-de-bicicleta-em-grupo/{Slug}"
+@page "/group-bike-tours/{Slug}"
 @inject IPublicCatalogApiClient CatalogApi
 
 @if (_loadFailed)
 {
-    <PageTitle>Viagem indisponível - Viajantes Turismo</PageTitle>
-    <h1>Viagem indisponível</h1>
-    <p>Esta viagem não pôde ser carregada agora. Tente novamente mais tarde.</p>
+    <PageTitle>Tour unavailable - Viajantes Turismo</PageTitle>
+    <h1>Tour unavailable</h1>
+    <p>This tour could not be loaded right now. Try again later.</p>
 }
 else if (_tour is null)
 {
-    <PageTitle>Viagem não encontrada - Viajantes Turismo</PageTitle>
-    <h1>Viagem não encontrada</h1>
-    <p>A viagem solicitada não está publicada.</p>
+    <PageTitle>Tour not found - Viajantes Turismo</PageTitle>
+    <h1>Tour not found</h1>
+    <p>The requested tour is not published.</p>
 }
 else
 {
     <PageTitle>@_tour.Title - Viajantes Turismo</PageTitle>
 
     <article>
-        <a href="/">Todas as viagens</a>
+        <a href="/group-bike-tours">All tours</a>
         <h1>@_tour.Title</h1>
         <p>@_tour.Identifier</p>
 
         @if (_tour.Images.Count > 0)
         {
             <section aria-labelledby="tour-gallery">
-                <h2 id="tour-gallery">Galeria</h2>
+                <h2 id="tour-gallery">Gallery</h2>
                 <div class="tour-gallery">
                     <TourGallery Images="_tour.Images" />
                 </div>

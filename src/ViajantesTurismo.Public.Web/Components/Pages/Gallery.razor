@@ -1,22 +1,22 @@
-@page "/galeria"
+@page "/gallery"
 @inject IPublicCatalogApiClient CatalogApi
 
-<PageTitle>Galeria - Viajantes Turismo</PageTitle>
+<PageTitle>Gallery - Viajantes Turismo</PageTitle>
 
-<h1>Galeria</h1>
-<p>Momentos das viagens de cicloturismo da Viajantes Turismo.</p>
+<h1>Gallery</h1>
+<p>Moments from Viajantes Turismo cycle tours.</p>
 
 @if (_loadFailed)
 {
-    <p>A galeria não pôde ser carregada agora. Tente novamente mais tarde.</p>
+    <p>The gallery could not be loaded right now. Try again later.</p>
 }
 else if (_tours is null)
 {
-    <p><em>Carregando galeria...</em></p>
+    <p><em>Loading gallery...</em></p>
 }
 else if (!_tours.Any(tour => tour.Images.Count > 0))
 {
-    <p>Novas fotos serão publicadas em breve.</p>
+    <p>New photos will be published soon.</p>
 }
 else
 {

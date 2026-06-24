@@ -25,7 +25,8 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
 
     public async Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken cancellationToken)
     {
-        using var response = await httpClient.GetAsync(new Uri($"/public/catalog/tours/{slug}", UriKind.Relative), cancellationToken);
+        var escapedSlug = Uri.EscapeDataString(slug);
+        using var response = await httpClient.GetAsync(new Uri($"/public/catalog/tours/{escapedSlug}", UriKind.Relative), cancellationToken);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;

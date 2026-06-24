@@ -1,21 +1,21 @@
-@page "/viagens-de-bicicleta-em-grupo"
+@page "/group-bike-tours"
 @inject IPublicCatalogApiClient CatalogApi
 
-<PageTitle>Viagens de Bicicleta em Grupo - Viajantes Turismo</PageTitle>
+<PageTitle>Group Bike Tours - Viajantes Turismo</PageTitle>
 
-<h1>Viagens de Bicicleta em Grupo</h1>
+<h1>Group Bike Tours</h1>
 
 @if (_loadFailed)
 {
-    <p>As viagens não puderam ser carregadas agora. Tente novamente mais tarde.</p>
+    <p>Tours could not be loaded right now. Try again later.</p>
 }
 else if (_tours is null)
 {
-    <p><em>Carregando viagens...</em></p>
+    <p><em>Loading tours...</em></p>
 }
 else if (_tours.Length == 0)
 {
-    <p>Novas viagens serão publicadas em breve.</p>
+    <p>New tours will be published soon.</p>
 }
 else
 {
