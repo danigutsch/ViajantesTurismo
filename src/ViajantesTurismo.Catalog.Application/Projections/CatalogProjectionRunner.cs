@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using SharedKernel.EventSourcing;
 
 namespace ViajantesTurismo.Catalog.Application.Projections;
@@ -20,22 +21,71 @@ public sealed class CatalogProjectionRunner(
     {
         foreach (var projection in projections)
         {
-            var checkpoint = await checkpointStore.GetCheckpoint(projection.Name, ct);
-            var position = checkpoint?.Position ?? 0;
-            var envelopes = await eventStore.LoadAfter(position, BatchSize, ct);
-            if (envelopes.Count == 0)
-            {
-                continue;
-            }
+            using var activity = CatalogTelemetry.ActivitySource.StartActivity(
+                CatalogTelemetry.ActivityProjectionProcess,
+                ActivityKind.Internal);
+            activity?.SetTag(CatalogTelemetry.TagBoundedContext, "catalog");
+            activity?.SetTag(CatalogTelemetry.TagProjectionName, projection.Name);
 
-            var lastPosition = position;
-            foreach (var envelope in envelopes.OrderBy(static envelope => envelope.Position))
+            try
             {
-                await projection.Apply(envelope, ct);
-                lastPosition = envelope.Position;
-            }
+                var checkpoint = await checkpointStore.GetCheckpoint(projection.Name, ct);
+                var position = checkpoint?.Position ?? 0;
+                activity?.SetTag(CatalogTelemetry.TagCheckpointPosition, position);
 
-            await checkpointStore.Save(new ProjectionCheckpoint(projection.Name, lastPosition), ct);
+                var envelopes = await eventStore.LoadAfter(position, BatchSize, ct);
+                activity?.SetTag(CatalogTelemetry.TagEventCount, envelopes.Count);
+                if (envelopes.Count == 0)
+                {
+                    SetOutcome(activity, CatalogTelemetry.OutcomeSkipped);
+                    CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSkipped));
+
+                    continue;
+                }
+
+                var lastPosition = position;
+                foreach (var envelope in envelopes.OrderBy(static envelope => envelope.Position))
+                {
+                    await projection.Apply(envelope, ct);
+                    lastPosition = envelope.Position;
+                }
+
+                await checkpointStore.Save(new ProjectionCheckpoint(projection.Name, lastPosition), ct);
+
+                activity?.SetTag(CatalogTelemetry.TagCheckpointPosition, lastPosition);
+                SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
+                CatalogTelemetry.ProjectionEvents.Add(envelopes.Count, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSuccess));
+                CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSuccess));
+            }
+            catch (Exception ex)
+            {
+                SetError(activity, ex);
+                CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeError));
+
+                throw;
+            }
         }
+    }
+
+    private static TagList CreateProjectionTags(string projectionName, string outcome)
+    {
+        return
+        [
+            new(CatalogTelemetry.TagProjectionName, projectionName),
+            new(CatalogTelemetry.TagOutcome, outcome),
+        ];
+    }
+
+    private static void SetOutcome(Activity? activity, string outcome)
+    {
+        activity?.SetTag(CatalogTelemetry.TagOutcome, outcome);
+        activity?.SetStatus(ActivityStatusCode.Ok);
+    }
+
+    private static void SetError(Activity? activity, Exception exception)
+    {
+        activity?.SetTag(CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError);
+        activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+        activity?.AddException(exception);
     }
 }
