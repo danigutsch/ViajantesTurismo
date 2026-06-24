@@ -71,12 +71,14 @@ public static class ServiceDefaultsExtensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddSharedKernelMediatorMetrics();
+                    .AddSharedKernelMediatorMetrics()
+                    .AddSharedKernelProviderMetrics();
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddSharedKernelMediatorTracing()
+                    .AddSharedKernelProviderTracing()
                     .AddAspNetCoreInstrumentation(options =>
                         options.Filter = context =>
                             !context.Request.Path.StartsWithSegments(EndpointPaths.Health, StringComparison.OrdinalIgnoreCase)

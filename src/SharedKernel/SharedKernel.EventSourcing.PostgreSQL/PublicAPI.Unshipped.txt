@@ -1,4 +1,30 @@
 #nullable enable
+SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.ActivityAppend.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.ActivityCheckpoint.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.ActivityLoad.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.ExpectedRevisionAny.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.ExpectedRevisionExact.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.ExpectedRevisionNoStream.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.MetricAppendConflicts.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.MetricAppendDuration.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.MetricCheckpointDuration.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.MetricEventsAppended.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.MetricEventsLoaded.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.MetricLoadDuration.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.Name.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.OutcomeConflict.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.OutcomeError.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.OutcomeSuccess.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagActualRevision.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagCheckpointPosition.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagEventCount.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagExpectedRevisionMode.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagExpectedRevisionValue.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagOperation.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagOutcome.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagProjectionName.get -> string!
+static SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingTelemetry.TagSchema.get -> string!
 SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions
 SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions.PostgreSqlEventSourcingOptions() -> void
 SharedKernel.EventSourcing.PostgreSQL.PostgreSqlEventSourcingOptions.Schema.get -> string!

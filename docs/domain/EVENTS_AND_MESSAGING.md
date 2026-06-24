@@ -95,6 +95,17 @@ Owns event-sourcing abstractions:
 Event-sourcing infrastructure may use PostgreSQL first, but the SharedKernel abstractions should
 remain storage-neutral.
 
+### Provider Modules
+
+Provider-specific reusable infrastructure belongs in `SharedKernel.<Capability>.<Provider>` modules.
+For example, `SharedKernel.EventSourcing.PostgreSQL` contains PostgreSQL event-store and projection
+checkpoint persistence, while `SharedKernel.EventSourcing` remains storage-neutral.
+
+Bounded-context infrastructure owns composition, schema naming, migrations, read models, and
+context-specific operational policy. See
+[ADR-027](../adr/20260624-provider-specific-sharedkernel-infrastructure-modules.md) for naming and
+boundary rules.
+
 ## Domain Events
 
 Domain events describe business facts inside one bounded context. Aggregates raise them as part of
