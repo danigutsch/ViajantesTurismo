@@ -17,7 +17,7 @@ else
 
 @code {
     [Parameter, EditorRequired]
-    public CatalogTourDto Tour { get; set; } = default!;
+    public required CatalogTourDto Tour { get; set; }
 
     [Parameter]
     public int HeadingLevel { get; set; } = 2;
