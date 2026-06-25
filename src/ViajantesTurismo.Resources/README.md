@@ -14,7 +14,9 @@ in Aspire orchestration.
 - **Database**: Application database (`"database"`)
 - **Api**: Admin API service (`"api"`)
 - **WebApp**: Blazor web application (`"web-app"`)
+- **PublicWebApp**: Public Blazor web application (`"public-web-app"`)
 - **MigrationService**: Migration service (`"migration"`)
+- **AdminPerformanceSmoke**: Optional Admin k6 smoke resource (`"admin-performance-smoke"`)
 
 ## Usage
 

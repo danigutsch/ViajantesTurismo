@@ -1,39 +1,69 @@
 # ViajantesTurismo.AppHost
 
-.NET Aspire orchestration host for the application - coordinates all services, databases, and dependencies.
+.NET Aspire orchestration host for the local ViajantesTurismo stack.
 
 ## Purpose
 
-Application orchestrator using .NET Aspire. Defines service dependencies, health checks, and startup order for local
-development and deployment.
+`ViajantesTurismo.AppHost` is the repository's code-first Aspire model. It declares local
+infrastructure, service relationships, health checks, startup order, and opt-in developer tooling.
+
+Keep application behavior out of this project. Business rules belong in the domain/application
+projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefaults`.
 
 ## Services Orchestrated
 
 ### Infrastructure
 
-- **PostgreSQL**: Database server with PgWeb admin interface
-- **Redis**: Caching server with RedisInsight admin interface
+- **PostgreSQL**: database server with PgWeb admin interface
+- **Redis**: cache server with RedisInsight admin interface
 
 ### Application Services
 
-- **MigrationService**: Database migrations and seeding
-- **Admin.ApiService**: REST API (waits for database + migrations)
-- **Management.Web**: Blazor web UI (waits for API + cache)
+- **MigrationService**: applies database migrations and seed data, then exits
+- **Admin.ApiService**: Admin REST API; waits for the database and migration completion
+- **Management.Web**: Blazor management UI; waits for Redis and the Admin API
+- **Public.Web**: public-facing Blazor UI with an external HTTP endpoint
+
+### Optional Developer Tooling
+
+- **admin-performance-smoke**: opt-in k6 smoke scenario resource; enabled only when
+  `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set before AppHost starts
 
 ## Service Dependencies
 
 ```text
 PostgreSQL → Database → MigrationService
                      ↓
-                  ApiService → Management.Web ← Redis
+                  Admin.ApiService → Management.Web ← Redis
+                         ↓
+              admin-performance-smoke (opt-in)
+
+Public.Web
 ```
+
+`Public.Web` is currently exposed by the AppHost but does not consume an AppHost service reference in
+this branch.
+
+## Resource Names
+
+All resource names come from `ResourceNames` in `src/ViajantesTurismo.Resources`. Do not hardcode
+resource name strings in AppHost orchestration code.
+
+## Code Organization
+
+- `AppHost.cs`: primary orchestration map, kept short and dependency ordered
+- `PerformanceTestingResourceExtensions.cs`: opt-in performance-testing executable resource wiring
+
+Optional resources should stay in focused extension files when their setup would otherwise clutter the
+main orchestration map.
 
 ## Features
 
-- Service discovery
-- Health check monitoring at `/health`
-- Dependency orchestration with `WaitFor()` and `WaitForCompletion()`
-- Admin tools (PgWeb, RedisInsight)
+- Aspire service discovery
+- `/health` monitoring for HTTP project resources
+- dependency orchestration with `WaitFor()` and `WaitForCompletion()`
+- local admin tools through `.WithPgWeb()` and `.WithRedisInsight()`
+- opt-in performance smoke execution through `admin-performance-smoke`
 
 ## Running
 
@@ -48,12 +78,32 @@ dotnet run --project src/ViajantesTurismo.AppHost
 aspire run
 ```
 
-This repository pins `aspire.cli` in `.config/dotnet-tools.json`, so `dotnet tool run aspire run` is the reproducible
-command for contributors and CI. A global/script installation exposes `aspire` directly on `PATH`.
+This repository pins `aspire.cli` in `.config/dotnet-tools.json`, so `dotnet tool run aspire run` is
+the reproducible command for contributors and CI. A global/script installation exposes `aspire`
+directly on `PATH`.
 
-Opens Aspire dashboard showing all services, logs, traces, and metrics.
+The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
+traces, metrics, endpoints, and health status.
+
+## Performance Smoke Resource
+
+The AppHost can run the Admin k6 smoke scenario after the Admin API starts:
+
+```bash
+VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
+```
+
+The resource is intentionally disabled by default so regular AppHost runs do not execute load tooling.
+For profiles, thresholds, wrapper behavior, and result output, see
+`tests/performance/README.md` and `tests/performance/k6/README.md`.
+
+## Coverage
+
+The AppHost project is local orchestration code and is excluded from MTP coverage collection in
+`coverage.settings.xml`. Sonar coverage exclusions mirror that boundary with
+`src/ViajantesTurismo.AppHost/**`.
 
 ## Dependencies
 
-- **.NET Aspire**: Orchestration framework
-- **ViajantesTurismo.Resources**: Resource name constants
+- **.NET Aspire**: orchestration framework
+- **ViajantesTurismo.Resources**: resource name constants

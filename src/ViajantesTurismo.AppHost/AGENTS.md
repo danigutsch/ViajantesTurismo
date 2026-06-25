@@ -37,6 +37,9 @@ Declare resources in dependency order:
 
 - Use `.WithReference(resource)` for connection strings and service discovery injection.
 - Attach dev tooling with companion methods where applicable (`.WithPgWeb()`, `.WithRedisInsight()`).
+- Keep optional or tool-specific resource wiring in focused extension files when it would otherwise
+  clutter `AppHost.cs`.
+- Document opt-in resources in `src/ViajantesTurismo.AppHost/README.md` and the owning feature docs.
 
 ## New integrations
 
