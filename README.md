@@ -206,8 +206,18 @@ Install `k6` only if you plan to run those scenarios:
 Example run:
 
 ```bash
-VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh
 ```
+
+Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard.
+
+Aspire can also run the same smoke scenario as an opt-in AppHost resource:
+
+```bash
+VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
+```
+
+See `tests/performance/README.md` for profiles, thresholds, wrapper behavior, and output details.
 
 When `global.json` changes, CI still expects committed `packages.lock.json` files to stay in sync.
 Dependabot PRs that only bump the SDK now trigger the `SDK Lockfile Maintenance` workflow, which

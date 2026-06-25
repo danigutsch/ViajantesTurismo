@@ -8,7 +8,7 @@ if ! command -v curl >/dev/null 2>&1; then
 fi
 
 if [[ -z "${VT_API_BASE_URL:-}" ]]; then
-  printf 'VT_API_BASE_URL is required, for example http://127.0.0.1:5510\n' >&2
+  printf 'VT_API_BASE_URL is required. Use the Admin API endpoint from Aspire output or the Aspire dashboard.\n' >&2
   exit 1
 fi
 

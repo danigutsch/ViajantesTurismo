@@ -1,4 +1,5 @@
 using Projects;
+using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -31,5 +32,7 @@ builder.AddProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
 builder.AddProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck(EndpointPaths.Health);
+
+builder.AddAdminPerformanceSmoke(apiService);
 
 await builder.Build().RunAsync();

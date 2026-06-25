@@ -177,7 +177,7 @@ check_k6() {
     if command -v k6 > /dev/null 2>&1; then
         printf "%b" "   ${GREEN}✅ k6 installed${NC}\n"
         printf "%b" "   ${CYAN}💡 Run the Admin smoke scenario with:${NC}\n"
-        printf "%b" "   ${CYAN}   VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh${NC}\n"
+        printf "%b" "   ${CYAN}   VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh${NC}\n"
     else
         printf "%b" "   ${YELLOW}⚠️ k6 not available - performance/load testing scripts will be skipped locally${NC}\n"
         printf "%b" "   ${CYAN}💡 Install k6 only if you plan to run tests under tests/performance/:${NC}\n"
@@ -197,7 +197,7 @@ print_summary() {
     printf "%b" "  1. Run the application: ${NC}dotnet tool run aspire run\n"
     printf "%b" "  2. Run tests: ${NC}dotnet test\n"
     printf "%b" "  3. Install Playwright browsers after build: ${NC}bash scripts/install-playwright.sh\n"
-    printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh\n"
+    printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh\n"
     printf "%b" "  5. Validate a commit message: ${NC}bash scripts/validate-commit-message.sh /path/to/message.txt\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
     printf "%b" "  6. Tool inventory reference: ${NC}README.md (required local, optional local, CI-only, and devcontainer-provided tools)\n"

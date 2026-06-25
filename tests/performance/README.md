@@ -32,6 +32,12 @@ Current wrapper:
 - `../../scripts/run-admin-performance-smoke.sh`
 - `../../scripts/run-admin-performance-smoke.ps1`
 
+Current Aspire integration:
+
+- opt-in resource: `admin-performance-smoke`
+- enable with `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`
+- AppHost wiring lives in `src/ViajantesTurismo.AppHost/PerformanceTestingResourceExtensions.cs`
+
 ## Intent
 
 This initial slice is for:
@@ -47,15 +53,32 @@ This is not yet a full load-testing suite.
 Start the local stack first, then point the wrapper at the Admin API endpoint:
 
 ```bash
-VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
+$env:VT_API_BASE_URL = '<admin-api-url>'
 scripts/run-admin-performance-smoke.ps1
 ```
+
+Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard.
+
+## Run With Aspire
+
+The AppHost can run the smoke scenario after the Admin API starts. This is opt-in so normal Aspire
+runs do not execute load tooling accidentally:
+
+```bash
+VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
+```
+
+Use `VT_K6_PROFILE=average-load` for conservative broader validation. Keep `stress` manual-only.
+
+The Aspire resource injects `VT_API_BASE_URL` from the Admin API endpoint. It also forwards
+`VT_K6_PROFILE`, `VT_K6_RESULTS_DIR`, `VT_K6_VUS`, `VT_K6_DURATION`, `VT_K6_USE_DOCKER`, and
+`VT_K6_DOCKER_IMAGE` when those values are set before AppHost starts.
 
 ## Results
 

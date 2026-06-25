@@ -4,6 +4,11 @@ const defaultSmokeProfile = Object.freeze({
   vus: 1,
   duration: '30s',
   gracefulStop: '5s',
+  thresholds: Object.freeze({
+    http_req_failed: ['rate<0.01'],
+    http_req_duration: ['p(95)<1000'],
+    checks: ['rate>0.99'],
+  }),
 });
 
 const profiles = Object.freeze({
@@ -14,6 +19,11 @@ const profiles = Object.freeze({
     vus: 5,
     duration: '2m',
     gracefulStop: '10s',
+    thresholds: Object.freeze({
+      http_req_failed: ['rate<0.01'],
+      http_req_duration: ['p(95)<1500'],
+      checks: ['rate>0.99'],
+    }),
   }),
   stress: Object.freeze({
     scenarioName: 'admin_stress',
@@ -21,6 +31,11 @@ const profiles = Object.freeze({
     vus: 15,
     duration: '5m',
     gracefulStop: '15s',
+    thresholds: Object.freeze({
+      http_req_failed: ['rate<0.05'],
+      http_req_duration: ['p(95)<3000'],
+      checks: ['rate>0.95'],
+    }),
   }),
 });
 
@@ -63,11 +78,7 @@ export function createOptions() {
   const profile = getScenarioProfile();
 
   return {
-    thresholds: {
-      http_req_failed: ['rate<0.01'],
-      http_req_duration: ['p(95)<1000'],
-      checks: ['rate>0.99'],
-    },
+    thresholds: profile.thresholds,
     scenarios: {
       [profile.scenarioName]: {
         executor: profile.executor,
