@@ -1,5 +1,3 @@
-using ViajantesTurismo.Public.Web;
-
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
 internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient

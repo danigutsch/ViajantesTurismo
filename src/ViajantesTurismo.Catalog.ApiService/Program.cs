@@ -60,13 +60,3 @@ static bool IsPublished(CatalogTourDraftReadModel tour)
 }
 
 static string CreateSlug(string identifier) => identifier.Trim();
-
-/// <summary>
-/// Exposes the Catalog API entry point for integration tests.
-/// </summary>
-internal partial class Program
-{
-    protected Program()
-    {
-    }
-}

@@ -1,5 +1,4 @@
 using System.Text;
-using ViajantesTurismo.Public.Web;
 
 namespace ViajantesTurismo.Public.WebTests;
 

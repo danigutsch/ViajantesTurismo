@@ -1,6 +1,6 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
-using CatalogApiProgram = Program;
+using SharedKernel.Testing;
+using ViajantesTurismo.Catalog.ApiService;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -10,7 +10,7 @@ public sealed class CatalogEndpointTests
     public async Task Public_Tour_Details_Returns_BadRequest_For_Whitespace_Slug()
     {
         // Arrange
-        await using var factory = new WebApplicationFactory<CatalogApiProgram>();
+        await using var factory = WebApplicationTestHost.Create<ICatalogApiAssemblyMarker>();
         using var client = factory.CreateClient();
 
         // Act

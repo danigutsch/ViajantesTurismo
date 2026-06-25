@@ -1,4 +1,4 @@
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
+using TestTraits = SharedKernel.Testing.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
 
@@ -10,7 +10,7 @@ public sealed class PublicWebEndpointTests
     public async Task Root_Returns_Public_Landing_Page()
     {
         // Arrange
-        await using var factory = PublicWebTestHost.Create();
+        await using var factory = CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -32,7 +32,7 @@ public sealed class PublicWebEndpointTests
     public async Task Public_Ssr_Routes_Return_Expected_Content(string path, string expectedHeading)
     {
         // Arrange
-        await using var factory = PublicWebTestHost.Create();
+        await using var factory = CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -52,7 +52,7 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
 
-        await using var factory = PublicWebTestHost.Create(catalogApiClient: catalogApi);
+        await using var factory = CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -72,7 +72,7 @@ public sealed class PublicWebEndpointTests
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailDetailsRequests = true };
 
-        await using var factory = PublicWebTestHost.Create(catalogApiClient: catalogApi);
+        await using var factory = CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -92,7 +92,7 @@ public sealed class PublicWebEndpointTests
     public async Task Default_Health_Endpoint_Returns_Success(string path)
     {
         // Arrange
-        await using var factory = PublicWebTestHost.Create();
+        await using var factory = CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -106,7 +106,7 @@ public sealed class PublicWebEndpointTests
     public async Task Error_Endpoint_Returns_Problem_Response()
     {
         // Arrange
-        await using var factory = PublicWebTestHost.Create();
+        await using var factory = CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -124,7 +124,7 @@ public sealed class PublicWebEndpointTests
     public async Task Production_Root_Returns_Public_Landing_Page()
     {
         // Arrange
-        await using var factory = PublicWebTestHost.Create("Production");
+        await using var factory = CreateFactory(environment: "Production");
         using var client = factory.CreateClient();
 
         // Act
@@ -140,7 +140,7 @@ public sealed class PublicWebEndpointTests
     public async Task Production_Default_Health_Endpoint_Is_Not_Exposed(string path)
     {
         // Arrange
-        await using var factory = PublicWebTestHost.Create("Production");
+        await using var factory = CreateFactory(environment: "Production");
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -166,6 +166,19 @@ public sealed class PublicWebEndpointTests
             Images = [],
             UpdatedAt = DateTimeOffset.UtcNow
         };
+    }
+
+    private static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
+        FakePublicCatalogApiClient? catalogApiClient = null,
+        string? environment = null)
+    {
+        return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
+            environment,
+            services =>
+            {
+                services.RemoveAll<IPublicCatalogApiClient>();
+                services.AddSingleton<IPublicCatalogApiClient>(catalogApiClient ?? new FakePublicCatalogApiClient());
+            });
     }
 
 }

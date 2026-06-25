@@ -563,6 +563,9 @@
       "sharedkernel.results": {
         "type": "Project"
       },
+      "sharedkernel.testing": {
+        "type": "Project"
+      },
       "viajantesturismo.admin.contracts": {
         "type": "Project",
         "dependencies": {
