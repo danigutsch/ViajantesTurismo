@@ -34,21 +34,17 @@ If a protected pull request shows required checks as "Expected" on the latest he
 whether GitHub created any `pull_request` workflow runs for that exact SHA before assuming the
 code or tests are at fault.
 
-The required workflows also run on same-repository branch pushes so a normal push can publish
-required contexts even when a pull request synchronize workflow run is not created. Manual
-`workflow_dispatch` remains useful for diagnostics, but it is not the required-check recovery
-path.
-
 Repository recovery order:
 
 1. Confirm the current PR head SHA.
 2. Confirm whether `pull_request` runs exist for that SHA.
-3. Confirm whether same-repository branch-push runs exist for that SHA.
-4. If no automatic run exists, trigger another PR activity event by editing the PR.
-5. If editing does not create fresh automatic runs, close and reopen the PR.
+3. If none exist, trigger another PR activity event by editing the PR.
+4. If editing does not create fresh PR-context runs, close and reopen the PR.
 
 The required workflows in this repository listen to `pull_request.edited` specifically so a
-small metadata edit can be used as a recovery step when branch-push runs also fail to appear.
+small metadata edit can be used as the first recovery step. Manual `workflow_dispatch` runs may
+be helpful for diagnostics, but they are not the preferred recovery path for satisfying branch
+protection on the current PR head SHA.
 
 ## Signed commit policy
 

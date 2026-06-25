@@ -6,12 +6,12 @@ Operational details for the primary GitHub Actions workflow in
 ## Workflow jobs
 
 The CI workflow runs on pull request activity (`opened`, `edited`, `synchronize`,
-`reopened`, and `ready_for_review`), every branch push, on merge queue checks
+`reopened`, and `ready_for_review`), every push to `main`, on merge queue checks
 (`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a SonarCloud
 aggregation job, a lint job, and the shared change-detection gate.
 
 The workflow-level concurrency policy cancels stale runs for non-`main` refs but preserves
-in-flight `main` runs. This keeps branch and pull request iteration responsive while ensuring the
+in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
 protected branch keeps its post-merge validation history intact.
 
 All jobs in this workflow use the repository `CI_UBUNTU_RUNNER` Actions variable.
