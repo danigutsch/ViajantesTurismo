@@ -10,7 +10,7 @@ public sealed class PublicWebEndpointTests
     public async Task Root_Returns_Public_Landing_Page()
     {
         // Arrange
-        await using var factory = CreateFactory();
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -31,9 +31,9 @@ public sealed class PublicWebEndpointTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
 
-        await using var factory = CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -51,7 +51,7 @@ public sealed class PublicWebEndpointTests
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
 
-        await using var factory = CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -69,7 +69,7 @@ public sealed class PublicWebEndpointTests
     public async Task Public_Ssr_Routes_Return_Expected_Content(string path, string expectedHeading)
     {
         // Arrange
-        await using var factory = CreateFactory();
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -87,9 +87,9 @@ public sealed class PublicWebEndpointTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
 
-        await using var factory = CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -109,7 +109,7 @@ public sealed class PublicWebEndpointTests
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
 
-        await using var factory = CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -128,9 +128,9 @@ public sealed class PublicWebEndpointTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
 
-        await using var factory = CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -150,7 +150,7 @@ public sealed class PublicWebEndpointTests
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailDetailsRequests = true };
 
-        await using var factory = CreateFactory(catalogApi);
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -168,7 +168,7 @@ public sealed class PublicWebEndpointTests
     public async Task Public_Tour_Details_Returns_Not_Found_When_Tour_Is_Not_Published()
     {
         // Arrange
-        await using var factory = CreateFactory();
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -188,7 +188,7 @@ public sealed class PublicWebEndpointTests
     public async Task Default_Health_Endpoint_Returns_Success(string path)
     {
         // Arrange
-        await using var factory = CreateFactory();
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -202,7 +202,7 @@ public sealed class PublicWebEndpointTests
     public async Task Error_Endpoint_Returns_Problem_Response()
     {
         // Arrange
-        await using var factory = CreateFactory();
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -220,7 +220,7 @@ public sealed class PublicWebEndpointTests
     public async Task Production_Root_Returns_Public_Landing_Page()
     {
         // Arrange
-        await using var factory = CreateFactory(environment: "Production");
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
         using var client = factory.CreateClient();
 
         // Act
@@ -236,7 +236,7 @@ public sealed class PublicWebEndpointTests
     public async Task Production_Default_Health_Endpoint_Is_Not_Exposed(string path)
     {
         // Arrange
-        await using var factory = CreateFactory(environment: "Production");
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -249,32 +249,34 @@ public sealed class PublicWebEndpointTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    private static CatalogTourDto CreateTour(string slug, string title)
+    private static class PublicWebEndpointTestsHelpers
     {
-        return new CatalogTourDto
+        public static CatalogTourDto CreateTour(string slug, string title)
         {
-            Id = Guid.CreateVersion7(),
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "TOUR-2026",
-            Title = title,
-            Slug = slug,
-            IsPublished = true,
-            Images = [],
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
-    }
-
-    private static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
-        FakePublicCatalogApiClient? catalogApiClient = null,
-        string? environment = null)
-    {
-        return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
-            environment,
-            services =>
+            return new CatalogTourDto
             {
-                services.RemoveAll<IPublicCatalogApiClient>();
-                services.AddSingleton<IPublicCatalogApiClient>(catalogApiClient ?? new FakePublicCatalogApiClient());
-            });
-    }
+                Id = Guid.CreateVersion7(),
+                AdminTourId = Guid.CreateVersion7(),
+                Identifier = "TOUR-2026",
+                Title = title,
+                Slug = slug,
+                IsPublished = true,
+                Images = [],
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+        }
 
+        public static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
+                FakePublicCatalogApiClient? catalogApiClient = null,
+                string? environment = null)
+        {
+            return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
+                environment,
+                services =>
+                {
+                    services.RemoveAll<IPublicCatalogApiClient>();
+                    services.AddSingleton<IPublicCatalogApiClient>(catalogApiClient ?? new FakePublicCatalogApiClient());
+                });
+        }
+    }
 }
