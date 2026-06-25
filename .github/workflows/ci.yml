@@ -517,6 +517,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ANALYSIS_SKIP_TESTS: true
+          SONAR_PULL_REQUEST_KEY: ${{ github.event.pull_request.number }}
         run: |
           set -o pipefail
           mkdir -p TestResults
@@ -553,6 +554,15 @@ jobs:
           if-no-files-found: ignore
           name: sonar-analysis-log
           path: TestResults/sonar-analysis.log
+          retention-days: 7
+
+      - name: Upload Sonar policy responses
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() && steps.run-sonar.outcome != 'skipped' }}
+        with:
+          if-no-files-found: ignore
+          name: sonar-policy-responses
+          path: TestResults/sonar-policy-*.json
           retention-days: 7
 
       - name: Upload Sonar analysis manifest

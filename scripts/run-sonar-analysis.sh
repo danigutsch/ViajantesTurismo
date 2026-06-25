@@ -19,6 +19,8 @@ sonar_project_key="${SONAR_PROJECT_KEY:-}"
 sonar_exclusions="**/Migrations/**,.devcontainer/**,.vscode/**"
 sonar_coverage_exclusions="benchmarks/**,samples/**,scripts/**,tests/performance/**,src/ViajantesTurismo.AppHost/**,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs,src/ViajantesTurismo.Catalog.ApiService/Program.cs"
 sonar_cpd_exclusions="benchmarks/**,src/ViajantesTurismo.Common/BuildingBlocks/DateRange.cs,src/ViajantesTurismo.Common/BuildingBlocks/Entity.cs,src/SharedKernel/SharedKernel.Mediator.Analyzers/SharedKernelMediatorAnalyzer.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingHandlerCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.CodeFixes/MissingRequestInterfaceCodeFix.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs,src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs"
+sonar_host_url="${SONAR_HOST_URL:-https://sonarcloud.io}"
+sonar_pull_request_key="${SONAR_PULL_REQUEST_KEY:-}"
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     echo "::add-mask::${sonar_token}"
@@ -270,6 +272,140 @@ run_with_log() {
     return "${exit_code}"
 }
 
+detect_pull_request_key() {
+    if [[ -n "${sonar_pull_request_key}" ]]; then
+        return 0
+    fi
+
+    if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" && "${GITHUB_REF:-}" =~ ^refs/pull/([0-9]+)/ ]]; then
+        sonar_pull_request_key="${BASH_REMATCH[1]}"
+    fi
+
+    return 0
+}
+
+extract_issue_total() {
+    local response_file="$1"
+
+    python3 - "${response_file}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as response:
+    payload = json.load(response)
+
+print(payload.get("total", 0))
+PY
+}
+
+query_sonar_issues() {
+    local response_file="$1"
+    local filter_key="$2"
+    local filter_value="$3"
+
+    curl \
+        --fail \
+        --silent \
+        --show-error \
+        --get \
+        --url "${sonar_host_url}/api/issues/search" \
+        --header "Authorization: Bearer ${sonar_token}" \
+        --data-urlencode "organization=${sonar_organization}" \
+        --data-urlencode "componentKeys=${sonar_project_key}" \
+        --data-urlencode "pullRequest=${sonar_pull_request_key}" \
+        --data-urlencode "resolved=false" \
+        --data-urlencode "ps=1" \
+        --data-urlencode "${filter_key}=${filter_value}" \
+        --output "${response_file}"
+}
+
+run_policy_gate() {
+    detect_pull_request_key
+
+    if [[ -z "${sonar_pull_request_key}" ]]; then
+        echo "SONAR POLICY STATUS: skipped (not a pull request analysis)"
+        return 0
+    fi
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "python3 is required to evaluate Sonar issue policy responses." >&2
+        return 1
+    fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "curl is required to query Sonar issue policy responses." >&2
+        return 1
+    fi
+
+    local security_response="TestResults/sonar-policy-security-issues.json"
+    local severity_response="TestResults/sonar-policy-medium-issues.json"
+    local security_issue_count
+    local medium_issue_count
+    local policy_exit_code=0
+    local command_exit_code
+
+    set +e
+    query_sonar_issues "${security_response}" "impactSoftwareQualities" "SECURITY"
+    command_exit_code="$?"
+    set -e
+
+    if [[ ${command_exit_code} -ne 0 ]]; then
+        echo "Failed to query Sonar security issue policy." >&2
+        return 1
+    fi
+
+    set +e
+    query_sonar_issues "${severity_response}" "impactSeverities" "MEDIUM,HIGH,BLOCKER"
+    command_exit_code="$?"
+    set -e
+
+    if [[ ${command_exit_code} -ne 0 ]]; then
+        echo "Failed to query Sonar medium-or-higher issue policy." >&2
+        return 1
+    fi
+
+    set +e
+    security_issue_count="$(extract_issue_total "${security_response}")"
+    command_exit_code="$?"
+    set -e
+
+    if [[ ${command_exit_code} -ne 0 ]]; then
+        echo "Failed to parse Sonar security issue policy response." >&2
+        return 1
+    fi
+
+    set +e
+    medium_issue_count="$(extract_issue_total "${severity_response}")"
+    command_exit_code="$?"
+    set -e
+
+    if [[ ${command_exit_code} -ne 0 ]]; then
+        echo "Failed to parse Sonar medium-or-higher issue policy response." >&2
+        return 1
+    fi
+
+    echo "SONAR POLICY CHECK: new security issues=${security_issue_count}"
+    echo "SONAR POLICY CHECK: new medium-or-higher issues=${medium_issue_count}"
+
+    if [[ "${security_issue_count}" != "0" ]]; then
+        echo "SONAR POLICY FAILURE: new security issues detected (${security_issue_count})." >&2
+        policy_exit_code=1
+    fi
+
+    if [[ "${medium_issue_count}" != "0" ]]; then
+        echo "SONAR POLICY FAILURE: new medium-or-higher issues detected (${medium_issue_count})." >&2
+        policy_exit_code=1
+    fi
+
+    if [[ ${policy_exit_code} -eq 0 ]]; then
+        echo "SONAR POLICY STATUS: passed"
+    else
+        echo "SONAR POLICY STATUS: failed" >&2
+    fi
+
+    return "${policy_exit_code}"
+}
+
 cleanup() {
     local exit_code="$1"
     local completed_at_epoch
@@ -292,6 +428,17 @@ cleanup() {
             grep -F "QUALITY GATE STATUS:" "${sonar_end_log}" || true
         else
             exit_code="${sonar_end_exit_code}"
+        fi
+
+        local policy_gate_exit_code
+
+        set +e
+        run_policy_gate
+        policy_gate_exit_code="$?"
+        set -e
+
+        if [[ ${policy_gate_exit_code} -ne 0 && ${exit_code} -eq 0 ]]; then
+            exit_code="${policy_gate_exit_code}"
         fi
     fi
 

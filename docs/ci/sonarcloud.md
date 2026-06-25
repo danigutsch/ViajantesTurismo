@@ -53,6 +53,18 @@ The repository already relies on an 80% coverage threshold configured in SonarCl
 Coverage threshold enforcement is therefore part of the hosted Sonar quality gate rather
 than a missing future CI feature in this repository.
 
+After the hosted scanner finishes, `scripts/run-sonar-analysis.sh` also queries the
+SonarCloud Web API `api/issues/search` endpoint for pull request analysis results. The
+repository-owned CI policy fails the SonarCloud job when pull request new code has either
+of these issue categories:
+
+- any unresolved issue whose impacted software quality is `SECURITY`
+- any unresolved issue whose Web API impact severity is `MEDIUM`, `HIGH`, or `BLOCKER`
+
+The script uses the pull request key and project key instead of scraping SonarCloud UI pages.
+GitHub summaries include `SONAR POLICY` lines so the failing issue category is visible in CI.
+CI uploads the raw `sonar-policy-responses` artifact when those Web API responses are available.
+
 ## Required repository settings
 
 The integrated SonarCloud analysis path requires these GitHub repository settings:
@@ -93,6 +105,32 @@ bash scripts/run-sonar-analysis.sh
 
 This keeps the committed repository limited to placeholders while still making the expected local
 configuration discoverable.
+
+Run normal local checks first (`dotnet build ViajantesTurismo.slnx` and the relevant test slice).
+Run full local Sonar before pushing changes that could affect hosted quality results, such as
+security-sensitive code, broad refactors, coverage-sensitive changes, or CI/Sonar script changes.
+
+To exercise the pull request issue policy against an already analyzed SonarCloud pull request,
+provide the Sonar pull request key without committing it:
+
+```bash
+SONAR_PULL_REQUEST_KEY=123 bash scripts/run-sonar-analysis.sh
+```
+
+That variable controls the repository-owned Web API policy query. It does not by itself turn a
+local scanner run into pull request analysis; CI relies on GitHub Actions pull request metadata for
+the hosted scanner analysis.
+
+Troubleshooting notes:
+
+- missing token or configuration: ensure `.env.local` defines `SONAR_TOKEN`, `SONAR_ORGANIZATION`,
+  and `SONAR_PROJECT_KEY`
+- missing Playwright browsers: rerun the script after `dotnet build` succeeds, or run the relevant
+  test slice that installs Playwright in CI
+- coverage generation issues: inspect `TestResults/sonar-coverage-collection.log` and
+  `TestResults/sonar-reportgenerator.log`
+- issue-policy failures: inspect the `SONAR POLICY FAILURE` lines and the SonarCloud pull request
+  details for the matching security or medium-or-higher issues
 
 ## Analysis exclusions
 
