@@ -7,7 +7,6 @@
 
     <ItemGroup>
         <Compile Include="..\SharedKernel.AspNetCoreTesting\WebApplicationTestHost.cs" Link="Infrastructure\WebApplicationTestHost.cs" />
-        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
