@@ -223,8 +223,12 @@ public sealed partial class NamingConventionTests
             throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
         }
 
-        public static bool IsGeneratedTestPath(string path) =>
-                path.Contains(@"\bin\", StringComparison.Ordinal)
-                || path.Contains(@"\obj\", StringComparison.Ordinal);
+        public static bool IsGeneratedTestPath(string path)
+        {
+            var normalizedPath = path.Replace('\\', '/');
+
+            return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
+                || normalizedPath.Contains("/obj/", StringComparison.Ordinal);
+        }
     }
 }
