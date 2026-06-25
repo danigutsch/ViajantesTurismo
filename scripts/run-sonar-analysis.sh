@@ -294,7 +294,22 @@ import sys
 with open(sys.argv[1], encoding="utf-8") as response:
     payload = json.load(response)
 
-print(payload.get("total", 0))
+issues = payload.get("issues")
+if not isinstance(issues, list):
+    print(payload.get("total", 0))
+    raise SystemExit(0)
+
+closed_issue_statuses = {"ACCEPTED", "FALSE_POSITIVE", "FIXED"}
+closed_statuses = {"CLOSED", "RESOLVED"}
+
+open_issue_count = sum(
+    1
+    for issue in issues
+    if issue.get("issueStatus") not in closed_issue_statuses
+    and issue.get("status") not in closed_statuses
+)
+
+print(open_issue_count)
 PY
 }
 
@@ -314,7 +329,7 @@ query_sonar_issues() {
         --data-urlencode "componentKeys=${sonar_project_key}" \
         --data-urlencode "pullRequest=${sonar_pull_request_key}" \
         --data-urlencode "resolved=false" \
-        --data-urlencode "ps=1" \
+        --data-urlencode "ps=100" \
         --data-urlencode "${filter_key}=${filter_value}" \
         --output "${response_file}"
 }
