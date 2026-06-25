@@ -19,7 +19,7 @@ public sealed class IndexPageTests : BunitContext
         // Arrange
         catalogApi.Tours =
         [
-IndexPageTestsHelpers.CreateTour("TOUR-1", "First Public Tour", "first-public-tour", isPublished: true),
+            IndexPageTestsHelpers.CreateTour("TOUR-1", "First Public Tour", "first-public-tour", isPublished: true),
             IndexPageTestsHelpers.CreateTour("TOUR-2", "Second Draft Tour", "second-draft-tour", isPublished: false)
         ];
 
