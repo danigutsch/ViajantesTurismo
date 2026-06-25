@@ -32,6 +32,9 @@ main() {
             local warning_count
             warning_count=$(grep -Ec 'WARN:|WARNING:' "${sonar_log_file}" || true)
 
+            local -a policy_lines=()
+            mapfile -t policy_lines < <(grep -E 'SONAR POLICY (CHECK|STATUS|FAILURE):' "${sonar_log_file}" || true)
+
             if [[ -n "${quality_gate_line}" ]]; then
                 echo "- ${quality_gate_line#*QUALITY GATE STATUS: }"
             else
@@ -45,6 +48,18 @@ main() {
             echo "- Sonar warnings in log: ${warning_count}"
             echo "- Uploaded artifacts: \`test-results\`, \`coverage-report\`, \`sonar-coverage\`, \`sonar-analysis-log\`"
             echo
+
+            if [[ ${#policy_lines[@]} -gt 0 ]]; then
+                echo "### Issue policy"
+                echo
+
+                local policy_line
+                for policy_line in "${policy_lines[@]}"; do
+                    printf -- "%s\n" "- ${policy_line}"
+                done
+
+                echo
+            fi
 
             if [[ -f "${timing_file}" ]]; then
                 echo "### Phase timings"
