@@ -14,6 +14,9 @@ The scenario supports these profiles through `VT_K6_PROFILE`:
 - `average-load`: conservative regular validation, 5 VUs for 2 minutes
 - `stress`: manual investigation, 15 VUs for 5 minutes
 
+Each profile carries versioned thresholds in `lib/config.js`. Smoke is strict and short-lived;
+stress allows wider latency and error tolerance because it is manual investigation tooling.
+
 The `smoke` and `average-load` profiles are intended for:
 
 - local repeatable verification
@@ -55,6 +58,16 @@ On Windows PowerShell:
 ```powershell
 $env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
 scripts/run-admin-performance-smoke.ps1
+```
+
+## Run with Aspire
+
+Set `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` before starting AppHost. Aspire adds an opt-in
+`admin-performance-smoke` executable resource, waits for the Admin API, injects `VT_API_BASE_URL`,
+and writes summaries to `tests/performance/results/` unless `VT_K6_RESULTS_DIR` is set.
+
+```bash
+VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
 Wrapper behavior:

@@ -32,6 +32,11 @@ Current wrapper:
 - `../../scripts/run-admin-performance-smoke.sh`
 - `../../scripts/run-admin-performance-smoke.ps1`
 
+Current Aspire integration:
+
+- opt-in resource: `admin-performance-smoke`
+- enable with `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`
+
 ## Intent
 
 This initial slice is for:
@@ -56,6 +61,17 @@ On Windows PowerShell:
 $env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
 scripts/run-admin-performance-smoke.ps1
 ```
+
+## Run With Aspire
+
+The AppHost can run the smoke scenario after the Admin API starts. This is opt-in so normal Aspire
+runs do not execute load tooling accidentally:
+
+```bash
+VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
+```
+
+Use `VT_K6_PROFILE=average-load` for conservative broader validation. Keep `stress` manual-only.
 
 ## Results
 
