@@ -12,13 +12,13 @@ public sealed class SeederWorkerTelemetryTests
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = CreateCapturingListener(stoppedActivities);
+        using var listener = SeederWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         var seeder = new SuccessfulSeeder();
         using var harness = SeederWorkerHarness.Create(seeder);
         using var worker = harness.CreateWorker();
 
         // Act
-        await ExecuteWorker(worker, CancellationToken.None);
+        await SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None);
 
         // Assert
         var activity = Assert.Single(stoppedActivities);
@@ -38,13 +38,13 @@ public sealed class SeederWorkerTelemetryTests
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = CreateCapturingListener(stoppedActivities);
+        using var listener = SeederWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         var seeder = new FailingSeeder();
         using var harness = SeederWorkerHarness.Create(seeder);
         using var worker = harness.CreateWorker();
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => ExecuteWorker(worker, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
         Assert.Equal("boom", exception.Message);
@@ -73,13 +73,13 @@ public sealed class SeederWorkerTelemetryTests
     {
         // Arrange
         List<Activity> stoppedActivities = [];
-        using var listener = CreateCapturingListener(stoppedActivities);
+        using var listener = SeederWorkerTestHelpers.CreateCapturingListener(stoppedActivities);
         var seeder = new CancelledSeeder();
         using var harness = SeederWorkerHarness.Create(seeder);
         using var worker = harness.CreateWorker();
 
         // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => ExecuteWorker(worker, CancellationToken.None));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => SeederWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
         var activity = Assert.Single(stoppedActivities);
@@ -94,30 +94,33 @@ public sealed class SeederWorkerTelemetryTests
         Assert.True(seeder.SeedCalled);
     }
 
-    private static async Task ExecuteWorker(SeederWorker worker, CancellationToken cancellationToken)
+    private static class SeederWorkerTestHelpers
     {
-        var executeAsync = typeof(SeederWorker).GetMethod(
-            "ExecuteAsync",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-
-        Assert.NotNull(executeAsync);
-        var executionTask = (Task?)executeAsync.Invoke(worker, [cancellationToken]);
-        Assert.NotNull(executionTask);
-        await executionTask;
-    }
-
-    private static ActivityListener CreateCapturingListener(List<Activity> stoppedActivities)
-    {
-        var listener = new ActivityListener
+        public static async Task ExecuteWorker(SeederWorker worker, CancellationToken cancellationToken)
         {
-            ShouldListenTo = static source => source.Name == SeederWorker.ActivitySourceName,
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = stoppedActivities.Add,
-        };
+            var executeAsync = typeof(SeederWorker).GetMethod(
+                "ExecuteAsync",
+                BindingFlags.Instance | BindingFlags.NonPublic);
 
-        ActivitySource.AddActivityListener(listener);
-        return listener;
+            Assert.NotNull(executeAsync);
+            var executionTask = (Task?)executeAsync.Invoke(worker, [cancellationToken]);
+            Assert.NotNull(executionTask);
+            await executionTask;
+        }
+
+        public static ActivityListener CreateCapturingListener(List<Activity> stoppedActivities)
+        {
+            var listener = new ActivityListener
+            {
+                ShouldListenTo = static source => source.Name == SeederWorker.ActivitySourceName,
+                Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = stoppedActivities.Add,
+            };
+
+            ActivitySource.AddActivityListener(listener);
+            return listener;
+        }
     }
 
     private sealed class SuccessfulSeeder : ISeeder

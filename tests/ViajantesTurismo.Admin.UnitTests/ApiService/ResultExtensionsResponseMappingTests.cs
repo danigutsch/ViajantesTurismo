@@ -318,13 +318,13 @@ public class ResultExtensionsResponseMappingTests
         Assert.Equal("Only results with status 'Conflict' can be converted to Conflict.", exception.Message);
     }
 
-    private static HttpValidationProblemDetails AssertValidationProblemDetails(ValidationProblem result)
+    protected static HttpValidationProblemDetails AssertValidationProblemDetails(ValidationProblem result)
     {
         var valueResult = Assert.IsType<IValueHttpResult<HttpValidationProblemDetails>>(result, exactMatch: false);
         return Assert.IsType<HttpValidationProblemDetails>(valueResult.Value);
     }
 
-    private static Result CreateMalformedFailureResult(ResultStatus status, ResultError? error)
+    protected static Result CreateMalformedFailureResult(ResultStatus status, ResultError? error)
     {
         var constructor = typeof(Result).GetConstructor(
             BindingFlags.Instance | BindingFlags.NonPublic,
@@ -336,7 +336,7 @@ public class ResultExtensionsResponseMappingTests
         return (Result)constructor.Invoke([status, error]);
     }
 
-    private static Result<T> CreateMalformedFailureResult<T>(ResultStatus status, T? value, ResultError? error)
+    protected static Result<T> CreateMalformedFailureResult<T>(ResultStatus status, T? value, ResultError? error)
         where T : notnull
     {
         var constructor = typeof(Result<T>).GetConstructor(

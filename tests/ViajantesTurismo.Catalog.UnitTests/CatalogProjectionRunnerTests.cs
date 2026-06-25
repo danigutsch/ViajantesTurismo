@@ -26,7 +26,7 @@ public sealed class CatalogProjectionRunnerTests
             "Andes 2026",
             Guid.CreateVersion7());
         var recordedAt = DateTimeOffset.UtcNow;
-        eventStore.AddReplayEvent(CreateEnvelope(11, draftCreated, recordedAt));
+        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, draftCreated, recordedAt));
 
         // Act
         await runner.Project(TestContext.Current.CancellationToken);
@@ -85,8 +85,8 @@ public sealed class CatalogProjectionRunnerTests
             "patagonia-2026",
             "Patagonia 2026",
             Guid.CreateVersion7());
-        eventStore.AddReplayEvent(CreateEnvelope(12, secondDraftCreated, DateTimeOffset.UtcNow));
-        eventStore.AddReplayEvent(CreateEnvelope(11, firstDraftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(12, secondDraftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CatalogProjectionRunnerTestsHelpers.CreateEnvelope(11, firstDraftCreated, DateTimeOffset.UtcNow));
 
         // Act
         await runner.Project(TestContext.Current.CancellationToken);
@@ -100,15 +100,18 @@ public sealed class CatalogProjectionRunnerTests
         Assert.Equal(12, checkpointStore.SavedCheckpoint.Position);
     }
 
-    private static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
+    private static class CatalogProjectionRunnerTestsHelpers
     {
-        return new EventEnvelope(
-            CatalogTourStreamIds.FromAdminTourId(draftCreated.AdminTourId),
-            position,
-            StreamRevision.From(1),
-            Guid.CreateVersion7(),
-            nameof(CatalogTourDraftCreated),
-            draftCreated,
-            recordedAt);
+        public static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
+        {
+            return new EventEnvelope(
+                CatalogTourStreamIds.FromAdminTourId(draftCreated.AdminTourId),
+                position,
+                StreamRevision.From(1),
+                Guid.CreateVersion7(),
+                nameof(CatalogTourDraftCreated),
+                draftCreated,
+                recordedAt);
+        }
     }
 }

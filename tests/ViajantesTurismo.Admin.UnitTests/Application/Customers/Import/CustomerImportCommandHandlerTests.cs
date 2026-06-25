@@ -14,11 +14,6 @@ public sealed class CustomerImportCommandHandlerTests
         "Email,Mobile,Street,Neighborhood,PostalCode,City,State,Country," +
         "WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
 
-    private static string BuildCsv(string email = "test@example.com") =>
-        $"{CsvHeaders}\nJohn,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA," +
-        $"{email},+1234567890,123 Main St,Downtown,10001,New York,NY,USA," +
-        $"75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321";
-
     public CustomerImportCommandHandlerTests()
     {
         _uow = new FakeUnitOfWork();
@@ -30,7 +25,7 @@ public sealed class CustomerImportCommandHandlerTests
     public async Task Handle_With_DryRun_True_Does_Not_Persist_Changes()
     {
         // Arrange
-        var command = new CustomerImportCommand(BuildCsv(), DryRun: true);
+        var command = new CustomerImportCommand(CsvRows.Build(), DryRun: true);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -45,7 +40,7 @@ public sealed class CustomerImportCommandHandlerTests
     public async Task Handle_With_DryRun_False_Persists_New_Customer()
     {
         // Arrange
-        var command = new CustomerImportCommand(BuildCsv("imported@example.com"), DryRun: false);
+        var command = new CustomerImportCommand(CsvRows.Build("imported@example.com"), DryRun: false);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -85,7 +80,7 @@ public sealed class CustomerImportCommandHandlerTests
         var storeWithExisting = new FakeCustomerStore(seededEmails: [existingEmail]);
         var sut = new CustomerImportCommandHandler(storeWithExisting, _uow, TimeProvider.System);
 
-        var command = new CustomerImportCommand(BuildCsv(existingEmail), DryRun: false);
+        var command = new CustomerImportCommand(CsvRows.Build(existingEmail), DryRun: false);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);
@@ -95,5 +90,12 @@ public sealed class CustomerImportCommandHandlerTests
         Assert.Equal(1, result.ErrorCount);
         Assert.Equal(0, _uow.SaveEntitiesCallCount);
     }
-}
 
+    private static class CsvRows
+    {
+        public static string Build(string email = "test@example.com") =>
+            $"{CsvHeaders}\nJohn,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA," +
+            $"{email},+1234567890,123 Main St,Downtown,10001,New York,NY,USA," +
+            $"75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321";
+    }
+}

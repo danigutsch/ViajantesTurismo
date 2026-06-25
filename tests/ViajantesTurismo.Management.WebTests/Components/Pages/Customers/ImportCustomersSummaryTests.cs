@@ -32,11 +32,6 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         return cut;
     }
 
-    private static AngleSharp.Dom.IElement FindSuccessSummaryRow(IRenderedComponent<ImportCustomers> cut, string email)
-    {
-        return ImportCustomersTestDomHelper.FindRowContainingText(cut, "[data-testid='summary-success-rows'] tbody tr", email);
-    }
-
     [Fact]
     public void Confirm_Import_After_Duplicate_Decisions_Shows_Created_Updated_Skipped_And_Failed_Counts()
     {
@@ -80,9 +75,9 @@ public sealed class ImportCustomersSummaryTests : BunitContext
                     new ImportSuccessRowDto("updated@example.com", "updated", updatedId),
                 ]));
 
-        var createdLink = FindSuccessSummaryRow(cut, "created@example.com")
+        var createdLink = ImportCustomersSummaryTestsHelpers.FindSuccessSummaryRow(cut, "created@example.com")
             .QuerySelector("a[data-action='view-customer']");
-        var updatedLink = FindSuccessSummaryRow(cut, "updated@example.com")
+        var updatedLink = ImportCustomersSummaryTestsHelpers.FindSuccessSummaryRow(cut, "updated@example.com")
             .QuerySelector("a[data-action='view-customer']");
 
         Assert.NotNull(createdLink);
@@ -116,7 +111,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
                 null,
                 [new ImportSuccessRowDto("created@example.com", "created", createdId)]));
 
-        var link = FindSuccessSummaryRow(cut, "created@example.com")
+        var link = ImportCustomersSummaryTestsHelpers.FindSuccessSummaryRow(cut, "created@example.com")
             .QuerySelector("a[data-action='view-customer']");
 
         Assert.NotNull(link);
@@ -229,5 +224,13 @@ public sealed class ImportCustomersSummaryTests : BunitContext
             Assert.Contains("Source Column (CSV)", cut.Markup, StringComparison.Ordinal);
             Assert.Contains("customers.csv", cut.Markup, StringComparison.Ordinal);
         });
+    }
+
+    private static class ImportCustomersSummaryTestsHelpers
+    {
+        public static AngleSharp.Dom.IElement FindSuccessSummaryRow(IRenderedComponent<ImportCustomers> cut, string email)
+        {
+            return ImportCustomersTestDomHelper.FindRowContainingText(cut, "[data-testid='summary-success-rows'] tbody tr", email);
+        }
     }
 }

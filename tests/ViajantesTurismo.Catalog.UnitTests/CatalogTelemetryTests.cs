@@ -20,9 +20,9 @@ public sealed class CatalogTelemetryTests
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        using var rootActivity = StartRootActivity();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
             new CapturingIdempotencyStore());
@@ -37,9 +37,9 @@ public sealed class CatalogTelemetryTests
         await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
 
         // Assert
-        var handlingActivity = SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
-        Assert.True(HasTag(handlingActivity, CatalogTelemetry.TagIntegrationEventType, AdminTourCreatedIntegrationEvent.EventType));
-        Assert.True(HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSuccess));
+        var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagIntegrationEventType, AdminTourCreatedIntegrationEvent.EventType));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSuccess));
         Assert.Contains(CatalogTelemetry.MetricIntegrationEvent, measurements, StringComparer.Ordinal);
         Assert.Contains(CatalogTelemetry.MetricIdempotencyOperation, measurements, StringComparer.Ordinal);
         Assert.Contains(CatalogTelemetry.MetricTourStreamUpdate, measurements, StringComparer.Ordinal);
@@ -51,9 +51,9 @@ public sealed class CatalogTelemetryTests
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        using var rootActivity = StartRootActivity();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
             new CapturingIdempotencyStore(started: false));
@@ -68,9 +68,9 @@ public sealed class CatalogTelemetryTests
         await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
 
         // Assert
-        var handlingActivity = SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
-        Assert.True(HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSkipped));
-        Assert.True(HasTag(handlingActivity, CatalogTelemetry.TagIdempotencyOutcome, CatalogTelemetry.OutcomeSkipped));
+        var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSkipped));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagIdempotencyOutcome, CatalogTelemetry.OutcomeSkipped));
         Assert.Contains(CatalogTelemetry.MetricIdempotencyOperation, measurements, StringComparer.Ordinal);
     }
 
@@ -80,9 +80,9 @@ public sealed class CatalogTelemetryTests
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        using var rootActivity = StartRootActivity();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var eventStore = new CapturingEventStore();
         var checkpointStore = new CapturingProjectionCheckpointStore
         {
@@ -96,17 +96,17 @@ public sealed class CatalogTelemetryTests
             "andes-2026",
             "Andes 2026",
             Guid.CreateVersion7());
-        eventStore.AddReplayEvent(CreateEnvelope(11, draftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(11, draftCreated, DateTimeOffset.UtcNow));
 
         // Act
         await runner.Project(TestContext.Current.CancellationToken);
 
         // Assert
-        var projectionActivity = SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
-        Assert.True(HasTag(projectionActivity, CatalogTelemetry.TagProjectionName, projection.Name));
-        Assert.True(HasTag(projectionActivity, CatalogTelemetry.TagEventCount, 1));
-        Assert.True(HasTag(projectionActivity, CatalogTelemetry.TagCheckpointPosition, 11L));
-        Assert.True(HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSuccess));
+        var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagProjectionName, projection.Name));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagEventCount, 1));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagCheckpointPosition, 11L));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSuccess));
         Assert.Contains(CatalogTelemetry.MetricProjectionEvent, measurements, StringComparer.Ordinal);
         Assert.Contains(CatalogTelemetry.MetricProjectionBatch, measurements, StringComparer.Ordinal);
     }
@@ -117,9 +117,9 @@ public sealed class CatalogTelemetryTests
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        using var rootActivity = StartRootActivity();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new ThrowingEventStore()),
             new CapturingIdempotencyStore());
@@ -135,10 +135,10 @@ public sealed class CatalogTelemetryTests
             await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
 
         // Assert
-        var handlingActivity = SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
+        var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
         Assert.Equal(ActivityStatusCode.Error, handlingActivity.Status);
         Assert.Equal(exception.Message, handlingActivity.StatusDescription);
-        Assert.True(HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(handlingActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError));
         Assert.Contains(handlingActivity.Events, activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         Assert.Contains(CatalogTelemetry.MetricIntegrationEvent, measurements, StringComparer.Ordinal);
         Assert.Contains(CatalogTelemetry.MetricIdempotencyOperation, measurements, StringComparer.Ordinal);
@@ -151,9 +151,9 @@ public sealed class CatalogTelemetryTests
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        using var rootActivity = StartRootActivity();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
         var eventStore = new CapturingEventStore();
         var projection = new ThrowingProjection();
         var runner = new CatalogProjectionRunner(eventStore, new CapturingProjectionCheckpointStore(), [projection]);
@@ -163,94 +163,20 @@ public sealed class CatalogTelemetryTests
             "andes-2026",
             "Andes 2026",
             Guid.CreateVersion7());
-        eventStore.AddReplayEvent(CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
+        eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
 
         // Act
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await runner.Project(TestContext.Current.CancellationToken));
 
         // Assert
-        var projectionActivity = SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
+        var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
         Assert.Equal(ActivityStatusCode.Error, projectionActivity.Status);
         Assert.Equal(exception.Message, projectionActivity.StatusDescription);
-        Assert.True(HasTag(projectionActivity, CatalogTelemetry.TagProjectionName, projection.Name));
-        Assert.True(HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagProjectionName, projection.Name));
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeError));
         Assert.Contains(projectionActivity.Events, activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
         Assert.Contains(CatalogTelemetry.MetricProjectionBatch, measurements, StringComparer.Ordinal);
-    }
-
-    private static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
-    {
-        var listener = new ActivityListener
-        {
-            ShouldListenTo = static source => string.Equals(source.Name, CatalogTelemetry.Name, StringComparison.Ordinal),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = stoppedActivities.Enqueue,
-        };
-
-        ActivitySource.AddActivityListener(listener);
-        return listener;
-    }
-
-    private static Activity StartRootActivity()
-    {
-        var activity = new Activity("test.root");
-        activity.Start();
-
-        return activity;
-    }
-
-    private static Activity SingleActivity(
-        ConcurrentQueue<Activity> stoppedActivities,
-        Activity rootActivity,
-        string operationName)
-    {
-        return Assert.Single(stoppedActivities, activity =>
-            activity.TraceId == rootActivity.TraceId
-            && string.Equals(activity.OperationName, operationName, StringComparison.Ordinal));
-    }
-
-    private static MeterListener CreateMeterListener(ConcurrentQueue<string> measurements)
-    {
-        var listener = new MeterListener
-        {
-            InstrumentPublished = static (instrument, listener) =>
-            {
-                if (string.Equals(instrument.Meter.Name, CatalogTelemetry.Name, StringComparison.Ordinal))
-                {
-                    listener.EnableMeasurementEvents(instrument);
-                }
-            },
-        };
-
-        listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
-        listener.Start();
-        return listener;
-    }
-
-    private static bool HasTag(Activity activity, string key, object expectedValue)
-    {
-        foreach (var tag in activity.TagObjects)
-        {
-            if (string.Equals(tag.Key, key, StringComparison.Ordinal) && Equals(tag.Value, expectedValue))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
-    {
-        return new EventEnvelope(
-            CatalogTourStreamIds.FromAdminTourId(draftCreated.AdminTourId),
-            position,
-            StreamRevision.From(1),
-            Guid.CreateVersion7(),
-            nameof(CatalogTourDraftCreated),
-            draftCreated,
-            recordedAt);
     }
 
     private sealed class ThrowingEventStore : IEventStore
@@ -277,5 +203,82 @@ public sealed class CatalogTelemetryTests
         public string Name => "catalog.throwing";
 
         public ValueTask Apply(EventEnvelope envelope, CancellationToken ct) => throw new InvalidOperationException("projection failed");
+    }
+
+    private static class CatalogTelemetryTestsHelpers
+    {
+        public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
+        {
+            var listener = new ActivityListener
+            {
+                ShouldListenTo = static source => string.Equals(source.Name, CatalogTelemetry.Name, StringComparison.Ordinal),
+                Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = stoppedActivities.Enqueue,
+            };
+
+            ActivitySource.AddActivityListener(listener);
+            return listener;
+        }
+
+        public static Activity StartRootActivity()
+        {
+            var activity = new Activity("test.root");
+            activity.Start();
+
+            return activity;
+        }
+
+        public static Activity SingleActivity(
+                ConcurrentQueue<Activity> stoppedActivities,
+                Activity rootActivity,
+                string operationName)
+        {
+            return Assert.Single(stoppedActivities, activity =>
+                activity.TraceId == rootActivity.TraceId
+                && string.Equals(activity.OperationName, operationName, StringComparison.Ordinal));
+        }
+
+        public static MeterListener CreateMeterListener(ConcurrentQueue<string> measurements)
+        {
+            var listener = new MeterListener
+            {
+                InstrumentPublished = static (instrument, listener) =>
+                {
+                    if (string.Equals(instrument.Meter.Name, CatalogTelemetry.Name, StringComparison.Ordinal))
+                    {
+                        listener.EnableMeasurementEvents(instrument);
+                    }
+                },
+            };
+
+            listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
+            listener.Start();
+            return listener;
+        }
+
+        public static bool HasTag(Activity activity, string key, object expectedValue)
+        {
+            foreach (var tag in activity.TagObjects)
+            {
+                if (string.Equals(tag.Key, key, StringComparison.Ordinal) && Equals(tag.Value, expectedValue))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
+        {
+            return new EventEnvelope(
+                CatalogTourStreamIds.FromAdminTourId(draftCreated.AdminTourId),
+                position,
+                StreamRevision.From(1),
+                Guid.CreateVersion7(),
+                nameof(CatalogTourDraftCreated),
+                draftCreated,
+                recordedAt);
+        }
     }
 }

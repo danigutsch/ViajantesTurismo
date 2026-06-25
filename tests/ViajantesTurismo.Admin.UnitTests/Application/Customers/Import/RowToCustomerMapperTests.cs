@@ -56,7 +56,7 @@ public class RowToCustomerMapperTests
     public void MapCustomer_When_Row_Contains_All_Supported_Columns_Returns_Customer()
     {
         // Arrange
-        var (document, row) = CreateMappingInputs();
+        var (document, row) = MappingInputs.Create();
 
         // Act
         var customerResult = RowToCustomerMapper.MapCustomer(document, row, TimeProvider.System);
@@ -82,7 +82,7 @@ public class RowToCustomerMapperTests
     public void MapCustomer_When_Email_Is_Invalid_Returns_Email_Validation_Failure()
     {
         // Arrange
-        var (document, row) = CreateMappingInputs(overrides: new Dictionary<string, string>
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
         {
             ["Email"] = "invalid-email"
         });
@@ -112,7 +112,7 @@ public class RowToCustomerMapperTests
         string expectedMessage)
     {
         // Arrange
-        var (document, row) = CreateMappingInputs(overrides: new Dictionary<string, string>
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
         {
             [field] = invalidValue
         });
@@ -133,7 +133,7 @@ public class RowToCustomerMapperTests
     public void MapCustomer_When_Required_Header_Is_Missing_Returns_Header_Validation_Failure()
     {
         // Arrange
-        var (document, row) = CreateMappingInputs(headers: CompleteHeaders.Where(header => header != "FirstName").ToArray());
+        var (document, row) = MappingInputs.Create(headers: CompleteHeaders.Where(header => header != "FirstName").ToArray());
         const string expectedMessage = "Required header 'FirstName' is missing.";
 
         // Act
@@ -152,7 +152,7 @@ public class RowToCustomerMapperTests
     public void MapCustomer_When_Multiple_Import_Values_Are_Invalid_Returns_Aggregated_Validation_Failure()
     {
         // Arrange
-        var (document, row) = CreateMappingInputs(overrides: new Dictionary<string, string>
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
         {
             ["BirthDate"] = "not-a-date",
             ["WeightKg"] = "heavy",
@@ -175,34 +175,37 @@ public class RowToCustomerMapperTests
         Assert.Contains("CompanionId has invalid format.", customerResult.ErrorDetails.ValidationErrors["CompanionId"]);
     }
 
-    private static (CsvDocument Document, CsvRow Row) CreateMappingInputs(
-        IReadOnlyDictionary<string, string>? overrides = null,
-        IReadOnlyList<string>? headers = null)
+    private static class MappingInputs
     {
-        var effectiveHeaders = headers ?? CompleteHeaders;
-        var values = BuildRowValues(overrides);
-        var row = CsvRow.Parse(string.Join(",", effectiveHeaders.Select(header => values[header])));
-        var documentResult = CsvDocument.Create([.. effectiveHeaders], [row]);
-
-        return documentResult.IsFailure
-            ? throw new InvalidOperationException(documentResult.ErrorDetails?.Detail ?? "Failed to create CSV document for test.")
-            : (documentResult.Value, row);
-    }
-
-    private static Dictionary<string, string> BuildRowValues(IReadOnlyDictionary<string, string>? overrides)
-    {
-        var values = ValidRowValues.ToDictionary(entry => entry.Key, entry => entry.Value);
-
-        if (overrides is null)
+        public static (CsvDocument Document, CsvRow Row) Create(
+            IReadOnlyDictionary<string, string>? overrides = null,
+            IReadOnlyList<string>? headers = null)
         {
+            var effectiveHeaders = headers ?? CompleteHeaders;
+            var values = BuildRowValues(overrides);
+            var row = CsvRow.Parse(string.Join(",", effectiveHeaders.Select(header => values[header])));
+            var documentResult = CsvDocument.Create([.. effectiveHeaders], [row]);
+
+            return documentResult.IsFailure
+                ? throw new InvalidOperationException(documentResult.ErrorDetails?.Detail ?? "Failed to create CSV document for test.")
+                : (documentResult.Value, row);
+        }
+
+        private static Dictionary<string, string> BuildRowValues(IReadOnlyDictionary<string, string>? overrides)
+        {
+            var values = ValidRowValues.ToDictionary(entry => entry.Key, entry => entry.Value);
+
+            if (overrides is null)
+            {
+                return values;
+            }
+
+            foreach (var (key, value) in overrides)
+            {
+                values[key] = value;
+            }
+
             return values;
         }
-
-        foreach (var (key, value) in overrides)
-        {
-            values[key] = value;
-        }
-
-        return values;
     }
 }

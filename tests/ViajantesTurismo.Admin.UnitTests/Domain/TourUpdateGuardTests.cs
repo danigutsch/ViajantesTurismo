@@ -6,13 +6,6 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
 public class TourUpdateGuardTests
 {
-    private static void AddBookingToTour(Tour tour)
-    {
-        var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
-
-        Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
-    }
-
     [Fact]
     public void Update_Details_Without_Bookings_Should_Succeed()
     {
@@ -33,7 +26,7 @@ public class TourUpdateGuardTests
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "ORIG2024"));
-        AddBookingToTour(tour);
+        TourUpdateGuardTestHelpers.AddBookingToTour(tour);
 
         // Act — change the identifier
         var result = tour.UpdateDetails("NEWID", "New Name");
@@ -48,7 +41,7 @@ public class TourUpdateGuardTests
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "KEEP2024"));
-        AddBookingToTour(tour);
+        TourUpdateGuardTestHelpers.AddBookingToTour(tour);
 
         // Act — keep the same identifier, change only the name
         var result = tour.UpdateDetails("KEEP2024", "Updated Name");
@@ -78,7 +71,7 @@ public class TourUpdateGuardTests
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.UsDollar)));
-        AddBookingToTour(tour);
+        TourUpdateGuardTestHelpers.AddBookingToTour(tour);
 
         // Act
         var result = tour.UpdateCurrency(Currency.Euro);
@@ -86,5 +79,14 @@ public class TourUpdateGuardTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
+    }
+    private static class TourUpdateGuardTestHelpers
+    {
+        public static void AddBookingToTour(Tour tour)
+        {
+            var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
+
+            Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
+        }
     }
 }

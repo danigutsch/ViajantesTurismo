@@ -21,9 +21,9 @@ public sealed class CustomerImportWorkflowServiceTests
         var csv =
             $"""
              {CsvHeaders}
-             {BuildRow("José", "Silva", firstEmail)}
-             {BuildRow("Jose", "Silva", nameDuplicateEmail)}
-             {BuildRow("Maria", "Souza", dbDuplicateEmail)}
+             {CsvRows.Build("José", "Silva", firstEmail)}
+             {CsvRows.Build("Jose", "Silva", nameDuplicateEmail)}
+             {CsvRows.Build("Maria", "Souza", dbDuplicateEmail)}
              """;
 
         var store = new FakeCustomerStore([dbDuplicateEmail]);
@@ -44,10 +44,13 @@ public sealed class CustomerImportWorkflowServiceTests
         Assert.Equal(0, result.ErrorCount);
     }
 
-    private static string BuildRow(string firstName, string lastName, string email)
+    private static class CsvRows
     {
-        return $"{firstName},{lastName},Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +
-               $"{email},+5511999999999,Rua A,Centro,01000-000,São Paulo,SP,Brazil," +
-               "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
+        public static string Build(string firstName, string lastName, string email)
+        {
+            return $"{firstName},{lastName},Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +
+                   $"{email},+5511999999999,Rua A,Centro,01000-000,São Paulo,SP,Brazil," +
+                   "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
+        }
     }
 }

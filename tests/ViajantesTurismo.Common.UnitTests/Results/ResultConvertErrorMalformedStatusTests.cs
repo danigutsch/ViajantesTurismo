@@ -37,7 +37,7 @@ public class ResultConvertErrorMalformedStatusTests
         string expectedMessage)
     {
         // Arrange
-        var malformedSourceResult = CreateMalformedGenericResult(
+        var malformedSourceResult = ResultConvertErrorMalformedStatusTestsHelpers.CreateMalformedGenericResult(
             (ResultStatus)statusValue,
             "payload",
             new ResultError("Malformed result status."));
@@ -58,7 +58,7 @@ public class ResultConvertErrorMalformedStatusTests
         string expectedMessage)
     {
         // Arrange
-        var malformedSourceResult = CreateMalformedGenericResult(
+        var malformedSourceResult = ResultConvertErrorMalformedStatusTestsHelpers.CreateMalformedGenericResult(
             (ResultStatus)statusValue,
             "payload",
             new ResultError("Malformed result status."));
@@ -82,16 +82,19 @@ public class ResultConvertErrorMalformedStatusTests
         return (Result)constructor.Invoke([status, error]);
     }
 
-    private static Result<T> CreateMalformedGenericResult<T>(ResultStatus status, T value, ResultError? error)
-        where T : notnull
+    private static class ResultConvertErrorMalformedStatusTestsHelpers
     {
-        var constructor = typeof(Result<T>).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(ResultStatus), typeof(T), typeof(ResultError)],
-            modifiers: null);
+        public static Result<T> CreateMalformedGenericResult<T>(ResultStatus status, T value, ResultError? error)
+            where T : notnull
+        {
+            var constructor = typeof(Result<T>).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                binder: null,
+                types: [typeof(ResultStatus), typeof(T), typeof(ResultError)],
+                modifiers: null);
 
-        Assert.NotNull(constructor);
-        return (Result<T>)constructor.Invoke([status, value, error]);
+            Assert.NotNull(constructor);
+            return (Result<T>)constructor.Invoke([status, value, error]);
+        }
     }
 }

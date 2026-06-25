@@ -57,7 +57,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Append_With_No_Stream_Loads_Persisted_Events_In_Revision_Order()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-test-1");
@@ -94,7 +94,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Append_With_Stale_Expected_Revision_Reports_Conflict()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-test-2");
@@ -123,7 +123,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Save_Upserts_Projection_Checkpoint()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var firstCheckpoint = new ProjectionCheckpoint("catalog-public-listing", 12);
@@ -144,7 +144,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Save_Does_Not_Move_Projection_Checkpoint_Backward()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var currentCheckpoint = new ProjectionCheckpoint("catalog-public-listing", 27);
@@ -166,7 +166,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Save_Rejects_Missing_Projection_Name(string projectionName)
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var checkpoint = new ProjectionCheckpoint(projectionName, 12);
@@ -183,7 +183,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Save_Rejects_Negative_Position()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var checkpoint = new ProjectionCheckpoint("catalog-public-listing", -1);
@@ -200,7 +200,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Append_With_Concurrent_No_Stream_Writers_Reports_Conflicts()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-concurrent");
@@ -224,7 +224,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Append_With_Concurrent_Any_Writers_Appends_All_Events()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-any-concurrent");
@@ -249,7 +249,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Append_With_Specific_Revision_After_Empty_Stream_Reports_Conflict()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-empty-conflict");
@@ -270,7 +270,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Load_After_Loads_Events_In_Global_Position_Order()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var firstStreamId = StreamId.From("catalog-tour-global-1");
@@ -302,7 +302,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     public async Task Load_After_Can_Checkpoint_Concurrent_Cross_Stream_Appends()
     {
         // Arrange
-        var options = CreateOptions();
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
 
@@ -331,9 +331,9 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        var options = CreateOptions();
+        using var activityListener = PostgreSqlEventStoreTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = PostgreSqlEventStoreTestsHelpers.CreateMeterListener(measurements);
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-telemetry");
@@ -349,11 +349,11 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         // Assert
         Assert.Contains(stoppedActivities, activity =>
             string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityAppend, StringComparison.Ordinal)
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeSuccess)
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagExpectedRevisionMode, PostgreSqlEventSourcingTelemetry.ExpectedRevisionNoStream));
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeSuccess)
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagExpectedRevisionMode, PostgreSqlEventSourcingTelemetry.ExpectedRevisionNoStream));
         Assert.Contains(stoppedActivities, activity =>
             string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityLoad, StringComparison.Ordinal)
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagEventCount, 1));
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagEventCount, 1));
         Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricAppendDuration, measurements, StringComparer.Ordinal);
         Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricLoadDuration, measurements, StringComparer.Ordinal);
         Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricEventsAppended, measurements, StringComparer.Ordinal);
@@ -366,9 +366,9 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        var options = CreateOptions();
+        using var activityListener = PostgreSqlEventStoreTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = PostgreSqlEventStoreTestsHelpers.CreateMeterListener(measurements);
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var streamId = StreamId.From("catalog-tour-telemetry-conflict");
@@ -390,8 +390,8 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         Assert.Contains(stoppedActivities, activity =>
             string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityAppend, StringComparison.Ordinal)
             && activity.Status == ActivityStatusCode.Error
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeConflict)
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagActualRevision, 1L));
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeConflict)
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagActualRevision, 1L));
         Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricAppendConflicts, measurements, StringComparer.Ordinal);
     }
 
@@ -401,9 +401,9 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
         var measurements = new ConcurrentQueue<string>();
-        using var activityListener = CreateActivityListener(stoppedActivities);
-        using var meterListener = CreateMeterListener(measurements);
-        var options = CreateOptions();
+        using var activityListener = PostgreSqlEventStoreTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = PostgreSqlEventStoreTestsHelpers.CreateMeterListener(measurements);
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var store = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
         await store.Initialize(TestContext.Current.CancellationToken);
         var checkpoint = new ProjectionCheckpoint("catalog-public-listing", 27);
@@ -415,20 +415,15 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         // Assert
         Assert.Contains(stoppedActivities, activity =>
             string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityCheckpoint, StringComparison.Ordinal)
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOperation, "save_checkpoint")
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagCheckpointPosition, 27L));
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOperation, "save_checkpoint")
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagCheckpointPosition, 27L));
         Assert.Contains(stoppedActivities, activity =>
             string.Equals(activity.OperationName, PostgreSqlEventSourcingTelemetry.ActivityCheckpoint, StringComparison.Ordinal)
-            && HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOperation, "get_checkpoint"));
+            && PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOperation, "get_checkpoint"));
         Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricCheckpointDuration, measurements, StringComparer.Ordinal);
     }
 
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
-
-    private static PostgreSqlEventSourcingOptions CreateOptions() => new()
-    {
-        Schema = $"es_{Guid.NewGuid():N}",
-    };
 
     private sealed record TestEvent(string Name);
 
@@ -451,54 +446,6 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         {
             return exception;
         }
-    }
-
-    private static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
-    {
-        var listener = new ActivityListener
-        {
-            ShouldListenTo = static source => string.Equals(
-                source.Name,
-                PostgreSqlEventSourcingTelemetry.Name,
-                StringComparison.Ordinal),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = activity => stoppedActivities.Enqueue(activity),
-        };
-
-        ActivitySource.AddActivityListener(listener);
-        return listener;
-    }
-
-    private static MeterListener CreateMeterListener(ConcurrentQueue<string> measurements)
-    {
-        var listener = new MeterListener
-        {
-            InstrumentPublished = static (instrument, listener) =>
-            {
-                if (string.Equals(instrument.Meter.Name, PostgreSqlEventSourcingTelemetry.Name, StringComparison.Ordinal))
-                {
-                    listener.EnableMeasurementEvents(instrument);
-                }
-            },
-        };
-
-        listener.SetMeasurementEventCallback<double>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
-        listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
-        listener.Start();
-        return listener;
-    }
-
-    private static bool HasTag(Activity activity, string key, object expectedValue)
-    {
-        foreach (var tag in activity.TagObjects)
-        {
-            if (string.Equals(tag.Key, key, StringComparison.Ordinal) && Equals(tag.Value, expectedValue))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private sealed class TestEventSerializer : IEventSerializer
@@ -528,6 +475,62 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 
             return JsonSerializer.Deserialize<TestEvent>(payloadJson)
                 ?? throw new InvalidOperationException("Event payload could not be deserialized.");
+        }
+    }
+
+    private static class PostgreSqlEventStoreTestsHelpers
+    {
+        public static PostgreSqlEventSourcingOptions CreateOptions() => new()
+        {
+            Schema = $"es_{Guid.NewGuid():N}",
+        };
+
+        public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
+        {
+            var listener = new ActivityListener
+            {
+                ShouldListenTo = static source => string.Equals(
+                    source.Name,
+                    PostgreSqlEventSourcingTelemetry.Name,
+                    StringComparison.Ordinal),
+                Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = activity => stoppedActivities.Enqueue(activity),
+            };
+
+            ActivitySource.AddActivityListener(listener);
+            return listener;
+        }
+
+        public static MeterListener CreateMeterListener(ConcurrentQueue<string> measurements)
+        {
+            var listener = new MeterListener
+            {
+                InstrumentPublished = static (instrument, listener) =>
+                {
+                    if (string.Equals(instrument.Meter.Name, PostgreSqlEventSourcingTelemetry.Name, StringComparison.Ordinal))
+                    {
+                        listener.EnableMeasurementEvents(instrument);
+                    }
+                },
+            };
+
+            listener.SetMeasurementEventCallback<double>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
+            listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
+            listener.Start();
+            return listener;
+        }
+
+        public static bool HasTag(Activity activity, string key, object expectedValue)
+        {
+            foreach (var tag in activity.TagObjects)
+            {
+                if (string.Equals(tag.Key, key, StringComparison.Ordinal) && Equals(tag.Value, expectedValue))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
