@@ -195,24 +195,24 @@ public sealed partial class AdminTestArchitectureGuardTests
             $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
-    private static void AssertFileContains(string filePath, string expectedText)
+    internal static void AssertFileContains(string filePath, string expectedText)
     {
         var fileContents = File.ReadAllText(filePath);
         Assert.Contains(expectedText, fileContents, StringComparison.Ordinal);
     }
 
-    private static void AssertFileDoesNotExist(string filePath)
+    internal static void AssertFileDoesNotExist(string filePath)
     {
         Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
     }
 
-    private static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
+    internal static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
     {
         var fileContents = File.ReadAllText(filePath);
         Assert.DoesNotMatch(unexpectedPattern, fileContents);
     }
 
-    private static string[] FindGenericServiceProviderReachThrough(string filePath)
+    internal static string[] FindGenericServiceProviderReachThrough(string filePath)
     {
         var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
         var lines = File.ReadAllLines(filePath);
@@ -231,7 +231,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         return [.. offenses];
     }
 
-    private static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
+    internal static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
     {
         var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
         var lines = File.ReadAllLines(filePath);
@@ -279,18 +279,18 @@ public sealed partial class AdminTestArchitectureGuardTests
         return [.. offenses];
     }
 
-    private static bool IsTestAttributeLine(string trimmedLine)
+    internal static bool IsTestAttributeLine(string trimmedLine)
     {
         return trimmedLine.StartsWith("[Fact", StringComparison.Ordinal)
             || trimmedLine.StartsWith("[Theory", StringComparison.Ordinal);
     }
 
-    private static int CountBraceDelta(string line)
+    internal static int CountBraceDelta(string line)
     {
         return line.Count(static character => character == '{') - line.Count(static character => character == '}');
     }
 
-    private static string[] FindUndocumentedSerialTests(string filePath)
+    internal static string[] FindUndocumentedSerialTests(string filePath)
     {
         var fileContents = File.ReadAllText(filePath);
         if (!fileContents.Contains("AspireSerialSystemTestBase", StringComparison.Ordinal))
@@ -320,27 +320,27 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [GeneratedRegex(@"\b(?:new\s+ServiceCollection\s*\(|BuildServiceProvider\s*\(|CreateScope\s*\(|CreateAsyncScope\s*\()", RegexOptions.Compiled)]
-    private static partial Regex RawServiceProviderPlumbingRegex();
+    internal static partial Regex RawServiceProviderPlumbingRegex();
 
     [GeneratedRegex(@"^public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+\w+\s*\(", RegexOptions.Compiled)]
-    private static partial Regex TestMethodSignatureRegex();
+    internal static partial Regex TestMethodSignatureRegex();
 
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
-    private static partial Regex PublicServiceProviderReachThroughRegex();
+    internal static partial Regex PublicServiceProviderReachThroughRegex();
 
     [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
-    private static partial Regex ProtectedClearDatabaseMemberRegex();
+    internal static partial Regex ProtectedClearDatabaseMemberRegex();
 
     [GeneratedRegex(@"(?<attributes>(?:\s*\[[^\]]+\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
-    private static partial Regex SerialTestMethodRegex();
+    internal static partial Regex SerialTestMethodRegex();
 
     [GeneratedRegex(@"\[(?:Fact|Theory)(?:\(|\])", RegexOptions.Compiled)]
-    private static partial Regex TestAttributeRegex();
+    internal static partial Regex TestAttributeRegex();
 
     [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
-    private static partial Regex SerialReasonAttributeRegex();
+    internal static partial Regex SerialReasonAttributeRegex();
 
-    private static class AdminTestArchitectureGuardTestsHelpers
+    internal static class AdminTestArchitectureGuardTestsHelpers
     {
         public static string GetRepositoryRoot()
         {

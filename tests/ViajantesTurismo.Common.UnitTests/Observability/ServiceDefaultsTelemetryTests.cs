@@ -158,7 +158,7 @@ public sealed class ServiceDefaultsTelemetryTests
         Assert.Contains(PostgreSqlEventSourcingMetricEventsAppended, exportedMetricNames, StringComparer.Ordinal);
     }
 
-    private sealed class CollectingActivityExporter(ConcurrentQueue<Activity> exportedActivities) : BaseExporter<Activity>
+    internal sealed class CollectingActivityExporter(ConcurrentQueue<Activity> exportedActivities) : BaseExporter<Activity>
     {
         public override ExportResult Export(in Batch<Activity> batch)
         {
@@ -171,7 +171,7 @@ public sealed class ServiceDefaultsTelemetryTests
         }
     }
 
-    private sealed class CollectingMetricExporter(ConcurrentQueue<string> exportedMetricNames) : BaseExporter<Metric>
+    internal sealed class CollectingMetricExporter(ConcurrentQueue<string> exportedMetricNames) : BaseExporter<Metric>
     {
         public override ExportResult Export(in Batch<Metric> batch)
         {

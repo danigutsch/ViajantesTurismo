@@ -18,7 +18,7 @@ public sealed class ErrorClassTests
             $"Expected error classes to be static, but found violations: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
-    private static Type[] GetErrorClasses()
+    internal static Type[] GetErrorClasses()
     {
         const string domainNamespace = ArchitectureProvider.Namespaces.Domain;
         return

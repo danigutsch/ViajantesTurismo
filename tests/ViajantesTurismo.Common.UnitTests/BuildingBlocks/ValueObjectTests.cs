@@ -193,7 +193,7 @@ public sealed class ValueObjectTests
         Assert.False(order1 == order3);
     }
 
-    private sealed class TestAddress(string street, string? city) : ValueObject
+    internal sealed class TestAddress(string street, string? city) : ValueObject
     {
         public string Street { get; } = street;
         public string? City { get; } = city;
@@ -205,7 +205,7 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestMoney(decimal amount, string currency) : ValueObject
+    internal sealed class TestMoney(decimal amount, string currency) : ValueObject
     {
         public decimal Amount { get; } = amount;
         public string Currency { get; } = currency;
@@ -217,7 +217,7 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestTwoStrings(string first, string second) : ValueObject
+    internal sealed class TestTwoStrings(string first, string second) : ValueObject
     {
         public string First { get; } = first;
         public string Second { get; } = second;
@@ -229,7 +229,7 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestPerson(string firstName, string lastName, int age) : ValueObject
+    internal sealed class TestPerson(string firstName, string lastName, int age) : ValueObject
     {
         public string FirstName { get; } = firstName;
         public string LastName { get; } = lastName;
@@ -243,7 +243,7 @@ public sealed class ValueObjectTests
         }
     }
 
-    private sealed class TestOrder(TestMoney price, TestAddress address) : ValueObject
+    internal sealed class TestOrder(TestMoney price, TestAddress address) : ValueObject
     {
         public TestMoney Price { get; } = price;
         public TestAddress Address { get; } = address;
@@ -255,7 +255,7 @@ public sealed class ValueObjectTests
         }
     }
 
-    private static bool EqualsObject(object instance, object? other)
+    internal static bool EqualsObject(object instance, object? other)
     {
         return instance.Equals(other);
     }

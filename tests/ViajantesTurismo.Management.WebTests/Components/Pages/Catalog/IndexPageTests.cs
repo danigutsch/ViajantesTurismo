@@ -81,7 +81,7 @@ public sealed class IndexPageTests : BunitContext
         Assert.Contains("pagination", cut.Markup, StringComparison.OrdinalIgnoreCase);
     }
 
-    private sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
+    internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     {
         public CatalogTourDto[] Tours { get; set; } = [];
 
@@ -97,7 +97,7 @@ public sealed class IndexPageTests : BunitContext
         }
     }
 
-    private static class IndexPageTestsHelpers
+    internal static class IndexPageTestsHelpers
     {
         public static CatalogTourDto CreateTour(string identifier, string title, string slug, bool isPublished)
         {

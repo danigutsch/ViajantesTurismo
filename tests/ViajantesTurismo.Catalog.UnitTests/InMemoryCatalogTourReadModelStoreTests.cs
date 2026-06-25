@@ -96,7 +96,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
         await lookup;
     }
 
-    private static class InMemoryCatalogTourReadModelStoreTestsHelpers
+    internal static class InMemoryCatalogTourReadModelStoreTestsHelpers
     {
         public static CatalogTourDraftReadModel CreateTour(Guid id, string title)
         {

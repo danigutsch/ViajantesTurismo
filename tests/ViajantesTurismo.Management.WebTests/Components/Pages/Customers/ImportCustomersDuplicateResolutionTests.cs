@@ -13,7 +13,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
-    private void SeedExistingCustomer(string email, string firstName, string lastName)
+    internal void SeedExistingCustomer(string email, string firstName, string lastName)
     {
         var customerId = Guid.NewGuid();
 
@@ -87,7 +87,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         });
     }
 
-    private IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
+    internal IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
     {
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(csvContent, fileName);

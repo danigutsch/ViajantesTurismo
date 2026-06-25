@@ -77,7 +77,7 @@ public sealed class CatalogContractValidationTests
         Assert.Contains(errors, error => error.MemberNames.Contains(nameof(CatalogTourImageDto.Caption)));
     }
 
-    private static class CatalogContractValidationTestsHelpers
+    internal static class CatalogContractValidationTestsHelpers
     {
         public static CatalogTourDto CreateTour()
         {

@@ -12,7 +12,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
-    private IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
+    internal IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
     {
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(csvContent, fileName);

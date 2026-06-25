@@ -35,15 +35,16 @@ public sealed class AdminReadDbContextTests
             exception.Message);
     }
 
-    private static class AdminReadDbContexts
-    {
-        public static AdminReadDbContext Create()
-        {
-            var options = new DbContextOptionsBuilder<AdminReadDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
-                .Options;
+}
 
-            return new AdminReadDbContext(options);
-        }
+file static class AdminReadDbContexts
+{
+    public static AdminReadDbContext Create()
+    {
+        var options = new DbContextOptionsBuilder<AdminReadDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
+            .Options;
+
+        return new AdminReadDbContext(options);
     }
 }

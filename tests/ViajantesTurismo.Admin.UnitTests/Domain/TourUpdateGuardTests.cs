@@ -80,13 +80,14 @@ public class TourUpdateGuardTests
         Assert.False(result.IsSuccess);
         Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
-    private static class TourUpdateGuardTestHelpers
-    {
-        public static void AddBookingToTour(Tour tour)
-        {
-            var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
+}
 
-            Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
-        }
+file static class TourUpdateGuardTestHelpers
+{
+    public static void AddBookingToTour(Tour tour)
+    {
+        var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
+
+        Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
     }
 }

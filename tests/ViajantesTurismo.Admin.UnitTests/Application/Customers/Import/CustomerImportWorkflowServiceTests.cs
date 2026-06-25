@@ -44,13 +44,14 @@ public sealed class CustomerImportWorkflowServiceTests
         Assert.Equal(0, result.ErrorCount);
     }
 
-    private static class CsvRows
+}
+
+file static class CsvRows
+{
+    public static string Build(string firstName, string lastName, string email)
     {
-        public static string Build(string firstName, string lastName, string email)
-        {
-            return $"{firstName},{lastName},Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +
-                   $"{email},+5511999999999,Rua A,Centro,01000-000,São Paulo,SP,Brazil," +
-                   "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
-        }
+        return $"{firstName},{lastName},Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +
+               $"{email},+5511999999999,Rua A,Centro,01000-000,São Paulo,SP,Brazil," +
+               "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
     }
 }

@@ -85,7 +85,7 @@ public sealed class CatalogEndpointTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    private sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadModel[] tours) : ICatalogTourReadModelStore
+    internal sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadModel[] tours) : ICatalogTourReadModelStore
     {
         public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
         {
@@ -104,7 +104,7 @@ public sealed class CatalogEndpointTests
         }
     }
 
-    private static class CatalogEndpointTestsHelpers
+    internal static class CatalogEndpointTestsHelpers
     {
         public static WebApplicationFactory<ICatalogApiAssemblyMarker> CreateFactory(ICatalogTourReadModelStore store)
         {

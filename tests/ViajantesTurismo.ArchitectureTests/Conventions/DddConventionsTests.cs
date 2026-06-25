@@ -68,7 +68,7 @@ public sealed class DddConventionsTests
             $"Expected value objects to expose immutable state, but found public setters on: {string.Join(", ", violatingTypes)}");
     }
 
-    private static bool InheritsFromEntity(Type type)
+    internal static bool InheritsFromEntity(Type type)
     {
         for (var current = type.BaseType; current is not null; current = current.BaseType)
         {
@@ -81,7 +81,7 @@ public sealed class DddConventionsTests
         return false;
     }
 
-    private static bool InheritsFromValueObject(Type type)
+    internal static bool InheritsFromValueObject(Type type)
     {
         for (var current = type.BaseType; current is not null; current = current.BaseType)
         {

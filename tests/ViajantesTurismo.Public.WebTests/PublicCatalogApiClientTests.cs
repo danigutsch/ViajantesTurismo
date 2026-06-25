@@ -117,7 +117,7 @@ public sealed class PublicCatalogApiClientTests
         await Assert.ThrowsAsync<HttpRequestException>(async () => await act);
     }
 
-    private sealed class StubHttpClient : HttpClient
+    internal sealed class StubHttpClient : HttpClient
     {
         private readonly IHost host;
 
@@ -138,7 +138,7 @@ public sealed class PublicCatalogApiClientTests
         }
     }
 
-    private static class PublicCatalogApiClientTestsHelpers
+    internal static class PublicCatalogApiClientTestsHelpers
     {
         public static StubHttpClient CreateClient(Func<HttpRequest, HttpResponseMessage> handler)
         {

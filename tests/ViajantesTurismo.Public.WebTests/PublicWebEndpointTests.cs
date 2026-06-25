@@ -249,7 +249,7 @@ public sealed class PublicWebEndpointTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    private static class PublicWebEndpointTestsHelpers
+    internal static class PublicWebEndpointTestsHelpers
     {
         public static CatalogTourDto CreateTour(string slug, string title)
         {

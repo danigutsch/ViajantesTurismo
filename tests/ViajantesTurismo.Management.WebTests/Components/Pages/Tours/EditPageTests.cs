@@ -318,7 +318,7 @@ public class EditPageTests : BunitContext
         Assert.True(currency.HasAttribute("disabled"));
     }
 
-    private async Task<GetTourDto> CreateTestTour()
+    internal async Task<GetTourDto> CreateTestTour()
     {
         var createDto = new CreateTourDto
         {
@@ -341,7 +341,7 @@ public class EditPageTests : BunitContext
         return tours[0];
     }
 
-    private GetTourDto CreateTestTourWithBookings()
+    internal GetTourDto CreateTestTourWithBookings()
     {
         var tour = BuildTourDto(
             identifier: "CUBA2024",

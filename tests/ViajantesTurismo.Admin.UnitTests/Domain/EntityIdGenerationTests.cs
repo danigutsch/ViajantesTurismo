@@ -82,20 +82,22 @@ public sealed class EntityIdGenerationTests
         EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
-    private static class EntityIdAssertions
-    {
-        public static void AssertUuidV7(Guid id)
-        {
-            var guidText = id.ToString("D");
-            Assert.Equal('7', guidText[14]);
-        }
-    }
+}
 
-    private static class EntityIdTestData
+file static class EntityIdAssertions
+{
+    public static void AssertUuidV7(Guid id)
     {
-        public static Customer CreateCustomer()
-        {
-            var personalInfo = PersonalInfo.Create(
+        var guidText = id.ToString("D");
+        Assert.Equal('7', guidText[14]);
+    }
+}
+
+file static class EntityIdTestData
+{
+    public static Customer CreateCustomer()
+    {
+        var personalInfo = PersonalInfo.Create(
             firstName: "John",
             lastName: "Doe",
             gender: "Male",
@@ -141,15 +143,14 @@ public sealed class EntityIdGenerationTests
             allergies: "None",
             additionalInfo: "None").Value;
 
-            return new Customer(
-                personalInfo,
-                identificationInfo,
-                contactInfo,
-                address,
-                physicalInfo,
-                accommodation,
-                emergency,
-                medical);
-        }
+        return new Customer(
+            personalInfo,
+            identificationInfo,
+            contactInfo,
+            address,
+            physicalInfo,
+            accommodation,
+            emergency,
+            medical);
     }
 }

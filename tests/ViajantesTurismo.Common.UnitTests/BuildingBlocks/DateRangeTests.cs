@@ -181,7 +181,7 @@ public sealed class DateRangeTests
         Assert.True(result.Value.DurationDays < 0.001);
     }
 
-    private static class DateRangeTestsHelpers
+    internal static class DateRangeTestsHelpers
     {
         public static DateTime UtcDate(int year, int month, int day, int hour = 0, int minute = 0, int second = 0)
         {

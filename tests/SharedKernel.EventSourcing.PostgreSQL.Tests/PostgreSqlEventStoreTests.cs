@@ -425,9 +425,9 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
 
-    private sealed record TestEvent(string Name);
+    internal sealed record TestEvent(string Name);
 
-    private static async Task<Exception?> CaptureAppendResult(
+    internal static async Task<Exception?> CaptureAppendResult(
         PostgreSqlEventStore store,
         StreamId streamId,
         TestEvent eventData)
@@ -448,7 +448,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         }
     }
 
-    private sealed class TestEventSerializer : IEventSerializer
+    internal sealed class TestEventSerializer : IEventSerializer
     {
         public const string EventType = "test.event.v1";
 
@@ -478,7 +478,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         }
     }
 
-    private static class PostgreSqlEventStoreTestsHelpers
+    internal static class PostgreSqlEventStoreTestsHelpers
     {
         public static PostgreSqlEventSourcingOptions CreateOptions() => new()
         {

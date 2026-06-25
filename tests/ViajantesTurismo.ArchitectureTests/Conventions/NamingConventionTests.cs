@@ -122,7 +122,7 @@ public sealed partial class NamingConventionTests
             $"Expected mediator tests to assign method-call results to locals before simple assertions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingAssertions)}");
     }
 
-    private static bool IsWithinSolution(string? @namespace)
+    internal static bool IsWithinSolution(string? @namespace)
     {
         if (@namespace is null)
         {
@@ -132,7 +132,7 @@ public sealed partial class NamingConventionTests
         return SolutionRootNamespaces.Any(root => @namespace.StartsWith(root, StringComparison.Ordinal));
     }
 
-    private static string[] FindOffendingXunitMethods(string repositoryRoot, string filePath)
+    internal static string[] FindOffendingXunitMethods(string repositoryRoot, string filePath)
     {
         var lines = File.ReadAllLines(filePath);
         var offendingMethods = new List<string>();
@@ -165,7 +165,7 @@ public sealed partial class NamingConventionTests
         return [.. offendingMethods];
     }
 
-    private static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
+    internal static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
     {
         var lines = File.ReadAllLines(filePath);
         var offendingAssertions = new List<string>();
@@ -183,27 +183,27 @@ public sealed partial class NamingConventionTests
         return [.. offendingAssertions];
     }
 
-    private static bool IsStaticClass(Type type) => type is { IsAbstract: true, IsSealed: true };
+    internal static bool IsStaticClass(Type type) => type is { IsAbstract: true, IsSealed: true };
 
     [GeneratedRegex(@"^\s*\[(Fact|Theory)\b", RegexOptions.Compiled)]
-    private static partial Regex XunitAttributeRegex();
+    internal static partial Regex XunitAttributeRegex();
 
     [GeneratedRegex(@"^\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+([A-Za-z0-9_]+)\s*\(", RegexOptions.Compiled)]
-    private static partial Regex XunitMethodRegex();
+    internal static partial Regex XunitMethodRegex();
 
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
-    private static partial Regex XunitMethodNamingRegex();
+    internal static partial Regex XunitMethodNamingRegex();
 
     [GeneratedRegex(@"Assert\.(Equal|Null|NotNull|True|False)\([^\n]*\.[A-Za-z_][A-Za-z0-9_]*\([^\n]*\)", RegexOptions.Compiled)]
-    private static partial Regex SimpleAssertMethodCallRegex();
+    internal static partial Regex SimpleAssertMethodCallRegex();
 
     [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)+\.feature$", RegexOptions.Compiled)]
-    private static partial Regex KebabCaseFeatureFileRegex();
+    internal static partial Regex KebabCaseFeatureFileRegex();
 
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]+\.feature$", RegexOptions.Compiled)]
-    private static partial Regex PascalCaseFeatureFileRegex();
+    internal static partial Regex PascalCaseFeatureFileRegex();
 
-    private static class NamingConventionTestsHelpers
+    internal static class NamingConventionTestsHelpers
     {
         public static string GetRepositoryRoot()
         {

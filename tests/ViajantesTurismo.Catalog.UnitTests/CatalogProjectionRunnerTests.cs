@@ -100,7 +100,7 @@ public sealed class CatalogProjectionRunnerTests
         Assert.Equal(12, checkpointStore.SavedCheckpoint.Position);
     }
 
-    private static class CatalogProjectionRunnerTestsHelpers
+    internal static class CatalogProjectionRunnerTestsHelpers
     {
         public static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
         {

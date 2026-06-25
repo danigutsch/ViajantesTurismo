@@ -175,7 +175,7 @@ public class RowToCustomerMapperTests
         Assert.Contains("CompanionId has invalid format.", customerResult.ErrorDetails.ValidationErrors["CompanionId"]);
     }
 
-    private static class MappingInputs
+    internal static class MappingInputs
     {
         public static (CsvDocument Document, CsvRow Row) Create(
             IReadOnlyDictionary<string, string>? overrides = null,

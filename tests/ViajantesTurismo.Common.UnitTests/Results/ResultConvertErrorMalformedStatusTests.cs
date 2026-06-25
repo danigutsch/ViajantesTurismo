@@ -70,7 +70,7 @@ public class ResultConvertErrorMalformedStatusTests
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    private static Result CreateMalformedResult(ResultStatus status, ResultError? error)
+    internal static Result CreateMalformedResult(ResultStatus status, ResultError? error)
     {
         var constructor = typeof(Result).GetConstructor(
             BindingFlags.Instance | BindingFlags.NonPublic,
@@ -82,7 +82,7 @@ public class ResultConvertErrorMalformedStatusTests
         return (Result)constructor.Invoke([status, error]);
     }
 
-    private static class ResultConvertErrorMalformedStatusTestsHelpers
+    internal static class ResultConvertErrorMalformedStatusTestsHelpers
     {
         public static Result<T> CreateMalformedGenericResult<T>(ResultStatus status, T value, ResultError? error)
             where T : notnull

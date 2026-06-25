@@ -72,7 +72,7 @@ public sealed class PublicComponentTests : BunitContext
         Assert.Equal("Mountain pass", caption.TextContent);
     }
 
-    private static class PublicComponentTestsHelpers
+    internal static class PublicComponentTestsHelpers
     {
         public static CatalogTourDto CreateTour(string slug, string title, bool includeImage)
         {

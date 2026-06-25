@@ -338,7 +338,7 @@ public class DetailsPageTests : BunitContext
         Assert.Equal("Amazing Bike Tour 2024", cardHeader.TextContent);
     }
 
-    private void SetupSuccessfulTourLoad(GetTourDto tour)
+    internal void SetupSuccessfulTourLoad(GetTourDto tour)
     {
         _fakeToursApi.AddTour(tour);
     }

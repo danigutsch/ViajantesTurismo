@@ -148,7 +148,7 @@ public sealed class LayerDependencyTests
         Assert.Empty(unexpectedReferences);
     }
 
-    private static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
+    internal static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
     {
         var pattern = $"^{Regex.Escape(namespaceRoot)}(\\.|$)";
         return Types().That().ResideInNamespaceMatching(pattern).As(description);

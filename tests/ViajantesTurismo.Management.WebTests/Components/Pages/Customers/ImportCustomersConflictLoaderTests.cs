@@ -84,7 +84,7 @@ public sealed class ImportCustomersConflictLoaderTests
         Assert.Equal(string.Empty, conflictState.GetExistingValue(CustomerImportFieldNames.FirstName));
         Assert.Equal(string.Empty, conflictState.GetExistingValue(CustomerImportFieldNames.Email));
     }
-    private static CustomerDetailsDto BuildCustomerDetails(Guid customerId, string email, string lastName)
+    internal static CustomerDetailsDto BuildCustomerDetails(Guid customerId, string email, string lastName)
     {
         return new CustomerDetailsDto
         {

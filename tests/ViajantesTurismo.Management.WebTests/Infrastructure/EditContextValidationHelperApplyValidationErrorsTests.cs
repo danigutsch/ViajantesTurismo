@@ -77,7 +77,7 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         Assert.Equal(1, validationStateChangedNotifications);
     }
 
-    private sealed class TestFormModel
+    internal sealed class TestFormModel
     {
         public string Email { get; set; } = string.Empty;
 

@@ -72,7 +72,7 @@ public sealed class CatalogToursApiClientTests
         Assert.Empty(tours);
     }
 
-    private sealed class StubHttpClient : HttpClient
+    internal sealed class StubHttpClient : HttpClient
     {
         private readonly IHost host;
 
@@ -93,7 +93,7 @@ public sealed class CatalogToursApiClientTests
         }
     }
 
-    private static class CatalogToursApiClientTestsHelpers
+    internal static class CatalogToursApiClientTestsHelpers
     {
         public static StubHttpClient CreateClient(Func<HttpRequest, HttpResponseMessage> handler)
         {

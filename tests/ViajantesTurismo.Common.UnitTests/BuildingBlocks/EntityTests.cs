@@ -144,15 +144,15 @@ public sealed class EntityTests
         Assert.False(entity1.Equals(entity2));
     }
 
-    private sealed class TestEntity(int id) : Entity<int>(id);
+    internal sealed class TestEntity(int id) : Entity<int>(id);
 
-    private sealed class TestEntityDifferentType(int id) : Entity<int>(id);
+    internal sealed class TestEntityDifferentType(int id) : Entity<int>(id);
 
-    private sealed class AnotherTestEntity(int id) : Entity<int>(id);
+    internal sealed class AnotherTestEntity(int id) : Entity<int>(id);
 
-    private sealed class TestEntityNullableId(string? id) : Entity<string?>(id);
+    internal sealed class TestEntityNullableId(string? id) : Entity<string?>(id);
 
-    private static bool EqualsObject(object instance, object? other)
+    internal static bool EqualsObject(object instance, object? other)
     {
         return instance.Equals(other);
     }

@@ -160,7 +160,7 @@ public sealed class ReviewPageTests : BunitContext
         Assert.Equal(8, _state.CurrentStep);
     }
 
-    private sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
+    internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
     {
         public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100) => throw new NotImplementedException();
 

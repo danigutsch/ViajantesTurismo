@@ -179,7 +179,7 @@ public sealed class CatalogTelemetryTests
         Assert.Contains(CatalogTelemetry.MetricProjectionBatch, measurements, StringComparer.Ordinal);
     }
 
-    private sealed class ThrowingEventStore : IEventStore
+    internal sealed class ThrowingEventStore : IEventStore
     {
         public ValueTask Append(
             StreamId streamId,
@@ -198,14 +198,14 @@ public sealed class CatalogTelemetryTests
             CancellationToken ct) => ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
     }
 
-    private sealed class ThrowingProjection : IProjection
+    internal sealed class ThrowingProjection : IProjection
     {
         public string Name => "catalog.throwing";
 
         public ValueTask Apply(EventEnvelope envelope, CancellationToken ct) => throw new InvalidOperationException("projection failed");
     }
 
-    private static class CatalogTelemetryTestsHelpers
+    internal static class CatalogTelemetryTestsHelpers
     {
         public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
         {

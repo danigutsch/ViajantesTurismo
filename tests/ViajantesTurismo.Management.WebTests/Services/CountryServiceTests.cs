@@ -15,13 +15,13 @@ public sealed class CountryServiceTests : IDisposable
         }
     }
 
-    private CountryService CreateService()
+    internal CountryService CreateService()
     {
         var env = new StubWebHostEnvironment(_tempDir);
         return new CountryService(env);
     }
 
-    private void WriteCountriesJson(string json)
+    internal void WriteCountriesJson(string json)
     {
         var dataDir = Path.Combine(_tempDir, "data");
         Directory.CreateDirectory(dataDir);
@@ -154,7 +154,7 @@ public sealed class CountryServiceTests : IDisposable
         Assert.Equal(unknown, result);
     }
 
-    private sealed class StubWebHostEnvironment(string webRootPath) : IWebHostEnvironment
+    internal sealed class StubWebHostEnvironment(string webRootPath) : IWebHostEnvironment
     {
         public string WebRootPath { get; set; } = webRootPath;
         public IFileProvider WebRootFileProvider { get; set; } = null!;

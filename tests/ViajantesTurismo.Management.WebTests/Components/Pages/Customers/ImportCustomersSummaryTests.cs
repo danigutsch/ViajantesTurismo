@@ -12,7 +12,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
-    private IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
+    internal IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
     {
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(csvContent, fileName);
@@ -23,7 +23,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         return cut;
     }
 
-    private IRenderedComponent<ImportCustomers> ConfirmImportWithoutConflicts(ImportResultDto result)
+    internal IRenderedComponent<ImportCustomers> ConfirmImportWithoutConflicts(ImportResultDto result)
     {
         _fakeCustomersApi.SetImportCustomersResult(result);
         var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
@@ -226,7 +226,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         });
     }
 
-    private static class ImportCustomersSummaryTestsHelpers
+    internal static class ImportCustomersSummaryTestsHelpers
     {
         public static AngleSharp.Dom.IElement FindSuccessSummaryRow(IRenderedComponent<ImportCustomers> cut, string email)
         {

@@ -58,7 +58,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             $"Expected SuppressMessage attributes to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithSuppressMessage)}");
     }
 
-    private static string[] FindNoWarnEntries(string repositoryRoot, string filePath)
+    internal static string[] FindNoWarnEntries(string repositoryRoot, string filePath)
     {
         var text = File.ReadAllText(filePath);
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
@@ -77,7 +77,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         return [.. entries];
     }
 
-    private static bool ContainsPragmaWarningDirective(string filePath)
+    internal static bool ContainsPragmaWarningDirective(string filePath)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath));
         return syntaxTree.GetRoot()
@@ -86,14 +86,14 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
-    private static partial Regex NoWarnRegex();
+    internal static partial Regex NoWarnRegex();
 
     [GeneratedRegex(
         @"^\s*\[\s*(?:assembly:\s*)?(?:(?:global::)?System\.Diagnostics\.CodeAnalysis\.)?SuppressMessage(?:Attribute)?\s*\(",
         RegexOptions.Multiline | RegexOptions.CultureInvariant)]
-    private static partial Regex SuppressMessageAttributeRegex();
+    internal static partial Regex SuppressMessageAttributeRegex();
 
-    private static class AnalyzerSuppressionPolicyTestsHelpers
+    internal static class AnalyzerSuppressionPolicyTestsHelpers
     {
         public static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
         {
