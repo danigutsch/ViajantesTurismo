@@ -1,27 +1,18 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed partial class AnalyzerSuppressionPolicyTests
 {
-    private static readonly HashSet<string> ApprovedNoWarnEntries =
-    [
-    ];
-
-    private static readonly HashSet<string> ApprovedPragmaFiles =
-    [
-        "src/ViajantesTurismo.Admin.Infrastructure/Migrations/20251114124325_Initial.Designer.cs",
-        "src/ViajantesTurismo.Admin.Infrastructure/Migrations/AdminWriteDbContextModelSnapshot.cs",
-        "tests/SharedKernel.Testing.Analyzers.Tests/SharedKernelTestingAnalyzerTests.cs"
-    ];
-
     private static readonly HashSet<string> ApprovedSuppressMessageFiles =
     [
         "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs"
     ];
 
     [Fact]
-    public void Project_And_Props_NoWarn_Entries_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
+    public void Project_And_Props_Should_Not_Use_NoWarn_Entries()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var noWarnEntries = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
@@ -30,35 +21,24 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .SelectMany(path => FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
 
-        var unapprovedEntries = noWarnEntries
-            .Where(entry => !ApprovedNoWarnEntries.Contains(entry))
-            .ToArray();
-        var staleApprovedEntries = ApprovedNoWarnEntries
-            .Where(entry => !noWarnEntries.Contains(entry))
-            .ToArray();
-
         Assert.True(
-            unapprovedEntries.Length == 0,
-            $"Expected NoWarn entries to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, unapprovedEntries)}");
-        Assert.True(
-            staleApprovedEntries.Length == 0,
-            $"Expected approved NoWarn entries to match current suppressions, but found stale allowlist entries:{Environment.NewLine}{string.Join(Environment.NewLine, staleApprovedEntries)}");
+            noWarnEntries.Length == 0,
+            $"Expected project and props files not to use NoWarn entries, but found:{Environment.NewLine}{string.Join(Environment.NewLine, noWarnEntries)}");
     }
 
     [Fact]
-    public void Pragma_Warning_Suppressions_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
+    public void Hand_Written_Source_Should_Not_Use_Pragma_Warning_Suppressions()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var filesWithPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
-            .Where(path => PragmaWarningDirectiveRegex().IsMatch(File.ReadAllText(path)))
+            .Where(ContainsPragmaWarningDirective)
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
-            .Where(path => !ApprovedPragmaFiles.Contains(path))
             .ToArray();
 
         Assert.True(
             filesWithPragmas.Length == 0,
-            $"Expected pragma warning suppressions to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
+            $"Expected hand-written source not to use pragma warning suppressions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
     }
 
     [Fact]
@@ -96,11 +76,16 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         return [.. entries];
     }
 
+    private static bool ContainsPragmaWarningDirective(string filePath)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath));
+        return syntaxTree.GetRoot()
+            .DescendantTrivia(descendIntoTrivia: true)
+            .Any(static trivia => trivia.GetStructure() is PragmaWarningDirectiveTriviaSyntax);
+    }
+
     [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
     private static partial Regex NoWarnRegex();
-
-    [GeneratedRegex(@"^\s*#pragma\s+warning\s+disable\b", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
-    private static partial Regex PragmaWarningDirectiveRegex();
 
     [GeneratedRegex(
         @"^\s*\[\s*(?:assembly:\s*)?(?:(?:global::)?System\.Diagnostics\.CodeAnalysis\.)?SuppressMessage(?:Attribute)?\s*\(",

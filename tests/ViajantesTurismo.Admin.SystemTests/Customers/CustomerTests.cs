@@ -107,8 +107,9 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page).ToHaveTitleAsync("Create Customer - Emergency Contact");
         await Expect(Page.GetByText("Step 7 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#name", emergencyContactName);
-        await Page.FillAsync("#mobile", "+5511988880001");
+        var emergencyStep = Page.Locator("article").Filter(new LocatorFilterOptions { HasText = "Step 7 of 8: Emergency Contact" });
+        await emergencyStep.Locator("#name").FillAsync(emergencyContactName);
+        await emergencyStep.Locator("#mobile").FillAsync("+5511988880001");
 
         await Page.GetButton("Next").ClickAsync();
 
