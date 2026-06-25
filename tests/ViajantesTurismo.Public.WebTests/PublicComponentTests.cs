@@ -11,7 +11,7 @@ public sealed class PublicComponentTests : BunitContext
     public void TourCard_Renders_Default_Heading_Link_And_First_Image()
     {
         // Arrange
-        var tour = CreateTour("camino norte", "Camino Norte", includeImage: true);
+        var tour = PublicComponentTestsHelpers.CreateTour("camino norte", "Camino Norte", includeImage: true);
 
         // Act
         var cut = Render<TourCard>(parameters => parameters.Add(component => component.Tour, tour));
@@ -29,7 +29,7 @@ public sealed class PublicComponentTests : BunitContext
     public void TourCard_Renders_Level_Three_Heading_And_No_Image_When_Tour_Has_No_Images()
     {
         // Arrange
-        var tour = CreateTour("andes/ride", "Andes Ride", includeImage: false);
+        var tour = PublicComponentTestsHelpers.CreateTour("andes/ride", "Andes Ride", includeImage: false);
 
         // Act
         var cut = Render<TourCard>(parameters => parameters
@@ -72,28 +72,31 @@ public sealed class PublicComponentTests : BunitContext
         Assert.Equal("Mountain pass", caption.TextContent);
     }
 
-    private static CatalogTourDto CreateTour(string slug, string title, bool includeImage)
+    private static class PublicComponentTestsHelpers
     {
-        return new CatalogTourDto
+        public static CatalogTourDto CreateTour(string slug, string title, bool includeImage)
         {
-            Id = Guid.CreateVersion7(),
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = "TOUR-2026",
-            Title = title,
-            Slug = slug,
-            IsPublished = true,
-            Images = includeImage
-                ?
-                [
-                    new CatalogTourImageDto
+            return new CatalogTourDto
+            {
+                Id = Guid.CreateVersion7(),
+                AdminTourId = Guid.CreateVersion7(),
+                Identifier = "TOUR-2026",
+                Title = title,
+                Slug = slug,
+                IsPublished = true,
+                Images = includeImage
+                    ?
+                    [
+                        new CatalogTourImageDto
                     {
                         Uri = new Uri("https://cdn.example/camino.jpg"),
                         AltText = "Cyclists on the Camino",
                         Caption = "Camino caption"
                     }
-                ]
-                : [],
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
+                    ]
+                    : [],
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+        }
     }
 }

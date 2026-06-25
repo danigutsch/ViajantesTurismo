@@ -66,10 +66,10 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Xunit_Test_Methods_Should_Follow_Underscore_Naming_Convention()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = NamingConventionTestsHelpers.GetRepositoryRoot();
         var offendingMethods = Directory
             .GetFiles(Path.Combine(repositoryRoot, "tests"), "*.cs", SearchOption.AllDirectories)
-            .Where(path => !IsGeneratedTestPath(path))
+            .Where(path => !NamingConventionTestsHelpers.IsGeneratedTestPath(path))
             .SelectMany(path => FindOffendingXunitMethods(repositoryRoot, path))
             .ToArray();
 
@@ -81,7 +81,7 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Behavior_Feature_Files_Should_Use_A_Recognized_Naming_Style()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = NamingConventionTestsHelpers.GetRepositoryRoot();
         var behaviorSpecsRoot = Path.Combine(
             repositoryRoot,
             "tests",
@@ -90,7 +90,7 @@ public sealed partial class NamingConventionTests
 
         var offendingFiles = Directory
             .GetFiles(behaviorSpecsRoot, "*.feature", SearchOption.AllDirectories)
-            .Where(path => !IsGeneratedTestPath(path))
+            .Where(path => !NamingConventionTestsHelpers.IsGeneratedTestPath(path))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .Where(relativePath =>
             {
@@ -108,12 +108,12 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Mediator_Tests_Should_Not_Invoke_Methods_Inside_Simple_Assertions()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = NamingConventionTestsHelpers.GetRepositoryRoot();
         var mediatorTestsRoot = Path.Combine(repositoryRoot, "tests");
         var offendingAssertions = Directory
             .GetFiles(mediatorTestsRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => path.Contains("SharedKernel.Mediator", StringComparison.Ordinal))
-            .Where(path => !IsGeneratedTestPath(path))
+            .Where(path => !NamingConventionTestsHelpers.IsGeneratedTestPath(path))
             .SelectMany(path => FindOffendingAssertionMethodCalls(repositoryRoot, path))
             .ToArray();
 
@@ -183,28 +183,6 @@ public sealed partial class NamingConventionTests
         return [.. offendingAssertions];
     }
 
-    private static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(solutionPath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
-    }
-
-    private static bool IsGeneratedTestPath(string path) =>
-        path.Contains(@"\bin\", StringComparison.Ordinal)
-        || path.Contains(@"\obj\", StringComparison.Ordinal);
-
     private static bool IsStaticClass(Type type) => type is { IsAbstract: true, IsSealed: true };
 
     [GeneratedRegex(@"^\s*\[(Fact|Theory)\b", RegexOptions.Compiled)]
@@ -224,4 +202,33 @@ public sealed partial class NamingConventionTests
 
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]+\.feature$", RegexOptions.Compiled)]
     private static partial Regex PascalCaseFeatureFileRegex();
+
+    private static class NamingConventionTestsHelpers
+    {
+        public static string GetRepositoryRoot()
+        {
+            var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+
+            while (currentDirectory is not null)
+            {
+                var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
+                if (File.Exists(solutionPath))
+                {
+                    return currentDirectory.FullName;
+                }
+
+                currentDirectory = currentDirectory.Parent;
+            }
+
+            throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
+        }
+
+        public static bool IsGeneratedTestPath(string path)
+        {
+            var normalizedPath = path.Replace('\\', '/');
+
+            return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
+                || normalizedPath.Contains("/obj/", StringComparison.Ordinal);
+        }
+    }
 }

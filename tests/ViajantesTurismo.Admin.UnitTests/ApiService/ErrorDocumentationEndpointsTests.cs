@@ -32,7 +32,7 @@ public sealed class ErrorDocumentationEndpointsTests
 
         var result = method.Invoke(null, ["missing-entry"]);
         var union = Assert.IsType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>(result);
-        var notFound = Assert.IsType<NotFound<ProblemDetails>>(GetInnerResult(union));
+        var notFound = Assert.IsType<NotFound<ProblemDetails>>(ResultUnionHelpers.GetInnerResult(union));
         Assert.NotNull(notFound.Value);
         Assert.Equal("Error Documentation Not Found", notFound.Value.Title);
     }
@@ -55,18 +55,21 @@ public sealed class ErrorDocumentationEndpointsTests
 
         var result = method.Invoke(null, [knownIdentifier]);
         var union = Assert.IsType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>(result);
-        var ok = Assert.IsType<Ok<GetErrorDocumentationDto>>(GetInnerResult(union));
+        var ok = Assert.IsType<Ok<GetErrorDocumentationDto>>(ResultUnionHelpers.GetInnerResult(union));
         Assert.NotNull(ok.Value);
         Assert.Equal(knownIdentifier, ok.Value.Identifier);
     }
 
-    private static object GetInnerResult(object union)
+    private static class ResultUnionHelpers
     {
-        var resultProperty = union.GetType().GetProperty("Result", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        Assert.NotNull(resultProperty);
+        public static object GetInnerResult(object union)
+        {
+            var resultProperty = union.GetType().GetProperty("Result", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.NotNull(resultProperty);
 
-        var innerResult = resultProperty.GetValue(union);
-        Assert.NotNull(innerResult);
-        return innerResult;
+            var innerResult = resultProperty.GetValue(union);
+            Assert.NotNull(innerResult);
+            return innerResult;
+        }
     }
 }

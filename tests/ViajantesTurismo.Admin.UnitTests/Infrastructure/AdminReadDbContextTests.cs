@@ -9,7 +9,7 @@ public sealed class AdminReadDbContextTests
     public void SaveChanges_When_Called_Throws_Read_Only_Exception()
     {
         // Arrange
-        using var context = CreateContext();
+        using var context = AdminReadDbContexts.Create();
 
         // Act
         var exception = Assert.Throws<InvalidOperationException>(() => context.SaveChanges());
@@ -24,7 +24,7 @@ public sealed class AdminReadDbContextTests
     public async Task SaveChanges_When_Called_Asynchronously_Throws_Read_Only_Exception()
     {
         // Arrange
-        await using var context = CreateContext();
+        await using var context = AdminReadDbContexts.Create();
 
         // Act
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SaveChangesAsync(TestContext.Current.CancellationToken));
@@ -35,12 +35,15 @@ public sealed class AdminReadDbContextTests
             exception.Message);
     }
 
-    private static AdminReadDbContext CreateContext()
+    private static class AdminReadDbContexts
     {
-        var options = new DbContextOptionsBuilder<AdminReadDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
-            .Options;
+        public static AdminReadDbContext Create()
+        {
+            var options = new DbContextOptionsBuilder<AdminReadDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
+                .Options;
 
-        return new AdminReadDbContext(options);
+            return new AdminReadDbContext(options);
+        }
     }
 }

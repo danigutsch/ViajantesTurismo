@@ -27,17 +27,17 @@ public sealed class EntityIdGenerationTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        AssertUuidV7(result.Value.Id);
+        EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
     [Fact]
     public void Customer_Constructor_Should_Generate_UuidV7_Id()
     {
         // Arrange
-        var customer = CreateCustomer();
+        var customer = EntityIdTestData.CreateCustomer();
 
         // Assert
-        AssertUuidV7(customer.Id);
+        EntityIdAssertions.AssertUuidV7(customer.Id);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class EntityIdGenerationTests
         Assert.True(principalResult.IsSuccess);
         Assert.True(discountResult.IsSuccess);
         Assert.True(result.IsSuccess);
-        AssertUuidV7(result.Value.Id);
+        EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
     [Fact]
@@ -79,18 +79,23 @@ public sealed class EntityIdGenerationTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        AssertUuidV7(result.Value.Id);
+        EntityIdAssertions.AssertUuidV7(result.Value.Id);
     }
 
-    private static void AssertUuidV7(Guid id)
+    private static class EntityIdAssertions
     {
-        var guidText = id.ToString("D");
-        Assert.Equal('7', guidText[14]);
+        public static void AssertUuidV7(Guid id)
+        {
+            var guidText = id.ToString("D");
+            Assert.Equal('7', guidText[14]);
+        }
     }
 
-    private static Customer CreateCustomer()
+    private static class EntityIdTestData
     {
-        var personalInfo = PersonalInfo.Create(
+        public static Customer CreateCustomer()
+        {
+            var personalInfo = PersonalInfo.Create(
             firstName: "John",
             lastName: "Doe",
             gender: "Male",
@@ -136,14 +141,15 @@ public sealed class EntityIdGenerationTests
             allergies: "None",
             additionalInfo: "None").Value;
 
-        return new Customer(
-            personalInfo,
-            identificationInfo,
-            contactInfo,
-            address,
-            physicalInfo,
-            accommodation,
-            emergency,
-            medical);
+            return new Customer(
+                personalInfo,
+                identificationInfo,
+                contactInfo,
+                address,
+                physicalInfo,
+                accommodation,
+                emergency,
+                medical);
+        }
     }
 }

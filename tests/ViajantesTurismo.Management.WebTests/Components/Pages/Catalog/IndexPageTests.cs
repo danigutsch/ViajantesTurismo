@@ -19,8 +19,8 @@ public sealed class IndexPageTests : BunitContext
         // Arrange
         catalogApi.Tours =
         [
-            CreateTour("TOUR-1", "First Public Tour", "first-public-tour", isPublished: true),
-            CreateTour("TOUR-2", "Second Draft Tour", "second-draft-tour", isPublished: false)
+            IndexPageTestsHelpers.CreateTour("TOUR-1", "First Public Tour", "first-public-tour", isPublished: true),
+            IndexPageTestsHelpers.CreateTour("TOUR-2", "Second Draft Tour", "second-draft-tour", isPublished: false)
         ];
 
         // Act
@@ -70,7 +70,7 @@ public sealed class IndexPageTests : BunitContext
     {
         // Arrange
         catalogApi.Tours = Enumerable.Range(1, 11)
-            .Select(index => CreateTour($"TOUR-{index:00}", $"Tour {index:00}", $"tour-{index:00}", isPublished: index % 2 == 0))
+            .Select(index => IndexPageTestsHelpers.CreateTour($"TOUR-{index:00}", $"Tour {index:00}", $"tour-{index:00}", isPublished: index % 2 == 0))
             .ToArray();
 
         // Act
@@ -79,21 +79,6 @@ public sealed class IndexPageTests : BunitContext
 
         // Assert
         Assert.Contains("pagination", cut.Markup, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static CatalogTourDto CreateTour(string identifier, string title, string slug, bool isPublished)
-    {
-        return new CatalogTourDto
-        {
-            Id = Guid.CreateVersion7(),
-            AdminTourId = Guid.CreateVersion7(),
-            Identifier = identifier,
-            Title = title,
-            Slug = slug,
-            IsPublished = isPublished,
-            Images = [],
-            UpdatedAt = new DateTimeOffset(2026, 6, 25, 10, 30, 0, TimeSpan.Zero)
-        };
     }
 
     private sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
@@ -109,6 +94,24 @@ public sealed class IndexPageTests : BunitContext
             return ThrowOnGetTours
                 ? throw new HttpRequestException("Catalog unavailable.")
                 : Task.FromResult(Tours);
+        }
+    }
+
+    private static class IndexPageTestsHelpers
+    {
+        public static CatalogTourDto CreateTour(string identifier, string title, string slug, bool isPublished)
+        {
+            return new CatalogTourDto
+            {
+                Id = Guid.CreateVersion7(),
+                AdminTourId = Guid.CreateVersion7(),
+                Identifier = identifier,
+                Title = title,
+                Slug = slug,
+                IsPublished = isPublished,
+                Images = [],
+                UpdatedAt = new DateTimeOffset(2026, 6, 25, 10, 30, 0, TimeSpan.Zero)
+            };
         }
     }
 }

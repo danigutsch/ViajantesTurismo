@@ -13,10 +13,10 @@ public sealed class PublicCatalogApiClientTests
     {
         // Arrange
         var requestPath = string.Empty;
-        using var httpClient = CreateClient(request =>
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
         {
             requestPath = request.Path + request.QueryString.Value;
-            return JsonResponse("""
+            return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 [
                   {
                     "id":"11111111-1111-1111-1111-111111111111",
@@ -63,10 +63,10 @@ public sealed class PublicCatalogApiClientTests
     {
         // Arrange
         var requestPath = string.Empty;
-        using var httpClient = CreateClient(request =>
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
         {
             requestPath = request.Path + request.QueryString.Value;
-            return JsonResponse("""
+            return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 {
                   "id":"11111111-1111-1111-1111-111111111111",
                   "adminTourId":"22222222-2222-2222-2222-222222222222",
@@ -93,7 +93,7 @@ public sealed class PublicCatalogApiClientTests
     public async Task GetPublishedTourBySlug_Returns_Null_When_Catalog_Returns_NotFound()
     {
         // Arrange
-        using var httpClient = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
@@ -107,7 +107,7 @@ public sealed class PublicCatalogApiClientTests
     public async Task GetPublishedTourBySlug_Throws_When_Catalog_Returns_Unexpected_Error()
     {
         // Arrange
-        using var httpClient = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadGateway));
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadGateway));
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
@@ -115,37 +115,6 @@ public sealed class PublicCatalogApiClientTests
 
         // Assert
         await Assert.ThrowsAsync<HttpRequestException>(async () => await act);
-    }
-
-    private static StubHttpClient CreateClient(Func<HttpRequest, HttpResponseMessage> handler)
-    {
-        var host = new HostBuilder()
-            .ConfigureWebHost(builder => builder
-                .UseTestServer()
-                .Configure(app => app.Run(async context =>
-                {
-                    using var response = handler(context.Request);
-
-                    context.Response.StatusCode = (int)response.StatusCode;
-
-                    if (response.Content is not null)
-                    {
-                        context.Response.ContentType = response.Content.Headers.ContentType?.ToString();
-                        var content = await response.Content.ReadAsStringAsync(context.RequestAborted);
-                        await context.Response.WriteAsync(content, context.RequestAborted);
-                    }
-                })))
-            .Start();
-
-        return new StubHttpClient(host);
-    }
-
-    private static HttpResponseMessage JsonResponse(string json)
-    {
-        return new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        };
     }
 
     private sealed class StubHttpClient : HttpClient
@@ -166,6 +135,40 @@ public sealed class PublicCatalogApiClientTests
             }
 
             base.Dispose(disposing);
+        }
+    }
+
+    private static class PublicCatalogApiClientTestsHelpers
+    {
+        public static StubHttpClient CreateClient(Func<HttpRequest, HttpResponseMessage> handler)
+        {
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder => builder
+                    .UseTestServer()
+                    .Configure(app => app.Run(async context =>
+                    {
+                        using var response = handler(context.Request);
+
+                        context.Response.StatusCode = (int)response.StatusCode;
+
+                        if (response.Content is not null)
+                        {
+                            context.Response.ContentType = response.Content.Headers.ContentType?.ToString();
+                            var content = await response.Content.ReadAsStringAsync(context.RequestAborted);
+                            await context.Response.WriteAsync(content, context.RequestAborted);
+                        }
+                    })))
+                .Start();
+
+            return new StubHttpClient(host);
+        }
+
+        public static HttpResponseMessage JsonResponse(string json)
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
         }
     }
 }

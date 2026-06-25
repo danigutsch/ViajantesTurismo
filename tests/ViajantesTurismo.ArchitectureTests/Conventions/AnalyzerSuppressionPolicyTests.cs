@@ -1,72 +1,53 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed partial class AnalyzerSuppressionPolicyTests
 {
-    private static readonly HashSet<string> ApprovedNoWarnEntries =
-    [
-    ];
-
-    private static readonly HashSet<string> ApprovedPragmaFiles =
-    [
-        "src/ViajantesTurismo.Admin.Infrastructure/Migrations/20251114124325_Initial.Designer.cs",
-        "src/ViajantesTurismo.Admin.Infrastructure/Migrations/AdminWriteDbContextModelSnapshot.cs",
-        "tests/SharedKernel.Testing.Analyzers.Tests/SharedKernelTestingAnalyzerTests.cs"
-    ];
-
     private static readonly HashSet<string> ApprovedSuppressMessageFiles =
     [
         "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs"
     ];
 
     [Fact]
-    public void Project_And_Props_NoWarn_Entries_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
+    public void Project_And_Props_Should_Not_Use_NoWarn_Entries()
     {
-        var repositoryRoot = GetRepositoryRoot();
-        var noWarnEntries = EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
-            .Concat(EnumerateRepositoryFiles(repositoryRoot, "*.props"))
-            .Where(path => !IsIgnoredPath(path))
+        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var noWarnEntries = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
+            .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.props"))
+            .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .SelectMany(path => FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
 
-        var unapprovedEntries = noWarnEntries
-            .Where(entry => !ApprovedNoWarnEntries.Contains(entry))
-            .ToArray();
-        var staleApprovedEntries = ApprovedNoWarnEntries
-            .Where(entry => !noWarnEntries.Contains(entry))
-            .ToArray();
-
         Assert.True(
-            unapprovedEntries.Length == 0,
-            $"Expected NoWarn entries to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, unapprovedEntries)}");
-        Assert.True(
-            staleApprovedEntries.Length == 0,
-            $"Expected approved NoWarn entries to match current suppressions, but found stale allowlist entries:{Environment.NewLine}{string.Join(Environment.NewLine, staleApprovedEntries)}");
+            noWarnEntries.Length == 0,
+            $"Expected project and props files not to use NoWarn entries, but found:{Environment.NewLine}{string.Join(Environment.NewLine, noWarnEntries)}");
     }
 
     [Fact]
-    public void Pragma_Warning_Suppressions_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
+    public void Hand_Written_Source_Should_Not_Use_Pragma_Warning_Suppressions()
     {
-        var repositoryRoot = GetRepositoryRoot();
-        var filesWithPragmas = EnumerateRepositoryFiles(repositoryRoot, "*.cs")
-            .Where(path => !IsIgnoredPath(path))
-            .Where(path => PragmaWarningDirectiveRegex().IsMatch(File.ReadAllText(path)))
+        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var filesWithPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
+            .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
+            .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsGeneratedSource(repositoryRoot, path))
+            .Where(ContainsPragmaWarningDirective)
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
-            .Where(path => !ApprovedPragmaFiles.Contains(path))
             .ToArray();
 
         Assert.True(
             filesWithPragmas.Length == 0,
-            $"Expected pragma warning suppressions to stay on the approved analyzer policy allowlist, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
+            $"Expected hand-written source not to use pragma warning suppressions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, filesWithPragmas)}");
     }
 
     [Fact]
     public void SuppressMessage_Attributes_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
     {
-        var repositoryRoot = GetRepositoryRoot();
-        var filesWithSuppressMessage = EnumerateRepositoryFiles(repositoryRoot, "*.cs")
-            .Where(path => !IsIgnoredPath(path))
+        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var filesWithSuppressMessage = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
+            .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .Where(path => SuppressMessageAttributeRegex().IsMatch(File.ReadAllText(path)))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .Where(path => !ApprovedSuppressMessageFiles.Contains(path))
@@ -96,80 +77,96 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         return [.. entries];
     }
 
-    private static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
+    private static bool ContainsPragmaWarningDirective(string filePath)
     {
-        return EnumerateRepositoryFiles(new DirectoryInfo(repositoryRoot), searchPattern);
-    }
-
-    private static IEnumerable<string> EnumerateRepositoryFiles(DirectoryInfo directory, string searchPattern)
-    {
-        foreach (var file in directory.EnumerateFiles(searchPattern))
-        {
-            yield return file.FullName;
-        }
-
-        foreach (var childDirectory in directory.EnumerateDirectories())
-        {
-            if (IsIgnoredDirectoryName(childDirectory.Name))
-            {
-                continue;
-            }
-
-            foreach (var file in EnumerateRepositoryFiles(childDirectory, searchPattern))
-            {
-                yield return file;
-            }
-        }
-    }
-
-    private static bool IsIgnoredPath(string path)
-    {
-        return ContainsDirectorySegment(path, "bin")
-            || ContainsDirectorySegment(path, "obj")
-            || ContainsDirectorySegment(path, ".git")
-            || ContainsDirectorySegment(path, ".nuget")
-            || ContainsDirectorySegment(path, ".worktrees")
-            || path.EndsWith(".feature.cs", StringComparison.Ordinal);
-    }
-
-    private static bool IsIgnoredDirectoryName(string directoryName)
-    {
-        return directoryName is "bin" or "obj" or ".git" or ".nuget" or ".worktrees";
-    }
-
-    private static bool ContainsDirectorySegment(string path, string directoryName)
-    {
-        return path.Contains(
-            $"{Path.DirectorySeparatorChar}{directoryName}{Path.DirectorySeparatorChar}",
-            StringComparison.Ordinal);
-    }
-
-    private static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(solutionPath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
+        var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath));
+        return syntaxTree.GetRoot()
+            .DescendantTrivia(descendIntoTrivia: true)
+            .Any(static trivia => trivia.GetStructure() is PragmaWarningDirectiveTriviaSyntax);
     }
 
     [GeneratedRegex(@"<NoWarn(?:\s+[^>]*)?>\s*([^<]+)</NoWarn>", RegexOptions.CultureInvariant)]
     private static partial Regex NoWarnRegex();
 
-    [GeneratedRegex(@"^\s*#pragma\s+warning\s+disable\b", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
-    private static partial Regex PragmaWarningDirectiveRegex();
-
     [GeneratedRegex(
         @"^\s*\[\s*(?:assembly:\s*)?(?:(?:global::)?System\.Diagnostics\.CodeAnalysis\.)?SuppressMessage(?:Attribute)?\s*\(",
         RegexOptions.Multiline | RegexOptions.CultureInvariant)]
     private static partial Regex SuppressMessageAttributeRegex();
+
+    private static class AnalyzerSuppressionPolicyTestsHelpers
+    {
+        public static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
+        {
+            return EnumerateRepositoryFiles(new DirectoryInfo(repositoryRoot), searchPattern);
+        }
+
+        public static bool IsIgnoredPath(string path)
+        {
+            return ContainsDirectorySegment(path, "bin")
+                || ContainsDirectorySegment(path, "obj")
+                || ContainsDirectorySegment(path, ".git")
+                || ContainsDirectorySegment(path, ".nuget")
+                || path.EndsWith(".feature.cs", StringComparison.Ordinal);
+        }
+
+        public static bool IsGeneratedSource(string repositoryRoot, string path)
+        {
+            var relativePath = Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
+
+            return relativePath.Contains("/Migrations/", StringComparison.Ordinal)
+                && (relativePath.EndsWith(".Designer.cs", StringComparison.Ordinal)
+                    || relativePath.EndsWith("ModelSnapshot.cs", StringComparison.Ordinal));
+        }
+
+        public static string GetRepositoryRoot()
+        {
+            var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+
+            while (currentDirectory is not null)
+            {
+                var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
+                if (File.Exists(solutionPath))
+                {
+                    return currentDirectory.FullName;
+                }
+
+                currentDirectory = currentDirectory.Parent;
+            }
+
+            throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
+        }
+
+        private static IEnumerable<string> EnumerateRepositoryFiles(DirectoryInfo directory, string searchPattern)
+        {
+            foreach (var file in directory.EnumerateFiles(searchPattern))
+            {
+                yield return file.FullName;
+            }
+
+            foreach (var childDirectory in directory.EnumerateDirectories())
+            {
+                if (IsIgnoredDirectoryName(childDirectory.Name))
+                {
+                    continue;
+                }
+
+                foreach (var file in EnumerateRepositoryFiles(childDirectory, searchPattern))
+                {
+                    yield return file;
+                }
+            }
+        }
+
+        private static bool IsIgnoredDirectoryName(string directoryName)
+        {
+            return directoryName is "bin" or "obj" or ".git" or ".nuget" or ".worktrees";
+        }
+
+        private static bool ContainsDirectorySegment(string path, string directoryName)
+        {
+            return path.Contains(
+                $"{Path.DirectorySeparatorChar}{directoryName}{Path.DirectorySeparatorChar}",
+                StringComparison.Ordinal);
+        }
+    }
 }
