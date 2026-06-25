@@ -19,12 +19,9 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     {
         ct.ThrowIfCancellationRequested();
 
-        if (FailListRequests)
-        {
-            throw new HttpRequestException("Catalog unavailable.");
-        }
-
-        return Task.FromResult(tours.ToArray());
+        return FailListRequests
+            ? throw new HttpRequestException("Catalog unavailable.")
+            : Task.FromResult(tours.ToArray());
     }
 
     public Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)

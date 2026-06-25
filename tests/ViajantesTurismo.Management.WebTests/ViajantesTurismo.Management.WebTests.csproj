@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="bunit"/>
+        <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

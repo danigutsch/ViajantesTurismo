@@ -106,12 +106,9 @@ public sealed class IndexPageTests : BunitContext
         {
             ct.ThrowIfCancellationRequested();
 
-            if (ThrowOnGetTours)
-            {
-                throw new HttpRequestException("Catalog unavailable.");
-            }
-
-            return Task.FromResult(Tours);
+            return ThrowOnGetTours
+                ? throw new HttpRequestException("Catalog unavailable.")
+                : Task.FromResult(Tours);
         }
     }
 }

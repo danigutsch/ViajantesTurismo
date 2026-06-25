@@ -1,5 +1,10 @@
 using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -11,9 +16,9 @@ public sealed class CatalogToursApiClientTests
     {
         // Arrange
         var requestPath = string.Empty;
-        using var httpClient = CreateClient((request, _) =>
+        using var httpClient = CreateClient(request =>
         {
-            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            requestPath = request.Path + request.QueryString.Value;
             return JsonResponse("""
                 [
                   {
@@ -57,7 +62,7 @@ public sealed class CatalogToursApiClientTests
     public async Task GetTours_Returns_Empty_Array_When_Catalog_Returns_Only_Nulls()
     {
         // Arrange
-        using var httpClient = CreateClient((_, _) => JsonResponse("[null,null]"));
+        using var httpClient = CreateClient(_ => JsonResponse("[null,null]"));
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
@@ -67,12 +72,27 @@ public sealed class CatalogToursApiClientTests
         Assert.Empty(tours);
     }
 
-    private static StubHttpClient CreateClient(Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> handler)
+    private static StubHttpClient CreateClient(Func<HttpRequest, HttpResponseMessage> handler)
     {
-        return new StubHttpClient(handler)
-        {
-            BaseAddress = new Uri("https://catalog.example")
-        };
+        var host = new HostBuilder()
+            .ConfigureWebHost(builder => builder
+                .UseTestServer()
+                .Configure(app => app.Run(async context =>
+                {
+                    using var response = handler(context.Request);
+
+                    context.Response.StatusCode = (int)response.StatusCode;
+
+                    if (response.Content is not null)
+                    {
+                        context.Response.ContentType = response.Content.Headers.ContentType?.ToString();
+                        var content = await response.Content.ReadAsStringAsync(context.RequestAborted);
+                        await context.Response.WriteAsync(content, context.RequestAborted);
+                    }
+                })))
+            .Start();
+
+        return new StubHttpClient(host);
     }
 
     private static HttpResponseMessage JsonResponse(string json)
@@ -83,16 +103,24 @@ public sealed class CatalogToursApiClientTests
         };
     }
 
-    private sealed class StubHttpMessageHandler(
-        Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> handler) : HttpMessageHandler
+    private sealed class StubHttpClient : HttpClient
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        private readonly IHost host;
+
+        public StubHttpClient(IHost host) : base(host.GetTestServer().CreateHandler(), disposeHandler: true)
         {
-            return Task.FromResult(handler(request, cancellationToken));
+            this.host = host;
+            BaseAddress = new Uri("https://catalog.example");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                host.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
-
-    private sealed class StubHttpClient(
-        Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> handler) : HttpClient(
-        new StubHttpMessageHandler(handler), disposeHandler: true);
 }
