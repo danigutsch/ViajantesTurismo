@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Using Include="System.Net" />
         <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />

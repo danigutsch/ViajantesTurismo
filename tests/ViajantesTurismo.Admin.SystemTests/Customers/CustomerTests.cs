@@ -69,6 +69,7 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Page.FillAsync("#city", "E2ECity");
         await Page.FillAsync("#state", "TS");
         await Page.FillAsync("#country", "Brazil");
+        await Page.Locator("#country").BlurAsync();
 
         await Page.GetButton("Next").ClickAsync();
 
