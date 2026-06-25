@@ -32,6 +32,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var filesWithPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
+            .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsGeneratedSource(repositoryRoot, path))
             .Where(ContainsPragmaWarningDirective)
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .ToArray();
@@ -105,8 +106,16 @@ public sealed partial class AnalyzerSuppressionPolicyTests
                 || ContainsDirectorySegment(path, "obj")
                 || ContainsDirectorySegment(path, ".git")
                 || ContainsDirectorySegment(path, ".nuget")
-                || ContainsDirectorySegment(path, ".worktrees")
                 || path.EndsWith(".feature.cs", StringComparison.Ordinal);
+        }
+
+        public static bool IsGeneratedSource(string repositoryRoot, string path)
+        {
+            var relativePath = Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
+
+            return relativePath.Contains("/Migrations/", StringComparison.Ordinal)
+                && (relativePath.EndsWith(".Designer.cs", StringComparison.Ordinal)
+                    || relativePath.EndsWith("ModelSnapshot.cs", StringComparison.Ordinal));
         }
 
         public static string GetRepositoryRoot()
