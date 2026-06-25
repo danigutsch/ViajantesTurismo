@@ -36,6 +36,7 @@ Current Aspire integration:
 
 - opt-in resource: `admin-performance-smoke`
 - enable with `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`
+- AppHost wiring lives in `src/ViajantesTurismo.AppHost/PerformanceTestingResourceExtensions.cs`
 
 ## Intent
 
@@ -72,6 +73,10 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
 Use `VT_K6_PROFILE=average-load` for conservative broader validation. Keep `stress` manual-only.
+
+The Aspire resource injects `VT_API_BASE_URL` from the Admin API endpoint. It also forwards
+`VT_K6_PROFILE`, `VT_K6_RESULTS_DIR`, `VT_K6_VUS`, `VT_K6_DURATION`, `VT_K6_USE_DOCKER`, and
+`VT_K6_DOCKER_IMAGE` when those values are set before AppHost starts.
 
 ## Results
 

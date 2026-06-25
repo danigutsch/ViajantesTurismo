@@ -66,6 +66,10 @@ Set `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` before starting AppHost. Aspire adds 
 `admin-performance-smoke` executable resource, waits for the Admin API, injects `VT_API_BASE_URL`,
 and writes summaries to `tests/performance/results/` unless `VT_K6_RESULTS_DIR` is set.
 
+The AppHost resource wiring is intentionally kept outside `AppHost.cs` in
+`src/ViajantesTurismo.AppHost/PerformanceTestingResourceExtensions.cs` so the AppHost remains a
+readable orchestration map.
+
 ```bash
 VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
