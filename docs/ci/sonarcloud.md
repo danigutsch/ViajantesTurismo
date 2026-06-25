@@ -163,10 +163,16 @@ Coverage exclusions skip:
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
   compatibility shim
 
-Duplication exclusions currently cover:
+Application `Program.cs` files are not excluded from coverage. Startup and default endpoint behavior should
+be covered with focused `WebApplicationFactory` or equivalent host tests instead of a broad coverage exclusion.
+
+Duplication exclusions skip:
 
 - `benchmarks/**` because benchmark source factories intentionally repeat controlled variants
-- mediator analyzer and code-fix files that intentionally repeat handler-shape and template logic
+
+Production source files are not excluded from duplication analysis by default. Repeated analyzer,
+code-fix, source-generator, or building-block code should be refactored or justified with a narrow
+documented pattern before being excluded.
 
 To add further exclusions, append additional comma-separated glob patterns to the matching
 `sonar.exclusions`, `sonar.coverage.exclusions`, or `sonar.cpd.exclusions` property in the script.

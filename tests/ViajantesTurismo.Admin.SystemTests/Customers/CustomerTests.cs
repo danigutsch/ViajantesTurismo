@@ -40,13 +40,13 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page).ToHaveTitleAsync("Create Customer - Identification");
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#nationalId", nationalId);
-
         // CountrySelector for ID Nationality has no explicit id; locate by label context
         var idNatField = Page.Locator(".mb-3").Filter(new LocatorFilterOptions { HasText = "ID Nationality" });
         await idNatField.Locator("button.form-select").ClickAsync();
         await Page.Locator(".country-dropdown-menu input").FillAsync("Brazil");
         await Page.Locator(".country-dropdown-item", new PageLocatorOptions { HasText = "Brazil" }).First.ClickAsync();
+
+        await Page.FillAsync("#nationalId", nationalId);
 
         await Page.GetButton("Next").ClickAsync();
 

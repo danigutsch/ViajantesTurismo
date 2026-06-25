@@ -32,6 +32,7 @@ Decisions about code quality standards and testing practices.
 - **[ADR-006](adr/20251108-type-safety-test-step-definitions.md)** — Type Safety in Test Step Definitions
 - **[ADR-018](adr/20260228-test-parallelization-with-assembly-fixtures.md)** — Test Parallelization with xUnit v3 Assembly Fixtures
 - **[ADR-019](adr/20260321-no-task-delay-in-production-code.md)** — No Direct Task.Delay in Production Code
+- **[ADR-028](adr/20260625-api-entrypoint-test-markers.md)** — API Entry Point Test Markers
 
 ### Architecture & Layers
 

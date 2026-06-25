@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ViajantesTurismo.Catalog.ApiServiceTests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Net" />
+        <Using Include="Microsoft.AspNetCore.Hosting" />
+        <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <Using Include="ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure" />
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="xunit.v3.mtp-v2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
+        <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+    </ItemGroup>
+
+</Project>
