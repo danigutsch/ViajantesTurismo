@@ -30,6 +30,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
