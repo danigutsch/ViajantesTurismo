@@ -280,6 +280,8 @@ detect_pull_request_key() {
     if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" && "${GITHUB_REF:-}" =~ ^refs/pull/([0-9]+)/ ]]; then
         sonar_pull_request_key="${BASH_REMATCH[1]}"
     fi
+
+    return 0
 }
 
 extract_issue_total() {

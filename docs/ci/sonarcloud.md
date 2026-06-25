@@ -59,7 +59,7 @@ repository-owned CI policy fails the SonarCloud job when pull request new code h
 of these issue categories:
 
 - any unresolved issue whose impacted software quality is `SECURITY`
-- any unresolved issue whose impact severity is `MEDIUM`, `HIGH`, or `BLOCKER`
+- any unresolved issue whose Web API impact severity is `MEDIUM`, `HIGH`, or `BLOCKER`
 
 The script uses the pull request key and project key instead of scraping SonarCloud UI pages.
 GitHub summaries include `SONAR POLICY` lines so the failing issue category is visible in CI.
