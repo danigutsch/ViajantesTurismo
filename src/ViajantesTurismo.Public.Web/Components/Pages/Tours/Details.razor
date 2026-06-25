@@ -44,6 +44,9 @@ else
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
+        _loadFailed = false;
+        _tour = null;
+
         try
         {
             _tour = await CatalogApi.GetPublishedTourBySlug(Slug, CancellationToken.None);

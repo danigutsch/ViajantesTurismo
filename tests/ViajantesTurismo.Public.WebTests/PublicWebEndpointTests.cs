@@ -45,6 +45,47 @@ public sealed class PublicWebEndpointTests
         Assert.Contains($"<h1>{expectedHeading}</h1>", content, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Public_Tour_Details_Returns_Tour_Content_When_Catalog_Loads()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
+
+        await using var factory = PublicWebTestHost.Create(catalogApiClient: catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/group-bike-tours/camino-norte", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h1>Camino Norte</h1>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Public_Tour_Details_Returns_Unavailable_When_Catalog_Fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailDetailsRequests = true };
+
+        await using var factory = PublicWebTestHost.Create(catalogApiClient: catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/group-bike-tours/camino-norte", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h1>Tour unavailable</h1>", content, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("/health")]
     [InlineData("/alive")]
@@ -110,6 +151,21 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private static CatalogTourDto CreateTour(string slug, string title)
+    {
+        return new CatalogTourDto
+        {
+            Id = Guid.CreateVersion7(),
+            AdminTourId = Guid.CreateVersion7(),
+            Identifier = "TOUR-2026",
+            Title = title,
+            Slug = slug,
+            IsPublished = true,
+            Images = [],
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
     }
 
 }
