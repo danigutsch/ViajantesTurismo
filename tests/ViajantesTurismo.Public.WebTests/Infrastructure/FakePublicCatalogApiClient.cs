@@ -21,7 +21,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         return FailListRequests
             ? throw new HttpRequestException("Catalog unavailable.")
-            : Task.FromResult(tours.ToArray());
+            : Task.FromResult(tours.Where(tour => tour.IsPublished).ToArray());
     }
 
     public Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
@@ -33,7 +33,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
             throw new HttpRequestException("Catalog unavailable.");
         }
 
-        var tour = tours.FirstOrDefault(tour => string.Equals(tour.Slug, slug, StringComparison.Ordinal));
+        var tour = tours.FirstOrDefault(tour =>
+            tour.IsPublished && string.Equals(tour.Slug, slug, StringComparison.Ordinal));
         return Task.FromResult(tour);
     }
 }

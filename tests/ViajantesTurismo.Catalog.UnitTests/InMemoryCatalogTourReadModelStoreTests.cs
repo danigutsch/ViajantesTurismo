@@ -81,17 +81,16 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
     }
 
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task GetPublishedTourBySlug_Rejects_Invalid_Slugs(string? slug)
+    public async Task GetPublishedTourBySlug_Rejects_Invalid_Slugs(string slug)
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
 
         // Act
         var lookup = Assert.ThrowsAnyAsync<ArgumentException>(
-            async () => await sut.GetPublishedTourBySlug(slug!, TestContext.Current.CancellationToken));
+            async () => await sut.GetPublishedTourBySlug(slug, TestContext.Current.CancellationToken));
 
         // Assert
         await lookup;

@@ -299,6 +299,14 @@ if not isinstance(issues, list):
     print(payload.get("total", 0))
     raise SystemExit(0)
 
+total = payload.get("total", len(issues))
+if isinstance(total, int) and total > len(issues):
+    print(
+        f"Sonar issue response is truncated: total={total}, returned={len(issues)}.",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+
 closed_issue_statuses = {"ACCEPTED", "FALSE_POSITIVE", "FIXED"}
 closed_statuses = {"CLOSED", "RESOLVED"}
 
@@ -329,7 +337,7 @@ query_sonar_issues() {
         --data-urlencode "componentKeys=${sonar_project_key}" \
         --data-urlencode "pullRequest=${sonar_pull_request_key}" \
         --data-urlencode "resolved=false" \
-        --data-urlencode "ps=100" \
+        --data-urlencode "ps=500" \
         --data-urlencode "${filter_key}=${filter_value}" \
         --output "${response_file}"
 }
