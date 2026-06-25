@@ -54,9 +54,9 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
     {
         // Arrange
         var uid = Guid.NewGuid().ToString("N")[..8];
-        for (var index = 0; index <= 10; index++)
+        for (var index = 0; index < 20; index++)
         {
-            await ApiClient.CreateCustomer(firstName: $"List{uid}{index:00}", lastName: "Smoke");
+            await ApiClient.CreateCustomer(firstName: $"ZzzList{uid}{index:00}", lastName: "Smoke");
         }
 
         // Act

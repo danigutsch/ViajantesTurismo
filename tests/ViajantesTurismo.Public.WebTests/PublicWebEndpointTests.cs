@@ -20,6 +20,7 @@ public sealed class PublicWebEndpointTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("<html lang=\"en\">", content, StringComparison.Ordinal);
         Assert.Contains("Viajantes Turismo", content, StringComparison.Ordinal);
         Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
         Assert.Contains("New tours will be published soon.", content, StringComparison.Ordinal);

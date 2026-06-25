@@ -13,15 +13,15 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         tours.Add(tour);
     }
 
-    public Task<CatalogTourDto[]> GetPublishedTours(CancellationToken cancellationToken)
+    public Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(tours.ToArray());
     }
 
-    public Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken cancellationToken)
+    public Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
 
         var tour = tours.FirstOrDefault(tour => string.Equals(tour.Slug, slug, StringComparison.Ordinal));
         return Task.FromResult(tour);

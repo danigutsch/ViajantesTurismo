@@ -1,10 +1,21 @@
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
 /// <summary>
-/// Serial E2E smoke tests that require a clean database baseline to verify empty-state UI behavior.
+/// E2E smoke tests that require an isolated database baseline to verify empty-state UI behavior.
 /// </summary>
-public class ErrorHandlingTests(AspireSystemTestFixture fixture) : AspireSerialSystemTestBase(fixture)
+public class ErrorHandlingTests(IsolatedAspireSystemTestFixture fixture)
+    : AspireSystemTestBase<IsolatedAspireSystemTestFixture>(fixture), IClassFixture<IsolatedAspireSystemTestFixture>
 {
+    private static readonly TimeSpan DatabaseResetTimeout = TimeSpan.FromSeconds(30);
+
+    public override async ValueTask InitializeAsync()
+    {
+        await base.InitializeAsync();
+
+        using var cts = new CancellationTokenSource(DatabaseResetTimeout);
+        await Fixture.ResetToKnownBaseline(cts.Token);
+    }
+
     [Fact]
     [SerialE2EReason(
         "/customers renders the empty-state branch only when the API returns zero customers; any " +

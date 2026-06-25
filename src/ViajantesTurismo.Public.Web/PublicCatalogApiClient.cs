@@ -5,11 +5,11 @@ namespace ViajantesTurismo.Public.Web;
 
 internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatalogApiClient
 {
-    public async Task<CatalogTourDto[]> GetPublishedTours(CancellationToken cancellationToken)
+    public async Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
     {
         List<CatalogTourDto>? tours = null;
 
-        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable<CatalogTourDto>("/public/catalog/tours", cancellationToken))
+        await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable<CatalogTourDto>("/public/catalog/tours", ct))
         {
             if (tour is null)
             {
@@ -23,10 +23,10 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
         return tours?.ToArray() ?? [];
     }
 
-    public async Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken cancellationToken)
+    public async Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         var escapedSlug = Uri.EscapeDataString(slug);
-        using var response = await httpClient.GetAsync(new Uri($"/public/catalog/tours/{escapedSlug}", UriKind.Relative), cancellationToken);
+        using var response = await httpClient.GetAsync(new Uri($"/public/catalog/tours/{escapedSlug}", UriKind.Relative), ct);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -34,6 +34,6 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
 
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<CatalogTourDto>(cancellationToken);
+        return await response.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
     }
 }

@@ -4,7 +4,7 @@ namespace ViajantesTurismo.Public.Web;
 
 internal interface IPublicCatalogApiClient
 {
-    Task<CatalogTourDto[]> GetPublishedTours(CancellationToken cancellationToken);
+    Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct);
 
-    Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken cancellationToken);
+    Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct);
 }

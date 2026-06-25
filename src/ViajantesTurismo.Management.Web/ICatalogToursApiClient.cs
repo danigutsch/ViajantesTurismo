@@ -4,5 +4,5 @@ namespace ViajantesTurismo.Management.Web;
 
 internal interface ICatalogToursApiClient
 {
-    Task<CatalogTourDto[]> GetTours(CancellationToken cancellationToken);
+    Task<CatalogTourDto[]> GetTours(CancellationToken ct);
 }
