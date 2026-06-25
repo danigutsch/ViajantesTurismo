@@ -18,8 +18,8 @@ Actions variable. Set that variable to the current repository CI baseline runner
 ## Dependency review workflow
 
 A separate workflow (`.github/workflows/dependency-review.yml`) runs the
-`actions/dependency-review-action` on every pull request and on merge queue checks
-(`merge_group`). It scans manifest and lock file changes for newly introduced
+`actions/dependency-review-action` on every pull request, every branch push, and on merge queue
+checks (`merge_group`). It scans manifest and lock file changes for newly introduced
 vulnerabilities and fails the check when severity is `moderate` or higher.
 
 This workflow is intentionally separate from the main CI workflow so that its required
@@ -27,6 +27,10 @@ check status does not interfere with path-based optimizations in the CI workflow
 
 The action natively understands `merge_group` payloads, so the same required check name
 continues to report correctly when merge queue is enabled.
+
+On branch pushes, the workflow compares `main` to the pushed commit with explicit
+`base-ref` and `head-ref` inputs. This gives the required `Dependency Review` context an
+automatic branch-push path if a pull request synchronize run is not created.
 
 ## Actionlint workflow
 
@@ -91,7 +95,7 @@ skipped in that case. This also keeps least-privilege boundaries tighter because
 scan/install path itself only needs read-only repository access.
 
 Unlike the path-scoped governance workflows, `Secret Scan` is a good merge-gate candidate
-because it runs on all pull requests and pushes to `main`, has a low runtime cost, and
+because it runs on all pull requests and branch pushes, has a low runtime cost, and
 protects against a high-impact failure mode that should block merges when detected.
 
 `Secret Scan` also runs on `merge_group` so a required merge-queue build reports the same
