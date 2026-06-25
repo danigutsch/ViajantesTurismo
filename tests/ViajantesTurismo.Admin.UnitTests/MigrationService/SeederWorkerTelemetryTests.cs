@@ -96,14 +96,14 @@ public sealed class SeederWorkerTelemetryTests
 
     private static class SeederWorkerTestHelpers
     {
-        public static async Task ExecuteWorker(SeederWorker worker, CancellationToken cancellationToken)
+        public static async Task ExecuteWorker(SeederWorker worker, CancellationToken ct)
         {
             var executeAsync = typeof(SeederWorker).GetMethod(
                 "ExecuteAsync",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
             Assert.NotNull(executeAsync);
-            var executionTask = (Task?)executeAsync.Invoke(worker, [cancellationToken]);
+            var executionTask = (Task?)executeAsync.Invoke(worker, [ct]);
             Assert.NotNull(executionTask);
             await executionTask;
         }
