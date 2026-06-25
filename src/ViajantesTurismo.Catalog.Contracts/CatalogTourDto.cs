@@ -1,22 +1,57 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace ViajantesTurismo.Catalog.Contracts;
 
 /// <summary>
 /// Represents a Catalog tour projection exposed to management and public web clients.
 /// </summary>
-/// <param name="Id">The Catalog tour identifier.</param>
-/// <param name="AdminTourId">The source Admin tour identifier.</param>
-/// <param name="Identifier">The customer-facing tour identifier.</param>
-/// <param name="Title">The customer-facing tour title.</param>
-/// <param name="Slug">The stable public URL slug.</param>
-/// <param name="IsPublished">A value indicating whether the tour is visible on the public website.</param>
-/// <param name="Images">The images that can be rendered in public tour galleries.</param>
-/// <param name="UpdatedAt">The timestamp of the event that last updated the projection.</param>
-public sealed record CatalogTourDto(
-    Guid Id,
-    Guid AdminTourId,
-    string Identifier,
-    string Title,
-    string Slug,
-    bool IsPublished,
-    IReadOnlyList<CatalogTourImageDto> Images,
-    DateTimeOffset UpdatedAt);
+public sealed record CatalogTourDto
+{
+    /// <summary>
+    /// Gets the Catalog tour identifier.
+    /// </summary>
+    [Required]
+    public required Guid Id { get; init; }
+
+    /// <summary>
+    /// Gets the source Admin tour identifier.
+    /// </summary>
+    [Required]
+    public required Guid AdminTourId { get; init; }
+
+    /// <summary>
+    /// Gets the customer-facing tour identifier.
+    /// </summary>
+    [Required, StringLength(ContractConstants.MaxDefaultLength, MinimumLength = 1)]
+    public required string Identifier { get; init; }
+
+    /// <summary>
+    /// Gets the customer-facing tour title.
+    /// </summary>
+    [Required, StringLength(ContractConstants.MaxNameLength, MinimumLength = 1)]
+    public required string Title { get; init; }
+
+    /// <summary>
+    /// Gets the stable public URL slug.
+    /// </summary>
+    [Required, StringLength(ContractConstants.MaxSlugLength, MinimumLength = 1)]
+    public required string Slug { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether the tour is visible on the public website.
+    /// </summary>
+    [Required]
+    public required bool IsPublished { get; init; }
+
+    /// <summary>
+    /// Gets the images that can be rendered in public tour galleries.
+    /// </summary>
+    [Required]
+    public required IReadOnlyList<CatalogTourImageDto> Images { get; init; }
+
+    /// <summary>
+    /// Gets the timestamp of the event that last updated the projection.
+    /// </summary>
+    [Required]
+    public required DateTimeOffset UpdatedAt { get; init; }
+}

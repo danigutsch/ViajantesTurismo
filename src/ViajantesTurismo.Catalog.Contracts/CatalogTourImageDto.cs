@@ -1,12 +1,27 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace ViajantesTurismo.Catalog.Contracts;
 
 /// <summary>
 /// Represents an image in a public Catalog tour gallery.
 /// </summary>
-/// <param name="Uri">The public image URI.</param>
-/// <param name="AltText">The accessible image description.</param>
-/// <param name="Caption">An optional display caption.</param>
-public sealed record CatalogTourImageDto(
-    Uri Uri,
-    string AltText,
-    string? Caption);
+public sealed record CatalogTourImageDto
+{
+    /// <summary>
+    /// Gets the public image URI.
+    /// </summary>
+    [Required]
+    public required Uri Uri { get; init; }
+
+    /// <summary>
+    /// Gets the accessible image description.
+    /// </summary>
+    [Required, StringLength(ContractConstants.MaxAltTextLength, MinimumLength = 1)]
+    public required string AltText { get; init; }
+
+    /// <summary>
+    /// Gets an optional display caption.
+    /// </summary>
+    [StringLength(ContractConstants.MaxCaptionLength)]
+    public string? Caption { get; init; }
+}

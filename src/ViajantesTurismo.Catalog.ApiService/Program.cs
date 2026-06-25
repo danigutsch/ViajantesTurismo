@@ -35,15 +35,17 @@ await app.RunAsync();
 
 static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 {
-    return new CatalogTourDto(
-        tour.CatalogTourId,
-        tour.AdminTourId,
-        tour.Identifier,
-        tour.Title,
-        CreateSlug(tour.Identifier),
-        IsPublished(tour),
-        [],
-        tour.UpdatedAt);
+    return new CatalogTourDto
+    {
+        Id = tour.CatalogTourId,
+        AdminTourId = tour.AdminTourId,
+        Identifier = tour.Identifier,
+        Title = tour.Title,
+        Slug = CreateSlug(tour.Identifier),
+        IsPublished = IsPublished(tour),
+        Images = [],
+        UpdatedAt = tour.UpdatedAt
+    };
 }
 
 static bool IsPublished(CatalogTourDraftReadModel tour)
