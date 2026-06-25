@@ -4,6 +4,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<CatalogTourDto> tours = [];
 
+    public bool FailListRequests { get; set; }
+
     public bool FailDetailsRequests { get; set; }
 
     public void AddTour(CatalogTourDto tour)
@@ -16,6 +18,12 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     public Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (FailListRequests)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
+        }
+
         return Task.FromResult(tours.ToArray());
     }
 

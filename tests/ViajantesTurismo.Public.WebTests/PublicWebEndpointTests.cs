@@ -26,6 +26,43 @@ public sealed class PublicWebEndpointTests
         Assert.Contains("New tours will be published soon.", content, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Root_Returns_Published_Tours_When_Catalog_Loads()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
+
+        await using var factory = CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_Returns_Unavailable_Message_When_Catalog_Fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
+
+        await using var factory = CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Tours could not be loaded right now. Try again later.", content, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("/group-bike-tours", "Group Bike Tours")]
     [InlineData("/gallery", "Gallery")]
@@ -43,6 +80,47 @@ public sealed class PublicWebEndpointTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
         Assert.Contains($"<h1>{expectedHeading}</h1>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Public_Tour_List_Returns_Published_Tours_When_Catalog_Loads()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(CreateTour("camino-norte", "Camino Norte"));
+
+        await using var factory = CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/group-bike-tours", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h2><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h2>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Public_Tour_List_Returns_Unavailable_Message_When_Catalog_Fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
+
+        await using var factory = CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/group-bike-tours", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Tours could not be loaded right now. Try again later.", content, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,6 +162,24 @@ public sealed class PublicWebEndpointTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("<h1>Tour unavailable</h1>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Public_Tour_Details_Returns_Not_Found_When_Tour_Is_Not_Published()
+    {
+        // Arrange
+        await using var factory = CreateFactory();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/group-bike-tours/missing-tour", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h1>Tour not found</h1>", content, StringComparison.Ordinal);
     }
 
     [Theory]
