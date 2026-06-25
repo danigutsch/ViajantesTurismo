@@ -25,6 +25,11 @@ app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, Can
 
 app.MapGet("/public/catalog/tours/{slug}", async (string slug, ICatalogTourReadModelStore store, CancellationToken ct) =>
 {
+    if (string.IsNullOrWhiteSpace(slug))
+    {
+        return Results.BadRequest();
+    }
+
     var tour = await store.GetPublishedTourBySlug(slug, ct);
     return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
 });
@@ -55,3 +60,13 @@ static bool IsPublished(CatalogTourDraftReadModel tour)
 }
 
 static string CreateSlug(string identifier) => identifier.Trim();
+
+/// <summary>
+/// Exposes the Catalog API entry point for integration tests.
+/// </summary>
+internal partial class Program
+{
+    protected Program()
+    {
+    }
+}
