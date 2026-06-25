@@ -1,6 +1,7 @@
 tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj
 tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj
+tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj
 tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj
 tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj
 tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj

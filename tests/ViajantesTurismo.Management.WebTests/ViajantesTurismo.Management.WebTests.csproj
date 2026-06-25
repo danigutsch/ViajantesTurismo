@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Using Include="Bunit"/>
         <Using Include="Bunit.TestDoubles"/>
         <Using Include="Microsoft.AspNetCore.Components.Forms"/>
