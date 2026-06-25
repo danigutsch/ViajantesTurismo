@@ -120,6 +120,8 @@ Coverage exclusions skip:
   the .NET test coverage pipeline
 - `tests/performance/**` because the current performance/load-testing assets are JavaScript-based tool inputs,
   not .NET code exercised by the repository's MTP coverage pipeline
+- `src/ViajantesTurismo.AppHost/**` because the AppHost is local orchestration code and is already
+  excluded from MTP collection in `coverage.settings.xml`
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/IsExternalInit.cs` because it is a
   compatibility shim
 
@@ -128,5 +130,5 @@ Duplication exclusions currently cover:
 - `benchmarks/**` because benchmark source factories intentionally repeat controlled variants
 - mediator analyzer and code-fix files that intentionally repeat handler-shape and template logic
 
-To add further exclusions, append additional comma-separated glob patterns to the existing
-`sonar.exclusions` property in the script.
+To add further exclusions, append additional comma-separated glob patterns to the matching
+`sonar.exclusions`, `sonar.coverage.exclusions`, or `sonar.cpd.exclusions` property in the script.
