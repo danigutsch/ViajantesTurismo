@@ -128,7 +128,7 @@ function Test-K6Prerequisites {
 
     if ($k6Command) {
         Write-Host "   ✅ k6 installed: $($k6Command.Source)" -ForegroundColor Green
-        Write-Host "   💡 Run the Admin smoke scenario with: VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh" -ForegroundColor Cyan
+        Write-Host "   💡 Run the Admin smoke scenario with: VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh" -ForegroundColor Cyan
     }
     else {
         Write-Host "   ⚠️ k6 not available - performance/load testing scripts will be skipped locally" -ForegroundColor Yellow
@@ -147,7 +147,7 @@ function Write-SetupSummary {
     Write-Host "  1. Run the application: dotnet tool run aspire run" -ForegroundColor White
     Write-Host "  2. Run tests: dotnet test" -ForegroundColor White
     Write-Host "  3. Install Playwright browsers after build: bash scripts/install-playwright.sh" -ForegroundColor White
-    Write-Host "  4. Optional performance smoke run: VT_API_BASE_URL=http://127.0.0.1:5001 scripts/run-admin-performance-smoke.sh" -ForegroundColor White
+    Write-Host "  4. Optional performance smoke run: VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh" -ForegroundColor White
     Write-Host "  5. Validate a commit message: bash scripts/validate-commit-message.sh /path/to/message.txt" -ForegroundColor White
     Write-Host "     (If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)" -ForegroundColor DarkGray
     Write-Host "  6. Tool inventory reference: README.md (required local, optional local, CI-only, and devcontainer-provided tools)" -ForegroundColor White

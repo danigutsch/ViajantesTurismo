@@ -36,7 +36,7 @@ The `stress` profile is manual-only for now. These assets are not intended for:
 
 ## Required environment
 
-- `VT_API_BASE_URL`: base URL of the Admin API, for example `http://127.0.0.1:5510`
+- `VT_API_BASE_URL`: base URL of the Admin API, from Aspire output or the Aspire dashboard
 
 Optional overrides:
 
@@ -50,13 +50,13 @@ Optional overrides:
 ## Run with wrapper
 
 ```bash
-VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
+$env:VT_API_BASE_URL = '<admin-api-url>'
 scripts/run-admin-performance-smoke.ps1
 ```
 
@@ -86,7 +86,7 @@ Wrapper behavior:
 ## Run raw k6
 
 ```bash
-k6 run -e VT_API_BASE_URL=http://127.0.0.1:5510 tests/performance/k6/scenarios/admin-smoke.js
+k6 run -e VT_API_BASE_URL=<admin-api-url> tests/performance/k6/scenarios/admin-smoke.js
 ```
 
 ## Run raw Docker k6
@@ -96,7 +96,7 @@ docker run --rm \
   --add-host host.docker.internal:host-gateway \
   -v "$(pwd):/work" -w /work \
   grafana/k6:0.49.0 run \
-  -e VT_API_BASE_URL=http://host.docker.internal:5510 \
+  -e VT_API_BASE_URL=<docker-reachable-admin-api-url> \
   -e VT_K6_PROFILE=smoke \
   tests/performance/k6/scenarios/admin-smoke.js
 ```

@@ -53,15 +53,17 @@ This is not yet a full load-testing suite.
 Start the local stack first, then point the wrapper at the Admin API endpoint:
 
 ```bash
-VT_API_BASE_URL=http://127.0.0.1:5510 scripts/run-admin-performance-smoke.sh
+VT_API_BASE_URL=<admin-api-url> scripts/run-admin-performance-smoke.sh
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:VT_API_BASE_URL = 'http://127.0.0.1:5510'
+$env:VT_API_BASE_URL = '<admin-api-url>'
 scripts/run-admin-performance-smoke.ps1
 ```
+
+Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard.
 
 ## Run With Aspire
 

@@ -7,7 +7,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 if ([string]::IsNullOrWhiteSpace($env:VT_API_BASE_URL)) {
-    Write-Error 'VT_API_BASE_URL is required, for example http://127.0.0.1:5510'
+    Write-Error 'VT_API_BASE_URL is required. Use the Admin API endpoint from Aspire output or the Aspire dashboard.'
 }
 
 $scriptDirectory = Split-Path -Parent $PSCommandPath
