@@ -9,11 +9,18 @@
         <Using Include="System.Net" />
         <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <Using Include="Microsoft.AspNetCore.TestHost" />
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
+        <Using Include="SharedKernel.Testing" />
+        <Using Include="ViajantesTurismo.Catalog.Contracts" />
+        <Using Include="ViajantesTurismo.Public.Web" />
         <Using Include="ViajantesTurismo.Public.WebTests.Infrastructure" />
         <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="bunit" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
@@ -22,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="..\SharedKernel.AspNetCoreTesting\WebApplicationTestHost.cs" Link="Infrastructure\WebApplicationTestHost.cs" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
     </ItemGroup>

@@ -22,6 +22,12 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
         }
       },
+      "Microsoft.AspNetCore.TestHost": {
+        "type": "Direct",
+        "requested": "[10.0.8, )",
+        "resolved": "10.0.8",
+        "contentHash": "HRH/XAke90wkHv9ykCsrvpVqvKOUt53jQzvHHIXrPIPZWAjyPq6B5/InCmPYWvme+WKMXD10rplMAitzNMtC3w=="
+      },
       "Microsoft.Testing.Extensions.CodeCoverage": {
         "type": "Direct",
         "requested": "[18.7.0, )",
@@ -823,6 +829,9 @@
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )"
         }
       },
+      "viajantesturismo.catalog.contracts": {
+        "type": "Project"
+      },
       "viajantesturismo.common": {
         "type": "Project",
         "dependencies": {
@@ -835,6 +844,7 @@
           "Aspire.StackExchange.Redis.OutputCaching": "[13.3.5, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.8, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )",
           "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
         }

@@ -11,4 +11,19 @@ public interface ICatalogTourReadModelStore
     /// <param name="tour">The projected tour row.</param>
     /// <param name="ct">The cancellation token.</param>
     ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct);
+
+    /// <summary>
+    /// Lists Catalog tour projection rows for management workflows.
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The current Catalog tour projection rows.</returns>
+    ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct);
+
+    /// <summary>
+    /// Gets a published Catalog tour by its public slug.
+    /// </summary>
+    /// <param name="slug">The public tour slug.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The published tour row when one exists; otherwise, <see langword="null" />.</returns>
+    ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct);
 }

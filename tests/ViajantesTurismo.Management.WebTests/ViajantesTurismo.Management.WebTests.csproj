@@ -11,6 +11,7 @@
         <Using Include="Microsoft.AspNetCore.Components.Forms"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
         <Using Include="ViajantesTurismo.Admin.Contracts"/>
+        <Using Include="ViajantesTurismo.Catalog.Contracts"/>
         <Using Include="ViajantesTurismo.Admin.Testing.Builders.DtoBuilders" Static="True"/>
         <Using Include="ViajantesTurismo.Admin.Testing.Fakes.ApiClients"/>
         <Using Include="ViajantesTurismo.Management.Web.Components.Shared"/>
@@ -20,6 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="bunit"/>
+        <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

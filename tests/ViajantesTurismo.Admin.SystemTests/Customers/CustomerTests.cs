@@ -26,7 +26,9 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Page.FillAsync("#firstName", firstName);
         await Page.FillAsync("#lastName", lastName);
         await Page.FillAsync("#birthDate", "1990-06-15");
-        await Page.SelectOptionAsync("#gender", "Female");
+        var genderInput = Page.Locator("#gender");
+        await genderInput.SelectOptionAsync("Female");
+        await Expect(genderInput).ToHaveValueAsync("Female");
 
         // CountrySelector: click to open, search, select
         await Page.Locator("#nationality").ClickAsync();
@@ -40,13 +42,18 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page).ToHaveTitleAsync("Create Customer - Identification");
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
+        var nationalIdInput = Page.Locator("#nationalId");
+        await nationalIdInput.FillAsync(nationalId);
+        await Expect(nationalIdInput).ToHaveValueAsync(nationalId);
+
         // CountrySelector for ID Nationality has no explicit id; locate by label context
         var idNatField = Page.Locator(".mb-3").Filter(new LocatorFilterOptions { HasText = "ID Nationality" });
         await idNatField.Locator("button.form-select").ClickAsync();
         await Page.Locator(".country-dropdown-menu input").FillAsync("Brazil");
         await Page.Locator(".country-dropdown-item", new PageLocatorOptions { HasText = "Brazil" }).First.ClickAsync();
 
-        await Page.FillAsync("#nationalId", nationalId);
+        await nationalIdInput.FillAsync(nationalId);
+        await Expect(nationalIdInput).ToHaveValueAsync(nationalId);
 
         await Page.GetButton("Next").ClickAsync();
 
@@ -78,15 +85,22 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
 
         await Page.FillAsync("#weightKg", "65");
         await Page.FillAsync("#heightCm", "170");
-        await Page.SelectOptionAsync("#bikeType", "Regular");
+        var bikeTypeInput = Page.Locator("#bikeType");
+        await bikeTypeInput.SelectOptionAsync("Regular");
+        await Expect(bikeTypeInput).ToHaveValueAsync("Regular");
 
         await Page.GetButton("Next").ClickAsync();
 
         await Expect(Page).ToHaveTitleAsync("Create Customer - Accommodation Preferences");
         await Expect(Page.GetByText("Step 6 of 8")).ToBeVisibleAsync();
 
-        await Page.SelectOptionAsync("#roomType", "SingleOccupancy");
-        await Page.SelectOptionAsync("#bedType", "DoubleBed");
+        var roomTypeInput = Page.Locator("#roomType");
+        await roomTypeInput.SelectOptionAsync("SingleOccupancy");
+        await Expect(roomTypeInput).ToHaveValueAsync("SingleOccupancy");
+
+        var bedTypeInput = Page.Locator("#bedType");
+        await bedTypeInput.SelectOptionAsync("DoubleBed");
+        await Expect(bedTypeInput).ToHaveValueAsync("DoubleBed");
 
         await Page.GetButton("Next").ClickAsync();
 

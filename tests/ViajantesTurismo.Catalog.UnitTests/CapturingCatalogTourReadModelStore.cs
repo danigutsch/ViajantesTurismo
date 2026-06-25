@@ -17,4 +17,15 @@ public sealed class CapturingCatalogTourReadModelStore : ICatalogTourReadModelSt
 
         return ValueTask.CompletedTask;
     }
+
+    public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
+    {
+        IReadOnlyList<CatalogTourDraftReadModel> snapshot = drafts.ToArray();
+        return ValueTask.FromResult(snapshot);
+    }
+
+    public ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    {
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
+    }
 }

@@ -1,0 +1,26 @@
+@if (Tour.Images.Count > 0)
+{
+    <img src="@Tour.Images[0].Uri" alt="@Tour.Images[0].AltText" loading="lazy" />
+}
+
+@if (HeadingLevel == 3)
+{
+    <h3><a href="@TourUrl(Tour)">@Tour.Title</a></h3>
+}
+else
+{
+    <h2><a href="@TourUrl(Tour)">@Tour.Title</a></h2>
+}
+
+<p>@Tour.Identifier</p>
+<a href="@TourUrl(Tour)">Learn more</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public required CatalogTourDto Tour { get; set; }
+
+    [Parameter]
+    public int HeadingLevel { get; set; } = 2;
+
+    private static string TourUrl(CatalogTourDto tour) => $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}";
+}

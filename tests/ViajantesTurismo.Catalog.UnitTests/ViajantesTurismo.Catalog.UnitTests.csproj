@@ -6,10 +6,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="..\SharedKernel.AspNetCoreTesting\WebApplicationTestHost.cs" Link="Infrastructure\WebApplicationTestHost.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -19,8 +24,12 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
+        <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

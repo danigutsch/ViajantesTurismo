@@ -1,0 +1,54 @@
+@page "/"
+@inject IPublicCatalogApiClient CatalogApi
+
+<PageTitle>Cycle Tourism Around the World - Viajantes Turismo</PageTitle>
+
+<h1>Cycle tourism around the world!</h1>
+<p>Travel differently. ViajantesTurismo is culture, health, and fun.</p>
+
+<section aria-labelledby="published-tours">
+    <h2 id="published-tours">Our tours</h2>
+
+    @if (_loadFailed)
+    {
+        <p>Tours could not be loaded right now. Try again later.</p>
+    }
+    else if (_tours is null)
+    {
+        <p><em>Loading tours...</em></p>
+    }
+    else if (_tours.Length == 0)
+    {
+        <p>New tours will be published soon.</p>
+    }
+    else
+    {
+        <div class="tour-list">
+            @foreach (var tour in _tours)
+            {
+                <article>
+                    <TourCard Tour="tour" HeadingLevel="3" />
+                </article>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private CatalogTourDto[]? _tours;
+    private bool _loadFailed;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _tours = await CatalogApi.GetPublishedTours(CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _loadFailed = true;
+            _tours = [];
+        }
+    }
+}
