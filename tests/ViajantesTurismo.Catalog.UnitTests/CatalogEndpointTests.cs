@@ -16,8 +16,8 @@ public sealed class CatalogEndpointTests
     public async Task Catalog_Tour_List_Returns_All_Tours()
     {
         // Arrange
-        var store = new StubCatalogTourReadModelStore(CreateTour("TOUR-002", "Dolomites"));
-        await using var factory = CreateFactory(store);
+        var store = new StubCatalogTourReadModelStore(CatalogEndpointTestsHelpers.CreateTour("TOUR-002", "Dolomites"));
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(store);
         using var client = factory.CreateClient();
 
         // Act
@@ -37,8 +37,8 @@ public sealed class CatalogEndpointTests
     public async Task Public_Tour_List_Returns_Empty_List_When_No_Tours_Are_Published()
     {
         // Arrange
-        var store = new StubCatalogTourReadModelStore(CreateTour("TOUR-002", "Dolomites"));
-        await using var factory = CreateFactory(store);
+        var store = new StubCatalogTourReadModelStore(CatalogEndpointTestsHelpers.CreateTour("TOUR-002", "Dolomites"));
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(store);
         using var client = factory.CreateClient();
 
         // Act
@@ -57,7 +57,7 @@ public sealed class CatalogEndpointTests
     public async Task Public_Tour_Details_Returns_NotFound_When_Tour_Is_Not_Published()
     {
         // Arrange
-        await using var factory = CreateFactory(new StubCatalogTourReadModelStore());
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());
         using var client = factory.CreateClient();
 
         // Act
@@ -73,7 +73,7 @@ public sealed class CatalogEndpointTests
     public async Task Public_Tour_Details_Returns_BadRequest_For_Whitespace_Slug()
     {
         // Arrange
-        await using var factory = CreateFactory(new StubCatalogTourReadModelStore());
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());
         using var client = factory.CreateClient();
 
         // Act
@@ -83,27 +83,6 @@ public sealed class CatalogEndpointTests
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    private static WebApplicationFactory<ICatalogApiAssemblyMarker> CreateFactory(ICatalogTourReadModelStore store)
-    {
-        return WebApplicationTestHost.Create<ICatalogApiAssemblyMarker>(
-            configureTestServices: services =>
-            {
-                services.RemoveAll<ICatalogTourReadModelStore>();
-                services.AddSingleton(store);
-            });
-    }
-
-    private static CatalogTourDraftReadModel CreateTour(string identifier, string title)
-    {
-        return new CatalogTourDraftReadModel(
-            Guid.CreateVersion7(),
-            Guid.CreateVersion7(),
-            identifier,
-            title,
-            1,
-            DateTimeOffset.UtcNow);
     }
 
     private sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadModel[] tours) : ICatalogTourReadModelStore
@@ -122,6 +101,30 @@ public sealed class CatalogEndpointTests
         public ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
         {
             return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
+        }
+    }
+
+    private static class CatalogEndpointTestsHelpers
+    {
+        public static WebApplicationFactory<ICatalogApiAssemblyMarker> CreateFactory(ICatalogTourReadModelStore store)
+        {
+            return WebApplicationTestHost.Create<ICatalogApiAssemblyMarker>(
+                configureTestServices: services =>
+                {
+                    services.RemoveAll<ICatalogTourReadModelStore>();
+                    services.AddSingleton(store);
+                });
+        }
+
+        public static CatalogTourDraftReadModel CreateTour(string identifier, string title)
+        {
+            return new CatalogTourDraftReadModel(
+                Guid.CreateVersion7(),
+                Guid.CreateVersion7(),
+                identifier,
+                title,
+                1,
+                DateTimeOffset.UtcNow);
         }
     }
 }

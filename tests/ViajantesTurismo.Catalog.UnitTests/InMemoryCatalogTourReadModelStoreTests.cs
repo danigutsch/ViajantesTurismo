@@ -13,9 +13,9 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
         var alphaLaterId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var alphaEarlierId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-        await sut.UpsertDraft(CreateTour(Guid.CreateVersion7(), "Zulu"), TestContext.Current.CancellationToken);
-        await sut.UpsertDraft(CreateTour(alphaLaterId, "alpha"), TestContext.Current.CancellationToken);
-        await sut.UpsertDraft(CreateTour(alphaEarlierId, "Alpha"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Zulu"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(alphaLaterId, "alpha"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(alphaEarlierId, "Alpha"), TestContext.Current.CancellationToken);
 
         // Act
         var tours = await sut.ListTours(TestContext.Current.CancellationToken);
@@ -34,10 +34,10 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
         var tourId = Guid.CreateVersion7();
-        await sut.UpsertDraft(CreateTour(tourId, "Original"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Original"), TestContext.Current.CancellationToken);
 
         // Act
-        await sut.UpsertDraft(CreateTour(tourId, "Updated"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Updated"), TestContext.Current.CancellationToken);
         var tours = await sut.ListTours(TestContext.Current.CancellationToken);
 
         // Assert
@@ -50,7 +50,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
-        await sut.UpsertDraft(CreateTour(Guid.CreateVersion7(), "Draft"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Draft"), TestContext.Current.CancellationToken);
 
         // Act
         var tour = await sut.GetPublishedTourBySlug("draft", TestContext.Current.CancellationToken);
@@ -69,7 +69,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
 
         // Act
         var upsert = Assert.ThrowsAsync<OperationCanceledException>(
-            async () => await sut.UpsertDraft(CreateTour(Guid.CreateVersion7(), "Cancelled"), cts.Token));
+            async () => await sut.UpsertDraft(InMemoryCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Cancelled"), cts.Token));
         var list = Assert.ThrowsAsync<OperationCanceledException>(async () => await sut.ListTours(cts.Token));
         var lookup = Assert.ThrowsAsync<OperationCanceledException>(
             async () => await sut.GetPublishedTourBySlug("cancelled", cts.Token));
@@ -96,14 +96,17 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
         await lookup;
     }
 
-    private static CatalogTourDraftReadModel CreateTour(Guid id, string title)
+    private static class InMemoryCatalogTourReadModelStoreTestsHelpers
     {
-        return new CatalogTourDraftReadModel(
-            id,
-            Guid.CreateVersion7(),
-            $"TOUR-{title}",
-            title,
-            1,
-            DateTimeOffset.UtcNow);
+        public static CatalogTourDraftReadModel CreateTour(Guid id, string title)
+        {
+            return new CatalogTourDraftReadModel(
+                id,
+                Guid.CreateVersion7(),
+                $"TOUR-{title}",
+                title,
+                1,
+                DateTimeOffset.UtcNow);
+        }
     }
 }
