@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 
 namespace ViajantesTurismo.Public.WebTests;
