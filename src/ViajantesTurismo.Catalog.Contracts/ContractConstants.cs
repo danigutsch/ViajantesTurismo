@@ -29,4 +29,9 @@ public static class ContractConstants
     /// The maximum length for image captions.
     /// </summary>
     public const int MaxCaptionLength = 256;
+
+    /// <summary>
+    /// The maximum length for public content body text.
+    /// </summary>
+    public const int MaxBodyLength = 4000;
 }

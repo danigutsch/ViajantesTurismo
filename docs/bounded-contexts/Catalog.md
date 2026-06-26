@@ -22,6 +22,8 @@ presentation model.
 - **Management editing** - Provide management-facing APIs for editing public presentation content.
 - **Versioned content history** - Store customer-facing changes as event streams for replay,
   diagnostics, and projection rebuilds.
+- **Editable public website content** - Own business-editable website text and SEO content for
+  English and Brazilian Portuguese variants.
 
 ## Bounded Context Map
 
@@ -89,6 +91,55 @@ Expected invariants:
 - Published tours require title, summary, slug, and minimum public content.
 - Archived tours cannot be published without explicit reactivation.
 - Public detail projections are built from published Catalog state only.
+
+### Slug Policy
+
+Catalog owns public tour slugs because they are part of the customer-facing URL contract. Slug
+generation and validation should stay in Catalog domain/application code until another maintained
+bounded context needs the same rules.
+
+Initial slug rules:
+
+- Slugs are required for published tours.
+- Slugs are lowercase ASCII path segments using `a-z`, `0-9`, and single hyphens.
+- Whitespace and separator runs collapse to one hyphen.
+- Leading and trailing hyphens are removed.
+- Accented Latin letters normalize to their ASCII base letter when practical.
+- Slugs must not exceed the Catalog contract maximum length.
+- Slugs are unique within Catalog published and draft tour records.
+- Slugs should be stable after publication; changes need explicit redirect/compatibility handling.
+
+Keep conventional UI labels and unrelated URL helpers out of this model. If future CMS or media
+features need identical URL-safe identifier rules, create a focused SharedKernel extraction issue
+after the second real caller exists.
+
+### EditablePublicContent
+
+**Purpose**: Own business-editable public website text that is not a conventional UI label.
+
+Expected data:
+
+- Stable content key, such as a page or section identifier.
+- Source language entered by the editor.
+- English (`en-US`) content variant.
+- Brazilian Portuguese (`pt-BR`) content variant.
+- Publication state: draft, review required, or published.
+- SEO title, meta description, and social sharing summary where those are business content.
+
+Initial rules:
+
+- Both supported language variants are modeled explicitly.
+- The English slot must contain `en-US`, and the Brazilian Portuguese slot must contain `pt-BR`.
+- The editor source language must be one of the supported languages.
+- AI-generated or machine-translated variants are marked as requiring human review.
+- Content with any review-required variant starts in review-required state.
+- Content can move to published only after no variant requires human review.
+- Published rendering must use published content only.
+- Conventional labels such as About and Gallery stay in code or localization resources unless a
+  business-editing need appears.
+
+The initial domain model is `EditablePublicContent` with `PublicContentVariant` values. Persistent
+tables and public/management API contracts should be added with the rendering/editor slices.
 
 ## Event Sourcing
 
