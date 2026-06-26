@@ -98,6 +98,10 @@ public sealed class Tour : Entity<Guid> { }
 Order: Using directives → Namespace → XML docs → Type declaration → Private fields →
 Constructors (private first) → Public properties → Public methods (factory first) → Private methods
 
+Keep one top-level C# type per hand-written source file. When extracting helpers, fakes, builders,
+or test plumbing, move them to their own clearly named files instead of adding file-local helper
+types beside the primary type.
+
 ## Code Style
 
 ### Expression Bodies
