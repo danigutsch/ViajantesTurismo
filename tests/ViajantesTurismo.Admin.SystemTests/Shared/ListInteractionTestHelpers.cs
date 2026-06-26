@@ -3,14 +3,14 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public static class ListInteractionTestHelpers
+public static partial class ListInteractionTestHelpers
 {
     public static async Task<(int CurrentPage, int TotalPages)> ReadPaginationState(ILocator paginationText)
     {
         ArgumentNullException.ThrowIfNull(paginationText);
 
         var text = await paginationText.InnerTextAsync();
-        var match = Regex.Match(text, @"Page\s+(?<current>\d+)\s+of\s+(?<total>\d+)");
+        var match = PaginationStateRegex().Match(text);
 
         Assert.True(match.Success, $"Expected pagination text in 'Page N of M' format, but found '{text}'.");
 
@@ -35,4 +35,7 @@ public static class ListInteractionTestHelpers
 
         Assert.Equal(sortedTexts, visibleTexts);
     }
+
+    [GeneratedRegex(@"Page\s+(?<current>\d+)\s+of\s+(?<total>\d+)")]
+    private static partial Regex PaginationStateRegex();
 }

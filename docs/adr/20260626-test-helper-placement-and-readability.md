@@ -6,19 +6,17 @@ Tests should make behavior easy to read. The arrange, act, and assert flow shoul
 inputs, action, and business-visible outcome without making readers inspect hidden class members.
 
 Helper methods and nested helper types inside an xUnit test class can hide complexity behind the test
-class itself. Private helpers are especially easy to add because they feel local, but they make the
-test class carry two responsibilities: specifying behavior and hosting reusable plumbing. Internal
-static helpers on a test class have the same problem when multiple tests reuse them: the behavior is
-spread across the class instead of being explicit in each test or isolated in a named helper type.
+class itself. Private and internal helpers are common forms of this pattern, but accessibility is not
+the core issue. The issue is that the test class carries two responsibilities: specifying behavior
+and hosting reusable plumbing.
 
-Nested helper types, including internal nested types, also add hidden structure to a test class and
-make navigation harder. They keep complexity inside the test class instead of moving it to a named
-test helper file where the abstraction can be reviewed independently.
+Nested helper types also add hidden structure to a test class and make navigation harder. They keep
+complexity inside the test class instead of moving it to a named test helper file where the
+abstraction can be reviewed independently.
 
 ## Decision
 
-xUnit test classes must not declare helper members directly when those members hide reusable or
-non-test behavior.
+xUnit test classes must not declare helper members directly.
 
 Apply these rules:
 
@@ -26,10 +24,8 @@ Apply these rules:
 - Use local functions only for truly local logic used by one test.
 - Move reusable setup, assertions, fakes, builders, and test doubles to dedicated helper types in
   their own files near the consuming test project.
-- Flag private helper methods declared directly on xUnit test classes.
-- Flag reused internal static helper methods declared directly on xUnit test classes.
-- Flag non-public nested helper types declared directly on xUnit test classes, explicitly including
-  internal nested types.
+- Flag helper methods declared directly on xUnit test classes, regardless of accessibility.
+- Flag nested helper types declared directly on xUnit test classes, regardless of accessibility.
 
 `SKTEST004` enforces this rule so contributors get fast feedback before review.
 
@@ -46,6 +42,8 @@ Apply these rules:
 
 - Allow internal nested helper types in test classes. Rejected because they still hide complexity in
   the test class and weaken the readability rule.
+- Allow public or internal helper methods in test classes. Rejected because accessibility does not
+  change whether the method hides test plumbing in the test class.
 - Allow private helper methods for one-off test setup. Rejected because local functions provide the
   same locality without expanding the test class surface.
 - Suppress analyzer findings for existing tests. Rejected because this would make the rule optional

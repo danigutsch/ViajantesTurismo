@@ -37,7 +37,7 @@ internal static class EditPageTestsHelper
             singleRoomSupplementPrice: 200.00m,
             regularBikePrice: 50.00m,
             eBikePrice: 100.00m,
-            includedServices: new List<string> { "Hotel", "Breakfast", "Lunch" },
+            includedServices: ["Hotel", "Breakfast", "Lunch"],
             minCustomers: 5,
             maxCustomers: 15,
             currentCustomerCount: 3);

@@ -6,12 +6,8 @@ internal static partial class NamingConventionTestsHelpers
 {
     public static bool IsWithinSolution(string? @namespace, IReadOnlyCollection<string> solutionRootNamespaces)
     {
-        if (@namespace is null)
-        {
-            return false;
-        }
-
-        return solutionRootNamespaces.Any(root => @namespace.StartsWith(root, StringComparison.Ordinal));
+        return @namespace is not null
+            && solutionRootNamespaces.Any(root => @namespace.StartsWith(root, StringComparison.Ordinal));
     }
 
     public static string[] FindOffendingXunitMethods(string repositoryRoot, string filePath)

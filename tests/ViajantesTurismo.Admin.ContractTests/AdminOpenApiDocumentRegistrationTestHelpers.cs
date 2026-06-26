@@ -11,12 +11,9 @@ internal static class AdminOpenApiDocumentRegistrationTestHelpers
             throw new InvalidOperationException($"Expected OpenAPI path '{path}' to exist.");
         }
 
-        if (!pathItem.Operations.TryGetValue(HttpMethod.Post, out var operation))
-        {
-            throw new InvalidOperationException($"Expected POST operation for '{path}'.");
-        }
-
-        return operation.RequestBody?.Content?["multipart/form-data"].Schema as OpenApiSchema
+        return !pathItem.Operations.TryGetValue(HttpMethod.Post, out var operation)
+            ? throw new InvalidOperationException($"Expected POST operation for '{path}'.")
+            : operation.RequestBody?.Content?["multipart/form-data"].Schema as OpenApiSchema
             ?? throw new InvalidOperationException($"Expected multipart schema for '{path}'.");
     }
 }

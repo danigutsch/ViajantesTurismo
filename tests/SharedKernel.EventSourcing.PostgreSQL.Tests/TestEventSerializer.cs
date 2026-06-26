@@ -22,12 +22,9 @@ internal sealed class TestEventSerializer : IEventSerializer
 
     public object Deserialize(string eventType, string payloadJson)
     {
-        if (!string.Equals(EventType, eventType, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException($"Unsupported event type '{eventType}'.");
-        }
-
-        return JsonSerializer.Deserialize<TestEvent>(payloadJson)
+        return !string.Equals(EventType, eventType, StringComparison.Ordinal)
+            ? throw new InvalidOperationException($"Unsupported event type '{eventType}'.")
+            : JsonSerializer.Deserialize<TestEvent>(payloadJson)
             ?? throw new InvalidOperationException("Event payload could not be deserialized.");
     }
 }
