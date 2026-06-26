@@ -40,8 +40,8 @@ PostgreSQL → Database → MigrationService
                admin-performance-smoke (opt-in)
 
 Catalog.ApiService → Management.Web
-                 ↓
-             Public.Web
+        ↓
+   Public.Web
 ```
 
 ## Resource Names
