@@ -1,10 +1,9 @@
-using System.Text.RegularExpressions;
 using ArchUnitNET.Domain;
-using ArchUnitNET.Fluent.Syntax.Elements.Types;
 using ArchUnitNET.xUnitV3;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using Assembly = System.Reflection.Assembly;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
+using static ViajantesTurismo.ArchitectureTests.Dependencies.LayerDependencyTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Dependencies;
 
@@ -148,9 +147,4 @@ public sealed class LayerDependencyTests
         Assert.Empty(unexpectedReferences);
     }
 
-    internal static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
-    {
-        var pattern = $"^{Regex.Escape(namespaceRoot)}(\\.|$)";
-        return Types().That().ResideInNamespaceMatching(pattern).As(description);
-    }
 }

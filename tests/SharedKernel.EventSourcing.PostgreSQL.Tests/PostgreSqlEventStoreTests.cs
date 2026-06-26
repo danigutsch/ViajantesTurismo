@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Text.Json;
 using Aspire.Hosting.Testing;
 
 namespace SharedKernel.EventSourcing.PostgreSQL.Tests;
@@ -207,7 +205,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 
         // Act
         var appendTasks = Enumerable.Range(1, 10)
-            .Select(index => CaptureAppendResult(store, streamId, new TestEvent($"event-{index}")))
+            .Select(index => PostgreSqlEventStoreTestsHelpers.CaptureAppendResult(store, streamId, new TestEvent($"event-{index}")))
             .ToArray();
         var results = await Task.WhenAll(appendTasks);
 
@@ -425,112 +423,4 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
 
-    internal sealed record TestEvent(string Name);
-
-    internal static async Task<Exception?> CaptureAppendResult(
-        PostgreSqlEventStore store,
-        StreamId streamId,
-        TestEvent eventData)
-    {
-        try
-        {
-            await store.Append(
-                streamId,
-                ExpectedStreamRevision.NoStream,
-                [eventData],
-                TestContext.Current.CancellationToken);
-
-            return null;
-        }
-        catch (ExpectedStreamRevisionConflictException exception)
-        {
-            return exception;
-        }
-    }
-
-    internal sealed class TestEventSerializer : IEventSerializer
-    {
-        public const string EventType = "test.event.v1";
-
-        public string GetEventType(object eventData)
-        {
-            ArgumentNullException.ThrowIfNull(eventData);
-
-            return eventData is TestEvent ? EventType : throw new InvalidOperationException("Unsupported event type.");
-        }
-
-        public string Serialize(object eventData)
-        {
-            ArgumentNullException.ThrowIfNull(eventData);
-
-            return JsonSerializer.Serialize((TestEvent)eventData);
-        }
-
-        public object Deserialize(string eventType, string payloadJson)
-        {
-            if (!string.Equals(EventType, eventType, StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException($"Unsupported event type '{eventType}'.");
-            }
-
-            return JsonSerializer.Deserialize<TestEvent>(payloadJson)
-                ?? throw new InvalidOperationException("Event payload could not be deserialized.");
-        }
-    }
-
-    internal static class PostgreSqlEventStoreTestsHelpers
-    {
-        public static PostgreSqlEventSourcingOptions CreateOptions() => new()
-        {
-            Schema = $"es_{Guid.NewGuid():N}",
-        };
-
-        public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
-        {
-            var listener = new ActivityListener
-            {
-                ShouldListenTo = static source => string.Equals(
-                    source.Name,
-                    PostgreSqlEventSourcingTelemetry.Name,
-                    StringComparison.Ordinal),
-                Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-                ActivityStopped = activity => stoppedActivities.Enqueue(activity),
-            };
-
-            ActivitySource.AddActivityListener(listener);
-            return listener;
-        }
-
-        public static MeterListener CreateMeterListener(ConcurrentQueue<string> measurements)
-        {
-            var listener = new MeterListener
-            {
-                InstrumentPublished = static (instrument, listener) =>
-                {
-                    if (string.Equals(instrument.Meter.Name, PostgreSqlEventSourcingTelemetry.Name, StringComparison.Ordinal))
-                    {
-                        listener.EnableMeasurementEvents(instrument);
-                    }
-                },
-            };
-
-            listener.SetMeasurementEventCallback<double>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
-            listener.SetMeasurementEventCallback<long>((instrument, _, _, _) => measurements.Enqueue(instrument.Name));
-            listener.Start();
-            return listener;
-        }
-
-        public static bool HasTag(Activity activity, string key, object expectedValue)
-        {
-            foreach (var tag in activity.TagObjects)
-            {
-                if (string.Equals(tag.Key, key, StringComparison.Ordinal) && Equals(tag.Value, expectedValue))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    }
 }

@@ -32,7 +32,7 @@ public class EditPageTests : BunitContext
     public async Task Loads_Existing_Tour_Data()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -49,7 +49,7 @@ public class EditPageTests : BunitContext
     public async Task Renders_Page_Title()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -66,7 +66,7 @@ public class EditPageTests : BunitContext
     public async Task Services_Are_Loaded_As_Multiline_Text()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -86,7 +86,7 @@ public class EditPageTests : BunitContext
     public async Task Cancel_Redirect_Button_Is_Present()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
         var cut = Render<Edit>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
@@ -107,7 +107,7 @@ public class EditPageTests : BunitContext
     public async Task Cancel_Redirect_Shows_Alternative_Message()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
         var cut = Render<Edit>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
@@ -138,7 +138,7 @@ public class EditPageTests : BunitContext
     public async Task After_Cancel_Redirect_Shows_Go_To_Details_Button()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
         var cut = Render<Edit>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
@@ -165,7 +165,7 @@ public class EditPageTests : BunitContext
     public async Task API_Error_Shows_Error_Message()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
         _fakeToursApi.SetUpdateTourException(new InvalidOperationException("Failed to update tour"));
 
         var cut = Render<Edit>(parameters => parameters
@@ -189,7 +189,7 @@ public class EditPageTests : BunitContext
     public async Task Submission_Shows_Spinner_And_Disabled_Button()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
         var cut = Render<Edit>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
@@ -211,7 +211,7 @@ public class EditPageTests : BunitContext
     public async Task Updates_Tour_With_Modified_Data()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
         var cut = Render<Edit>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
@@ -254,7 +254,7 @@ public class EditPageTests : BunitContext
     public async Task Identifier_Field_Is_Enabled_When_No_Bookings()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -271,7 +271,7 @@ public class EditPageTests : BunitContext
     public async Task Identifier_Field_Is_Disabled_When_Bookings_Exist()
     {
         // Arrange
-        var tour = CreateTestTourWithBookings();
+        var tour = EditPageTestsHelper.CreateTestTourWithBookings(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -288,7 +288,7 @@ public class EditPageTests : BunitContext
     public async Task Currency_Field_Is_Enabled_When_No_Bookings()
     {
         // Arrange
-        var tour = await CreateTestTour();
+        var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -305,7 +305,7 @@ public class EditPageTests : BunitContext
     public async Task Currency_Field_Is_Disabled_When_Bookings_Exist()
     {
         // Arrange
-        var tour = CreateTestTourWithBookings();
+        var tour = EditPageTestsHelper.CreateTestTourWithBookings(_fakeToursApi);
 
         // Act
         var cut = Render<Edit>(parameters => parameters
@@ -318,47 +318,4 @@ public class EditPageTests : BunitContext
         Assert.True(currency.HasAttribute("disabled"));
     }
 
-    internal async Task<GetTourDto> CreateTestTour()
-    {
-        var createDto = new CreateTourDto
-        {
-            Identifier = "CUBA2024",
-            Name = "Cuba Adventure",
-            StartDate = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified),
-            EndDate = new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified),
-            Currency = CurrencyDto.Euro,
-            Price = 1500.00m,
-            SingleRoomSupplementPrice = 200.00m,
-            RegularBikePrice = 50.00m,
-            EBikePrice = 100.00m,
-            IncludedServices = ["Hotel", "Breakfast", "Lunch"],
-            MinCustomers = 5,
-            MaxCustomers = 15
-        };
-
-        await _fakeToursApi.CreateTour(createDto, CancellationToken.None);
-        var tours = await _fakeToursApi.GetTours(CancellationToken.None);
-        return tours[0];
-    }
-
-    internal GetTourDto CreateTestTourWithBookings()
-    {
-        var tour = BuildTourDto(
-            identifier: "CUBA2024",
-            name: "Cuba Adventure",
-            startDate: new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Unspecified),
-            endDate: new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Unspecified),
-            currency: CurrencyDto.Euro,
-            price: 1500.00m,
-            singleRoomSupplementPrice: 200.00m,
-            regularBikePrice: 50.00m,
-            eBikePrice: 100.00m,
-            includedServices: new List<string> { "Hotel", "Breakfast", "Lunch" },
-            minCustomers: 5,
-            maxCustomers: 15,
-            currentCustomerCount: 3);
-
-        _fakeToursApi.AddTour(tour);
-        return tour;
-    }
 }

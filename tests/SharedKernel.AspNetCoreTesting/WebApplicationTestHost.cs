@@ -8,9 +8,9 @@ public static class WebApplicationTestHost
     /// <summary>
     /// Creates a web application factory for the target application assembly.
     /// </summary>
-    public static Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint> Create<TEntryPoint>(
+    public static WebApplicationFactory<TEntryPoint> Create<TEntryPoint>(
         string? environment = null,
-        Action<Microsoft.Extensions.DependencyInjection.IServiceCollection>? configureTestServices = null)
+        Action<IServiceCollection>? configureTestServices = null)
         where TEntryPoint : class
     {
         return new ConfigurableWebApplicationFactory<TEntryPoint>(environment, configureTestServices);
@@ -18,15 +18,15 @@ public static class WebApplicationTestHost
 
     private sealed class ConfigurableWebApplicationFactory<TEntryPoint>(
         string? environment,
-        Action<Microsoft.Extensions.DependencyInjection.IServiceCollection>? configureTestServices)
-        : Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
+        Action<IServiceCollection>? configureTestServices)
+        : WebApplicationFactory<TEntryPoint>
         where TEntryPoint : class
     {
-        protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             if (environment is not null)
             {
-                Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseEnvironment(
+                HostingAbstractionsWebHostBuilderExtensions.UseEnvironment(
                     builder,
                     environment);
             }

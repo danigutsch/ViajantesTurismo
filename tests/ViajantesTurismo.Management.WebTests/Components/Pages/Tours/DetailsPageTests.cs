@@ -22,7 +22,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto();
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -45,7 +45,7 @@ public class DetailsPageTests : BunitContext
         var tour = BuildTourDto();
         var expectedDuration = (tour.EndDate - tour.StartDate).Days;
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -63,7 +63,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.Real);
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -84,7 +84,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.Euro);
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -103,7 +103,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.UsDollar);
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -122,7 +122,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto();
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -147,7 +147,7 @@ public class DetailsPageTests : BunitContext
             CurrentCustomerCount = 15
         };
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -170,7 +170,7 @@ public class DetailsPageTests : BunitContext
             CurrentCustomerCount = 30
         };
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -194,7 +194,7 @@ public class DetailsPageTests : BunitContext
             CurrentCustomerCount = 5
         };
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -222,7 +222,7 @@ public class DetailsPageTests : BunitContext
             }
         };
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -248,7 +248,7 @@ public class DetailsPageTests : BunitContext
             includedServices: new List<string>()
         );
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -267,7 +267,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto();
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -287,7 +287,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto();
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -306,7 +306,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto();
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -325,7 +325,7 @@ public class DetailsPageTests : BunitContext
         // Arrange
         var tour = BuildTourDto(name: "Amazing Bike Tour 2024");
 
-        SetupSuccessfulTourLoad(tour);
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
         // Act
         var cut = Render<Details>(parameters => parameters
@@ -338,8 +338,4 @@ public class DetailsPageTests : BunitContext
         Assert.Equal("Amazing Bike Tour 2024", cardHeader.TextContent);
     }
 
-    internal void SetupSuccessfulTourLoad(GetTourDto tour)
-    {
-        _fakeToursApi.AddTour(tour);
-    }
 }

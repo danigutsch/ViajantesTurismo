@@ -1,5 +1,4 @@
 using System.Text;
-using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
@@ -13,96 +12,11 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
-    internal void SeedExistingCustomer(string email, string firstName, string lastName)
-    {
-        var customerId = Guid.NewGuid();
-
-        _fakeCustomersApi.AddCustomer(new GetCustomerDto
-        {
-            Id = customerId,
-            FirstName = firstName,
-            LastName = lastName,
-            Email = email,
-            Mobile = "+551111111111",
-            Nationality = "Brazilian",
-            BikeType = BikeTypeDto.Regular,
-        });
-
-        _fakeCustomersApi.AddCustomerDetails(new CustomerDetailsDto
-        {
-            Id = customerId,
-            PersonalInfo = new PersonalInfoDto
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Gender = "Female",
-                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Unspecified),
-                Nationality = "Brazilian",
-                Occupation = "Engineer",
-            },
-            IdentificationInfo = new IdentificationInfoDto
-            {
-                NationalId = "A123",
-                IdNationality = "Brazilian",
-            },
-            ContactInfo = new ContactInfoDto
-            {
-                Email = email,
-                Mobile = "+551111111111",
-                Instagram = null,
-                Facebook = null,
-            },
-            Address = new AddressDto
-            {
-                Street = "Rua A",
-                Complement = null,
-                Neighborhood = "Centro",
-                PostalCode = "01000-000",
-                City = "São Paulo",
-                State = "SP",
-                Country = "Brazil",
-            },
-            PhysicalInfo = new PhysicalInfoDto
-            {
-                WeightKg = 70,
-                HeightCentimeters = 170,
-                BikeType = BikeTypeDto.Regular,
-            },
-            AccommodationPreferences = new AccommodationPreferencesDto
-            {
-                RoomType = RoomTypeDto.DoubleOccupancy,
-                BedType = BedTypeDto.SingleBed,
-                CompanionId = null,
-            },
-            EmergencyContact = new EmergencyContactDto
-            {
-                Name = "Emergency Contact",
-                Mobile = "+55222222222",
-            },
-            MedicalInfo = new MedicalInfoDto
-            {
-                Allergies = null,
-                AdditionalInfo = null,
-            },
-        });
-    }
-
-    internal IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
-    {
-        var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(csvContent, fileName);
-        cut.FindComponent<InputFile>().UploadFiles(file);
-        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
-        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
-        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
-        return cut;
-    }
-
     [Fact]
     public void ConfirmImport_WithConflicts_AdvancesToDuplicateResolutionStep()
     {
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("existing@example.com")]));
-        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
 
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
 
@@ -115,7 +29,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
-        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
@@ -131,7 +45,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
-        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
@@ -155,7 +69,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
-        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
@@ -241,7 +155,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             }
         });
 
-        var cut = GoToPreview(CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
@@ -258,7 +172,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
 
-        var cut = GoToPreview(CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
@@ -279,9 +193,9 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
-        SeedExistingCustomer("a@example.com", "ExistingFirst", "ExistingLast");
+        ImportCustomersDuplicateResolutionTestHelper.SeedExistingCustomer(_fakeCustomersApi, "a@example.com", "ExistingFirst", "ExistingLast");
 
-        var cut = GoToPreview(CustomerImportCsvTestData.BuildCsvWithOverrides(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.BuildCsvWithOverrides(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["FirstName"] = "IncomingFirst",
             ["LastName"] = "IncomingLast",

@@ -99,19 +99,4 @@ public sealed class CatalogProjectionRunnerTests
         Assert.NotNull(checkpointStore.SavedCheckpoint);
         Assert.Equal(12, checkpointStore.SavedCheckpoint.Position);
     }
-
-    internal static class CatalogProjectionRunnerTestsHelpers
-    {
-        public static EventEnvelope CreateEnvelope(long position, CatalogTourDraftCreated draftCreated, DateTimeOffset recordedAt)
-        {
-            return new EventEnvelope(
-                CatalogTourStreamIds.FromAdminTourId(draftCreated.AdminTourId),
-                position,
-                StreamRevision.From(1),
-                Guid.CreateVersion7(),
-                nameof(CatalogTourDraftCreated),
-                draftCreated,
-                recordedAt);
-        }
-    }
 }

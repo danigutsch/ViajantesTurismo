@@ -37,12 +37,12 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
         var completedBooking = await ApiClient.CreateCompletedBooking(tour.Id, completedCustomer.Id);
 
         // Act
-        await ExpectTerminalBookingEditState(cancelledBooking.Id, "cancelled");
+        await ConditionalStateTestHelpers.ExpectTerminalBookingEditState(Page, BookingWorkflow.NavigateToEdit, cancelledBooking.Id, "cancelled");
 
         // Assert
         await Expect(Page.GetButton("Cancel Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
-        await ExpectTerminalBookingEditState(completedBooking.Id, "completed");
+        await ConditionalStateTestHelpers.ExpectTerminalBookingEditState(Page, BookingWorkflow.NavigateToEdit, completedBooking.Id, "completed");
     }
 
     [Fact]
@@ -61,17 +61,5 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page.Locator("#notes")).ToBeEnabledAsync();
         await Expect(Page.Locator("#discountType")).ToBeEnabledAsync();
         await Expect(Page.GetButton("Update Booking")).ToBeEnabledAsync();
-    }
-
-    private async Task ExpectTerminalBookingEditState(Guid bookingId, string terminalStateText)
-    {
-        await BookingWorkflow.NavigateToEdit(bookingId);
-
-        await Expect(Page.Locator(".alert-warning")).ToContainTextAsync(terminalStateText);
-        await Expect(Page.Locator("#status")).ToBeDisabledAsync();
-        await Expect(Page.Locator("#notes")).ToBeDisabledAsync();
-        await Expect(Page.Locator("#discountType")).ToBeDisabledAsync();
-        await Expect(Page.GetButton("Update Booking")).ToBeDisabledAsync();
-        await Expect(Page.GetButton("Delete Booking")).ToBeEnabledAsync();
     }
 }

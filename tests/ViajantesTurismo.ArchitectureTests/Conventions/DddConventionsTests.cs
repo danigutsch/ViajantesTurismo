@@ -1,14 +1,11 @@
 using System.Reflection;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
-using ViajantesTurismo.Common.BuildingBlocks;
+using static ViajantesTurismo.ArchitectureTests.Conventions.DddConventionsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed class DddConventionsTests
 {
-    private static readonly Type EntityBaseType = typeof(Entity<>);
-    private static readonly Type ValueObjectBaseType = typeof(ValueObject);
-
     private static IEnumerable<Type> EntityTypes =>
     [
         .. ArchitectureProvider.Assemblies
@@ -68,29 +65,4 @@ public sealed class DddConventionsTests
             $"Expected value objects to expose immutable state, but found public setters on: {string.Join(", ", violatingTypes)}");
     }
 
-    internal static bool InheritsFromEntity(Type type)
-    {
-        for (var current = type.BaseType; current is not null; current = current.BaseType)
-        {
-            if (current.IsGenericType && current.GetGenericTypeDefinition() == EntityBaseType)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    internal static bool InheritsFromValueObject(Type type)
-    {
-        for (var current = type.BaseType; current is not null; current = current.BaseType)
-        {
-            if (current == ValueObjectBaseType)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

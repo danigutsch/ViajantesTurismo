@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
 using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
+using static ViajantesTurismo.ArchitectureTests.Conventions.NamingConventionTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -21,7 +21,7 @@ public sealed partial class NamingConventionTests
     {
         var offendingTypes = ArchitectureProvider.Assemblies
             .SelectMany(assembly => assembly.GetExportedTypes())
-            .Where(type => type.IsInterface && IsWithinSolution(type.Namespace))
+            .Where(type => type.IsInterface && IsWithinSolution(type.Namespace, SolutionRootNamespaces))
             .Where(type => !type.Name.StartsWith('I'))
             .ToArray();
 
@@ -66,10 +66,10 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Xunit_Test_Methods_Should_Follow_Underscore_Naming_Convention()
     {
-        var repositoryRoot = NamingConventionTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = GetRepositoryRoot();
         var offendingMethods = Directory
             .GetFiles(Path.Combine(repositoryRoot, "tests"), "*.cs", SearchOption.AllDirectories)
-            .Where(path => !NamingConventionTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(path => FindOffendingXunitMethods(repositoryRoot, path))
             .ToArray();
 
@@ -81,7 +81,7 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Behavior_Feature_Files_Should_Use_A_Recognized_Naming_Style()
     {
-        var repositoryRoot = NamingConventionTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = GetRepositoryRoot();
         var behaviorSpecsRoot = Path.Combine(
             repositoryRoot,
             "tests",
@@ -90,7 +90,7 @@ public sealed partial class NamingConventionTests
 
         var offendingFiles = Directory
             .GetFiles(behaviorSpecsRoot, "*.feature", SearchOption.AllDirectories)
-            .Where(path => !NamingConventionTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .Where(relativePath =>
             {
@@ -108,12 +108,12 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Mediator_Tests_Should_Not_Invoke_Methods_Inside_Simple_Assertions()
     {
-        var repositoryRoot = NamingConventionTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = GetRepositoryRoot();
         var mediatorTestsRoot = Path.Combine(repositoryRoot, "tests");
         var offendingAssertions = Directory
             .GetFiles(mediatorTestsRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => path.Contains("SharedKernel.Mediator", StringComparison.Ordinal))
-            .Where(path => !NamingConventionTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(path => FindOffendingAssertionMethodCalls(repositoryRoot, path))
             .ToArray();
 
@@ -122,113 +122,4 @@ public sealed partial class NamingConventionTests
             $"Expected mediator tests to assign method-call results to locals before simple assertions, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingAssertions)}");
     }
 
-    internal static bool IsWithinSolution(string? @namespace)
-    {
-        if (@namespace is null)
-        {
-            return false;
-        }
-
-        return SolutionRootNamespaces.Any(root => @namespace.StartsWith(root, StringComparison.Ordinal));
-    }
-
-    internal static string[] FindOffendingXunitMethods(string repositoryRoot, string filePath)
-    {
-        var lines = File.ReadAllLines(filePath);
-        var offendingMethods = new List<string>();
-
-        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-        {
-            if (!XunitAttributeRegex().IsMatch(lines[lineIndex]))
-            {
-                continue;
-            }
-
-            for (var candidateIndex = lineIndex + 1; candidateIndex < Math.Min(lineIndex + 6, lines.Length); candidateIndex++)
-            {
-                var match = XunitMethodRegex().Match(lines[candidateIndex]);
-                if (!match.Success)
-                {
-                    continue;
-                }
-
-                var methodName = match.Groups[1].Value;
-                if (!XunitMethodNamingRegex().IsMatch(methodName))
-                {
-                    offendingMethods.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{candidateIndex + 1} {methodName}");
-                }
-
-                break;
-            }
-        }
-
-        return [.. offendingMethods];
-    }
-
-    internal static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
-    {
-        var lines = File.ReadAllLines(filePath);
-        var offendingAssertions = new List<string>();
-
-        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-        {
-            if (!SimpleAssertMethodCallRegex().IsMatch(lines[lineIndex]))
-            {
-                continue;
-            }
-
-            offendingAssertions.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
-        }
-
-        return [.. offendingAssertions];
-    }
-
-    internal static bool IsStaticClass(Type type) => type is { IsAbstract: true, IsSealed: true };
-
-    [GeneratedRegex(@"^\s*\[(Fact|Theory)\b", RegexOptions.Compiled)]
-    internal static partial Regex XunitAttributeRegex();
-
-    [GeneratedRegex(@"^\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+([A-Za-z0-9_]+)\s*\(", RegexOptions.Compiled)]
-    internal static partial Regex XunitMethodRegex();
-
-    [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
-    internal static partial Regex XunitMethodNamingRegex();
-
-    [GeneratedRegex(@"Assert\.(Equal|Null|NotNull|True|False)\([^\n]*\.[A-Za-z_][A-Za-z0-9_]*\([^\n]*\)", RegexOptions.Compiled)]
-    internal static partial Regex SimpleAssertMethodCallRegex();
-
-    [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)+\.feature$", RegexOptions.Compiled)]
-    internal static partial Regex KebabCaseFeatureFileRegex();
-
-    [GeneratedRegex(@"^[A-Z][A-Za-z0-9]+\.feature$", RegexOptions.Compiled)]
-    internal static partial Regex PascalCaseFeatureFileRegex();
-
-    internal static class NamingConventionTestsHelpers
-    {
-        public static string GetRepositoryRoot()
-        {
-            var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-            while (currentDirectory is not null)
-            {
-                var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-                if (File.Exists(solutionPath))
-                {
-                    return currentDirectory.FullName;
-                }
-
-                currentDirectory = currentDirectory.Parent;
-            }
-
-            throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
-        }
-
-        public static bool IsGeneratedTestPath(string path)
-        {
-            var normalizedPath = path.Replace('\\', '/');
-
-            return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
-                || normalizedPath.Contains("/obj/", StringComparison.Ordinal);
-        }
-    }
 }

@@ -81,37 +81,4 @@ public sealed class IndexPageTests : BunitContext
         Assert.Contains("pagination", cut.Markup, StringComparison.OrdinalIgnoreCase);
     }
 
-    internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
-    {
-        public CatalogTourDto[] Tours { get; set; } = [];
-
-        public bool ThrowOnGetTours { get; set; }
-
-        public Task<CatalogTourDto[]> GetTours(CancellationToken ct)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            return ThrowOnGetTours
-                ? throw new HttpRequestException("Catalog unavailable.")
-                : Task.FromResult(Tours);
-        }
-    }
-
-    internal static class IndexPageTestsHelpers
-    {
-        public static CatalogTourDto CreateTour(string identifier, string title, string slug, bool isPublished)
-        {
-            return new CatalogTourDto
-            {
-                Id = Guid.CreateVersion7(),
-                AdminTourId = Guid.CreateVersion7(),
-                Identifier = identifier,
-                Title = title,
-                Slug = slug,
-                IsPublished = isPublished,
-                Images = [],
-                UpdatedAt = new DateTimeOffset(2026, 6, 25, 10, 30, 0, TimeSpan.Zero)
-            };
-        }
-    }
 }

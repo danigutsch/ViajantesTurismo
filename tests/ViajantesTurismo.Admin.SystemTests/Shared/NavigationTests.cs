@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using TestTraits = ViajantesTurismo.Admin.SystemTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
@@ -7,7 +6,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Shared;
 [Trait(TestTraits.ScopeName, TestTraits.SystemScope)]
 [Trait(TestTraits.AreaName, TestTraits.SharedArea)]
 [Trait(TestTraits.HostName, TestTraits.AspireHost)]
-public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string AddTourTitle = "Add Tour";
     private const string ToursTitle = "Tours";
@@ -21,28 +20,28 @@ public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSy
         var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
 
         // Act
-        await AssertDeepLink("/", "Home - ViajantesTurismo");
-        await AssertDeepLink("/addtour", AddTourTitle);
-        await AssertDeepLink("/tours", ToursTitle);
-        await AssertDeepLink("/customers", "Customers");
-        await AssertDeepLink("/bookings", "Bookings");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/", "Home - ViajantesTurismo");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/addtour", AddTourTitle);
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/tours", ToursTitle);
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers", "Customers");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/bookings", "Bookings");
 
-        await AssertDeepLink($"/tours/{tour.Id}", "Tour Details");
-        await AssertDeepLink($"/edittour/{tour.Id}", "Edit Tour");
-        await AssertDeepLink($"/customers/{customer.Id}", "Customer Details");
-        await AssertDeepLink($"/customers/{customer.Id}/edit", "Edit Customer");
-        await AssertDeepLink($"/bookings/{booking.Id}", "Booking Details");
-        await AssertDeepLink($"/bookings/{booking.Id}/edit", "Edit Booking");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, $"/tours/{tour.Id}", "Tour Details");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, $"/edittour/{tour.Id}", "Edit Tour");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, $"/customers/{customer.Id}", "Customer Details");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, $"/customers/{customer.Id}/edit", "Edit Customer");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, $"/bookings/{booking.Id}", "Booking Details");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, $"/bookings/{booking.Id}/edit", "Edit Booking");
 
-        await AssertCustomerWizardDeepLink("/customers/create", PersonalInfoRegex(), "Create Customer - Personal Information");
-        await AssertDeepLink("/customers/create/identification", "Create Customer - Identification");
-        await AssertDeepLink("/customers/create/contact", "Create Customer - Contact Information");
-        await AssertDeepLink("/customers/create/address", "Create Customer - Address");
-        await AssertDeepLink("/customers/create/physical", "Create Customer - Physical Information");
-        await AssertDeepLink("/customers/create/accommodation", "Create Customer - Accommodation Preferences");
-        await AssertDeepLink("/customers/create/emergency-contact", "Create Customer - Emergency Contact");
-        await AssertDeepLink("/customers/create/medical", "Create Customer - Medical Information");
-        await AssertDeepLink("/customers/create/review", "Create Customer - Review & Submit");
+        await NavigationTestHelpers.AssertCustomerWizardDeepLink(Page, NavigateTo, NavigationTestRegexes.PersonalInfo(), "Create Customer - Personal Information");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/identification", "Create Customer - Identification");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/contact", "Create Customer - Contact Information");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/address", "Create Customer - Address");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/physical", "Create Customer - Physical Information");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/accommodation", "Create Customer - Accommodation Preferences");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/emergency-contact", "Create Customer - Emergency Contact");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/medical", "Create Customer - Medical Information");
+        await NavigationTestHelpers.AssertDeepLink(Page, NavigateTo, "/customers/create/review", "Create Customer - Review & Submit");
         await NavigateTo("/tours");
         await NavigateTo($"/tours/{tour.Id}");
         await Page.GoBackAsync(new PageGoBackOptions { WaitUntil = WaitUntilState.NetworkIdle });
@@ -50,7 +49,7 @@ public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSy
         // Assert
         // Deep-link assertions are verified inside the navigation helpers above; this final block checks browser back-navigation.
         await Expect(Page).ToHaveTitleAsync(ToursTitle);
-        await Expect(Page).ToHaveURLAsync(ToursRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Tours());
     }
 
     [Fact]
@@ -73,7 +72,7 @@ public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSy
         await Expect(content.GetLink("Add Customer")).ToBeVisibleAsync();
         await Expect(content.GetLink("View All")).ToHaveCountAsync(3);
         await Expect(Page.GetLink("About")).ToBeVisibleAsync();
-        await Expect(sidebar.GetLink("Home")).ToHaveClassAsync(ActiveRegex());
+        await Expect(sidebar.GetLink("Home")).ToHaveClassAsync(NavigationTestRegexes.Active());
     }
 
     [Fact]
@@ -87,19 +86,19 @@ public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSy
         await NavigateTo("/");
 
         // Assert
-        await AssertSidebarNavigation(sidebar, "Tours", ToursRegex(), exact: true);
-        await AssertSidebarNavigation(sidebar, "Bookings", BookingsRegex());
-        await AssertSidebarNavigation(sidebar, "Customers", CustomersRegex(), exact: true);
-        await AssertSidebarNavigation(sidebar, "Add Customer", CreateCustomerRegex());
-        await AssertSidebarNavigation(sidebar, AddTourTitle, AddTourRegex());
-        await AssertSidebarNavigation(sidebar, "Home", HomeRegex());
+        await NavigationTestHelpers.AssertSidebarNavigation(Page, sidebar, "Tours", NavigationTestRegexes.Tours(), exact: true);
+        await NavigationTestHelpers.AssertSidebarNavigation(Page, sidebar, "Bookings", NavigationTestRegexes.Bookings());
+        await NavigationTestHelpers.AssertSidebarNavigation(Page, sidebar, "Customers", NavigationTestRegexes.Customers(), exact: true);
+        await NavigationTestHelpers.AssertSidebarNavigation(Page, sidebar, "Add Customer", NavigationTestRegexes.CreateCustomer());
+        await NavigationTestHelpers.AssertSidebarNavigation(Page, sidebar, AddTourTitle, NavigationTestRegexes.AddTour());
+        await NavigationTestHelpers.AssertSidebarNavigation(Page, sidebar, "Home", NavigationTestRegexes.Home());
 
         // Act
         await NavigateTo($"/tours/{tour.Id}");
 
         // Assert
-        await Expect(Page).ToHaveURLAsync(TourRegex());
-        await Expect(sidebar.GetLink("Tours", exact: true)).ToHaveClassAsync(ActiveRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Tour());
+        await Expect(sidebar.GetLink("Tours", exact: true)).ToHaveClassAsync(NavigationTestRegexes.Active());
     }
 
     [Fact]
@@ -114,14 +113,14 @@ public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSy
         await content.GetLink(AddTourTitle).ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveURLAsync(AddTourRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.AddTour());
 
         // Act
         await NavigateTo("/");
         await content.GetLink("Add Customer").ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveURLAsync(CreateCustomerRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.CreateCustomer());
 
         // Act
         await NavigateTo("/");
@@ -130,67 +129,20 @@ public partial class NavigationTests(AspireSystemTestFixture fixture) : AspireSy
         await viewAllLinks.Nth(0).ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveURLAsync(ToursRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Tours());
 
         // Act
         await NavigateTo("/");
         await viewAllLinks.Nth(1).ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveURLAsync(CustomersRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Customers());
 
         // Act
         await NavigateTo("/");
         await viewAllLinks.Nth(2).ClickAsync();
 
         // Assert
-        await Expect(Page).ToHaveURLAsync(BookingsRegex());
+        await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Bookings());
     }
-
-    private async Task AssertDeepLink(string path, string expectedTitle)
-    {
-        await NavigateTo(path);
-        await Expect(Page).ToHaveTitleAsync(expectedTitle);
-    }
-
-    private async Task AssertCustomerWizardDeepLink(string path, Regex expectedUrl, string expectedTitle)
-    {
-        await NavigateTo(path);
-        await Expect(Page).ToHaveURLAsync(expectedUrl);
-        await Expect(Page).ToHaveTitleAsync(expectedTitle);
-    }
-
-    private async Task AssertSidebarNavigation(ILocator sidebar, string linkName, Regex expectedUrl, bool? exact = null)
-    {
-        await sidebar.GetLink(linkName, exact).ClickAsync();
-        await Expect(Page).ToHaveURLAsync(expectedUrl);
-        await Expect(sidebar.GetLink(linkName, exact)).ToHaveClassAsync(ActiveRegex());
-    }
-
-    [GeneratedRegex("active")]
-    private static partial Regex ActiveRegex();
-
-    [GeneratedRegex("/tours$")]
-    private static partial Regex ToursRegex();
-
-    [GeneratedRegex("/$")]
-    private static partial Regex HomeRegex();
-
-    [GeneratedRegex("/addtour$")]
-    private static partial Regex AddTourRegex();
-
-    [GeneratedRegex(@"/tours/[\da-f-]+")]
-    private static partial Regex TourRegex();
-
-    [GeneratedRegex("/bookings$")]
-    private static partial Regex BookingsRegex();
-
-    [GeneratedRegex("/customers$")]
-    private static partial Regex CustomersRegex();
-
-    [GeneratedRegex("/customers/create")]
-    private static partial Regex CreateCustomerRegex();
-
-    [GeneratedRegex("/customers/create/personal-info$")]
-    private static partial Regex PersonalInfoRegex();
 }

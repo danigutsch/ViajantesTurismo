@@ -1,0 +1,178 @@
+using System.Text.RegularExpressions;
+
+namespace ViajantesTurismo.ArchitectureTests.Conventions;
+
+internal static partial class AdminTestArchitectureGuardTestsHelpers
+{
+    public static void AssertFileContains(string filePath, string expectedText)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        Assert.Contains(expectedText, fileContents, StringComparison.Ordinal);
+    }
+
+    public static void AssertFileDoesNotExist(string filePath)
+    {
+        Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
+    }
+
+    public static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        Assert.DoesNotMatch(unexpectedPattern, fileContents);
+    }
+
+    public static string[] FindGenericServiceProviderReachThrough(string filePath)
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            if (!PublicServiceProviderReachThroughRegex().IsMatch(lines[lineIndex]))
+            {
+                continue;
+            }
+
+            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
+        }
+
+        return [.. offenses];
+    }
+
+    public static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+        var insideTestMethod = false;
+        var awaitingMethodSignature = false;
+        var braceDepth = 0;
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            var trimmedLine = line.TrimStart();
+
+            if (!insideTestMethod && !awaitingMethodSignature && IsTestAttributeLine(trimmedLine))
+            {
+                awaitingMethodSignature = true;
+                continue;
+            }
+
+            if (awaitingMethodSignature && TestMethodSignatureRegex().IsMatch(trimmedLine))
+            {
+                insideTestMethod = true;
+                awaitingMethodSignature = false;
+                braceDepth = CountBraceDelta(line);
+                continue;
+            }
+
+            if (!insideTestMethod)
+            {
+                continue;
+            }
+
+            if (RawServiceProviderPlumbingRegex().IsMatch(line))
+            {
+                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {trimmedLine.Trim()}");
+            }
+
+            braceDepth += CountBraceDelta(line);
+            if (braceDepth <= 0)
+            {
+                insideTestMethod = false;
+            }
+        }
+
+        return [.. offenses];
+    }
+
+    public static string[] FindUndocumentedSerialTests(string filePath)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        if (!fileContents.Contains("AspireSerialSystemTestBase", StringComparison.Ordinal))
+        {
+            return [];
+        }
+
+        var repositoryRoot = GetRepositoryRoot();
+        var offenses = new List<string>();
+        foreach (Match match in SerialTestMethodRegex().Matches(fileContents))
+        {
+            var attributes = match.Groups["attributes"].Value;
+            if (!TestAttributeRegex().IsMatch(attributes))
+            {
+                continue;
+            }
+
+            if (SerialReasonAttributeRegex().IsMatch(attributes))
+            {
+                continue;
+            }
+
+            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}: {match.Groups["method"].Value}");
+        }
+
+        return [.. offenses];
+    }
+
+    public static string GetRepositoryRoot()
+    {
+        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (currentDirectory is not null)
+        {
+            var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
+            if (File.Exists(solutionPath))
+            {
+                return currentDirectory.FullName;
+            }
+
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
+    }
+
+    public static bool IsGeneratedTestPath(string path)
+    {
+        var normalizedPath = path.Replace('\\', '/');
+        return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
+            || normalizedPath.Contains("/obj/", StringComparison.Ordinal)
+            || normalizedPath.Contains("/Snapshots/", StringComparison.Ordinal)
+            || normalizedPath.EndsWith(".feature.cs", StringComparison.Ordinal);
+    }
+
+    [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
+    public static partial Regex ProtectedClearDatabaseMemberRegex();
+
+    [GeneratedRegex(@"\b(?:new\s+ServiceCollection\s*\(|BuildServiceProvider\s*\(|CreateScope\s*\(|CreateAsyncScope\s*\()", RegexOptions.Compiled)]
+    private static partial Regex RawServiceProviderPlumbingRegex();
+
+    [GeneratedRegex(@"^public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+\w+\s*\(", RegexOptions.Compiled)]
+    private static partial Regex TestMethodSignatureRegex();
+
+    [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
+    private static partial Regex PublicServiceProviderReachThroughRegex();
+
+    [GeneratedRegex(@"(?<attributes>(?:\s*\[[^\]]+\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
+    private static partial Regex SerialTestMethodRegex();
+
+    [GeneratedRegex(@"\[(?:Fact|Theory)(?:\(|\])", RegexOptions.Compiled)]
+    private static partial Regex TestAttributeRegex();
+
+    [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
+    private static partial Regex SerialReasonAttributeRegex();
+
+    private static bool IsTestAttributeLine(string trimmedLine)
+    {
+        return trimmedLine.StartsWith("[Fact", StringComparison.Ordinal)
+            || trimmedLine.StartsWith("[Theory", StringComparison.Ordinal);
+    }
+
+    private static int CountBraceDelta(string line)
+    {
+        return line.Count(static character => character == '{') - line.Count(static character => character == '}');
+    }
+}

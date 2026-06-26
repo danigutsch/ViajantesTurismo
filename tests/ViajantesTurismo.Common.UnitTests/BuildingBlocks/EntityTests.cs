@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.BuildingBlocks;
+using static ViajantesTurismo.Common.UnitTests.BuildingBlocks.EntityTestsHelpers;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
@@ -144,16 +144,4 @@ public sealed class EntityTests
         Assert.False(entity1.Equals(entity2));
     }
 
-    internal sealed class TestEntity(int id) : Entity<int>(id);
-
-    internal sealed class TestEntityDifferentType(int id) : Entity<int>(id);
-
-    internal sealed class AnotherTestEntity(int id) : Entity<int>(id);
-
-    internal sealed class TestEntityNullableId(string? id) : Entity<string?>(id);
-
-    internal static bool EqualsObject(object instance, object? other)
-    {
-        return instance.Equals(other);
-    }
 }
