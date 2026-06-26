@@ -15,7 +15,7 @@ public sealed class InMemoryPublicContentStore : IPublicContentStore
     public Task<IReadOnlyCollection<EditablePublicContent>> ListContent(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult<IReadOnlyCollection<EditablePublicContent>>(contentByKey.Values.OrderBy(content => content.Key).ToArray());
+        return Task.FromResult<IReadOnlyCollection<EditablePublicContent>>(contentByKey.Values.OrderBy(content => content.Key, StringComparer.OrdinalIgnoreCase).ToArray());
     }
 
     /// <inheritdoc />

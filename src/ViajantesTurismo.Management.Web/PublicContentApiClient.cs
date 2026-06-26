@@ -26,7 +26,7 @@ internal sealed class PublicContentApiClient(HttpClient httpClient) : IPublicCon
     public async Task<PublicContentDto?> GetContent(string key, CancellationToken ct)
     {
         var requestUri = new Uri($"/catalog/public-content/{Uri.EscapeDataString(key)}", UriKind.Relative);
-        var response = await httpClient.GetAsync(requestUri, ct);
+        using var response = await httpClient.GetAsync(requestUri, ct);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -40,7 +40,7 @@ internal sealed class PublicContentApiClient(HttpClient httpClient) : IPublicCon
     public async Task<PublicContentDto> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
     {
         var requestUri = new Uri($"/catalog/public-content/{Uri.EscapeDataString(key)}", UriKind.Relative);
-        var response = await httpClient.PutAsJsonAsync(requestUri, request, ct);
+        using var response = await httpClient.PutAsJsonAsync(requestUri, request, ct);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadFromJsonAsync<PublicContentDto>(ct);

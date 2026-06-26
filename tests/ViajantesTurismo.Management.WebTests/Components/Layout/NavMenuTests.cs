@@ -35,7 +35,7 @@ public class NavMenuTests : BunitContext
         var cut = Render<NavMenu>();
 
         // Assert
-        var addTourLink = cut.Find("a[href='addtour']");
+        var addTourLink = cut.Find("a[href='/addtour']");
         Assert.Contains("Add Tour", addTourLink.TextContent, StringComparison.Ordinal);
         Assert.Contains("bi-plus-square-fill", addTourLink.InnerHtml, StringComparison.Ordinal);
     }

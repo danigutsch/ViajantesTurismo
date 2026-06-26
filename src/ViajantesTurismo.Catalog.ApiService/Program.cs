@@ -4,6 +4,7 @@ using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.ServiceDefaults;
+using SharedKernel.Results;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -70,7 +71,7 @@ app.MapPut("/catalog/public-content/{key}", async (
 
     if (enUs.IsFailure || ptBr.IsFailure)
     {
-        return Results.BadRequest();
+        return ToValidationProblemFromVariants([enUs, ptBr]);
     }
 
     var content = EditablePublicContent.Create(
@@ -81,7 +82,7 @@ app.MapPut("/catalog/public-content/{key}", async (
 
     if (content.IsFailure)
     {
-        return Results.BadRequest();
+        return ToValidationProblem(content.ErrorDetails);
     }
 
     await store.SaveContent(content.Value, ct);
@@ -141,10 +142,18 @@ static PublicContentVariantDto MapVariant(PublicContentVariant variant)
     };
 }
 
-static SharedKernel.Results.Result<PublicContentVariant> CreateVariant(
+static Result<PublicContentVariant> CreateVariant(
     PublicContentVariantDto variant,
     PublicContentLanguage language)
 {
+    var actualLanguage = ToDomainLanguage(variant.Language);
+    if (actualLanguage != language)
+    {
+        var mismatch = PublicContentErrors.VariantLanguageMismatch(nameof(PublicContentVariantDto.Language), language, actualLanguage);
+        var error = mismatch.ErrorDetails ?? throw new InvalidOperationException("Variant language mismatch must include validation details.");
+        return Result.Invalid<PublicContentVariant>(error.Detail, ToValidationProblemDictionary(error.ValidationErrors));
+    }
+
     return PublicContentVariant.Create(
         language,
         variant.Title,
@@ -153,6 +162,43 @@ static SharedKernel.Results.Result<PublicContentVariant> CreateVariant(
         variant.MetaDescription,
         variant.ShareSummary,
         variant.RequiresHumanReview);
+}
+
+static IResult ToValidationProblem(ResultError error)
+{
+    return Results.ValidationProblem(ToValidationProblemDictionary(error.ValidationErrors), detail: error.Detail);
+}
+
+static IResult ToValidationProblemFromVariants(IEnumerable<Result<PublicContentVariant>> results)
+{
+    var validationErrors = new ValidationErrors();
+
+    foreach (var result in results)
+    {
+        if (result.IsFailure)
+        {
+            validationErrors.Add(result);
+        }
+    }
+
+    var error = validationErrors.ToResult().ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details.");
+    return ToValidationProblem(error);
+}
+
+static Dictionary<string, string[]> ToValidationProblemDictionary(IReadOnlyDictionary<string, IReadOnlyList<string>>? validationErrors)
+{
+    if (validationErrors is null)
+    {
+        return [];
+    }
+
+    var result = new Dictionary<string, string[]>(validationErrors.Count, StringComparer.Ordinal);
+    foreach (var (field, messages) in validationErrors)
+    {
+        result[field] = [.. messages];
+    }
+
+    return result;
 }
 
 static PublicContentLanguage ToDomainLanguage(PublicContentLanguageDto language)
