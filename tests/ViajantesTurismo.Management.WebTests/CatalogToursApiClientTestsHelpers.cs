@@ -20,6 +20,10 @@ internal static class CatalogToursApiClientTestsHelpers
                     using var response = handler(context.Request);
 
                     context.Response.StatusCode = (int)response.StatusCode;
+                    if (response.Headers.Location is not null)
+                    {
+                        context.Response.Headers.Location = response.Headers.Location.ToString();
+                    }
 
                     if (response.Content is not null)
                     {
