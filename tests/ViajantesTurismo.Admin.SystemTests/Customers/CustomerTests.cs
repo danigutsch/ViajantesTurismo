@@ -114,8 +114,13 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page).ToHaveTitleAsync("Create Customer - Medical Information");
         await Expect(Page.GetByText("Step 8 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#allergies", "None known");
-        await Page.FillAsync("#additionalInfo", "E2E test medical info");
+        var allergiesInput = Page.Locator("#allergies");
+        var additionalInfoInput = Page.Locator("#additionalInfo");
+
+        await allergiesInput.FillAsync("None known");
+        await additionalInfoInput.FillAsync("E2E test medical info");
+        await Expect(allergiesInput).ToHaveValueAsync("None known");
+        await Expect(additionalInfoInput).ToHaveValueAsync("E2E test medical info");
 
         await Page.GetButton("Review & Submit").ClickAsync();
 
