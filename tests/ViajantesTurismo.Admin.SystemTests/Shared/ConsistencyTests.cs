@@ -1,9 +1,8 @@
-using System.Text.RegularExpressions;
 using ViajantesTurismo.Admin.Contracts;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-public partial class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
     public async Task Tour_List_And_Details_Show_Consistent_Currency_And_Date_Formatting()
@@ -24,8 +23,8 @@ public partial class ConsistencyTests(AspireSystemTestFixture fixture) : AspireS
 
         await tourRow.GetLink("View").ClickAsync();
         await Expect(Page).ToHaveTitleAsync("Tour Details");
-        await Expect(Page.GetByText(BrlPriceRegex()).First).ToBeVisibleAsync();
-        await Expect(Page.GetByText(DateFormatRegex()).First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(ConsistencyTestRegexes.BrlPrice()).First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(ConsistencyTestRegexes.DateFormat()).First).ToBeVisibleAsync();
     }
 
     [Fact]
@@ -72,10 +71,4 @@ public partial class ConsistencyTests(AspireSystemTestFixture fixture) : AspireS
         await NavigateTo(route);
         await Expect(Page).ToHaveTitleAsync(expectedTitle);
     }
-
-    [GeneratedRegex(@"R\$\s[\d,]+\.\d{2}")]
-    private static partial Regex BrlPriceRegex();
-
-    [GeneratedRegex(@"\d{2}/\d{2}/\d{4}")]
-    private static partial Regex DateFormatRegex();
 }

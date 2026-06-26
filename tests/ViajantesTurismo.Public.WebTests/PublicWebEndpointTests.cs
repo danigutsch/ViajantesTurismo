@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Testing;
 using TestTraits = SharedKernel.Testing.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
@@ -249,34 +250,4 @@ public sealed class PublicWebEndpointTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    private static class PublicWebEndpointTestsHelpers
-    {
-        public static CatalogTourDto CreateTour(string slug, string title)
-        {
-            return new CatalogTourDto
-            {
-                Id = Guid.CreateVersion7(),
-                AdminTourId = Guid.CreateVersion7(),
-                Identifier = "TOUR-2026",
-                Title = title,
-                Slug = slug,
-                IsPublished = true,
-                Images = [],
-                UpdatedAt = DateTimeOffset.UtcNow
-            };
-        }
-
-        public static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
-                FakePublicCatalogApiClient? catalogApiClient = null,
-                string? environment = null)
-        {
-            return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
-                environment,
-                services =>
-                {
-                    services.RemoveAll<IPublicCatalogApiClient>();
-                    services.AddSingleton<IPublicCatalogApiClient>(catalogApiClient ?? new FakePublicCatalogApiClient());
-                });
-        }
-    }
 }

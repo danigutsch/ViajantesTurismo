@@ -9,11 +9,6 @@ public sealed class CustomerImportCommandHandlerTests
     private readonly FakeCustomerStore _fakeCustomerStore;
     private readonly CustomerImportCommandHandler _sut;
 
-    private const string CsvHeaders =
-        "FirstName,LastName,Gender,BirthDate,Nationality,Occupation,NationalId,IdNationality," +
-        "Email,Mobile,Street,Neighborhood,PostalCode,City,State,Country," +
-        "WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
-
     public CustomerImportCommandHandlerTests()
     {
         _uow = new FakeUnitOfWork();
@@ -58,7 +53,7 @@ public sealed class CustomerImportCommandHandlerTests
         // Arrange
         const string duplicateEmail = "dup@example.com";
         const string csv =
-            $"{CsvHeaders}\n" +
+            $"{CsvRows.Headers}\n" +
             $"John,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA,{duplicateEmail},+1234567890,123 Main St,Downtown,10001,New York,NY,USA,75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321\n" +
             $"Jane,Smith,Female,1992-06-15,USA,Doctor,B87654321,USA,{duplicateEmail},+9876543210,456 Oak Ave,Uptown,20002,Boston,MA,USA,65,165,Regular,SingleOccupancy,DoubleBed,Jim Smith,+1122334455";
 
@@ -91,11 +86,4 @@ public sealed class CustomerImportCommandHandlerTests
         Assert.Equal(0, _uow.SaveEntitiesCallCount);
     }
 
-    private static class CsvRows
-    {
-        public static string Build(string email = "test@example.com") =>
-            $"{CsvHeaders}\nJohn,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA," +
-            $"{email},+1234567890,123 Main St,Downtown,10001,New York,NY,USA," +
-            $"75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321";
-    }
 }

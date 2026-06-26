@@ -1,5 +1,3 @@
-using ViajantesTurismo.Management.Web.Components.Pages.Customers;
-
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersSummaryTests : BunitContext
@@ -12,26 +10,6 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
 
-    private IRenderedComponent<ImportCustomers> GoToPreview(string csvContent, string fileName = "customers.csv")
-    {
-        var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(csvContent, fileName);
-        cut.FindComponent<InputFile>().UploadFiles(file);
-        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
-        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
-        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
-        return cut;
-    }
-
-    private IRenderedComponent<ImportCustomers> ConfirmImportWithoutConflicts(ImportResultDto result)
-    {
-        _fakeCustomersApi.SetImportCustomersResult(result);
-        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
-        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
-        cut.WaitForAssertion(() => Assert.Contains("Import complete.", cut.Markup, StringComparison.Ordinal));
-        return cut;
-    }
-
     [Fact]
     public void Confirm_Import_After_Duplicate_Decisions_Shows_Created_Updated_Skipped_And_Failed_Counts()
     {
@@ -39,7 +17,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(2, 1));
-        var cut = GoToPreview(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
         cut.WaitForAssertion(() => Assert.Contains("Resolve Duplicates", cut.Markup, StringComparison.Ordinal));
 
@@ -65,7 +43,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     {
         var createdId = Guid.NewGuid();
         var updatedId = Guid.NewGuid();
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 2,
                 0,
@@ -89,7 +67,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     [Fact]
     public void Render_Summary_When_Success_Row_Has_No_Customer_Id_Does_Not_Render_View_Customer_Link()
     {
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 1,
                 0,
@@ -104,7 +82,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     public void Render_Summary_When_View_Customer_Link_Is_Available_Targets_Customer_Details_Route()
     {
         var createdId = Guid.NewGuid();
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 1,
                 0,
@@ -121,7 +99,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     [Fact]
     public void Render_Summary_When_Per_Row_Errors_Exist_Shows_Row_And_Field_Level_Error_Messages()
     {
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 1,
                 2,
@@ -145,7 +123,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     [Fact]
     public void Render_Summary_When_Error_Row_Field_And_Email_Are_Null_Shows_Dash_Placeholders()
     {
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 0,
                 1,
@@ -168,7 +146,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     [Fact]
     public void Download_Error_Report_When_Error_Rows_Exist_Exports_Current_Error_Rows()
     {
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 0,
                 1,
@@ -188,7 +166,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     [Fact]
     public void Download_Error_Report_When_Error_Row_Contains_Special_Characters_Escapes_Csv_Values()
     {
-        var cut = ConfirmImportWithoutConflicts(
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
                 0,
                 2,
@@ -215,7 +193,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     [Fact]
     public void Retry_Action_After_Summary_Display_Returns_To_Mapping_With_Previous_File_Context()
     {
-        var cut = ConfirmImportWithoutConflicts(new ImportResultDto(1, 1));
+        var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi, new ImportResultDto(1, 1));
 
         cut.Find("button[data-action='retry-current-file']").Click();
 
@@ -226,11 +204,4 @@ public sealed class ImportCustomersSummaryTests : BunitContext
         });
     }
 
-    private static class ImportCustomersSummaryTestsHelpers
-    {
-        public static AngleSharp.Dom.IElement FindSuccessSummaryRow(IRenderedComponent<ImportCustomers> cut, string email)
-        {
-            return ImportCustomersTestDomHelper.FindRowContainingText(cut, "[data-testid='summary-success-rows'] tbody tr", email);
-        }
-    }
 }

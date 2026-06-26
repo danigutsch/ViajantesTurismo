@@ -1,11 +1,4 @@
-using System.Text.RegularExpressions;
-
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
-
-file static class CustomerImportRoutes
-{
-    public const string Import = "/customers/import";
-}
 
 /// <summary>
 /// E2E tests for the CSV customer import wizard.
@@ -142,10 +135,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
         await Expect(viewCustomerLink).ToBeVisibleAsync();
         await viewCustomerLink.ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(CustomerUrlRegex());
+        await Expect(Page).ToHaveURLAsync(CustomerImportTestRegexes.CustomerUrl());
         await Expect(Page).ToHaveTitleAsync("Customer Details");
     }
-
-    [GeneratedRegex(".*/customers/[0-9a-fA-F-]+$")]
-    private static partial Regex CustomerUrlRegex();
 }

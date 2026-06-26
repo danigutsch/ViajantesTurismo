@@ -1,4 +1,3 @@
-using Microsoft.OpenApi;
 using Xunit;
 
 namespace ViajantesTurismo.Admin.ContractTests;
@@ -40,7 +39,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         Assert.Contains("/customers/import/commit", document.Paths.Keys);
         Assert.DoesNotContain("/tours", document.Paths.Keys);
 
-        var importSchema = GetMultipartSchema(document, "/customers/import/commit");
+        var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/customers/import/commit");
         Assert.NotNull(importSchema.AllOf);
         Assert.Contains(importSchema.AllOf, static item => item.Properties?.ContainsKey("file") == true);
         Assert.Contains(importSchema.AllOf, static item => item.Properties?.ContainsKey("conflictResolutions") == true);
@@ -62,19 +61,4 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         Assert.Contains("/docs/errors/{identifier}", document.Paths.Keys);
     }
 
-    private static OpenApiSchema GetMultipartSchema(OpenApiDocument document, string path)
-    {
-        if (!document.Paths.TryGetValue(path, out var pathItem) || pathItem.Operations is null)
-        {
-            throw new InvalidOperationException($"Expected OpenAPI path '{path}' to exist.");
-        }
-
-        if (!pathItem.Operations.TryGetValue(HttpMethod.Post, out var operation))
-        {
-            throw new InvalidOperationException($"Expected POST operation for '{path}'.");
-        }
-
-        return operation.RequestBody?.Content?["multipart/form-data"].Schema as OpenApiSchema
-            ?? throw new InvalidOperationException($"Expected multipart schema for '{path}'.");
-    }
 }

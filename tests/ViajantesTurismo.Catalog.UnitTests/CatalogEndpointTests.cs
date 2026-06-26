@@ -1,11 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using SharedKernel.Testing;
-using ViajantesTurismo.Catalog.ApiService;
-using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -83,48 +77,5 @@ public sealed class CatalogEndpointTests
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    private sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadModel[] tours) : ICatalogTourReadModelStore
-    {
-        public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
-
-        public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
-        {
-            IReadOnlyList<CatalogTourDraftReadModel> snapshot = tours;
-            return ValueTask.FromResult(snapshot);
-        }
-
-        public ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
-        {
-            return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
-        }
-    }
-
-    private static class CatalogEndpointTestsHelpers
-    {
-        public static WebApplicationFactory<ICatalogApiAssemblyMarker> CreateFactory(ICatalogTourReadModelStore store)
-        {
-            return WebApplicationTestHost.Create<ICatalogApiAssemblyMarker>(
-                configureTestServices: services =>
-                {
-                    services.RemoveAll<ICatalogTourReadModelStore>();
-                    services.AddSingleton(store);
-                });
-        }
-
-        public static CatalogTourDraftReadModel CreateTour(string identifier, string title)
-        {
-            return new CatalogTourDraftReadModel(
-                Guid.CreateVersion7(),
-                Guid.CreateVersion7(),
-                identifier,
-                title,
-                1,
-                DateTimeOffset.UtcNow);
-        }
     }
 }

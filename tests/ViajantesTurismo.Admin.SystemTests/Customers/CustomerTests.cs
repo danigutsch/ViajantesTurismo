@@ -1,8 +1,6 @@
-using System.Text.RegularExpressions;
-
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
-public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const float WizardStepTransitionTimeoutMilliseconds = 15000;
 
@@ -57,7 +55,7 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
 
         await Page.GetButton("Next").ClickAsync();
 
-        await Expect(Page).ToHaveURLAsync(ContactStepRegex(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.ContactStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
         await Expect(Page.Locator("#email")).ToBeVisibleAsync(new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
@@ -175,7 +173,4 @@ public partial class CustomerTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page.GetByText("Senior QA Engineer")).ToBeVisibleAsync();
         await Expect(Page.GetByText("+5511999990099")).ToBeVisibleAsync();
     }
-
-    [GeneratedRegex("/customers/create/contact$")]
-    private static partial Regex ContactStepRegex();
 }

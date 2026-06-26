@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Common.Monies;
 
@@ -79,14 +78,5 @@ public class TourUpdateGuardTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Contains("cannot be changed if bookings exist", result.ErrorDetails!.Detail, StringComparison.Ordinal);
-    }
-    private static class TourUpdateGuardTestHelpers
-    {
-        public static void AddBookingToTour(Tour tour)
-        {
-            var result = BookingTestHelpers.AddSingleCustomerBooking(tour);
-
-            Assert.True(result.IsSuccess, "Failed to add booking to tour for test setup.");
-        }
     }
 }

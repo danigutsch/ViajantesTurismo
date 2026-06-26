@@ -1,4 +1,3 @@
-using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -94,19 +93,5 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
 
         // Assert
         await lookup;
-    }
-
-    private static class InMemoryCatalogTourReadModelStoreTestsHelpers
-    {
-        public static CatalogTourDraftReadModel CreateTour(Guid id, string title)
-        {
-            return new CatalogTourDraftReadModel(
-                id,
-                Guid.CreateVersion7(),
-                $"TOUR-{title}",
-                title,
-                1,
-                DateTimeOffset.UtcNow);
-        }
     }
 }

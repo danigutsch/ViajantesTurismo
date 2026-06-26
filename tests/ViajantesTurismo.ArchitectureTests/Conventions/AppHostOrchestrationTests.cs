@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -20,17 +20,4 @@ public sealed partial class AppHostOrchestrationTests
         Assert.DoesNotContain("WaitForCompletion(migrationService)", catalogApiBlock, StringComparison.Ordinal);
     }
 
-    [GeneratedRegex(@"var\s+catalogApiService\s*=\s*builder\.AddProject<[^;]+;", RegexOptions.CultureInvariant)]
-    private static partial Regex CatalogApiResourceRegex();
-
-    private static string GetRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "ViajantesTurismo.slnx")))
-        {
-            directory = directory.Parent;
-        }
-
-        return directory?.FullName ?? throw new InvalidOperationException("Could not locate repository root.");
-    }
 }

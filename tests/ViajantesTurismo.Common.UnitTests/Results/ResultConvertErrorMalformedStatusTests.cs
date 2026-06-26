@@ -1,5 +1,5 @@
-using System.Reflection;
 using SharedKernel.Results;
+using static ViajantesTurismo.Common.UnitTests.Results.ResultConvertErrorMalformedStatusTestsHelpers;
 
 namespace ViajantesTurismo.Common.UnitTests.Results;
 
@@ -37,7 +37,7 @@ public class ResultConvertErrorMalformedStatusTests
         string expectedMessage)
     {
         // Arrange
-        var malformedSourceResult = ResultConvertErrorMalformedStatusTestsHelpers.CreateMalformedGenericResult(
+        var malformedSourceResult = CreateMalformedGenericResult(
             (ResultStatus)statusValue,
             "payload",
             new ResultError("Malformed result status."));
@@ -58,7 +58,7 @@ public class ResultConvertErrorMalformedStatusTests
         string expectedMessage)
     {
         // Arrange
-        var malformedSourceResult = ResultConvertErrorMalformedStatusTestsHelpers.CreateMalformedGenericResult(
+        var malformedSourceResult = CreateMalformedGenericResult(
             (ResultStatus)statusValue,
             "payload",
             new ResultError("Malformed result status."));
@@ -70,31 +70,4 @@ public class ResultConvertErrorMalformedStatusTests
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    private static Result CreateMalformedResult(ResultStatus status, ResultError? error)
-    {
-        var constructor = typeof(Result).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(ResultStatus), typeof(ResultError)],
-            modifiers: null);
-
-        Assert.NotNull(constructor);
-        return (Result)constructor.Invoke([status, error]);
-    }
-
-    private static class ResultConvertErrorMalformedStatusTestsHelpers
-    {
-        public static Result<T> CreateMalformedGenericResult<T>(ResultStatus status, T value, ResultError? error)
-            where T : notnull
-        {
-            var constructor = typeof(Result<T>).GetConstructor(
-                BindingFlags.Instance | BindingFlags.NonPublic,
-                binder: null,
-                types: [typeof(ResultStatus), typeof(T), typeof(ResultError)],
-                modifiers: null);
-
-            Assert.NotNull(constructor);
-            return (Result<T>)constructor.Invoke([status, value, error]);
-        }
-    }
 }

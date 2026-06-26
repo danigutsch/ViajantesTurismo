@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
-
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
 /// <summary>
@@ -42,11 +39,11 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         // Assert: tours sort by Name ascending / descending.
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
-        await ListInteractionTestsHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: false);
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: false);
 
         await toursTable.GetButton("Name").ClickAsync();
         await Expect(toursTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
-        await ListInteractionTestsHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: true);
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: true);
     }
 
     [Fact]
@@ -68,7 +65,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         var paginator = Page.Locator(".paginator");
         var paginationText = paginator.Locator(".pagination-text");
 
-        var firstPage = await ReadPaginationState(paginationText);
+        var firstPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
         Assert.Equal(1, firstPage.CurrentPage);
         Assert.True(firstPage.TotalPages >= 2, $"Expected at least 2 pages, but found {firstPage.TotalPages}.");
 
@@ -77,52 +74,22 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         var customerNameCells = customersTable.Locator("tbody tr td:nth-child(1)");
-        await ListInteractionTestsHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
 
         await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 2 of");
-        var secondPage = await ReadPaginationState(paginationText);
+        var secondPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
         Assert.Equal(2, secondPage.CurrentPage);
         Assert.True(secondPage.TotalPages >= 2, $"Expected at least 2 pages, but found {secondPage.TotalPages}.");
-        await ListInteractionTestsHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 1 of");
-        var returnedPage = await ReadPaginationState(paginationText);
+        var returnedPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
         Assert.Equal(1, returnedPage.CurrentPage);
         Assert.True(returnedPage.TotalPages >= 2, $"Expected at least 2 pages, but found {returnedPage.TotalPages}.");
-        await ListInteractionTestsHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
-    }
-
-    private static async Task<(int CurrentPage, int TotalPages)> ReadPaginationState(ILocator paginationText)
-    {
-        var text = await paginationText.InnerTextAsync();
-        var match = Regex.Match(text, @"Page\s+(?<current>\d+)\s+of\s+(?<total>\d+)");
-
-        Assert.True(match.Success, $"Expected pagination text in 'Page N of M' format, but found '{text}'.");
-
-        return (int.Parse(match.Groups["current"].Value, CultureInfo.InvariantCulture),
-            int.Parse(match.Groups["total"].Value, CultureInfo.InvariantCulture));
-    }
-
-    private static class ListInteractionTestsHelpers
-    {
-        public static async Task AssertVisibleCellTextsAreSorted(ILocator cells, bool descending)
-        {
-            var visibleTexts = (await cells.AllInnerTextsAsync())
-                .Select(text => text.Trim())
-                .Where(text => text.Length > 0)
-                .ToArray();
-
-            Assert.True(visibleTexts.Length > 1, "Expected at least two visible rows to verify sorting.");
-
-            var sortedTexts = descending
-                ? visibleTexts.OrderByDescending(text => text, StringComparer.OrdinalIgnoreCase).ToArray()
-                : visibleTexts.OrderBy(text => text, StringComparer.OrdinalIgnoreCase).ToArray();
-
-            Assert.Equal(sortedTexts, visibleTexts);
-        }
     }
 }

@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.BuildingBlocks;
+using static ViajantesTurismo.Common.UnitTests.BuildingBlocks.ValueObjectTestsHelpers;
 
 namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 
@@ -193,70 +193,4 @@ public sealed class ValueObjectTests
         Assert.False(order1 == order3);
     }
 
-    private sealed class TestAddress(string street, string? city) : ValueObject
-    {
-        public string Street { get; } = street;
-        public string? City { get; } = city;
-
-        protected override IEnumerable<object?> GetEqualityComponents()
-        {
-            yield return Street;
-            yield return City;
-        }
-    }
-
-    private sealed class TestMoney(decimal amount, string currency) : ValueObject
-    {
-        public decimal Amount { get; } = amount;
-        public string Currency { get; } = currency;
-
-        protected override IEnumerable<object?> GetEqualityComponents()
-        {
-            yield return Amount;
-            yield return Currency;
-        }
-    }
-
-    private sealed class TestTwoStrings(string first, string second) : ValueObject
-    {
-        public string First { get; } = first;
-        public string Second { get; } = second;
-
-        protected override IEnumerable<object?> GetEqualityComponents()
-        {
-            yield return First;
-            yield return Second;
-        }
-    }
-
-    private sealed class TestPerson(string firstName, string lastName, int age) : ValueObject
-    {
-        public string FirstName { get; } = firstName;
-        public string LastName { get; } = lastName;
-        public int Age { get; } = age;
-
-        protected override IEnumerable<object?> GetEqualityComponents()
-        {
-            yield return FirstName;
-            yield return LastName;
-            yield return Age;
-        }
-    }
-
-    private sealed class TestOrder(TestMoney price, TestAddress address) : ValueObject
-    {
-        public TestMoney Price { get; } = price;
-        public TestAddress Address { get; } = address;
-
-        protected override IEnumerable<object?> GetEqualityComponents()
-        {
-            yield return Price;
-            yield return Address;
-        }
-    }
-
-    private static bool EqualsObject(object instance, object? other)
-    {
-        return instance.Equals(other);
-    }
 }

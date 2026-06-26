@@ -19,10 +19,10 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public IReadOnlyDictionary<string, string>? LastCommitConflictResolutions { get; private set; }
 
-    public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken cancellationToken, int maxItems = 100)
+    public Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken ct, int maxItems = 100)
         => Task.FromResult<IReadOnlyList<GetCustomerDto>>([.. _customers.Take(maxItems)]);
 
-    public Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken cancellationToken)
+    public Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken ct)
     {
         if (_getCustomerByIdException is not null)
         {
@@ -32,7 +32,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(_customerDetails.FirstOrDefault(c => c.Id == id));
     }
 
-    public Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken cancellationToken)
+    public Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         if (_createCustomerException is not null)
         {
@@ -43,7 +43,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(new Uri($"/customers/{customerId}", UriKind.Relative));
     }
 
-    public Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken cancellationToken)
+    public Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
     {
         if (_updateCustomerException is not null)
         {
@@ -53,7 +53,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.CompletedTask;
     }
 
-    public Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken cancellationToken)
+    public Task<ImportResultDto> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
     {
         if (_importCustomersException is not null)
         {
@@ -68,7 +68,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         throw new NotImplementedException();
     }
 
-    public Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken cancellationToken)
+    public Task<ImportResultDto> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         LastCommitFileContent = [.. fileContent];
         LastCommitFileName = fileName;

@@ -1,8 +1,7 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using ViajantesTurismo.Admin.ApiService;
 using SharedKernel.Results;
+using static ViajantesTurismo.Admin.UnitTests.ApiService.ResultExtensionsResponseMappingTestHelpers;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
@@ -318,34 +317,4 @@ public class ResultExtensionsResponseMappingTests
         Assert.Equal("Only results with status 'Conflict' can be converted to Conflict.", exception.Message);
     }
 
-    protected static HttpValidationProblemDetails AssertValidationProblemDetails(ValidationProblem result)
-    {
-        var valueResult = Assert.IsType<IValueHttpResult<HttpValidationProblemDetails>>(result, exactMatch: false);
-        return Assert.IsType<HttpValidationProblemDetails>(valueResult.Value);
-    }
-
-    protected static Result CreateMalformedFailureResult(ResultStatus status, ResultError? error)
-    {
-        var constructor = typeof(Result).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(ResultStatus), typeof(ResultError)],
-            modifiers: null);
-
-        Assert.NotNull(constructor);
-        return (Result)constructor.Invoke([status, error]);
-    }
-
-    protected static Result<T> CreateMalformedFailureResult<T>(ResultStatus status, T? value, ResultError? error)
-        where T : notnull
-    {
-        var constructor = typeof(Result<T>).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(ResultStatus), typeof(T), typeof(ResultError)],
-            modifiers: null);
-
-        Assert.NotNull(constructor);
-        return (Result<T>)constructor.Invoke([status, value, error]);
-    }
 }

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -7,7 +8,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Admin_Test_Architecture_Guide_Should_Declare_The_Canonical_Documentation_Owner()
     {
-        var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = GetRepositoryRoot();
         var guidePath = Path.Combine(repositoryRoot, "tests", "README.md");
         var guideText = File.ReadAllText(guidePath);
         var architectureReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
@@ -28,7 +29,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Admin_Hosted_Test_Infrastructure_Should_Use_The_Approved_Fixture_And_Base_Class_Model()
     {
-        var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = GetRepositoryRoot();
         var integrationInfrastructurePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure");
         var systemTestBasesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases");
         var systemTestFixturesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures");
@@ -50,7 +51,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
-            Path.Combine(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.Testing", "Integration", "Helpers", "DatabaseResetHelper.cs"),
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.Testing", "Integration", "Helpers", "DatabaseResetHelper.cs"),
             "public static async Task ResetPublicTables(DbConnection connection, CancellationToken ct)");
 
         AssertFileContains(
@@ -129,14 +130,14 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void SystemTests_Should_Keep_Serial_Collection_Control_In_Base_Classes_Only()
     {
-        var systemTestsPath = Path.Combine(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
+        var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
 
         var violatingFiles = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !AdminTestArchitectureGuardTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
                 && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
             .Where(path => File.ReadAllText(path).Contains("[Collection(E2ETestCollections.Serial)]", StringComparison.Ordinal))
-            .Select(path => Path.GetRelativePath(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), path).Replace('\\', '/'))
+            .Select(path => Path.GetRelativePath(GetRepositoryRoot(), path).Replace('\\', '/'))
             .ToArray();
 
         Assert.True(
@@ -147,10 +148,10 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void SystemTests_Should_Document_Each_Serial_Test_With_A_Reason()
     {
-        var systemTestsPath = Path.Combine(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
+        var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
 
         var undocumentedSerialTests = Directory.GetFiles(systemTestsPath, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !AdminTestArchitectureGuardTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .Where(path => !path.Contains("/Infrastructure/", StringComparison.Ordinal)
                 && !path.Contains("\\Infrastructure\\", StringComparison.Ordinal))
             .SelectMany(FindUndocumentedSerialTests)
@@ -166,13 +167,13 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         var infrastructureRoots = new[]
         {
-            Path.Combine(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure"),
-            Path.Combine(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure")
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure"),
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure")
         };
 
         var offendingMembers = infrastructureRoots
             .SelectMany(root => Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories))
-            .Where(path => !AdminTestArchitectureGuardTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(path => FindGenericServiceProviderReachThrough(path))
             .ToArray();
 
@@ -184,9 +185,9 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Concrete_Test_Methods_Should_Not_Own_Raw_ServiceProvider_Or_Scope_Plumbing()
     {
-        var testsRoot = Path.Combine(AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(), "tests");
+        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
         var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !AdminTestArchitectureGuardTestsHelpers.IsGeneratedTestPath(path))
+            .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(FindRawServiceProviderPlumbingInTestMethods)
             .ToArray();
 
@@ -195,178 +196,4 @@ public sealed partial class AdminTestArchitectureGuardTests
             $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
-    private static void AssertFileContains(string filePath, string expectedText)
-    {
-        var fileContents = File.ReadAllText(filePath);
-        Assert.Contains(expectedText, fileContents, StringComparison.Ordinal);
-    }
-
-    private static void AssertFileDoesNotExist(string filePath)
-    {
-        Assert.False(File.Exists(filePath), $"Did not expect file to exist: {filePath}");
-    }
-
-    private static void AssertFileDoesNotContain(string filePath, Regex unexpectedPattern)
-    {
-        var fileContents = File.ReadAllText(filePath);
-        Assert.DoesNotMatch(unexpectedPattern, fileContents);
-    }
-
-    private static string[] FindGenericServiceProviderReachThrough(string filePath)
-    {
-        var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
-        var lines = File.ReadAllLines(filePath);
-        var offenses = new List<string>();
-
-        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-        {
-            if (!PublicServiceProviderReachThroughRegex().IsMatch(lines[lineIndex]))
-            {
-                continue;
-            }
-
-            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
-        }
-
-        return [.. offenses];
-    }
-
-    private static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
-    {
-        var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
-        var lines = File.ReadAllLines(filePath);
-        var offenses = new List<string>();
-        var insideTestMethod = false;
-        var awaitingMethodSignature = false;
-        var braceDepth = 0;
-
-        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-        {
-            var line = lines[lineIndex];
-            var trimmedLine = line.TrimStart();
-
-            if (!insideTestMethod && !awaitingMethodSignature && IsTestAttributeLine(trimmedLine))
-            {
-                awaitingMethodSignature = true;
-                continue;
-            }
-
-            if (awaitingMethodSignature && TestMethodSignatureRegex().IsMatch(trimmedLine))
-            {
-                insideTestMethod = true;
-                awaitingMethodSignature = false;
-                braceDepth = CountBraceDelta(line);
-                continue;
-            }
-
-            if (!insideTestMethod)
-            {
-                continue;
-            }
-
-            if (RawServiceProviderPlumbingRegex().IsMatch(line))
-            {
-                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {trimmedLine.Trim()}");
-            }
-
-            braceDepth += CountBraceDelta(line);
-            if (braceDepth <= 0)
-            {
-                insideTestMethod = false;
-            }
-        }
-
-        return [.. offenses];
-    }
-
-    private static bool IsTestAttributeLine(string trimmedLine)
-    {
-        return trimmedLine.StartsWith("[Fact", StringComparison.Ordinal)
-            || trimmedLine.StartsWith("[Theory", StringComparison.Ordinal);
-    }
-
-    private static int CountBraceDelta(string line)
-    {
-        return line.Count(static character => character == '{') - line.Count(static character => character == '}');
-    }
-
-    private static string[] FindUndocumentedSerialTests(string filePath)
-    {
-        var fileContents = File.ReadAllText(filePath);
-        if (!fileContents.Contains("AspireSerialSystemTestBase", StringComparison.Ordinal))
-        {
-            return [];
-        }
-
-        var repositoryRoot = AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot();
-        var offenses = new List<string>();
-        foreach (Match match in SerialTestMethodRegex().Matches(fileContents))
-        {
-            var attributes = match.Groups["attributes"].Value;
-            if (!TestAttributeRegex().IsMatch(attributes))
-            {
-                continue;
-            }
-
-            if (SerialReasonAttributeRegex().IsMatch(attributes))
-            {
-                continue;
-            }
-
-            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}: {match.Groups["method"].Value}");
-        }
-
-        return [.. offenses];
-    }
-
-    [GeneratedRegex(@"\b(?:new\s+ServiceCollection\s*\(|BuildServiceProvider\s*\(|CreateScope\s*\(|CreateAsyncScope\s*\()", RegexOptions.Compiled)]
-    private static partial Regex RawServiceProviderPlumbingRegex();
-
-    [GeneratedRegex(@"^public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+\w+\s*\(", RegexOptions.Compiled)]
-    private static partial Regex TestMethodSignatureRegex();
-
-    [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
-    private static partial Regex PublicServiceProviderReachThroughRegex();
-
-    [GeneratedRegex(@"^\s*protected\s+.*\bClearDatabase(?:Async)?\s*\(", RegexOptions.Compiled | RegexOptions.Multiline)]
-    private static partial Regex ProtectedClearDatabaseMemberRegex();
-
-    [GeneratedRegex(@"(?<attributes>(?:\s*\[[^\]]+\]\s*)+)\s*public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+(?<method>\w+)\s*\(", RegexOptions.Compiled)]
-    private static partial Regex SerialTestMethodRegex();
-
-    [GeneratedRegex(@"\[(?:Fact|Theory)(?:\(|\])", RegexOptions.Compiled)]
-    private static partial Regex TestAttributeRegex();
-
-    [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
-    private static partial Regex SerialReasonAttributeRegex();
-
-    private static class AdminTestArchitectureGuardTestsHelpers
-    {
-        public static string GetRepositoryRoot()
-        {
-            var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-            while (currentDirectory is not null)
-            {
-                var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-                if (File.Exists(solutionPath))
-                {
-                    return currentDirectory.FullName;
-                }
-
-                currentDirectory = currentDirectory.Parent;
-            }
-
-            throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
-        }
-
-        public static bool IsGeneratedTestPath(string path)
-        {
-            var normalizedPath = path.Replace('\\', '/');
-            return normalizedPath.Contains("/bin/", StringComparison.Ordinal)
-                || normalizedPath.Contains("/obj/", StringComparison.Ordinal)
-                || normalizedPath.Contains("/Snapshots/", StringComparison.Ordinal)
-                || normalizedPath.EndsWith(".feature.cs", StringComparison.Ordinal);
-        }
-    }
 }

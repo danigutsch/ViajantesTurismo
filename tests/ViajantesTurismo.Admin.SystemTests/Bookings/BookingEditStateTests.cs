@@ -14,9 +14,9 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await BookingWorkflow.NavigateToEdit(booking.Id);
 
         // Assert
-        await ExpectWarningContains("cancelled", "cannot be modified");
+        await BookingEditStateTestHelpers.ExpectWarningContains(Page, "cancelled", "cannot be modified");
         await Expect(Page.GetButton("Record Payment")).Not.ToBeVisibleAsync();
-        await ExpectPaymentsSummaryVisible();
+        await BookingEditStateTestHelpers.ExpectPaymentsSummaryVisible(Page);
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Complete Booking")).Not.ToBeVisibleAsync();
         await Expect(Page.GetButton("Cancel Booking")).Not.ToBeVisibleAsync();
@@ -43,23 +43,6 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
         await Expect(Page.GetButton("Cancel Booking")).ToBeVisibleAsync();
         await Expect(Page.GetButton("Delete Booking")).ToBeVisibleAsync();
         await Expect(Page.GetButton("Confirm Booking")).Not.ToBeVisibleAsync();
-        await ExpectPaymentsSummaryVisible();
-    }
-
-    private async Task ExpectWarningContains(params string[] expectedTexts)
-    {
-        var warning = Page.Locator(".alert-warning");
-        foreach (var expectedText in expectedTexts)
-        {
-            await Expect(warning).ToContainTextAsync(expectedText);
-        }
-    }
-
-    private async Task ExpectPaymentsSummaryVisible()
-    {
-        var paymentsCard = Page.Locator(".card").Filter(new LocatorFilterOptions { HasText = "Payments" });
-        await Expect(paymentsCard.GetByText("Total Price", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
-        await Expect(paymentsCard.GetByText("Amount Paid", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
-        await Expect(paymentsCard.GetByText("Remaining Balance", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
+        await BookingEditStateTestHelpers.ExpectPaymentsSummaryVisible(Page);
     }
 }

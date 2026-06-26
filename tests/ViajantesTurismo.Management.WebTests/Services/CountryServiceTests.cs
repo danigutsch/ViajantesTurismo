@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
-
 namespace ViajantesTurismo.Management.WebTests.Services;
 
 public sealed class CountryServiceTests : IDisposable
@@ -15,25 +12,12 @@ public sealed class CountryServiceTests : IDisposable
         }
     }
 
-    private CountryService CreateService()
-    {
-        var env = new StubWebHostEnvironment(_tempDir);
-        return new CountryService(env);
-    }
-
-    private void WriteCountriesJson(string json)
-    {
-        var dataDir = Path.Combine(_tempDir, "data");
-        Directory.CreateDirectory(dataDir);
-        File.WriteAllText(Path.Combine(dataDir, "countries.json"), json);
-    }
-
     [Fact]
     public async Task GetCountries_Valid_Json_Returns_Countries_Ordered_By_Name()
     {
         // Arrange
-        WriteCountriesJson("""{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
-        var sut = CreateService();
+        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
+        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -50,8 +34,8 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_Caches_Result_On_Second_Call()
     {
         // Arrange
-        WriteCountriesJson("""{"us": {"name": "United States"}}""");
-        var sut = CreateService();
+        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"us": {"name": "United States"}}""");
+        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
 
         // Act
         CountryInfo[] first = await sut.GetCountries(CancellationToken.None);
@@ -66,7 +50,7 @@ public sealed class CountryServiceTests : IDisposable
     {
         // Arrange — data directory exists but file does not
         Directory.CreateDirectory(Path.Combine(_tempDir, "data"));
-        var sut = CreateService();
+        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -80,8 +64,8 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_Invalid_Json_Returns_Fallback_Countries()
     {
         // Arrange
-        WriteCountriesJson("not valid json {{{");
-        var sut = CreateService();
+        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, "not valid json {{{");
+        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -154,13 +138,4 @@ public sealed class CountryServiceTests : IDisposable
         Assert.Equal(unknown, result);
     }
 
-    private sealed class StubWebHostEnvironment(string webRootPath) : IWebHostEnvironment
-    {
-        public string WebRootPath { get; set; } = webRootPath;
-        public IFileProvider WebRootFileProvider { get; set; } = null!;
-        public string ApplicationName { get; set; } = "Test";
-        public IFileProvider ContentRootFileProvider { get; set; } = null!;
-        public string ContentRootPath { get; set; } = string.Empty;
-        public string EnvironmentName { get; set; } = "Test";
-    }
 }
