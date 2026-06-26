@@ -84,18 +84,15 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         ValidateVariantLanguage(errors, nameof(EnUs), enUs, PublicContentLanguage.EnUs);
         ValidateVariantLanguage(errors, nameof(PtBr), ptBr, PublicContentLanguage.PtBr);
 
-        if (errors.HasErrors)
-        {
-            return errors.ToResult<EditablePublicContent>();
-        }
-
-        return Result.Ok(new EditablePublicContent(
-            Guid.CreateVersion7(),
-            sanitizedKey,
-            sourceLanguage,
-            enUs,
-            ptBr,
-            GetInitialPublicationState(enUs, ptBr)));
+        return errors.HasErrors
+            ? errors.ToResult<EditablePublicContent>()
+            : Result.Ok(new EditablePublicContent(
+                Guid.CreateVersion7(),
+                sanitizedKey,
+                sourceLanguage,
+                enUs,
+                ptBr,
+                GetInitialPublicationState(enUs, ptBr)));
     }
 
     /// <summary>

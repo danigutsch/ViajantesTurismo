@@ -97,19 +97,16 @@ public sealed class PublicContentVariant : ValueObject
         ValidateOptionalText(errors, nameof(MetaDescription), sanitizedMetaDescription, ContractConstants.MaxCaptionLength);
         ValidateOptionalText(errors, nameof(ShareSummary), sanitizedShareSummary, ContractConstants.MaxCaptionLength);
 
-        if (errors.HasErrors)
-        {
-            return errors.ToResult<PublicContentVariant>();
-        }
-
-        return Result.Ok(new PublicContentVariant(
-            language,
-            sanitizedTitle,
-            sanitizedBody,
-            sanitizedSeoTitle,
-            sanitizedMetaDescription,
-            sanitizedShareSummary,
-            requiresHumanReview));
+        return errors.HasErrors
+            ? errors.ToResult<PublicContentVariant>()
+            : Result.Ok(new PublicContentVariant(
+                language,
+                sanitizedTitle,
+                sanitizedBody,
+                sanitizedSeoTitle,
+                sanitizedMetaDescription,
+                sanitizedShareSummary,
+                requiresHumanReview));
     }
 
     /// <inheritdoc />
