@@ -21,8 +21,9 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 - **MigrationService**: applies database migrations and seed data, then exits
 - **Admin.ApiService**: Admin REST API; waits for the database and migration completion
-- **Management.Web**: Blazor management UI; waits for Redis and the Admin API
-- **Public.Web**: public-facing Blazor UI with an external HTTP endpoint
+- **Catalog.ApiService**: localized public content API
+- **Management.Web**: Blazor management UI; waits for Redis, the Admin API, and the Catalog API
+- **Public.Web**: public-facing Blazor UI; waits for the Catalog API and exposes an external HTTP endpoint
 
 ### Optional Developer Tooling
 
@@ -36,13 +37,12 @@ PostgreSQL → Database → MigrationService
                      ↓
                   Admin.ApiService → Management.Web ← Redis
                          ↓
-              admin-performance-smoke (opt-in)
+               admin-performance-smoke (opt-in)
 
-Public.Web
+Catalog.ApiService → Management.Web
+                 ↓
+             Public.Web
 ```
-
-`Public.Web` is currently exposed by the AppHost but does not consume an AppHost service reference in
-this branch.
 
 ## Resource Names
 
