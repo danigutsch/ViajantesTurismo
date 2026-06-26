@@ -28,8 +28,8 @@ Apply these rules:
   their own files near the consuming test project.
 - Flag private helper methods declared directly on xUnit test classes.
 - Flag reused internal static helper methods declared directly on xUnit test classes.
-- Flag non-public nested helper types declared directly on xUnit test classes, including internal
-  nested types.
+- Flag non-public nested helper types declared directly on xUnit test classes, explicitly including
+  internal nested types.
 
 `SKTEST004` enforces this rule so contributors get fast feedback before review.
 
