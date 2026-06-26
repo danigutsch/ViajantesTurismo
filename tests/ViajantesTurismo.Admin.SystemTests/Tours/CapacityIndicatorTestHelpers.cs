@@ -1,5 +1,6 @@
 using System.Globalization;
 using static Microsoft.Playwright.Assertions;
+
 namespace ViajantesTurismo.Admin.SystemTests.Tours;
 
 public static class CapacityIndicatorTestHelpers
