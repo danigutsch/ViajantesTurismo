@@ -1,5 +1,7 @@
+using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -55,5 +57,44 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Public_Content_Endpoint_Saves_Review_Required_Draft()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var request = new UpsertPublicContentRequest
+        {
+            SourceLanguage = PublicContentLanguageDto.EnUs,
+            EnUs = new PublicContentVariantDto
+            {
+                Language = PublicContentLanguageDto.EnUs,
+                Title = "Welcome",
+                Body = "Ride with us"
+            },
+            PtBr = new PublicContentVariantDto
+            {
+                Language = PublicContentLanguageDto.PtBr,
+                Title = "Bem-vindo",
+                Body = "Pedale conosco",
+                RequiresHumanReview = true
+            }
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(saved);
+        Assert.Equal("home.hero", saved.Key);
+        Assert.True(saved.PtBr.RequiresHumanReview);
+        Assert.Equal("ReviewRequired", saved.PublicationState);
     }
 }

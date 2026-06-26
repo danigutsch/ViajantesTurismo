@@ -1,0 +1,354 @@
+@page "/catalog/content"
+@using System.ComponentModel.DataAnnotations
+@using ViajantesTurismo.Catalog.Contracts
+@using ViajantesTurismo.Management.Web.Helpers
+@rendermode InteractiveServer
+
+@inject IPublicContentApiClient PublicContentApi
+
+<PageTitle>Public Content</PageTitle>
+
+<h1><i class="bi bi-translate"></i> Public Content</h1>
+
+<p class="text-muted">Edit customer-facing website content in en-US and pt-BR.</p>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@if (_successMessage is not null)
+{
+    <div class="alert alert-success" role="status">@_successMessage</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <section aria-labelledby="content-list-heading">
+            <h2 id="content-list-heading" class="h4">Content entries</h2>
+
+            @if (_loading)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else if (_content.Length == 0)
+            {
+                <div class="alert alert-info" role="status">No public content entries yet.</div>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var entry in _content)
+                    {
+                        <button type="button"
+                                class="list-group-item list-group-item-action"
+                                @onclick="() => LoadEntry(entry.Key)">
+                            <span class="fw-semibold">@entry.Key</span>
+                            <span class="badge bg-secondary ms-2">@entry.PublicationState</span>
+                        </button>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+
+    <div class="col-lg-8">
+        <EditForm Model="@_model" OnValidSubmit="@SaveContent" FormName="publicContentEditor">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label for="content-key" class="form-label">Content key</label>
+                <InputText id="content-key" class="form-control" @bind-Value="_model.Key" placeholder="home.hero" />
+                <div class="form-text">Use a stable page or section key.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="source-language" class="form-label">Source language</label>
+                <InputSelect id="source-language" class="form-select" @bind-Value="_model.SourceLanguage">
+                    <option value="@PublicContentLanguageDto.EnUs">en-US</option>
+                    <option value="@PublicContentLanguageDto.PtBr">pt-BR</option>
+                </InputSelect>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <fieldset class="border rounded p-3 h-100">
+                        <legend class="float-none w-auto px-2 h5">en-US</legend>
+                        @RenderVariant("en-us", _model.EnUs)
+                    </fieldset>
+                </div>
+
+                <div class="col-md-6">
+                    <fieldset class="border rounded p-3 h-100">
+                        <legend class="float-none w-auto px-2 h5">pt-BR</legend>
+                        @RenderVariant("pt-br", _model.PtBr)
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="button" class="btn btn-outline-primary" @onclick="GenerateMissingDraft" disabled="@_saving">
+                    Create review draft for missing language
+                </button>
+                <button type="submit" class="btn btn-primary" disabled="@_saving">
+                    @(_saving ? "Saving..." : "Save content")
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="ResetForm" disabled="@_saving">New entry</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private PublicContentDto[] _content = [];
+    private PublicContentFormModel _model = new();
+    private bool _loading = true;
+    private bool _saving;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadContent();
+    }
+
+    private RenderFragment RenderVariant(string idPrefix, PublicContentVariantFormModel variant) => @<div>
+        <div class="mb-3">
+            <label for="@($"{idPrefix}-title")" class="form-label">Title</label>
+            <InputText id="@($"{idPrefix}-title")" class="form-control" @bind-Value="variant.Title" />
+        </div>
+        <div class="mb-3">
+            <label for="@($"{idPrefix}-body")" class="form-label">Body</label>
+            <InputTextArea id="@($"{idPrefix}-body")" class="form-control" rows="7" @bind-Value="variant.Body" />
+        </div>
+        <div class="mb-3">
+            <label for="@($"{idPrefix}-seo-title")" class="form-label">SEO title</label>
+            <InputText id="@($"{idPrefix}-seo-title")" class="form-control" @bind-Value="variant.SeoTitle" />
+        </div>
+        <div class="mb-3">
+            <label for="@($"{idPrefix}-meta-description")" class="form-label">Meta description</label>
+            <InputTextArea id="@($"{idPrefix}-meta-description")" class="form-control" rows="2" @bind-Value="variant.MetaDescription" />
+        </div>
+        <div class="mb-3">
+            <label for="@($"{idPrefix}-share-summary")" class="form-label">Share summary</label>
+            <InputTextArea id="@($"{idPrefix}-share-summary")" class="form-control" rows="2" @bind-Value="variant.ShareSummary" />
+        </div>
+        <div class="form-check">
+            <InputCheckbox id="@($"{idPrefix}-review")" class="form-check-input" @bind-Value="variant.RequiresHumanReview" />
+            <label for="@($"{idPrefix}-review")" class="form-check-label">Requires human review</label>
+        </div>
+        @if (variant.RequiresHumanReview)
+        {
+            <div class="alert alert-warning mt-3 mb-0" role="status">Review-required text. Review before publishing.</div>
+        }
+    </div>;
+
+    private async Task LoadContent()
+    {
+        _errorMessage = null;
+
+        try
+        {
+            _content = await PublicContentApi.GetContent(CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load public content");
+            _content = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadEntry(string key)
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var entry = await PublicContentApi.GetContent(key, CancellationToken.None);
+            if (entry is null)
+            {
+                _errorMessage = "Public content entry was not found.";
+                return;
+            }
+
+            _model = PublicContentFormModel.FromDto(entry);
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load public content");
+        }
+    }
+
+    private void GenerateMissingDraft()
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        var source = _model.SourceLanguage == PublicContentLanguageDto.EnUs ? _model.EnUs : _model.PtBr;
+        var target = _model.SourceLanguage == PublicContentLanguageDto.EnUs ? _model.PtBr : _model.EnUs;
+
+        if (string.IsNullOrWhiteSpace(source.Title) || string.IsNullOrWhiteSpace(source.Body))
+        {
+            _errorMessage = "Enter source title and body before generating a draft.";
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(target.Title) || !string.IsNullOrWhiteSpace(target.Body))
+        {
+            _errorMessage = "Clear the target language title and body before generating a missing-language draft.";
+            return;
+        }
+
+        target.Title = source.Title;
+        target.Body = source.Body;
+        target.SeoTitle = source.SeoTitle;
+        target.MetaDescription = source.MetaDescription;
+        target.ShareSummary = source.ShareSummary;
+        target.RequiresHumanReview = true;
+        _successMessage = "Draft created and marked for human review.";
+    }
+
+    private async Task SaveContent()
+    {
+        _saving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (!ValidateForm())
+        {
+            _saving = false;
+            return;
+        }
+
+        try
+        {
+            var saved = await PublicContentApi.SaveContent(
+                _model.Key,
+                _model.ToRequest(),
+                CancellationToken.None);
+
+            _model = PublicContentFormModel.FromDto(saved);
+            _successMessage = "Public content saved.";
+            await LoadContent();
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        _model = new PublicContentFormModel();
+        _errorMessage = null;
+        _successMessage = null;
+    }
+
+    private bool ValidateForm()
+    {
+        if (string.IsNullOrWhiteSpace(_model.EnUs.Title)
+            || string.IsNullOrWhiteSpace(_model.EnUs.Body)
+            || string.IsNullOrWhiteSpace(_model.PtBr.Title)
+            || string.IsNullOrWhiteSpace(_model.PtBr.Body))
+        {
+            _errorMessage = "Enter title and body for both en-US and pt-BR before saving.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private sealed class PublicContentFormModel
+    {
+        [Required]
+        [StringLength(ContractConstants.MaxDefaultLength)]
+        public string Key { get; set; } = string.Empty;
+
+        public PublicContentLanguageDto SourceLanguage { get; set; } = PublicContentLanguageDto.EnUs;
+
+        public PublicContentVariantFormModel EnUs { get; set; } = new();
+
+        public PublicContentVariantFormModel PtBr { get; set; } = new();
+
+        public static PublicContentFormModel FromDto(PublicContentDto content)
+        {
+            return new PublicContentFormModel
+            {
+                Key = content.Key,
+                SourceLanguage = content.SourceLanguage,
+                EnUs = PublicContentVariantFormModel.FromDto(content.EnUs),
+                PtBr = PublicContentVariantFormModel.FromDto(content.PtBr)
+            };
+        }
+
+        public UpsertPublicContentRequest ToRequest()
+        {
+            return new UpsertPublicContentRequest
+            {
+                SourceLanguage = SourceLanguage,
+                EnUs = EnUs.ToDto(PublicContentLanguageDto.EnUs),
+                PtBr = PtBr.ToDto(PublicContentLanguageDto.PtBr)
+            };
+        }
+    }
+
+    private sealed class PublicContentVariantFormModel
+    {
+        [Required]
+        [StringLength(ContractConstants.MaxNameLength)]
+        public string Title { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(ContractConstants.MaxBodyLength)]
+        public string Body { get; set; } = string.Empty;
+
+        [StringLength(ContractConstants.MaxNameLength)]
+        public string? SeoTitle { get; set; }
+
+        [StringLength(ContractConstants.MaxCaptionLength)]
+        public string? MetaDescription { get; set; }
+
+        [StringLength(ContractConstants.MaxCaptionLength)]
+        public string? ShareSummary { get; set; }
+
+        public bool RequiresHumanReview { get; set; }
+
+        public static PublicContentVariantFormModel FromDto(PublicContentVariantDto variant)
+        {
+            return new PublicContentVariantFormModel
+            {
+                Title = variant.Title,
+                Body = variant.Body,
+                SeoTitle = variant.SeoTitle,
+                MetaDescription = variant.MetaDescription,
+                ShareSummary = variant.ShareSummary,
+                RequiresHumanReview = variant.RequiresHumanReview
+            };
+        }
+
+        public PublicContentVariantDto ToDto(PublicContentLanguageDto language)
+        {
+            return new PublicContentVariantDto
+            {
+                Language = language,
+                Title = Title,
+                Body = Body,
+                SeoTitle = SeoTitle,
+                MetaDescription = MetaDescription,
+                ShareSummary = ShareSummary,
+                RequiresHumanReview = RequiresHumanReview
+            };
+        }
+    }
+}

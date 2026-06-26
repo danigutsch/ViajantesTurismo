@@ -10,8 +10,6 @@ namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 /// </summary>
 public sealed class PublicContentVariant : ValueObject
 {
-    private const int MaxBodyLength = 4000;
-
     private PublicContentVariant(
         PublicContentLanguage language,
         string title,
@@ -94,7 +92,7 @@ public sealed class PublicContentVariant : ValueObject
 
         ValidateSupportedLanguage(errors, language);
         ValidateRequiredText(errors, nameof(Title), sanitizedTitle, ContractConstants.MaxNameLength);
-        ValidateRequiredText(errors, nameof(Body), sanitizedBody, MaxBodyLength);
+        ValidateRequiredText(errors, nameof(Body), sanitizedBody, ContractConstants.MaxBodyLength);
         ValidateOptionalText(errors, nameof(SeoTitle), sanitizedSeoTitle, ContractConstants.MaxNameLength);
         ValidateOptionalText(errors, nameof(MetaDescription), sanitizedMetaDescription, ContractConstants.MaxCaptionLength);
         ValidateOptionalText(errors, nameof(ShareSummary), sanitizedShareSummary, ContractConstants.MaxCaptionLength);
