@@ -71,6 +71,7 @@ public static class ServiceDefaultsExtensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation()
                     .AddCatalogMetrics()
                     .AddSharedKernelMediatorMetrics()
                     .AddSharedKernelProviderMetrics();
