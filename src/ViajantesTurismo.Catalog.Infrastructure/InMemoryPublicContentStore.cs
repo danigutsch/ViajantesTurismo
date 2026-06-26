@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -22,7 +23,7 @@ public sealed class InMemoryPublicContentStore : IPublicContentStore
     public Task<EditablePublicContent?> GetContent(string key, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        contentByKey.TryGetValue(key, out var content);
+        contentByKey.TryGetValue(StringSanitizer.Sanitize(key), out var content);
         return Task.FromResult(content);
     }
 

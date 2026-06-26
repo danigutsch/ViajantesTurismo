@@ -1,4 +1,5 @@
 using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Management.Web.Exceptions;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -7,6 +8,8 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
     public PublicContentDto[] Content { get; set; } = [];
 
     public bool ThrowOnGetContent { get; set; }
+
+    public ApiValidationException? ValidationException { get; set; }
 
     public string? SavedKey { get; private set; }
 
@@ -31,6 +34,11 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
     public Task<PublicContentDto> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (ValidationException is not null)
+        {
+            throw ValidationException;
+        }
 
         SavedKey = key;
         SavedRequest = request;

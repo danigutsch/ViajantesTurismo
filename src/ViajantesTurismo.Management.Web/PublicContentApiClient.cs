@@ -1,5 +1,6 @@
 using System.Net;
 using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.Web;
 
@@ -41,7 +42,7 @@ internal sealed class PublicContentApiClient(HttpClient httpClient) : IPublicCon
     {
         var requestUri = new Uri($"/catalog/public-content/{Uri.EscapeDataString(key)}", UriKind.Relative);
         using var response = await httpClient.PutAsJsonAsync(requestUri, request, ct);
-        response.EnsureSuccessStatusCode();
+        await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
         var content = await response.Content.ReadFromJsonAsync<PublicContentDto>(ct);
         return content ?? throw new InvalidOperationException("Catalog API returned an empty content response.");

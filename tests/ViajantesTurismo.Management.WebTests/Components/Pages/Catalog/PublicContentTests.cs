@@ -1,5 +1,6 @@
 using PublicContent = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicContent;
 using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Management.Web.Exceptions;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -85,6 +86,29 @@ public sealed class PublicContentTests : BunitContext
         Assert.Equal("Welcome", publicContentApi.SavedRequest.EnUs.Title);
         Assert.Equal("Pedale conosco", publicContentApi.SavedRequest.PtBr.Body);
         Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_Server_Validation_Message_When_Save_Fails_Validation()
+    {
+        // Arrange
+        publicContentApi.ValidationException = new ApiValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { [nameof(PublicContentVariantDto.Title)] = ["Title is required."] });
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.Markup.Contains("Title is required", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        Assert.Contains("Title is required", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
     }
 
 }

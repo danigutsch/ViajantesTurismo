@@ -1,6 +1,7 @@
 @page "/catalog/content"
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Catalog.Contracts
+@using ViajantesTurismo.Management.Web.Exceptions
 @using ViajantesTurismo.Management.Web.Helpers
 @rendermode InteractiveServer
 
@@ -238,6 +239,10 @@
             _successMessage = "Public content saved.";
             await LoadContent();
         }
+        catch (ApiValidationException ex)
+        {
+            _errorMessage = string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
+        }
         catch (HttpRequestException)
         {
             _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
@@ -269,7 +274,7 @@
         return true;
     }
 
-    private sealed class PublicContentFormModel
+    private sealed class PublicContentFormModel : IValidatableObject
     {
         [Required]
         [StringLength(ContractConstants.MaxDefaultLength)]
@@ -280,6 +285,19 @@
         public PublicContentVariantFormModel EnUs { get; set; } = new();
 
         public PublicContentVariantFormModel PtBr { get; set; } = new();
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            foreach (var result in ValidateVariant(EnUs, nameof(EnUs)))
+            {
+                yield return result;
+            }
+
+            foreach (var result in ValidateVariant(PtBr, nameof(PtBr)))
+            {
+                yield return result;
+            }
+        }
 
         public static PublicContentFormModel FromDto(PublicContentDto content)
         {
@@ -300,6 +318,19 @@
                 EnUs = EnUs.ToDto(PublicContentLanguageDto.EnUs),
                 PtBr = PtBr.ToDto(PublicContentLanguageDto.PtBr)
             };
+        }
+
+        private static IEnumerable<ValidationResult> ValidateVariant(PublicContentVariantFormModel variant, string prefix)
+        {
+            var results = new List<ValidationResult>();
+            Validator.TryValidateObject(variant, new ValidationContext(variant), results, validateAllProperties: true);
+
+            foreach (var result in results)
+            {
+                yield return new ValidationResult(
+                    result.ErrorMessage,
+                    result.MemberNames.Select(memberName => $"{prefix}.{memberName}"));
+            }
         }
     }
 
