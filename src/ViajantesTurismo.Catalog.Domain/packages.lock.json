@@ -23,6 +23,9 @@
       "sharedkernel.results": {
         "type": "Project"
       },
+      "viajantesturismo.catalog.contracts": {
+        "type": "Project"
+      },
       "viajantesturismo.common": {
         "type": "Project",
         "dependencies": {
