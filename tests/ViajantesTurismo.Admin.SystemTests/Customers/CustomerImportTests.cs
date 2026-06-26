@@ -1,10 +1,5 @@
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
-file static class CustomerImportRoutes
-{
-    public const string Import = "/customers/import";
-}
-
 /// <summary>
 /// E2E tests for the CSV customer import wizard.
 /// </summary>
