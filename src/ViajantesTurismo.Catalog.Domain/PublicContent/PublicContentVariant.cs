@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
@@ -14,6 +15,7 @@ public sealed class PublicContentVariant : ValueObject
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [UsedImplicitly]
     private PublicContentVariant()
     {

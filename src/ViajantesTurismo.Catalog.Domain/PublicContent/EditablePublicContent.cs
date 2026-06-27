@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.Domain;
 using SharedKernel.Results;
@@ -14,6 +15,7 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [UsedImplicitly]
     private EditablePublicContent()
     {
