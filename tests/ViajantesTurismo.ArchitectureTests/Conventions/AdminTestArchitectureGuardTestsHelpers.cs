@@ -4,6 +4,30 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 internal static partial class AdminTestArchitectureGuardTestsHelpers
 {
+    private static readonly string[] CanonicalTraitNames =
+    [
+        SharedKernel.Testing.TestTraitNames.ScopeName,
+        SharedKernel.Testing.TestTraitNames.AreaName,
+        SharedKernel.Testing.TestTraitNames.CategoryName,
+        SharedKernel.Testing.TestTraitNames.HostName,
+        SharedKernel.Testing.TestTraitNames.SurfaceName
+    ];
+
+    private static readonly string[] ProductSpecificSharedKernelTestingTerms =
+    [
+        "ViajantesTurismo.",
+        "\"bookings\"",
+        "\"customers\"",
+        "\"tours\"",
+        "\"payments\"",
+        "\"catalog\"",
+        "\"public-web\""
+    ];
+
+    private static readonly Regex HardcodedCanonicalTraitNameRegex = new(
+        $@"(?:Trait\s*\(\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})""|const\s+string\s+\w+Name\s*=\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})"")",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     public static void AssertFileContains(string filePath, string expectedText)
     {
         var fileContents = File.ReadAllText(filePath);
@@ -35,6 +59,58 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
             }
 
             offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
+        }
+
+        return [.. offenses];
+    }
+
+    public static string[] FindHardcodedCanonicalTraitNames(string filePath)
+    {
+        if (IsCanonicalTraitNamesFile(filePath))
+        {
+            return [];
+        }
+
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+        var insideRawStringLiteral = false;
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            if (insideRawStringLiteral)
+            {
+                insideRawStringLiteral = ToggleRawStringLiteralState(line, insideRawStringLiteral);
+                continue;
+            }
+
+            if (HardcodedCanonicalTraitNameRegex.IsMatch(line))
+            {
+                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {line.Trim()}");
+            }
+
+            insideRawStringLiteral = ToggleRawStringLiteralState(line, insideRawStringLiteral);
+        }
+
+        return [.. offenses];
+    }
+
+    public static string[] FindProductSpecificSharedKernelTestingCoupling(string filePath)
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            if (!ProductSpecificSharedKernelTestingTerms.Any(term => line.Contains(term, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {line.Trim()}");
         }
 
         return [.. offenses];
@@ -174,5 +250,24 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     private static int CountBraceDelta(string line)
     {
         return line.Count(static character => character == '{') - line.Count(static character => character == '}');
+    }
+
+    private static bool IsCanonicalTraitNamesFile(string filePath)
+    {
+        var parentDirectoryName = Path.GetFileName(Path.GetDirectoryName(filePath));
+
+        return Path.GetFileName(filePath).Equals("TestTraitNames.cs", StringComparison.Ordinal)
+            && string.Equals(parentDirectoryName, "SharedKernel.Testing", StringComparison.Ordinal);
+    }
+
+    private static bool ToggleRawStringLiteralState(string line, bool insideRawStringLiteral)
+    {
+        var rawStringDelimiterCount = line.Split("\"\"\"").Length - 1;
+        if (rawStringDelimiterCount % 2 == 0)
+        {
+            return insideRawStringLiteral;
+        }
+
+        return !insideRawStringLiteral;
     }
 }
