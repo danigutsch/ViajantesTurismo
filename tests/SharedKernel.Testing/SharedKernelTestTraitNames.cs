@@ -1,11 +1,37 @@
 namespace SharedKernel.Testing;
 
-internal static class SharedKernelTestTraitNames
+/// <summary>
+/// Shared trait names and values used by SharedKernel tests.
+/// </summary>
+public static class SharedKernelTestTraitNames
 {
-    internal const string ScopeName = "TestScope";
-    internal const string ComponentName = "TestComponent";
-    internal const string CapabilityName = "TestCapability";
-    internal const string CategoryName = "TestCategory";
-    internal const string TheoryName = "TestTheory";
-    internal const string UnitScope = "Unit";
+    /// <summary>
+    /// Trait name for SharedKernel test scope.
+    /// </summary>
+    public const string ScopeName = "TestScope";
+
+    /// <summary>
+    /// Trait name for SharedKernel test component.
+    /// </summary>
+    public const string ComponentName = "TestComponent";
+
+    /// <summary>
+    /// Trait name for SharedKernel test capability.
+    /// </summary>
+    public const string CapabilityName = "TestCapability";
+
+    /// <summary>
+    /// Trait name for SharedKernel test category.
+    /// </summary>
+    public const string CategoryName = "TestCategory";
+
+    /// <summary>
+    /// Trait name for SharedKernel test theory classification.
+    /// </summary>
+    public const string TheoryName = "TestTheory";
+
+    /// <summary>
+    /// Scope value for SharedKernel unit tests.
+    /// </summary>
+    public const string UnitScope = "Unit";
 }

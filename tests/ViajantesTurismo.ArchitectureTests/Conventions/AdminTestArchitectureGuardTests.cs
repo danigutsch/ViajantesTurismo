@@ -196,4 +196,32 @@ public sealed partial class AdminTestArchitectureGuardTests
             $"Expected concrete test methods to use typed helpers instead of raw DI/scope plumbing, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
+    [Fact]
+    public void Test_Trait_Names_Should_Use_Canonical_Constants()
+    {
+        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
+        var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .SelectMany(FindHardcodedCanonicalTraitNames)
+            .ToArray();
+
+        Assert.False(
+            offendingLines.Length != 0,
+            $"Expected reusable trait names to come from canonical constants directly, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
+    }
+
+    [Fact]
+    public void SharedKernel_Testing_Should_Not_Own_Product_Or_Area_Specific_Trait_Values()
+    {
+        var sharedKernelTestingRoot = Path.Combine(GetRepositoryRoot(), "tests", "SharedKernel.Testing");
+        var offendingLines = Directory.GetFiles(sharedKernelTestingRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .SelectMany(FindProductSpecificSharedKernelTestingCoupling)
+            .ToArray();
+
+        Assert.False(
+            offendingLines.Length != 0,
+            $"Expected SharedKernel.Testing to stay neutral and leave product or area-specific trait values local, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
+    }
+
 }

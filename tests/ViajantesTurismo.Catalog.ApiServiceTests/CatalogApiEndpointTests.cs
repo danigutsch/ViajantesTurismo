@@ -7,8 +7,8 @@ using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(TestTraits.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraits.HostName, TestTraits.TestServerHost)]
+[Trait(global::SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(global::SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiEndpointTests
 {
     [Fact]

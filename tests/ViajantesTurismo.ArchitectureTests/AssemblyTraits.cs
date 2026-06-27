@@ -1,3 +1,3 @@
-[assembly: Trait(ViajantesTurismo.ArchitectureTests.TestTraits.ScopeName, ViajantesTurismo.ArchitectureTests.TestTraits.ArchitectureScope)]
-[assembly: Trait(ViajantesTurismo.ArchitectureTests.TestTraits.SurfaceName, ViajantesTurismo.ArchitectureTests.TestTraits.SolutionSurface)]
-[assembly: Trait(ViajantesTurismo.ArchitectureTests.TestTraits.AreaName, ViajantesTurismo.ArchitectureTests.TestTraits.SharedArea)]
+[assembly: Trait(global::SharedKernel.Testing.TestTraitNames.ScopeName, ViajantesTurismo.ArchitectureTests.TestTraits.ArchitectureScope)]
+[assembly: Trait(global::SharedKernel.Testing.TestTraitNames.SurfaceName, ViajantesTurismo.ArchitectureTests.TestTraits.SolutionSurface)]
+[assembly: Trait(global::SharedKernel.Testing.TestTraitNames.AreaName, ViajantesTurismo.ArchitectureTests.TestTraits.SharedArea)]

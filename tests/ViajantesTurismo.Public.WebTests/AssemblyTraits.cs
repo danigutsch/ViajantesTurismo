@@ -1,4 +1,4 @@
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-[assembly: Trait(TestTraits.ScopeName, TestTraits.WebIntegrationScope)]
-[assembly: Trait(TestTraits.AreaName, TestTraits.PublicWebArea)]
+[assembly: Trait(TestTraitNames.ScopeName, TestTraits.WebIntegrationScope)]
+[assembly: Trait(TestTraitNames.AreaName, TestTraits.PublicWebArea)]

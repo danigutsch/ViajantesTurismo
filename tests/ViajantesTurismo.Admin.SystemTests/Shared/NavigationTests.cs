@@ -2,10 +2,10 @@ using TestTraits = ViajantesTurismo.Admin.SystemTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
-[Trait(TestTraits.CategoryName, TestTraits.MigrationCategory)]
-[Trait(TestTraits.ScopeName, TestTraits.SystemScope)]
-[Trait(TestTraits.AreaName, TestTraits.SharedArea)]
-[Trait(TestTraits.HostName, TestTraits.AspireHost)]
+[Trait(global::SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.MigrationCategory)]
+[Trait(global::SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
+[Trait(global::SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.SharedArea)]
+[Trait(global::SharedKernel.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string AddTourTitle = "Add Tour";

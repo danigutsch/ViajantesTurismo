@@ -6,26 +6,6 @@ namespace ViajantesTurismo.Admin.SystemTests.Infrastructure;
 public static class TestTraits
 {
     /// <summary>
-    /// Trait name for category.
-    /// </summary>
-    public const string CategoryName = SharedKernel.Testing.TestTraitNames.CategoryName;
-
-    /// <summary>
-    /// Trait name for scope.
-    /// </summary>
-    public const string ScopeName = SharedKernel.Testing.TestTraitNames.ScopeName;
-
-    /// <summary>
-    /// Trait name for area.
-    /// </summary>
-    public const string AreaName = SharedKernel.Testing.TestTraitNames.AreaName;
-
-    /// <summary>
-    /// Trait name for host.
-    /// </summary>
-    public const string HostName = SharedKernel.Testing.TestTraitNames.HostName;
-
-    /// <summary>
     /// Category value for migration-focused tests.
     /// </summary>
     public const string MigrationCategory = "migration";

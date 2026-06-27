@@ -3,8 +3,8 @@ using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
 
-[Trait(TestTraits.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraits.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class PublicWebEndpointTests
 {
     [Fact]

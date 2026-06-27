@@ -6,29 +6,9 @@ namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 public static class TestTraits
 {
     /// <summary>
-    /// Trait name for category.
-    /// </summary>
-    public const string CategoryName = SharedKernel.Testing.TestTraitNames.CategoryName;
-
-    /// <summary>
-    /// Trait name for scope.
-    /// </summary>
-    public const string ScopeName = SharedKernel.Testing.TestTraitNames.ScopeName;
-
-    /// <summary>
-    /// Trait name for area.
-    /// </summary>
-    public const string AreaName = SharedKernel.Testing.TestTraitNames.AreaName;
-
-    /// <summary>
-    /// Trait name for host.
-    /// </summary>
-    public const string HostName = SharedKernel.Testing.TestTraitNames.HostName;
-
-    /// <summary>
     /// Category value for endpoint-focused tests.
     /// </summary>
-    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
+    public const string EndpointCategory = TestTraitValues.EndpointCategory;
 
     /// <summary>
     /// Scope value for web integration tests.
@@ -43,5 +23,5 @@ public static class TestTraits
     /// <summary>
     /// Host value for TestServer-hosted tests.
     /// </summary>
-    public const string TestServerHost = SharedKernel.Testing.TestTraitValues.TestServerHost;
+    public const string TestServerHost = TestTraitValues.TestServerHost;
 }
