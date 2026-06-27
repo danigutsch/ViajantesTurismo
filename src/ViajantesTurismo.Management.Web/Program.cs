@@ -8,7 +8,7 @@ using ViajantesTurismo.ServiceDefaults;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddRedisOutputCache("cache");
+builder.AddRedisOutputCache(ResourceNames.Cache);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
