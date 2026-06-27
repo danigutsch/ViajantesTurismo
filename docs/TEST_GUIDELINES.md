@@ -109,8 +109,8 @@ Mutation-testing note:
 
 - See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository posture on
   `Stryker.NET` with xUnit v3 + Microsoft.Testing.Platform.
-- Limited local smoke targets exist for contained SharedKernel unit-test projects. Run all configured
-  targets from the repository root:
+- Limited local smoke targets exist for contained unit-test and Roslyn analyzer/source-generator
+  projects. Run all configured targets from the repository root:
 
 ```powershell
 bash scripts/run-mutation-smoke.sh

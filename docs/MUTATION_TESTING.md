@@ -61,9 +61,9 @@ Mutation testing with `Stryker.NET` should remain **local-only and non-gating** 
 
 ## Limited smoke guidance
 
-The repository contains local smoke targets for contained SharedKernel unit-test projects.
+The repository contains local smoke targets for contained unit-test and Roslyn analyzer/source-generator projects.
 
-- config pattern: `tests/<project>/stryker-config.json`
+- config pattern: `tests/<project>/stryker*.json`
 - runner: `mtp`
 - command: `scripts/run-mutation-smoke.sh`
 
@@ -75,11 +75,12 @@ bash scripts/run-mutation-smoke.sh
 
 Treat the result as a compatibility smoke signal, not a repository-wide quality gate.
 
-Constraints for any future proof-of-concept:
+Constraints for any future expansion:
 
-- pick one contained unit-test project only
+- prefer contained unit-test projects first
+- prefer projects that reference fewer other projects before higher-level test projects
+- keep tested logic in the lowest layer where the behavior belongs
 - do not change repository-wide test runner settings
-- do not introduce alternate project configuration that becomes part of the supported baseline
 - treat any result as non-authoritative until upstream xUnit v3 + MTP support is clearly stable
 
 ## Revisit conditions
