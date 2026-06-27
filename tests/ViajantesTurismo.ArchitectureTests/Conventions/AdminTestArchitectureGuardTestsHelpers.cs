@@ -194,6 +194,36 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    public static string[] FindUndocumentedSerialCollectionDefinitions(string filePath)
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            var trimmedLine = lines[lineIndex].TrimStart();
+            if (!trimmedLine.StartsWith('[')
+                || !trimmedLine.Contains("CollectionDefinition", StringComparison.Ordinal)
+                || !trimmedLine.Contains("DisableParallelization = true", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var hasJustification = lines
+                .Skip(Math.Max(0, lineIndex - 3))
+                .Take(3)
+                .Any(line => line.Contains("SerialTestJustification(\"", StringComparison.Ordinal));
+
+            if (!hasJustification)
+            {
+                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
+            }
+        }
+
+        return [.. offenses];
+    }
+
     public static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
