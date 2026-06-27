@@ -11,7 +11,7 @@
 
 <h1><i class="bi bi-translate" aria-hidden="true"></i> Public Content</h1>
 
-<p class="text-muted">Edit customer-facing website content in en-US and pt-BR.</p>
+<p class="text-muted">Edit customer-facing website content variants.</p>
 
 @if (_errorMessage is not null)
 {
@@ -67,25 +67,23 @@
             <div class="mb-3">
                 <label for="source-language" class="form-label">Source language</label>
                 <InputSelect id="source-language" class="form-select" @bind-Value="_model.SourceLanguage">
-                    <option value="@PublicContentLanguageDto.EnUs">en-US</option>
-                    <option value="@PublicContentLanguageDto.PtBr">pt-BR</option>
+                    @foreach (var language in SupportedLanguages)
+                    {
+                        <option value="@language">@GetLanguageLabel(language)</option>
+                    }
                 </InputSelect>
             </div>
 
             <div class="row g-3">
-                <div class="col-md-6">
-                    <fieldset class="border rounded p-3 h-100">
-                        <legend class="float-none w-auto px-2 h5">en-US</legend>
-                        @RenderVariant("en-us", _model.EnUs)
-                    </fieldset>
-                </div>
-
-                <div class="col-md-6">
-                    <fieldset class="border rounded p-3 h-100">
-                        <legend class="float-none w-auto px-2 h5">pt-BR</legend>
-                        @RenderVariant("pt-br", _model.PtBr)
-                    </fieldset>
-                </div>
+                @foreach (var variant in _model.Variants)
+                {
+                    <div class="col-md-6">
+                        <fieldset class="border rounded p-3 h-100">
+                            <legend class="float-none w-auto px-2 h5">@GetLanguageLabel(variant.Language)</legend>
+                            @RenderVariant(GetLanguageId(variant.Language), variant)
+                        </fieldset>
+                    </div>
+                }
             </div>
 
             <div class="d-flex flex-wrap gap-2 mt-4">
@@ -104,6 +102,10 @@
 @code {
     private PublicContentDto[] _content = [];
     private PublicContentFormModel _model = new();
+    private static readonly PublicContentLanguageDto[] SupportedLanguages = Enum
+        .GetValues<PublicContentLanguageDto>()
+        .Where(language => language != PublicContentLanguageDto.None)
+        .ToArray();
     private bool _loading = true;
     private bool _saving;
     private string? _errorMessage;
@@ -192,8 +194,14 @@
         _errorMessage = null;
         _successMessage = null;
 
-        var source = _model.SourceLanguage == PublicContentLanguageDto.EnUs ? _model.EnUs : _model.PtBr;
-        var target = _model.SourceLanguage == PublicContentLanguageDto.EnUs ? _model.PtBr : _model.EnUs;
+        var source = _model.GetVariant(_model.SourceLanguage);
+        var target = _model.Variants.FirstOrDefault(variant => variant.Language != _model.SourceLanguage);
+
+        if (source is null || target is null)
+        {
+            _errorMessage = "Select a supported source and target language before generating a draft.";
+            return;
+        }
 
         if (string.IsNullOrWhiteSpace(source.Title) || string.IsNullOrWhiteSpace(source.Body))
         {
@@ -262,12 +270,9 @@
 
     private bool ValidateForm()
     {
-        if (string.IsNullOrWhiteSpace(_model.EnUs.Title)
-            || string.IsNullOrWhiteSpace(_model.EnUs.Body)
-            || string.IsNullOrWhiteSpace(_model.PtBr.Title)
-            || string.IsNullOrWhiteSpace(_model.PtBr.Body))
+        if (_model.Variants.Any(variant => string.IsNullOrWhiteSpace(variant.Title) || string.IsNullOrWhiteSpace(variant.Body)))
         {
-            _errorMessage = "Enter title and body for both en-US and pt-BR before saving.";
+            _errorMessage = "Enter title and body for every supported language before saving.";
             return false;
         }
 
@@ -282,45 +287,62 @@
 
         public PublicContentLanguageDto SourceLanguage { get; set; } = PublicContentLanguageDto.EnUs;
 
-        public PublicContentVariantFormModel EnUs { get; set; } = new();
-
-        public PublicContentVariantFormModel PtBr { get; set; } = new();
+        public List<PublicContentVariantFormModel> Variants { get; } = SupportedLanguages
+            .Select(language => new PublicContentVariantFormModel { Language = language })
+            .ToList();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            foreach (var result in ValidateVariant(EnUs, nameof(EnUs)))
+            foreach (var variant in Variants)
             {
-                yield return result;
-            }
-
-            foreach (var result in ValidateVariant(PtBr, nameof(PtBr)))
-            {
-                yield return result;
+                foreach (var result in ValidateVariant(variant))
+                {
+                    yield return result;
+                }
             }
         }
 
         public static PublicContentFormModel FromDto(PublicContentDto content)
         {
-            return new PublicContentFormModel
+            var model = new PublicContentFormModel
             {
                 Key = content.Key,
-                SourceLanguage = content.SourceLanguage,
-                EnUs = PublicContentVariantFormModel.FromDto(content.EnUs),
-                PtBr = PublicContentVariantFormModel.FromDto(content.PtBr)
+                SourceLanguage = content.SourceLanguage
             };
+
+            foreach (var variant in content.Variants)
+            {
+                var existing = model.GetVariant(variant.Language);
+                if (existing is not null)
+                {
+                    existing.CopyFrom(variant);
+                }
+            }
+
+            return model;
         }
 
         public UpsertPublicContentRequest ToRequest()
         {
-            return new UpsertPublicContentRequest
+            var request = new UpsertPublicContentRequest
             {
-                SourceLanguage = SourceLanguage,
-                EnUs = EnUs.ToDto(PublicContentLanguageDto.EnUs),
-                PtBr = PtBr.ToDto(PublicContentLanguageDto.PtBr)
+                SourceLanguage = SourceLanguage
             };
+
+            foreach (var variant in Variants)
+            {
+                request.Variants.Add(variant.ToDto());
+            }
+
+            return request;
         }
 
-        private static IEnumerable<ValidationResult> ValidateVariant(PublicContentVariantFormModel variant, string prefix)
+        public PublicContentVariantFormModel? GetVariant(PublicContentLanguageDto language)
+        {
+            return Variants.FirstOrDefault(variant => variant.Language == language);
+        }
+
+        private static IEnumerable<ValidationResult> ValidateVariant(PublicContentVariantFormModel variant)
         {
             var results = new List<ValidationResult>();
             Validator.TryValidateObject(variant, new ValidationContext(variant), results, validateAllProperties: true);
@@ -329,13 +351,15 @@
             {
                 yield return new ValidationResult(
                     result.ErrorMessage,
-                    result.MemberNames.Select(memberName => $"{prefix}.{memberName}"));
+                    result.MemberNames.Select(memberName => $"{variant.Language}.{memberName}"));
             }
         }
     }
 
     private sealed class PublicContentVariantFormModel
     {
+        public PublicContentLanguageDto Language { get; set; }
+
         [Required]
         [StringLength(ContractConstants.MaxNameLength)]
         public string Title { get; set; } = string.Empty;
@@ -355,24 +379,21 @@
 
         public bool RequiresHumanReview { get; set; }
 
-        public static PublicContentVariantFormModel FromDto(PublicContentVariantDto variant)
+        public void CopyFrom(PublicContentVariantDto variant)
         {
-            return new PublicContentVariantFormModel
-            {
-                Title = variant.Title,
-                Body = variant.Body,
-                SeoTitle = variant.SeoTitle,
-                MetaDescription = variant.MetaDescription,
-                ShareSummary = variant.ShareSummary,
-                RequiresHumanReview = variant.RequiresHumanReview
-            };
+            Title = variant.Title;
+            Body = variant.Body;
+            SeoTitle = variant.SeoTitle;
+            MetaDescription = variant.MetaDescription;
+            ShareSummary = variant.ShareSummary;
+            RequiresHumanReview = variant.RequiresHumanReview;
         }
 
-        public PublicContentVariantDto ToDto(PublicContentLanguageDto language)
+        public PublicContentVariantDto ToDto()
         {
             return new PublicContentVariantDto
             {
-                Language = language,
+                Language = Language,
                 Title = Title,
                 Body = Body,
                 SeoTitle = SeoTitle,
@@ -381,5 +402,20 @@
                 RequiresHumanReview = RequiresHumanReview
             };
         }
+    }
+
+    private static string GetLanguageLabel(PublicContentLanguageDto language)
+    {
+        return language switch
+        {
+            PublicContentLanguageDto.EnUs => "en-US",
+            PublicContentLanguageDto.PtBr => "pt-BR",
+            _ => language.ToString()
+        };
+    }
+
+    private static string GetLanguageId(PublicContentLanguageDto language)
+    {
+        return GetLanguageLabel(language).ToLowerInvariant();
     }
 }

@@ -20,8 +20,7 @@ public sealed class EfPublicContentStoreTests
         Assert.NotNull(saved);
         Assert.Equal(content.Key, saved.Key);
         Assert.Equal(content.SourceLanguage, saved.SourceLanguage);
-        Assert.Equal(content.EnUs, saved.EnUs);
-        Assert.Equal(content.PtBr, saved.PtBr);
+        Assert.Equal(content.Variants.OrderBy(variant => variant.Language), saved.Variants.OrderBy(variant => variant.Language));
         Assert.Equal(content.PublicationState, saved.PublicationState);
     }
 

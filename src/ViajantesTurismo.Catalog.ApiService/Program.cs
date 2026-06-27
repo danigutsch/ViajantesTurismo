@@ -66,19 +66,17 @@ app.MapPut("/catalog/public-content/{key}", async (
         return Results.BadRequest();
     }
 
-    var enUs = CreateVariant(request.EnUs, PublicContentLanguage.EnUs);
-    var ptBr = CreateVariant(request.PtBr, PublicContentLanguage.PtBr);
+    var variants = request.Variants.Select(CreateVariant).ToArray();
 
-    if (enUs.IsFailure || ptBr.IsFailure)
+    if (variants.Any(variant => variant.IsFailure))
     {
-        return ToValidationProblemFromVariants([enUs, ptBr]);
+        return ToValidationProblemFromVariants(variants);
     }
 
     var content = EditablePublicContent.Create(
         key,
         ToDomainLanguage(request.SourceLanguage),
-        enUs.Value,
-        ptBr.Value);
+        variants.Select(variant => variant.Value));
 
     if (content.IsFailure)
     {
@@ -118,14 +116,19 @@ static string CreateSlug(string identifier) => identifier.Trim();
 
 static PublicContentDto MapPublicContent(EditablePublicContent content)
 {
-    return new PublicContentDto
+    var dto = new PublicContentDto
     {
         Key = content.Key,
         SourceLanguage = ToContractLanguage(content.SourceLanguage),
-        EnUs = MapVariant(content.EnUs),
-        PtBr = MapVariant(content.PtBr),
         PublicationState = content.PublicationState.ToString()
     };
+
+    foreach (var variant in content.Variants.OrderBy(variant => variant.Language))
+    {
+        dto.Variants.Add(MapVariant(variant));
+    }
+
+    return dto;
 }
 
 static PublicContentVariantDto MapVariant(PublicContentVariant variant)
@@ -142,17 +145,9 @@ static PublicContentVariantDto MapVariant(PublicContentVariant variant)
     };
 }
 
-static Result<PublicContentVariant> CreateVariant(
-    PublicContentVariantDto variant,
-    PublicContentLanguage language)
+static Result<PublicContentVariant> CreateVariant(PublicContentVariantDto variant)
 {
-    var actualLanguage = ToDomainLanguage(variant.Language);
-    if (actualLanguage != language)
-    {
-        var mismatch = PublicContentErrors.VariantLanguageMismatch(nameof(PublicContentVariantDto.Language), language, actualLanguage);
-        var error = mismatch.ErrorDetails ?? throw new InvalidOperationException("Variant language mismatch must include validation details.");
-        return Result.Invalid<PublicContentVariant>(error.Detail, ToValidationProblemDictionary(error.ValidationErrors));
-    }
+    var language = ToDomainLanguage(variant.Language);
 
     return PublicContentVariant.Create(
         language,
@@ -203,20 +198,14 @@ static Dictionary<string, string[]> ToValidationProblemDictionary(IReadOnlyDicti
 
 static PublicContentLanguage ToDomainLanguage(PublicContentLanguageDto language)
 {
-    return language switch
-    {
-        PublicContentLanguageDto.EnUs => PublicContentLanguage.EnUs,
-        PublicContentLanguageDto.PtBr => PublicContentLanguage.PtBr,
-        _ => PublicContentLanguage.None
-    };
+    return language == PublicContentLanguageDto.None || !Enum.IsDefined(language)
+        ? PublicContentLanguage.None
+        : (PublicContentLanguage)(int)language;
 }
 
 static PublicContentLanguageDto ToContractLanguage(PublicContentLanguage language)
 {
-    return language switch
-    {
-        PublicContentLanguage.EnUs => PublicContentLanguageDto.EnUs,
-        PublicContentLanguage.PtBr => PublicContentLanguageDto.PtBr,
-        _ => PublicContentLanguageDto.None
-    };
+    return language == PublicContentLanguage.None || !Enum.IsDefined(language)
+        ? PublicContentLanguageDto.None
+        : (PublicContentLanguageDto)(int)language;
 }

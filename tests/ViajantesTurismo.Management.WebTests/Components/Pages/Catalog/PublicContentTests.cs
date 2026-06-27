@@ -83,8 +83,8 @@ public sealed class PublicContentTests : BunitContext
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
         Assert.Equal("home.hero", publicContentApi.SavedKey);
         Assert.NotNull(publicContentApi.SavedRequest);
-        Assert.Equal("Welcome", publicContentApi.SavedRequest.EnUs.Title);
-        Assert.Equal("Pedale conosco", publicContentApi.SavedRequest.PtBr.Body);
+        Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.EnUs && variant.Title == "Welcome");
+        Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Body == "Pedale conosco");
         Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
     }
 

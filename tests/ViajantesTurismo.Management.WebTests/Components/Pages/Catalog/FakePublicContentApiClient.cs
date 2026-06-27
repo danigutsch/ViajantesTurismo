@@ -47,12 +47,15 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
         {
             Key = key,
             SourceLanguage = request.SourceLanguage,
-            EnUs = request.EnUs,
-            PtBr = request.PtBr,
-            PublicationState = request.PtBr.RequiresHumanReview || request.EnUs.RequiresHumanReview
+            PublicationState = request.Variants.Any(variant => variant.RequiresHumanReview)
                 ? "ReviewRequired"
                 : "Draft"
         };
+
+        foreach (var variant in request.Variants)
+        {
+            saved.Variants.Add(variant);
+        }
 
         Content = [saved];
 
