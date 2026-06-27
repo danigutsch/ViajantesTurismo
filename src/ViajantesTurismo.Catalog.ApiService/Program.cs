@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using SharedKernel.Configuration;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
@@ -17,8 +16,6 @@ builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
 builder.Services.AddValidatedOptions<IntegrationEventOptions, IntegrationEventOptionsValidator>(
     builder.Configuration.GetSection(IntegrationEventOptions.SectionName));
-builder.Services.AddSingleton(serviceProvider =>
-    serviceProvider.GetRequiredService<IOptions<IntegrationEventOptions>>().Value);
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
 
 var app = builder.Build();

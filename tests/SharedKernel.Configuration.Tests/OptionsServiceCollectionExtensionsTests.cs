@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace SharedKernel.Configuration.Tests;
 
@@ -10,7 +8,6 @@ public sealed class OptionsServiceCollectionExtensionsTests
     public void AddValidatedOptions_registers_options_and_validator()
     {
         // Arrange
-        var services = new ServiceCollection();
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -19,14 +16,12 @@ public sealed class OptionsServiceCollectionExtensionsTests
             .Build();
 
         // Act
-        services.AddValidatedOptions<TestOptions, TestOptionsValidator>(configuration.GetSection("Test"));
+        var registration = TestOptionsServices.GetRegistration(configuration.GetSection("Test"));
 
         // Assert
-        using var serviceProvider = services.BuildServiceProvider();
-        var options = serviceProvider.GetRequiredService<IOptions<TestOptions>>();
-        var validators = serviceProvider.GetServices<IValidateOptions<TestOptions>>();
-        Assert.Equal("from-configuration", options.Value.Value);
-        Assert.Contains(validators, validator => validator is TestOptionsValidator);
+        Assert.Equal("from-configuration", registration.Options.Value.Value);
+        Assert.Same(registration.Options.Value, registration.OptionsValue);
+        Assert.Contains(registration.Validators, validator => validator is TestOptionsValidator);
     }
 
     [Fact]
@@ -50,11 +45,10 @@ public sealed class OptionsServiceCollectionExtensionsTests
     {
         // Arrange
         const string ExpectedParameterName = "configuration";
-        var services = new ServiceCollection();
 
         // Act
         var exception = Assert.Throws<ArgumentNullException>(() =>
-            services.AddValidatedOptions<TestOptions, TestOptionsValidator>(null));
+            TestOptionsServices.AddValidatedOptionsToServices(null));
 
         // Assert
         Assert.Equal(ExpectedParameterName, exception.ParamName);

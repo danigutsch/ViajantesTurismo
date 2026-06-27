@@ -11,7 +11,7 @@ namespace SharedKernel.Configuration;
 public static class OptionsServiceCollectionExtensions
 {
     /// <summary>
-    /// Binds an options type, registers its validator, and validates it during application startup.
+    /// Binds an options type, registers its validator, registers the validated value, and validates it during application startup.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The configuration section to bind.</param>
@@ -30,6 +30,7 @@ public static class OptionsServiceCollectionExtensions
         services.Configure<TOptions>(configuration);
         services.AddOptions<TOptions>().ValidateOnStart();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<TOptions>, TValidator>());
+        services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IOptions<TOptions>>().Value);
 
         return services;
     }
