@@ -29,10 +29,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         $@"(?:Trait\s*\(\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})""|const\s+string\s+\w+Name\s*=\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})"")",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    private static readonly Regex RedirectingCanonicalTraitNameRegex = new(
-        @"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?(?:TestTraitNames|SharedKernelTestTraitNames)\.\w+\s*;",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
     public static void AssertFileContains(string filePath, string expectedText)
     {
         var fileContents = File.ReadAllText(filePath);
@@ -90,7 +86,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
                 continue;
             }
 
-            if (HardcodedCanonicalTraitNameRegex.IsMatch(line) || RedirectingCanonicalTraitNameRegex.IsMatch(line))
+            if (HardcodedCanonicalTraitNameRegex.IsMatch(line) || RedirectingCanonicalTraitNameRegex().IsMatch(line))
             {
                 offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {line.Trim()}");
             }
@@ -246,6 +242,9 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
     private static partial Regex SerialReasonAttributeRegex();
 
+    [GeneratedRegex(@"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?(?:TestTraitNames|SharedKernelTestTraitNames)\.\w+\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex RedirectingCanonicalTraitNameRegex();
+
     [GeneratedRegex("\"{3,}", RegexOptions.Compiled)]
     private static partial Regex RawStringDelimiterRegex();
 
@@ -271,11 +270,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     private static bool ToggleRawStringLiteralState(string line, bool insideRawStringLiteral)
     {
         var rawStringDelimiterCount = RawStringDelimiterRegex().Count(line);
-        if (rawStringDelimiterCount % 2 == 0)
-        {
-            return insideRawStringLiteral;
-        }
-
-        return !insideRawStringLiteral;
+        return rawStringDelimiterCount % 2 == 0 ? insideRawStringLiteral : !insideRawStringLiteral;
     }
 }
