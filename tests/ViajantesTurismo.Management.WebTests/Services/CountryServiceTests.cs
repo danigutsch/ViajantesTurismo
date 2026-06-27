@@ -13,7 +13,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_valid_json_returns_countries_ordered_by_name()
+    public async Task GetCountries_valid_Json_returns_countries_ordered_by_name()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
@@ -61,7 +61,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_invalid_json_returns_fallback_countries()
+    public async Task GetCountries_invalid_Json_returns_fallback_countries()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, "not valid json {{{");

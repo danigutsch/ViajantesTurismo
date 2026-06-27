@@ -342,7 +342,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_dataAnnotationsValidator()
+    public void Renders_DataAnnotationsValidator()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -359,7 +359,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_validationMessage_components()
+    public void Renders_ValidationMessage_components()
     {
         // Arrange
         var model = new BookingFormModel();

@@ -358,7 +358,7 @@ public class CustomerBookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_dataAnnotationsValidator()
+    public void Renders_DataAnnotationsValidator()
     {
         // Arrange
         var model = new BookingFormModel();

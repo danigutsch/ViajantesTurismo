@@ -36,7 +36,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Renders_quickGrid_when_bookings_exist()
+    public void Renders_QuickGrid_when_bookings_exist()
     {
         // Arrange
         var bookings = new[]

@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests;
 public sealed class AdminOpenApiArtifactDriftGuardTests
 {
     [Fact]
-    public void Canonical_openApi_artifacts_match_the_generated_boundary_artifacts()
+    public void Canonical_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Assert
         AdminOpenApiArtifactDriftGuard.AssertCanonicalArtifactsMatchGeneratedArtifacts();

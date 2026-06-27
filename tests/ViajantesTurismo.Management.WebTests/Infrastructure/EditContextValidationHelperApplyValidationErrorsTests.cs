@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 public class EditContextValidationHelperApplyValidationErrorsTests
 {
     [Fact]
-    public void ApplyValidationErrors_when_exception_has_no_field_errors_leaves_editContext_unchanged()
+    public void ApplyValidationErrors_when_exception_has_no_field_errors_leaves_EditContext_unchanged()
     {
         // Arrange
         var model = new TestFormModel();

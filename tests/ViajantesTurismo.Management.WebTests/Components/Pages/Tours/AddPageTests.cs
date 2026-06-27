@@ -235,7 +235,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Form_uses_dataAnnotationsValidator()
+    public void Form_uses_DataAnnotationsValidator()
     {
         // Arrange
         // Act

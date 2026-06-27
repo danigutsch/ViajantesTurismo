@@ -41,7 +41,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_request_ID_when_httpContext_has_traceIdentifier()
+    public void Shows_request_ID_when_HttpContext_has_traceIdentifier()
     {
         // Arrange
         var httpContext = new DefaultHttpContext
