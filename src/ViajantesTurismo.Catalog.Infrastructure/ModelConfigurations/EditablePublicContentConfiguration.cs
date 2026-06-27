@@ -19,20 +19,20 @@ internal sealed class EditablePublicContentConfiguration : IEntityTypeConfigurat
         entity.Property(content => content.SourceLanguage).HasConversion<string>().IsRequired();
         entity.Property(content => content.PublicationState).HasConversion<string>().IsRequired();
 
-        ConfigureVariant(entity.OwnsOne(content => content.EnUs), "EnUs");
-        ConfigureVariant(entity.OwnsOne(content => content.PtBr), "PtBr");
-    }
+        entity.OwnsMany(content => content.Variants, variant =>
+        {
+            variant.ToTable("PublicContentVariants");
+            variant.WithOwner().HasForeignKey("PublicContentId");
+            variant.Property(v => v.Language).HasConversion<string>().IsRequired();
+            variant.Property(v => v.Title).HasMaxLength(ContractConstants.MaxNameLength).IsRequired();
+            variant.Property(v => v.Body).HasMaxLength(ContractConstants.MaxBodyLength).IsRequired();
+            variant.Property(v => v.SeoTitle).HasMaxLength(ContractConstants.MaxNameLength);
+            variant.Property(v => v.MetaDescription).HasMaxLength(ContractConstants.MaxCaptionLength);
+            variant.Property(v => v.ShareSummary).HasMaxLength(ContractConstants.MaxCaptionLength);
+            variant.Property(v => v.RequiresHumanReview).IsRequired();
+            variant.HasKey("PublicContentId", nameof(PublicContentVariant.Language));
+        });
 
-    private static void ConfigureVariant(
-        OwnedNavigationBuilder<EditablePublicContent, PublicContentVariant> variant,
-        string prefix)
-    {
-        variant.Property(v => v.Language).HasColumnName($"{prefix}Language").HasConversion<string>().IsRequired();
-        variant.Property(v => v.Title).HasColumnName($"{prefix}Title").HasMaxLength(ContractConstants.MaxNameLength).IsRequired();
-        variant.Property(v => v.Body).HasColumnName($"{prefix}Body").HasMaxLength(ContractConstants.MaxBodyLength).IsRequired();
-        variant.Property(v => v.SeoTitle).HasColumnName($"{prefix}SeoTitle").HasMaxLength(ContractConstants.MaxNameLength);
-        variant.Property(v => v.MetaDescription).HasColumnName($"{prefix}MetaDescription").HasMaxLength(ContractConstants.MaxCaptionLength);
-        variant.Property(v => v.ShareSummary).HasColumnName($"{prefix}ShareSummary").HasMaxLength(ContractConstants.MaxCaptionLength);
-        variant.Property(v => v.RequiresHumanReview).HasColumnName($"{prefix}RequiresHumanReview").IsRequired();
+        entity.Navigation(content => content.Variants).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

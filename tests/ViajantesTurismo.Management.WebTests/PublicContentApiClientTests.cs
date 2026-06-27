@@ -21,8 +21,7 @@ public sealed class PublicContentApiClientTests
                   {
                     "key":"home.hero",
                     "sourceLanguage":1,
-                    "enUs":{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false},
-                    "ptBr":{"language":2,"title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true},
+                    "variants":[{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false},{"language":2,"title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true}],
                     "publicationState":"ReviewRequired"
                   },
                   null
@@ -68,8 +67,7 @@ public sealed class PublicContentApiClientTests
                 {
                   "key":"home.hero",
                   "sourceLanguage":1,
-                  "enUs":{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false},
-                  "ptBr":{"language":2,"title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true},
+                  "variants":[{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false},{"language":2,"title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true}],
                   "publicationState":"ReviewRequired"
                 }
                 """);
@@ -77,10 +75,10 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs,
-            EnUs = new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" },
-            PtBr = new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true }
+            SourceLanguage = PublicContentLanguageDto.EnUs
         };
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
         var saved = await sut.SaveContent("home.hero", request, Xunit.TestContext.Current.CancellationToken);
@@ -110,10 +108,10 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs,
-            EnUs = new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = string.Empty, Body = "Ride with us" },
-            PtBr = new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" }
+            SourceLanguage = PublicContentLanguageDto.EnUs
         };
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = string.Empty, Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
         var exception = await Assert.ThrowsAsync<ApiValidationException>(() =>
