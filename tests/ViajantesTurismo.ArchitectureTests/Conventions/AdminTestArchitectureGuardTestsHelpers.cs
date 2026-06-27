@@ -246,6 +246,9 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     [GeneratedRegex(@"\[SerialE2EReason\(\s*""[^""\r\n\s][^""\r\n]*""", RegexOptions.Compiled)]
     private static partial Regex SerialReasonAttributeRegex();
 
+    [GeneratedRegex("\"{3,}", RegexOptions.Compiled)]
+    private static partial Regex RawStringDelimiterRegex();
+
     private static bool IsTestAttributeLine(string trimmedLine)
     {
         return trimmedLine.StartsWith("[Fact", StringComparison.Ordinal)
@@ -267,7 +270,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
     private static bool ToggleRawStringLiteralState(string line, bool insideRawStringLiteral)
     {
-        var rawStringDelimiterCount = line.Split("\"\"\"").Length - 1;
+        var rawStringDelimiterCount = RawStringDelimiterRegex().Count(line);
         if (rawStringDelimiterCount % 2 == 0)
         {
             return insideRawStringLiteral;
