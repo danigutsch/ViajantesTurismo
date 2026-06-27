@@ -1,4 +1,4 @@
-namespace SharedKernel.Testing;
+namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
 /// <summary>
 /// Shared trait constants for Public Web tests.
@@ -8,27 +8,27 @@ public static class TestTraits
     /// <summary>
     /// Trait name for category.
     /// </summary>
-    public const string CategoryName = AdminTestTraitNames.CategoryName;
+    public const string CategoryName = SharedKernel.Testing.TestTraitNames.CategoryName;
 
     /// <summary>
     /// Trait name for scope.
     /// </summary>
-    public const string ScopeName = AdminTestTraitNames.ScopeName;
+    public const string ScopeName = SharedKernel.Testing.TestTraitNames.ScopeName;
 
     /// <summary>
     /// Trait name for area.
     /// </summary>
-    public const string AreaName = AdminTestTraitNames.AreaName;
+    public const string AreaName = SharedKernel.Testing.TestTraitNames.AreaName;
 
     /// <summary>
     /// Trait name for host.
     /// </summary>
-    public const string HostName = AdminTestTraitNames.HostName;
+    public const string HostName = SharedKernel.Testing.TestTraitNames.HostName;
 
     /// <summary>
     /// Category value for endpoint-focused tests.
     /// </summary>
-    public const string EndpointCategory = "endpoint";
+    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
 
     /// <summary>
     /// Scope value for web integration tests.
@@ -43,5 +43,5 @@ public static class TestTraits
     /// <summary>
     /// Host value for TestServer-hosted tests.
     /// </summary>
-    public const string TestServerHost = "test-server";
+    public const string TestServerHost = SharedKernel.Testing.TestTraitValues.TestServerHost;
 }

@@ -45,6 +45,24 @@ When tags or traits are used, keep them orthogonal:
 - `Category`: smoke, regression, happy-path, edge-case
 - `Host`: in-memory, aspire, browser
 
+Trait ownership follows the same boundary rules as production code:
+
+- Neutral trait names belong in shared test support only when multiple test areas use them.
+- Neutral trait values belong in shared test support only when multiple bounded contexts use them.
+- Admin, Catalog, Public Web, and other area-specific values belong in the owning test project or
+  bounded-context test support.
+- SharedKernel test helpers must not own Admin- or Catalog-specific values just to reduce local
+  strings.
+
+Examples:
+
+- Admin API integration tests can use `Scope=integration`, `Surface=api`, and `Area=bookings`.
+- Catalog projection tests can use `Scope=integration`, `Surface=workflow`, and `Area=catalog`.
+- Public Web rendering tests can use `Scope=ui-integration`, `Surface=web`, and `Area=public-web`.
+- Architecture tests can use `Scope=architecture` and `Surface=solution`.
+- SharedKernel tests should use neutral SharedKernel values only when the tested behavior is truly
+  reusable across bounded contexts.
+
 ## Test Platform: MTP + xUnit v3
 
 This repository uses **xUnit v3** on top of
