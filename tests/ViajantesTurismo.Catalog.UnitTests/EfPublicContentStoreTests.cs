@@ -46,6 +46,23 @@ public sealed class EfPublicContentStoreTests
     }
 
     [Fact]
+    public async Task Store_matches_keys_case_insensitively_through_canonical_casing()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicContentStore(dbContext);
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false, key: "Home.Hero");
+
+        // Act
+        await store.SaveContent(content, TestContext.Current.CancellationToken);
+        var saved = await store.GetContent("HOME.HERO", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(saved);
+        Assert.Equal(content.Id, saved.Id);
+    }
+
+    [Fact]
     public async Task Store_lists_content_ordered_by_key()
     {
         // Arrange

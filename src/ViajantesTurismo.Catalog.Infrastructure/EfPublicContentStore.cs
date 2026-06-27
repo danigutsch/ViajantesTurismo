@@ -17,7 +17,7 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
 
     public async Task<EditablePublicContent?> GetContent(string key, CancellationToken ct)
     {
-        var sanitizedKey = StringSanitizer.Sanitize(key);
+        var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
 
         return await dbContext.PublicContent
             .SingleOrDefaultAsync(content => content.Key == sanitizedKey, ct)

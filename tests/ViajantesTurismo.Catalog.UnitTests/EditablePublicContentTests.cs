@@ -18,7 +18,7 @@ public sealed class EditablePublicContentTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("home.hero", result.Value.Key);
+        Assert.Equal("HOME.HERO", result.Value.Key);
         Assert.Equal(PublicContentLanguage.EnUs, result.Value.SourceLanguage);
         Assert.Equal(enUs, result.Value.EnUs);
         Assert.Equal(ptBr, result.Value.PtBr);
@@ -52,6 +52,21 @@ public sealed class EditablePublicContentTests
 
         // Assert
         Assert.True(result.IsFailure);
+    }
+
+    [Fact]
+    public void Create_normalizes_content_key_casing()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+
+        // Act
+        var result = EditablePublicContent.Create("  Home.Hero  ", PublicContentLanguage.EnUs, enUs, ptBr);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal("HOME.HERO", result.Value.Key);
     }
 
     [Fact]

@@ -82,7 +82,7 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         ArgumentNullException.ThrowIfNull(enUs);
         ArgumentNullException.ThrowIfNull(ptBr);
 
-        var sanitizedKey = StringSanitizer.Sanitize(key);
+        var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
         var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(sanitizedKey))
