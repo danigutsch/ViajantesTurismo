@@ -30,7 +30,7 @@ public sealed class OptionsServiceCollectionExtensionsTests
 
         // Act
         var exception = Assert.Throws<ArgumentNullException>(() =>
-            OptionsServiceCollectionExtensions.AddValidatedOptions<TestOptions, TestOptionsValidator>(null!));
+            OptionsServiceCollectionExtensions.AddValidatedOptions<TestOptions, TestOptionsValidator>(null));
 
         // Assert
         Assert.Equal(ExpectedParameterName, exception.ParamName);

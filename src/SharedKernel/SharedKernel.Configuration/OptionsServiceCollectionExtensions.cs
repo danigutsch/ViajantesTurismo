@@ -16,7 +16,7 @@ public static class OptionsServiceCollectionExtensions
     /// <typeparam name="TOptions">The options type.</typeparam>
     /// <typeparam name="TValidator">The validator type.</typeparam>
     /// <returns>The configured service collection.</returns>
-    public static IServiceCollection AddValidatedOptions<TOptions, TValidator>(this IServiceCollection services)
+    public static IServiceCollection AddValidatedOptions<TOptions, TValidator>(this IServiceCollection? services)
         where TOptions : class
         where TValidator : class, IValidateOptions<TOptions>
     {
