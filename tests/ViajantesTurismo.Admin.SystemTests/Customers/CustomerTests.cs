@@ -62,6 +62,8 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.FillAsync("#email", email);
         await Page.FillAsync("#mobile", "+5511999990001");
+        await Expect(Page.Locator("#email")).ToHaveValueAsync(email);
+        await Expect(Page.Locator("#mobile")).ToHaveValueAsync("+5511999990001");
 
         await Page.GetButton("Next").ClickAsync();
 
