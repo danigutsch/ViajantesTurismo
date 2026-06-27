@@ -8,17 +8,17 @@ public static class TestTraits
     /// <summary>
     /// Trait name for scope.
     /// </summary>
-    public const string ScopeName = SharedKernel.Testing.AdminTestTraitNames.ScopeName;
+    public const string ScopeName = SharedKernel.Testing.TestTraitNames.ScopeName;
 
     /// <summary>
     /// Trait name for surface.
     /// </summary>
-    public const string SurfaceName = SharedKernel.Testing.AdminTestTraitNames.SurfaceName;
+    public const string SurfaceName = SharedKernel.Testing.TestTraitNames.SurfaceName;
 
     /// <summary>
     /// Trait name for area.
     /// </summary>
-    public const string AreaName = SharedKernel.Testing.AdminTestTraitNames.AreaName;
+    public const string AreaName = SharedKernel.Testing.TestTraitNames.AreaName;
 
     /// <summary>
     /// Scope value for architecture tests.

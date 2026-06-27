@@ -3,6 +3,9 @@
 This is the index of architecture decisions for **ViajantesTurismo**. We use short, linkable, versioned ADRs in
 `docs/adr/`.
 
+For the current implementation map and runtime diagrams, see
+[Architecture overview](architecture/README.md).
+
 ## Conventions
 
 - One decision per file
