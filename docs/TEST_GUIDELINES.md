@@ -107,8 +107,16 @@ Official references:
 
 Mutation-testing note:
 
-- See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository decision on
+- See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository posture on
   `Stryker.NET` with xUnit v3 + Microsoft.Testing.Platform.
+- A limited local smoke target exists at `tests/SharedKernel.Domain.Tests/stryker-config.json`.
+  Run it from `tests/SharedKernel.Domain.Tests`:
+
+```powershell
+dotnet tool run dotnet-stryker
+```
+
+Do not gate CI on this while Stryker.NET MTP support remains in preview.
 
 ### Code Coverage with MTP + xUnit v3
 
