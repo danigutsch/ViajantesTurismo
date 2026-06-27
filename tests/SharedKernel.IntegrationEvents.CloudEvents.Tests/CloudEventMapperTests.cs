@@ -25,4 +25,54 @@ public sealed class CloudEventMapperTests
         Assert.Equal(1, envelope.Version);
         Assert.Same(integrationEvent, envelope.Data);
     }
+
+    [Fact]
+    public void ToCloudEvent_preserves_optional_null_metadata()
+    {
+        // Arrange
+        var integrationEvent = new TestIntegrationEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "tour-created");
+        var metadata = new CloudEventMetadata(new Uri("https://viajantes.example/admin/tours"));
+
+        // Act
+        var envelope = CloudEventMapper.ToCloudEvent(integrationEvent, metadata);
+
+        // Assert
+        Assert.Null(envelope.Subject);
+        Assert.Null(envelope.DataContentType);
+        Assert.Null(envelope.DataSchema);
+    }
+
+    [Fact]
+    public void ToCloudEvent_rejects_null_integration_events()
+    {
+        // Arrange
+        var metadata = new CloudEventMetadata(new Uri("https://viajantes.example/admin/tours"));
+        var method = typeof(CloudEventMapper).GetMethod(nameof(CloudEventMapper.ToCloudEvent));
+        Assert.NotNull(method);
+        var genericMethod = method.MakeGenericMethod(typeof(TestIntegrationEvent));
+
+        // Act
+        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => genericMethod.Invoke(null, [null, metadata]));
+
+        // Assert
+        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
+        Assert.Equal("integrationEvent", argumentException.ParamName);
+    }
+
+    [Fact]
+    public void ToCloudEvent_rejects_null_metadata()
+    {
+        // Arrange
+        var integrationEvent = new TestIntegrationEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "tour-created");
+        var method = typeof(CloudEventMapper).GetMethod(nameof(CloudEventMapper.ToCloudEvent));
+        Assert.NotNull(method);
+        var genericMethod = method.MakeGenericMethod(typeof(TestIntegrationEvent));
+
+        // Act
+        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => genericMethod.Invoke(null, [integrationEvent, null]));
+
+        // Assert
+        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
+        Assert.Equal("metadata", argumentException.ParamName);
+    }
 }
