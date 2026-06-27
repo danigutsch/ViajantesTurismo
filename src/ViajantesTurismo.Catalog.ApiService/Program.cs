@@ -1,6 +1,4 @@
-using SharedKernel.Configuration;
 using ViajantesTurismo.Catalog.ApiService;
-using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
@@ -14,8 +12,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
-builder.Services.AddValidatedOptions<IntegrationEventOptions, IntegrationEventOptionsValidator>(
-    builder.Configuration.GetSection(IntegrationEventOptions.SectionName));
+builder.Services.AddCatalogIntegrationEvents(builder.Configuration);
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
 
 var app = builder.Build();
