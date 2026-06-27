@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public class ResultConvertErrorGenericToGenericTests
 {
     [Fact]
-    public void Convert_Error_With_Failed_Result_Returns_Failed_Result_With_Same_Errors()
+    public void Convert_error_with_failed_result_returns_failed_result_with_same_errors()
     {
         // Arrange
         var sourceResult = Result.Invalid<string>("Original error", "field", "message");
@@ -25,7 +25,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Not_Found_Result_Preserves_Not_Found_Status()
+    public void Convert_error_with_not_found_result_preserves_not_found_status()
     {
         // Arrange
         var sourceResult = Result.NotFound<string>("Resource not found");
@@ -41,7 +41,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Conflict_Result_Preserves_Conflict_Status()
+    public void Convert_error_with_conflict_result_preserves_conflict_status()
     {
         // Arrange
         var sourceResult = Result.Conflict<string>("Conflict occurred");
@@ -57,7 +57,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Unauthorized_Result_Preserves_Unauthorized_Status()
+    public void Convert_error_with_unauthorized_result_preserves_unauthorized_status()
     {
         // Arrange
         var sourceResult = Result.Unauthorized<string>("Unauthorized access");
@@ -73,7 +73,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Forbidden_Result_Preserves_Forbidden_Status()
+    public void Convert_error_with_forbidden_result_preserves_forbidden_status()
     {
         // Arrange
         var sourceResult = Result.Forbidden<string>("Access forbidden");
@@ -89,7 +89,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Error_Result_Preserves_Error_Status()
+    public void Convert_error_with_error_result_preserves_error_status()
     {
         // Arrange
         var sourceResult = Result.Error<string>("Internal error");
@@ -105,7 +105,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Critical_Error_Result_Preserves_Critical_Error_Status()
+    public void Convert_error_with_critical_error_result_preserves_critical_error_status()
     {
         // Arrange
         var sourceResult = Result.CriticalError<string>("Critical failure");
@@ -121,7 +121,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Unavailable_Result_Preserves_Unavailable_Status()
+    public void Convert_error_with_unavailable_result_preserves_unavailable_status()
     {
         // Arrange
         var sourceResult = Result.Unavailable<string>("Service unavailable");
@@ -137,7 +137,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Successful_Result_Throws_Invalid_Operation_Exception()
+    public void Convert_error_with_successful_result_throws_invalid_operation_exception()
     {
         // Arrange
         var sourceResult = Result.Ok("Success");
@@ -151,7 +151,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_With_Multiple_Validation_Errors_Preserves_All_Errors()
+    public void Convert_error_with_multiple_validation_errors_preserves_all_errors()
     {
         // Arrange
         var errors = new ValidationErrors();
@@ -175,7 +175,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_Between_Different_Types_Converts_Successfully()
+    public void Convert_error_between_different_types_converts_successfully()
     {
         // Arrange
         var sourceResult = Result.NotFound<string>("Entity not found");
@@ -191,7 +191,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_From_Value_Type_To_Reference_Type_Converts_Successfully()
+    public void Convert_error_from_value_type_to_reference_type_converts_successfully()
     {
         // Arrange
         var sourceResult = Result.Invalid<int>("Invalid number", "number", "Must be positive");
@@ -210,7 +210,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_From_Reference_Type_To_Value_Type_Converts_Successfully()
+    public void Convert_error_from_reference_type_to_value_type_converts_successfully()
     {
         // Arrange
         var sourceResult = Result.Conflict<string>("Duplicate entry");
@@ -226,7 +226,7 @@ public class ResultConvertErrorGenericToGenericTests
     }
 
     [Fact]
-    public void Convert_Error_Chained_Conversion_Preserves_Original_Errors()
+    public void Convert_error_chained_conversion_preserves_original_errors()
     {
         // Arrange
         var originalResult = Result.Invalid<string>("Original error", "field", "message");

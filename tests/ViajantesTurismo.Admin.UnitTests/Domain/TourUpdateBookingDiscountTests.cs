@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class TourUpdateBookingDiscountTests
 {
     [Fact]
-    public void UpdateBookingDiscount_When_Booking_Does_Not_Exist_Returns_Not_Found()
+    public void UpdateBookingDiscount_when_booking_does_not_exist_returns_not_found()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -28,7 +28,7 @@ public class TourUpdateBookingDiscountTests
     }
 
     [Fact]
-    public void UpdateBookingDiscount_When_Discount_Type_Is_Invalid_Returns_Invalid()
+    public void UpdateBookingDiscount_when_discount_type_is_invalid_returns_invalid()
     {
         // Arrange
         var (tour, _) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -51,7 +51,7 @@ public class TourUpdateBookingDiscountTests
     }
 
     [Fact]
-    public void UpdateBookingDiscount_When_Percentage_Exceeds_Maximum_Returns_Invalid()
+    public void UpdateBookingDiscount_when_percentage_exceeds_maximum_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -73,7 +73,7 @@ public class TourUpdateBookingDiscountTests
     }
 
     [Fact]
-    public void UpdateBookingDiscount_When_Reason_Is_Too_Short_Returns_Invalid()
+    public void UpdateBookingDiscount_when_reason_is_too_short_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -95,7 +95,7 @@ public class TourUpdateBookingDiscountTests
     }
 
     [Fact]
-    public void UpdateBookingDiscount_When_Absolute_Discount_Exceeds_Subtotal_Returns_Invalid()
+    public void UpdateBookingDiscount_when_absolute_discount_exceeds_subtotal_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -117,7 +117,7 @@ public class TourUpdateBookingDiscountTests
     }
 
     [Fact]
-    public void UpdateBookingDiscount_When_Booking_Is_Cancelled_Returns_Conflict()
+    public void UpdateBookingDiscount_when_booking_is_cancelled_returns_conflict()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -140,7 +140,7 @@ public class TourUpdateBookingDiscountTests
     }
 
     [Fact]
-    public void UpdateBookingDiscount_When_Request_Is_Valid_Updates_Discount()
+    public void UpdateBookingDiscount_when_request_is_valid_updates_discount()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(

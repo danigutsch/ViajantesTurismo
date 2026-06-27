@@ -8,7 +8,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Info_Message_When_No_Payments()
+    public void Shows_info_message_when_no_payments()
     {
         // Arrange
         var payments = Array.Empty<GetPaymentDto>();
@@ -24,7 +24,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Table_When_Payments_Exist()
+    public void Renders_table_when_payments_exist()
     {
         // Arrange
         var payments = new[]
@@ -45,7 +45,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Payment_Date()
+    public void Displays_payment_date()
     {
         // Arrange
         var paymentDate = new DateTime(2024, 3, 15, 0, 0, 0, DateTimeKind.Utc);
@@ -66,7 +66,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Amount_As_Currency()
+    public void Displays_amount_as_currency()
     {
         // Arrange
         var payments = new[]
@@ -86,7 +86,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Credit_Card_Method_With_Primary_Badge()
+    public void Displays_credit_card_method_with_primary_badge()
     {
         // Arrange
         var payments = new[]
@@ -106,7 +106,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Bank_Transfer_Method_With_Info_Badge()
+    public void Displays_bank_transfer_method_with_info_badge()
     {
         // Arrange
         var payments = new[]
@@ -126,7 +126,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Cash_Method_With_Success_Badge()
+    public void Displays_cash_method_with_success_badge()
     {
         // Arrange
         var payments = new[]
@@ -146,7 +146,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Check_Method_With_Warning_Badge()
+    public void Displays_check_method_with_warning_badge()
     {
         // Arrange
         var payments = new[]
@@ -166,7 +166,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_PayPal_Method_With_Secondary_Badge()
+    public void Displays_payPal_method_with_secondary_badge()
     {
         // Arrange
         var payments = new[]
@@ -186,7 +186,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Reference_Number_When_Present()
+    public void Displays_reference_number_when_present()
     {
         // Arrange
         var payments = new[]
@@ -207,7 +207,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Dash_When_Reference_Number_Missing()
+    public void Shows_dash_when_reference_number_missing()
     {
         // Arrange
         var payments = new[]
@@ -228,7 +228,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Notes_When_Present()
+    public void Displays_notes_when_present()
     {
         // Arrange
         var payments = new[]
@@ -248,7 +248,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Truncates_Long_Notes()
+    public void Truncates_long_notes()
     {
         // Arrange
         var longNotes = "This is a very long note that should be truncated to 30 characters";
@@ -272,7 +272,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Dash_When_Notes_Missing()
+    public void Shows_dash_when_notes_missing()
     {
         // Arrange
         var payments = new[]
@@ -293,7 +293,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Calculates_Total_Paid_Correctly()
+    public void Calculates_total_paid_correctly()
     {
         // Arrange
         var payments = new[]
@@ -313,7 +313,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Orders_Payments_By_Date_Descending()
+    public void Orders_payments_by_date_descending()
     {
         // Arrange
         var payments = new[]
@@ -336,7 +336,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Has_Responsive_Table_Wrapper()
+    public void Has_responsive_table_wrapper()
     {
         // Arrange
         var payments = new[]
@@ -354,7 +354,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Renders_All_Table_Headers()
+    public void Renders_all_table_headers()
     {
         // Arrange
         var payments = new[]

@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Admin.BehaviorTests</RootNamespace>
         <ReqnrollDeleteObsoleteCodeBehindFilesOnClean>true</ReqnrollDeleteObsoleteCodeBehindFilesOnClean>
+        <EnableSharedKernelTestingAnalyzers>false</EnableSharedKernelTestingAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>

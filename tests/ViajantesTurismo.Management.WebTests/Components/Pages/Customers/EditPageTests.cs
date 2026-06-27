@@ -15,7 +15,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Loading_State()
+    public void Renders_loading_state()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -31,7 +31,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task OnInitializedAsync_When_Load_Fails_Shows_Sanitized_Error_Message()
+    public async Task OnInitializedAsync_when_load_fails_shows_sanitized_error_message()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -51,7 +51,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task HandleSubmit_When_Update_Fails_Shows_Sanitized_Error_Message()
+    public async Task HandleSubmit_when_update_fails_shows_sanitized_error_message()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -76,7 +76,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Loads_And_Displays_Customer_Data()
+    public async Task Loads_and_displays_customer_data()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -102,7 +102,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Personal_Information_Card()
+    public async Task Renders_personal_information_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -127,7 +127,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Contact_Information_Card()
+    public async Task Renders_contact_information_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -150,7 +150,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Identification_Card()
+    public async Task Renders_identification_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -171,7 +171,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Address_Card_With_All_Fields()
+    public async Task Renders_address_card_with_all_fields()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -197,7 +197,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Physical_Information_Card()
+    public async Task Renders_physical_information_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -227,7 +227,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task BikeType_Dropdown_Has_All_Options()
+    public async Task BikeType_dropdown_has_all_options()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -251,7 +251,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Accommodation_Preferences_Card()
+    public async Task Renders_accommodation_preferences_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -273,7 +273,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task RoomType_Dropdown_Has_All_Options()
+    public async Task RoomType_dropdown_has_all_options()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -296,7 +296,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task BedType_Dropdown_Has_All_Options()
+    public async Task BedType_dropdown_has_all_options()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -319,7 +319,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Emergency_Contact_Card()
+    public async Task Renders_emergency_contact_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -340,7 +340,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Medical_Information_Card()
+    public async Task Renders_medical_information_card()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -367,7 +367,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Can_Cancel_Redirect_After_Update()
+    public async Task Can_cancel_redirect_after_update()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();

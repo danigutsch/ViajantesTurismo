@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests;
 public sealed class AdminOpenApiDocumentRegistrationTests
 {
     [Fact]
-    public async Task Generates_A_Tours_Document_Containing_Only_Tours_Paths()
+    public async Task Generates_a_tours_document_containing_only_tours_paths()
     {
         var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "tours",
@@ -24,7 +24,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    public async Task Generates_A_Customers_Document_Including_Import_Paths()
+    public async Task Generates_a_customers_document_including_import_paths()
     {
         var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "customers",
@@ -46,7 +46,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    public async Task Generates_A_V1_Document_Including_Error_Documentation_Paths()
+    public async Task Generates_a_v1_document_including_error_documentation_paths()
     {
         var document = await AdminOpenApiDocumentFactory.CreateDocument(
             "v1",

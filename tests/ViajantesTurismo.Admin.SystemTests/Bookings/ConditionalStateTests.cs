@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Tour_Edit_Disables_Locked_Fields_When_Bookings_Exist()
+    public async Task Tour_edit_disables_locked_fields_when_bookings_exist()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 10 });
@@ -26,7 +26,7 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
     }
 
     [Fact]
-    public async Task Booking_Edit_Disables_All_Fields_For_Terminal_States()
+    public async Task Booking_edit_disables_all_fields_for_terminal_states()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
@@ -46,7 +46,7 @@ public class ConditionalStateTests(AspireSystemTestFixture fixture) : AspireSyst
     }
 
     [Fact]
-    public async Task Booking_Edit_Keeps_Editable_Fields_Enabled_For_Pending_Bookings()
+    public async Task Booking_edit_keeps_editable_fields_enabled_for_pending_bookings()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });

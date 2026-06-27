@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public class CsvRowParsingTests
 {
     [Fact]
-    public void Parse_Single_Customer_Row_Returns_Parsed_Row()
+    public void Parse_single_customer_row_returns_parsed_row()
     {
         // Arrange
         const string csvLine = "John,Doe,john.doe@example.com";
@@ -21,7 +21,7 @@ public class CsvRowParsingTests
     }
 
     [Fact]
-    public void Parse_With_Whitespace_Trims_Values()
+    public void Parse_with_whitespace_trims_values()
     {
         // Arrange
         const string csvLine = " John , Doe , john.doe@example.com ";
@@ -36,7 +36,7 @@ public class CsvRowParsingTests
     }
 
     [Fact]
-    public void Index_OutOfRange_ThrowsException()
+    public void Index_outOfRange_throwsException()
     {
         // Arrange
         var row = CsvRow.Parse("John,Doe,john.doe@example.com");

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Services;
 public sealed class CustomerImportHeaderMatcherTests
 {
     [Fact]
-    public void AutoMatch_Returns_Exact_Match_For_Canonical_Header()
+    public void AutoMatch_returns_exact_match_for_canonical_header()
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["FirstName", "Email"]);
 
@@ -14,7 +14,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void AutoMatch_Is_CaseInsensitive()
+    public void AutoMatch_is_caseInsensitive()
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["firstname", "LASTNAME", "eMaIl"]);
 
@@ -24,7 +24,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void AutoMatch_Returns_Null_For_Unrecognized_Headers()
+    public void AutoMatch_returns_null_for_unrecognized_headers()
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["UnknownCol", "AnotherUnknown"]);
 
@@ -32,7 +32,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void AutoMatch_Returns_All_Known_Fields()
+    public void AutoMatch_returns_all_known_fields()
     {
         var result = CustomerImportHeaderMatcher.AutoMatch([]);
 
@@ -40,7 +40,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void AutoMatch_Returns_Null_Match_For_Unmatched_Fields()
+    public void AutoMatch_returns_null_match_for_unmatched_fields()
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["FirstName"]);
 
@@ -49,7 +49,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void Fields_Email_Is_Required()
+    public void Fields_email_is_required()
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Email");
 
@@ -57,7 +57,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void Fields_Instagram_Is_Optional()
+    public void Fields_instagram_is_optional()
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Instagram");
 
@@ -65,7 +65,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void Fields_Allergies_Is_Optional()
+    public void Fields_allergies_is_optional()
     {
         var field = CustomerImportHeaderMatcher.Fields.First(f => f.Name == "Allergies");
 
@@ -73,7 +73,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_Renames_CaseInsensitive_Match_To_Canonical_Form()
+    public void ApplyMapping_renames_caseInsensitive_match_to_canonical_form()
     {
         var bytes = Encoding.UTF8.GetBytes("firstname,lastname\njohn,doe\n");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["firstname", "lastname"]);
@@ -85,7 +85,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_Applies_User_Assignment_When_No_AutoMatch()
+    public void ApplyMapping_applies_user_assignment_when_no_autoMatch()
     {
         var bytes = Encoding.UTF8.GetBytes("Full Name,email_col\nJohn Doe,john@test.com\n");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["Full Name", "email_col"]);
@@ -102,7 +102,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_Keeps_Unrecognized_Extra_Columns_As_Is()
+    public void ApplyMapping_keeps_unrecognized_extra_columns_as_is()
     {
         var bytes = Encoding.UTF8.GetBytes("FirstName,SomeExtra,Email\n");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["FirstName", "SomeExtra", "Email"]);
@@ -114,7 +114,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_Preserves_Data_Rows()
+    public void ApplyMapping_preserves_data_rows()
     {
         var bytes = Encoding.UTF8.GetBytes("FirstName,LastName\njohn,doe\njane,smith\n");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["FirstName", "LastName"]);
@@ -127,7 +127,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_File_With_No_Newline_Only_Remaps_Headers()
+    public void ApplyMapping_file_with_no_newline_only_remaps_headers()
     {
         var bytes = Encoding.UTF8.GetBytes("firstname");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["firstname"]);

@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Tours;
 public sealed class ToursOpenApiGeneratedArtifactCompatibilityTests
 {
     [Fact]
-    public async Task Generated_Tours_Artifact_Matches_The_Canonical_Artifact_Contract_Slice()
+    public async Task Generated_tours_artifact_matches_the_canonical_artifact_contract_slice()
     {
         // Arrange
         var generatedContract = await ToursOpenApiDocumentClient.GetGeneratedContract(TestContext.Current.CancellationToken);

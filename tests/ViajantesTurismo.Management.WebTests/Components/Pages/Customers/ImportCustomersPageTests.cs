@@ -13,7 +13,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Page_Title_And_Header()
+    public void Renders_page_title_and_header()
     {
         // Act
         var cut = Render<ImportCustomers>();
@@ -24,7 +24,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Back_To_Customers_Button()
+    public void Renders_back_to_customers_button()
     {
         // Act
         var cut = Render<ImportCustomers>();
@@ -35,7 +35,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Description_Text()
+    public void Shows_description_text()
     {
         // Act
         var cut = Render<ImportCustomers>();
@@ -45,7 +45,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Drop_Zone_With_Instructions_Initially()
+    public void Shows_drop_zone_with_instructions_initially()
     {
         // Act
         var cut = Render<ImportCustomers>();
@@ -56,7 +56,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Show_Any_Alert_Initially()
+    public void Does_not_show_any_alert_initially()
     {
         // Act
         var cut = Render<ImportCustomers>();
@@ -66,7 +66,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Drop_Zone_Has_Secondary_Border_Initially()
+    public void Drop_zone_has_secondary_border_initially()
     {
         // Act
         var cut = Render<ImportCustomers>();
@@ -77,7 +77,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Drag_Enter_Changes_Drop_Zone_To_Primary_Border()
+    public void Drag_enter_changes_drop_zone_to_primary_border()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -92,7 +92,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Drag_Leave_Restores_Secondary_Border()
+    public void Drag_leave_restores_secondary_border()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -108,7 +108,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Validation_Error_For_Non_Csv_File()
+    public void Shows_validation_error_for_non_csv_file()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -123,7 +123,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Validation_Error_For_Oversized_File()
+    public void Shows_validation_error_for_oversized_file()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -140,7 +140,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Success_Alert_When_All_Rows_Imported()
+    public void Shows_success_alert_when_all_rows_imported()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(3, 0));
@@ -160,7 +160,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Warning_Alert_When_Import_Has_Row_Errors()
+    public void Shows_warning_alert_when_import_has_row_errors()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(2, 1));
@@ -180,7 +180,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Error_Alert_When_Api_Throws()
+    public void Shows_error_alert_when_api_throws()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersException(new InvalidOperationException("Connection refused"));
@@ -203,7 +203,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Success_Result_Shows_View_Customers_And_Import_Another_Actions()
+    public void Success_result_shows_view_customers_and_import_another_actions()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));
@@ -223,7 +223,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Reset_Restores_Drop_Zone_After_Successful_Import()
+    public void Reset_restores_drop_zone_after_successful_import()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));

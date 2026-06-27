@@ -17,7 +17,7 @@ public sealed class AccommodationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Does_Not_Render_Customer_Search_Input_In_Accommodation_Wizard_Step()
+    public async Task Does_not_render_customer_search_input_in_accommodation_wizard_step()
     {
         // Arrange
         _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: "Alice", lastName: "Brown", email: "alice@example.com"));
@@ -31,7 +31,7 @@ public sealed class AccommodationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task OnInitialized_When_State_Already_Has_AccommodationPreferences_Preloads_Existing_Values()
+    public async Task OnInitialized_when_state_already_has_accommodationPreferences_preloads_existing_values()
     {
         // Arrange
         var companionId = Guid.NewGuid();
@@ -59,7 +59,7 @@ public sealed class AccommodationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_When_Form_Is_Valid_Saves_State_And_Navigates_To_Emergency_Contact()
+    public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_emergency_contact()
     {
         // Arrange
         var companionId = Guid.NewGuid();
@@ -89,7 +89,7 @@ public sealed class AccommodationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Physical_And_Updates_Current_Step()
+    public async Task Back_button_navigates_to_physical_and_updates_current_step()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();

@@ -8,7 +8,7 @@ public class AdminEndpointResultsTests
 {
     [Theory]
     [MemberData(nameof(NotFoundConflictFailures))]
-    public void Match_Not_Found_Conflict_Failure_Returns_Mapped_Result(Result result, string expected)
+    public void Match_not_found_conflict_failure_returns_mapped_result(Result result, string expected)
     {
         var response = AdminEndpointResults.MatchNotFoundConflictFailure(
             result,
@@ -20,7 +20,7 @@ public class AdminEndpointResultsTests
 
     [Theory]
     [MemberData(nameof(NotFoundConflictValidationFailures))]
-    public void Match_Not_Found_Conflict_Validation_Failure_Returns_Mapped_Result(Result result, string expected)
+    public void Match_not_found_conflict_validation_failure_returns_mapped_result(Result result, string expected)
     {
         var response = AdminEndpointResults.MatchNotFoundConflictValidationFailure(
             result,
@@ -33,7 +33,7 @@ public class AdminEndpointResultsTests
 
     [Theory]
     [MemberData(nameof(NotFoundValidationFailures))]
-    public void Match_Not_Found_Validation_Failure_Returns_Mapped_Result(Result result, string expected)
+    public void Match_not_found_validation_failure_returns_mapped_result(Result result, string expected)
     {
         var response = AdminEndpointResults.MatchNotFoundValidationFailure(
             result,
@@ -45,7 +45,7 @@ public class AdminEndpointResultsTests
 
     [Theory]
     [MemberData(nameof(ConflictValidationFailures))]
-    public void Match_Conflict_Validation_Failure_Returns_Mapped_Result(Result result, string expected)
+    public void Match_conflict_validation_failure_returns_mapped_result(Result result, string expected)
     {
         var response = AdminEndpointResults.MatchConflictValidationFailure(
             result,
@@ -56,7 +56,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public void Match_Not_Found_Conflict_Failure_With_Unsupported_Status_Throws()
+    public void Match_not_found_conflict_failure_with_unsupported_status_throws()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
             AdminEndpointResults.MatchNotFoundConflictFailure(
@@ -68,7 +68,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Get_Booking_Response_When_Booking_Exists_Returns_Found_Response()
+    public async Task Get_booking_response_when_booking_exists_returns_found_response()
     {
         var booking = DtoBuilders.BuildBookingDto();
         var queryService = new FakeQueryService(booking, null);
@@ -84,7 +84,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Get_Booking_Response_When_Booking_Is_Missing_Returns_Not_Found_Response()
+    public async Task Get_booking_response_when_booking_is_missing_returns_not_found_response()
     {
         var bookingId = Guid.CreateVersion7();
         var queryService = new FakeQueryService(null, null);
@@ -100,7 +100,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Get_Payment_Response_When_Payment_Exists_Returns_Found_Response()
+    public async Task Get_payment_response_when_payment_exists_returns_found_response()
     {
         var payment = DtoBuilders.BuildPaymentDto();
         var booking = DtoBuilders.BuildBookingDto(id: payment.BookingId, payments: [payment]);
@@ -119,7 +119,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Get_Payment_Response_When_Booking_Is_Missing_Returns_Booking_Not_Found_Response()
+    public async Task Get_payment_response_when_booking_is_missing_returns_booking_not_found_response()
     {
         var bookingId = Guid.CreateVersion7();
         var paymentId = Guid.CreateVersion7();
@@ -138,7 +138,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Get_Payment_Response_When_Payment_Is_Missing_Returns_Payment_Not_Found_Response()
+    public async Task Get_payment_response_when_payment_is_missing_returns_payment_not_found_response()
     {
         var bookingId = Guid.CreateVersion7();
         var paymentId = Guid.CreateVersion7();
@@ -158,7 +158,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Match_Not_Found_Conflict_Booking_Response_When_Result_Succeeds_Returns_Found_Response()
+    public async Task Match_not_found_conflict_booking_response_when_result_succeeds_returns_found_response()
     {
         var booking = DtoBuilders.BuildBookingDto();
         var queryService = new FakeQueryService(booking, null);
@@ -176,7 +176,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Match_Not_Found_Conflict_Validation_Booking_Response_When_Result_Is_Invalid_Returns_Invalid_Response()
+    public async Task Match_not_found_conflict_validation_booking_response_when_result_is_invalid_returns_invalid_response()
     {
         var booking = DtoBuilders.BuildBookingDto();
         var queryService = new FakeQueryService(booking, null);
@@ -195,7 +195,7 @@ public class AdminEndpointResultsTests
     }
 
     [Fact]
-    public async Task Match_Not_Found_Validation_Booking_Response_When_Query_Misses_Booking_Returns_Not_Found_Response()
+    public async Task Match_not_found_validation_booking_response_when_query_misses_booking_returns_not_found_response()
     {
         var bookingId = Guid.CreateVersion7();
         var queryService = new FakeQueryService(null, null);

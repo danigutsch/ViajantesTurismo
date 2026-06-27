@@ -12,7 +12,7 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
     private const string ToursTitle = "Tours";
 
     [Fact]
-    public async Task Can_Deep_Link_All_Routes()
+    public async Task Can_deep_link_all_routes()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -53,7 +53,7 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
     }
 
     [Fact]
-    public async Task Can_Render_Home_Page_With_Dashboard_Content_And_Primary_Links()
+    public async Task Can_render_home_page_with_dashboard_content_and_primary_links()
     {
         // Arrange
         var sidebar = Page.Locator(".sidebar");
@@ -76,7 +76,7 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
     }
 
     [Fact]
-    public async Task Sidebar_Navigation_Should_Update_Active_State_For_Primary_Routes()
+    public async Task Sidebar_navigation_should_update_active_state_for_primary_routes()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -102,7 +102,7 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
     }
 
     [Fact]
-    public async Task Quick_Actions_Should_Navigate_To_Target_Pages()
+    public async Task Quick_actions_should_navigate_to_target_pages()
     {
         // Arrange
         // No additional setup required beyond navigating to the dashboard before each quick-action check.

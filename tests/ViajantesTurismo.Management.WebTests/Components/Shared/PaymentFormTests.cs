@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 public class PaymentFormTests : BunitContext
 {
     [Fact]
-    public void Renders_All_Form_Fields()
+    public void Renders_all_form_fields()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -37,7 +37,7 @@ public class PaymentFormTests : BunitContext
     [InlineData(CurrencyDto.UsDollar, "$")]
     [InlineData(CurrencyDto.Euro, "\u20ac")]
     [InlineData(CurrencyDto.Real, "R$")]
-    public void Amount_Field_Has_Currency_Symbol(CurrencyDto currency, string expectedSymbol)
+    public void Amount_field_has_currency_symbol(CurrencyDto currency, string expectedSymbol)
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -55,7 +55,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Method_Dropdown_Contains_All_Options()
+    public void Payment_method_dropdown_contains_all_options()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -80,7 +80,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Method_Options_Are_Formatted_Correctly()
+    public void Payment_method_options_are_formatted_correctly()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -114,7 +114,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Submit_Button_Shows_Record_Payment_Text_When_Not_Submitting()
+    public void Submit_button_shows_record_payment_text_when_not_submitting()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -133,7 +133,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Submit_Button_Shows_Recording_Text_When_Submitting()
+    public void Submit_button_shows_recording_text_when_submitting()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -152,7 +152,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Submit_Button_Is_Disabled_When_Submitting()
+    public void Submit_button_is_disabled_when_submitting()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -170,7 +170,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Cancel_Button_Is_Hidden_When_OnCancel_Not_Provided()
+    public void Cancel_button_is_hidden_when_onCancel_not_provided()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -187,7 +187,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Cancel_Button_Is_Shown_When_OnCancel_Provided()
+    public void Cancel_button_is_shown_when_onCancel_provided()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -207,7 +207,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Cancel_Button_Is_Disabled_When_Submitting()
+    public void Cancel_button_is_disabled_when_submitting()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -227,7 +227,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Validation_Error_Shown_For_Missing_Amount()
+    public void Validation_error_shown_for_missing_amount()
     {
         // Arrange
         var model = new PaymentFormModel { Amount = null };
@@ -247,7 +247,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Validation_Error_Shown_For_Zero_Amount()
+    public void Validation_error_shown_for_zero_amount()
     {
         // Arrange
         var model = new PaymentFormModel { Amount = 0 };
@@ -267,7 +267,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Validation_Error_Shown_For_Missing_Payment_Date()
+    public void Validation_error_shown_for_missing_payment_date()
     {
         // Arrange
         var model = new PaymentFormModel { PaymentDate = null };
@@ -287,7 +287,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Validation_Error_Shown_For_Missing_Payment_Method()
+    public void Validation_error_shown_for_missing_payment_method()
     {
         // Arrange
         var model = new PaymentFormModel { Method = null };
@@ -307,7 +307,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void OnValidSubmit_Called_When_Form_Is_Valid()
+    public void OnValidSubmit_called_when_form_is_valid()
     {
         // Arrange
         var submitCalled = false;
@@ -332,7 +332,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void OnValidSubmit_Not_Called_When_Form_Is_Invalid()
+    public void OnValidSubmit_not_called_when_form_is_invalid()
     {
         // Arrange
         var submitCalled = false;
@@ -352,7 +352,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Reference_Number_Field_Has_Placeholder_Text()
+    public void Reference_number_field_has_placeholder_text()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -369,7 +369,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Notes_Field_Has_Placeholder_Text()
+    public void Notes_field_has_placeholder_text()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -386,7 +386,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Required_Fields_Have_Asterisk_Indicators()
+    public void Required_fields_have_asterisk_indicators()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -404,7 +404,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Amount_Input_Has_Step_Attribute_For_Decimals()
+    public void Amount_input_has_step_attribute_for_decimals()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -421,7 +421,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Notes_Textarea_Has_Three_Rows()
+    public void Notes_textarea_has_three_rows()
     {
         // Arrange
         var model = new PaymentFormModel();

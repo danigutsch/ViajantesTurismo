@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Sanitizers;
 public sealed class NumericSanitizerTests
 {
     [Fact]
-    public void Sanitize_Price_Rounds_Very_Small_Values()
+    public void Sanitize_price_rounds_very_small_values()
     {
         var result = NumericSanitizer.SanitizePrice(0.001m);
 
@@ -13,7 +13,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Price_Rounds_Very_Small_Values_Up()
+    public void Sanitize_price_rounds_very_small_values_up()
     {
         var result = NumericSanitizer.SanitizePrice(0.009m);
 
@@ -21,7 +21,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Price_Handles_Banker_Rounding_Case_Positive_Even()
+    public void Sanitize_price_handles_banker_rounding_case_positive_even()
     {
         // Arrange
         // Act
@@ -31,7 +31,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Price_Handles_Banker_Rounding_Case_Positive_Odd()
+    public void Sanitize_price_handles_banker_rounding_case_positive_odd()
     {
         // Arrange
         // Act
@@ -41,7 +41,7 @@ public sealed class NumericSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Price_Handles_Floating_Point_Precision_Issue()
+    public void Sanitize_price_handles_floating_point_precision_issue()
     {
         // Arrange
         // Act
@@ -63,7 +63,7 @@ public sealed class NumericSanitizerTests
     [InlineData(1.005, 1.01)]
     [InlineData(1.006, 1.01)]
     [InlineData(1.009, 1.01)]
-    public void Sanitize_Price_Rounds_Correctly_For_Various_Inputs(decimal input, decimal expected)
+    public void Sanitize_price_rounds_correctly_for_various_inputs(decimal input, decimal expected)
     {
         var result = NumericSanitizer.SanitizePrice(input);
 

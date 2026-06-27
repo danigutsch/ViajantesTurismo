@@ -21,7 +21,7 @@ public sealed class DddConventionsTests
     ];
 
     [Fact]
-    public void Entities_Must_Be_Sealed()
+    public void Entities_must_be_sealed()
     {
         var violatingTypes = EntityTypes.Where(type => !type.IsSealed).ToArray();
         Assert.False(
@@ -30,7 +30,7 @@ public sealed class DddConventionsTests
     }
 
     [Fact]
-    public void Entities_Must_Be_Located_In_Domain_Namespace()
+    public void Entities_must_be_located_in_domain_namespace()
     {
         var domainNamespace = ArchitectureProvider.Namespaces.Domain;
         var violatingTypes = EntityTypes
@@ -43,7 +43,7 @@ public sealed class DddConventionsTests
     }
 
     [Fact]
-    public void ValueObjects_Must_Be_Sealed()
+    public void ValueObjects_must_be_sealed()
     {
         var violatingTypes = ValueObjectTypes.Where(type => !type.IsSealed).ToArray();
         Assert.False(
@@ -52,7 +52,7 @@ public sealed class DddConventionsTests
     }
 
     [Fact]
-    public void ValueObjects_Should_Not_Expose_Public_Setters()
+    public void ValueObjects_should_not_expose_public_setters()
     {
         var violatingTypes = ValueObjectTypes
             .SelectMany(type => type.GetProperties(BindingFlags.Instance | BindingFlags.Public))

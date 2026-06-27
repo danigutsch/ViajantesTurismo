@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 public sealed class AboutPageTests : BunitContext
 {
     [Fact]
-    public void Renders_Static_About_Content_And_Dashboard_Link()
+    public void Renders_static_about_content_and_dashboard_link()
     {
         // Act
         var cut = Render<About>();

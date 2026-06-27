@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Cancelled_Booking_Edit_Hides_Payment_And_Action_Buttons()
+    public async Task Cancelled_booking_edit_hides_payment_and_action_buttons()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });
@@ -24,7 +24,7 @@ public class BookingEditStateTests(AspireSystemTestFixture fixture) : AspireSyst
     }
 
     [Fact]
-    public async Task Confirmed_Booking_Edit_Shows_Action_Buttons_And_Payment_Section()
+    public async Task Confirmed_booking_edit_shows_action_buttons_and_payment_section()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 20 });

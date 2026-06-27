@@ -13,7 +13,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void ConfirmImport_WithConflicts_AdvancesToDuplicateResolutionStep()
+    public void ConfirmImport_withConflicts_advancesToDuplicateResolutionStep()
     {
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("existing@example.com")]));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
@@ -25,7 +25,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_Each_Conflict_Shows_Keep_And_Overwrite_Buttons()
+    public void DuplicateResolution_each_conflict_shows_keep_and_overwrite_buttons()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
@@ -41,7 +41,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_ConfirmIsDisabled_UntilAllConflictsResolved()
+    public void DuplicateResolution_confirmIsDisabled_untilAllConflictsResolved()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
@@ -64,7 +64,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_ConfirmImport_ShowsResultAfterAllConflictsResolved()
+    public void DuplicateResolution_confirmImport_showsResultAfterAllConflictsResolved()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
@@ -81,7 +81,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_Shows_Mixed_Decision_And_Field_Source_Controls()
+    public void DuplicateResolution_shows_mixed_decision_and_field_source_controls()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
@@ -166,7 +166,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_Mixed_Decision_Is_Sent_On_Commit()
+    public void DuplicateResolution_mixed_decision_is_sent_on_commit()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
@@ -187,7 +187,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_Mixed_Decision_Applies_Selected_Field_Sources_To_Committed_File()
+    public void DuplicateResolution_mixed_decision_applies_selected_field_sources_to_committed_file()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(

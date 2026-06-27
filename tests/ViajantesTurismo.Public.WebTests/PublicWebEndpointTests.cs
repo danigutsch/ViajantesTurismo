@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Public.WebTests;
 public sealed class PublicWebEndpointTests
 {
     [Fact]
-    public async Task Root_Returns_Public_Landing_Page()
+    public async Task Root_returns_public_landing_page()
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
@@ -28,7 +28,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Root_Returns_Published_Tours_When_Catalog_Loads()
+    public async Task Root_returns_published_tours_when_catalog_loads()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -47,7 +47,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Root_Returns_Unavailable_Message_When_Catalog_Fails()
+    public async Task Root_returns_unavailable_message_when_catalog_fails()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
@@ -67,7 +67,7 @@ public sealed class PublicWebEndpointTests
     [Theory]
     [InlineData("/group-bike-tours", "Group Bike Tours")]
     [InlineData("/gallery", "Gallery")]
-    public async Task Public_Ssr_Routes_Return_Expected_Content(string path, string expectedHeading)
+    public async Task Public_ssr_routes_return_expected_content(string path, string expectedHeading)
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
@@ -84,7 +84,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_List_Returns_Published_Tours_When_Catalog_Loads()
+    public async Task Public_tour_list_returns_published_tours_when_catalog_loads()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -105,7 +105,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_List_Returns_Unavailable_Message_When_Catalog_Fails()
+    public async Task Public_tour_list_returns_unavailable_message_when_catalog_fails()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
@@ -125,7 +125,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_Details_Returns_Tour_Content_When_Catalog_Loads()
+    public async Task Public_tour_details_returns_tour_content_when_catalog_loads()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -146,7 +146,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_Details_Returns_Unavailable_When_Catalog_Fails()
+    public async Task Public_tour_details_returns_unavailable_when_catalog_fails()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailDetailsRequests = true };
@@ -166,7 +166,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_Details_Returns_Not_Found_When_Tour_Is_Not_Published()
+    public async Task Public_tour_details_returns_not_found_when_tour_is_not_published()
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
@@ -186,7 +186,7 @@ public sealed class PublicWebEndpointTests
     [Theory]
     [InlineData("/health")]
     [InlineData("/alive")]
-    public async Task Default_Health_Endpoint_Returns_Success(string path)
+    public async Task Default_health_endpoint_returns_success(string path)
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
@@ -200,7 +200,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Error_Endpoint_Returns_Problem_Response()
+    public async Task Error_endpoint_returns_problem_response()
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
@@ -218,7 +218,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Production_Root_Returns_Public_Landing_Page()
+    public async Task Production_root_returns_public_landing_page()
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");
@@ -234,7 +234,7 @@ public sealed class PublicWebEndpointTests
     [Theory]
     [InlineData("/health")]
     [InlineData("/alive")]
-    public async Task Production_Default_Health_Endpoint_Is_Not_Exposed(string path)
+    public async Task Production_default_health_endpoint_is_not_exposed(string path)
     {
         // Arrange
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(environment: "Production");

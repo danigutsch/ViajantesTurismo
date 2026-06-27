@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class InMemoryCatalogTourReadModelStoreTests
 {
     [Fact]
-    public async Task ListTours_Returns_Stable_Title_Then_Id_Ordering()
+    public async Task ListTours_returns_stable_title_then_id_ordering()
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
@@ -28,7 +28,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
     }
 
     [Fact]
-    public async Task UpsertDraft_Replaces_Existing_Tour_By_Catalog_Id()
+    public async Task UpsertDraft_replaces_existing_tour_by_catalog_id()
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
@@ -45,7 +45,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_Returns_Null_Until_Published_Read_Model_Exists()
+    public async Task GetPublishedTourBySlug_returns_null_until_published_read_model_exists()
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
@@ -59,7 +59,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
     }
 
     [Fact]
-    public async Task Store_Methods_Honor_Cancellation()
+    public async Task Store_methods_honor_cancellation()
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();
@@ -82,7 +82,7 @@ public sealed class InMemoryCatalogTourReadModelStoreTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task GetPublishedTourBySlug_Rejects_Invalid_Slugs(string slug)
+    public async Task GetPublishedTourBySlug_rejects_invalid_slugs(string slug)
     {
         // Arrange
         var sut = new InMemoryCatalogTourReadModelStore();

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 public class HomePageTests : BunitContext
 {
     [Fact]
-    public void Renders_Page_Title()
+    public void Renders_page_title()
     {
         // Act
         var cut = Render<Home>();
@@ -17,7 +17,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Welcome_Message()
+    public void Renders_welcome_message()
     {
         // Act
         var cut = Render<Home>();
@@ -28,7 +28,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Tours_Management_Card()
+    public void Renders_tours_management_card()
     {
         // Act
         var cut = Render<Home>();
@@ -42,7 +42,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Customer_Management_Card()
+    public void Renders_customer_management_card()
     {
         // Act
         var cut = Render<Home>();
@@ -56,7 +56,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Bookings_Management_Card()
+    public void Renders_bookings_management_card()
     {
         // Act
         var cut = Render<Home>();
@@ -70,7 +70,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Add_Tour_Link()
+    public void Renders_add_tour_link()
     {
         // Act
         var cut = Render<Home>();
@@ -82,7 +82,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_View_All_Tours_Link()
+    public void Renders_view_all_tours_link()
     {
         // Act
         var cut = Render<Home>();
@@ -94,7 +94,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Add_Customer_Link()
+    public void Renders_add_customer_link()
     {
         // Act
         var cut = Render<Home>();
@@ -106,7 +106,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_View_All_Customers_Link()
+    public void Renders_view_all_customers_link()
     {
         // Act
         var cut = Render<Home>();
@@ -118,7 +118,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_View_All_Bookings_Link()
+    public void Renders_view_all_bookings_link()
     {
         // Act
         var cut = Render<Home>();
@@ -130,7 +130,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_About_Section()
+    public void Renders_about_section()
     {
         // Act
         var cut = Render<Home>();
@@ -143,7 +143,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void All_Cards_Have_Bootstrap_Border_Classes()
+    public void All_cards_have_bootstrap_border_classes()
     {
         // Act
         var cut = Render<Home>();
@@ -154,7 +154,7 @@ public class HomePageTests : BunitContext
     }
 
     [Fact]
-    public void Uses_Bootstrap_Grid_Layout()
+    public void Uses_bootstrap_grid_layout()
     {
         // Act
         var cut = Render<Home>();

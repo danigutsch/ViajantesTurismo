@@ -9,7 +9,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     [InlineData(PaymentStatusDto.PartiallyPaid, "bg-warning")]
     [InlineData(PaymentStatusDto.Paid, "bg-success")]
     [InlineData(PaymentStatusDto.Refunded, "bg-info")]
-    public void Payment_Status_Badge_Should_Apply_Correct_Css_Class_For_Each_Status(
+    public void Payment_status_badge_should_apply_correct_css_class_for_each_status(
         PaymentStatusDto status,
         string expectedCssClass)
     {
@@ -24,7 +24,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Status_Badge_Should_Apply_Text_Dark_Class_For_Partially_Paid_Status()
+    public void Payment_status_badge_should_apply_text_dark_class_for_partially_paid_status()
     {
         // Arrange
         // Act
@@ -41,7 +41,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     [InlineData(PaymentStatusDto.PartiallyPaid, "bi-cash-stack")]
     [InlineData(PaymentStatusDto.Paid, "bi-check-circle-fill")]
     [InlineData(PaymentStatusDto.Refunded, "bi-arrow-counterclockwise")]
-    public void Payment_Status_Badge_Should_Display_Correct_Icon_For_Each_Status(
+    public void Payment_status_badge_should_display_correct_icon_for_each_status(
         PaymentStatusDto status,
         string expectedIconClass)
     {
@@ -60,7 +60,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     [InlineData(PaymentStatusDto.PartiallyPaid)]
     [InlineData(PaymentStatusDto.Paid)]
     [InlineData(PaymentStatusDto.Refunded)]
-    public void Payment_Status_Badge_Should_Display_Status_Text(PaymentStatusDto status)
+    public void Payment_status_badge_should_display_status_text(PaymentStatusDto status)
     {
         // Arrange
         // Act
@@ -73,7 +73,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Status_Badge_Should_Render_With_Badge_Base_Class()
+    public void Payment_status_badge_should_render_with_badge_base_class()
     {
         // Arrange
         // Act
@@ -86,7 +86,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Status_Badge_Should_Render_Bootstrap_Icon_Element()
+    public void Payment_status_badge_should_render_bootstrap_icon_element()
     {
         // Arrange
         // Act
@@ -99,7 +99,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Status_Badge_Should_Handle_All_Enum_Values_Without_Throwing()
+    public void Payment_status_badge_should_handle_all_enum_values_without_throwing()
     {
         // Arrange
         var allStatuses = Enum.GetValues<PaymentStatusDto>();
@@ -117,7 +117,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Payment_Status_Badge_Should_Apply_Default_Styles_For_Undefined_Status_Values()
+    public void Payment_status_badge_should_apply_default_styles_for_undefined_status_values()
     {
         // Arrange
         const PaymentStatusDto invalidStatus = (PaymentStatusDto)999;

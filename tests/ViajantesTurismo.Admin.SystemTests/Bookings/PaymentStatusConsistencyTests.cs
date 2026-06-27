@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Bookings_List_Payment_Status_Matches_Booking_Details()
+    public async Task Bookings_list_payment_status_matches_booking_details()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -30,7 +30,7 @@ public class PaymentStatusConsistencyTests(AspireSystemTestFixture fixture) : As
     }
 
     [Fact]
-    public async Task Scoped_Bookings_Payment_Status_Matches_Global_List()
+    public async Task Scoped_bookings_payment_status_matches_global_list()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();

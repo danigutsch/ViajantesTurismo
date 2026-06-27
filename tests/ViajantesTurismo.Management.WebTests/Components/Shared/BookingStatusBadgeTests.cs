@@ -7,7 +7,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     [InlineData(BookingStatusDto.Confirmed, "bg-success")]
     [InlineData(BookingStatusDto.Cancelled, "bg-danger")]
     [InlineData(BookingStatusDto.Completed, "bg-primary")]
-    public void Booking_Status_Badge_Should_Apply_Correct_Css_Class_For_Each_Status(
+    public void Booking_status_badge_should_apply_correct_css_class_for_each_status(
         BookingStatusDto status,
         string expectedCssClass)
     {
@@ -21,7 +21,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Booking_Status_Badge_Should_Apply_Text_Dark_Class_For_Pending_Status()
+    public void Booking_status_badge_should_apply_text_dark_class_for_pending_status()
     {
         // Act
         var cut = Render<BookingStatusBadge>(parameters => parameters
@@ -37,7 +37,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     [InlineData(BookingStatusDto.Confirmed, "bi-check-circle")]
     [InlineData(BookingStatusDto.Cancelled, "bi-x-circle")]
     [InlineData(BookingStatusDto.Completed, "bi-check-all")]
-    public void Booking_Status_Badge_Should_Display_Correct_Icon_For_Each_Status(
+    public void Booking_status_badge_should_display_correct_icon_for_each_status(
         BookingStatusDto status,
         string expectedIconClass)
     {
@@ -55,7 +55,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     [InlineData(BookingStatusDto.Confirmed)]
     [InlineData(BookingStatusDto.Cancelled)]
     [InlineData(BookingStatusDto.Completed)]
-    public void Booking_Status_Badge_Should_Display_Status_Text(BookingStatusDto status)
+    public void Booking_status_badge_should_display_status_text(BookingStatusDto status)
     {
         // Arrange
         // Act
@@ -68,7 +68,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Booking_Status_Badge_Should_Render_With_Badge_Base_Class()
+    public void Booking_status_badge_should_render_with_badge_base_class()
     {
         // Arrange
         // Act
@@ -81,7 +81,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Booking_Status_Badge_Should_Render_Bootstrap_Icon_Element()
+    public void Booking_status_badge_should_render_bootstrap_icon_element()
     {
         // Arrange
         // Act
@@ -94,7 +94,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Booking_Status_Badge_Should_Handle_All_Enum_Values_Without_Throwing()
+    public void Booking_status_badge_should_handle_all_enum_values_without_throwing()
     {
         // Arrange
         var allStatuses = Enum.GetValues<BookingStatusDto>();
@@ -112,7 +112,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     }
 
     [Fact]
-    public void Booking_Status_Badge_Should_Apply_Default_Styles_For_Undefined_Status_Values()
+    public void Booking_status_badge_should_apply_default_styles_for_undefined_status_values()
     {
         // Arrange
         const BookingStatusDto invalidStatus = (BookingStatusDto)999;

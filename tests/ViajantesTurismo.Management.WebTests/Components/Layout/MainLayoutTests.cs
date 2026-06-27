@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 public sealed class MainLayoutTests : BunitContext
 {
     [Fact]
-    public void Renders_Page_Container()
+    public void Renders_page_container()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -16,7 +16,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Sidebar()
+    public void Renders_sidebar()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -27,7 +27,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_NavMenu_Component()
+    public void Renders_navMenu_component()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -38,7 +38,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Main_Element()
+    public void Renders_main_element()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -49,7 +49,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Top_Row_With_About_Link()
+    public void Renders_top_row_with_about_link()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -61,7 +61,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Article_Content_Container()
+    public void Renders_article_content_container()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -72,7 +72,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Error_UI_Container()
+    public void Renders_error_uI_container()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -83,7 +83,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Error_UI_Contains_Error_Message()
+    public void Error_uI_contains_error_message()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -94,7 +94,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Error_UI_Contains_Reload_Link()
+    public void Error_uI_contains_reload_link()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -108,7 +108,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Error_UI_Contains_Dismiss_Link()
+    public void Error_uI_contains_dismiss_link()
     {
         // Act
         var cut = Render<MainLayout>();

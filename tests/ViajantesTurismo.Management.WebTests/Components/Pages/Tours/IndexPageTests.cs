@@ -15,7 +15,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Tour_Basic_Information()
+    public void Renders_tour_basic_information()
     {
         // Arrange
         var tour = BuildTourDto(
@@ -37,7 +37,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Price_With_Real_Currency_Symbol()
+    public void Renders_price_with_real_currency_symbol()
     {
         // Arrange
         var tour = BuildTourDto(price: 1500m, currency: CurrencyDto.Real);
@@ -55,7 +55,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Price_With_Euro_Currency_Symbol()
+    public void Renders_price_with_euro_currency_symbol()
     {
         // Arrange
         var tour = BuildTourDto(price: 1200m, currency: CurrencyDto.Euro);
@@ -70,7 +70,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Price_With_UsDollar_Currency_Symbol()
+    public void Renders_price_with_usDollar_currency_symbol()
     {
         // Arrange
         var tour = BuildTourDto(price: 1800m, currency: CurrencyDto.UsDollar);
@@ -85,7 +85,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Available_Spots_Badge_When_Tour_Has_Capacity()
+    public void Renders_available_spots_badge_when_tour_has_capacity()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -107,7 +107,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Fully_Booked_Badge_When_At_Max_Capacity()
+    public void Renders_fully_booked_badge_when_at_max_capacity()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -128,7 +128,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Below_Minimum_Badge_When_Under_MinCustomers()
+    public void Renders_below_minimum_badge_when_under_minCustomers()
     {
         // Arrange
         var tour = BuildTourDto() with

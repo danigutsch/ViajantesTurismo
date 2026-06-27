@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 public class EditContextValidationHelperApplyValidationErrorsTests
 {
     [Fact]
-    public void ApplyValidationErrors_When_Exception_Has_No_Field_Errors_Leaves_EditContext_Unchanged()
+    public void ApplyValidationErrors_when_exception_has_no_field_errors_leaves_editContext_unchanged()
     {
         // Arrange
         var model = new TestFormModel();
@@ -25,7 +25,7 @@ public class EditContextValidationHelperApplyValidationErrorsTests
     }
 
     [Fact]
-    public void ApplyValidationErrors_When_One_Field_Has_Multiple_Errors_Associates_All_Messages_With_That_Field()
+    public void ApplyValidationErrors_when_one_field_has_multiple_errors_associates_all_messages_with_that_field()
     {
         // Arrange
         var model = new TestFormModel();
@@ -49,7 +49,7 @@ public class EditContextValidationHelperApplyValidationErrorsTests
     }
 
     [Fact]
-    public void ApplyValidationErrors_When_Multiple_Fields_Have_Errors_Associates_Each_Message_With_Its_Field()
+    public void ApplyValidationErrors_when_multiple_fields_have_errors_associates_each_message_with_its_field()
     {
         // Arrange
         var model = new TestFormModel();

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class TourUpdateBookingDetailsTests
 {
     [Fact]
-    public void UpdateBookingDetails_When_Booking_Does_Not_Exist_Returns_Not_Found()
+    public void UpdateBookingDetails_when_booking_does_not_exist_returns_not_found()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -28,7 +28,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Room_Type_Is_Invalid_Returns_Invalid()
+    public void UpdateBookingDetails_when_room_type_is_invalid_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -49,7 +49,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Principal_Bike_Type_Is_Invalid_Returns_Invalid()
+    public void UpdateBookingDetails_when_principal_bike_type_is_invalid_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -70,7 +70,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Companion_Bike_Type_Is_Invalid_Returns_Invalid()
+    public void UpdateBookingDetails_when_companion_bike_type_is_invalid_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -91,7 +91,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Companion_Bike_Type_Is_Provided_Without_Companion_Returns_Invalid()
+    public void UpdateBookingDetails_when_companion_bike_type_is_provided_without_companion_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -112,7 +112,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Companion_Is_Provided_Without_Bike_Type_Returns_Invalid()
+    public void UpdateBookingDetails_when_companion_is_provided_without_bike_type_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -133,7 +133,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Principal_And_Companion_Are_The_Same_Returns_Invalid()
+    public void UpdateBookingDetails_when_principal_and_companion_are_the_same_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -154,7 +154,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Booking_Is_Cancelled_Returns_Conflict()
+    public void UpdateBookingDetails_when_booking_is_cancelled_returns_conflict()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -176,7 +176,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Request_Is_Valid_Adds_Companion_And_Updates_Principal_Bike()
+    public void UpdateBookingDetails_when_request_is_valid_adds_companion_and_updates_principal_bike()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking();
@@ -200,7 +200,7 @@ public class TourUpdateBookingDetailsTests
     }
 
     [Fact]
-    public void UpdateBookingDetails_When_Request_Removes_Companion_Allows_Single_Room()
+    public void UpdateBookingDetails_when_request_removes_companion_allows_single_room()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithDoubleBooking();

@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Customers;
 public class CustomerEditTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Customer_Edit_Renders_All_Sections_With_Populated_Data()
+    public async Task Customer_edit_renders_all_sections_with_populated_data()
     {
         // Arrange
         var customer = await ApiClient.CreateCustomer(firstName: "Alice", lastName: "Owned");

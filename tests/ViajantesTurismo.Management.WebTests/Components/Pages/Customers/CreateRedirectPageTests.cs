@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 public sealed class CreateRedirectPageTests : BunitContext
 {
     [Fact]
-    public void Redirects_To_Personal_Info_Page_On_First_Render()
+    public void Redirects_to_personal_info_page_on_first_render()
     {
         // Arrange
         var navManager = Services.GetRequiredService<NavigationManager>();
@@ -20,7 +20,7 @@ public sealed class CreateRedirectPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Without_Content()
+    public void Renders_without_content()
     {
         // Act
         var cut = Render<CreateRedirect>();

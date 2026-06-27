@@ -16,7 +16,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public async Task SubmitCustomer_When_Create_Fails_Shows_Sanitized_Error_Message()
+    public async Task SubmitCustomer_when_create_fails_shows_sanitized_error_message()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
@@ -39,7 +39,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public async Task When_State_Is_Incomplete_Shows_Warning_And_Go_To_Step_1_Button_Navigates()
+    public async Task When_state_is_incomplete_shows_warning_and_go_to_step_1_button_navigates()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();
@@ -58,7 +58,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public void Complete_State_With_Optional_Values_Missing_Shows_Fallbacks_And_Hides_Optional_Sections()
+    public void Complete_state_with_optional_values_missing_shows_fallbacks_and_hides_optional_sections()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(
@@ -81,7 +81,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public void Complete_State_With_Optional_Values_Present_Shows_Socials_And_Companion_Id()
+    public void Complete_state_with_optional_values_present_shows_socials_and_companion_id()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(
@@ -104,7 +104,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public async Task SubmitCustomer_When_Create_Succeeds_Resets_State_And_Navigates_To_Customer_Details()
+    public async Task SubmitCustomer_when_create_succeeds_resets_state_and_navigates_to_customer_details()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
@@ -125,7 +125,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public async Task SubmitCustomer_When_Create_Succeeds_With_Absolute_Location_Navigates_Using_Path_And_Query()
+    public async Task SubmitCustomer_when_create_succeeds_with_absolute_location_navigates_using_path_and_query()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
@@ -143,7 +143,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Medical_And_Keeps_Wizard_On_Step_8()
+    public async Task Back_button_navigates_to_medical_and_keeps_wizard_on_step_8()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);

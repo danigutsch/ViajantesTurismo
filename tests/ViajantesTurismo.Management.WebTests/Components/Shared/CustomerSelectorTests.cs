@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 public sealed class CustomerSelectorTests : BunitContext
 {
     [Fact]
-    public void Renders_Search_Input_With_Placeholder()
+    public void Renders_search_input_with_placeholder()
     {
         // Arrange
         GetCustomerDto[] customers = [];
@@ -21,7 +21,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Dropdown_Is_Initially_Closed()
+    public void Dropdown_is_initially_closed()
     {
         // Arrange
         var customers = new List<GetCustomerDto> { BuildCustomerDto() };
@@ -39,7 +39,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Opens_Dropdown_On_Focus()
+    public void Opens_dropdown_on_focus()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -63,7 +63,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Displays_First_10_Customers_When_No_Search_Term()
+    public void Displays_first_10_customers_when_no_search_term()
     {
         // Arrange
         var customers = Enumerable.Range(1, 15)
@@ -86,7 +86,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Clear_Selection_Option()
+    public void Displays_clear_selection_option()
     {
         // Arrange
         var customers = new List<GetCustomerDto> { BuildCustomerDto() };
@@ -107,7 +107,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Customer_Full_Name_And_ID()
+    public void Displays_customer_full_name_and_ID()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -133,7 +133,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Customer_Email_And_Nationality()
+    public void Displays_customer_email_and_nationality()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -158,7 +158,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Filters_By_First_Name()
+    public void Filters_by_first_name()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -186,7 +186,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Filters_By_Last_Name()
+    public void Filters_by_last_name()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -213,7 +213,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Filters_By_Email()
+    public void Filters_by_email()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -240,7 +240,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Filters_By_Customer_ID()
+    public void Filters_by_customer_ID()
     {
         // Arrange
         var customerId = Guid.Parse("12345678-1234-1234-1234-123456789012");
@@ -268,7 +268,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Filter_Is_Case_Insensitive()
+    public void Filter_is_case_insensitive()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -294,7 +294,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Limits_Filtered_Results_To_20_Items()
+    public void Limits_filtered_results_to_20_items()
     {
         // Arrange
         var customers = Enumerable.Range(1, 30)
@@ -318,7 +318,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Displays_No_Customers_Found_Message()
+    public void Displays_no_customers_found_message()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -343,7 +343,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Customer_Updates_Value()
+    public void Selecting_customer_updates_value()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -371,7 +371,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Customer_Closes_Dropdown()
+    public void Selecting_customer_closes_dropdown()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -398,7 +398,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Customer_Clears_Search_Term()
+    public void Selecting_customer_clears_search_term()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -427,7 +427,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Clear_Selection_Sets_Value_To_Null()
+    public void Clear_selection_sets_value_to_null()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -455,7 +455,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Selected_Customer_Badge_When_Value_Set()
+    public void Displays_selected_customer_badge_when_value_set()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -478,7 +478,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Display_Selected_Badge_When_No_Value()
+    public void Does_not_display_selected_badge_when_no_value()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -499,7 +499,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Highlights_Selected_Customer_In_Dropdown()
+    public void Highlights_selected_customer_in_dropdown()
     {
         // Arrange
         var customerId = Guid.NewGuid();
@@ -525,7 +525,7 @@ public sealed class CustomerSelectorTests : BunitContext
     }
 
     [Fact]
-    public void Handles_Empty_Customer_List()
+    public void Handles_empty_customer_list()
     {
         // Arrange
         GetCustomerDto[] customers = [];

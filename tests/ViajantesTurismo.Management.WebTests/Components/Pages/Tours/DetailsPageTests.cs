@@ -17,7 +17,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Tour_Details_With_General_Information()
+    public void Renders_tour_details_with_general_information()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -39,7 +39,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Tour_Duration_In_Days()
+    public void Renders_tour_duration_in_days()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -58,7 +58,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Pricing_Information_With_Real_Currency()
+    public void Renders_pricing_information_with_real_currency()
     {
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.Real);
@@ -79,7 +79,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Pricing_Information_With_Euro_Currency()
+    public void Renders_pricing_information_with_euro_currency()
     {
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.Euro);
@@ -98,7 +98,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Pricing_Information_With_UsDollar_Currency()
+    public void Renders_pricing_information_with_usDollar_currency()
     {
         // Arrange
         var tour = BuildTourDto(currency: CurrencyDto.UsDollar);
@@ -117,7 +117,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Capacity_Information()
+    public void Renders_capacity_information()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -137,7 +137,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Available_Spots_Badge_When_Tour_Has_Capacity()
+    public void Renders_available_spots_badge_when_tour_has_capacity()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -161,7 +161,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Fully_Booked_Badge_When_At_Max_Capacity()
+    public void Renders_fully_booked_badge_when_at_max_capacity()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -184,7 +184,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Below_Minimum_Badge_When_Under_MinCustomers()
+    public void Renders_below_minimum_badge_when_under_minCustomers()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -208,7 +208,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Included_Services_When_Available()
+    public void Renders_included_services_when_available()
     {
         // Arrange
         var tour = BuildTourDto() with
@@ -241,7 +241,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Render_Services_Section_When_Empty()
+    public void Does_not_render_services_section_when_empty()
     {
         // Arrange
         var tour = BuildTourDto(
@@ -262,7 +262,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Edit_Tour_Link()
+    public void Renders_edit_tour_link()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -282,7 +282,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Back_To_List_Link()
+    public void Renders_back_to_list_link()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -301,7 +301,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Page_Title()
+    public void Renders_page_title()
     {
         // Arrange
         var tour = BuildTourDto();
@@ -320,7 +320,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Tour_Name_In_Card_Header()
+    public void Renders_tour_name_in_card_header()
     {
         // Arrange
         var tour = BuildTourDto(name: "Amazing Bike Tour 2024");

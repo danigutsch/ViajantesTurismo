@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public sealed class ValidationErrorsTests
 {
     [Fact]
-    public void Add_Accepts_Invalid_Result()
+    public void Add_accepts_invalid_result()
     {
         var errors = new ValidationErrors();
         var error = Result.Invalid("Validation failed", "Name", "Name is required");
@@ -16,7 +16,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void Add_Generic_Accepts_Invalid_Result()
+    public void Add_generic_accepts_invalid_result()
     {
         var errors = new ValidationErrors();
         var error = Result.Invalid<int>("Validation failed", "Age", "Age must be positive");
@@ -27,7 +27,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void Add_Throws_When_Result_Is_Not_Invalid()
+    public void Add_throws_when_result_is_not_invalid()
     {
         var errors = new ValidationErrors();
         var successResult = Result.Ok();
@@ -37,7 +37,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void Add_Generic_Throws_When_Result_Is_Not_Invalid()
+    public void Add_generic_throws_when_result_is_not_invalid()
     {
         var errors = new ValidationErrors();
         var successResult = Result.Ok(42);
@@ -47,7 +47,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Returns_Single_Error_When_Only_One_Error_Exists()
+    public void To_result_returns_single_error_when_only_one_error_exists()
     {
         var errors = new ValidationErrors();
         var singleError = Result.Invalid("Validation failed", "Name", "Name is required");
@@ -65,7 +65,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Generic_Returns_Single_Error_When_Only_One_Error_Exists()
+    public void To_result_generic_returns_single_error_when_only_one_error_exists()
     {
         var errors = new ValidationErrors();
         var singleError = Result.Invalid<int>("Validation failed", "Age", "Age must be positive");
@@ -83,7 +83,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Merges_Multiple_Errors_From_Different_Fields()
+    public void To_result_merges_multiple_errors_from_different_fields()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error 1", "Name", "Name is required"));
@@ -101,7 +101,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Generic_Merges_Multiple_Errors_From_Different_Fields()
+    public void To_result_generic_merges_multiple_errors_from_different_fields()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid<int>("Error 1", "Name", "Name is required"));
@@ -119,7 +119,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Merges_Multiple_Errors_For_Same_Field()
+    public void To_result_merges_multiple_errors_for_same_field()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error 1", "Name", "Name is required"));
@@ -139,7 +139,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void Has_Errors_Returns_True_When_Errors_Exist()
+    public void Has_errors_returns_true_when_errors_exist()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error", "Name", "Name is required"));
@@ -148,7 +148,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void Has_Errors_Returns_False_When_No_Errors_Exist()
+    public void Has_errors_returns_false_when_no_errors_exist()
     {
         var errors = new ValidationErrors();
 
@@ -156,7 +156,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Throws_When_No_Errors_Exist()
+    public void To_result_throws_when_no_errors_exist()
     {
         var errors = new ValidationErrors();
 
@@ -165,7 +165,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void To_Result_Generic_Throws_When_No_Errors_Exist()
+    public void To_result_generic_throws_when_no_errors_exist()
     {
         var errors = new ValidationErrors();
 
@@ -174,7 +174,7 @@ public sealed class ValidationErrorsTests
     }
 
     [Fact]
-    public void Add_Can_Mix_Generic_And_Non_Generic_Results()
+    public void Add_can_mix_generic_and_non_generic_results()
     {
         var errors = new ValidationErrors();
         errors.Add(Result.Invalid("Error 1", "Name", "Name is required"));

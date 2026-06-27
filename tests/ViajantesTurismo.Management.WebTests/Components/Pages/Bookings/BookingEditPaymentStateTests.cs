@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 public sealed class BookingEditPaymentStateTests
 {
     [Fact]
-    public void ShowForm_Resets_Model_And_Makes_Form_Visible()
+    public void ShowForm_resets_model_and_makes_form_visible()
     {
         // Arrange
         var state = new BookingEditPaymentState();
@@ -22,7 +22,7 @@ public sealed class BookingEditPaymentStateTests
     }
 
     [Fact]
-    public void HideForm_Makes_Form_Not_Visible()
+    public void HideForm_makes_form_not_visible()
     {
         // Arrange
         var state = new BookingEditPaymentState();
@@ -36,7 +36,7 @@ public sealed class BookingEditPaymentStateTests
     }
 
     [Fact]
-    public void BeginAndEndSubmission_Toggle_Submitting_State()
+    public void BeginAndEndSubmission_toggle_submitting_state()
     {
         // Arrange
         var state = new BookingEditPaymentState();

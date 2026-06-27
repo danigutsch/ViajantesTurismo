@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 public sealed class ImportCustomersCsvProcessorTests
 {
     [Fact]
-    public void BuildImportSummary_When_Result_And_Conflict_Decisions_Are_Provided_Returns_Expected_Counts()
+    public void BuildImportSummary_when_result_and_conflict_decisions_are_provided_returns_expected_counts()
     {
         // Arrange
         var result = new ImportResultDto(3, 2);
@@ -32,7 +32,7 @@ public sealed class ImportCustomersCsvProcessorTests
     }
 
     [Fact]
-    public void BuildErrorReportDataUri_When_Error_Rows_Have_Special_Characters_Escapes_Csv_Content()
+    public void BuildErrorReportDataUri_when_error_rows_have_special_characters_escapes_csv_content()
     {
         // Arrange
         var errorRows = new List<ImportErrorRowDto>
@@ -53,7 +53,7 @@ public sealed class ImportCustomersCsvProcessorTests
     }
 
     [Fact]
-    public void ApplyMixedFieldSelections_When_Existing_Source_Is_Selected_Uses_Existing_Field_Value()
+    public void ApplyMixedFieldSelections_when_existing_source_is_selected_uses_existing_field_value()
     {
         // Arrange
         var mappedCsv = Encoding.UTF8.GetBytes(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

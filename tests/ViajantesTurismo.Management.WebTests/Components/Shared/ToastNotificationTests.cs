@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 public sealed class ToastNotificationTests : BunitContext
 {
     [Fact]
-    public void Toast_Notification_Should_Not_Render_When_No_Toasts_Are_Shown()
+    public void Toast_notification_should_not_render_when_no_toasts_are_shown()
     {
         // Act
         var cut = Render<ToastNotification>();
@@ -14,7 +14,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Render_Toast_Container_When_Success_Toast_Is_Shown()
+    public void Toast_notification_should_render_toast_container_when_success_toast_is_shown()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -31,7 +31,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Success_Message()
+    public void Toast_notification_should_display_success_message()
     {
         // Arrange
         const string successMessage = "Customer created successfully!";
@@ -46,7 +46,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Error_Message()
+    public void Toast_notification_should_display_error_message()
     {
         // Arrange
         const string errorMessage = "Failed to save customer";
@@ -61,7 +61,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Apply_Success_Header_Class()
+    public void Toast_notification_should_apply_success_header_class()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -76,7 +76,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Apply_Error_Header_Class()
+    public void Toast_notification_should_apply_error_header_class()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -91,7 +91,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Success_Icon()
+    public void Toast_notification_should_display_success_icon()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -105,7 +105,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Error_Icon()
+    public void Toast_notification_should_display_error_icon()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -119,7 +119,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Success_Title()
+    public void Toast_notification_should_display_success_title()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -133,7 +133,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Error_Title()
+    public void Toast_notification_should_display_error_title()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -147,7 +147,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Render_Close_Button()
+    public void Toast_notification_should_render_close_button()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -161,7 +161,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Remove_Toast_When_Close_Button_Is_Clicked()
+    public void Toast_notification_should_remove_toast_when_close_button_is_clicked()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -176,7 +176,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Multiple_Toasts()
+    public void Toast_notification_should_display_multiple_toasts()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -194,7 +194,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Display_Messages_In_Correct_Order()
+    public void Toast_notification_should_display_messages_in_correct_order()
     {
         // Arrange
         var cut = Render<ToastNotification>();
@@ -213,7 +213,7 @@ public sealed class ToastNotificationTests : BunitContext
     }
 
     [Fact]
-    public void Toast_Notification_Should_Auto_Dismiss_After_Default_Duration()
+    public void Toast_notification_should_auto_dismiss_after_default_duration()
     {
         // Arrange
         var cut = Render<ToastNotification>();

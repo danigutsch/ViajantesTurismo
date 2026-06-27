@@ -5,7 +5,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
     private const string CustomerDetailsTitle = "Customer Details";
 
     [Fact]
-    public async Task Booking_Details_Should_Navigate_To_Related_Tour_And_Customer_Details()
+    public async Task Booking_details_should_navigate_to_related_tour_and_customer_details()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -23,7 +23,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
     }
 
     [Fact]
-    public async Task Bookings_List_Should_Navigate_To_Related_Tour_And_Customer_Details()
+    public async Task Bookings_list_should_navigate_to_related_tour_and_customer_details()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -42,7 +42,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
     }
 
     [Fact]
-    public async Task Tour_Details_Should_Show_Contextual_Bookings_Without_Tour_Column()
+    public async Task Tour_details_should_show_contextual_bookings_without_tour_column()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -61,7 +61,7 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
     }
 
     [Fact]
-    public async Task Customer_Details_Should_Show_Contextual_Bookings_Without_Customer_Column()
+    public async Task Customer_details_should_show_contextual_bookings_without_customer_column()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 public class TourMapperTests
 {
     [Fact]
-    public void Map_To_Currency_Should_Cover_All_Enum_Values()
+    public void Map_to_currency_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<CurrencyDto>();
@@ -23,7 +23,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void Map_To_Currency_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_currency_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const CurrencyDto invalidValue = (CurrencyDto)999;
@@ -35,7 +35,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void Map_To_Currency_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_currency_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<Currency>();
@@ -51,7 +51,7 @@ public class TourMapperTests
     }
 
     [Fact]
-    public void Map_To_Currency_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_currency_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const Currency invalidValue = (Currency)999;

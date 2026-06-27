@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed partial class AdminTestArchitectureGuardTests
 {
     [Fact]
-    public void Admin_Test_Architecture_Guide_Should_Declare_The_Canonical_Documentation_Owner()
+    public void Admin_test_architecture_guide_should_declare_the_canonical_documentation_owner()
     {
         var repositoryRoot = GetRepositoryRoot();
         var guidePath = Path.Combine(repositoryRoot, "tests", "README.md");
@@ -27,7 +27,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Admin_Hosted_Test_Infrastructure_Should_Use_The_Approved_Fixture_And_Base_Class_Model()
+    public void Admin_hosted_test_infrastructure_should_use_the_approved_fixture_and_base_class_model()
     {
         var repositoryRoot = GetRepositoryRoot();
         var integrationInfrastructurePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure");
@@ -128,7 +128,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void SystemTests_Should_Keep_Serial_Collection_Control_In_Base_Classes_Only()
+    public void SystemTests_should_keep_serial_collection_control_in_base_classes_only()
     {
         var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
 
@@ -146,7 +146,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void SystemTests_Should_Document_Each_Serial_Test_With_A_Reason()
+    public void SystemTests_should_document_each_serial_test_with_a_reason()
     {
         var systemTestsPath = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests");
 
@@ -163,7 +163,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Serial_Test_Collection_Definitions_Should_Declare_A_Justification()
+    public void Serial_test_collection_definitions_should_declare_a_justification()
     {
         var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
 
@@ -180,7 +180,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Admin_Hosted_Test_Infrastructure_Should_Not_Expose_Generic_ServiceProvider_Reach_Through()
+    public void Admin_hosted_test_infrastructure_should_not_expose_generic_serviceProvider_reach_through()
     {
         var infrastructureRoots = new[]
         {
@@ -200,7 +200,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Concrete_Test_Methods_Should_Not_Own_Raw_ServiceProvider_Or_Scope_Plumbing()
+    public void Concrete_test_methods_should_not_own_raw_serviceProvider_or_scope_plumbing()
     {
         var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
         var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
@@ -214,7 +214,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Test_Trait_Names_Should_Use_Canonical_Constants()
+    public void Test_trait_names_should_use_canonical_constants()
     {
         var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
         var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
@@ -228,7 +228,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void SharedKernel_Testing_Should_Not_Own_Product_Or_Area_Specific_Trait_Values()
+    public void SharedKernel_testing_should_not_own_product_or_area_specific_trait_values()
     {
         var sharedKernelTestingRoot = Path.Combine(GetRepositoryRoot(), "tests", "SharedKernel.Testing");
         var offendingLines = Directory.GetFiles(sharedKernelTestingRoot, "*.cs", SearchOption.AllDirectories)

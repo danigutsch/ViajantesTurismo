@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 public sealed class DateRangeTests
 {
     [Fact]
-    public void Create_WithValidDates_ReturnsSuccessResult()
+    public void Create_withValidDates_returnsSuccessResult()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 6, 1);
@@ -23,7 +23,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Create_WithEndDateBeforeStartDate_ReturnsInvalidResult()
+    public void Create_withEndDateBeforeStartDate_returnsInvalidResult()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 6, 10);
@@ -44,7 +44,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Create_WithEndDateEqualToStartDate_ReturnsInvalidResult()
+    public void Create_withEndDateEqualToStartDate_returnsInvalidResult()
     {
         // Arrange
         var date = DateRangeTestsHelpers.UtcDate(2025, 6, 1);
@@ -61,7 +61,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void DurationDays_CalculatesCorrectDuration()
+    public void DurationDays_calculatesCorrectDuration()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 6, 1);
@@ -76,7 +76,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void DurationDays_WithSingleDay_ReturnsCorrectValue()
+    public void DurationDays_withSingleDay_returnsCorrectValue()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 6, 1);
@@ -91,7 +91,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void DurationDays_WithPartialDays_ReturnsDecimalValue()
+    public void DurationDays_withPartialDays_returnsDecimalValue()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 6, 1, 10);
@@ -106,7 +106,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Equality_WithSameDates_AreEqual()
+    public void Equality_withSameDates_areEqual()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 6, 1);
@@ -121,7 +121,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Equality_WithDifferentDates_AreNotEqual()
+    public void Equality_withDifferentDates_areNotEqual()
     {
         // Arrange
         var range1 = DateRange.Create(DateRangeTestsHelpers.UtcDate(2025, 6, 1), DateRangeTestsHelpers.UtcDate(2025, 6, 10)).Value;
@@ -134,7 +134,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Create_WithUtcDates_PreservesUtcKind()
+    public void Create_withUtcDates_preservesUtcKind()
     {
         // Arrange
         var startDate = new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -150,7 +150,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Create_WithLongDuration_CalculatesCorrectly()
+    public void Create_withLongDuration_calculatesCorrectly()
     {
         // Arrange
         var startDate = DateRangeTestsHelpers.UtcDate(2025, 1, 1);
@@ -165,7 +165,7 @@ public sealed class DateRangeTests
     }
 
     [Fact]
-    public void Create_WithMinimumTimeSpan_ReturnsSuccess()
+    public void Create_withMinimumTimeSpan_returnsSuccess()
     {
         // Arrange
         const int oneSecondDifference = 1;

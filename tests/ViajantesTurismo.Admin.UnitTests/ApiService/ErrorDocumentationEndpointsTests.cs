@@ -13,7 +13,7 @@ public sealed class ErrorDocumentationEndpointsTests
         ?? throw new InvalidOperationException("Could not locate ErrorDocumentationEndpoints type.");
 
     [Fact]
-    public void GetAllErrorDocumentation_Returns_All_Entries()
+    public void GetAllErrorDocumentation_returns_all_entries()
     {
         var method = EndpointsType.GetMethod("GetAllErrorDocumentation", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
@@ -25,7 +25,7 @@ public sealed class ErrorDocumentationEndpointsTests
     }
 
     [Fact]
-    public void GetErrorDocumentationByIdentifier_Returns_NotFound_For_Unknown_Identifier()
+    public void GetErrorDocumentationByIdentifier_returns_notFound_for_unknown_identifier()
     {
         var method = EndpointsType.GetMethod("GetErrorDocumentationByIdentifier", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
@@ -38,7 +38,7 @@ public sealed class ErrorDocumentationEndpointsTests
     }
 
     [Fact]
-    public void GetErrorDocumentationByIdentifier_Returns_Entry_For_Known_Identifier()
+    public void GetErrorDocumentationByIdentifier_returns_entry_for_known_identifier()
     {
         var entries = typeof(ResultExtensions).Assembly
             .GetType("ViajantesTurismo.Admin.ApiService.Errors.ErrorDocumentationCatalog")?

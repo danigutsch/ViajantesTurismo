@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public class ResultConvertErrorGenericToNonGenericTests
 {
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Invalid_Result()
+    public void Generic_convertError_to_nonGeneric_with_invalid_result()
     {
         // Arrange
         var sourceResult = Result.Invalid<string>("Validation error", "field", "message");
@@ -24,7 +24,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_NotFound_Result()
+    public void Generic_convertError_to_nonGeneric_with_notFound_result()
     {
         // Arrange
         var sourceResult = Result.NotFound<int>("Entity not found");
@@ -40,7 +40,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Conflict_Result()
+    public void Generic_convertError_to_nonGeneric_with_conflict_result()
     {
         // Arrange
         var sourceResult = Result.Conflict<decimal>("Duplicate key");
@@ -56,7 +56,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Unauthorized_Result()
+    public void Generic_convertError_to_nonGeneric_with_unauthorized_result()
     {
         // Arrange
         var sourceResult = Result.Unauthorized<bool>("Not authorized");
@@ -72,7 +72,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Forbidden_Result()
+    public void Generic_convertError_to_nonGeneric_with_forbidden_result()
     {
         // Arrange
         var sourceResult = Result.Forbidden<string>("Forbidden access");
@@ -88,7 +88,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Error_Result()
+    public void Generic_convertError_to_nonGeneric_with_error_result()
     {
         // Arrange
         var sourceResult = Result.Error<List<int>>("Processing error");
@@ -104,7 +104,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_CriticalError_Result()
+    public void Generic_convertError_to_nonGeneric_with_criticalError_result()
     {
         // Arrange
         var sourceResult = Result.CriticalError<Dictionary<string, int>>("Critical failure");
@@ -120,7 +120,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Unavailable_Result()
+    public void Generic_convertError_to_nonGeneric_with_unavailable_result()
     {
         // Arrange
         var sourceResult = Result.Unavailable<DateTime>("Service unavailable");
@@ -136,7 +136,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Successful_Result_Throws_InvalidOperationException()
+    public void Generic_convertError_to_nonGeneric_with_successful_result_throws_invalidOperationException()
     {
         // Arrange
         var sourceResult = Result.Ok("Success");
@@ -150,7 +150,7 @@ public class ResultConvertErrorGenericToNonGenericTests
     }
 
     [Fact]
-    public void Generic_ConvertError_To_NonGeneric_With_Multiple_ValidationErrors_Preserves_All()
+    public void Generic_convertError_to_nonGeneric_with_multiple_validationErrors_preserves_all()
     {
         // Arrange
         var errors = new ValidationErrors();

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class DiscountTests
 {
     [Fact]
-    public void Invalid_Discount_Type_Should_Return_Invalid_Result()
+    public void Invalid_discount_type_should_return_invalid_result()
     {
         // Arrange
         const DiscountType invalidType = (DiscountType)999;
@@ -25,7 +25,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Negative_Discount_Amount_Should_Return_Invalid_Result()
+    public void Negative_discount_amount_should_return_invalid_result()
     {
         // Arrange
         const decimal negativeAmount = -10.50m;
@@ -44,7 +44,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Percentage_Exceeds_Maximum_Should_Return_Invalid_Result()
+    public void Percentage_exceeds_maximum_should_return_invalid_result()
     {
         // Arrange
         const decimal amount = 150m;
@@ -65,7 +65,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Absolute_Discount_Exceeds_Subtotal_Should_Return_Invalid_Result()
+    public void Absolute_discount_exceeds_subtotal_should_return_invalid_result()
     {
         // Arrange
         const decimal amount = 1000m;
@@ -87,7 +87,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Final_Price_Not_Positive_Should_Return_Invalid_Result()
+    public void Final_price_not_positive_should_return_invalid_result()
     {
         // Arrange
         const decimal finalPrice = -5.00m;
@@ -106,7 +106,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Reason_Too_Short_Should_Return_Invalid_Result()
+    public void Reason_too_short_should_return_invalid_result()
     {
         // Arrange
         const int minLength = 10;
@@ -126,7 +126,7 @@ public class DiscountTests
     }
 
     [Fact]
-    public void Reason_Too_Long_Should_Return_Invalid_Result()
+    public void Reason_too_long_should_return_invalid_result()
     {
         // Arrange
         const int maxLength = 500;

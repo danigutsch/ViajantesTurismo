@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class PaymentTests
 {
     [Fact]
-    public void Invalid_Amount_Should_Return_Invalid_Result()
+    public void Invalid_amount_should_return_invalid_result()
     {
         // Arrange
         const decimal invalidAmount = 0m;
@@ -24,7 +24,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void Invalid_Payment_Method_Should_Return_Invalid_Result()
+    public void Invalid_payment_method_should_return_invalid_result()
     {
         // Arrange
         const PaymentMethod invalidMethod = (PaymentMethod)999;
@@ -44,7 +44,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void Invalid_Payment_Method_Should_Include_All_Valid_Values()
+    public void Invalid_payment_method_should_include_all_valid_values()
     {
         // Arrange
         const PaymentMethod invalidMethod = (PaymentMethod)999;
@@ -62,7 +62,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void Future_Payment_Date_Should_Return_Invalid_Result()
+    public void Future_payment_date_should_return_invalid_result()
     {
         // Arrange
         var futureDate = new DateTime(2026, 12, 31, 10, 30, 0, DateTimeKind.Utc);
@@ -81,7 +81,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void Exceeds_Remaining_Balance_Should_Return_Invalid_Result()
+    public void Exceeds_remaining_balance_should_return_invalid_result()
     {
         // Arrange
         const decimal paymentAmount = 500.00m;
@@ -103,7 +103,7 @@ public class PaymentTests
     }
 
     [Fact]
-    public void Payment_Not_Found_Should_Return_Not_Found_Result()
+    public void Payment_not_found_should_return_not_found_result()
     {
         // Arrange
         var paymentId = Guid.CreateVersion7();

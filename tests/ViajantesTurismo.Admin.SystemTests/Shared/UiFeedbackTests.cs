@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Shared;
 public class UiFeedbackTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Confirm_Booking_Should_Show_Success_Toast()
+    public async Task Confirm_booking_should_show_success_toast()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();
@@ -19,7 +19,7 @@ public class UiFeedbackTests(AspireSystemTestFixture fixture) : AspireSystemTest
     }
 
     [Fact]
-    public async Task Updating_Booking_Should_Show_Redirect_Alert_And_Allow_Cancelling_It()
+    public async Task Updating_booking_should_show_redirect_alert_and_allow_cancelling_it()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();

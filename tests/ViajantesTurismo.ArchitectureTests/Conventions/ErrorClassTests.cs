@@ -5,7 +5,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed class ErrorClassTests
 {
     [Fact]
-    public void ErrorClasses_Must_Be_Static()
+    public void ErrorClasses_must_be_static()
     {
         var errorClasses = GetErrorClasses();
 

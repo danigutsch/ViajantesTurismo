@@ -13,7 +13,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Page_Title()
+    public void Renders_page_title()
     {
         // Arrange
         // Act
@@ -25,7 +25,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_All_Form_Fields()
+    public void Renders_all_form_fields()
     {
         // Arrange
         // Act
@@ -47,7 +47,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Currency_Dropdown_Contains_All_Options()
+    public void Currency_dropdown_contains_all_options()
     {
         // Arrange
         // Act
@@ -64,7 +64,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Submit_Button_Has_Correct_Initial_Text()
+    public void Submit_button_has_correct_initial_text()
     {
         // Arrange
         // Act
@@ -76,7 +76,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Shows_Validation_Summary()
+    public async Task Shows_validation_summary()
     {
         // Arrange
         var cut = Render<Add>();
@@ -93,7 +93,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Successful_Submission_Shows_Success_Message()
+    public async Task Successful_submission_shows_success_message()
     {
         // Arrange
         var cut = Render<Add>();
@@ -120,7 +120,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Successful_Submission_Shows_Action_Buttons()
+    public async Task Successful_submission_shows_action_buttons()
     {
         // Arrange
         var cut = Render<Add>();
@@ -151,7 +151,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Create_Another_Button_Resets_Form()
+    public async Task Create_another_button_resets_form()
     {
         // Arrange
         var cut = Render<Add>();
@@ -179,7 +179,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submission_Shows_Spinner_And_Disabled_Button()
+    public async Task Submission_shows_spinner_and_disabled_button()
     {
         // Arrange
         var cut = Render<Add>();
@@ -207,7 +207,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task API_Error_Shows_Error_Message()
+    public async Task API_error_shows_error_message()
     {
         // Arrange
         _fakeToursApi.SetCreateTourException(new InvalidOperationException("Failed to create tour"));
@@ -235,7 +235,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Form_Uses_DataAnnotationsValidator()
+    public void Form_uses_dataAnnotationsValidator()
     {
         // Arrange
         // Act
@@ -247,7 +247,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Single_Room_Supplement_Field_Is_Present()
+    public void Single_room_supplement_field_is_present()
     {
         // Arrange
         // Act
@@ -262,7 +262,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public void Bike_Price_Fields_Are_Present()
+    public void Bike_price_fields_are_present()
     {
         // Arrange
         // Act
@@ -281,7 +281,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Creates_Tour_With_Correct_Data()
+    public async Task Creates_tour_with_correct_data()
     {
         // Arrange
         var cut = Render<Add>();
@@ -312,7 +312,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Services_Input_Splits_By_Lines()
+    public async Task Services_input_splits_by_lines()
     {
         // Arrange
         var cut = Render<Add>();

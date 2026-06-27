@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Shared;
 public class NotFoundErrorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Invalid_GUID_Format_Shows_404_Page()
+    public async Task Invalid_GUID_format_shows_404_page()
     {
         // Arrange
         const string invalidGuid = "not-a-guid";
@@ -17,7 +17,7 @@ public class NotFoundErrorTests(AspireSystemTestFixture fixture) : AspireSystemT
     }
 
     [Fact]
-    public async Task Non_Existent_Route_Shows_Custom_404_Page()
+    public async Task Non_existent_route_shows_custom_404_page()
     {
         // Arrange
 

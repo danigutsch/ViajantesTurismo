@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Customers;
 public partial class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Can_Navigate_To_Import_Page_And_Upload_Csv_Wizard_Opens()
+    public async Task Can_navigate_to_import_page_and_upload_csv_wizard_opens()
     {
         // Arrange
         var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";
@@ -27,7 +27,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
     }
 
     [Fact]
-    public async Task Can_Auto_Match_Canonical_Headers_And_Enable_Preview()
+    public async Task Can_auto_match_canonical_headers_and_enable_preview()
     {
         // Arrange
         var email = $"e2e-ui2-{Guid.NewGuid():N}@import.test";
@@ -45,7 +45,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
     }
 
     [Fact]
-    public async Task Can_Block_Preview_When_Required_Header_Is_Not_Canonical()
+    public async Task Can_block_preview_when_required_header_is_not_canonical()
     {
         // Arrange
         var nonCanonicalCsv = CustomerImportCsvHelpers.ReplaceCanonicalHeader("Email", "EmailAddress") +
@@ -65,7 +65,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
     }
 
     [Fact]
-    public async Task Can_Surface_Duplicate_Resolution_And_Commit_Keep_Decision()
+    public async Task Can_surface_duplicate_resolution_and_commit_keep_decision()
     {
         // Arrange
         var existingCustomer = await ApiClient.CreateCustomer();
@@ -97,7 +97,7 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
     }
 
     [Fact]
-    public async Task Can_Complete_Import_Flow_Show_Final_Summary_And_Open_Customer_Details()
+    public async Task Can_complete_import_flow_show_final_summary_and_open_customer_details()
     {
         // Arrange
         var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";

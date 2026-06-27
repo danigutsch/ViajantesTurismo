@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 public sealed class ConfirmDialogTests : BunitContext
 {
     [Fact]
-    public void Confirm_Dialog_Should_Not_Render_When_Not_Visible()
+    public void Confirm_dialog_should_not_render_when_not_visible()
     {
         // Act
         var cut = Render<ConfirmDialog>();
@@ -14,7 +14,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Render_Modal_When_ShowAsync_Is_Called()
+    public void Confirm_dialog_should_render_modal_when_showAsync_is_called()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -29,7 +29,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Display_Custom_Message()
+    public void Confirm_dialog_should_display_custom_message()
     {
         // Arrange
         const string customMessage = "Do you want to proceed with this action?";
@@ -44,7 +44,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Display_Custom_Title()
+    public void Confirm_dialog_should_display_custom_title()
     {
         // Arrange
         const string customTitle = "Delete Confirmation";
@@ -59,7 +59,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Display_Default_Title_When_Not_Specified()
+    public void Confirm_dialog_should_display_default_title_when_not_specified()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -73,7 +73,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Display_Custom_Confirm_Button_Text()
+    public void Confirm_dialog_should_display_custom_confirm_button_text()
     {
         // Arrange
         const string customConfirmText = "Yes, Delete";
@@ -88,7 +88,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Display_Custom_Cancel_Button_Text()
+    public void Confirm_dialog_should_display_custom_cancel_button_text()
     {
         // Arrange
         const string customCancelText = "No, Keep It";
@@ -103,7 +103,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Apply_Custom_Confirm_Button_Class()
+    public void Confirm_dialog_should_apply_custom_confirm_button_class()
     {
         // Arrange
         const string customButtonClass = "btn-danger";
@@ -118,7 +118,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Apply_Default_Primary_Button_Class()
+    public void Confirm_dialog_should_apply_default_primary_button_class()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -132,7 +132,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Render_Close_Button_In_Header()
+    public void Confirm_dialog_should_render_close_button_in_header()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -146,7 +146,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Render_Modal_Backdrop()
+    public void Confirm_dialog_should_render_modal_backdrop()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -161,7 +161,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public async Task Confirm_Dialog_Should_Return_True_When_Confirm_Button_Is_Clicked()
+    public async Task Confirm_dialog_should_return_true_when_confirm_button_is_clicked()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -178,7 +178,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public async Task Confirm_Dialog_Should_Return_False_When_Cancel_Button_Is_Clicked()
+    public async Task Confirm_dialog_should_return_false_when_cancel_button_is_clicked()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -195,7 +195,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public async Task Confirm_Dialog_Should_Return_False_When_Close_Button_Is_Clicked()
+    public async Task Confirm_dialog_should_return_false_when_close_button_is_clicked()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -212,7 +212,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Hide_Modal_After_Confirm_Is_Clicked()
+    public void Confirm_dialog_should_hide_modal_after_confirm_is_clicked()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();
@@ -228,7 +228,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Dialog_Should_Hide_Modal_After_Cancel_Is_Clicked()
+    public void Confirm_dialog_should_hide_modal_after_cancel_is_clicked()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();

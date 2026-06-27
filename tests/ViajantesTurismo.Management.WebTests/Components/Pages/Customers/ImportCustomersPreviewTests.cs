@@ -13,7 +13,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Clicking_Preview_Advances_To_Preview_Step()
+    public void Clicking_preview_advances_to_preview_step()
     {
         var cut = Render<ImportCustomers>();
         var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
@@ -26,7 +26,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Preview_Step_Shows_File_Name()
+    public void Preview_step_shows_file_name()
     {
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "my-data.csv");
 
@@ -34,7 +34,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Preview_Shows_Data_Rows()
+    public void Preview_shows_data_rows()
     {
         var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues + "\n" + CustomerImportCsvTestData.AllCanonicalValues;
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, csvContent);
@@ -44,7 +44,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Preview_Shows_At_Most_Five_Rows()
+    public void Preview_shows_at_most_five_rows()
     {
         var manyRows = string.Join("\n", Enumerable.Repeat(CustomerImportCsvTestData.AllCanonicalValues, 10));
         var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + manyRows;
@@ -55,7 +55,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Preview_Highlights_Row_With_Empty_Required_Field()
+    public void Preview_highlights_row_with_empty_required_field()
     {
         // FirstName (index 0) is required — a row starting with "," leaves it empty
         var rowWithEmptyFirst = "," + string.Join(",", CustomerImportHeaderMatcher.Fields.Skip(1).Select(_ => "v"));
@@ -66,7 +66,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Preview_Row_With_All_Required_Values_Has_No_Warning()
+    public void Preview_row_with_all_required_values_has_no_warning()
     {
         var csvContent = CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues;
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, csvContent);
@@ -75,7 +75,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Back_To_Mapping_Returns_To_Header_Mapping_Step()
+    public void Back_to_mapping_returns_to_header_mapping_step()
     {
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
 
@@ -86,7 +86,7 @@ public sealed class ImportCustomersPreviewTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Import_Triggers_Api_Call_And_Shows_Result()
+    public void Confirm_import_triggers_api_call_and_shows_result()
     {
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);

@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 public sealed class ImportCustomersConflictLoaderTests
 {
     [Fact]
-    public async Task LoadConflictStates_When_Existing_Customer_Is_Found_Populates_Existing_And_Incoming_Values()
+    public async Task LoadConflictStates_when_existing_customer_is_found_populates_existing_and_incoming_values()
     {
         // Arrange
         const string conflictEmail = "existing@example.com";
@@ -49,7 +49,7 @@ public sealed class ImportCustomersConflictLoaderTests
     }
 
     [Fact]
-    public async Task LoadConflictStates_When_Existing_Customer_Details_Are_Missing_Leaves_Existing_Values_Empty()
+    public async Task LoadConflictStates_when_existing_customer_details_are_missing_leaves_existing_values_empty()
     {
         // Arrange
         const string conflictEmail = "missing-details@example.com";

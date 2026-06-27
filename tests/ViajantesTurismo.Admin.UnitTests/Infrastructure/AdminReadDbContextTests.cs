@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 public sealed class AdminReadDbContextTests
 {
     [Fact]
-    public void SaveChanges_When_Called_Throws_Read_Only_Exception()
+    public void SaveChanges_when_called_throws_read_only_exception()
     {
         // Arrange
         using var context = AdminReadDbContexts.Create();
@@ -18,7 +18,7 @@ public sealed class AdminReadDbContextTests
     }
 
     [Fact]
-    public async Task SaveChanges_When_Called_Asynchronously_Throws_Read_Only_Exception()
+    public async Task SaveChanges_when_called_asynchronously_throws_read_only_exception()
     {
         // Arrange
         await using var context = AdminReadDbContexts.Create();

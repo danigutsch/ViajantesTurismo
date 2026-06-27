@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 public sealed class ImportCustomersWorkflowStateTests
 {
     [Fact]
-    public void SetPendingFile_Stores_File_Data_And_Resets_Transient_State()
+    public void SetPendingFile_stores_file_data_and_resets_transient_state()
     {
         // Arrange
         var state = new ImportCustomersWorkflowState
@@ -40,7 +40,7 @@ public sealed class ImportCustomersWorkflowStateTests
     }
 
     [Fact]
-    public void ResetToFileSelection_Clears_All_State_And_Returns_To_FileSelection()
+    public void ResetToFileSelection_clears_all_state_and_returns_to_fileSelection()
     {
         // Arrange
         var state = new ImportCustomersWorkflowState
@@ -80,7 +80,7 @@ public sealed class ImportCustomersWorkflowStateTests
     }
 
     [Fact]
-    public void RetryCurrentFile_When_Pending_File_Exists_Returns_To_HeaderMapping_And_Clears_Transient_State()
+    public void RetryCurrentFile_when_pending_file_exists_returns_to_headerMapping_and_clears_transient_state()
     {
         // Arrange
         var state = new ImportCustomersWorkflowState
@@ -115,7 +115,7 @@ public sealed class ImportCustomersWorkflowStateTests
     }
 
     [Fact]
-    public void BuildConflictDecisions_Returns_Case_Insensitive_Decision_Map()
+    public void BuildConflictDecisions_returns_case_insensitive_decision_map()
     {
         // Arrange
         var keepState = new ImportCustomerConflictState("keep@example.com", null, null);

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed partial class AppHostOrchestrationTests
 {
     [Fact]
-    public void Catalog_Api_Waits_For_Database_Migrations_When_It_Uses_Persisted_Public_Content()
+    public void Catalog_api_waits_for_database_migrations_when_it_uses_persisted_public_content()
     {
         // Arrange
         var appHostText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHost.cs"));

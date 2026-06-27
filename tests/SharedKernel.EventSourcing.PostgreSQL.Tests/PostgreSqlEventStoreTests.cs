@@ -31,7 +31,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_With_No_Stream_Loads_Persisted_Events_In_Revision_Order()
+    public async Task Append_with_no_stream_loads_persisted_events_in_revision_order()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -68,7 +68,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_With_Stale_Expected_Revision_Reports_Conflict()
+    public async Task Append_with_stale_expected_revision_reports_conflict()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -97,7 +97,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Save_Upserts_Projection_Checkpoint()
+    public async Task Save_upserts_projection_checkpoint()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -118,7 +118,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Save_Does_Not_Move_Projection_Checkpoint_Backward()
+    public async Task Save_does_not_move_projection_checkpoint_backward()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -140,7 +140,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task Save_Rejects_Missing_Projection_Name(string projectionName)
+    public async Task Save_rejects_missing_projection_name(string projectionName)
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -157,7 +157,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Save_Rejects_Negative_Position()
+    public async Task Save_rejects_negative_position()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -174,7 +174,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_With_Concurrent_No_Stream_Writers_Reports_Conflicts()
+    public async Task Append_with_concurrent_no_stream_writers_reports_conflicts()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -198,7 +198,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_With_Concurrent_Any_Writers_Appends_All_Events()
+    public async Task Append_with_concurrent_any_writers_appends_all_events()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -223,7 +223,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_With_Specific_Revision_After_Empty_Stream_Reports_Conflict()
+    public async Task Append_with_specific_revision_after_empty_stream_reports_conflict()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -244,7 +244,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Load_After_Loads_Events_In_Global_Position_Order()
+    public async Task Load_after_loads_events_in_global_position_order()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -276,7 +276,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Load_After_Can_Checkpoint_Concurrent_Cross_Stream_Appends()
+    public async Task Load_after_can_checkpoint_concurrent_cross_stream_appends()
     {
         // Arrange
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
@@ -303,7 +303,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_And_Load_Emit_Telemetry()
+    public async Task Append_and_load_emit_telemetry()
     {
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
@@ -338,7 +338,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Append_Conflict_Emits_Error_Telemetry()
+    public async Task Append_conflict_emits_error_telemetry()
     {
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
@@ -373,7 +373,7 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Checkpoint_Store_Emits_Telemetry()
+    public async Task Checkpoint_store_emits_telemetry()
     {
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();

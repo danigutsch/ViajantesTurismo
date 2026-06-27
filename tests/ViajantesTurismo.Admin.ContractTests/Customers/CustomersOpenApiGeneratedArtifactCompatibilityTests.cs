@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Customers;
 public sealed class CustomersOpenApiGeneratedArtifactCompatibilityTests
 {
     [Fact]
-    public async Task Generated_Customers_Artifact_Matches_The_Canonical_Artifact_Contract_Slice()
+    public async Task Generated_customers_artifact_matches_the_canonical_artifact_contract_slice()
     {
         // Arrange
         var generatedContract = await CustomersOpenApiDocumentClient.GetGeneratedContract(TestContext.Current.CancellationToken);

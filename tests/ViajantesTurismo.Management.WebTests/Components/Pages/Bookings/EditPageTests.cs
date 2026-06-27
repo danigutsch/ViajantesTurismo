@@ -22,7 +22,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Page_Renders_Successfully_With_Valid_Id()
+    public void Page_renders_successfully_with_valid_id()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -37,7 +37,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void OnInitializedAsync_When_Load_Fails_Shows_Sanitized_Error_Message()
+    public void OnInitializedAsync_when_load_fails_shows_sanitized_error_message()
     {
         // Arrange
         var bookingId = Guid.NewGuid();
@@ -54,7 +54,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task HandleSubmit_When_Update_Fails_Shows_Sanitized_Error_Message()
+    public async Task HandleSubmit_when_update_fails_shows_sanitized_error_message()
     {
         // Arrange
         var booking = BuildBookingDto(notes: "Original notes");
@@ -81,7 +81,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Booking_Information_When_Found()
+    public void Displays_booking_information_when_found()
     {
         // Arrange
         var booking = BuildBookingDto(
@@ -107,7 +107,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Companion_Information_When_Present()
+    public void Displays_companion_information_when_present()
     {
         // Arrange
         var companionId = Guid.NewGuid();
@@ -126,7 +126,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Display_Companion_When_Not_Present()
+    public void Does_not_display_companion_when_not_present()
     {
         // Arrange
         var booking = BuildBookingDto(companionId: null);
@@ -141,7 +141,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Booking_Date_In_Correct_Format()
+    public void Displays_booking_date_in_correct_format()
     {
         // Arrange
         var bookingDate = new DateTime(2024, 3, 15, 14, 30, 0, DateTimeKind.Utc);
@@ -157,7 +157,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Total_Price_As_Readonly()
+    public void Displays_total_price_as_readonly()
     {
         // Arrange
         var booking = BuildBookingDto(totalPrice: 3250.50m);
@@ -173,7 +173,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Status_Dropdown_With_All_Options()
+    public void Renders_status_dropdown_with_all_options()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending);
@@ -194,7 +194,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Payment_Status_Dropdown_With_All_Options()
+    public void Renders_payment_status_dropdown_with_all_options()
     {
         // Arrange
         var booking = BuildBookingDto(paymentStatus: PaymentStatusDto.Unpaid);
@@ -215,7 +215,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Preloads_Existing_Notes_In_Form()
+    public void Preloads_existing_notes_in_form()
     {
         // Arrange
         var booking = BuildBookingDto(notes: "Customer requested early check-in");
@@ -231,7 +231,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Discount_Type_Dropdown_With_All_Options()
+    public void Renders_discount_type_dropdown_with_all_options()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -251,7 +251,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Show_Discount_Fields_When_Type_Is_None()
+    public void Does_not_show_discount_fields_when_type_is_none()
     {
         // Arrange
         var booking = BuildBookingDto(discountType: DiscountTypeDto.None);
@@ -267,7 +267,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Discount_Amount_Field_When_Percentage_Selected()
+    public void Shows_discount_amount_field_when_percentage_selected()
     {
         // Arrange
         var booking = BuildBookingDto(
@@ -293,7 +293,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Discount_Amount_Field_When_Absolute_Selected()
+    public void Shows_discount_amount_field_when_absolute_selected()
     {
         // Arrange
         var booking = BuildBookingDto(
@@ -313,7 +313,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Cancel_Button_With_Link_To_Bookings()
+    public void Renders_cancel_button_with_link_to_bookings()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -329,7 +329,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Submit_Button_Shows_Default_Text_Initially()
+    public void Submit_button_shows_default_text_initially()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -345,7 +345,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Cancel_Redirect_Button_Shows_Success_Message()
+    public async Task Cancel_redirect_button_shows_success_message()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -371,7 +371,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Buttons_Are_Disabled_During_Submission()
+    public async Task Buttons_are_disabled_during_submission()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -398,7 +398,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Discount_Reason_Help_Text()
+    public void Displays_discount_reason_help_text()
     {
         // Arrange
         var booking = BuildBookingDto(
@@ -418,7 +418,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Record_Payment_Button_Toggles_Payment_Form_Visibility()
+    public async Task Record_payment_button_toggles_payment_form_visibility()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending, remainingBalance: 250m);
@@ -453,7 +453,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Page_Has_Correct_Title()
+    public void Page_has_correct_title()
     {
         // Arrange
         var booking = BuildBookingDto();
@@ -468,7 +468,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Status_Dropdown_Updates_After_Confirm_Action()
+    public async Task Status_dropdown_updates_after_confirm_action()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending);
@@ -487,7 +487,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Status_Dropdown_Updates_After_Complete_Action()
+    public async Task Status_dropdown_updates_after_complete_action()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
@@ -506,7 +506,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Cancel_Booking_Should_Show_Configured_Confirm_Dialog()
+    public async Task Cancel_booking_should_show_configured_confirm_dialog()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
@@ -534,7 +534,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Cancelling_Cancel_Dialog_Should_Keep_Status_Unchanged()
+    public async Task Cancelling_cancel_dialog_should_keep_status_unchanged()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
@@ -565,7 +565,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Confirming_Cancel_Booking_Should_Update_Status_And_Disable_Editing()
+    public async Task Confirming_cancel_booking_should_update_status_and_disable_editing()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed, notes: "Original notes");
@@ -601,7 +601,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Delete_Booking_Should_Show_Configured_Confirm_Dialog()
+    public async Task Delete_booking_should_show_configured_confirm_dialog()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending);
@@ -629,7 +629,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Cancelling_Delete_Dialog_Should_Keep_Booking_On_Edit_Page()
+    public async Task Cancelling_delete_dialog_should_keep_booking_on_edit_page()
     {
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending);

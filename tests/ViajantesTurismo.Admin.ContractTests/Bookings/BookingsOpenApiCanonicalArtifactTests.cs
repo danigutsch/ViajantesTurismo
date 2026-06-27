@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 public sealed class BookingsOpenApiCanonicalArtifactTests
 {
     [Fact]
-    public async Task Reads_The_Bookings_OpenApi_Document_Through_The_Canonical_Artifact()
+    public async Task Reads_the_bookings_openApi_document_through_the_canonical_artifact()
     {
         // Act
         var contract = await BookingsOpenApiDocumentClient.GetContract(TestContext.Current.CancellationToken);

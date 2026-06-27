@@ -17,7 +17,7 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_With_DryRun_True_Does_Not_Persist_Changes()
+    public async Task Handle_with_dryRun_true_does_not_persist_changes()
     {
         // Arrange
         var command = new CustomerImportCommand(CsvRows.Build(), DryRun: true);
@@ -32,7 +32,7 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_With_DryRun_False_Persists_New_Customer()
+    public async Task Handle_with_dryRun_false_persists_new_customer()
     {
         // Arrange
         var command = new CustomerImportCommand(CsvRows.Build("imported@example.com"), DryRun: false);
@@ -48,7 +48,7 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_With_Duplicate_Email_In_File_Counts_Second_Row_As_Error()
+    public async Task Handle_with_duplicate_email_in_file_counts_second_row_as_error()
     {
         // Arrange
         const string duplicateEmail = "dup@example.com";
@@ -68,7 +68,7 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_With_Email_Already_In_Database_Skips_Row_And_Counts_As_Error()
+    public async Task Handle_with_email_already_in_database_skips_row_and_counts_as_error()
     {
         // Arrange
         const string existingEmail = "existing@example.com";

@@ -4,7 +4,7 @@ namespace ViajantesTurismo.Public.WebTests;
 public sealed class PublicCatalogApiClientTests
 {
     [Fact]
-    public async Task GetPublishedTours_Requests_Public_Catalog_Endpoint_And_Skips_Null_Items()
+    public async Task GetPublishedTours_requests_public_catalog_endpoint_and_skips_null_items()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -54,7 +54,7 @@ public sealed class PublicCatalogApiClientTests
     [InlineData("group tour", "/public/catalog/tours/group%20tour")]
     [InlineData("camino/norte", "/public/catalog/tours/camino%2Fnorte")]
     [InlineData("tour?#fragment", "/public/catalog/tours/tour%3F%23fragment")]
-    public async Task GetPublishedTourBySlug_Escapes_The_Slug_Route_Segment(string slug, string expectedPath)
+    public async Task GetPublishedTourBySlug_escapes_the_slug_route_segment(string slug, string expectedPath)
     {
         // Arrange
         var requestPath = string.Empty;
@@ -85,7 +85,7 @@ public sealed class PublicCatalogApiClientTests
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_Returns_Null_When_Catalog_Returns_NotFound()
+    public async Task GetPublishedTourBySlug_returns_null_when_catalog_returns_notFound()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -99,7 +99,7 @@ public sealed class PublicCatalogApiClientTests
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_Throws_When_Catalog_Returns_Unexpected_Error()
+    public async Task GetPublishedTourBySlug_throws_when_catalog_returns_unexpected_error()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadGateway));

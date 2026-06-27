@@ -17,7 +17,7 @@ public sealed partial class NamingConventionTests
     ];
 
     [Fact]
-    public void Interfaces_Should_Start_With_I()
+    public void Interfaces_should_start_with_i()
     {
         var offendingTypes = ArchitectureProvider.Assemblies
             .SelectMany(assembly => assembly.GetExportedTypes())
@@ -31,7 +31,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void ContractDtos_Should_End_With_Dto()
+    public void ContractDtos_should_end_with_dto()
     {
         const string contractNamespace = ArchitectureProvider.Namespaces.Contracts;
         var offendingTypes = ArchitectureProvider.Assemblies
@@ -50,7 +50,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void TestClasses_Should_End_With_Tests()
+    public void TestClasses_should_end_with_tests()
     {
         var testsAssembly = typeof(NamingConventionTests).Assembly;
         var offendingTypes = testsAssembly.GetExportedTypes()
@@ -64,7 +64,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Xunit_Test_Methods_Should_Follow_Underscore_Naming_Convention()
+    public void Xunit_test_methods_should_follow_underscore_naming_convention()
     {
         var repositoryRoot = GetRepositoryRoot();
         var offendingMethods = Directory
@@ -79,7 +79,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Behavior_Feature_Files_Should_Use_A_Recognized_Naming_Style()
+    public void Behavior_feature_files_should_use_a_recognized_naming_style()
     {
         var repositoryRoot = GetRepositoryRoot();
         var behaviorSpecsRoot = Path.Combine(
@@ -106,7 +106,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Mediator_Tests_Should_Not_Invoke_Methods_Inside_Simple_Assertions()
+    public void Mediator_tests_should_not_invoke_methods_inside_simple_assertions()
     {
         var repositoryRoot = GetRepositoryRoot();
         var mediatorTestsRoot = Path.Combine(repositoryRoot, "tests");
