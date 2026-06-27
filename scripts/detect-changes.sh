@@ -83,6 +83,7 @@ shared_validation_patterns=(
     "scripts/run-sonar-analysis.sh"
     "scripts/run-tests-with-coverage.sh"
     "scripts/validate-sonar-analysis-config.sh"
+    "scripts/write-ci-artifact-summary.sh"
     "scripts/write-github-sonar-summary.sh"
     "ViajantesTurismo.slnx"
 )
