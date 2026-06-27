@@ -45,4 +45,25 @@ public sealed class EfPublicContentStoreTests
         Assert.Equal(replacement.PublicationState, saved.PublicationState);
     }
 
+    [Fact]
+    public async Task Store_lists_content_ordered_by_key()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicContentStore(dbContext);
+        var second = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false, key: "section-b");
+        var first = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false, key: "section-a");
+
+        // Act
+        await store.SaveContent(second, TestContext.Current.CancellationToken);
+        await store.SaveContent(first, TestContext.Current.CancellationToken);
+        var saved = await store.ListContent(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Collection(
+            saved,
+            content => Assert.Equal(first.Key, content.Key),
+            content => Assert.Equal(second.Key, content.Key));
+    }
+
 }

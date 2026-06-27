@@ -4,11 +4,11 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 internal static class EditablePublicContentTestFactory
 {
-    public static EditablePublicContent CreateContent(bool requiresHumanReview)
+    public static EditablePublicContent CreateContent(bool requiresHumanReview, string key = "home.hero")
     {
         var enUs = CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
         var ptBr = CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview);
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, enUs, ptBr);
+        var result = EditablePublicContent.Create(key, PublicContentLanguage.EnUs, enUs, ptBr);
 
         Assert.True(result.IsSuccess);
         return result.Value;
