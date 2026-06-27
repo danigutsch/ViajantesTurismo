@@ -30,6 +30,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="..\SharedKernel.IntegrationTesting\AspireTestApplication.cs" Link="Infrastructure\AspireTestApplication.cs" />
+        <Compile Include="..\SharedKernel.IntegrationTesting\PostgreSqlPublicSchemaReset.cs" Link="Infrastructure\PostgreSqlPublicSchemaReset.cs" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.AppHost\ViajantesTurismo.AppHost.csproj" IsAspireProjectResource="false" />

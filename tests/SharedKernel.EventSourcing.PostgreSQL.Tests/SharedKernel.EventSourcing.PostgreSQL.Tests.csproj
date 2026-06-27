@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="..\SharedKernel.IntegrationTesting\AspireTestApplication.cs" Link="Infrastructure\AspireTestApplication.cs" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\SharedKernel.EventSourcing.PostgreSQL.AppHost\SharedKernel.EventSourcing.PostgreSQL.AppHost.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing.PostgreSQL\SharedKernel.EventSourcing.PostgreSQL.csproj" IsAspireProjectResource="false" />

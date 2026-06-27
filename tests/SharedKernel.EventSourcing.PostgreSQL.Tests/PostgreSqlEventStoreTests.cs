@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Aspire.Hosting.Testing;
+using SharedKernel.Testing;
 
 namespace SharedKernel.EventSourcing.PostgreSQL.Tests;
 
@@ -8,46 +8,25 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 {
     private const string PostgreSqlResourceName = "postgres";
     private const string DatabaseResourceName = "eventstore";
-    private static readonly TimeSpan ResourceStartupTimeout = TimeSpan.FromSeconds(90);
 
-    private IDistributedApplicationTestingBuilder? appBuilder;
-    private DistributedApplication? app;
+    private AspireTestApplication? app;
     private string? connectionString;
 
     public async ValueTask InitializeAsync()
     {
-        appBuilder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.SharedKernel_EventSourcing_PostgreSQL_AppHost>();
-        app = await appBuilder.BuildAsync();
-        await app.StartAsync();
-
-        using var cts = new CancellationTokenSource(ResourceStartupTimeout);
-        await app.ResourceNotifications.WaitForResourceHealthyAsync(PostgreSqlResourceName, cts.Token);
-        connectionString = await app.GetConnectionStringAsync(DatabaseResourceName, cts.Token)
-            ?? throw new InvalidOperationException("PostgreSQL connection string is not configured.");
+        app = await AspireTestApplication.Start<Projects.SharedKernel_EventSourcing_PostgreSQL_AppHost>([PostgreSqlResourceName], ct: TestContext.Current.CancellationToken);
+        connectionString = await app.GetConnectionString(DatabaseResourceName, TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()
     {
         var application = app;
-        var builder = appBuilder;
         app = null;
-        appBuilder = null;
         connectionString = null;
 
-        try
+        if (application is not null)
         {
-            if (application is not null)
-            {
-                await application.StopAsync();
-                await application.DisposeAsync();
-            }
-        }
-        finally
-        {
-            if (builder is not null)
-            {
-                await builder.DisposeAsync();
-            }
+            await application.DisposeAsync();
         }
     }
 
