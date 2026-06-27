@@ -49,6 +49,12 @@ Catalog.ApiService → Management.Web
 All resource names come from `ResourceNames` in `src/ViajantesTurismo.Resources`. Do not hardcode
 resource name strings in AppHost orchestration code.
 
+## Container Images
+
+Infrastructure and companion tooling images are pinned by digest in `AppHost.cs` to keep local runs
+reproducible. There is no production image policy yet. When one exists, update these digest pins to
+match the production-approved images.
+
 ## Code Organization
 
 - `AppHost.cs`: primary orchestration map, kept short and dependency ordered
