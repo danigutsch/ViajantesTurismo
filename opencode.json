@@ -1,4 +1,105 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "lsp": true
+  "share": "disabled",
+  "instructions": ["AGENTS.md", "CONTRIBUTING.md", "docs/local-tool-security.md"],
+  "lsp": true,
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      ".build/**",
+      "**/bin/**",
+      "**/obj/**",
+      "artifacts/**",
+      "BenchmarkDotNet.Artifacts/**",
+      "TestResults/**",
+      "logs/**",
+      ".vs/**",
+      ".idea/**"
+    ]
+  },
+  "permission": {
+    "edit": {
+      "*": "allow",
+      ".env*": "deny",
+      "logs/**": "deny",
+      "TestResults/**": "deny",
+      "artifacts/**": "deny"
+    },
+    "bash": {
+      "*": "allow",
+      "rm -rf*": "deny",
+      "git reset --hard*": "ask",
+      "git clean*": "ask",
+      "docker *": "ask",
+      "podman *": "ask",
+      "dotnet ef database update*": "ask"
+    }
+  },
+  "command": {
+    "build": {
+      "description": "Build the solution.",
+      "template": "!`dotnet build ViajantesTurismo.slnx`"
+    },
+    "test": {
+      "description": "Run the solution tests.",
+      "template": "!`dotnet test --solution ViajantesTurismo.slnx`"
+    },
+    "lint": {
+      "description": "Run repository docs/script/spec lint checks.",
+      "template": "!`bash scripts/lint-all.sh`"
+    },
+    "prepare-pr": {
+      "description": "Prepare a pull request summary using the repository template.",
+      "template": "Read `docs/pull_request_template.md`, inspect current git diff and recent commits, then draft a PR body. Include related issue references, validation run, and any not-run checks with reasons. Do not create or push unless explicitly asked."
+    },
+    "commit-message": {
+      "description": "Draft a Conventional Commit message for the current staged or unstaged diff.",
+      "template": "Inspect the current staged diff first, then unstaged diff if nothing is staged. Draft one Conventional Commit message using the repository rules in `CONTRIBUTING.md`. Keep the header <= 100 characters. Do not commit unless explicitly asked."
+    }
+  },
+  "formatter": {
+    "biome": { "disabled": true },
+    "prettier": { "disabled": true },
+    "shfmt": { "disabled": true },
+    "dotnet-format": {
+      "command": [
+        "bash",
+        "-lc",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; dotnet format ViajantesTurismo.slnx --include \"$rel\" --no-restore",
+        "_",
+        "$FILE"
+      ],
+      "extensions": [".cs"]
+    },
+    "repo-markdownlint": {
+      "command": [
+        "bash",
+        "-lc",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; bash scripts/lint-markdown.sh --fix \"$rel\"",
+        "_",
+        "$FILE"
+      ],
+      "extensions": [".md"]
+    },
+    "repo-shfmt": {
+      "command": [
+        "bash",
+        "-lc",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$rel\"; elif command -v docker >/dev/null 2>&1; then docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace mvdan/shfmt:v3.11.0 -w -i 4 -ci -bn -sr -- \"$rel\"; else echo \"Optional: shfmt requires local install or docker. Skipping shell autofix.\" >&2; fi",
+        "_",
+        "$FILE"
+      ],
+      "extensions": [".sh", ".bash"]
+    },
+    "repo-powershell": {
+      "command": [
+        "bash",
+        "-lc",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v pwsh >/dev/null 2>&1; then pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path \"$rel\"; else echo \"Optional: pwsh is required for PowerShell autofix. Skipping PowerShell formatting.\" >&2; fi",
+        "_",
+        "$FILE"
+      ],
+      "extensions": [".ps1", ".psm1", ".psd1"]
+    }
+  }
 }

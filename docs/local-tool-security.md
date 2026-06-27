@@ -27,6 +27,9 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
   wrapper already provides it.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
+- Agent/editor project formatters: limited to repository-approved single-file formatters. They
+  reuse `.NET`, repository scripts, Docker-backed shell/markdown wrappers, and optional
+  PSScriptAnalyzer instead of adding npm helper packages.
 
 ## Do and do not
 
@@ -35,6 +38,8 @@ Do:
 - use `dotnet tool restore` for repo-pinned `.NET` tools
 - prefer repository wrappers over ad hoc command lines
 - prefer Dockerized local lint helpers when the repository already maintains that path
+- keep editor/agent format-on-save hooks aligned with repository scripts instead of adding a
+  separate formatter stack
 - prefer vendor or OS package installs for optional standalone tools
 - accept that some optional checks stay skipped locally when the tool is intentionally not
   installed
@@ -45,6 +50,8 @@ Do not:
   instructions by default
 - add repo-owned `package.json` or lockfiles just to support local lint helpers already
   covered by Docker or other pinned tooling
+- enable broad built-in formatter bundles that can rewrite files without this repository's
+  `.editorconfig`, markdownlint, shfmt, and `.NET` rules
 - rely on `curl | sh` bootstrap paths for local lint helpers
 - require contributors to install optional tooling just to complete ordinary `.NET`
   development and test workflows
