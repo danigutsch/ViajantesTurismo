@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.MigrationService;
 using ViajantesTurismo.ServiceDefaults;
 
@@ -10,6 +11,7 @@ builder.Services.AddOpenTelemetry()
 builder.AddServiceDefaults();
 
 builder.AddSeeding();
+builder.AddCatalogInfrastructure();
 
 builder.Services.AddHostedService<SeederWorker>();
 

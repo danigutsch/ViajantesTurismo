@@ -94,7 +94,7 @@ public sealed class CatalogApiEndpointTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
         Assert.NotNull(saved);
-        Assert.Equal("home.hero", saved.Key);
+        Assert.Equal("HOME.HERO", saved.Key);
         Assert.True(saved.PtBr.RequiresHumanReview);
         Assert.Equal("ReviewRequired", saved.PublicationState);
     }

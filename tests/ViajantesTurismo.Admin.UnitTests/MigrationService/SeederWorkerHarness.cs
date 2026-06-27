@@ -1,6 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
@@ -22,6 +24,7 @@ internal sealed class SeederWorkerHarness : IDisposable
         ArgumentNullException.ThrowIfNull(seeder);
 
         var services = new ServiceCollection();
+        services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
         services.AddSingleton(seeder);
 
         return new SeederWorkerHarness(

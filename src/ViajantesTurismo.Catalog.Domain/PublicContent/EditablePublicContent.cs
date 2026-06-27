@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 using SharedKernel.Domain;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
@@ -10,6 +12,18 @@ namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 /// </summary>
 public sealed class EditablePublicContent : AggregateRoot<Guid>
 {
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [UsedImplicitly]
+    private EditablePublicContent()
+    {
+        Key = string.Empty;
+        EnUs = null!;
+        PtBr = null!;
+    }
+
     private EditablePublicContent(
         Guid id,
         string key,
@@ -68,7 +82,7 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         ArgumentNullException.ThrowIfNull(enUs);
         ArgumentNullException.ThrowIfNull(ptBr);
 
-        var sanitizedKey = StringSanitizer.Sanitize(key);
+        var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
         var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(sanitizedKey))
@@ -107,6 +121,40 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         }
 
         PublicationState = PublicContentPublicationState.Published;
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Replaces the editable language variants for the same content key.
+    /// </summary>
+    /// <param name="sourceLanguage">The source language entered by the editor.</param>
+    /// <param name="enUs">The English variant.</param>
+    /// <param name="ptBr">The Brazilian Portuguese variant.</param>
+    /// <returns>A result indicating whether replacement was allowed.</returns>
+    public Result ReplaceVariants(
+        PublicContentLanguage sourceLanguage,
+        PublicContentVariant enUs,
+        PublicContentVariant ptBr)
+    {
+        ArgumentNullException.ThrowIfNull(enUs);
+        ArgumentNullException.ThrowIfNull(ptBr);
+
+        var errors = new ValidationErrors();
+
+        ValidateSupportedSourceLanguage(errors, sourceLanguage);
+        ValidateVariantLanguage(errors, nameof(EnUs), enUs, PublicContentLanguage.EnUs);
+        ValidateVariantLanguage(errors, nameof(PtBr), ptBr, PublicContentLanguage.PtBr);
+
+        if (errors.HasErrors)
+        {
+            return errors.ToResult();
+        }
+
+        SourceLanguage = sourceLanguage;
+        EnUs = enUs;
+        PtBr = ptBr;
+        PublicationState = GetInitialPublicationState(enUs, ptBr);
+
         return Result.Ok();
     }
 

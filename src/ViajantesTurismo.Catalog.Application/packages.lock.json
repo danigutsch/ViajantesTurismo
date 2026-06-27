@@ -48,6 +48,7 @@
       "viajantesturismo.catalog.domain": {
         "type": "Project",
         "dependencies": {
+          "JetBrains.Annotations": "[2025.2.4, )",
           "SharedKernel.Domain": "[1.0.0, )",
           "SharedKernel.EventSourcing": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
@@ -60,6 +61,12 @@
         "dependencies": {
           "SharedKernel.Results": "[1.0.0, )"
         }
+      },
+      "JetBrains.Annotations": {
+        "type": "CentralTransitive",
+        "requested": "[2025.2.4, )",
+        "resolved": "2025.2.4",
+        "contentHash": "TwbgxAkXxY+vNEhNVx/QXjJ4vqxmepOjsgRvvImQPbHkHMMb4W+ahL3laMsxXKtNT7iMy+E1B3xkqao2hf1n3A=="
       }
     }
   }

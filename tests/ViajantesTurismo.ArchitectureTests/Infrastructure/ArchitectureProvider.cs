@@ -4,13 +4,13 @@ using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain;
 using ViajantesTurismo.Catalog.Infrastructure;
 using SharedKernel.Results;
+using AdminInfrastructure = ViajantesTurismo.Admin.Infrastructure;
 using Assembly = System.Reflection.Assembly;
 
 namespace ViajantesTurismo.ArchitectureTests.Infrastructure;
@@ -25,7 +25,7 @@ internal static class ArchitectureProvider
     [
         typeof(Tour).Assembly,
         typeof(IUnitOfWork).Assembly,
-        typeof(InfrastructureDependencyInjection).Assembly,
+        typeof(AdminInfrastructure.InfrastructureDependencyInjection).Assembly,
         ApiMarker.Assembly,
         typeof(Result).Assembly,
         typeof(UpdateTourDto).Assembly,

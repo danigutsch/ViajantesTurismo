@@ -10,8 +10,8 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
+builder.AddCatalogInfrastructure();
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
-builder.Services.AddSingleton<IPublicContentStore, InMemoryPublicContentStore>();
 
 var app = builder.Build();
 

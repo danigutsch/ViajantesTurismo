@@ -22,7 +22,10 @@ var apiService = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_
     .WaitForCompletion(migrationService);
 
 var catalogApiService = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
-    .WithHttpHealthCheck(EndpointPaths.Health);
+    .WithHttpHealthCheck(EndpointPaths.Health)
+    .WithReference(database)
+    .WaitFor(database)
+    .WaitForCompletion(migrationService);
 
 builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Common.BuildingBlocks;
@@ -10,6 +12,17 @@ namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 /// </summary>
 public sealed class PublicContentVariant : ValueObject
 {
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [UsedImplicitly]
+    private PublicContentVariant()
+    {
+        Title = string.Empty;
+        Body = string.Empty;
+    }
+
     private PublicContentVariant(
         PublicContentLanguage language,
         string title,
@@ -31,37 +44,37 @@ public sealed class PublicContentVariant : ValueObject
     /// <summary>
     /// Gets the content language.
     /// </summary>
-    public PublicContentLanguage Language { get; }
+    public PublicContentLanguage Language { get; private set; }
 
     /// <summary>
     /// Gets the public page title.
     /// </summary>
-    public string Title { get; }
+    public string Title { get; private set; }
 
     /// <summary>
     /// Gets the main public page body text.
     /// </summary>
-    public string Body { get; }
+    public string Body { get; private set; }
 
     /// <summary>
     /// Gets the SEO title when it differs from the page title.
     /// </summary>
-    public string? SeoTitle { get; }
+    public string? SeoTitle { get; private set; }
 
     /// <summary>
     /// Gets the SEO meta description.
     /// </summary>
-    public string? MetaDescription { get; }
+    public string? MetaDescription { get; private set; }
 
     /// <summary>
     /// Gets the social sharing summary.
     /// </summary>
-    public string? ShareSummary { get; }
+    public string? ShareSummary { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether a human must review this variant before publication.
     /// </summary>
-    public bool RequiresHumanReview { get; }
+    public bool RequiresHumanReview { get; private set; }
 
     /// <summary>
     /// Creates localized content with validation.
