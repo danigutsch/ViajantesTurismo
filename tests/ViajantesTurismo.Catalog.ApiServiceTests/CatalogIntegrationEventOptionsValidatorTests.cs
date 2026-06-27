@@ -34,7 +34,8 @@ public sealed class CatalogIntegrationEventOptionsValidatorTests
         var result = validator.Validate(null, options);
 
         // Assert
-        Assert.True(result.Failed);
+        Assert.False(result.Succeeded);
+        Assert.NotNull(result.Failures);
         Assert.Contains(
             "Catalog integration event idempotency lock duration must be greater than zero.",
             result.Failures,

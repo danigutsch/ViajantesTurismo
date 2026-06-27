@@ -11,11 +11,6 @@ public sealed class CatalogIntegrationEventOptions
     public const string SectionName = "CatalogIntegrationEvents";
 
     /// <summary>
-    /// Configuration key for the idempotency lock duration.
-    /// </summary>
-    public const string IdempotencyLockDurationKey = nameof(IdempotencyLockDuration);
-
-    /// <summary>
     /// Gets or sets the duration for holding an idempotency lock while handling an integration event.
     /// </summary>
     public TimeSpan IdempotencyLockDuration { get; set; } = TimeSpan.FromMinutes(5);
