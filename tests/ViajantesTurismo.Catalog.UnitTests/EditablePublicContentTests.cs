@@ -103,6 +103,40 @@ public sealed class EditablePublicContentTests
     }
 
     [Fact]
+    public void Create_rejects_missing_supported_language_variants()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+
+        // Act
+        var result = EditablePublicContent.Create(
+            "home.hero",
+            PublicContentLanguage.EnUs,
+            [enUs]);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains(nameof(EditablePublicContent.Variants), result.ErrorDetails.ValidationErrors?.Keys ?? []);
+    }
+
+    [Fact]
+    public void ReplaceVariants_rejects_missing_supported_language_variants_without_changing_content()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
+
+        // Act
+        var result = content.ReplaceVariants(PublicContentLanguage.EnUs, [enUs]);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal(PublicContentPublicationState.Draft, content.PublicationState);
+        Assert.Contains(content.Variants, variant => variant.Language == PublicContentLanguage.PtBr);
+    }
+
+    [Fact]
     public void Publish_marks_reviewed_content_as_published()
     {
         // Arrange

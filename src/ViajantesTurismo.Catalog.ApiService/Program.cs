@@ -66,6 +66,15 @@ app.MapPut("/catalog/public-content/{key}", async (
         return Results.BadRequest();
     }
 
+    if (request.Variants is null)
+    {
+        var missingVariants = Result.Invalid(
+            "Public content variants must be provided.",
+            nameof(UpsertPublicContentRequest.Variants),
+            "Variants are required.");
+        return ToValidationProblem(missingVariants.ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details."));
+    }
+
     var variants = request.Variants.Select(CreateVariant).ToArray();
 
     if (variants.Any(variant => variant.IsFailure))
@@ -145,8 +154,16 @@ static PublicContentVariantDto MapVariant(PublicContentVariant variant)
     };
 }
 
-static Result<PublicContentVariant> CreateVariant(PublicContentVariantDto variant)
+static Result<PublicContentVariant> CreateVariant(PublicContentVariantDto? variant)
 {
+    if (variant is null)
+    {
+        return Result.Invalid<PublicContentVariant>(
+            "Public content variants cannot contain null entries.",
+            nameof(UpsertPublicContentRequest.Variants),
+            "Variants cannot contain null entries.");
+    }
+
     var language = ToDomainLanguage(variant.Language);
 
     return PublicContentVariant.Create(

@@ -195,23 +195,34 @@
         _successMessage = null;
 
         var source = _model.GetVariant(_model.SourceLanguage);
-        var target = _model.Variants.FirstOrDefault(variant => variant.Language != _model.SourceLanguage);
+        var blankTargets = _model.Variants
+            .Where(variant => variant.Language != _model.SourceLanguage)
+            .Where(IsBlankDraftTarget)
+            .ToArray();
 
-        if (source is null || target is null)
+        if (source is null)
         {
-            _errorMessage = "Select a supported source and target language before generating a draft.";
+            _errorMessage = "Select a supported source language before generating a draft.";
             return;
         }
+
+        if (blankTargets.Length == 0)
+        {
+            _errorMessage = "Clear one target language title and body before generating a missing-language draft.";
+            return;
+        }
+
+        if (blankTargets.Length > 1)
+        {
+            _errorMessage = "Leave exactly one target language blank before generating a draft.";
+            return;
+        }
+
+        var target = blankTargets[0];
 
         if (string.IsNullOrWhiteSpace(source.Title) || string.IsNullOrWhiteSpace(source.Body))
         {
             _errorMessage = "Enter source title and body before generating a draft.";
-            return;
-        }
-
-        if (!string.IsNullOrWhiteSpace(target.Title) || !string.IsNullOrWhiteSpace(target.Body))
-        {
-            _errorMessage = "Clear the target language title and body before generating a missing-language draft.";
             return;
         }
 
@@ -309,6 +320,11 @@
                 Key = content.Key,
                 SourceLanguage = content.SourceLanguage
             };
+
+            if (content.Variants is null)
+            {
+                return model;
+            }
 
             foreach (var variant in content.Variants)
             {
@@ -417,5 +433,11 @@
     private static string GetLanguageId(PublicContentLanguageDto language)
     {
         return GetLanguageLabel(language).ToLowerInvariant();
+    }
+
+    private static bool IsBlankDraftTarget(PublicContentVariantFormModel variant)
+    {
+        return string.IsNullOrWhiteSpace(variant.Title)
+            && string.IsNullOrWhiteSpace(variant.Body);
     }
 }

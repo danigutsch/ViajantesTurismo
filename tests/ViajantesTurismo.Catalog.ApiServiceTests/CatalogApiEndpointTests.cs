@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.ApiService;
@@ -126,6 +127,89 @@ public sealed class CatalogApiEndpointTests
         };
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Welcome", Body = "Ride with us" });
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains("Variants", problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Variants_Is_Null()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        using var content = new StringContent(
+            """
+            { "sourceLanguage": 1, "variants": null }
+            """,
+            Encoding.UTF8,
+            "application/json");
+
+        // Act
+        using var response = await client.PutAsync(
+            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(UpsertPublicContentRequest.Variants), problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Variant_Element_Is_Null()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        using var content = new StringContent(
+            """
+            {
+              "sourceLanguage": 1,
+              "variants": [
+                null,
+                { "language": 2, "title": "Bem-vindo", "body": "Pedale conosco" }
+              ]
+            }
+            """,
+            Encoding.UTF8,
+            "application/json");
+
+        // Act
+        using var response = await client.PutAsync(
+            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(UpsertPublicContentRequest.Variants), problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Supported_Language_Is_Missing()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var request = new UpsertPublicContentRequest
+        {
+            SourceLanguage = PublicContentLanguageDto.EnUs
+        };
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
 
         // Act
         using var response = await client.PutAsJsonAsync(
