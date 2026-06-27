@@ -61,4 +61,22 @@ public sealed class IntegrationEventDispatchTests
         Assert.IsAssignableFrom<INotificationHandler<TestIntegrationEvent>>(handler);
     }
 
+    [Fact]
+    public void Test_integration_event_exposes_expected_metadata()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.UtcNow;
+
+        // Act
+        var integrationEvent = new TestIntegrationEvent(eventId, occurredAt, "tour-created");
+
+        // Assert
+        Assert.Equal(eventId, integrationEvent.EventId);
+        Assert.Equal(occurredAt, integrationEvent.OccurredAt);
+        Assert.Equal("tour-created", integrationEvent.Name);
+        Assert.Equal("admin.tour.created", TestIntegrationEvent.EventType);
+        Assert.Equal(1, TestIntegrationEvent.EventVersion);
+    }
+
 }
