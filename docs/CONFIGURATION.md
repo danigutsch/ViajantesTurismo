@@ -1,6 +1,7 @@
 # Configuration Standards
 
-This document defines how repository settings are classified, named, validated, and documented.
+This document defines how application and service configuration values are classified, named,
+validated, and documented.
 
 ## Classification
 
