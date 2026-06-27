@@ -4,7 +4,6 @@ using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Contracts;
@@ -25,7 +24,7 @@ internal static class ArchitectureProvider
     [
         typeof(Tour).Assembly,
         typeof(IUnitOfWork).Assembly,
-        typeof(InfrastructureDependencyInjection).Assembly,
+        typeof(Admin.Infrastructure.InfrastructureDependencyInjection).Assembly,
         ApiMarker.Assembly,
         typeof(Result).Assembly,
         typeof(UpdateTourDto).Assembly,

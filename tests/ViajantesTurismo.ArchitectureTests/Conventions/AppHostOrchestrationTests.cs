@@ -5,7 +5,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed partial class AppHostOrchestrationTests
 {
     [Fact]
-    public void Catalog_Api_Should_Not_Wait_For_Postgres_While_It_Uses_InMemory_Read_Model_Storage()
+    public void Catalog_Api_Waits_For_Database_Migrations_When_It_Uses_Persisted_Public_Content()
     {
         // Arrange
         var appHostText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHost.cs"));
@@ -15,9 +15,9 @@ public sealed partial class AppHostOrchestrationTests
 
         // Assert
         Assert.NotEmpty(catalogApiBlock);
-        Assert.DoesNotContain("WithReference(database)", catalogApiBlock, StringComparison.Ordinal);
-        Assert.DoesNotContain("WaitFor(database)", catalogApiBlock, StringComparison.Ordinal);
-        Assert.DoesNotContain("WaitForCompletion(migrationService)", catalogApiBlock, StringComparison.Ordinal);
+        Assert.Contains("WithReference(database)", catalogApiBlock, StringComparison.Ordinal);
+        Assert.Contains("WaitFor(database)", catalogApiBlock, StringComparison.Ordinal);
+        Assert.Contains("WaitForCompletion(migrationService)", catalogApiBlock, StringComparison.Ordinal);
     }
 
 }

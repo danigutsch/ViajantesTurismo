@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.MigrationService;
 
@@ -22,7 +24,13 @@ internal sealed class SeederWorker(IServiceScopeFactory scopeFactory, ILogger<Se
             logger.SeedingStarted();
 
             using var scope = scopeFactory.CreateScope();
+            var catalogDbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
             var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+
+            if (catalogDbContext.Database.IsRelational())
+            {
+                await catalogDbContext.Database.MigrateAsync(stoppingToken);
+            }
 
             await seeder.Seed(stoppingToken);
 
