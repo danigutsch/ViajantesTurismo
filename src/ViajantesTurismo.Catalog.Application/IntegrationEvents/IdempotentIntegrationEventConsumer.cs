@@ -11,7 +11,7 @@ namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
     IIntegrationEventHandler<TIntegrationEvent> inner,
     IIdempotencyStore idempotencyStore,
-    CatalogIntegrationEventOptions options) : IIntegrationEventHandler<TIntegrationEvent>
+    IntegrationEventOptions options) : IIntegrationEventHandler<TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
 {
     private static readonly IdempotencyScope Scope = IdempotencyScope.From(

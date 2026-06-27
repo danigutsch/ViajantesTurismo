@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 /// <summary>
 /// Configures Catalog integration event handling policies.
 /// </summary>
-public sealed class CatalogIntegrationEventOptions
+public class IntegrationEventOptions
 {
     /// <summary>
     /// Configuration section name for Catalog integration event handling.

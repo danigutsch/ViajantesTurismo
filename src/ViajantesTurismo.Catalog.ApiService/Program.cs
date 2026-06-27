@@ -15,11 +15,10 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
-builder.Services.Configure<CatalogIntegrationEventOptions>(
-    builder.Configuration.GetSection(CatalogIntegrationEventOptions.SectionName));
-builder.Services.AddValidatedOptions<CatalogIntegrationEventOptions, CatalogIntegrationEventOptionsValidator>();
+builder.Services.AddValidatedOptions<IntegrationEventOptions, IntegrationEventOptionsValidator>(
+    builder.Configuration.GetSection(IntegrationEventOptions.SectionName));
 builder.Services.AddSingleton(serviceProvider =>
-    serviceProvider.GetRequiredService<IOptions<CatalogIntegrationEventOptions>>().Value);
+    serviceProvider.GetRequiredService<IOptions<IntegrationEventOptions>>().Value);
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
 
 var app = builder.Build();

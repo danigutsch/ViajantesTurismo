@@ -3,9 +3,9 @@ using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
-internal sealed class CatalogIntegrationEventOptionsValidator : IValidateOptions<CatalogIntegrationEventOptions>
+internal sealed class IntegrationEventOptionsValidator : IValidateOptions<IntegrationEventOptions>
 {
-    public ValidateOptionsResult Validate(string? name, CatalogIntegrationEventOptions options)
+    public ValidateOptionsResult Validate(string? name, IntegrationEventOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 

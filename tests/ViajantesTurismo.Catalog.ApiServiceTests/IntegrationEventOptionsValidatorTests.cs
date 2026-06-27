@@ -3,16 +3,16 @@ using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-public sealed class CatalogIntegrationEventOptionsValidatorTests
+public sealed class IntegrationEventOptionsValidatorTests
 {
     [Fact]
     public void Validate_accepts_the_default_options()
     {
         // Arrange
-        var validator = new CatalogIntegrationEventOptionsValidator();
+        var validator = new IntegrationEventOptionsValidator();
 
         // Act
-        var result = validator.Validate(null, new CatalogIntegrationEventOptions());
+        var result = validator.Validate(null, new IntegrationEventOptions());
 
         // Assert
         Assert.True(result.Succeeded);
@@ -24,8 +24,8 @@ public sealed class CatalogIntegrationEventOptionsValidatorTests
     public void Validate_rejects_non_positive_idempotency_lock_duration(int seconds)
     {
         // Arrange
-        var validator = new CatalogIntegrationEventOptionsValidator();
-        var options = new CatalogIntegrationEventOptions
+        var validator = new IntegrationEventOptionsValidator();
+        var options = new IntegrationEventOptions
         {
             IdempotencyLockDuration = TimeSpan.FromSeconds(seconds)
         };
