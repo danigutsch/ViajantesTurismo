@@ -212,7 +212,12 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
             var hasJustification = lines
                 .Skip(Math.Max(0, lineIndex - 3))
                 .Take(7)
-                .Any(line => line.Contains("SerialTestJustification", StringComparison.Ordinal));
+                .Any(static line =>
+                {
+                    var candidate = line.TrimStart();
+                    return candidate.StartsWith('[')
+                        && candidate.Contains("SerialTestJustification", StringComparison.Ordinal);
+                });
 
             if (!hasJustification)
             {
