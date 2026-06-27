@@ -26,5 +26,6 @@ public abstract class AspireSerialSystemTestBase(AspireSystemTestFixture fixture
 }
 
 [ExcludeFromCodeCoverage]
+[global::SharedKernel.Testing.SerialTestJustification("Clean-slate browser workflows reset shared backend state before and after each test.")]
 [CollectionDefinition(E2ETestCollections.Serial, DisableParallelization = true)]
 public sealed class AspireSerialSystemTests;

@@ -194,6 +194,40 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    public static string[] FindUndocumentedSerialCollectionDefinitions(string filePath)
+    {
+        var repositoryRoot = GetRepositoryRoot();
+        var lines = File.ReadAllLines(filePath);
+        var offenses = new List<string>();
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            var trimmedLine = lines[lineIndex].TrimStart();
+            if (!trimmedLine.StartsWith('[')
+                || !SerialCollectionDefinitionRegex().IsMatch(trimmedLine))
+            {
+                continue;
+            }
+
+            var hasJustification = lines
+                .Skip(Math.Max(0, lineIndex - 3))
+                .Take(7)
+                .Any(static line =>
+                {
+                    var candidate = line.TrimStart();
+                    return candidate.StartsWith('[')
+                        && candidate.Contains("SerialTestJustification", StringComparison.Ordinal);
+                });
+
+            if (!hasJustification)
+            {
+                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {lines[lineIndex].Trim()}");
+            }
+        }
+
+        return [.. offenses];
+    }
+
     public static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -247,6 +281,9 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
     [GeneratedRegex("\"{3,}", RegexOptions.Compiled)]
     private static partial Regex RawStringDelimiterRegex();
+
+    [GeneratedRegex(@"CollectionDefinition.*DisableParallelization\s*=\s*true", RegexOptions.Compiled)]
+    private static partial Regex SerialCollectionDefinitionRegex();
 
     private static bool IsTestAttributeLine(string trimmedLine)
     {

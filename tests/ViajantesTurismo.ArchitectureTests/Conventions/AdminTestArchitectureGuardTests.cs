@@ -163,6 +163,23 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
+    public void Serial_Test_Collection_Definitions_Should_Declare_A_Justification()
+    {
+        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
+
+        var undocumentedSerialDefinitions = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .Where(path => !path.Contains("/SharedKernel.Testing.Analyzers.Tests/", StringComparison.Ordinal)
+                && !path.Contains("\\SharedKernel.Testing.Analyzers.Tests\\", StringComparison.Ordinal))
+            .SelectMany(FindUndocumentedSerialCollectionDefinitions)
+            .ToArray();
+
+        Assert.True(
+            undocumentedSerialDefinitions.Length == 0,
+            $"Expected every DisableParallelization = true collection definition to include a nearby [SerialTestJustification] attribute, but found:{Environment.NewLine}{string.Join(Environment.NewLine, undocumentedSerialDefinitions)}");
+    }
+
+    [Fact]
     public void Admin_Hosted_Test_Infrastructure_Should_Not_Expose_Generic_ServiceProvider_Reach_Through()
     {
         var infrastructureRoots = new[]
