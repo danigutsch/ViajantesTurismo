@@ -4,12 +4,19 @@ using ViajantesTurismo.Resources;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+const string PostgresImageTag = "17.6";
+const string PgWebImageTag = "0.17.0";
+const string RedisImageTag = "8.6";
+const string RedisInsightImageTag = "3.0";
+
 var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer)
-    .WithPgWeb();
+    .WithImageTag(PostgresImageTag)
+    .WithPgWeb(pgweb => pgweb.WithImageTag(PgWebImageTag));
 var database = databaseServer.AddDatabase(ResourceNames.Database);
 
 var cache = builder.AddRedis(ResourceNames.Cache)
-    .WithRedisInsight();
+    .WithImageTag(RedisImageTag)
+    .WithRedisInsight(redisInsight => redisInsight.WithImageTag(RedisInsightImageTag));
 
 var migrationService = builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
     .WithReference(database)
