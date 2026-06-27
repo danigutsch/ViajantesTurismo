@@ -286,7 +286,7 @@ dotnet format --verify-no-changes
 OpenCode is configured in `opencode.json` to run only repository-approved single-file
 formatters after agent edits:
 
-- C# (`.cs`): `dotnet format ViajantesTurismo.slnx --include <file> --no-restore`
+- C# (`.cs`): resolve the repository root, then run `dotnet format ViajantesTurismo.slnx --include <file> --no-restore`
 - Markdown (`.md`): `bash scripts/lint-markdown.sh --fix <file>`
 - Shell (`.sh`, `.bash`): `shfmt -w -i 4 -ci -bn -sr <file>` with the same Docker fallback model as `scripts/lint-all.sh`
 - PowerShell (`.ps1`, `.psm1`, `.psd1`): `scripts/format-powershell-file.ps1 <file>` using PSScriptAnalyzer `Invoke-Formatter`

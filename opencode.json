@@ -6,14 +6,20 @@
     "prettier": { "disabled": true },
     "shfmt": { "disabled": true },
     "dotnet-format": {
-      "command": ["dotnet", "format", "ViajantesTurismo.slnx", "--include", "$FILE", "--no-restore"],
+      "command": [
+        "bash",
+        "-lc",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); cd \"$root\"; dotnet format ViajantesTurismo.slnx --include \"$1\" --no-restore",
+        "_",
+        "$FILE"
+      ],
       "extensions": [".cs"]
     },
     "repo-markdownlint": {
       "command": [
         "bash",
         "-lc",
-        "f=$1; case \"$f\" in \"$PWD\"/*) f=${f#\"$PWD\"/};; esac; bash scripts/lint-markdown.sh --fix \"$f\"",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; bash scripts/lint-markdown.sh --fix \"$rel\"",
         "_",
         "$FILE"
       ],
@@ -23,14 +29,20 @@
       "command": [
         "bash",
         "-lc",
-        "if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$1\"; else f=$1; case \"$f\" in \"$PWD\"/*) f=${f#\"$PWD\"/};; esac; docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace mvdan/shfmt:v3.11.0 -w -i 4 -ci -bn -sr -- \"$f\"; fi",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$1\"; else docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace mvdan/shfmt:v3.11.0 -w -i 4 -ci -bn -sr -- \"$rel\"; fi",
         "_",
         "$FILE"
       ],
       "extensions": [".sh", ".bash"]
     },
     "repo-powershell": {
-      "command": ["pwsh", "-NoProfile", "-File", "scripts/format-powershell-file.ps1", "$FILE"],
+      "command": [
+        "bash",
+        "-lc",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); pwsh -NoProfile -File \"$root/scripts/format-powershell-file.ps1\" \"$1\"",
+        "_",
+        "$FILE"
+      ],
       "extensions": [".ps1", ".psm1", ".psd1"]
     }
   }
