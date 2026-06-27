@@ -38,6 +38,6 @@ internal sealed class FakeCountryService : ICountryService
     {
         ct.ThrowIfCancellationRequested();
 
-        return countries;
+        return countries.WaitAsync(ct);
     }
 }
