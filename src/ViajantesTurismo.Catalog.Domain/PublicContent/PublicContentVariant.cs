@@ -136,7 +136,7 @@ public sealed class PublicContentVariant : ValueObject
 
     private static void ValidateSupportedLanguage(ValidationErrors errors, PublicContentLanguage language)
     {
-        if (language is not PublicContentLanguage.EnUs and not PublicContentLanguage.PtBr)
+        if (language == PublicContentLanguage.None || !Enum.IsDefined(language))
         {
             errors.Add(PublicContentErrors.UnsupportedLanguage(nameof(Language)));
         }

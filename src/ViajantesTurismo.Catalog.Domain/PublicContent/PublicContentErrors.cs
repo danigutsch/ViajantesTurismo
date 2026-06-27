@@ -33,24 +33,35 @@ public static class PublicContentErrors
     /// <param name="field">The invalid field.</param>
     /// <returns>A validation result.</returns>
     public static Result UnsupportedLanguage(string field) => Result.Invalid(
-        detail: $"Public content {field} must be en-US or pt-BR.",
+        detail: $"Public content {field} must be a supported language.",
         field: field,
         message: $"{field} must be a supported language.");
 
     /// <summary>
-    /// Indicates that a language variant was assigned to the wrong slot.
+    /// Indicates that a language variant is duplicated.
     /// </summary>
     /// <param name="field">The invalid field.</param>
-    /// <param name="expectedLanguage">The expected language.</param>
-    /// <param name="actualLanguage">The actual language.</param>
+    /// <param name="language">The duplicated language.</param>
     /// <returns>A validation result.</returns>
-    public static Result VariantLanguageMismatch(
+    public static Result DuplicateVariantLanguage(
         string field,
-        PublicContentLanguage expectedLanguage,
-        PublicContentLanguage actualLanguage) => Result.Invalid(
-            detail: $"Public content {field} must use {expectedLanguage}. Received: {actualLanguage}.",
+        PublicContentLanguage language) => Result.Invalid(
+            detail: $"Public content {field} contains more than one {language} variant.",
             field: field,
-            message: $"{field} has the wrong language.");
+            message: $"{field} contains a duplicate language variant.");
+
+    /// <summary>
+    /// Indicates that a supported language variant is missing.
+    /// </summary>
+    /// <param name="field">The invalid field.</param>
+    /// <param name="language">The missing language.</param>
+    /// <returns>A validation result.</returns>
+    public static Result MissingVariantLanguage(
+        string field,
+        PublicContentLanguage language) => Result.Invalid(
+            detail: $"Public content {field} must include a {language} variant.",
+            field: field,
+            message: $"{field} is missing a supported language variant.");
 
     /// <summary>
     /// Indicates that content cannot be published while human review is required.

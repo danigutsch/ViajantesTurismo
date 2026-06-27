@@ -55,30 +55,43 @@ app.MapGet("/catalog/public-content/{key}", async (string key, IPublicContentSto
     return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
 });
 
-app.MapPut("/catalog/public-content/{key}", async (
+app.MapPut("/catalog/public-content/{key}", UpsertPublicContent);
+
+app.MapDefaultEndpoints();
+
+await app.RunAsync();
+
+static async Task<IResult> UpsertPublicContent(
     string key,
     UpsertPublicContentRequest request,
     IPublicContentStore store,
-    CancellationToken ct) =>
+    CancellationToken ct)
 {
     if (string.IsNullOrWhiteSpace(key))
     {
         return Results.BadRequest();
     }
 
-    var enUs = CreateVariant(request.EnUs, PublicContentLanguage.EnUs);
-    var ptBr = CreateVariant(request.PtBr, PublicContentLanguage.PtBr);
-
-    if (enUs.IsFailure || ptBr.IsFailure)
+    if (request.Variants is null)
     {
-        return ToValidationProblemFromVariants([enUs, ptBr]);
+        var missingVariants = Result.Invalid(
+            "Public content variants must be provided.",
+            nameof(UpsertPublicContentRequest.Variants),
+            "Variants are required.");
+        return ToValidationProblem(missingVariants.ErrorDetails ?? throw new InvalidOperationException("Public content validation errors must include validation details."));
+    }
+
+    var variants = request.Variants.Select(CreateVariant).ToArray();
+
+    if (variants.Any(variant => variant.IsFailure))
+    {
+        return ToValidationProblemFromVariants(variants);
     }
 
     var content = EditablePublicContent.Create(
         key,
         ToDomainLanguage(request.SourceLanguage),
-        enUs.Value,
-        ptBr.Value);
+        variants.Select(variant => variant.Value));
 
     if (content.IsFailure)
     {
@@ -87,11 +100,7 @@ app.MapPut("/catalog/public-content/{key}", async (
 
     await store.SaveContent(content.Value, ct);
     return Results.Ok(MapPublicContent(content.Value));
-});
-
-app.MapDefaultEndpoints();
-
-await app.RunAsync();
+}
 
 static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 {
@@ -118,14 +127,19 @@ static string CreateSlug(string identifier) => identifier.Trim();
 
 static PublicContentDto MapPublicContent(EditablePublicContent content)
 {
-    return new PublicContentDto
+    var dto = new PublicContentDto
     {
         Key = content.Key,
         SourceLanguage = ToContractLanguage(content.SourceLanguage),
-        EnUs = MapVariant(content.EnUs),
-        PtBr = MapVariant(content.PtBr),
         PublicationState = content.PublicationState.ToString()
     };
+
+    foreach (var variant in content.Variants.OrderBy(variant => variant.Language))
+    {
+        dto.Variants.Add(MapVariant(variant));
+    }
+
+    return dto;
 }
 
 static PublicContentVariantDto MapVariant(PublicContentVariant variant)
@@ -142,17 +156,17 @@ static PublicContentVariantDto MapVariant(PublicContentVariant variant)
     };
 }
 
-static Result<PublicContentVariant> CreateVariant(
-    PublicContentVariantDto variant,
-    PublicContentLanguage language)
+static Result<PublicContentVariant> CreateVariant(PublicContentVariantDto? variant)
 {
-    var actualLanguage = ToDomainLanguage(variant.Language);
-    if (actualLanguage != language)
+    if (variant is null)
     {
-        var mismatch = PublicContentErrors.VariantLanguageMismatch(nameof(PublicContentVariantDto.Language), language, actualLanguage);
-        var error = mismatch.ErrorDetails ?? throw new InvalidOperationException("Variant language mismatch must include validation details.");
-        return Result.Invalid<PublicContentVariant>(error.Detail, ToValidationProblemDictionary(error.ValidationErrors));
+        return Result.Invalid<PublicContentVariant>(
+            "Public content variants cannot contain null entries.",
+            nameof(UpsertPublicContentRequest.Variants),
+            "Variants cannot contain null entries.");
     }
+
+    var language = ToDomainLanguage(variant.Language);
 
     return PublicContentVariant.Create(
         language,
@@ -203,20 +217,14 @@ static Dictionary<string, string[]> ToValidationProblemDictionary(IReadOnlyDicti
 
 static PublicContentLanguage ToDomainLanguage(PublicContentLanguageDto language)
 {
-    return language switch
-    {
-        PublicContentLanguageDto.EnUs => PublicContentLanguage.EnUs,
-        PublicContentLanguageDto.PtBr => PublicContentLanguage.PtBr,
-        _ => PublicContentLanguage.None
-    };
+    return language == PublicContentLanguageDto.None || !Enum.IsDefined(language)
+        ? PublicContentLanguage.None
+        : (PublicContentLanguage)(int)language;
 }
 
 static PublicContentLanguageDto ToContractLanguage(PublicContentLanguage language)
 {
-    return language switch
-    {
-        PublicContentLanguage.EnUs => PublicContentLanguageDto.EnUs,
-        PublicContentLanguage.PtBr => PublicContentLanguageDto.PtBr,
-        _ => PublicContentLanguageDto.None
-    };
+    return language == PublicContentLanguage.None || !Enum.IsDefined(language)
+        ? PublicContentLanguageDto.None
+        : (PublicContentLanguageDto)(int)language;
 }
