@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Contracts;
+using static Microsoft.Playwright.Assertions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 
@@ -87,10 +88,9 @@ internal sealed class ToursListPage(
             var previousHref = await firstTourLink.GetAttributeAsync("href");
             Assert.NotNull(previousHref);
 
+            await Expect(nextButton).ToBeEnabledAsync();
             await nextButton.ClickAsync();
-            await page.WaitForFunctionAsync(
-                "([selector, href]) => { const element = document.querySelector(selector); return element && element.getAttribute('href') !== href; }",
-                new object[] { "table tbody tr a[href^='/tours/']", previousHref });
+            await Expect(firstTourLink).Not.ToHaveAttributeAsync("href", previousHref);
         }
     }
 }

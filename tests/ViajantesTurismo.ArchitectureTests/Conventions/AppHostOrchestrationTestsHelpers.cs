@@ -15,6 +15,6 @@ internal static partial class AppHostOrchestrationTestsHelpers
         return directory?.FullName ?? throw new InvalidOperationException("Could not locate repository root.");
     }
 
-    [GeneratedRegex(@"var\s+catalogApiService\s*=\s*builder\.AddProject<[^;]+;", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"var\s+catalogApiService\s*=\s*builder\.(?:AddProject|AddDevelopmentAspNetCoreProject)<[^;]+;", RegexOptions.CultureInvariant)]
     public static partial Regex CatalogApiResourceRegex();
 }

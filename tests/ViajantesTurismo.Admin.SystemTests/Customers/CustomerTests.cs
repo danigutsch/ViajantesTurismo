@@ -75,6 +75,12 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.FillAsync("#state", "TS");
         await Page.FillAsync("#country", "Brazil");
         await Page.Locator("#country").BlurAsync();
+        await Expect(Page.Locator("#street")).ToHaveValueAsync(street);
+        await Expect(Page.Locator("#neighborhood")).ToHaveValueAsync("TestVille");
+        await Expect(Page.Locator("#postalCode")).ToHaveValueAsync("54321-000");
+        await Expect(Page.Locator("#city")).ToHaveValueAsync("E2ECity");
+        await Expect(Page.Locator("#state")).ToHaveValueAsync("TS");
+        await Expect(Page.Locator("#country")).ToHaveValueAsync("Brazil");
 
         await Page.GetButton("Next").ClickAsync();
 
