@@ -11,7 +11,8 @@ $ErrorActionPreference = 'Stop'
 $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
 
 if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
-    throw 'PSScriptAnalyzer is required for PowerShell formatting. Install it with: Install-Module -Name PSScriptAnalyzer -Scope CurrentUser'
+    Write-Warning 'Optional: PSScriptAnalyzer is required for PowerShell autofix. Install it with: Install-Module -Name PSScriptAnalyzer -Scope CurrentUser. Skipping PowerShell formatting.'
+    return
 }
 
 Import-Module PSScriptAnalyzer

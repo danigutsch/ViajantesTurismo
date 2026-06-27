@@ -39,7 +39,7 @@
       "command": [
         "bash",
         "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; pwsh -NoProfile -File scripts/format-powershell-file.ps1 \"$rel\"",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v pwsh >/dev/null 2>&1; then pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path \"$rel\"; else echo \"Optional: pwsh is required for PowerShell autofix. Skipping PowerShell formatting.\" >&2; fi",
         "_",
         "$FILE"
       ],
