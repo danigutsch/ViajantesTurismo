@@ -9,7 +9,40 @@ surface is registered, and how to verify the emitted signals locally.
 | --- | --- | --- | --- |
 | ActivitySource | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Used by generated and runtime mediator spans. |
 | Meter | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Emits mediator request/notification/stream metrics. |
+| ActivitySource | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, stream update, and projection spans. |
+| Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
+| ActivitySource | `SharedKernel.EventSourcing.PostgreSQL` | `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
+| Meter | `SharedKernel.EventSourcing.PostgreSQL` | `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
 | ActivitySource | `ViajantesTurismo.MigrationService.SeederWorker` | `src/ViajantesTurismo.MigrationService/SeederWorker.cs` | Emits database seeding span (`DatabaseSeeding`). |
+
+## Telemetry contract documentation rules
+
+Each repository-owned telemetry surface should document:
+
+- stable ActivitySource and Meter names
+- span and metric names
+- units for duration/count metrics
+- tag names, allowed values, and outcome values
+- privacy and cardinality limits for every tag or metric dimension
+- registration point in service defaults or explicit service startup
+- compatibility notes for additive versus breaking telemetry changes
+
+Telemetry names, tag names, units, and outcome values are consumer-facing contracts. Additive spans,
+metrics, or tag values are normally safe. Renames, unit changes, or cardinality expansions are
+breaking and should be called out in release notes or ADRs when they affect operators.
+
+Do not put personal data, customer-entered content, raw identifiers, or unbounded values into tags
+or metric dimensions. Prefer low-cardinality outcome, operation, area, and provider values.
+
+## Consumer documentation template
+
+Per-surface docs should answer these questions before adding dashboard-specific JSON:
+
+- Developers: which source or meter should be enabled, and which operation emits each signal?
+- Operators: which operational question does each metric or span answer?
+- Dashboard authors: which dimensions are safe to group by without cardinality risk?
+- Compatibility reviewers: which names and dimensions are stable contracts?
+- Backend users: how can the signal be queried without binding the repository to one vendor?
 
 ## Registration points
 
@@ -21,12 +54,16 @@ surface is registered, and how to verify the emitted signals locally.
 - Metrics registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
     - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
+    - `AddCatalogMetrics()` -> `metrics.AddMeter(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
+    - `AddSharedKernelProviderMetrics()` -> `metrics.AddMeter("SharedKernel.EventSourcing.PostgreSQL")`
 - Tracing registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
     - `AddSharedKernelMediatorTracing()` -> `tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name)`
+    - `AddCatalogTracing()` -> `tracing.AddSource(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
+    - `AddSharedKernelProviderTracing()` -> `tracing.AddSource("SharedKernel.EventSourcing.PostgreSQL")`
 - Applied in pipeline:
     - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
-    - `ConfigureOpenTelemetry()` calls both shared registration helpers.
+    - `ConfigureOpenTelemetry()` calls the custom registration helpers.
 
 ### Migration service registration
 
@@ -79,6 +116,9 @@ surface-owned tag contract.
 - `ViajantesTurismo.MigrationService.SeederWorker` spans require:
     - `operation.type=database_seeding`
     - `worker.type=migration`
+- `ViajantesTurismo.Catalog` spans and metrics use Catalog-owned operation and outcome tags.
+- `SharedKernel.EventSourcing.PostgreSQL` spans and metrics use provider-owned operation, stream,
+  checkpoint, and outcome tags.
 
 Surfaces that do not define a stable repository tag contract should still follow the
 status and exception-event rules above without inventing extra tags.
@@ -90,6 +130,8 @@ status and exception-event rules above without inventing extra tags.
   and emit outcome tags.
 - Migration service seeding spans use the same failure-status and exception-event pattern,
   while keeping seeding-specific operation tags on all paths.
+- Catalog and PostgreSQL event-sourcing surfaces are registered through service defaults and should
+  keep their tag sets low-cardinality because they are used by traces and metrics.
 
 ### Helper abstraction decision
 
@@ -108,22 +150,33 @@ and the direct tests already provide the drift protection needed for the current
 2. Open the Aspire dashboard URL shown in terminal output.
 
 3. Verify traces:
-   - Find spans named:
-     - `mediator.send`
-     - `mediator.stream`
-     - `mediator.publish`
-     - `mediator.notification.handle`
-   - Find migration service span:
-     - `DatabaseSeeding`
+    - Find mediator spans:
+        - `mediator.send`
+        - `mediator.stream`
+        - `mediator.publish`
+        - `mediator.notification.handle`
+    - Find migration service span:
+        - `DatabaseSeeding`
+    - Find Catalog spans:
+        - `catalog.integration_event.handle`
+        - `catalog.tour.stream_update`
+        - `catalog.projection.process`
+    - Find PostgreSQL event-sourcing spans:
+        - `eventsourcing.postgresql.append`
+        - `eventsourcing.postgresql.load`
+        - `eventsourcing.postgresql.checkpoint`
 
 4. Verify metrics:
-   - Meter: `SharedKernel.Mediator`
-   - Expected custom metric names:
-     - `mediator.requests`
-     - `mediator.request.duration`
-     - `mediator.notifications`
-     - `mediator.notification.duration`
-     - `mediator.streams`
+    - Meter: `SharedKernel.Mediator`
+    - Expected custom metric names:
+        - `mediator.requests`
+        - `mediator.request.duration`
+        - `mediator.notifications`
+        - `mediator.notification.duration`
+        - `mediator.streams`
+    - Additional custom meters:
+        - `ViajantesTurismo.Catalog`
+        - `SharedKernel.EventSourcing.PostgreSQL`
 
 5. Optional OTLP path check:
    - Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint before startup.
@@ -135,6 +188,9 @@ and the direct tests already provide the drift protection needed for the current
 - Shared telemetry runtime instrumentation: `src/SharedKernel/SharedKernel.Mediator/AppMediatorInstrumentation.cs`
 - Shared service registration: `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
 - Shared OTel pipeline setup: `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
+- Catalog telemetry names and instrumentation helpers: `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs`
+- PostgreSQL event-sourcing telemetry names and instrumentation helpers:
+  `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs`
 - Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/SeederWorker.cs`
 - Migration custom source registration: `src/ViajantesTurismo.MigrationService/Program.cs`
 
