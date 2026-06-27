@@ -647,6 +647,13 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.configuration": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.8, )",
+          "Microsoft.Extensions.Options": "[10.0.8, )"
+        }
+      },
       "sharedkernel.domain": {
         "type": "Project"
       },
@@ -690,6 +697,7 @@
       "viajantesturismo.catalog.apiservice": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.Configuration": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Application": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Infrastructure": "[1.0.0, )",

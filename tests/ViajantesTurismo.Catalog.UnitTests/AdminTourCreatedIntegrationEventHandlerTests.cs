@@ -90,6 +90,7 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
     [Fact]
     public async Task Handle_uses_configured_idempotency_lock_duration()
     {
+        // Arrange
         var idempotencyStore = new CapturingIdempotencyStore();
         var configuredDuration = TimeSpan.FromMinutes(2);
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
@@ -103,8 +104,10 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
             "andes-2026",
             "Andes 2026");
 
+        // Act
         await handler.Handle(integrationEvent, CancellationToken.None);
 
+        // Assert
         Assert.Equal(configuredDuration, idempotencyStore.CapturedLockDuration);
     }
 }

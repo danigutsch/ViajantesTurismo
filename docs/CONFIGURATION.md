@@ -23,7 +23,7 @@ when environments need different values or operators need documented control.
 
 - Use PascalCase section names matching the owning feature or component.
 - Use descriptive key names with units in the name when the type is not self-evident.
-- Prefer `TimeSpan` options for durations and document accepted formats.
+- Use .NET `TimeSpan` options for durations and document values in round-trip `c` format.
 - Keep resource names in `src/ViajantesTurismo.Resources/ResourceNames.cs` when multiple projects
   need the same Aspire/service-discovery identity.
 
@@ -59,7 +59,7 @@ Each production configuration surface should document:
 | --- | --- | --- |
 | Redis resource name `cache` | Resource name | Use `ResourceNames.Cache`, not inline strings. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Configuration | Already documented in OpenTelemetry guidance. |
-| Catalog idempotency lock duration | Configuration | `CatalogIntegrationEvents:IdempotencyLockDuration`, default `00:05:00`, must be greater than zero. |
+| Catalog idempotency lock duration | Configuration | `CatalogIntegrationEvents:IdempotencyLockDuration`, default `00:05:00`, use .NET `TimeSpan` round-trip `c` format, must be greater than zero. |
 | PostgreSQL event-sourcing schema | Provider option | Keep the current provider option and identifier validation; add DI binding only when an app needs per-environment schema selection. |
 | Catalog projection batch size | Configuration candidate | Defer until projection runtime ownership and operational tuning needs are clear. |
 | Standard HTTP resilience defaults | Library policy | Defer to a resilience policy review; do not replace framework defaults speculatively. |
@@ -74,6 +74,6 @@ Each production configuration surface should document:
 
 | Key | Default | Unit/range | Safe to log | Consumed by | Test override |
 | --- | --- | --- | --- | --- | --- |
-| `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | `TimeSpan`; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event consumers | Override the options value through dependency injection or configuration. |
+| `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | .NET `TimeSpan` round-trip `c` format; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event consumers | Override the options value through dependency injection or configuration. |
 
 Environment variable form: `CatalogIntegrationEvents__IdempotencyLockDuration`.

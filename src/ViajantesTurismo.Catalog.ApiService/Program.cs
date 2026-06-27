@@ -1,5 +1,5 @@
-using System.Globalization;
 using Microsoft.Extensions.Options;
+using SharedKernel.Configuration;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -15,11 +15,9 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
-builder.Services
-    .AddOptions<CatalogIntegrationEventOptions>()
-    .Configure(options => options.IdempotencyLockDuration = GetCatalogIntegrationEventIdempotencyLockDuration(builder.Configuration))
-    .ValidateOnStart();
-builder.Services.AddSingleton<IValidateOptions<CatalogIntegrationEventOptions>, CatalogIntegrationEventOptionsValidator>();
+builder.Services.Configure<CatalogIntegrationEventOptions>(
+    builder.Configuration.GetSection(CatalogIntegrationEventOptions.SectionName));
+builder.Services.AddValidatedOptions<CatalogIntegrationEventOptions, CatalogIntegrationEventOptionsValidator>();
 builder.Services.AddSingleton(serviceProvider =>
     serviceProvider.GetRequiredService<IOptions<CatalogIntegrationEventOptions>>().Value);
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
@@ -71,23 +69,6 @@ app.MapPut("/catalog/public-content/{key}", UpsertPublicContent);
 app.MapDefaultEndpoints();
 
 await app.RunAsync();
-
-static TimeSpan GetCatalogIntegrationEventIdempotencyLockDuration(ConfigurationManager configuration)
-{
-    var configuredValue = configuration[$"{CatalogIntegrationEventOptions.SectionName}:{CatalogIntegrationEventOptions.IdempotencyLockDurationKey}"];
-    if (string.IsNullOrWhiteSpace(configuredValue))
-    {
-        return new CatalogIntegrationEventOptions().IdempotencyLockDuration;
-    }
-
-    if (TimeSpan.TryParse(configuredValue, CultureInfo.InvariantCulture, out var parsedValue))
-    {
-        return parsedValue;
-    }
-
-    throw new InvalidOperationException(
-        $"{CatalogIntegrationEventOptions.SectionName}:{CatalogIntegrationEventOptions.IdempotencyLockDurationKey} must be a TimeSpan value like 00:05:00. Provided value: '{configuredValue}'.");
-}
 
 static async Task<IResult> UpsertPublicContent(
     string key,
