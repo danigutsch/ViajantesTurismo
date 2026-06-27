@@ -27,7 +27,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_navmenu_component()
+    public void Renders_NavMenu_component()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -72,7 +72,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Renders_error_ui_container()
+    public void Renders_error_UI_container()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -83,7 +83,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Error_ui_contains_error_message()
+    public void Error_UI_contains_error_message()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -94,7 +94,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Error_ui_contains_reload_link()
+    public void Error_UI_contains_reload_link()
     {
         // Act
         var cut = Render<MainLayout>();
@@ -108,7 +108,7 @@ public sealed class MainLayoutTests : BunitContext
     }
 
     [Fact]
-    public void Error_ui_contains_dismiss_link()
+    public void Error_UI_contains_dismiss_link()
     {
         // Act
         var cut = Render<MainLayout>();
