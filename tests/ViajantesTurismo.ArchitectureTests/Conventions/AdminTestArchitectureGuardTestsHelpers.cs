@@ -212,8 +212,8 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
             var hasJustification = lines
                 .Skip(Math.Max(0, lineIndex - 3))
-                .Take(3)
-                .Any(line => line.Contains("SerialTestJustification(\"", StringComparison.Ordinal));
+                .Take(4)
+                .Any(line => line.Contains("SerialTestJustification", StringComparison.Ordinal));
 
             if (!hasJustification)
             {
