@@ -44,7 +44,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "_app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>([ResourceNames.Api], ct: TestContext.Current.CancellationToken);");
+            "_app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>([ResourceNames.Api], null, TestContext.Current.CancellationToken);");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),

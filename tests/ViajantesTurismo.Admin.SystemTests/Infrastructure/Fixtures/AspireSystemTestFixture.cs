@@ -21,7 +21,8 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
     {
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(
             [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp],
-            ct: TestContext.Current.CancellationToken);
+            null,
+            TestContext.Current.CancellationToken);
 
         _apiClient = _app.CreateHttpClient(ResourceNames.Api);
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
