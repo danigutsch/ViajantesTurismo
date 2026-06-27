@@ -36,13 +36,6 @@
         "aspire"
       ],
       "rollForward": false
-    },
-    "dotnet-stryker": {
-      "version": "4.15.0",
-      "commands": [
-        "dotnet-stryker"
-      ],
-      "rollForward": false
     }
   }
 }

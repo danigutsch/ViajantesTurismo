@@ -69,7 +69,7 @@ The repository contains local smoke targets for contained unit-test and Roslyn a
 
 Run all configured smoke targets from the repository root:
 
-```powershell
+```bash
 bash scripts/run-mutation-smoke.sh
 ```
 

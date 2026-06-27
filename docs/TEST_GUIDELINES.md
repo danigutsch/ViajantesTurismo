@@ -112,7 +112,7 @@ Mutation-testing note:
 - Limited local smoke targets exist for contained unit-test and Roslyn analyzer/source-generator
   projects. Run all configured targets from the repository root:
 
-```powershell
+```bash
 bash scripts/run-mutation-smoke.sh
 ```
 

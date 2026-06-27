@@ -2,6 +2,15 @@
 
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${script_dir}/.." && pwd)"
+tool_dir="${repo_root}/.tmp/dotnet-tools"
+stryker="${tool_dir}/dotnet-stryker"
+
+if [[ ! -x "${stryker}" ]]; then
+    dotnet tool install dotnet-stryker --version 4.15.0 --tool-path "${tool_dir}"
+fi
+
 configs=(
     "tests/ViajantesTurismo.Common.UnitTests/stryker-config.json"
     "tests/ViajantesTurismo.Catalog.UnitTests/stryker-domain-config.json"
@@ -29,7 +38,7 @@ for config in "${configs[@]}"; do
 
     echo "==> ${config}"
     (
-        cd "${project_dir}"
-        dotnet tool run dotnet-stryker -- --config-file "${config_file}"
+        cd "${repo_root}/${project_dir}"
+        "${stryker}" --config-file "${config_file}"
     )
 done
