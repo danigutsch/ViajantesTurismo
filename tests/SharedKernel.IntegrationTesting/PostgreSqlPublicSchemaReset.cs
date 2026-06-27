@@ -1,8 +1,11 @@
 using System.Data.Common;
 
-namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;
+namespace SharedKernel.Testing;
 
-public static class DatabaseResetHelper
+/// <summary>
+/// Resets PostgreSQL public-schema tables to a known baseline for integration tests.
+/// </summary>
+public static class PostgreSqlPublicSchemaReset
 {
     private const string ResetPublicTablesSql = """
                                                 DO $$
@@ -21,7 +24,12 @@ public static class DatabaseResetHelper
                                                 END $$;
                                                 """;
 
-    public static async Task ResetPublicTables(DbConnection connection, CancellationToken ct)
+    /// <summary>
+    /// Truncates all public-schema tables except the EF migrations history table.
+    /// </summary>
+    /// <param name="connection">The PostgreSQL database connection.</param>
+    /// <param name="ct">A cancellation token.</param>
+    public static async Task Reset(DbConnection connection, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(connection);
 

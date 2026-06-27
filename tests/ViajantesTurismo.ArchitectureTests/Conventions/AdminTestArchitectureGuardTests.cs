@@ -44,15 +44,15 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
-            "_appBuilder = await DistributedApplicationTestingBuilder.CreateAsync<ViajantesTurismo_AppHost>();");
+            "_app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>([ResourceNames.Api], null, TestContext.Current.CancellationToken);");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"),
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.Testing", "Integration", "Helpers", "DatabaseResetHelper.cs"),
-            "public static async Task ResetPublicTables(DbConnection connection, CancellationToken ct)");
+            Path.Combine(GetRepositoryRoot(), "tests", "SharedKernel.IntegrationTesting", "PostgreSqlPublicSchemaReset.cs"),
+            "public static async Task Reset(DbConnection connection, CancellationToken ct)");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
@@ -64,7 +64,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Fixtures", "AspireSerialIntegrationTestFixture.cs"),
-            "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
+            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
 
         AssertFileContains(
             Path.Combine(integrationInfrastructurePath, "Bases", "AspireSerialIntegrationTestBase.cs"),
@@ -100,7 +100,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         AssertFileContains(
             Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"),
-            "await DatabaseResetHelper.ResetPublicTables(connection, ct);");
+            "await PostgreSqlPublicSchemaReset.Reset(connection, ct);");
 
         AssertFileContains(
             Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"),

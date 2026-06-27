@@ -1002,6 +1002,12 @@
           "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
+      "sharedkernel.integrationtesting": {
+        "type": "Project",
+        "dependencies": {
+          "Aspire.Hosting.Testing": "[13.3.5, )"
+        }
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
