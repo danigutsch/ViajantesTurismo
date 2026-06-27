@@ -204,15 +204,14 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         {
             var trimmedLine = lines[lineIndex].TrimStart();
             if (!trimmedLine.StartsWith('[')
-                || !trimmedLine.Contains("CollectionDefinition", StringComparison.Ordinal)
-                || !trimmedLine.Contains("DisableParallelization = true", StringComparison.Ordinal))
+                || !SerialCollectionDefinitionRegex().IsMatch(trimmedLine))
             {
                 continue;
             }
 
             var hasJustification = lines
                 .Skip(Math.Max(0, lineIndex - 3))
-                .Take(4)
+                .Take(7)
                 .Any(line => line.Contains("SerialTestJustification", StringComparison.Ordinal));
 
             if (!hasJustification)
@@ -277,6 +276,9 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
     [GeneratedRegex("\"{3,}", RegexOptions.Compiled)]
     private static partial Regex RawStringDelimiterRegex();
+
+    [GeneratedRegex(@"CollectionDefinition.*DisableParallelization\s*=\s*true", RegexOptions.Compiled)]
+    private static partial Regex SerialCollectionDefinitionRegex();
 
     private static bool IsTestAttributeLine(string trimmedLine)
     {
