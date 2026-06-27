@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -6,11 +7,11 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 {
     private static readonly string[] CanonicalTraitNames =
     [
-        SharedKernel.Testing.TestTraitNames.ScopeName,
-        SharedKernel.Testing.TestTraitNames.AreaName,
-        SharedKernel.Testing.TestTraitNames.CategoryName,
-        SharedKernel.Testing.TestTraitNames.HostName,
-        SharedKernel.Testing.TestTraitNames.SurfaceName
+        TestTraitNames.ScopeName,
+        TestTraitNames.AreaName,
+        TestTraitNames.CategoryName,
+        TestTraitNames.HostName,
+        TestTraitNames.SurfaceName
     ];
 
     private static readonly string[] ProductSpecificSharedKernelTestingTerms =
@@ -26,6 +27,10 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
     private static readonly Regex HardcodedCanonicalTraitNameRegex = new(
         $@"(?:Trait\s*\(\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})""|const\s+string\s+\w+Name\s*=\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})"")",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    private static readonly Regex RedirectingCanonicalTraitNameRegex = new(
+        @"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?(?:TestTraitNames|SharedKernelTestTraitNames)\.\w+\s*;",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     public static void AssertFileContains(string filePath, string expectedText)
@@ -85,7 +90,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
                 continue;
             }
 
-            if (HardcodedCanonicalTraitNameRegex.IsMatch(line))
+            if (HardcodedCanonicalTraitNameRegex.IsMatch(line) || RedirectingCanonicalTraitNameRegex.IsMatch(line))
             {
                 offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {line.Trim()}");
             }

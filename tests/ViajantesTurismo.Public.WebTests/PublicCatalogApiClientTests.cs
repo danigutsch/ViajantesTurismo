@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Public.WebTests;
 
-[Trait(TestTraits.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 public sealed class PublicCatalogApiClientTests
 {
     [Fact]

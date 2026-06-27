@@ -207,7 +207,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         Assert.False(
             offendingLines.Length != 0,
-            $"Expected reusable trait names to come from SharedKernel.Testing.TestTraitNames, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
+            $"Expected reusable trait names to come from canonical constants directly, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingLines)}");
     }
 
     [Fact]

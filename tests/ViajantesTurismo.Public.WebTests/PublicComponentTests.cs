@@ -4,7 +4,7 @@ using TourGallery = ViajantesTurismo.Public.Web.Components.Shared.TourGallery;
 
 namespace ViajantesTurismo.Public.WebTests;
 
-[Trait(TestTraits.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 public sealed class PublicComponentTests : BunitContext
 {
     [Fact]
