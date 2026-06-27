@@ -117,7 +117,7 @@ public class CustomerBookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_notes_textArea()
+    public void Renders_notes_textarea()
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Special dietary requirements" };
@@ -159,7 +159,7 @@ public class CustomerBookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_discountType_dropdown()
+    public void Renders_discounttype_dropdown()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -183,7 +183,7 @@ public class CustomerBookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Hides_discount_fields_when_discountType_is_none()
+    public void Hides_discount_fields_when_discounttype_is_none()
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.None };
@@ -205,7 +205,7 @@ public class CustomerBookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_discount_percentage_fields_when_discountType_is_percentage()
+    public void Shows_discount_percentage_fields_when_discounttype_is_percentage()
     {
         // Arrange
         var model = new BookingFormModel
@@ -239,7 +239,7 @@ public class CustomerBookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_discount_amount_fields_when_discountType_is_absolute()
+    public void Shows_discount_amount_fields_when_discounttype_is_absolute()
     {
         // Arrange
         var model = new BookingFormModel

@@ -410,7 +410,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Has_toastNotification_component()
+    public void Has_toastnotification_component()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();

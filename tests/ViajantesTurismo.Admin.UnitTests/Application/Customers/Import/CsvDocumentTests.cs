@@ -154,7 +154,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_with_empty_csvContent_fails()
+    public void Parse_with_empty_csvcontent_fails()
     {
         // Arrange
         const string csvContent = "";
@@ -169,7 +169,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_with_requiredHeader_different_casing_and_whitespace_succeeds()
+    public void Parse_with_requiredheader_different_casing_and_whitespace_succeeds()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
@@ -198,7 +198,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_with_blank_requiredHeaderNames_ignores_them()
+    public void Parse_with_blank_requiredheadernames_ignores_them()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";

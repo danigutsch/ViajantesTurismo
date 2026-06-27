@@ -14,7 +14,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void AutoMatch_is_caseInsensitive()
+    public void AutoMatch_is_caseinsensitive()
     {
         var result = CustomerImportHeaderMatcher.AutoMatch(["firstname", "LASTNAME", "eMaIl"]);
 
@@ -73,7 +73,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_renames_caseInsensitive_match_to_canonical_form()
+    public void ApplyMapping_renames_caseinsensitive_match_to_canonical_form()
     {
         var bytes = Encoding.UTF8.GetBytes("firstname,lastname\njohn,doe\n");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["firstname", "lastname"]);
@@ -85,7 +85,7 @@ public sealed class CustomerImportHeaderMatcherTests
     }
 
     [Fact]
-    public void ApplyMapping_applies_user_assignment_when_no_autoMatch()
+    public void ApplyMapping_applies_user_assignment_when_no_automatch()
     {
         var bytes = Encoding.UTF8.GetBytes("Full Name,email_col\nJohn Doe,john@test.com\n");
         var mappings = CustomerImportHeaderMatcher.AutoMatch(["Full Name", "email_col"]);

@@ -31,7 +31,7 @@ public sealed class AccommodationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task OnInitialized_when_state_already_has_accommodationPreferences_preloads_existing_values()
+    public async Task OnInitialized_when_state_already_has_accommodationpreferences_preloads_existing_values()
     {
         // Arrange
         var companionId = Guid.NewGuid();

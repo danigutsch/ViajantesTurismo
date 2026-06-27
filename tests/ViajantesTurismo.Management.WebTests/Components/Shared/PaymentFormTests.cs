@@ -170,7 +170,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Cancel_button_is_hidden_when_onCancel_not_provided()
+    public void Cancel_button_is_hidden_when_oncancel_not_provided()
     {
         // Arrange
         var model = new PaymentFormModel();
@@ -187,7 +187,7 @@ public class PaymentFormTests : BunitContext
     }
 
     [Fact]
-    public void Cancel_button_is_shown_when_onCancel_provided()
+    public void Cancel_button_is_shown_when_oncancel_provided()
     {
         // Arrange
         var model = new PaymentFormModel();

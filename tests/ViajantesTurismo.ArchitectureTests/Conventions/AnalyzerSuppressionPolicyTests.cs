@@ -9,7 +9,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     ];
 
     [Fact]
-    public void Project_and_props_should_not_use_noWarn_entries()
+    public void Project_and_props_should_not_use_nowarn_entries()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var noWarnEntries = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")

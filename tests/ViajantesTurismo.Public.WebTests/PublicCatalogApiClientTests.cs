@@ -85,7 +85,7 @@ public sealed class PublicCatalogApiClientTests
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_returns_null_when_catalog_returns_notFound()
+    public async Task GetPublishedTourBySlug_returns_null_when_catalog_returns_notfound()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));

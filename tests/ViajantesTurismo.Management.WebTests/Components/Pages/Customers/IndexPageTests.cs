@@ -54,7 +54,7 @@ public class IndexPageTests : BunitContext
 
 
     [Fact]
-    public void Renders_name_column_with_firstName_and_lastName()
+    public void Renders_name_column_with_firstname_and_lastname()
     {
         // Arrange
         _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: "Jane", lastName: "Doe"));

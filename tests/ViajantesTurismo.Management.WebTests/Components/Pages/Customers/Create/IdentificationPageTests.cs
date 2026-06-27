@@ -17,7 +17,7 @@ public sealed class IdentificationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task OnInitialized_when_state_already_has_identificationInfo_preloads_existing_values()
+    public async Task OnInitialized_when_state_already_has_identificationinfo_preloads_existing_values()
     {
         // Arrange
         _state.SetIdentificationInfo(new IdentificationInfoFormModel

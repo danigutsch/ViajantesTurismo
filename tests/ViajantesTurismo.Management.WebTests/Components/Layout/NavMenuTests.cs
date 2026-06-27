@@ -16,7 +16,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_home_navLink()
+    public void Renders_home_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -29,7 +29,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_add_tour_navLink()
+    public void Renders_add_tour_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -41,7 +41,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_tours_navLink()
+    public void Renders_tours_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -53,7 +53,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_catalog_navLink()
+    public void Renders_catalog_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -65,7 +65,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_public_content_navLink()
+    public void Renders_public_content_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -77,7 +77,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_bookings_navLink()
+    public void Renders_bookings_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -89,7 +89,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_add_customer_navLink()
+    public void Renders_add_customer_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -101,7 +101,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_customers_navLink()
+    public void Renders_customers_navlink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -113,7 +113,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void All_navLinks_have_nav_link_class()
+    public void All_navlinks_have_nav_link_class()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -124,7 +124,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void All_navLinks_have_icons()
+    public void All_navlinks_have_icons()
     {
         // Act
         var cut = Render<NavMenu>();

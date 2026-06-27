@@ -48,7 +48,7 @@ public sealed class CatalogEndpointTests
     }
 
     [Fact]
-    public async Task Public_tour_details_returns_notFound_when_tour_is_not_published()
+    public async Task Public_tour_details_returns_notfound_when_tour_is_not_published()
     {
         // Arrange
         await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());
@@ -64,7 +64,7 @@ public sealed class CatalogEndpointTests
     }
 
     [Fact]
-    public async Task Public_tour_details_returns_badRequest_for_whitespace_slug()
+    public async Task Public_tour_details_returns_badrequest_for_whitespace_slug()
     {
         // Arrange
         await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());

@@ -70,7 +70,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_price_with_usDollar_currency_symbol()
+    public void Renders_price_with_usdollar_currency_symbol()
     {
         // Arrange
         var tour = BuildTourDto(price: 1800m, currency: CurrencyDto.UsDollar);
@@ -128,7 +128,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_below_minimum_badge_when_under_minCustomers()
+    public void Renders_below_minimum_badge_when_under_mincustomers()
     {
         // Arrange
         var tour = BuildTourDto() with

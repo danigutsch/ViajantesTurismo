@@ -36,7 +36,7 @@ public class CsvRowParsingTests
     }
 
     [Fact]
-    public void Index_outOfRange_throwsException()
+    public void Index_outofrange_throwsexception()
     {
         // Arrange
         var row = CsvRow.Parse("John,Doe,john.doe@example.com");

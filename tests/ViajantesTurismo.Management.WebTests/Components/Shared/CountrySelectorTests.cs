@@ -267,7 +267,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_country_raises_valueChanged()
+    public void Selecting_country_raises_valuechanged()
     {
         // Arrange
         var countries = new List<CountryInfo>

@@ -166,7 +166,7 @@ public class PaymentsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_payPal_method_with_secondary_badge()
+    public void Displays_paypal_method_with_secondary_badge()
     {
         // Arrange
         var payments = new[]

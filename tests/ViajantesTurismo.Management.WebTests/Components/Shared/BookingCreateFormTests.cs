@@ -139,7 +139,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_roomType_dropdown_with_options()
+    public void Renders_roomtype_dropdown_with_options()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -162,7 +162,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_single_occupancy_badge_for_singleRoom_without_companion()
+    public void Shows_single_occupancy_badge_for_singleroom_without_companion()
     {
         // Arrange
         var model = new BookingFormModel
@@ -209,7 +209,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Hides_companion_section_for_singleRoom()
+    public void Hides_companion_section_for_singleroom()
     {
         // Arrange
         var model = new BookingFormModel { RoomType = RoomTypeDto.SingleOccupancy };
@@ -228,7 +228,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_companion_section_for_doubleRoom()
+    public void Shows_companion_section_for_doubleroom()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -361,7 +361,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_notes_textArea()
+    public void Renders_notes_textarea()
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Special request" };
@@ -401,7 +401,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_discountType_dropdown()
+    public void Renders_discounttype_dropdown()
     {
         // Arrange
         var model = new BookingFormModel();

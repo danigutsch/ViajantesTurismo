@@ -25,7 +25,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_result_is_successful_throws_invalidOperationException()
+    public void ToValidationProblem_when_result_is_successful_throws_invalidoperationexception()
     {
         // Arrange
         var successfulResult = Result.Ok();
@@ -38,7 +38,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_result_status_is_unknown_throws_invalidOperationException()
+    public void ToValidationProblem_when_result_status_is_unknown_throws_invalidoperationexception()
     {
         // Arrange
         var resultWithUnknownStatus = default(Result);
@@ -51,7 +51,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_invalid_result_has_no_error_details_throws_invalidOperationException()
+    public void ToValidationProblem_when_invalid_result_has_no_error_details_throws_invalidoperationexception()
     {
         // Arrange
         var malformedInvalidResult = CreateMalformedFailureResult(ResultStatus.Invalid, null);
@@ -64,7 +64,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_invalid_result_has_no_validation_errors_throws_invalidOperationException()
+    public void ToValidationProblem_when_invalid_result_has_no_validation_errors_throws_invalidoperationexception()
     {
         // Arrange
         var malformedInvalidResult = CreateMalformedFailureResult(ResultStatus.Invalid, new ResultError("Validation failed."));
@@ -94,7 +94,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_generic_result_is_successful_throws_invalidOperationException()
+    public void ToValidationProblem_when_generic_result_is_successful_throws_invalidoperationexception()
     {
         // Arrange
         var successfulResult = Result.Ok("done");
@@ -107,7 +107,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_generic_result_status_is_unknown_throws_invalidOperationException()
+    public void ToValidationProblem_when_generic_result_status_is_unknown_throws_invalidoperationexception()
     {
         // Arrange
         var resultWithUnknownStatus = default(Result<string>);
@@ -120,7 +120,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_generic_invalid_result_has_no_error_details_throws_invalidOperationException()
+    public void ToValidationProblem_when_generic_invalid_result_has_no_error_details_throws_invalidoperationexception()
     {
         // Arrange
         var malformedInvalidResult = CreateMalformedFailureResult<string>(ResultStatus.Invalid, null, null);
@@ -133,7 +133,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToValidationProblem_when_generic_invalid_result_has_no_validation_errors_throws_invalidOperationException()
+    public void ToValidationProblem_when_generic_invalid_result_has_no_validation_errors_throws_invalidoperationexception()
     {
         // Arrange
         var malformedInvalidResult = CreateMalformedFailureResult<string>(ResultStatus.Invalid, null, new ResultError("Validation failed."));
@@ -146,7 +146,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToNotFound_when_result_is_notFound_returns_not_found_problem_details()
+    public void ToNotFound_when_result_is_notfound_returns_not_found_problem_details()
     {
         // Arrange
         var failedResult = Result.NotFound("Customer was not found.");
@@ -163,7 +163,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToNotFound_when_result_is_successful_throws_invalidOperationException()
+    public void ToNotFound_when_result_is_successful_throws_invalidoperationexception()
     {
         // Arrange
         var successfulResult = Result.Ok();
@@ -176,7 +176,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToNotFound_when_result_status_is_unknown_throws_invalidOperationException()
+    public void ToNotFound_when_result_status_is_unknown_throws_invalidoperationexception()
     {
         // Arrange
         var resultWithUnknownStatus = default(Result);
@@ -189,7 +189,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToNotFound_when_generic_result_is_notFound_returns_not_found_problem_details()
+    public void ToNotFound_when_generic_result_is_notfound_returns_not_found_problem_details()
     {
         // Arrange
         var failedResult = Result.NotFound<string>("Customer was not found.");
@@ -206,7 +206,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToNotFound_when_generic_result_is_successful_throws_invalidOperationException()
+    public void ToNotFound_when_generic_result_is_successful_throws_invalidoperationexception()
     {
         // Arrange
         var successfulResult = Result.Ok("done");
@@ -219,7 +219,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToNotFound_when_generic_result_status_is_unknown_throws_invalidOperationException()
+    public void ToNotFound_when_generic_result_status_is_unknown_throws_invalidoperationexception()
     {
         // Arrange
         var resultWithUnknownStatus = default(Result<string>);
@@ -249,7 +249,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToConflict_when_result_is_successful_throws_invalidOperationException()
+    public void ToConflict_when_result_is_successful_throws_invalidoperationexception()
     {
         // Arrange
         var successfulResult = Result.Ok();
@@ -262,7 +262,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToConflict_when_result_status_is_unknown_throws_invalidOperationException()
+    public void ToConflict_when_result_status_is_unknown_throws_invalidoperationexception()
     {
         // Arrange
         var resultWithUnknownStatus = default(Result);
@@ -292,7 +292,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToConflict_when_generic_result_is_successful_throws_invalidOperationException()
+    public void ToConflict_when_generic_result_is_successful_throws_invalidoperationexception()
     {
         // Arrange
         var successfulResult = Result.Ok("done");
@@ -305,7 +305,7 @@ public class ResultExtensionsResponseMappingTests
     }
 
     [Fact]
-    public void ToConflict_when_generic_result_status_is_unknown_throws_invalidOperationException()
+    public void ToConflict_when_generic_result_status_is_unknown_throws_invalidoperationexception()
     {
         // Arrange
         var resultWithUnknownStatus = default(Result<string>);

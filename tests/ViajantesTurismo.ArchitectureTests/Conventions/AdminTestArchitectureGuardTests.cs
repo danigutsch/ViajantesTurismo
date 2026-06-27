@@ -180,7 +180,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Admin_hosted_test_infrastructure_should_not_expose_generic_serviceProvider_reach_through()
+    public void Admin_hosted_test_infrastructure_should_not_expose_generic_serviceprovider_reach_through()
     {
         var infrastructureRoots = new[]
         {
@@ -200,7 +200,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
-    public void Concrete_test_methods_should_not_own_raw_serviceProvider_or_scope_plumbing()
+    public void Concrete_test_methods_should_not_own_raw_serviceprovider_or_scope_plumbing()
     {
         var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
         var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)

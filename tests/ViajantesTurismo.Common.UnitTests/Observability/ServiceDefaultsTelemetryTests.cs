@@ -115,7 +115,7 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
-    public void Add_service_defaults_exports_sharedKernel_provider_tracing_and_metrics()
+    public void Add_service_defaults_exports_sharedkernel_provider_tracing_and_metrics()
     {
         // Arrange
         var exportedActivities = new ConcurrentQueue<Activity>();

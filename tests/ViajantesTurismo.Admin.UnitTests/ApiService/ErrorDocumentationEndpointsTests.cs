@@ -25,7 +25,7 @@ public sealed class ErrorDocumentationEndpointsTests
     }
 
     [Fact]
-    public void GetErrorDocumentationByIdentifier_returns_notFound_for_unknown_identifier()
+    public void GetErrorDocumentationByIdentifier_returns_notfound_for_unknown_identifier()
     {
         var method = EndpointsType.GetMethod("GetErrorDocumentationByIdentifier", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);

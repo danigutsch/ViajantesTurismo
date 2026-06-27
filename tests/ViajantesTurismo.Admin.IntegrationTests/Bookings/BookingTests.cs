@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 public class BookingTests(ApiFixture fixture)
 {
     [Fact]
-    public async Task Can_getBookings_smoke()
+    public async Task Can_getbookings_smoke()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -19,7 +19,7 @@ public class BookingTests(ApiFixture fixture)
     }
 
     [Fact]
-    public async Task Exposes_the_appHost_managed_baseUri_through_the_host_seam()
+    public async Task Exposes_the_apphost_managed_baseuri_through_the_host_seam()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;

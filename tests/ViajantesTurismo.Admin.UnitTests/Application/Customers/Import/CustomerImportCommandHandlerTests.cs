@@ -17,7 +17,7 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_with_dryRun_true_does_not_persist_changes()
+    public async Task Handle_with_dryrun_true_does_not_persist_changes()
     {
         // Arrange
         var command = new CustomerImportCommand(CsvRows.Build(), DryRun: true);
@@ -32,7 +32,7 @@ public sealed class CustomerImportCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_with_dryRun_false_persists_new_customer()
+    public async Task Handle_with_dryrun_false_persists_new_customer()
     {
         // Arrange
         var command = new CustomerImportCommand(CsvRows.Build("imported@example.com"), DryRun: false);

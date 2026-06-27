@@ -67,7 +67,7 @@ public sealed class UpdateCustomerCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_returns_notFound_for_missing_customer()
+    public async Task Handle_returns_notfound_for_missing_customer()
     {
         // Arrange
         var command = new UpdateCustomerCommand(

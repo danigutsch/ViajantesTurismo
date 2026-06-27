@@ -61,7 +61,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_tour_info_column_when_showTourInfo_is_true()
+    public void Shows_tour_info_column_when_showtourinfo_is_true()
     {
         // Arrange
         var bookings = new[]
@@ -90,7 +90,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Hides_tour_info_column_when_showTourInfo_is_false()
+    public void Hides_tour_info_column_when_showtourinfo_is_false()
     {
         // Arrange
         var bookings = new[]
@@ -118,7 +118,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_customer_info_column_when_showCustomerInfo_is_true()
+    public void Shows_customer_info_column_when_showcustomerinfo_is_true()
     {
         // Arrange
         var bookings = new[]
@@ -145,7 +145,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Hides_customer_info_column_when_showCustomerInfo_is_false()
+    public void Hides_customer_info_column_when_showcustomerinfo_is_false()
     {
         // Arrange
         var bookings = new[]
@@ -333,7 +333,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_bookingStatusBadge()
+    public void Displays_bookingstatusbadge()
     {
         // Arrange
         var bookings = new[]
@@ -358,7 +358,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_paymentStatusBadge()
+    public void Displays_paymentstatusbadge()
     {
         // Arrange
         var bookings = new[]

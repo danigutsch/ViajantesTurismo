@@ -40,7 +40,7 @@ public sealed class ImportCustomersWorkflowStateTests
     }
 
     [Fact]
-    public void ResetToFileSelection_clears_all_state_and_returns_to_fileSelection()
+    public void ResetToFileSelection_clears_all_state_and_returns_to_fileselection()
     {
         // Arrange
         var state = new ImportCustomersWorkflowState
@@ -80,7 +80,7 @@ public sealed class ImportCustomersWorkflowStateTests
     }
 
     [Fact]
-    public void RetryCurrentFile_when_pending_file_exists_returns_to_headerMapping_and_clears_transient_state()
+    public void RetryCurrentFile_when_pending_file_exists_returns_to_headermapping_and_clears_transient_state()
     {
         // Arrange
         var state = new ImportCustomersWorkflowState

@@ -41,7 +41,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_request_ID_when_HttpContext_has_traceIdentifier()
+    public void Shows_request_ID_when_HttpContext_has_traceidentifier()
     {
         // Arrange
         var httpContext = new DefaultHttpContext
@@ -83,7 +83,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_aSPNETCORE_eNVIRONMENT_instructions()
+    public void Renders_aspnetcore_environment_instructions()
     {
         // Act
         var cut = Render<Error>();

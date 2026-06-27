@@ -77,7 +77,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Invalid_with_empty_validationErrors_dictionary_throws_argumentOutOfRangeException()
+    public void Invalid_with_empty_validationerrors_dictionary_throws_argumentoutofrangeexception()
     {
         // Arrange
         var emptyDictionary = new Dictionary<string, string[]>();

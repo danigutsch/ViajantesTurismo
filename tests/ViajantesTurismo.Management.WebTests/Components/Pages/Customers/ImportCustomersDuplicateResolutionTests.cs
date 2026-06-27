@@ -13,7 +13,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void ConfirmImport_withConflicts_advancesToDuplicateResolutionStep()
+    public void ConfirmImport_withconflicts_advancestoduplicateresolutionstep()
     {
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("existing@example.com")]));
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
@@ -41,7 +41,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_confirmIsDisabled_untilAllConflictsResolved()
+    public void DuplicateResolution_confirmisdisabled_untilallconflictsresolved()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com"), new ImportConflictDto("b@example.com")]));
@@ -64,7 +64,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
-    public void DuplicateResolution_confirmImport_showsResultAfterAllConflictsResolved()
+    public void DuplicateResolution_confirmimport_showsresultafterallconflictsresolved()
     {
         _fakeCustomersApi.SetImportCustomersResult(
             new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));

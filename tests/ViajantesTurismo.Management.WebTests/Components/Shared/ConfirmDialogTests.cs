@@ -14,7 +14,7 @@ public sealed class ConfirmDialogTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_dialog_should_render_modal_when_showAsync_is_called()
+    public void Confirm_dialog_should_render_modal_when_showasync_is_called()
     {
         // Arrange
         var cut = Render<ConfirmDialog>();

@@ -105,7 +105,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_notes_textArea()
+    public void Renders_notes_textarea()
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Test notes" };
@@ -141,7 +141,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_discountType_dropdown()
+    public void Renders_discounttype_dropdown()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -226,7 +226,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void DiscountReason_has_placeholder_and_helpText()
+    public void DiscountReason_has_placeholder_and_helptext()
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.Percentage };
