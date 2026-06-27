@@ -9,7 +9,8 @@ internal static class TestOptionsServices
     public static TestOptionsRegistration GetRegistration(IConfiguration configuration)
     {
         var services = new ServiceCollection();
-        AddValidatedOptionsToServices(services, configuration);
+        services.AddSingleton(configuration);
+        AddValidatedOptionsToServices(services);
         using var serviceProvider = services.BuildServiceProvider();
         return new TestOptionsRegistration(
             serviceProvider.GetRequiredService<IOptions<TestOptions>>(),
@@ -17,13 +18,13 @@ internal static class TestOptionsServices
             serviceProvider.GetServices<IValidateOptions<TestOptions>>().ToArray());
     }
 
-    public static void AddValidatedOptionsToServices(IConfiguration? configuration)
+    public static void AddValidatedOptionsToServices()
     {
-        AddValidatedOptionsToServices(new ServiceCollection(), configuration);
+        AddValidatedOptionsToServices(new ServiceCollection());
     }
 
-    private static void AddValidatedOptionsToServices(IServiceCollection services, IConfiguration? configuration)
+    private static void AddValidatedOptionsToServices(IServiceCollection services)
     {
-        services.AddValidatedOptions<TestOptions, TestOptionsValidator>(configuration);
+        services.AddValidatedOptions<TestOptions, TestOptionsValidator>();
     }
 }

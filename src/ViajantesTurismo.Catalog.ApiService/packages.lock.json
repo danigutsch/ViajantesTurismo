@@ -211,6 +211,7 @@
       "viajantesturismo.catalog.application": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.Configuration": "[1.0.0, )",
           "SharedKernel.EventSourcing": "[1.0.0, )",
           "SharedKernel.Idempotency": "[1.0.0, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
