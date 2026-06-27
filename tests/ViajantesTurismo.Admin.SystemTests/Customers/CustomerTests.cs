@@ -13,6 +13,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var lastName = $"Customer{uid}";
         var nationalId = $"E2E{uid}";
         var email = $"e2e-wizard-{uid}@test.com";
+        var mobile = "+5511999990001";
         var street = $"E2E Street {uid}";
         var emergencyContactName = $"EmergencyPerson {uid}";
 
@@ -61,9 +62,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
         await Page.FillAsync("#email", email);
-        await Page.FillAsync("#mobile", "+5511999990001");
+        await Page.FillAsync("#mobile", mobile);
         await Expect(Page.Locator("#email")).ToHaveValueAsync(email);
-        await Expect(Page.Locator("#mobile")).ToHaveValueAsync("+5511999990001");
+        await Expect(Page.Locator("#mobile")).ToHaveValueAsync(mobile);
 
         await Page.GetButton("Next").ClickAsync();
 
