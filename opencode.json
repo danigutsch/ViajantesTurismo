@@ -1,6 +1,61 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "share": "disabled",
+  "instructions": ["AGENTS.md", "CONTRIBUTING.md", "docs/local-tool-security.md"],
   "lsp": true,
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      "**/bin/**",
+      "**/obj/**",
+      "artifacts/**",
+      "BenchmarkDotNet.Artifacts/**",
+      "TestResults/**",
+      "logs/**",
+      ".vs/**",
+      ".idea/**"
+    ]
+  },
+  "permission": {
+    "edit": {
+      "*": "allow",
+      ".env*": "deny",
+      "logs/**": "deny",
+      "TestResults/**": "deny",
+      "artifacts/**": "deny"
+    },
+    "bash": {
+      "*": "allow",
+      "rm -rf*": "deny",
+      "git reset --hard*": "ask",
+      "git clean*": "ask",
+      "docker *": "ask",
+      "podman *": "ask",
+      "dotnet ef database update*": "ask"
+    }
+  },
+  "command": {
+    "build": {
+      "description": "Build the solution.",
+      "template": "!`dotnet build ViajantesTurismo.slnx`"
+    },
+    "test": {
+      "description": "Run the solution tests.",
+      "template": "!`dotnet test --solution ViajantesTurismo.slnx`"
+    },
+    "lint": {
+      "description": "Run repository docs/script/spec lint checks.",
+      "template": "!`bash scripts/lint-all.sh`"
+    },
+    "prepare-pr": {
+      "description": "Prepare a pull request summary using the repository template.",
+      "template": "Read `docs/pull_request_template.md`, inspect current git diff and recent commits, then draft a PR body. Include related issue references, validation run, and any not-run checks with reasons. Do not create or push unless explicitly asked."
+    },
+    "commit-message": {
+      "description": "Draft a Conventional Commit message for the current staged or unstaged diff.",
+      "template": "Inspect the current staged diff first, then unstaged diff if nothing is staged. Draft one Conventional Commit message using the repository rules in `CONTRIBUTING.md`. Keep the header <= 100 characters. Do not commit unless explicitly asked."
+    }
+  },
   "formatter": {
     "biome": { "disabled": true },
     "prettier": { "disabled": true },

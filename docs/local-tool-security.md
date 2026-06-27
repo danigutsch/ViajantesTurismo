@@ -27,9 +27,9 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
   wrapper already provides it.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
-- OpenCode project formatters: configured in `opencode.json` and limited to repository-approved
-  single-file formatters. They reuse `.NET`, repository scripts, Docker-backed shell/markdown
-  wrappers, and optional PSScriptAnalyzer instead of adding npm helper packages.
+- Agent/editor project formatters: limited to repository-approved single-file formatters. They
+  reuse `.NET`, repository scripts, Docker-backed shell/markdown wrappers, and optional
+  PSScriptAnalyzer instead of adding npm helper packages.
 
 ## Do and do not
 

@@ -19,6 +19,7 @@ Import-Module PSScriptAnalyzer
 
 $source = Get-Content -LiteralPath $resolvedPath -Raw
 $formatted = Invoke-Formatter -ScriptDefinition $source
+$formatted = $formatted -replace "`r`n?", "`n"
 
 if (-not $formatted.EndsWith("`n", [System.StringComparison]::Ordinal)) {
     $formatted = $formatted + "`n"

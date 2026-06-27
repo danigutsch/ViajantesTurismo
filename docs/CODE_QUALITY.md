@@ -281,18 +281,19 @@ dotnet format whitespace
 dotnet format --verify-no-changes
 ```
 
-**OpenCode single-file formatters:**
+**Single-file formatters:**
 
-OpenCode is configured in `opencode.json` to run only repository-approved single-file
-formatters after agent edits:
+Agent/editor format-on-save integrations should run only repository-approved single-file
+formatters after edits:
 
 - C# (`.cs`): resolve the repository root, then run `dotnet format ViajantesTurismo.slnx --include <file> --no-restore`
 - Markdown (`.md`): `bash scripts/lint-markdown.sh --fix <file>`
 - Shell (`.sh`, `.bash`): `shfmt -w -i 4 -ci -bn -sr <file>` with the same Docker fallback model as `scripts/lint-all.sh`
 - PowerShell (`.ps1`, `.psm1`, `.psd1`): `pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path <file>` using PSScriptAnalyzer `Invoke-Formatter`
 
-Built-in Prettier, Biome, and default shfmt are disabled in OpenCode so format-on-edit stays
-aligned with this repository's `.editorconfig`, markdownlint, `.NET`, and shell policies.
+Broad formatter bundles such as Prettier, Biome, or default shfmt should stay disabled unless
+they are explicitly adopted by the repository so format-on-edit stays aligned with this
+repository's `.editorconfig`, markdownlint, `.NET`, and shell policies.
 JSON, JSONC, YAML, and Gherkin stay validation-only until the repository adopts an approved
 single-file formatter for those formats.
 
