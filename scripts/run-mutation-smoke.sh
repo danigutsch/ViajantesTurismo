@@ -8,6 +8,7 @@ tool_dir="${repo_root}/.tmp/dotnet-tools"
 stryker="${tool_dir}/dotnet-stryker"
 
 if [[ ! -x "${stryker}" ]]; then
+    mkdir -p "${tool_dir}"
     dotnet tool install dotnet-stryker --version 4.15.0 --tool-path "${tool_dir}"
 fi
 
