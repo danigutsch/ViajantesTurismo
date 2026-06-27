@@ -109,26 +109,29 @@ public sealed class PublicContentTests : BunitContext
         var cut = Render<PublicContent>();
         cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
-        void AssertLabelFor(string id)
-        {
-            Assert.NotNull(cut.Find($"label[for='{id}']"));
-        }
-
         // Assert
-        AssertLabelFor("content-key");
-        AssertLabelFor("source-language");
-        AssertLabelFor("en-us-title");
-        AssertLabelFor("en-us-body");
-        AssertLabelFor("en-us-seo-title");
-        AssertLabelFor("en-us-meta-description");
-        AssertLabelFor("en-us-share-summary");
-        AssertLabelFor("en-us-review");
-        AssertLabelFor("pt-br-title");
-        AssertLabelFor("pt-br-body");
-        AssertLabelFor("pt-br-seo-title");
-        AssertLabelFor("pt-br-meta-description");
-        AssertLabelFor("pt-br-share-summary");
-        AssertLabelFor("pt-br-review");
+        string[] inputIds =
+        [
+            "content-key",
+            "source-language",
+            "en-us-title",
+            "en-us-body",
+            "en-us-seo-title",
+            "en-us-meta-description",
+            "en-us-share-summary",
+            "en-us-review",
+            "pt-br-title",
+            "pt-br-body",
+            "pt-br-seo-title",
+            "pt-br-meta-description",
+            "pt-br-share-summary",
+            "pt-br-review",
+        ];
+
+        foreach (var inputId in inputIds)
+        {
+            Assert.NotNull(cut.Find($"label[for='{inputId}']"));
+        }
     }
 
     [Fact]
