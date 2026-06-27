@@ -50,6 +50,7 @@ public sealed class PersonalInfoPageTests : BunitContext
         Assert.NotNull(cut.Find("input#lastName"));
         Assert.NotNull(cut.Find("input#birthDate"));
         Assert.NotNull(cut.Find("select#gender"));
+        Assert.NotNull(cut.Find("label[for='nationality']"));
         Assert.NotNull(cut.Find("#nationality"));
         Assert.NotNull(cut.Find("input#occupation"));
     }
