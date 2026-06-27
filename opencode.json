@@ -6,6 +6,7 @@
   "watcher": {
     "ignore": [
       ".git/**",
+      ".build/**",
       "**/bin/**",
       "**/obj/**",
       "artifacts/**",

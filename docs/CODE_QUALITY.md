@@ -336,7 +336,7 @@ shfmt -w -i 4 -ci -bn -sr **/*.sh    # Format shell scripts with shfmt
 **PowerShell Scripts:**
 
 ```powershell
-pwsh -NoProfile -File scripts/format-powershell-file.ps1 ./setup-dev.ps1
+pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path ./setup-dev.ps1
 Invoke-ScriptAnalyzer -Path ./setup-dev.ps1
 ```
 
