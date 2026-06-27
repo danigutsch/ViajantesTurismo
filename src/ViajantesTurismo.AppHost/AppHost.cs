@@ -11,38 +11,20 @@ var database = databaseServer.AddDatabase(ResourceNames.Database);
 var cache = builder.AddRedis(ResourceNames.Cache)
     .WithRedisInsight();
 
-var migrationService = builder.AddProject<ViajantesTurismo_MigrationService>(
-        ResourceNames.MigrationService,
-        launchProfileName: null)
-    .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
+var migrationService = builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
     .WithReference(database)
     .WaitFor(database);
 
-var apiService = builder.AddProject<ViajantesTurismo_Admin_ApiService>(
-        ResourceNames.Api,
-        launchProfileName: null)
-    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
-    .WithHttpEndpoint()
-    .WithHttpsEndpoint()
+var apiService = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
     .WithHttpHealthCheck(EndpointPaths.Health)
     .WithReference(database)
     .WaitFor(database)
     .WaitForCompletion(migrationService);
 
-var catalogApiService = builder.AddProject<ViajantesTurismo_Catalog_ApiService>(
-        ResourceNames.CatalogApi,
-        launchProfileName: null)
-    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
-    .WithHttpEndpoint()
-    .WithHttpsEndpoint()
+var catalogApiService = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
     .WithHttpHealthCheck(EndpointPaths.Health);
 
-builder.AddProject<ViajantesTurismo_Management_Web>(
-        ResourceNames.WebApp,
-        launchProfileName: null)
-    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
-    .WithHttpEndpoint()
-    .WithHttpsEndpoint()
+builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck(EndpointPaths.Health)
     .WithReference(cache)
@@ -52,12 +34,7 @@ builder.AddProject<ViajantesTurismo_Management_Web>(
     .WithReference(catalogApiService)
     .WaitFor(catalogApiService);
 
-builder.AddProject<ViajantesTurismo_Public_Web>(
-        ResourceNames.PublicWebApp,
-        launchProfileName: null)
-    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
-    .WithHttpEndpoint()
-    .WithHttpsEndpoint()
+builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck(EndpointPaths.Health)
     .WithReference(catalogApiService)
