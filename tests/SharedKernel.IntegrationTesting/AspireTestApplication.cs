@@ -57,15 +57,37 @@ public sealed class AspireTestApplication : IAsyncDisposable
         }
         catch
         {
-            if (app is not null)
+            try
             {
-                await app.StopAsync(CancellationToken.None);
-                await app.DisposeAsync();
+                if (app is not null)
+                {
+                    await app.StopAsync(CancellationToken.None);
+                    await app.DisposeAsync();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Preserve the original startup exception.
+            }
+            catch (InvalidOperationException)
+            {
+                // Preserve the original startup exception.
             }
 
-            if (appBuilder is not null)
+            try
             {
-                await appBuilder.DisposeAsync();
+                if (appBuilder is not null)
+                {
+                    await appBuilder.DisposeAsync();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Preserve the original startup exception.
+            }
+            catch (InvalidOperationException)
+            {
+                // Preserve the original startup exception.
             }
 
             throw;

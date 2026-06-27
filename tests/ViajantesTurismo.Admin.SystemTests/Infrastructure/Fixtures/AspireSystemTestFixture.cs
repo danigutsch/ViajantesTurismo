@@ -27,7 +27,9 @@ public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLi
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.Database, TestContext.Current.CancellationToken);
 
-        await WarmUpWebApp(TestContext.Current.CancellationToken);
+        using var warmupTimeoutCts = new CancellationTokenSource(AspireTestApplication.DefaultResourceStartupTimeout);
+        using var warmupCts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken, warmupTimeoutCts.Token);
+        await WarmUpWebApp(warmupCts.Token);
     }
 
     public async ValueTask DisposeAsync()
