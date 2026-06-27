@@ -364,7 +364,7 @@ Primary endpoint groups include:
 - **Bookings**: Creation plus confirm, cancel, and complete operations
 - **Payments**: Payment recording and status tracking
 
-For detailed business rules and domain operations, see:
+For detailed domain and application guidance, see:
 
 - [Domain Validation](docs/DOMAIN_VALIDATION.md) - Validation patterns and rules
 - [Aggregates](docs/domain/AGGREGATES.md) - Business invariants and operations
