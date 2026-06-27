@@ -25,7 +25,7 @@ Relevant local references:
 
 - Stryker.NET documentation exposes an `mtp` test-runner option, but marks Microsoft
   Testing Platform support as **preview**.
-- `dotnet-stryker` `4.15.0` can run a contained xUnit v3 + MTP smoke target in this repository
+- `dotnet-stryker` `4.15.0` can run contained xUnit v3 + MTP smoke targets in this repository
   when `test-runner` is set to `mtp` explicitly.
 - The upstream issue `stryker-mutator/stryker-net#3117` reports that Stryker.NET does not
   handle xUnit v3 properly even without MTP enabled, producing unexpected test-case warnings
@@ -35,7 +35,7 @@ Relevant local references:
 
 ### Practical implication
 
-Even though Stryker.NET has an `mtp` mode that can run a contained smoke target, current upstream
+Even though Stryker.NET has an `mtp` mode that can run contained smoke targets, current upstream
 evidence does not justify treating xUnit v3 + MTP mutation runs as broadly trustworthy for this
 repository.
 
@@ -54,23 +54,23 @@ Mutation testing with `Stryker.NET` should remain **local-only and non-gating** 
 
 ## Recommended repository posture
 
-- Keep `Stryker.NET` limited to the documented local smoke target right now.
+- Keep `Stryker.NET` limited to the documented local smoke targets right now.
 - Do not add mutation-testing CI jobs while xUnit v3 + MTP support remains preview.
 - Keep the repository standard on xUnit v3 + MTP instead of weakening the test stack to suit a
   mutation-testing tool.
 
 ## Limited smoke guidance
 
-The repository contains one local smoke target:
+The repository contains local smoke targets for contained SharedKernel unit-test projects.
 
-- config: `tests/SharedKernel.Domain.Tests/stryker-config.json`
-- target: `src/SharedKernel/SharedKernel.Domain/Entity.cs`
+- config pattern: `tests/<project>/stryker-config.json`
 - runner: `mtp`
+- command: `scripts/run-mutation-smoke.sh`
 
-Run it from `tests/SharedKernel.Domain.Tests`:
+Run all configured smoke targets from the repository root:
 
 ```powershell
-dotnet tool run dotnet-stryker
+bash scripts/run-mutation-smoke.sh
 ```
 
 Treat the result as a compatibility smoke signal, not a repository-wide quality gate.
