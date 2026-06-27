@@ -907,6 +907,12 @@
           "Aspire.Hosting.PostgreSQL": "[13.3.5, )"
         }
       },
+      "sharedkernel.integrationtesting": {
+        "type": "Project",
+        "dependencies": {
+          "Aspire.Hosting.Testing": "[13.3.5, )"
+        }
+      },
       "sharedkernel.testing": {
         "type": "Project"
       },

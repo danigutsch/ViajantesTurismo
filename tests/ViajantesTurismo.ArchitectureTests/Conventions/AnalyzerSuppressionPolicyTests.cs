@@ -4,7 +4,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 {
     private static readonly HashSet<string> ApprovedSuppressMessageFiles =
     [
-        "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs"
+        "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs",
+        "tests/SharedKernel.IntegrationTesting/AspireTestApplication.cs"
     ];
 
     [Fact]
