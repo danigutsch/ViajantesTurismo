@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.Options;
+using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -17,10 +18,8 @@ builder.AddCatalogInfrastructure();
 builder.Services
     .AddOptions<CatalogIntegrationEventOptions>()
     .Configure(options => options.IdempotencyLockDuration = GetCatalogIntegrationEventIdempotencyLockDuration(builder.Configuration))
-    .Validate(
-        options => options.IdempotencyLockDuration > TimeSpan.Zero,
-        "Catalog integration event idempotency lock duration must be greater than zero.")
     .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<CatalogIntegrationEventOptions>, CatalogIntegrationEventOptionsValidator>();
 builder.Services.AddSingleton(serviceProvider =>
     serviceProvider.GetRequiredService<IOptions<CatalogIntegrationEventOptions>>().Value);
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
@@ -87,7 +86,7 @@ static TimeSpan GetCatalogIntegrationEventIdempotencyLockDuration(ConfigurationM
     }
 
     throw new InvalidOperationException(
-        $"{CatalogIntegrationEventOptions.SectionName}:{CatalogIntegrationEventOptions.IdempotencyLockDurationKey} must be a TimeSpan value.");
+        $"{CatalogIntegrationEventOptions.SectionName}:{CatalogIntegrationEventOptions.IdempotencyLockDurationKey} must be a TimeSpan value like 00:05:00. Provided value: '{configuredValue}'.");
 }
 
 static async Task<IResult> UpsertPublicContent(

@@ -1,0 +1,37 @@
+using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Application.IntegrationEvents;
+
+namespace ViajantesTurismo.Catalog.ApiServiceTests;
+
+public sealed class CatalogIntegrationEventOptionsValidatorTests
+{
+    [Fact]
+    public void Validate_accepts_the_default_options()
+    {
+        var validator = new CatalogIntegrationEventOptionsValidator();
+
+        var result = validator.Validate(null, new CatalogIntegrationEventOptions());
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Validate_rejects_non_positive_idempotency_lock_duration(int seconds)
+    {
+        var validator = new CatalogIntegrationEventOptionsValidator();
+        var options = new CatalogIntegrationEventOptions
+        {
+            IdempotencyLockDuration = TimeSpan.FromSeconds(seconds)
+        };
+
+        var result = validator.Validate(null, options);
+
+        Assert.True(result.Failed);
+        Assert.Contains(
+            "Catalog integration event idempotency lock duration must be greater than zero.",
+            result.Failures,
+            StringComparer.Ordinal);
+    }
+}
