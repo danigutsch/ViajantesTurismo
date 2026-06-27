@@ -31,8 +31,8 @@ public sealed class AspireTestApplication : IAsyncDisposable
     /// <returns>The started test application.</returns>
     public static async Task<AspireTestApplication> Start<TAppHost>(
         IEnumerable<string> healthyResourceNames,
-        TimeSpan? resourceStartupTimeout = null,
-        CancellationToken ct = default)
+        CancellationToken ct,
+        TimeSpan? resourceStartupTimeout = null)
         where TAppHost : class
     {
         ArgumentNullException.ThrowIfNull(healthyResourceNames);
