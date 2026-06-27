@@ -1,4 +1,5 @@
 using Aspire.Hosting.Testing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SharedKernel.Testing;
 
@@ -57,35 +58,7 @@ public sealed class AspireTestApplication : IAsyncDisposable
         }
         catch
         {
-            try
-            {
-                if (app is not null)
-                {
-                    await app.StopAsync(CancellationToken.None);
-                    await app.DisposeAsync();
-                }
-            }
-#pragma warning disable CA1031 // Cleanup must not mask the original startup exception.
-            catch
-#pragma warning restore CA1031
-            {
-                // Preserve the original startup exception.
-            }
-
-            try
-            {
-                if (appBuilder is not null)
-                {
-                    await appBuilder.DisposeAsync();
-                }
-            }
-#pragma warning disable CA1031 // Cleanup must not mask the original startup exception.
-            catch
-#pragma warning restore CA1031
-            {
-                // Preserve the original startup exception.
-            }
-
+            await DisposeAfterFailedStart(app, appBuilder);
             throw;
         }
     }
@@ -145,6 +118,40 @@ public sealed class AspireTestApplication : IAsyncDisposable
             {
                 await appBuilder.DisposeAsync();
             }
+        }
+    }
+
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Cleanup after failed startup must not mask the original startup exception.")]
+    private static async Task DisposeAfterFailedStart(
+        DistributedApplication? app,
+        IDistributedApplicationTestingBuilder? appBuilder)
+    {
+        try
+        {
+            if (app is not null)
+            {
+                await app.StopAsync(CancellationToken.None);
+                await app.DisposeAsync();
+            }
+        }
+        catch
+        {
+            // Preserve the original startup exception.
+        }
+
+        try
+        {
+            if (appBuilder is not null)
+            {
+                await appBuilder.DisposeAsync();
+            }
+        }
+        catch
+        {
+            // Preserve the original startup exception.
         }
     }
 
