@@ -65,11 +65,9 @@ public sealed class AspireTestApplication : IAsyncDisposable
                     await app.DisposeAsync();
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Preserve the original startup exception.
-            }
-            catch (InvalidOperationException)
+#pragma warning disable CA1031 // Cleanup must not mask the original startup exception.
+            catch
+#pragma warning restore CA1031
             {
                 // Preserve the original startup exception.
             }
@@ -81,11 +79,9 @@ public sealed class AspireTestApplication : IAsyncDisposable
                     await appBuilder.DisposeAsync();
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Preserve the original startup exception.
-            }
-            catch (InvalidOperationException)
+#pragma warning disable CA1031 // Cleanup must not mask the original startup exception.
+            catch
+#pragma warning restore CA1031
             {
                 // Preserve the original startup exception.
             }
