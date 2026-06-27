@@ -11,12 +11,7 @@ public sealed class UpsertPublicContentRequest
     public PublicContentLanguageDto SourceLanguage { get; set; }
 
     /// <summary>
-    /// Gets or sets the English content variant.
+    /// Gets or sets the localized content variants.
     /// </summary>
-    public PublicContentVariantDto EnUs { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the Brazilian Portuguese content variant.
-    /// </summary>
-    public PublicContentVariantDto PtBr { get; set; } = new();
+    public ICollection<PublicContentVariantDto> Variants { get; init; } = [];
 }

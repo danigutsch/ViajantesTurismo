@@ -8,10 +8,12 @@ using ViajantesTurismo.Common.Sanitizers;
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 
 /// <summary>
-/// Business-editable public website content with English and Brazilian Portuguese variants.
+/// Business-editable public website content with localized variants.
 /// </summary>
 public sealed class EditablePublicContent : AggregateRoot<Guid>
 {
+    private readonly List<PublicContentVariant> _variants = [];
+
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
     /// </summary>
@@ -20,23 +22,19 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     private EditablePublicContent()
     {
         Key = string.Empty;
-        EnUs = null!;
-        PtBr = null!;
     }
 
     private EditablePublicContent(
         Guid id,
         string key,
         PublicContentLanguage sourceLanguage,
-        PublicContentVariant enUs,
-        PublicContentVariant ptBr,
+        IEnumerable<PublicContentVariant> variants,
         PublicContentPublicationState publicationState)
         : base(id)
     {
         Key = key;
         SourceLanguage = sourceLanguage;
-        EnUs = enUs;
-        PtBr = ptBr;
+        _variants.AddRange(variants);
         PublicationState = publicationState;
     }
 
@@ -51,14 +49,9 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     public PublicContentLanguage SourceLanguage { get; private set; }
 
     /// <summary>
-    /// Gets the English content variant.
+    /// Gets the localized content variants.
     /// </summary>
-    public PublicContentVariant EnUs { get; private set; }
-
-    /// <summary>
-    /// Gets the Brazilian Portuguese content variant.
-    /// </summary>
-    public PublicContentVariant PtBr { get; private set; }
+    public IReadOnlyCollection<PublicContentVariant> Variants => _variants.AsReadOnly();
 
     /// <summary>
     /// Gets the publication state for the content entry.
@@ -66,23 +59,21 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     public PublicContentPublicationState PublicationState { get; private set; }
 
     /// <summary>
-    /// Creates editable public website content with both supported language variants.
+    /// Creates editable public website content with supported language variants.
     /// </summary>
     /// <param name="key">The stable content key.</param>
     /// <param name="sourceLanguage">The source language entered by the editor.</param>
-    /// <param name="enUs">The English variant.</param>
-    /// <param name="ptBr">The Brazilian Portuguese variant.</param>
+    /// <param name="variants">The localized variants.</param>
     /// <returns>A result containing editable content when valid.</returns>
     public static Result<EditablePublicContent> Create(
         string key,
         PublicContentLanguage sourceLanguage,
-        PublicContentVariant enUs,
-        PublicContentVariant ptBr)
+        IEnumerable<PublicContentVariant> variants)
     {
-        ArgumentNullException.ThrowIfNull(enUs);
-        ArgumentNullException.ThrowIfNull(ptBr);
+        ArgumentNullException.ThrowIfNull(variants);
 
         var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
+        var variantsArray = variants.ToArray();
         var errors = new ValidationErrors();
 
         if (string.IsNullOrWhiteSpace(sanitizedKey))
@@ -95,8 +86,7 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         }
 
         ValidateSupportedSourceLanguage(errors, sourceLanguage);
-        ValidateVariantLanguage(errors, nameof(EnUs), enUs, PublicContentLanguage.EnUs);
-        ValidateVariantLanguage(errors, nameof(PtBr), ptBr, PublicContentLanguage.PtBr);
+        ValidateVariants(errors, variantsArray);
 
         return errors.HasErrors
             ? errors.ToResult<EditablePublicContent>()
@@ -104,9 +94,8 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
                 Guid.CreateVersion7(),
                 sanitizedKey,
                 sourceLanguage,
-                enUs,
-                ptBr,
-                GetInitialPublicationState(enUs, ptBr)));
+                variantsArray,
+                GetInitialPublicationState(variantsArray)));
     }
 
     /// <summary>
@@ -115,7 +104,7 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     /// <returns>A result indicating whether publication was allowed.</returns>
     public Result Publish()
     {
-        if (EnUs.RequiresHumanReview || PtBr.RequiresHumanReview)
+        if (_variants.Any(variant => variant.RequiresHumanReview))
         {
             return PublicContentErrors.ReviewRequiredBeforePublishing();
         }
@@ -128,22 +117,19 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     /// Replaces the editable language variants for the same content key.
     /// </summary>
     /// <param name="sourceLanguage">The source language entered by the editor.</param>
-    /// <param name="enUs">The English variant.</param>
-    /// <param name="ptBr">The Brazilian Portuguese variant.</param>
+    /// <param name="variants">The localized variants.</param>
     /// <returns>A result indicating whether replacement was allowed.</returns>
     public Result ReplaceVariants(
         PublicContentLanguage sourceLanguage,
-        PublicContentVariant enUs,
-        PublicContentVariant ptBr)
+        IEnumerable<PublicContentVariant> variants)
     {
-        ArgumentNullException.ThrowIfNull(enUs);
-        ArgumentNullException.ThrowIfNull(ptBr);
+        ArgumentNullException.ThrowIfNull(variants);
 
+        var variantsArray = variants.ToArray();
         var errors = new ValidationErrors();
 
         ValidateSupportedSourceLanguage(errors, sourceLanguage);
-        ValidateVariantLanguage(errors, nameof(EnUs), enUs, PublicContentLanguage.EnUs);
-        ValidateVariantLanguage(errors, nameof(PtBr), ptBr, PublicContentLanguage.PtBr);
+        ValidateVariants(errors, variantsArray);
 
         if (errors.HasErrors)
         {
@@ -151,18 +137,16 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         }
 
         SourceLanguage = sourceLanguage;
-        EnUs = enUs;
-        PtBr = ptBr;
-        PublicationState = GetInitialPublicationState(enUs, ptBr);
+        _variants.Clear();
+        _variants.AddRange(variantsArray);
+        PublicationState = GetInitialPublicationState(variantsArray);
 
         return Result.Ok();
     }
 
-    private static PublicContentPublicationState GetInitialPublicationState(
-        PublicContentVariant enUs,
-        PublicContentVariant ptBr)
+    private static PublicContentPublicationState GetInitialPublicationState(IEnumerable<PublicContentVariant> variants)
     {
-        return enUs.RequiresHumanReview || ptBr.RequiresHumanReview
+        return variants.Any(variant => variant.RequiresHumanReview)
             ? PublicContentPublicationState.ReviewRequired
             : PublicContentPublicationState.Draft;
     }
@@ -171,21 +155,30 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         ValidationErrors errors,
         PublicContentLanguage sourceLanguage)
     {
-        if (sourceLanguage is not PublicContentLanguage.EnUs and not PublicContentLanguage.PtBr)
+        if (sourceLanguage == PublicContentLanguage.None || !Enum.IsDefined(sourceLanguage))
         {
             errors.Add(PublicContentErrors.UnsupportedLanguage(nameof(SourceLanguage)));
         }
     }
 
-    private static void ValidateVariantLanguage(
-        ValidationErrors errors,
-        string field,
-        PublicContentVariant variant,
-        PublicContentLanguage expectedLanguage)
+    private static void ValidateVariants(ValidationErrors errors, IReadOnlyCollection<PublicContentVariant> variants)
     {
-        if (variant.Language != expectedLanguage)
+        foreach (var duplicate in variants
+            .GroupBy(variant => variant.Language)
+            .Where(group => group.Count() > 1))
         {
-            errors.Add(PublicContentErrors.VariantLanguageMismatch(field, expectedLanguage, variant.Language));
+            errors.Add(PublicContentErrors.DuplicateVariantLanguage(nameof(Variants), duplicate.Key));
         }
+
+        foreach (var language in GetSupportedLanguages()
+            .Where(language => variants.All(variant => variant.Language != language)))
+        {
+            errors.Add(PublicContentErrors.MissingVariantLanguage(nameof(Variants), language));
+        }
+    }
+
+    private static IEnumerable<PublicContentLanguage> GetSupportedLanguages()
+    {
+        return Enum.GetValues<PublicContentLanguage>().Where(language => language != PublicContentLanguage.None);
     }
 }
