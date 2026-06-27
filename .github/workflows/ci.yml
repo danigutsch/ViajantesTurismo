@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -109,6 +109,7 @@ jobs:
             "$TEST_OUTCOME"
 
       - name: Upload fast validation diagnostics
+        id: upload-fast-validation-diagnostics
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ failure() && steps.run-fast-validation.outcome != 'skipped' }}
         with:
@@ -118,6 +119,7 @@ jobs:
           retention-days: 7
 
       - name: Upload fast validation test results
+        id: upload-fast-validation-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ always() && steps.run-fast-validation.outcome != 'skipped' }}
         with:
@@ -127,6 +129,13 @@ jobs:
             **/TestResults/**
             !TestResults/ci-diagnostics/**
           retention-days: 7
+
+      - name: Report fast validation artifacts
+        if: ${{ always() && steps.run-fast-validation.outcome != 'skipped' }}
+        env:
+          DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-fast-validation-diagnostics.outputs.artifact-url }}
+          RESULTS_ARTIFACT_URL: ${{ steps.upload-fast-validation-results.outputs.artifact-url }}
+        run: bash scripts/write-ci-artifact-summary.sh "Fast validation"
 
   admin-integration-tests:
     name: Admin Integration Tests
@@ -183,6 +192,7 @@ jobs:
             "$TEST_OUTCOME"
 
       - name: Upload admin integration diagnostics
+        id: upload-admin-integration-diagnostics
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ failure() && steps.run-admin-integration.outcome != 'skipped' }}
         with:
@@ -192,6 +202,7 @@ jobs:
           retention-days: 7
 
       - name: Upload admin integration test results
+        id: upload-admin-integration-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ always() && steps.run-admin-integration.outcome != 'skipped' }}
         with:
@@ -201,6 +212,13 @@ jobs:
             **/TestResults/**
             !TestResults/ci-diagnostics/**
           retention-days: 7
+
+      - name: Report admin integration artifacts
+        if: ${{ always() && steps.run-admin-integration.outcome != 'skipped' }}
+        env:
+          DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-admin-integration-diagnostics.outputs.artifact-url }}
+          RESULTS_ARTIFACT_URL: ${{ steps.upload-admin-integration-results.outputs.artifact-url }}
+        run: bash scripts/write-ci-artifact-summary.sh "Admin integration tests"
 
   mediator-heavy-tests:
     name: Mediator Heavy Tests
@@ -257,6 +275,7 @@ jobs:
             "$TEST_OUTCOME"
 
       - name: Upload mediator heavy diagnostics
+        id: upload-mediator-heavy-diagnostics
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ failure() && steps.run-mediator-heavy.outcome != 'skipped' }}
         with:
@@ -266,6 +285,7 @@ jobs:
           retention-days: 7
 
       - name: Upload mediator heavy test results
+        id: upload-mediator-heavy-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ always() && steps.run-mediator-heavy.outcome != 'skipped' }}
         with:
@@ -275,6 +295,13 @@ jobs:
             **/TestResults/**
             !TestResults/ci-diagnostics/**
           retention-days: 7
+
+      - name: Report mediator heavy artifacts
+        if: ${{ always() && steps.run-mediator-heavy.outcome != 'skipped' }}
+        env:
+          DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-mediator-heavy-diagnostics.outputs.artifact-url }}
+          RESULTS_ARTIFACT_URL: ${{ steps.upload-mediator-heavy-results.outputs.artifact-url }}
+        run: bash scripts/write-ci-artifact-summary.sh "Mediator heavy tests"
 
   admin-system-tests:
     name: Admin System Tests
@@ -332,6 +359,7 @@ jobs:
             "$TEST_OUTCOME"
 
       - name: Upload admin system diagnostics
+        id: upload-admin-system-diagnostics
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ failure() && steps.run-admin-system.outcome != 'skipped' }}
         with:
@@ -341,6 +369,7 @@ jobs:
           retention-days: 7
 
       - name: Upload admin system test results
+        id: upload-admin-system-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ always() && steps.run-admin-system.outcome != 'skipped' }}
         with:
@@ -350,6 +379,13 @@ jobs:
             **/TestResults/**
             !TestResults/ci-diagnostics/**
           retention-days: 7
+
+      - name: Report admin system artifacts
+        if: ${{ always() && steps.run-admin-system.outcome != 'skipped' }}
+        env:
+          DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-admin-system-diagnostics.outputs.artifact-url }}
+          RESULTS_ARTIFACT_URL: ${{ steps.upload-admin-system-results.outputs.artifact-url }}
+        run: bash scripts/write-ci-artifact-summary.sh "Admin system tests"
 
   build-and-test:
     name: Build and Test

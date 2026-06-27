@@ -114,6 +114,8 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var emergencyStep = Page.Locator("article").Filter(new LocatorFilterOptions { HasText = "Step 7 of 8: Emergency Contact" });
         await emergencyStep.Locator("#name").FillAsync(emergencyContactName);
         await emergencyStep.Locator("#mobile").FillAsync("+5511988880001");
+        await Expect(emergencyStep.Locator("#name")).ToHaveValueAsync(emergencyContactName);
+        await Expect(emergencyStep.Locator("#mobile")).ToHaveValueAsync("+5511988880001");
 
         await Page.GetButton("Next").ClickAsync();
 
