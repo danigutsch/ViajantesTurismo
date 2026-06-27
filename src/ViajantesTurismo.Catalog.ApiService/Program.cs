@@ -55,11 +55,17 @@ app.MapGet("/catalog/public-content/{key}", async (string key, IPublicContentSto
     return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
 });
 
-app.MapPut("/catalog/public-content/{key}", async (
+app.MapPut("/catalog/public-content/{key}", UpsertPublicContent);
+
+app.MapDefaultEndpoints();
+
+await app.RunAsync();
+
+static async Task<IResult> UpsertPublicContent(
     string key,
     UpsertPublicContentRequest request,
     IPublicContentStore store,
-    CancellationToken ct) =>
+    CancellationToken ct)
 {
     if (string.IsNullOrWhiteSpace(key))
     {
@@ -94,11 +100,7 @@ app.MapPut("/catalog/public-content/{key}", async (
 
     await store.SaveContent(content.Value, ct);
     return Results.Ok(MapPublicContent(content.Value));
-});
-
-app.MapDefaultEndpoints();
-
-await app.RunAsync();
+}
 
 static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 {
