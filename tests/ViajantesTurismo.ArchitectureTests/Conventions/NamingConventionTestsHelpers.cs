@@ -15,10 +15,19 @@ internal static partial class NamingConventionTestsHelpers
         var lines = File.ReadAllLines(filePath);
         var offendingMethods = new List<string>();
 
-        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        var lineIndex = 0;
+        while (lineIndex < lines.Length)
         {
+            if (IsRawStringBoundary(lines[lineIndex]))
+            {
+                lineIndex = SkipRawString(lines, lineIndex);
+                lineIndex++;
+                continue;
+            }
+
             if (!XunitAttributeRegex().IsMatch(lines[lineIndex]))
             {
+                lineIndex++;
                 continue;
             }
 
@@ -38,10 +47,27 @@ internal static partial class NamingConventionTestsHelpers
 
                 break;
             }
+
+            lineIndex++;
         }
 
         return [.. offendingMethods];
     }
+
+    private static int SkipRawString(string[] lines, int lineIndex)
+    {
+        for (var candidateIndex = lineIndex + 1; candidateIndex < lines.Length; candidateIndex++)
+        {
+            if (IsRawStringBoundary(lines[candidateIndex]))
+            {
+                return candidateIndex;
+            }
+        }
+
+        return lineIndex;
+    }
+
+    private static bool IsRawStringBoundary(string line) => line.Contains("\"\"\"", StringComparison.Ordinal);
 
     public static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
     {

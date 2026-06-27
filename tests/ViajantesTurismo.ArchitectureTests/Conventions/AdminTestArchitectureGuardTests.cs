@@ -23,7 +23,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         Assert.Contains("AdminTestArchitectureGuardTests", architectureReadmeText, StringComparison.Ordinal);
         Assert.Contains("tests/README.md", architectureReadmeText, StringComparison.Ordinal);
         Assert.Contains("Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here", uiIntegrationReadmeText, StringComparison.Ordinal);
-        Assert.Contains("Project_Remains_A_Scaffold_Until_A_Real_Admin_UI_Integration_Slice_Exists", uiIntegrationScaffoldTestText, StringComparison.Ordinal);
+        Assert.Contains("Project_remains_a_scaffold_until_a_real_admin_ui_integration_slice_exists", uiIntegrationScaffoldTestText, StringComparison.Ordinal);
     }
 
     [Fact]
