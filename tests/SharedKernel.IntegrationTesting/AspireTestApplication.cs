@@ -1,3 +1,4 @@
+using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using System.Diagnostics.CodeAnalysis;
 
