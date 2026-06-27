@@ -369,6 +369,7 @@ For detailed business rules and domain operations, see:
 - [Domain Validation](docs/DOMAIN_VALIDATION.md) - Validation patterns and rules
 - [Aggregates](docs/domain/AGGREGATES.md) - Business invariants and operations
 - [Glossary](docs/domain/GLOSSARY.md) - Domain terminology and concepts
+- [Configuration Standards](docs/CONFIGURATION.md) - Configuration classification, naming, validation, and documentation rules
 
 ## Architecture
 
