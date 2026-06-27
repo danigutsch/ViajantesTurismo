@@ -63,14 +63,19 @@ if [[ -z "${GITHUB_OUTPUT:-}" ]]; then
 fi
 
 shared_validation_patterns=(
+    ".editorconfig"
+    ".gitattributes"
     ".github/actions/**"
     ".github/workflows/**"
     ".config/dotnet-tools.json"
+    ".markdownlint-cli2.jsonc"
+    ".markdownlint.json"
     "Directory.Build.props"
     "Directory.Build.targets"
     "Directory.Packages.props"
     "NuGet.Config"
     "global.json"
+    "opencode.json"
     "coverage.settings.xml"
     "scripts/collect-ci-build-test-diagnostics.sh"
     "scripts/collect-test-coverage.sh"
@@ -90,6 +95,7 @@ shared_validation_patterns=(
 
 low_risk_maintenance_patterns=(
     "scripts/commitlint.sh"
+    "scripts/format-powershell-file.ps1"
     "scripts/lint-all.sh"
     "scripts/lint-gherkin.sh"
     "scripts/lint-gherkin.py"

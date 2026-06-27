@@ -281,6 +281,21 @@ dotnet format whitespace
 dotnet format --verify-no-changes
 ```
 
+**OpenCode single-file formatters:**
+
+OpenCode is configured in `opencode.json` to run only repository-approved single-file
+formatters after agent edits:
+
+- C# (`.cs`): `dotnet format ViajantesTurismo.slnx --include <file> --no-restore`
+- Markdown (`.md`): `bash scripts/lint-markdown.sh --fix <file>`
+- Shell (`.sh`, `.bash`): `shfmt -w -i 4 -ci -bn -sr <file>` with the same Docker fallback model as `scripts/lint-all.sh`
+- PowerShell (`.ps1`, `.psm1`, `.psd1`): `scripts/format-powershell-file.ps1 <file>` using PSScriptAnalyzer `Invoke-Formatter`
+
+Built-in Prettier, Biome, and default shfmt are disabled in OpenCode so format-on-edit stays
+aligned with this repository's `.editorconfig`, markdownlint, `.NET`, and shell policies.
+JSON, JSONC, YAML, and Gherkin stay validation-only until the repository adopts an approved
+single-file formatter for those formats.
+
 ### Prerequisites
 
 Install .NET local tools (dotnet-ef, reportgenerator, aspire):
@@ -307,6 +322,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 ```powershell
 bash scripts/lint-markdown.sh                    # CI-owned markdown lint wrapper
+bash scripts/lint-markdown.sh --fix docs/example.md
 ```
 
 **Shell Scripts:**
@@ -314,6 +330,13 @@ bash scripts/lint-markdown.sh                    # CI-owned markdown lint wrappe
 ```powershell
 shellcheck **/*.sh       # Lint shell scripts with ShellCheck
 shfmt -w -i 4 -ci -bn -sr **/*.sh    # Format shell scripts with shfmt
+```
+
+**PowerShell Scripts:**
+
+```powershell
+pwsh -NoProfile -File scripts/format-powershell-file.ps1 ./setup-dev.ps1
+Invoke-ScriptAnalyzer -Path ./setup-dev.ps1
 ```
 
 **Gherkin/Feature Files:**
