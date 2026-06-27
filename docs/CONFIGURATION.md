@@ -58,6 +58,17 @@ Each production configuration surface should document:
 | --- | --- | --- |
 | Redis resource name `cache` | Resource name | Use `ResourceNames.Cache`, not inline strings. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Configuration | Already documented in OpenTelemetry guidance. |
-| Catalog idempotency lock duration | Configuration candidate | Convert to options when tuning is required. |
+| Catalog idempotency lock duration | Configuration | `CatalogIntegrationEvents:IdempotencyLockDuration`, default `00:05:00`, must be greater than zero. |
+| Catalog projection batch size | Configuration candidate | Defer until projection runtime ownership and operational tuning needs are clear. |
+| Standard HTTP resilience defaults | Library policy | Defer to a resilience policy review; do not replace framework defaults speculatively. |
 | `AllowedHosts` | Hosting configuration | Review separately before changing production defaults. |
 | CDN asset URLs | External asset policy | Decide asset strategy before configuring broadly. |
+| Endpoint paths, route templates, and contract limits | Constant or domain/API invariant | Keep centralized constants and validation rules unless the public contract changes. |
+
+## Catalog integration events
+
+| Key | Default | Unit/range | Safe to log | Consumed by | Test override |
+| --- | --- | --- | --- | --- | --- |
+| `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | `TimeSpan`; greater than zero | Yes | `ViajantesTurismo.Catalog.ApiService` integration event consumers | Override the options value through dependency injection or configuration. |
+
+Environment variable form: `CatalogIntegrationEvents__IdempotencyLockDuration`.

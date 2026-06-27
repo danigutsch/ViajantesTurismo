@@ -1,3 +1,6 @@
+using System.Globalization;
+using Microsoft.Extensions.Options;
+using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
@@ -11,6 +14,15 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
+builder.Services
+    .AddOptions<CatalogIntegrationEventOptions>()
+    .Configure(options => options.IdempotencyLockDuration = GetCatalogIntegrationEventIdempotencyLockDuration(builder.Configuration))
+    .Validate(
+        options => options.IdempotencyLockDuration > TimeSpan.Zero,
+        "Catalog integration event idempotency lock duration must be greater than zero.")
+    .ValidateOnStart();
+builder.Services.AddSingleton(serviceProvider =>
+    serviceProvider.GetRequiredService<IOptions<CatalogIntegrationEventOptions>>().Value);
 builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
 
 var app = builder.Build();
@@ -60,6 +72,23 @@ app.MapPut("/catalog/public-content/{key}", UpsertPublicContent);
 app.MapDefaultEndpoints();
 
 await app.RunAsync();
+
+static TimeSpan GetCatalogIntegrationEventIdempotencyLockDuration(ConfigurationManager configuration)
+{
+    var configuredValue = configuration[$"{CatalogIntegrationEventOptions.SectionName}:{CatalogIntegrationEventOptions.IdempotencyLockDurationKey}"];
+    if (string.IsNullOrWhiteSpace(configuredValue))
+    {
+        return new CatalogIntegrationEventOptions().IdempotencyLockDuration;
+    }
+
+    if (TimeSpan.TryParse(configuredValue, CultureInfo.InvariantCulture, out var parsedValue))
+    {
+        return parsedValue;
+    }
+
+    throw new InvalidOperationException(
+        $"{CatalogIntegrationEventOptions.SectionName}:{CatalogIntegrationEventOptions.IdempotencyLockDurationKey} must be a TimeSpan value.");
+}
 
 static async Task<IResult> UpsertPublicContent(
     string key,

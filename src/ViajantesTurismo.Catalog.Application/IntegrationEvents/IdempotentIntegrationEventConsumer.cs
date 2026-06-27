@@ -10,7 +10,8 @@ namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 /// <typeparam name="TIntegrationEvent">The integration event type.</typeparam>
 public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
     IIntegrationEventHandler<TIntegrationEvent> inner,
-    IIdempotencyStore idempotencyStore) : IIntegrationEventHandler<TIntegrationEvent>
+    IIdempotencyStore idempotencyStore,
+    CatalogIntegrationEventOptions options) : IIntegrationEventHandler<TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
 {
     private static readonly IdempotencyScope Scope = IdempotencyScope.From(
@@ -34,7 +35,7 @@ public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
             var startResult = await idempotencyStore.TryStart(
                 operation,
                 DateTimeOffset.UtcNow,
-                TimeSpan.FromMinutes(5),
+                options.IdempotencyLockDuration,
                 ct);
             if (!startResult.Started)
             {
