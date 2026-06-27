@@ -12,7 +12,7 @@ public class ResultConvertErrorMalformedStatusTests
     [InlineData((int)ResultStatus.Created, CannotConvertSuccessfulResultMessage)]
     [InlineData((int)ResultStatus.Unknown, "Unsupported result status: Unknown")]
     [InlineData(999, "Unsupported result status: 999")]
-    public void ConvertError_NonGenericToGeneric_Malformed_Status_Throws_Expected_Exception(
+    public void ConvertError_nongenerictogeneric_malformed_status_throws_expected_exception(
         int statusValue,
         string expectedMessage)
     {
@@ -32,7 +32,7 @@ public class ResultConvertErrorMalformedStatusTests
     [InlineData((int)ResultStatus.NoContent, CannotConvertSuccessfulResultMessage)]
     [InlineData((int)ResultStatus.Unknown, "Unsupported result status: Unknown")]
     [InlineData(999, "Unsupported result status: 999")]
-    public void ConvertError_GenericToNonGeneric_Malformed_Status_Throws_Expected_Exception(
+    public void ConvertError_generictonongeneric_malformed_status_throws_expected_exception(
         int statusValue,
         string expectedMessage)
     {
@@ -53,7 +53,7 @@ public class ResultConvertErrorMalformedStatusTests
     [InlineData((int)ResultStatus.NoContent, CannotConvertSuccessfulResultMessage)]
     [InlineData((int)ResultStatus.Unknown, "Unsupported result status: Unknown")]
     [InlineData(999, "Unsupported result status: 999")]
-    public void ConvertError_GenericToGeneric_Malformed_Status_Throws_Expected_Exception(
+    public void ConvertError_generictogeneric_malformed_status_throws_expected_exception(
         int statusValue,
         string expectedMessage)
     {

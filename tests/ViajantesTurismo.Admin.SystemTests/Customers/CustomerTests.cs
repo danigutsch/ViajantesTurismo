@@ -5,7 +5,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
     private const float WizardStepTransitionTimeoutMilliseconds = 15000;
 
     [Fact]
-    public async Task Can_Complete_Wizard_View_Details_And_Edit_Customer()
+    public async Task Can_complete_wizard_view_details_and_edit_customer()
     {
         // Arrange
         var uid = Guid.NewGuid().ToString("N")[..8];

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 public class BookingEditFormTests : BunitContext
 {
     [Fact]
-    public void Renders_Info_Alert()
+    public void Renders_info_alert()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -25,7 +25,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Customer_Dropdown_Disabled()
+    public void Renders_customer_dropdown_disabled()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -52,7 +52,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Companion_Dropdown_Disabled()
+    public void Renders_companion_dropdown_disabled()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -81,7 +81,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Companion_Dropdown_Excludes_Selected_Customer()
+    public void Companion_dropdown_excludes_selected_customer()
     {
         // Arrange
         var customer1 = BuildCustomerDto(firstName: "Alice", lastName: "Brown");
@@ -105,7 +105,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Notes_TextArea()
+    public void Renders_notes_textarea()
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Test notes" };
@@ -123,7 +123,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Discount_Card()
+    public void Renders_discount_card()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -141,7 +141,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_DiscountType_Dropdown()
+    public void Renders_discounttype_dropdown()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -162,7 +162,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Hides_Discount_Fields_When_Type_Is_None()
+    public void Hides_discount_fields_when_type_is_none()
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.None };
@@ -179,7 +179,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Discount_Fields_When_Type_Is_Percentage()
+    public void Shows_discount_fields_when_type_is_percentage()
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.Percentage };
@@ -204,7 +204,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Discount_Fields_When_Type_Is_Absolute()
+    public void Shows_discount_fields_when_type_is_absolute()
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.Absolute };
@@ -226,7 +226,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void DiscountReason_Has_Placeholder_And_HelpText()
+    public void DiscountReason_has_placeholder_and_helptext()
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.Percentage };
@@ -246,7 +246,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Update_Button()
+    public void Renders_update_button()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -264,7 +264,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Cancel_Button()
+    public void Renders_cancel_button()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -281,7 +281,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Update_Button_Shows_Spinner_When_Submitting()
+    public void Update_button_shows_spinner_when_submitting()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -301,7 +301,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Buttons_Are_Disabled_When_Submitting()
+    public void Buttons_are_disabled_when_submitting()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -321,7 +321,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public async Task OnCancel_Is_Called_When_Cancel_Button_Is_Clicked()
+    public async Task OnCancel_is_called_when_cancel_button_is_clicked()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -359,7 +359,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_ValidationMessage_Components()
+    public void Renders_ValidationMessage_components()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -376,7 +376,7 @@ public class BookingEditFormTests : BunitContext
     }
 
     [Fact]
-    public void Preloads_Model_Values()
+    public void Preloads_model_values()
     {
         // Arrange
         var customerId = Guid.NewGuid();

@@ -21,7 +21,7 @@ public sealed class ServiceDefaultsTelemetryTests
     private const string CatalogMetricIntegrationEvent = "catalog.integration_event";
 
     [Fact]
-    public void Add_Service_Defaults_Exports_Catalog_Custom_Tracing_And_Metrics()
+    public void Add_service_defaults_exports_catalog_custom_tracing_and_metrics()
     {
         // Arrange
         var exportedActivities = new ConcurrentQueue<Activity>();
@@ -65,7 +65,7 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
-    public void Add_Service_Defaults_Exports_Mediator_Custom_Tracing_And_Metrics()
+    public void Add_service_defaults_exports_mediator_custom_tracing_and_metrics()
     {
         // Arrange
         var exportedActivities = new ConcurrentQueue<Activity>();
@@ -115,7 +115,7 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
-    public void Add_Service_Defaults_Exports_SharedKernel_Provider_Tracing_And_Metrics()
+    public void Add_service_defaults_exports_sharedkernel_provider_tracing_and_metrics()
     {
         // Arrange
         var exportedActivities = new ConcurrentQueue<Activity>();

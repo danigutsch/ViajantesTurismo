@@ -17,7 +17,7 @@ public sealed class IdentificationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task OnInitialized_When_State_Already_Has_IdentificationInfo_Preloads_Existing_Values()
+    public async Task OnInitialized_when_state_already_has_identificationinfo_preloads_existing_values()
     {
         // Arrange
         _state.SetIdentificationInfo(new IdentificationInfoFormModel
@@ -37,7 +37,7 @@ public sealed class IdentificationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_When_Form_Is_Valid_Saves_State_And_Navigates_To_Contact()
+    public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_contact()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();
@@ -59,7 +59,7 @@ public sealed class IdentificationPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Personal_Info_And_Updates_Current_Step()
+    public async Task Back_button_navigates_to_personal_info_and_updates_current_step()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();

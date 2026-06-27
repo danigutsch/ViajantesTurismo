@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Shared;
 public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Tour_List_And_Details_Show_Consistent_Currency_And_Date_Formatting()
+    public async Task Tour_list_and_details_show_consistent_currency_and_date_formatting()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Real });
@@ -28,7 +28,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
     }
 
     [Fact]
-    public async Task Booking_List_And_Details_Show_Consistent_Status_And_Payment_Badges()
+    public async Task Booking_list_and_details_show_consistent_status_and_payment_badges()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
@@ -63,7 +63,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
     [InlineData("/customers", "Customers")]
     [InlineData("/bookings", "Bookings")]
     [InlineData("/addtour", "Add Tour")]
-    public async Task Major_Routes_Show_Expected_Page_Titles(string route, string expectedTitle)
+    public async Task Major_routes_show_expected_page_titles(string route, string expectedTitle)
     {
         // Arrange
         // Act

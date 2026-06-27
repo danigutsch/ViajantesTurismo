@@ -23,9 +23,9 @@ This file overrides root guidance where test-specific behavior is needed.
   always look for an existing helper method or helper class first.
 - If no suitable helper exists and the logic is repeated or hurts readability,
   prefer creating a helper method/class and then using that helper instead of inlining the plumbing.
-- Do not add private helper methods or private nested helper types to xUnit test classes.
-- Keep truly local helper logic inside the test body as a local function, or move reusable logic to
-  a dedicated helper type near the consuming test project.
+- Do not add helper methods, local helper functions, or nested helper types to xUnit test classes.
+- Keep truly local test logic visible in the test body, or move reusable plumbing to a dedicated
+  helper type near the consuming test project.
 - Before adding new test plumbing, check whether the repository already has a builder,
   fixture, page object, or helper for the same concern, and extend it when appropriate
   instead of creating a parallel pattern.

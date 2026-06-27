@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class WorkflowIntegrityTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Tour_Details_Add_Booking_Flow_Should_Validate_Without_Leaking_Internal_Errors()
+    public async Task Tour_details_add_booking_flow_should_validate_without_leaking_internal_errors()
     {
         // Arrange
         var tour = await ApiClient.CreateTour();

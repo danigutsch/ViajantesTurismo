@@ -9,7 +9,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     ];
 
     [Fact]
-    public void Project_And_Props_Should_Not_Use_NoWarn_Entries()
+    public void Project_and_props_should_not_use_nowarn_entries()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var noWarnEntries = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
@@ -24,7 +24,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Hand_Written_Source_Should_Not_Use_Pragma_Warning_Suppressions()
+    public void Hand_written_source_should_not_use_pragma_warning_suppressions()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var filesWithPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
@@ -40,7 +40,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void SuppressMessage_Attributes_Should_Stay_On_The_Approved_Analyzer_Policy_Allowlist()
+    public void SuppressMessage_attributes_should_stay_on_the_approved_analyzer_policy_allowlist()
     {
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
         var filesWithSuppressMessage = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public class CsvDocumentTests
 {
     [Fact]
-    public void Create_With_Headers_And_Row_Exposes_Both_Collections()
+    public void Create_with_headers_and_row_exposes_both_collections()
     {
         // Arrange
         string[] headers = ["FirstName", "LastName", "Email"];
@@ -30,7 +30,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Header_And_Row_Parses_Document()
+    public void Parse_with_header_and_row_parses_document()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
@@ -54,7 +54,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Multiple_Rows_Parses_Document()
+    public void Parse_with_multiple_rows_parses_document()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com\nJane,Smith,jane.smith@example.com\nAlice,Johnson,alice.johnson@example.com";
@@ -85,7 +85,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Create_With_Rows_Of_Different_Lengths_Fails()
+    public void Create_with_rows_of_different_lengths_fails()
     {
         // Arrange
         var differentLengthRow = CsvRow.Parse("Alice,alice.johnson@example.com");
@@ -106,7 +106,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Create_With_Empty_Headers_Fails()
+    public void Create_with_empty_headers_fails()
     {
         // Arrange
         string[] headers = [];
@@ -122,7 +122,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Create_With_Header_Count_Different_From_Row_Count_Fails()
+    public void Create_with_header_count_different_from_row_count_fails()
     {
         // Arrange
         string[] headers = ["FirstName", "LastName", "Email", "Phone"];
@@ -138,7 +138,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Missing_Required_Header_Fails()
+    public void Parse_with_missing_required_header_fails()
     {
         // Arrange
         const string csvContent = "FirstName,LastName\nJohn,Doe";
@@ -154,7 +154,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Empty_CsvContent_Fails()
+    public void Parse_with_empty_csvcontent_fails()
     {
         // Arrange
         const string csvContent = "";
@@ -169,7 +169,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_RequiredHeader_Different_Casing_And_Whitespace_Succeeds()
+    public void Parse_with_requiredheader_different_casing_and_whitespace_succeeds()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
@@ -183,7 +183,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Empty_Data_Row_Does_Not_Ignore_It_And_Fails_Validation()
+    public void Parse_with_empty_data_row_does_not_ignore_it_and_fails_validation()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\n\nJohn,Doe,john.doe@example.com";
@@ -198,7 +198,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Parse_With_Blank_RequiredHeaderNames_Ignores_Them()
+    public void Parse_with_blank_requiredheadernames_ignores_them()
     {
         // Arrange
         const string csvContent = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";
@@ -212,7 +212,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void Create_With_Rows_Of_Different_Lengths_Includes_Csv_Line_Number_In_Error_Detail()
+    public void Create_with_rows_of_different_lengths_includes_csv_line_number_in_error_detail()
     {
         // Arrange
         CsvRow[] rows =
@@ -231,7 +231,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void String_Indexer_With_Existing_Header_Returns_Row_Value()
+    public void String_indexer_with_existing_header_returns_row_value()
     {
         // Arrange
         var documentResult = CsvDocument.Create(
@@ -250,7 +250,7 @@ public class CsvDocumentTests
     }
 
     [Fact]
-    public void TryGetByHeader_With_Missing_Header_Returns_False()
+    public void TryGetByHeader_with_missing_header_returns_false()
     {
         // Arrange
         var documentResult = CsvDocument.Create(

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class BookingUpdateCompanionTests
 {
     [Fact]
-    public void UpdateCompanion_When_Booking_Is_Cancelled_Returns_Conflict_And_Does_Not_Add_Companion()
+    public void UpdateCompanion_when_booking_is_cancelled_returns_conflict_and_does_not_add_companion()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
@@ -27,7 +27,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_When_Booking_Is_Completed_Returns_Conflict_And_Does_Not_Add_Companion()
+    public void UpdateCompanion_when_booking_is_completed_returns_conflict_and_does_not_add_companion()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
@@ -47,7 +47,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_When_Companion_Matches_Principal_Returns_Invalid()
+    public void UpdateCompanion_when_companion_matches_principal_returns_invalid()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
@@ -68,7 +68,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_When_Single_Room_Booking_Has_Companion_Returns_Invalid()
+    public void UpdateCompanion_when_single_room_booking_has_companion_returns_invalid()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
@@ -89,7 +89,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_When_Companion_Matches_Principal_On_Single_Room_Returns_Aggregated_Validation_Errors()
+    public void UpdateCompanion_when_companion_matches_principal_on_single_room_returns_aggregated_validation_errors()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking(new SingleBookingOptions(RoomType: RoomType.SingleOccupancy));
@@ -116,7 +116,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_When_Double_Room_And_Valid_Companion_Succeeds()
+    public void UpdateCompanion_when_double_room_and_valid_companion_succeeds()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateSingleBooking();
@@ -134,7 +134,7 @@ public class BookingUpdateCompanionTests
     }
 
     [Fact]
-    public void UpdateCompanion_When_Companion_Is_Null_Removes_Existing_Companion()
+    public void UpdateCompanion_when_companion_is_null_removes_existing_companion()
     {
         // Arrange
         var booking = BookingDomainTestDataFactory.CreateDoubleBooking();

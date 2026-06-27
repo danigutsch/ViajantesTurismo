@@ -11,7 +11,7 @@ public sealed class CustomerImportWorkflowServiceTests
         "WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
 
     [Fact]
-    public async Task ImportAsync_With_FileAndDatabaseDuplicates_Reports_Conflicts_Using_Configured_Normalization_Rules()
+    public async Task ImportAsync_with_fileanddatabaseduplicates_reports_conflicts_using_configured_normalization_rules()
     {
         // Arrange
         const string firstEmail = "jose.silva@example.com";

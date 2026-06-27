@@ -12,7 +12,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Booking_Found_Shows_Edit_Booking_Link()
+    public void Booking_found_shows_edit_booking_link()
     {
         // Arrange
         var booking = BuildBookingDto();

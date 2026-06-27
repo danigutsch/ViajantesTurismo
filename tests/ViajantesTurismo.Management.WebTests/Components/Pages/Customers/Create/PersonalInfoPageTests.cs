@@ -18,7 +18,7 @@ public sealed class PersonalInfoPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_Empty_Form_Shows_Inline_Errors_Without_Validation_Summary()
+    public async Task Submit_empty_form_shows_inline_errors_without_validation_summary()
     {
         // Arrange — render the page (triggers OnInitializedAsync)
         var cut = Render<PersonalInfo>();
@@ -39,7 +39,7 @@ public sealed class PersonalInfoPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_All_Required_Personal_Info_Controls()
+    public async Task Renders_all_required_personal_info_controls()
     {
         // Arrange
         var cut = Render<PersonalInfo>();
@@ -56,7 +56,7 @@ public sealed class PersonalInfoPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Accessible_Country_Loading_Status_Until_Countries_Are_Available()
+    public void Renders_accessible_country_loading_status_until_countries_are_available()
     {
         // Arrange
         var countries = new TaskCompletionSource<CountryInfo[]>();

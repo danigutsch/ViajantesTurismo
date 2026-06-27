@@ -8,7 +8,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
     private const string DescendingSortSelector = "th[aria-sort='descending']";
 
     [Fact]
-    public async Task Tour_List_Sort_Smoke_Works_For_Name_Column()
+    public async Task Tour_list_sort_smoke_works_for_name_column()
     {
         // Arrange
         var uid = Guid.NewGuid().ToString("N")[..8];
@@ -47,7 +47,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
     }
 
     [Fact]
-    public async Task Customer_List_Paginator_Smoke_Works_And_Preserves_Sort()
+    public async Task Customer_list_paginator_smoke_works_and_preserves_sort()
     {
         // Arrange
         var uid = Guid.NewGuid().ToString("N")[..8];

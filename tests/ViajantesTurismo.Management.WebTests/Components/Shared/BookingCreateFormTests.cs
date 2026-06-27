@@ -17,7 +17,7 @@ public class BookingCreateFormTests : BunitContext
     private const string AliceCustomerDisplayName = AliceDisplayName + " (" + AliceEmail + ")";
 
     [Fact]
-    public void Renders_Tour_Dropdown_When_Tours_Available()
+    public void Renders_tour_dropdown_when_tours_available()
     {
         // Arrange
         var tours = new List<GetTourDto>
@@ -43,7 +43,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Available_Spots_When_Tour_Selected()
+    public void Shows_available_spots_when_tour_selected()
     {
         // Arrange
         var tour = BuildTourDto(maxCustomers: 10, currentCustomerCount: 3);
@@ -67,7 +67,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Fully_Booked_Message_When_No_Spots()
+    public void Shows_fully_booked_message_when_no_spots()
     {
         // Arrange
         var tour = BuildTourDto(maxCustomers: 10, currentCustomerCount: 10);
@@ -91,7 +91,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_One_Spot_Available_Singular()
+    public void Shows_one_spot_available_singular()
     {
         // Arrange
         var tour = BuildTourDto(maxCustomers: 10, currentCustomerCount: 9);
@@ -112,7 +112,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Customer_Dropdown()
+    public void Renders_customer_dropdown()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -139,7 +139,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_RoomType_Dropdown_With_Options()
+    public void Renders_roomtype_dropdown_with_options()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -162,7 +162,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Single_Occupancy_Badge_For_SingleRoom_Without_Companion()
+    public void Shows_single_occupancy_badge_for_singleroom_without_companion()
     {
         // Arrange
         var model = new BookingFormModel
@@ -186,7 +186,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Principal_Bike_Dropdown()
+    public void Renders_principal_bike_dropdown()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -209,7 +209,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Hides_Companion_Section_For_SingleRoom()
+    public void Hides_companion_section_for_singleroom()
     {
         // Arrange
         var model = new BookingFormModel { RoomType = RoomTypeDto.SingleOccupancy };
@@ -228,7 +228,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Companion_Section_For_DoubleRoom()
+    public void Shows_companion_section_for_doubleroom()
     {
         // Arrange
         var customers = new List<GetCustomerDto>
@@ -262,7 +262,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Companion_Bike_When_Companion_Selected()
+    public void Shows_companion_bike_when_companion_selected()
     {
         // Arrange
         var customer1 = BuildCustomerDto(firstName: AliceFirstName);
@@ -288,7 +288,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Customers_And_Toggling_Room_Type_Should_Update_Companion_Fields_And_Bike_Selection()
+    public void Selecting_customers_and_toggling_room_type_should_update_companion_fields_and_bike_selection()
     {
         // Arrange
         var principalCustomer = BuildCustomerDto(firstName: AliceFirstName, lastName: AliceLastName, email: AliceEmail, bikeType: BikeTypeDto.EBike);
@@ -338,7 +338,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Hides_Companion_Bike_When_No_Companion()
+    public void Hides_companion_bike_when_no_companion()
     {
         // Arrange
         var model = new BookingFormModel
@@ -361,7 +361,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Notes_TextArea()
+    public void Renders_notes_textarea()
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Special request" };
@@ -381,7 +381,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Discount_Card()
+    public void Renders_discount_card()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -401,7 +401,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_DiscountType_Dropdown()
+    public void Renders_discounttype_dropdown()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -424,7 +424,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Price_Breakdown_When_Tour_Selected()
+    public void Shows_price_breakdown_when_tour_selected()
     {
         // Arrange
         var tour = BuildTourDto(price: 1000m, currency: CurrencyDto.Euro);
@@ -453,7 +453,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Price_Breakdown_Shows_Discount_When_Applied()
+    public void Price_breakdown_shows_discount_when_applied()
     {
         // Arrange
         var tour = BuildTourDto(price: 1000m, currency: CurrencyDto.Euro);
@@ -484,7 +484,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Live_Price_Breakdown_Should_Recalculate_For_Customer_Bike_Room_Type_And_Discount_Changes()
+    public void Live_price_breakdown_should_recalculate_for_customer_bike_room_type_and_discount_changes()
     {
         // Arrange
         var tour = BuildTourDto(
@@ -542,7 +542,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Warning_When_Final_Price_Is_Zero_Or_Negative()
+    public void Shows_warning_when_final_price_is_zero_or_negative()
     {
         // Arrange
         var tour = BuildTourDto(
@@ -577,7 +577,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Hides_Price_Breakdown_When_No_Tour_Selected()
+    public void Hides_price_breakdown_when_no_tour_selected()
     {
         // Arrange
         var model = new BookingFormModel { TourId = null };
@@ -596,7 +596,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Create_Button()
+    public void Renders_create_button()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -616,7 +616,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Cancel_Button()
+    public void Renders_cancel_button()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -635,7 +635,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Create_Button_Shows_Spinner_When_Submitting()
+    public void Create_button_shows_spinner_when_submitting()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -657,7 +657,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Buttons_Are_Disabled_When_Submitting()
+    public void Buttons_are_disabled_when_submitting()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -679,7 +679,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public async Task OnCancel_Is_Called_When_Cancel_Button_Is_Clicked()
+    public async Task OnCancel_is_called_when_cancel_button_is_clicked()
     {
         // Arrange
         var model = new BookingFormModel();
@@ -721,7 +721,7 @@ public class BookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Price_Breakdown_With_Currency_Symbol()
+    public void Displays_price_breakdown_with_currency_symbol()
     {
         // Arrange
         var tour = BuildTourDto(price: 1500m, currency: CurrencyDto.Euro);

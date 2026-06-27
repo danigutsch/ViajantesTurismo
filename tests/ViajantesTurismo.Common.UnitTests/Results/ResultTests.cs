@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public sealed class ResultTests
 {
     [Fact]
-    public void Ok_Creates_Successful_Result()
+    public void Ok_creates_successful_result()
     {
         var result = Result.Ok();
 
@@ -16,7 +16,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void No_Content_Creates_Successful_Result()
+    public void No_content_creates_successful_result()
     {
         var result = Result.NoContent();
 
@@ -27,7 +27,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Accepted_Creates_Successful_Result()
+    public void Accepted_creates_successful_result()
     {
         var result = Result.Accepted();
 
@@ -38,7 +38,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Invalid_Creates_Failed_Result_With_Single_Validation_Error()
+    public void Invalid_creates_failed_result_with_single_validation_error()
     {
         var result = Result.Invalid("Validation failed", "Name", "Name is required");
 
@@ -53,7 +53,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Invalid_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Invalid_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid("", "field", "message"));
         Assert.Throws<ArgumentNullException>(() => Result.Invalid(null!, "field", "message"));
@@ -61,7 +61,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Invalid_Throws_When_Field_Is_Null_Or_Empty()
+    public void Invalid_throws_when_field_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid("detail", "", "message"));
         Assert.Throws<ArgumentNullException>(() => Result.Invalid("detail", null!, "message"));
@@ -69,7 +69,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Invalid_Throws_When_Message_Is_Null_Or_Empty()
+    public void Invalid_throws_when_message_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid("detail", "field", ""));
         Assert.Throws<ArgumentNullException>(() => Result.Invalid("detail", "field", null!));
@@ -77,7 +77,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Invalid_With_Empty_ValidationErrors_Dictionary_Throws_ArgumentOutOfRangeException()
+    public void Invalid_with_empty_validationerrors_dictionary_throws_argumentoutofrangeexception()
     {
         // Arrange
         var emptyDictionary = new Dictionary<string, string[]>();
@@ -88,7 +88,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Not_Found_Creates_Failed_Result()
+    public void Not_found_creates_failed_result()
     {
         var result = Result.NotFound("Resource not found");
 
@@ -100,7 +100,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Not_Found_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Not_found_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.NotFound(""));
         Assert.Throws<ArgumentNullException>(() => Result.NotFound(null!));
@@ -108,7 +108,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Unauthorized_Creates_Failed_Result()
+    public void Unauthorized_creates_failed_result()
     {
         var result = Result.Unauthorized("Access denied");
 
@@ -120,7 +120,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Unauthorized_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Unauthorized_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Unauthorized(""));
         Assert.Throws<ArgumentNullException>(() => Result.Unauthorized(null!));
@@ -128,7 +128,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Forbidden_Creates_Failed_Result()
+    public void Forbidden_creates_failed_result()
     {
         var result = Result.Forbidden("Operation forbidden");
 
@@ -140,7 +140,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Forbidden_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Forbidden_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Forbidden(""));
         Assert.Throws<ArgumentNullException>(() => Result.Forbidden(null!));
@@ -148,7 +148,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Conflict_Creates_Failed_Result()
+    public void Conflict_creates_failed_result()
     {
         var result = Result.Conflict("Resource conflict");
 
@@ -160,7 +160,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Conflict_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Conflict_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Conflict(""));
         Assert.Throws<ArgumentNullException>(() => Result.Conflict(null!));
@@ -168,7 +168,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Error_Creates_Failed_Result()
+    public void Error_creates_failed_result()
     {
         var result = Result.Error("An error occurred");
 
@@ -180,7 +180,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Error_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Error_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Error(""));
         Assert.Throws<ArgumentNullException>(() => Result.Error(null!));
@@ -188,7 +188,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Critical_Error_Creates_Failed_Result()
+    public void Critical_error_creates_failed_result()
     {
         var result = Result.CriticalError("Critical failure");
 
@@ -200,7 +200,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Critical_Error_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Critical_error_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.CriticalError(""));
         Assert.Throws<ArgumentNullException>(() => Result.CriticalError(null!));
@@ -208,7 +208,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Unavailable_Creates_Failed_Result()
+    public void Unavailable_creates_failed_result()
     {
         var result = Result.Unavailable("Service unavailable");
 
@@ -220,7 +220,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Unavailable_Throws_When_Detail_Is_Null_Or_Empty()
+    public void Unavailable_throws_when_detail_is_null_or_empty()
     {
         Assert.Throws<ArgumentException>(() => Result.Unavailable(""));
         Assert.Throws<ArgumentNullException>(() => Result.Unavailable(null!));
@@ -228,7 +228,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Equality_Works_For_Success_Results()
+    public void Equality_works_for_success_results()
     {
         var result1 = Result.Ok();
         var result2 = Result.Ok();
@@ -239,7 +239,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Equality_Works_For_Failed_Results_With_Same_Error()
+    public void Equality_works_for_failed_results_with_same_error()
     {
         var result1 = Result.NotFound("Not found");
         var result2 = Result.NotFound("Not found");
@@ -250,7 +250,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Equality_Fails_For_Results_With_Different_Errors()
+    public void Equality_fails_for_results_with_different_errors()
     {
         var result1 = Result.NotFound("Not found");
         var result2 = Result.Error("Error");
@@ -261,7 +261,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Equality_Fails_For_Results_With_Different_Error_Messages()
+    public void Equality_fails_for_results_with_different_error_messages()
     {
         var result1 = Result.NotFound("Message 1");
         var result2 = Result.NotFound("Message 2");
@@ -270,7 +270,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Get_Hash_Code_Is_Consistent()
+    public void Get_hash_code_is_consistent()
     {
         var result = Result.Ok();
 
@@ -281,7 +281,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void To_String_Returns_Success_Status_For_Success()
+    public void To_string_returns_success_status_for_success()
     {
         var result = Result.Ok();
 
@@ -292,7 +292,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void To_String_Returns_Failure_Status_And_Error_For_Failure()
+    public void To_string_returns_failure_status_and_error_for_failure()
     {
         var result = Result.Error("Something went wrong");
 
@@ -304,7 +304,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Equals_Object_Returns_False_For_Non_Result_Object()
+    public void Equals_object_returns_false_for_non_result_object()
     {
         var result = Result.Ok();
 
@@ -313,7 +313,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Equals_Object_Returns_True_For_Boxed_Equal_Result()
+    public void Equals_object_returns_true_for_boxed_equal_result()
     {
         var result1 = Result.Ok();
         object result2 = Result.Ok();
@@ -322,7 +322,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Different_Success_Statuses_Are_Not_Equal()
+    public void Different_success_statuses_are_not_equal()
     {
         var ok = Result.Ok();
         var noContent = Result.NoContent();
@@ -334,7 +334,7 @@ public sealed class ResultTests
     }
 
     [Fact]
-    public void Success_Result_Error_Details_Returns_Null()
+    public void Success_result_error_details_returns_null()
     {
         var result = Result.Ok();
 

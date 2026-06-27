@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 public class ErrorPageTests : BunitContext
 {
     [Fact]
-    public void Renders_Error_Title()
+    public void Renders_error_title()
     {
         // Act
         var cut = Render<Error>();
@@ -18,7 +18,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Error_Message()
+    public void Renders_error_message()
     {
         // Act
         var cut = Render<Error>();
@@ -30,7 +30,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Show_Request_ID_When_Not_Available()
+    public void Does_not_show_request_ID_when_not_available()
     {
         // Act
         var cut = Render<Error>();
@@ -41,7 +41,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Request_ID_When_HttpContext_Has_TraceIdentifier()
+    public void Shows_request_ID_when_HttpContext_has_traceidentifier()
     {
         // Arrange
         var httpContext = new DefaultHttpContext
@@ -59,7 +59,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Development_Mode_Section()
+    public void Renders_development_mode_section()
     {
         // Act
         var cut = Render<Error>();
@@ -70,7 +70,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Development_Environment_Warning()
+    public void Renders_development_environment_warning()
     {
         // Act
         var cut = Render<Error>();
@@ -83,7 +83,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_ASPNETCORE_ENVIRONMENT_Instructions()
+    public void Renders_aspnetcore_environment_instructions()
     {
         // Act
         var cut = Render<Error>();
@@ -95,7 +95,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Detailed_Information_Warning()
+    public void Renders_detailed_information_warning()
     {
         // Act
         var cut = Render<Error>();
@@ -108,7 +108,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Sensitive_Information_Warning()
+    public void Renders_sensitive_information_warning()
     {
         // Act
         var cut = Render<Error>();
@@ -120,7 +120,7 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Has_Correct_Page_Route()
+    public void Has_correct_page_route()
     {
         // This test verifies the component has the correct route attribute
         // by checking if it can be rendered (which validates the @page directive exists)

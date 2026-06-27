@@ -13,7 +13,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Loading_State_Initially()
+    public void Shows_loading_state_initially()
     {
         // Arrange
         var tourId = Guid.NewGuid();
@@ -29,7 +29,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Loads_Existing_Tour_Data()
+    public async Task Loads_existing_tour_data()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -46,7 +46,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Renders_Page_Title()
+    public async Task Renders_page_title()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -63,7 +63,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Services_Are_Loaded_As_Multiline_Text()
+    public async Task Services_are_loaded_as_multiline_text()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -83,7 +83,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Cancel_Redirect_Button_Is_Present()
+    public async Task Cancel_redirect_button_is_present()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -104,7 +104,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Cancel_Redirect_Shows_Alternative_Message()
+    public async Task Cancel_redirect_shows_alternative_message()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -135,7 +135,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task After_Cancel_Redirect_Shows_Go_To_Details_Button()
+    public async Task After_cancel_redirect_shows_go_to_details_button()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -162,7 +162,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task API_Error_Shows_Error_Message()
+    public async Task API_error_shows_error_message()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -186,7 +186,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submission_Shows_Spinner_And_Disabled_Button()
+    public async Task Submission_shows_spinner_and_disabled_button()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -208,7 +208,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Updates_Tour_With_Modified_Data()
+    public async Task Updates_tour_with_modified_data()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -232,7 +232,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Load_Error_Shows_Error_Message()
+    public async Task Load_error_shows_error_message()
     {
         // Arrange
         _fakeToursApi.SetGetTourByIdException(new InvalidOperationException("Database error"));
@@ -251,7 +251,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Identifier_Field_Is_Enabled_When_No_Bookings()
+    public async Task Identifier_field_is_enabled_when_no_bookings()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -268,7 +268,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Identifier_Field_Is_Disabled_When_Bookings_Exist()
+    public async Task Identifier_field_is_disabled_when_bookings_exist()
     {
         // Arrange
         var tour = EditPageTestsHelper.CreateTestTourWithBookings(_fakeToursApi);
@@ -285,7 +285,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Currency_Field_Is_Enabled_When_No_Bookings()
+    public async Task Currency_field_is_enabled_when_no_bookings()
     {
         // Arrange
         var tour = await EditPageTestsHelper.CreateTestTour(_fakeToursApi);
@@ -302,7 +302,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Currency_Field_Is_Disabled_When_Bookings_Exist()
+    public async Task Currency_field_is_disabled_when_bookings_exist()
     {
         // Arrange
         var tour = EditPageTestsHelper.CreateTestTourWithBookings(_fakeToursApi);

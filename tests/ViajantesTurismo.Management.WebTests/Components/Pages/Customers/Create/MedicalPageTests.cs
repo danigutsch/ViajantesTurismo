@@ -15,7 +15,7 @@ public sealed class MedicalPageTests : BunitContext
     }
 
     [Fact]
-    public void OnInitialized_When_State_Already_Has_Medical_Info_Preloads_Existing_Values()
+    public void OnInitialized_when_state_already_has_medical_info_preloads_existing_values()
     {
         // Arrange
         _state.SetMedicalInfo(new MedicalInfoFormModel
@@ -37,7 +37,7 @@ public sealed class MedicalPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_When_Form_Is_Valid_Saves_State_And_Navigates_To_Review()
+    public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_review()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();
@@ -57,7 +57,7 @@ public sealed class MedicalPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Emergency_Contact_And_Updates_Current_Step()
+    public async Task Back_button_navigates_to_emergency_contact_and_updates_current_step()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();

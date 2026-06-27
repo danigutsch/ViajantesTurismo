@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 public sealed class BookingEditRedirectStateTests
 {
     [Fact]
-    public async Task Reset_Clears_Pending_And_Cancelled_State()
+    public async Task Reset_clears_pending_and_cancelled_state()
     {
         // Arrange
         await using var state = new BookingEditRedirectState();
@@ -21,7 +21,7 @@ public sealed class BookingEditRedirectStateTests
     }
 
     [Fact]
-    public async Task BeginPendingRedirect_Marks_State_As_Pending_And_Navigable()
+    public async Task BeginPendingRedirect_marks_state_as_pending_and_navigable()
     {
         // Arrange
         await using var state = new BookingEditRedirectState();
@@ -36,7 +36,7 @@ public sealed class BookingEditRedirectStateTests
     }
 
     [Fact]
-    public async Task CancelPendingRedirect_Marks_State_As_Cancelled_And_Not_Pending()
+    public async Task CancelPendingRedirect_marks_state_as_cancelled_and_not_pending()
     {
         // Arrange
         await using var state = new BookingEditRedirectState();

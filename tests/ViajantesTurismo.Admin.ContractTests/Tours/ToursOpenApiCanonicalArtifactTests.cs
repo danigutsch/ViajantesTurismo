@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Tours;
 public sealed class ToursOpenApiCanonicalArtifactTests
 {
     [Fact]
-    public async Task Reads_The_Tours_OpenApi_Document_Through_The_Canonical_Artifact()
+    public async Task Reads_the_tours_OpenApi_document_through_the_canonical_artifact()
     {
         // Act
         var contract = await ToursOpenApiDocumentClient.GetContract(TestContext.Current.CancellationToken);

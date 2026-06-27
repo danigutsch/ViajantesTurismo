@@ -15,7 +15,7 @@ public sealed class PhysicalPageTests : BunitContext
     }
 
     [Fact]
-    public void OnInitialized_When_State_Already_Has_Physical_Info_Preloads_Existing_Values()
+    public void OnInitialized_when_state_already_has_physical_info_preloads_existing_values()
     {
         // Arrange
         _state.SetPhysicalInfo(new PhysicalInfoFormModel
@@ -36,7 +36,7 @@ public sealed class PhysicalPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_When_Form_Is_Valid_Saves_State_And_Navigates_To_Accommodation()
+    public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_accommodation()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();
@@ -58,7 +58,7 @@ public sealed class PhysicalPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Address_And_Updates_Current_Step()
+    public async Task Back_button_navigates_to_address_and_updates_current_step()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();

@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Customers;
 public sealed class CustomersOpenApiCanonicalArtifactTests
 {
     [Fact]
-    public async Task Reads_The_Customers_OpenApi_Document_Through_The_Canonical_Artifact()
+    public async Task Reads_the_customers_OpenApi_document_through_the_canonical_artifact()
     {
         // Act
         var contract = await CustomersOpenApiDocumentClient.GetContract(TestContext.Current.CancellationToken);

@@ -7,7 +7,7 @@ public sealed class BookingBaselineIsolationTests(AspireSerialIntegrationTestFix
     : AspireSerialIntegrationTestBase(fixture)
 {
     [Fact]
-    public async Task Can_Exercise_An_Empty_Bookings_Baseline_Through_Fixture_Owned_Reset_Control()
+    public async Task Can_exercise_an_empty_bookings_baseline_through_fixture_owned_reset_control()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;

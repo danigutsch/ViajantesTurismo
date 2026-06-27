@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests;
 public sealed class CustomersApiClientTests
 {
     [Fact]
-    public async Task GetCustomers_Requests_Customers_Endpoint_And_Limits_Items()
+    public async Task GetCustomers_requests_customers_endpoint_and_limits_items()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -48,7 +48,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task GetCustomerById_Returns_Null_When_Not_Found()
+    public async Task GetCustomerById_returns_null_when_not_found()
     {
         // Arrange
         var customerId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -69,7 +69,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task CreateCustomer_Returns_Location_Header()
+    public async Task CreateCustomer_returns_location_header()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -92,7 +92,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task UpdateCustomer_Sends_Put_Request()
+    public async Task UpdateCustomer_sends_put_request()
     {
         // Arrange
         var customerId = Guid.Parse("44444444-4444-4444-4444-444444444444");
@@ -115,7 +115,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task ImportCustomers_Returns_Import_Result()
+    public async Task ImportCustomers_returns_import_result()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -137,7 +137,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task CommitImportWithResolutions_Returns_Import_Result()
+    public async Task CommitImportWithResolutions_returns_import_result()
     {
         // Arrange
         var requestPath = string.Empty;

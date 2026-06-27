@@ -13,7 +13,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Dropdown_For_Every_Defined_Field()
+    public void Shows_dropdown_for_every_defined_field()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -31,7 +31,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     }
 
     [Fact]
-    public void Optional_Fields_Are_Labeled_As_Optional()
+    public void Optional_fields_are_labeled_as_optional()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -50,7 +50,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     }
 
     [Fact]
-    public void Auto_Matched_Field_Dropdown_Has_CSV_Header_Preselected()
+    public void Auto_matched_field_dropdown_has_CSV_header_preselected()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -70,7 +70,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     }
 
     [Fact]
-    public void Clearing_Required_Auto_Matched_Field_Via_Dropdown_Disables_Import()
+    public void Clearing_required_auto_matched_field_via_dropdown_disables_import()
     {
         // Arrange — all canonical headers: all required fields matched → import enabled
         var cut = Render<ImportCustomers>();
@@ -86,7 +86,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     }
 
     [Fact]
-    public void Clearing_Optional_Field_Does_Not_Disable_Import()
+    public void Clearing_optional_field_does_not_disable_import()
     {
         // Arrange — all canonical headers present: all required matched, import enabled
         const string optionalFieldName = "Instagram";

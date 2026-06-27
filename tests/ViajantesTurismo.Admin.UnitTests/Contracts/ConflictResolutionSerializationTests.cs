@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Contracts;
 public class ConflictResolutionSerializationTests
 {
     [Fact]
-    public void Serialize_With_Empty_Conflict_Resolutions_Should_Return_Empty_String()
+    public void Serialize_with_empty_conflict_resolutions_should_return_empty_string()
     {
         // Arrange
         IReadOnlyDictionary<string, string> conflictResolutions = new Dictionary<string, string>();
@@ -18,7 +18,7 @@ public class ConflictResolutionSerializationTests
     }
 
     [Fact]
-    public void Serialize_And_Parse_With_Encoded_Values_Should_Round_Trip_Conflict_Resolutions()
+    public void Serialize_and_parse_with_encoded_values_should_round_trip_conflict_resolutions()
     {
         // Arrange
         IReadOnlyDictionary<string, string> conflictResolutions = new Dictionary<string, string>
@@ -40,7 +40,7 @@ public class ConflictResolutionSerializationTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Parse_With_Null_Or_Whitespace_Input_Should_Return_Empty_Case_Insensitive_Dictionary(string? serialized)
+    public void Parse_with_null_or_whitespace_input_should_return_empty_case_insensitive_dictionary(string? serialized)
     {
         // Arrange
         // Act
@@ -52,7 +52,7 @@ public class ConflictResolutionSerializationTests
     }
 
     [Fact]
-    public void Parse_With_Malformed_Pairs_Should_Ignore_Invalid_Entries()
+    public void Parse_with_malformed_pairs_should_ignore_invalid_entries()
     {
         // Arrange
         const string serialized = "missing-separator;=missing-email;missing-value=;valid%40example.com=merge";
@@ -66,7 +66,7 @@ public class ConflictResolutionSerializationTests
     }
 
     [Fact]
-    public void Parse_With_Whitespace_Email_Or_Decision_Should_Ignore_Whitespace_Only_Entries()
+    public void Parse_with_whitespace_email_or_decision_should_ignore_whitespace_only_entries()
     {
         // Arrange
         const string serialized = "%20=merge;blank-decision%40example.com=%20;valid%40example.com=keep";
@@ -80,7 +80,7 @@ public class ConflictResolutionSerializationTests
     }
 
     [Fact]
-    public void Parse_With_Duplicate_Email_Different_Casing_Should_Keep_Last_Value_In_Case_Insensitive_Dictionary()
+    public void Parse_with_duplicate_email_different_casing_should_keep_last_value_in_case_insensitive_dictionary()
     {
         // Arrange
         const string serialized = "User%40Example.com=merge;user%40example.com=replace";

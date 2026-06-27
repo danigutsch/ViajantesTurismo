@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Bookings.Mappings;
 public class BookingMapperTests
 {
     [Fact]
-    public void Map_To_Bike_Type_Should_Cover_All_Enum_Values()
+    public void Map_to_bike_type_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<BikeTypeDto>();
@@ -25,7 +25,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Bike_Type_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_bike_type_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<BikeType>();
@@ -41,7 +41,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Room_Type_Should_Cover_All_Enum_Values()
+    public void Map_to_room_type_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<RoomTypeDto>();
@@ -57,7 +57,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Booking_Status_Should_Cover_All_Enum_Values()
+    public void Map_to_booking_status_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<BookingStatusDto>();
@@ -73,7 +73,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Status_Should_Cover_All_Enum_Values()
+    public void Map_to_payment_status_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<PaymentStatusDto>();
@@ -89,7 +89,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Discount_Type_Should_Cover_All_Enum_Values()
+    public void Map_to_discount_type_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<DiscountTypeDto>();
@@ -105,7 +105,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Discount_Type_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_discount_type_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<DiscountType>();
@@ -121,7 +121,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Bike_Type_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_bike_type_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const BikeTypeDto invalidValue = (BikeTypeDto)999;
@@ -133,7 +133,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Bike_Type_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_bike_type_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const BikeType invalidValue = (BikeType)999;
@@ -145,7 +145,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Room_Type_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_room_type_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const RoomTypeDto invalidValue = (RoomTypeDto)999;
@@ -157,7 +157,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Booking_Status_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_booking_status_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const BookingStatusDto invalidValue = (BookingStatusDto)999;
@@ -169,7 +169,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Status_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_payment_status_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const PaymentStatusDto invalidValue = (PaymentStatusDto)999;
@@ -181,7 +181,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Discount_Type_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_discount_type_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const DiscountTypeDto invalidValue = (DiscountTypeDto)999;
@@ -193,7 +193,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Discount_Type_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_discount_type_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const DiscountType invalidValue = (DiscountType)999;
@@ -205,7 +205,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Method_Should_Cover_All_Enum_Values()
+    public void Map_to_payment_method_should_cover_all_enum_values()
     {
         // Arrange
         var allDtoValues = Enum.GetValues<PaymentMethodDto>();
@@ -221,7 +221,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Method_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_payment_method_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const PaymentMethodDto invalidValue = (PaymentMethodDto)999;
@@ -233,7 +233,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Method_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_payment_method_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<PaymentMethod>();
@@ -249,7 +249,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Method_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_payment_method_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const PaymentMethod invalidValue = (PaymentMethod)999;
@@ -261,7 +261,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Dto_Should_Map_All_Properties()
+    public void Map_to_payment_dto_should_map_all_properties()
     {
         // Arrange
         var bookingId = Guid.CreateVersion7();
@@ -296,7 +296,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Dto_With_Null_Payment_Should_Throw_Argument_Null_Exception()
+    public void Map_to_payment_dto_with_null_payment_should_throw_argument_null_exception()
     {
         // Arrange
         Payment? payment = null;
@@ -307,7 +307,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Dto_With_Null_Optional_Fields_Should_Map_Correctly()
+    public void Map_to_payment_dto_with_null_optional_fields_should_map_correctly()
     {
         // Arrange
         var bookingId = Guid.CreateVersion7();
@@ -348,7 +348,7 @@ public class BookingMapperTests
     [InlineData(PaymentMethod.Check, PaymentMethodDto.Check)]
     [InlineData(PaymentMethod.PayPal, PaymentMethodDto.PayPal)]
     [InlineData(PaymentMethod.Other, PaymentMethodDto.Other)]
-    public void Map_To_Payment_Dto_Should_Map_All_Payment_Methods(PaymentMethod domainMethod, PaymentMethodDto expectedDto)
+    public void Map_to_payment_dto_should_map_all_payment_methods(PaymentMethod domainMethod, PaymentMethodDto expectedDto)
     {
         // Arrange
         var paymentDate = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
@@ -379,7 +379,7 @@ public class BookingMapperTests
     [InlineData(BookingStatus.Confirmed, BookingStatusDto.Confirmed)]
     [InlineData(BookingStatus.Cancelled, BookingStatusDto.Cancelled)]
     [InlineData(BookingStatus.Completed, BookingStatusDto.Completed)]
-    public void Map_To_Booking_Status_Dto_Should_Map_All_Valid_Values(BookingStatus domain, BookingStatusDto expected)
+    public void Map_to_booking_status_dto_should_map_all_valid_values(BookingStatus domain, BookingStatusDto expected)
     {
         // Arrange
         // Act
@@ -390,7 +390,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Booking_Status_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_booking_status_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<BookingStatus>();
@@ -406,7 +406,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Booking_Status_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_booking_status_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const BookingStatus invalidValue = (BookingStatus)999;
@@ -422,7 +422,7 @@ public class BookingMapperTests
     [InlineData(PaymentStatus.PartiallyPaid, PaymentStatusDto.PartiallyPaid)]
     [InlineData(PaymentStatus.Paid, PaymentStatusDto.Paid)]
     [InlineData(PaymentStatus.Refunded, PaymentStatusDto.Refunded)]
-    public void Map_To_Payment_Status_Dto_Should_Map_All_Valid_Values(PaymentStatus domain, PaymentStatusDto expected)
+    public void Map_to_payment_status_dto_should_map_all_valid_values(PaymentStatus domain, PaymentStatusDto expected)
     {
         // Arrange
         // Act
@@ -433,7 +433,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Status_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_payment_status_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<PaymentStatus>();
@@ -449,7 +449,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Payment_Status_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_payment_status_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const PaymentStatus invalidValue = (PaymentStatus)999;
@@ -463,7 +463,7 @@ public class BookingMapperTests
     [Theory]
     [InlineData(RoomType.DoubleOccupancy, RoomTypeDto.DoubleOccupancy)]
     [InlineData(RoomType.SingleOccupancy, RoomTypeDto.SingleOccupancy)]
-    public void Map_To_Room_Type_Dto_Should_Map_All_Valid_Values(RoomType domain, RoomTypeDto expected)
+    public void Map_to_room_type_dto_should_map_all_valid_values(RoomType domain, RoomTypeDto expected)
     {
         // Arrange
         // Act
@@ -474,7 +474,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Room_Type_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_room_type_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<RoomType>();
@@ -490,7 +490,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Room_Type_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_room_type_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const RoomType invalidValue = (RoomType)999;
@@ -504,7 +504,7 @@ public class BookingMapperTests
     [Theory]
     [InlineData(BedType.SingleBed, BedTypeDto.SingleBed)]
     [InlineData(BedType.DoubleBed, BedTypeDto.DoubleBed)]
-    public void Map_To_Bed_Type_Dto_Should_Map_All_Valid_Values(BedType domain, BedTypeDto expected)
+    public void Map_to_bed_type_dto_should_map_all_valid_values(BedType domain, BedTypeDto expected)
     {
         // Arrange
         // Act
@@ -515,7 +515,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Bed_Type_Dto_Should_Cover_All_Enum_Values()
+    public void Map_to_bed_type_dto_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<BedType>();
@@ -531,7 +531,7 @@ public class BookingMapperTests
     }
 
     [Fact]
-    public void Map_To_Bed_Type_Dto_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+    public void Map_to_bed_type_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const BedType invalidValue = (BedType)999;

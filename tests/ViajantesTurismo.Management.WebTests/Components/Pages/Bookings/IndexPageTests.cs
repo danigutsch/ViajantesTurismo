@@ -18,7 +18,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Total_Bookings_Count()
+    public void Displays_total_bookings_count()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto());
@@ -35,7 +35,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Pending_Bookings_Count()
+    public void Displays_pending_bookings_count()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Pending));
@@ -52,7 +52,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Confirmed_Bookings_Count()
+    public void Displays_confirmed_bookings_count()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Confirmed));
@@ -69,7 +69,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Empty_State_When_No_Bookings()
+    public void Displays_empty_state_when_no_bookings()
     {
         // Arrange
         // Act
@@ -84,7 +84,7 @@ public class IndexPageTests : BunitContext
 
 
     [Fact]
-    public void Counts_Only_Pending_Status_For_Pending_Badge()
+    public void Counts_only_pending_status_for_pending_badge()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Pending));
@@ -101,7 +101,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Counts_Only_Confirmed_Status_For_Confirmed_Badge()
+    public void Counts_only_confirmed_status_for_confirmed_badge()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Pending));
@@ -118,7 +118,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_All_Status_Counts_Correctly()
+    public void Displays_all_status_counts_correctly()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Pending));
@@ -140,7 +140,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Completed_And_Cancelled_Bookings_Counts()
+    public void Displays_completed_and_cancelled_bookings_counts()
     {
         // Arrange
         _fakeBookingsApi.AddBooking(BuildBookingDto(status: BookingStatusDto.Completed));

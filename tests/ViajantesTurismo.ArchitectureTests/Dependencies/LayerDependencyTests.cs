@@ -28,7 +28,7 @@ public sealed class LayerDependencyTests
     private static IObjectProvider<IType> CatalogApiTypes => TypesInNamespace(ArchitectureProvider.Namespaces.CatalogApi, "Catalog API layer");
 
     [Fact]
-    public void Domain_Should_Not_Depend_On_Application_Infrastructure_Or_Api()
+    public void Domain_should_not_depend_on_application_infrastructure_or_api()
     {
         var rule = Types().That().Are(DomainTypes)
             .Should().NotDependOnAny(ApplicationTypes)
@@ -40,7 +40,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Application_Should_Not_Depend_On_Infrastructure_Or_Api()
+    public void Application_should_not_depend_on_infrastructure_or_api()
     {
         var rule = Types().That().Are(ApplicationTypes)
             .Should().NotDependOnAny(ApiTypes)
@@ -51,7 +51,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Infrastructure_Should_Not_Depend_On_Api()
+    public void Infrastructure_should_not_depend_on_api()
     {
         var rule = Types().That().Are(InfrastructureTypes)
             .Should().NotDependOnAny(ApiTypes)
@@ -61,7 +61,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Public_Web_Should_Not_Depend_On_Admin_Or_Management_Web()
+    public void Public_web_should_not_depend_on_admin_or_management_web()
     {
         // Arrange
         var forbiddenReferences = new[]
@@ -88,7 +88,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_Domain_Should_Not_Depend_On_Application_Infrastructure_Or_Api()
+    public void Catalog_domain_should_not_depend_on_application_infrastructure_or_api()
     {
         var rule = Types().That().Are(CatalogDomainTypes)
             .Should().NotDependOnAny(CatalogApplicationTypes)
@@ -100,7 +100,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_Application_Should_Not_Depend_On_Infrastructure_Or_Api()
+    public void Catalog_application_should_not_depend_on_infrastructure_or_api()
     {
         var rule = Types().That().Are(CatalogApplicationTypes)
             .Should().NotDependOnAny(CatalogApiTypes)
@@ -111,7 +111,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_Infrastructure_Should_Not_Depend_On_Api()
+    public void Catalog_infrastructure_should_not_depend_on_api()
     {
         var rule = Types().That().Are(CatalogInfrastructureTypes)
             .Should().NotDependOnAny(CatalogApiTypes)
@@ -121,7 +121,7 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Catalog_Should_Not_Depend_On_Admin_Implementation_Projects()
+    public void Catalog_should_not_depend_on_admin_implementation_projects()
     {
         // Arrange
         var forbiddenReferences = new[]

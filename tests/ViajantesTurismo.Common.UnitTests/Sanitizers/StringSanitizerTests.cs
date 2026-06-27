@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Sanitizers;
 public class StringSanitizerTests
 {
     [Fact]
-    public void Sanitize_Returns_Null_When_Input_Is_Null()
+    public void Sanitize_returns_null_when_input_is_null()
     {
         // Arrange
         // Act
@@ -16,7 +16,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Returns_Empty_String_When_Input_Is_Empty()
+    public void Sanitize_returns_empty_string_when_input_is_empty()
     {
         // Arrange
         // Act
@@ -27,7 +27,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Trims_Leading_Whitespace()
+    public void Sanitize_trims_leading_whitespace()
     {
         // Arrange
         // Act
@@ -38,7 +38,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Trims_Trailing_Whitespace()
+    public void Sanitize_trims_trailing_whitespace()
     {
         // Arrange
         // Act
@@ -49,7 +49,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Trims_Leading_And_Trailing_Whitespace()
+    public void Sanitize_trims_leading_and_trailing_whitespace()
     {
         // Arrange
         // Act
@@ -60,7 +60,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Normalizes_Multiple_Spaces_To_Single_Space()
+    public void Sanitize_normalizes_multiple_spaces_to_single_space()
     {
         // Arrange
         // Act
@@ -71,7 +71,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Normalizes_Multiple_Whitespace_Characters_To_Single_Space()
+    public void Sanitize_normalizes_multiple_whitespace_characters_to_single_space()
     {
         // Arrange
         // Act
@@ -82,7 +82,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Removes_Control_Characters()
+    public void Sanitize_removes_control_characters()
     {
         // Arrange
         // Act
@@ -93,7 +93,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Removes_Null_Character()
+    public void Sanitize_removes_null_character()
     {
         // Arrange
         // Act
@@ -104,7 +104,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Removes_Bell_Character()
+    public void Sanitize_removes_bell_character()
     {
         // Arrange
         // Act
@@ -115,7 +115,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Removes_Delete_Character()
+    public void Sanitize_removes_delete_character()
     {
         // Arrange
         // Act
@@ -126,7 +126,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Preserves_Tab_Character_But_Normalizes_To_Space()
+    public void Sanitize_preserves_tab_character_but_normalizes_to_space()
     {
         // Arrange
         // Act
@@ -137,7 +137,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Preserves_Newline_Character_But_Normalizes_To_Space()
+    public void Sanitize_preserves_newline_character_but_normalizes_to_space()
     {
         // Arrange
         // Act
@@ -148,7 +148,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Handles_Complex_Sanitization_With_Multiple_Issues()
+    public void Sanitize_handles_complex_sanitization_with_multiple_issues()
     {
         // Arrange
         // Act
@@ -159,7 +159,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Preserves_Valid_String_Without_Changes()
+    public void Sanitize_preserves_valid_string_without_changes()
     {
         // Arrange
         var input = "Hello World";
@@ -172,7 +172,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Handles_String_With_Only_Whitespace()
+    public void Sanitize_handles_string_with_only_whitespace()
     {
         // Arrange
         // Act
@@ -183,7 +183,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Handles_String_With_Special_Characters()
+    public void Sanitize_handles_string_with_special_characters()
     {
         // Arrange
         var input = "Hello@World!#$%";
@@ -196,7 +196,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Handles_String_With_Numbers()
+    public void Sanitize_handles_string_with_numbers()
     {
         // Arrange
         var input = "Test123";
@@ -209,7 +209,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Handles_String_With_Accented_Characters()
+    public void Sanitize_handles_string_with_accented_characters()
     {
         // Arrange
         var input = "José García";
@@ -222,7 +222,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Handles_String_With_Emoji()
+    public void Sanitize_handles_string_with_emoji()
     {
         // Arrange
         var input = "Hello 🌍 World";
@@ -235,7 +235,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Returns_Null_When_Input_Is_Null()
+    public void Sanitize_notes_returns_null_when_input_is_null()
     {
         // Arrange
         // Act
@@ -246,7 +246,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Returns_Empty_String_When_Input_Is_Empty()
+    public void Sanitize_notes_returns_empty_string_when_input_is_empty()
     {
         // Arrange
         // Act
@@ -257,7 +257,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Trims_Leading_And_Trailing_Whitespace()
+    public void Sanitize_notes_trims_leading_and_trailing_whitespace()
     {
         // Arrange
         // Act
@@ -268,7 +268,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Preserves_Newlines_Within_Text()
+    public void Sanitize_notes_preserves_newlines_within_text()
     {
         // Arrange
         var input = "Line 1\nLine 2\nLine 3";
@@ -281,7 +281,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Preserves_Multiple_Newlines()
+    public void Sanitize_notes_preserves_multiple_newlines()
     {
         // Arrange
         var input = "Paragraph 1\n\nParagraph 2";
@@ -294,7 +294,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Preserves_Tabs_Within_Text()
+    public void Sanitize_notes_preserves_tabs_within_text()
     {
         // Arrange
         var input = "Column1\tColumn2\tColumn3";
@@ -307,7 +307,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Preserves_Multiple_Spaces()
+    public void Sanitize_notes_preserves_multiple_spaces()
     {
         // Arrange
         var input = "Hello    World";
@@ -320,7 +320,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Preserves_Formatting_In_Multi_Line_Notes()
+    public void Sanitize_notes_preserves_formatting_in_multi_line_notes()
     {
         // Arrange
         var input = "Note:\n  - Item 1\n  - Item 2\n  - Item 3";
@@ -333,7 +333,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Notes_Handles_String_With_Only_Whitespace()
+    public void Sanitize_notes_handles_string_with_only_whitespace()
     {
         // Arrange
         // Act
@@ -344,7 +344,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Returns_Empty_Array_When_Input_Is_Null()
+    public void Sanitize_collection_returns_empty_array_when_input_is_null()
     {
         // Arrange
         // Act
@@ -356,7 +356,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Returns_Empty_Array_When_Input_Is_Empty()
+    public void Sanitize_collection_returns_empty_array_when_input_is_empty()
     {
         // Arrange
         // Act
@@ -368,7 +368,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Removes_Null_Entries()
+    public void Sanitize_collection_removes_null_entries()
     {
         // Arrange
         var input = new[] { "Hello", null, "World" };
@@ -383,7 +383,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Removes_Empty_String_Entries()
+    public void Sanitize_collection_removes_empty_string_entries()
     {
         // Arrange
         var input = new[] { "Hello", "", "World" };
@@ -398,7 +398,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Removes_Whitespace_Only_Entries()
+    public void Sanitize_collection_removes_whitespace_only_entries()
     {
         // Arrange
         var input = new[] { "Hello", "   ", "World" };
@@ -413,7 +413,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Trims_Each_Entry()
+    public void Sanitize_collection_trims_each_entry()
     {
         // Arrange
         var input = new[] { "  Hello  ", "  World  " };
@@ -428,7 +428,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Removes_Duplicate_Entries_Case_Insensitive()
+    public void Sanitize_collection_removes_duplicate_entries_case_insensitive()
     {
         // Arrange
         var input = new[] { "Hello", "hello", "HELLO", "World" };
@@ -443,7 +443,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Preserves_First_Occurrence_Of_Duplicate()
+    public void Sanitize_collection_preserves_first_occurrence_of_duplicate()
     {
         // Arrange
         var input = new[] { "Hello", "hello" };
@@ -457,7 +457,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Sanitizes_Each_Entry()
+    public void Sanitize_collection_sanitizes_each_entry()
     {
         // Arrange
         var input = new[] { "  Hello" + "\x00" + "  ", "  World\t\t  " };
@@ -472,7 +472,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Handles_Complex_Collection_With_Multiple_Issues()
+    public void Sanitize_collection_handles_complex_collection_with_multiple_issues()
     {
         // Arrange
         var input = new[] { "  Item1  ", null, "", "item1", "  Item2  ", "   ", "Item3" };
@@ -488,7 +488,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Returns_Empty_Array_When_All_Entries_Are_Invalid()
+    public void Sanitize_collection_returns_empty_array_when_all_entries_are_invalid()
     {
         // Arrange
         var input = new[] { null, "", "   ", "\t\n" };
@@ -502,7 +502,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Preserves_Order_Of_First_Occurrences()
+    public void Sanitize_collection_preserves_order_of_first_occurrences()
     {
         // Arrange
         var input = new[] { "Zebra", "Apple", "Banana" };
@@ -518,7 +518,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Handles_Collection_With_Special_Characters()
+    public void Sanitize_collection_handles_collection_with_special_characters()
     {
         // Arrange
         var input = new[] { "Item@1", "Item#2", "Item$3" };
@@ -534,7 +534,7 @@ public class StringSanitizerTests
     }
 
     [Fact]
-    public void Sanitize_Collection_Handles_Collection_With_Unicode_Characters()
+    public void Sanitize_collection_handles_collection_with_unicode_characters()
     {
         // Arrange
         var input = new[] { "José", "José", "María" };

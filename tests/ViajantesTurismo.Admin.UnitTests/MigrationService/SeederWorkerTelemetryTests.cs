@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 public sealed class SeederWorkerTelemetryTests
 {
     [Fact]
-    public async Task Records_A_Successful_Seeding_Span_Without_An_Exception_Event()
+    public async Task Records_a_successful_seeding_span_without_an_exception_event()
     {
         // Arrange
         List<Activity> stoppedActivities = [];
@@ -32,7 +32,7 @@ public sealed class SeederWorkerTelemetryTests
     }
 
     [Fact]
-    public async Task Records_A_Failed_Seeding_Span_With_An_Exception_Event()
+    public async Task Records_a_failed_seeding_span_with_an_exception_event()
     {
         // Arrange
         List<Activity> stoppedActivities = [];
@@ -67,7 +67,7 @@ public sealed class SeederWorkerTelemetryTests
     }
 
     [Fact]
-    public async Task Does_Not_Record_An_Error_For_A_Cancelled_Seeding_Span()
+    public async Task Does_not_record_an_error_for_a_cancelled_seeding_span()
     {
         // Arrange
         List<Activity> stoppedActivities = [];

@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Shared;
 public class NotFoundPageTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Not_Found_Pages_Hide_Action_Links_And_Show_Consistent_Layout()
+    public async Task Not_found_pages_hide_action_links_and_show_consistent_layout()
     {
         // Arrange
         var randomGuid = Guid.NewGuid().ToString();

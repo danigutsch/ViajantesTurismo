@@ -8,7 +8,7 @@ public class BookingContractValidationTests
     private const string CompanionBikeTypeMemberName = "CompanionBikeType";
 
     [Fact]
-    public void Discount_Validation_With_No_Discount_Should_Return_No_Errors()
+    public void Discount_validation_with_no_discount_should_return_no_errors()
     {
         var results = DiscountValidation.Validate(
                 DiscountTypeDto.None,
@@ -24,7 +24,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Discount_Validation_With_Invalid_Percentage_Discount_Should_Return_Amount_And_Reason_Errors()
+    public void Discount_validation_with_invalid_percentage_discount_should_return_amount_and_reason_errors()
     {
         var results = DiscountValidation.Validate(
                 DiscountTypeDto.Percentage,
@@ -48,7 +48,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Booking_Validation_With_Single_Room_And_Companion_Should_Return_Companion_Error()
+    public void Booking_validation_with_single_room_and_companion_should_return_companion_error()
     {
         var result = BookingValidation.ValidateSingleRoomNoCompanion(
             RoomTypeDto.SingleOccupancy,
@@ -64,7 +64,7 @@ public class BookingContractValidationTests
 
     [Theory]
     [MemberData(nameof(AllowedRoomAndCompanionCombinations))]
-    public void Booking_Validation_With_Allowed_Room_And_Companion_Combination_Should_Return_No_Error(
+    public void Booking_validation_with_allowed_room_and_companion_combination_should_return_no_error(
         RoomTypeDto roomType,
         Guid? companionCustomerId)
     {
@@ -77,7 +77,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Booking_Validation_With_Companion_And_Missing_Bike_Type_Should_Return_Companion_Bike_Type_Error()
+    public void Booking_validation_with_companion_and_missing_bike_type_should_return_companion_bike_type_error()
     {
         var result = BookingValidation.ValidateCompanionHasBikeType(
             Guid.CreateVersion7(),
@@ -93,7 +93,7 @@ public class BookingContractValidationTests
 
     [Theory]
     [MemberData(nameof(ValidCompanionBikeTypeStates))]
-    public void Booking_Validation_With_Valid_Companion_Bike_Type_State_Should_Return_No_Error(
+    public void Booking_validation_with_valid_companion_bike_type_state_should_return_no_error(
         Guid? companionCustomerId,
         BikeTypeDto? companionBikeType)
     {
@@ -106,7 +106,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Booking_Validation_With_Principal_Bike_Type_None_Should_Return_Principal_Bike_Type_Error()
+    public void Booking_validation_with_principal_bike_type_none_should_return_principal_bike_type_error()
     {
         var result = BookingValidation.ValidatePrincipalBikeType(BikeTypeDto.None, "PrincipalBikeType");
 
@@ -120,7 +120,7 @@ public class BookingContractValidationTests
     [Theory]
     [InlineData(BikeTypeDto.Regular)]
     [InlineData(BikeTypeDto.EBike)]
-    public void Booking_Validation_With_Valid_Principal_Bike_Type_Should_Return_No_Error(BikeTypeDto principalBikeType)
+    public void Booking_validation_with_valid_principal_bike_type_should_return_no_error(BikeTypeDto principalBikeType)
     {
         var result = BookingValidation.ValidatePrincipalBikeType(principalBikeType, "PrincipalBikeType");
 
@@ -131,7 +131,7 @@ public class BookingContractValidationTests
     [InlineData(null)]
     [InlineData(BikeTypeDto.Regular)]
     [InlineData(BikeTypeDto.EBike)]
-    public void Booking_Validation_With_Allowed_Companion_Bike_Type_Value_Should_Return_No_Error(BikeTypeDto? companionBikeType)
+    public void Booking_validation_with_allowed_companion_bike_type_value_should_return_no_error(BikeTypeDto? companionBikeType)
     {
         var result = BookingValidation.ValidateCompanionBikeTypeNotNone(companionBikeType, CompanionBikeTypeMemberName);
 
@@ -139,7 +139,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Create_Booking_Dto_Validate_With_Invalid_Discount_Should_Return_Discount_Validation_Errors()
+    public void Create_booking_dto_validate_with_invalid_discount_should_return_discount_validation_errors()
     {
         var dto = new CreateBookingDto
         {
@@ -164,7 +164,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Update_Booking_Details_Dto_Validate_With_Invalid_Combination_Should_Return_All_Booking_Rule_Errors()
+    public void Update_booking_details_dto_validate_with_invalid_combination_should_return_all_booking_rule_errors()
     {
         var dto = new UpdateBookingDetailsDto
         {
@@ -189,7 +189,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Update_Booking_Discount_Dto_Validate_With_Invalid_Reason_Should_Return_Discount_Reason_Error()
+    public void Update_booking_discount_dto_validate_with_invalid_reason_should_return_discount_reason_error()
     {
         var dto = new UpdateBookingDiscountDto
         {

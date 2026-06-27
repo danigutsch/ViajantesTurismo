@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class BookingDeleteAndDialogTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Can_Delete_Booking_Via_Confirm_Dialog()
+    public async Task Can_delete_booking_via_confirm_dialog()
     {
         // Arrange
         var api = ApiClient;

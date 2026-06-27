@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Tours;
 public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Tour_Capacity_Badges_Show_Correct_State_On_List_And_Details()
+    public async Task Tour_capacity_badges_show_correct_state_on_list_and_details()
     {
         // Arrange
         var toursListPage = new ToursListPage(Page, NavigateTo, ApiClient.GetAllTours);

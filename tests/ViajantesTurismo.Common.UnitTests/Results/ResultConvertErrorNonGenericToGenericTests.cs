@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public class ResultConvertErrorNonGenericToGenericTests
 {
     [Fact]
-    public void NonGeneric_ConvertError_With_Invalid_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_invalid_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.Invalid("Validation error", "field", "message");
@@ -24,7 +24,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_NotFound_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_notfound_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.NotFound("Resource not found");
@@ -40,7 +40,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Conflict_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_conflict_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.Conflict("Duplicate entry");
@@ -56,7 +56,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Unauthorized_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_unauthorized_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.Unauthorized("Unauthorized");
@@ -72,7 +72,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Forbidden_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_forbidden_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.Forbidden("Access denied");
@@ -88,7 +88,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Error_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_error_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.Error("Internal error");
@@ -104,7 +104,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_CriticalError_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_criticalerror_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.CriticalError("System failure");
@@ -120,7 +120,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Unavailable_Result_Converts_To_Generic()
+    public void NonGeneric_converterror_with_unavailable_result_converts_to_generic()
     {
         // Arrange
         var sourceResult = Result.Unavailable("Service down");
@@ -136,7 +136,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Successful_Result_Throws_InvalidOperationException()
+    public void NonGeneric_converterror_with_successful_result_throws_invalidoperationexception()
     {
         // Arrange
         var sourceResult = Result.Ok();
@@ -150,7 +150,7 @@ public class ResultConvertErrorNonGenericToGenericTests
     }
 
     [Fact]
-    public void NonGeneric_ConvertError_With_Multiple_ValidationErrors_Preserves_All()
+    public void NonGeneric_converterror_with_multiple_validationerrors_preserves_all()
     {
         // Arrange
         var errors = new ValidationErrors();

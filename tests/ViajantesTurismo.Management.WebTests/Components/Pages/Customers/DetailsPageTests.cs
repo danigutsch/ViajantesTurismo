@@ -16,7 +16,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Page_Title_And_Header()
+    public void Displays_page_title_and_header()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -32,7 +32,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Back_To_Customers_Button()
+    public void Displays_back_to_customers_button()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -47,7 +47,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Edit_Customer_Button()
+    public void Displays_edit_customer_button()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -62,7 +62,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Personal_Information_Card()
+    public void Displays_personal_information_card()
     {
         // Arrange
         var personalInfo = new PersonalInfoDto
@@ -90,7 +90,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Contact_Information_Card()
+    public void Displays_contact_information_card()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -115,7 +115,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Instagram_When_Present()
+    public void Displays_instagram_when_present()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -138,7 +138,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Display_Instagram_When_Empty()
+    public void Does_not_display_instagram_when_empty()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -160,7 +160,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Facebook_When_Present()
+    public void Displays_facebook_when_present()
     {
         // Arrange
         var contactInfo = new ContactInfoDto
@@ -183,7 +183,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Identification_Information()
+    public void Displays_identification_information()
     {
         // Arrange
         var identificationInfo = new IdentificationInfoDto
@@ -204,7 +204,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Address_Information()
+    public void Displays_address_information()
     {
         // Arrange
         var address = new AddressDto
@@ -235,7 +235,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Display_Address_Complement_When_Empty()
+    public void Does_not_display_address_complement_when_empty()
     {
         // Arrange
         var address = new AddressDto
@@ -261,7 +261,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Physical_Information()
+    public void Displays_physical_information()
     {
         // Arrange
         var physicalInfo = new PhysicalInfoDto
@@ -284,7 +284,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Accommodation_Preferences()
+    public void Displays_accommodation_preferences()
     {
         // Arrange
         var accommodationPreferences = new AccommodationPreferencesDto
@@ -306,7 +306,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Companion_Id_When_Present()
+    public void Displays_companion_id_when_present()
     {
         // Arrange
         var companionId = Guid.NewGuid();
@@ -328,7 +328,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Emergency_Contact_Information()
+    public void Displays_emergency_contact_information()
     {
         // Arrange
         var emergencyContact = new EmergencyContactDto
@@ -351,7 +351,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Medical_Information_When_Present()
+    public void Displays_medical_information_when_present()
     {
         // Arrange
         var medicalInfo = new MedicalInfoDto
@@ -372,7 +372,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_No_Medical_Info_Message_When_Empty()
+    public void Displays_no_medical_info_message_when_empty()
     {
         // Arrange
         var medicalInfo = new MedicalInfoDto
@@ -392,7 +392,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Bookings_Section_Header()
+    public void Displays_bookings_section_header()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();
@@ -410,7 +410,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Has_ToastNotification_Component()
+    public void Has_toastnotification_component()
     {
         // Arrange
         var customer = BuildCustomerDetailsDto();

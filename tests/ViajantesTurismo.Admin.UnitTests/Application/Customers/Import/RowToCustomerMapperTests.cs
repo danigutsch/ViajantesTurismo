@@ -7,7 +7,7 @@ public class RowToCustomerMapperTests
 {
     private const string MultipleValidationErrorsDetailMessage = "Multiple validation errors occurred.";
     [Fact]
-    public void MapCustomer_When_Row_Contains_All_Supported_Columns_Returns_Customer()
+    public void MapCustomer_when_row_contains_all_supported_columns_returns_customer()
     {
         // Arrange
         var (document, row) = MappingInputs.Create();
@@ -33,7 +33,7 @@ public class RowToCustomerMapperTests
     }
 
     [Fact]
-    public void MapCustomer_When_Email_Is_Invalid_Returns_Email_Validation_Failure()
+    public void MapCustomer_when_email_is_invalid_returns_email_validation_failure()
     {
         // Arrange
         var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
@@ -60,7 +60,7 @@ public class RowToCustomerMapperTests
     [InlineData("RoomType", "SpaceSuite", "RoomType has invalid format.")]
     [InlineData("BedType", "CloudBed", "BedType has invalid format.")]
     [InlineData("CompanionId", "definitely-not-a-guid", "CompanionId has invalid format.")]
-    public void MapCustomer_When_Import_Field_Format_Is_Invalid_Returns_Field_Validation_Failure(
+    public void MapCustomer_when_import_field_format_is_invalid_returns_field_validation_failure(
         string field,
         string invalidValue,
         string expectedMessage)
@@ -84,7 +84,7 @@ public class RowToCustomerMapperTests
     }
 
     [Fact]
-    public void MapCustomer_When_Required_Header_Is_Missing_Returns_Header_Validation_Failure()
+    public void MapCustomer_when_required_header_is_missing_returns_header_validation_failure()
     {
         // Arrange
         var (document, row) = MappingInputs.Create(headers: MappingInputs.CompleteHeaders.Where(header => header != "FirstName").ToArray());
@@ -103,7 +103,7 @@ public class RowToCustomerMapperTests
     }
 
     [Fact]
-    public void MapCustomer_When_Multiple_Import_Values_Are_Invalid_Returns_Aggregated_Validation_Failure()
+    public void MapCustomer_when_multiple_import_values_are_invalid_returns_aggregated_validation_failure()
     {
         // Arrange
         var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>

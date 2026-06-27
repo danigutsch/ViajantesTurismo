@@ -10,7 +10,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Info_Message_When_Bookings_Is_Null()
+    public void Renders_info_message_when_bookings_is_null()
     {
         // Arrange
         // Act
@@ -23,7 +23,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Info_Message_When_Bookings_Is_Empty()
+    public void Renders_info_message_when_bookings_is_empty()
     {
         // Arrange
         // Act
@@ -36,7 +36,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Renders_QuickGrid_When_Bookings_Exist()
+    public void Renders_QuickGrid_when_bookings_exist()
     {
         // Arrange
         var bookings = new[]
@@ -61,7 +61,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Tour_Info_Column_When_ShowTourInfo_Is_True()
+    public void Shows_tour_info_column_when_showtourinfo_is_true()
     {
         // Arrange
         var bookings = new[]
@@ -90,7 +90,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Hides_Tour_Info_Column_When_ShowTourInfo_Is_False()
+    public void Hides_tour_info_column_when_showtourinfo_is_false()
     {
         // Arrange
         var bookings = new[]
@@ -118,7 +118,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Customer_Info_Column_When_ShowCustomerInfo_Is_True()
+    public void Shows_customer_info_column_when_showcustomerinfo_is_true()
     {
         // Arrange
         var bookings = new[]
@@ -145,7 +145,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Hides_Customer_Info_Column_When_ShowCustomerInfo_Is_False()
+    public void Hides_customer_info_column_when_showcustomerinfo_is_false()
     {
         // Arrange
         var bookings = new[]
@@ -172,7 +172,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Companion_Link_When_Companion_Exists()
+    public void Displays_companion_link_when_companion_exists()
     {
         // Arrange
         var companionId = Guid.NewGuid();
@@ -200,7 +200,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Dash_When_No_Companion()
+    public void Displays_dash_when_no_companion()
     {
         // Arrange
         var bookings = new[]
@@ -224,7 +224,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Percentage_Discount_Badge()
+    public void Displays_percentage_discount_badge()
     {
         // Arrange
         var bookings = new[]
@@ -251,7 +251,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Absolute_Discount_Badge()
+    public void Displays_absolute_discount_badge()
     {
         // Arrange
         var bookings = new[]
@@ -282,7 +282,7 @@ public class BookingsListTests : BunitContext
     [InlineData(CurrencyDto.Real, "R$")]
     [InlineData(CurrencyDto.Euro, "€")]
     [InlineData(CurrencyDto.UsDollar, "$")]
-    public void Displays_Discount_With_Correct_Currency_Symbol(CurrencyDto currency, string expectedSymbol)
+    public void Displays_discount_with_correct_currency_symbol(CurrencyDto currency, string expectedSymbol)
     {
         // Arrange
         var bookings = new[]
@@ -308,7 +308,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_Dash_When_No_Discount()
+    public void Displays_dash_when_no_discount()
     {
         // Arrange
         var bookings = new[]
@@ -333,7 +333,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_BookingStatusBadge()
+    public void Displays_bookingstatusbadge()
     {
         // Arrange
         var bookings = new[]
@@ -358,7 +358,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_PaymentStatusBadge()
+    public void Displays_paymentstatusbadge()
     {
         // Arrange
         var bookings = new[]
@@ -383,7 +383,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_View_And_Edit_Links_For_All_Bookings()
+    public void Shows_view_and_edit_links_for_all_bookings()
     {
         // Arrange
         var bookingId = Guid.NewGuid();
@@ -414,7 +414,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Show_Paginator_For_10_Or_Fewer_Bookings()
+    public void Does_not_show_paginator_for_10_or_fewer_bookings()
     {
         // Arrange
         var bookings = Enumerable.Range(1, 10)
@@ -442,7 +442,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Paginator_For_More_Than_10_Bookings()
+    public void Shows_paginator_for_more_than_10_bookings()
     {
         // Arrange
         var bookings = Enumerable.Range(1, 15)
@@ -470,7 +470,7 @@ public class BookingsListTests : BunitContext
     }
 
     [Fact]
-    public void Displays_All_Column_Headers()
+    public void Displays_all_column_headers()
     {
         // Arrange
         var bookings = new[]

@@ -15,7 +15,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Loaded_Public_Content_Entries_And_Loads_Selected_Entry()
+    public void Renders_loaded_public_content_entries_and_loads_selected_entry()
     {
         // Arrange
         publicContentApi.Content = [PublicContentTestsHelpers.CreateContent("home.hero")];
@@ -32,7 +32,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Load_Error_When_Public_Content_Api_Fails()
+    public void Renders_load_error_when_public_content_api_fails()
     {
         // Arrange
         publicContentApi.ThrowOnGetContent = true;
@@ -47,7 +47,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Creates_Review_Draft_From_Source_Language_When_Target_Is_Missing()
+    public void Creates_review_draft_from_source_language_when_target_is_missing()
     {
         // Arrange
         var cut = Render<PublicContent>();
@@ -65,7 +65,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Creates_Review_Draft_From_Portuguese_Source_When_English_Target_Is_Missing()
+    public void Creates_review_draft_from_portuguese_source_when_english_target_is_missing()
     {
         // Arrange
         var cut = Render<PublicContent>();
@@ -84,7 +84,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Does_Not_Overwrite_Target_Language_When_Target_Already_Has_Content()
+    public void Does_not_overwrite_target_language_when_target_already_has_content()
     {
         // Arrange
         var cut = Render<PublicContent>();
@@ -103,36 +103,39 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Accessible_Labels_For_Public_Content_Inputs()
+    public void Renders_accessible_labels_for_public_content_inputs()
     {
         // Arrange
         var cut = Render<PublicContent>();
         cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
-        void AssertLabelFor(string id)
-        {
-            Assert.NotNull(cut.Find($"label[for='{id}']"));
-        }
-
         // Assert
-        AssertLabelFor("content-key");
-        AssertLabelFor("source-language");
-        AssertLabelFor("en-us-title");
-        AssertLabelFor("en-us-body");
-        AssertLabelFor("en-us-seo-title");
-        AssertLabelFor("en-us-meta-description");
-        AssertLabelFor("en-us-share-summary");
-        AssertLabelFor("en-us-review");
-        AssertLabelFor("pt-br-title");
-        AssertLabelFor("pt-br-body");
-        AssertLabelFor("pt-br-seo-title");
-        AssertLabelFor("pt-br-meta-description");
-        AssertLabelFor("pt-br-share-summary");
-        AssertLabelFor("pt-br-review");
+        string[] inputIds =
+        [
+            "content-key",
+            "source-language",
+            "en-us-title",
+            "en-us-body",
+            "en-us-seo-title",
+            "en-us-meta-description",
+            "en-us-share-summary",
+            "en-us-review",
+            "pt-br-title",
+            "pt-br-body",
+            "pt-br-seo-title",
+            "pt-br-meta-description",
+            "pt-br-share-summary",
+            "pt-br-review",
+        ];
+
+        foreach (var inputId in inputIds)
+        {
+            Assert.NotNull(cut.Find($"label[for='{inputId}']"));
+        }
     }
 
     [Fact]
-    public void Saves_Public_Content_With_Both_Language_Variants()
+    public void Saves_public_content_with_both_language_variants()
     {
         // Arrange
         var cut = Render<PublicContent>();
@@ -156,7 +159,7 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Shows_Server_Validation_Message_When_Save_Fails_Validation()
+    public void Shows_server_validation_message_when_save_fails_validation()
     {
         // Arrange
         publicContentApi.ValidationException = new ApiValidationException(

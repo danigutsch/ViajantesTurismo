@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Can_Create_Booking_From_Customer_Details_With_Prefilled_Data()
+    public async Task Can_create_booking_from_customer_details_with_prefilled_data()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Name = "Owned Cultural Experience" });

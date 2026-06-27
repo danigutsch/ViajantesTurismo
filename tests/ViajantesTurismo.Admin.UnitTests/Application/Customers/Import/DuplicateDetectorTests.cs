@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public class DuplicateDetectorTests
 {
     [Fact]
-    public void FindDuplicateEmailLineNumbers_With_Duplicate_Email_Flags_Second_Row()
+    public void FindDuplicateEmailLineNumbers_with_duplicate_email_flags_second_row()
     {
         // Arrange
         var headers = new[] { "FirstName", "LastName", "Email" };
@@ -30,7 +30,7 @@ public class DuplicateDetectorTests
     }
 
     [Fact]
-    public void FindDuplicateNameLineNumbers_With_Diacritics_Variation_Flags_Second_Row()
+    public void FindDuplicateNameLineNumbers_with_diacritics_variation_flags_second_row()
     {
         // Arrange
         var headers = new[] { "FirstName", "LastName", "Email" };
@@ -52,7 +52,7 @@ public class DuplicateDetectorTests
     }
 
     [Fact]
-    public async Task FindDatabaseEmailConflicts_With_Matching_Email_Returns_Conflict()
+    public async Task FindDatabaseEmailConflicts_with_matching_email_returns_conflict()
     {
         // Arrange
         const string csv = "FirstName,LastName,Email\nJohn,Doe,john.doe@example.com";

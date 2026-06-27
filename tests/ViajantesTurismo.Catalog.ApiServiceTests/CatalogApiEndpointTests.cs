@@ -12,7 +12,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiEndpointTests
 {
     [Fact]
-    public void Catalog_Api_Marker_Exposes_Entry_Assembly()
+    public void Catalog_api_marker_exposes_entry_assembly()
     {
         // Arrange
         var marker = new CatalogApiEntryPoint();
@@ -29,7 +29,7 @@ public sealed class CatalogApiEndpointTests
     [Theory]
     [InlineData("/health")]
     [InlineData("/alive")]
-    public async Task Default_Health_Endpoint_Returns_Success(string path)
+    public async Task Default_health_endpoint_returns_success(string path)
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -45,7 +45,7 @@ public sealed class CatalogApiEndpointTests
     [Theory]
     [InlineData("/health")]
     [InlineData("/alive")]
-    public async Task Production_Default_Health_Endpoint_Is_Not_Exposed(string path)
+    public async Task Production_default_health_endpoint_is_not_exposed(string path)
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create("Production");
@@ -62,7 +62,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_Content_Endpoint_Saves_Review_Required_Draft()
+    public async Task Public_content_endpoint_saves_review_required_draft()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -90,7 +90,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Body_Is_Invalid()
+    public async Task Public_content_endpoint_returns_validation_problem_when_body_is_invalid()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -116,7 +116,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Variant_Language_Is_Duplicated()
+    public async Task Public_content_endpoint_returns_validation_problem_when_variant_language_is_duplicated()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -142,7 +142,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Variants_Is_Null()
+    public async Task Public_content_endpoint_returns_validation_problem_when_variants_is_null()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -168,7 +168,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Variant_Element_Is_Null()
+    public async Task Public_content_endpoint_returns_validation_problem_when_variant_element_is_null()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();
@@ -200,7 +200,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_Content_Endpoint_Returns_Validation_Problem_When_Supported_Language_Is_Missing()
+    public async Task Public_content_endpoint_returns_validation_problem_when_supported_language_is_missing()
     {
         // Arrange
         await using var factory = CatalogApiTestHost.Create();

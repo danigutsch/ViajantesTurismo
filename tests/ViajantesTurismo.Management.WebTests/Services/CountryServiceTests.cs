@@ -13,7 +13,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_Valid_Json_Returns_Countries_Ordered_By_Name()
+    public async Task GetCountries_valid_Json_returns_countries_ordered_by_name()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
@@ -31,7 +31,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_Caches_Result_On_Second_Call()
+    public async Task GetCountries_caches_result_on_second_call()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"us": {"name": "United States"}}""");
@@ -46,7 +46,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_Missing_File_Returns_Fallback_Countries()
+    public async Task GetCountries_missing_file_returns_fallback_countries()
     {
         // Arrange — data directory exists but file does not
         Directory.CreateDirectory(Path.Combine(_tempDir, "data"));
@@ -61,7 +61,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_Invalid_Json_Returns_Fallback_Countries()
+    public async Task GetCountries_invalid_Json_returns_fallback_countries()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, "not valid json {{{");
@@ -76,7 +76,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public void NormalizeNationality_Null_Returns_Empty_String()
+    public void NormalizeNationality_null_returns_empty_string()
     {
         // Act
         var result = CountryService.NormalizeNationality(null);
@@ -86,7 +86,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public void NormalizeNationality_Empty_String_Returns_Empty_String()
+    public void NormalizeNationality_empty_string_returns_empty_string()
     {
         // Act
         var result = CountryService.NormalizeNationality(string.Empty);
@@ -106,7 +106,7 @@ public sealed class CountryServiceTests : IDisposable
     [InlineData("Portuguese", "Portugal")]
     [InlineData("Canadian", "Canada")]
     [InlineData("Mexican", "Mexico")]
-    public void NormalizeNationality_Known_Demonym_Returns_Country_Name(string demonym, string expectedCountry)
+    public void NormalizeNationality_known_demonym_returns_country_name(string demonym, string expectedCountry)
     {
         // Act
         var result = CountryService.NormalizeNationality(demonym);
@@ -116,7 +116,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public void NormalizeNationality_Known_Demonym_Is_Case_Insensitive()
+    public void NormalizeNationality_known_demonym_is_case_insensitive()
     {
         // Act
         var result = CountryService.NormalizeNationality("brazilian");
@@ -126,7 +126,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public void NormalizeNationality_Unknown_Value_Returns_Original_Value()
+    public void NormalizeNationality_unknown_value_returns_original_value()
     {
         // Arrange
         const string unknown = "Martian";

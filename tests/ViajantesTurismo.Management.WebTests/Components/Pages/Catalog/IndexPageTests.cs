@@ -14,7 +14,7 @@ public sealed class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Loaded_Catalog_Tours_With_Status_And_Updated_Date()
+    public void Renders_loaded_catalog_tours_with_status_and_updated_date()
     {
         // Arrange
         catalogApi.Tours =
@@ -37,7 +37,7 @@ public sealed class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Empty_State_When_No_Catalog_Tours_Exist()
+    public void Renders_empty_state_when_no_catalog_tours_exist()
     {
         // Arrange
         catalogApi.Tours = [];
@@ -51,7 +51,7 @@ public sealed class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Error_When_Catalog_Api_Fails()
+    public void Renders_error_when_catalog_api_fails()
     {
         // Arrange
         catalogApi.ThrowOnGetTours = true;
@@ -66,7 +66,7 @@ public sealed class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Paginator_When_More_Than_Ten_Catalog_Tours_Exist()
+    public void Renders_paginator_when_more_than_ten_catalog_tours_exist()
     {
         // Arrange
         catalogApi.Tours = Enumerable.Range(1, 11)

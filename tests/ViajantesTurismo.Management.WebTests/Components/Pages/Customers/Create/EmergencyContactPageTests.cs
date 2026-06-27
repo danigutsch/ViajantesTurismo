@@ -15,7 +15,7 @@ public sealed class EmergencyContactPageTests : BunitContext
     }
 
     [Fact]
-    public void OnInitialized_When_State_Already_Has_Emergency_Contact_Preloads_Existing_Values()
+    public void OnInitialized_when_state_already_has_emergency_contact_preloads_existing_values()
     {
         // Arrange
         _state.SetEmergencyContact(new EmergencyContactFormModel
@@ -34,7 +34,7 @@ public sealed class EmergencyContactPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_When_Form_Is_Valid_Saves_State_And_Navigates_To_Medical()
+    public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_medical()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();
@@ -54,7 +54,7 @@ public sealed class EmergencyContactPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Accommodation_And_Updates_Current_Step()
+    public async Task Back_button_navigates_to_accommodation_and_updates_current_step()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();

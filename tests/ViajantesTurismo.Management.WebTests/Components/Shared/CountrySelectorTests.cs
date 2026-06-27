@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 public class CountrySelectorTests : BunitContext
 {
     [Fact]
-    public void Renders_With_Default_Placeholder_When_No_Value_Selected()
+    public void Renders_with_default_placeholder_when_no_value_selected()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -30,7 +30,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Selected_Country_With_Flag_And_Name()
+    public void Renders_selected_country_with_flag_and_name()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -58,7 +58,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Dropdown_Is_Initially_Closed()
+    public void Dropdown_is_initially_closed()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -79,7 +79,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Clicking_Button_Opens_Dropdown()
+    public void Clicking_button_opens_dropdown()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -105,7 +105,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Dropdown_Shows_All_Countries_Initially()
+    public void Dropdown_shows_all_countries_initially()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -135,7 +135,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Search_Input_Filters_Countries()
+    public void Search_input_filters_countries()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -168,7 +168,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Search_Is_Case_Insensitive()
+    public void Search_is_case_insensitive()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -200,7 +200,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Shows_No_Countries_Found_Message_When_Search_Has_No_Results()
+    public void Shows_no_countries_found_message_when_search_has_no_results()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -232,7 +232,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Clicking_Country_Selects_It_And_Closes_Dropdown()
+    public void Clicking_country_selects_it_and_closes_dropdown()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -267,7 +267,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Country_Raises_ValueChanged()
+    public void Selecting_country_raises_valuechanged()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -299,7 +299,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Clicking_Button_Again_Closes_Dropdown()
+    public void Clicking_button_again_closes_dropdown()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -327,7 +327,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Closing_Dropdown_Clears_Search_Text()
+    public void Closing_dropdown_clears_search_text()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -365,7 +365,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Country_Clears_Search_Text()
+    public void Selecting_country_clears_search_text()
     {
         // Arrange
         var countries = new List<CountryInfo>
@@ -404,7 +404,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Handles_Null_Countries_List()
+    public void Handles_null_countries_list()
     {
         // Arrange
         var value = string.Empty;
@@ -421,7 +421,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Handles_Empty_Countries_List()
+    public void Handles_empty_countries_list()
     {
         // Arrange
         var value = string.Empty;
@@ -443,7 +443,7 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
-    public void Country_Items_Display_Flag_And_Name()
+    public void Country_items_display_flag_and_name()
     {
         // Arrange
         var countries = new List<CountryInfo>

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.Results;
 public sealed class ResultOfTTests
 {
     [Fact]
-    public void Ok_Creates_Successful_Result_With_Value()
+    public void Ok_creates_successful_result_with_value()
     {
         var result = Result.Ok(42);
 
@@ -17,7 +17,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Created_Creates_Successful_Result_With_Value()
+    public void Created_creates_successful_result_with_value()
     {
         var result = Result.Created("test");
 
@@ -29,7 +29,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Accepted_Creates_Successful_Result_With_Value()
+    public void Accepted_creates_successful_result_with_value()
     {
         var result = Result.Accepted(true);
 
@@ -41,7 +41,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Invalid_Creates_Failed_Result_With_Single_Validation_Error()
+    public void Invalid_creates_failed_result_with_single_validation_error()
     {
         var result = Result.Invalid<int>("Validation failed", "Age", "Age must be positive");
 
@@ -56,28 +56,28 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Invalid_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Invalid_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("", "field", "message"));
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("   ", "field", "message"));
     }
 
     [Fact]
-    public void Invalid_Throws_When_Field_Is_Empty_Or_Whitespace()
+    public void Invalid_throws_when_field_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "", "message"));
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "   ", "message"));
     }
 
     [Fact]
-    public void Invalid_Throws_When_Message_Is_Empty_Or_Whitespace()
+    public void Invalid_throws_when_message_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "field", ""));
         Assert.Throws<ArgumentException>(() => Result.Invalid<int>("detail", "field", "   "));
     }
 
     [Fact]
-    public void Not_Found_Creates_Failed_Result()
+    public void Not_found_creates_failed_result()
     {
         var result = Result.NotFound<string>("User not found");
 
@@ -89,14 +89,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Not_Found_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Not_found_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.NotFound<int>(""));
         Assert.Throws<ArgumentException>(() => Result.NotFound<int>("   "));
     }
 
     [Fact]
-    public void Unauthorized_Creates_Failed_Result()
+    public void Unauthorized_creates_failed_result()
     {
         var result = Result.Unauthorized<string>("Access denied");
 
@@ -108,14 +108,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Unauthorized_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Unauthorized_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Unauthorized<int>(""));
         Assert.Throws<ArgumentException>(() => Result.Unauthorized<int>("   "));
     }
 
     [Fact]
-    public void Forbidden_Creates_Failed_Result()
+    public void Forbidden_creates_failed_result()
     {
         var result = Result.Forbidden<string>("Operation forbidden");
 
@@ -127,14 +127,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Forbidden_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Forbidden_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Forbidden<int>(""));
         Assert.Throws<ArgumentException>(() => Result.Forbidden<int>("   "));
     }
 
     [Fact]
-    public void Conflict_Creates_Failed_Result()
+    public void Conflict_creates_failed_result()
     {
         var result = Result.Conflict<string>("Resource conflict");
 
@@ -146,14 +146,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Conflict_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Conflict_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Conflict<int>(""));
         Assert.Throws<ArgumentException>(() => Result.Conflict<int>("   "));
     }
 
     [Fact]
-    public void Error_Creates_Failed_Result()
+    public void Error_creates_failed_result()
     {
         var result = Result.Error<string>("An error occurred");
 
@@ -165,14 +165,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Error_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Error_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Error<int>(""));
         Assert.Throws<ArgumentException>(() => Result.Error<int>("   "));
     }
 
     [Fact]
-    public void Critical_Error_Creates_Failed_Result()
+    public void Critical_error_creates_failed_result()
     {
         var result = Result.CriticalError<string>("Critical failure");
 
@@ -184,14 +184,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Critical_Error_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Critical_error_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.CriticalError<int>(""));
         Assert.Throws<ArgumentException>(() => Result.CriticalError<int>("   "));
     }
 
     [Fact]
-    public void Unavailable_Creates_Failed_Result()
+    public void Unavailable_creates_failed_result()
     {
         var result = Result.Unavailable<string>("Service unavailable");
 
@@ -203,14 +203,14 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Unavailable_Throws_When_Detail_Is_Empty_Or_Whitespace()
+    public void Unavailable_throws_when_detail_is_empty_or_whitespace()
     {
         Assert.Throws<ArgumentException>(() => Result.Unavailable<int>(""));
         Assert.Throws<ArgumentException>(() => Result.Unavailable<int>("   "));
     }
 
     [Fact]
-    public void Value_Throws_Invalid_Operation_Exception_When_Accessing_Failed_Result()
+    public void Value_throws_invalid_operation_exception_when_accessing_failed_result()
     {
         var result = Result.Error<int>("Failed");
 
@@ -220,7 +220,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Implicit_Conversion_From_Value_Creates_Success_Result()
+    public void Implicit_conversion_from_value_creates_success_result()
     {
         Result<int> result = Result.Ok(42);
 
@@ -230,7 +230,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void To_Result_Converts_Success_Result_To_Non_Generic()
+    public void To_result_converts_success_result_to_non_generic()
     {
         var result = Result.Ok(42);
 
@@ -242,7 +242,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void To_Result_Converts_Failed_Result_To_Non_Generic()
+    public void To_result_converts_failed_result_to_non_generic()
     {
         var result = Result.Error<int>("Failed");
 
@@ -255,7 +255,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equality_Works_For_Success_Results_With_Same_Value()
+    public void Equality_works_for_success_results_with_same_value()
     {
         var result1 = Result.Ok(42);
         var result2 = Result.Ok(42);
@@ -266,7 +266,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equality_Fails_For_Success_Results_With_Different_Values()
+    public void Equality_fails_for_success_results_with_different_values()
     {
         var result1 = Result.Ok(42);
         var result2 = Result.Ok(43);
@@ -277,7 +277,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equality_Works_For_Failed_Results_With_Same_Error()
+    public void Equality_works_for_failed_results_with_same_error()
     {
         var result1 = Result.NotFound<int>("Not found");
         var result2 = Result.NotFound<int>("Not found");
@@ -288,7 +288,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equality_Fails_For_Failed_Results_With_Different_Errors()
+    public void Equality_fails_for_failed_results_with_different_errors()
     {
         var result1 = Result.NotFound<int>("Not found");
         var result2 = Result.Error<int>("Error");
@@ -299,7 +299,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equality_Fails_For_Success_And_Failure_Results()
+    public void Equality_fails_for_success_and_failure_results()
     {
         var result1 = Result.Ok(42);
         var result2 = Result.Error<int>("Failed");
@@ -310,7 +310,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Get_Hash_Code_Is_Consistent()
+    public void Get_hash_code_is_consistent()
     {
         var result = Result.Ok(42);
 
@@ -321,7 +321,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Get_Hash_Code_Differs_For_Different_Values()
+    public void Get_hash_code_differs_for_different_values()
     {
         var result1 = Result.Ok(42);
         var result2 = Result.Ok(43);
@@ -330,7 +330,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void To_String_Returns_Success_Status_And_Value_For_Success()
+    public void To_string_returns_success_status_and_value_for_success()
     {
         var result = Result.Ok(42);
 
@@ -342,7 +342,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void To_String_Returns_Failure_Status_And_Error_For_Failure()
+    public void To_string_returns_failure_status_and_error_for_failure()
     {
         var result = Result.Error<string>("Something went wrong");
 
@@ -354,7 +354,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Different_Success_Statuses_Are_Not_Equal()
+    public void Different_success_statuses_are_not_equal()
     {
         var result1 = Result.Ok(42);
         var result2 = Result.Created(42);
@@ -363,7 +363,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Success_Result_With_Reference_Type_Stores_Value()
+    public void Success_result_with_reference_type_stores_value()
     {
         var list = new List<int> { 1, 2, 3 };
         var result = Result.Ok(list);
@@ -372,7 +372,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equals_Object_Returns_False_For_Non_Result_Object()
+    public void Equals_object_returns_false_for_non_result_object()
     {
         var result = Result.Ok(42);
 
@@ -383,7 +383,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Equals_Object_Returns_True_For_Boxed_Equal_Result()
+    public void Equals_object_returns_true_for_boxed_equal_result()
     {
         var result1 = Result.Ok(42);
         object result2 = Result.Ok(42);
@@ -392,7 +392,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Success_Result_Error_Details_Returns_Null()
+    public void Success_result_error_details_returns_null()
     {
         var result = Result.Ok(42);
 
@@ -400,7 +400,7 @@ public sealed class ResultOfTTests
     }
 
     [Fact]
-    public void Failed_Result_Value_Access_Shows_Error_Detail_In_Exception()
+    public void Failed_result_value_access_shows_error_detail_in_exception()
     {
         var result = Result.NotFound<int>("Resource not found");
 

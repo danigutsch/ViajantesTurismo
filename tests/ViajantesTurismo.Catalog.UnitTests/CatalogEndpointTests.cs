@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class CatalogEndpointTests
 {
     [Fact]
-    public async Task Catalog_Tour_List_Returns_All_Tours()
+    public async Task Catalog_tour_list_returns_all_tours()
     {
         // Arrange
         var store = new StubCatalogTourReadModelStore(CatalogEndpointTestsHelpers.CreateTour("TOUR-002", "Dolomites"));
@@ -28,7 +28,7 @@ public sealed class CatalogEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_List_Returns_Empty_List_When_No_Tours_Are_Published()
+    public async Task Public_tour_list_returns_empty_list_when_no_tours_are_published()
     {
         // Arrange
         var store = new StubCatalogTourReadModelStore(CatalogEndpointTestsHelpers.CreateTour("TOUR-002", "Dolomites"));
@@ -48,7 +48,7 @@ public sealed class CatalogEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_Details_Returns_NotFound_When_Tour_Is_Not_Published()
+    public async Task Public_tour_details_returns_notfound_when_tour_is_not_published()
     {
         // Arrange
         await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());
@@ -64,7 +64,7 @@ public sealed class CatalogEndpointTests
     }
 
     [Fact]
-    public async Task Public_Tour_Details_Returns_BadRequest_For_Whitespace_Slug()
+    public async Task Public_tour_details_returns_badrequest_for_whitespace_slug()
     {
         // Arrange
         await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());

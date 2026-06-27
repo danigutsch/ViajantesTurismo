@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class TourRecordBookingPaymentTests
 {
     [Fact]
-    public void RecordBookingPayment_When_Booking_Does_Not_Exist_Returns_Not_Found()
+    public void RecordBookingPayment_when_booking_does_not_exist_returns_not_found()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -29,7 +29,7 @@ public class TourRecordBookingPaymentTests
     }
 
     [Fact]
-    public void RecordBookingPayment_When_Amount_Exceeds_Remaining_Balance_Returns_Invalid()
+    public void RecordBookingPayment_when_amount_exceeds_remaining_balance_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -53,7 +53,7 @@ public class TourRecordBookingPaymentTests
     }
 
     [Fact]
-    public void RecordBookingPayment_When_Amount_Is_Invalid_Returns_Invalid()
+    public void RecordBookingPayment_when_amount_is_invalid_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -77,7 +77,7 @@ public class TourRecordBookingPaymentTests
     }
 
     [Fact]
-    public void RecordBookingPayment_When_Payment_Method_Is_Invalid_Returns_Invalid()
+    public void RecordBookingPayment_when_payment_method_is_invalid_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -101,7 +101,7 @@ public class TourRecordBookingPaymentTests
     }
 
     [Fact]
-    public void RecordBookingPayment_When_Payment_Date_Is_In_The_Future_Returns_Invalid()
+    public void RecordBookingPayment_when_payment_date_is_in_the_future_returns_invalid()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(
@@ -125,7 +125,7 @@ public class TourRecordBookingPaymentTests
     }
 
     [Fact]
-    public void RecordBookingPayment_When_Request_Is_Valid_Records_Payment()
+    public void RecordBookingPayment_when_request_is_valid_records_payment()
     {
         // Arrange
         var (tour, booking) = BookingDomainTestDataFactory.CreateTourWithSingleBooking(

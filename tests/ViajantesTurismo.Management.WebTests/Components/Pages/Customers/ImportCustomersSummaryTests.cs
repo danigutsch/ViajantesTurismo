@@ -11,7 +11,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Confirm_Import_After_Duplicate_Decisions_Shows_Created_Updated_Skipped_And_Failed_Counts()
+    public void Confirm_import_after_duplicate_decisions_shows_created_updated_skipped_and_failed_counts()
     {
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(
@@ -39,7 +39,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_Summary_When_Success_Rows_Contain_Customer_Ids_Shows_View_Customer_Links_For_Created_And_Updated_Rows()
+    public void Render_summary_when_success_rows_contain_customer_ids_shows_view_customer_links_for_created_and_updated_rows()
     {
         var createdId = Guid.NewGuid();
         var updatedId = Guid.NewGuid();
@@ -65,7 +65,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_Summary_When_Success_Row_Has_No_Customer_Id_Does_Not_Render_View_Customer_Link()
+    public void Render_summary_when_success_row_has_no_customer_id_does_not_render_view_customer_link()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
@@ -79,7 +79,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_Summary_When_View_Customer_Link_Is_Available_Targets_Customer_Details_Route()
+    public void Render_summary_when_view_customer_link_is_available_targets_customer_details_route()
     {
         var createdId = Guid.NewGuid();
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
@@ -97,7 +97,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_Summary_When_Per_Row_Errors_Exist_Shows_Row_And_Field_Level_Error_Messages()
+    public void Render_summary_when_per_row_errors_exist_shows_row_and_field_level_error_messages()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
@@ -121,7 +121,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_Summary_When_Error_Row_Field_And_Email_Are_Null_Shows_Dash_Placeholders()
+    public void Render_summary_when_error_row_field_and_email_are_null_shows_dash_placeholders()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
@@ -144,7 +144,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Download_Error_Report_When_Error_Rows_Exist_Exports_Current_Error_Rows()
+    public void Download_error_report_when_error_rows_exist_exports_current_error_rows()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
@@ -164,7 +164,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Download_Error_Report_When_Error_Row_Contains_Special_Characters_Escapes_Csv_Values()
+    public void Download_error_report_when_error_row_contains_special_characters_escapes_csv_values()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
@@ -191,7 +191,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Retry_Action_After_Summary_Display_Returns_To_Mapping_With_Previous_File_Context()
+    public void Retry_action_after_summary_display_returns_to_mapping_with_previous_file_context()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi, new ImportResultDto(1, 1));
 

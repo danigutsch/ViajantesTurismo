@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Can_Create_Booking_And_Show_Initial_Details()
+    public async Task Can_create_booking_and_show_initial_details()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
@@ -28,7 +28,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
     }
 
     [Fact]
-    public async Task Can_Apply_Discount_Confirm_Booking_And_Record_Payment()
+    public async Task Can_apply_discount_confirm_booking_and_record_payment()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
@@ -51,7 +51,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
     }
 
     [Fact]
-    public async Task Can_Complete_Booking_And_Persist_Final_State()
+    public async Task Can_complete_booking_and_persist_final_state()
     {
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });

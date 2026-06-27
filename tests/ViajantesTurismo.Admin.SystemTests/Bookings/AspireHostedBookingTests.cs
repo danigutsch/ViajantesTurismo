@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 public class AspireHostedBookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task AppHost_Managed_Fixture_Exposes_Loopback_Endpoints_And_Loads_The_Web_App()
+    public async Task AppHost_managed_fixture_exposes_loopback_endpoints_and_loads_the_web_app()
     {
         // Act
         await NavigateTo("/");

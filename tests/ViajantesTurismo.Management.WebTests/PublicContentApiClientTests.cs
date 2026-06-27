@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Management.WebTests;
 public sealed class PublicContentApiClientTests
 {
     [Fact]
-    public async Task GetContent_Requests_Management_Public_Content_Endpoint_And_Skips_Null_Items()
+    public async Task GetContent_requests_management_public_content_endpoint_and_skips_null_items()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -40,7 +40,7 @@ public sealed class PublicContentApiClientTests
     }
 
     [Fact]
-    public async Task GetContent_By_Key_Returns_Null_When_Endpoint_Returns_Not_Found()
+    public async Task GetContent_by_key_returns_null_when_endpoint_returns_not_found()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -54,7 +54,7 @@ public sealed class PublicContentApiClientTests
     }
 
     [Fact]
-    public async Task SaveContent_Sends_Upsert_Request_To_Keyed_Endpoint()
+    public async Task SaveContent_sends_upsert_request_to_keyed_endpoint()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -90,7 +90,7 @@ public sealed class PublicContentApiClientTests
     }
 
     [Fact]
-    public async Task SaveContent_Throws_Api_Validation_Exception_When_Server_Returns_Validation_Problem()
+    public async Task SaveContent_throws_api_validation_exception_when_server_returns_validation_problem()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>

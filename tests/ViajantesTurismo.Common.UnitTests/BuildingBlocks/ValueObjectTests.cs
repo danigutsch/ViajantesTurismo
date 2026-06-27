@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Common.UnitTests.BuildingBlocks;
 public sealed class ValueObjectTests
 {
     [Fact]
-    public void Equals_Returns_True_For_Equal_Values()
+    public void Equals_returns_true_for_equal_values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("123 Main St", "Springfield");
@@ -16,7 +16,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Equals_Returns_False_For_Different_Values()
+    public void Equals_returns_false_for_different_values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("456 Oak Ave", "Springfield");
@@ -27,7 +27,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Equals_Returns_False_When_Other_Is_Null()
+    public void Equals_returns_false_when_other_is_null()
     {
         var address = new TestAddress("123 Main St", "Springfield");
 
@@ -37,7 +37,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Equals_Returns_False_For_Different_Types()
+    public void Equals_returns_false_for_different_types()
     {
         var address = new TestAddress("123 Main St", "Springfield");
         var money = new TestMoney(100m, "USD");
@@ -48,7 +48,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Equals_Object_Returns_False_For_Non_Value_Object()
+    public void Equals_object_returns_false_for_non_value_object()
     {
         var address = new TestAddress("123 Main St", "Springfield");
         object other = "Not a value object";
@@ -59,7 +59,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Get_Hash_Code_Returns_Same_Value_For_Equal_Objects()
+    public void Get_hash_code_returns_same_value_for_equal_objects()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("123 Main St", "Springfield");
@@ -71,7 +71,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Get_Hash_Code_Returns_Different_Values_For_Different_Objects()
+    public void Get_hash_code_returns_different_values_for_different_objects()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("456 Oak Ave", "Springfield");
@@ -83,7 +83,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Get_Hash_Code_Handles_Null_Components()
+    public void Get_hash_code_handles_null_components()
     {
         var address = new TestAddress("123 Main St", null);
 
@@ -93,7 +93,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Operator_Equals_Returns_False_For_Different_Values()
+    public void Operator_equals_returns_false_for_different_values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("456 Oak Ave", "Springfield");
@@ -104,7 +104,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Operator_Not_Equals_Returns_False_For_Equal_Values()
+    public void Operator_not_equals_returns_false_for_equal_values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("123 Main St", "Springfield");
@@ -115,7 +115,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Operator_Not_Equals_Returns_True_For_Different_Values()
+    public void Operator_not_equals_returns_true_for_different_values()
     {
         var address1 = new TestAddress("123 Main St", "Springfield");
         var address2 = new TestAddress("456 Oak Ave", "Springfield");
@@ -126,7 +126,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_Comparison_Respects_Component_Order()
+    public void Value_object_comparison_respects_component_order()
     {
         var value1 = new TestTwoStrings("A", "B");
         var value2 = new TestTwoStrings("B", "A");
@@ -137,7 +137,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_With_Multiple_Components_Compares_All()
+    public void Value_object_with_multiple_components_compares_all()
     {
         var person1 = new TestPerson("John", "Doe", 30);
         var person2 = new TestPerson("John", "Doe", 30);
@@ -148,7 +148,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_With_Null_Components_Compares_Correctly()
+    public void Value_object_with_null_components_compares_correctly()
     {
         var address1 = new TestAddress("123 Main St", null);
         var address2 = new TestAddress("123 Main St", null);
@@ -159,7 +159,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_Dictionary_Lookup_Works_With_Equal_Instance()
+    public void Value_object_dictionary_lookup_works_with_equal_instance()
     {
         var dictionary = new Dictionary<TestAddress, string>();
         var address1 = new TestAddress("123 Main St", "Springfield");
@@ -171,7 +171,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_Hash_Set_Contains_Works_With_Equal_Instance()
+    public void Value_object_hash_set_contains_works_with_equal_instance()
     {
         var hashSet = new HashSet<TestAddress>();
         var address1 = new TestAddress("123 Main St", "Springfield");
@@ -183,7 +183,7 @@ public sealed class ValueObjectTests
     }
 
     [Fact]
-    public void Value_Object_With_Complex_Types_Compares_Correctly()
+    public void Value_object_with_complex_types_compares_correctly()
     {
         var order1 = new TestOrder(new TestMoney(100m, "USD"), new TestAddress("123 Main St", "Springfield"));
         var order2 = new TestOrder(new TestMoney(100m, "USD"), new TestAddress("123 Main St", "Springfield"));

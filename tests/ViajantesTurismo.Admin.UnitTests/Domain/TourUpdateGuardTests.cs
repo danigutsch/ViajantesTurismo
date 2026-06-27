@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class TourUpdateGuardTests
 {
     [Fact]
-    public void Update_Details_Without_Bookings_Should_Succeed()
+    public void Update_details_without_bookings_should_succeed()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour();
@@ -21,7 +21,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void Update_Details_With_Bookings_Should_Fail()
+    public void Update_details_with_bookings_should_fail()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "ORIG2024"));
@@ -36,7 +36,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void Update_Details_With_Bookings_Same_Identifier_Should_Succeed()
+    public void Update_details_with_bookings_same_identifier_should_succeed()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "KEEP2024"));
@@ -52,7 +52,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void Update_Currency_Without_Bookings_Should_Succeed()
+    public void Update_currency_without_bookings_should_succeed()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.UsDollar)));
@@ -66,7 +66,7 @@ public class TourUpdateGuardTests
     }
 
     [Fact]
-    public void Update_Currency_With_Bookings_Should_Fail()
+    public void Update_currency_with_bookings_should_fail()
     {
         // Arrange
         var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.UsDollar)));

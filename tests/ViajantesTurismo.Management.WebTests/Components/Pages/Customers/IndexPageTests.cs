@@ -15,7 +15,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_No_Customers_Message_When_Empty()
+    public void Renders_no_customers_message_when_empty()
     {
         // Arrange
         // Act
@@ -29,7 +29,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Customer_Basic_Information()
+    public void Renders_customer_basic_information()
     {
         // Arrange
         var customer = BuildCustomerDto(
@@ -54,7 +54,7 @@ public class IndexPageTests : BunitContext
 
 
     [Fact]
-    public void Renders_Name_Column_With_FirstName_And_LastName()
+    public void Renders_name_column_with_firstname_and_lastname()
     {
         // Arrange
         _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: "Jane", lastName: "Doe"));

@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public class DuplicateKeyNormalizerTests
 {
     [Fact]
-    public void Normalize_Uses_Field_Specific_Rules_For_Name_And_Email()
+    public void Normalize_uses_field_specific_rules_for_name_and_email()
     {
         // Arrange
         const string nameWithDiacritics = "  José da Silva  ";

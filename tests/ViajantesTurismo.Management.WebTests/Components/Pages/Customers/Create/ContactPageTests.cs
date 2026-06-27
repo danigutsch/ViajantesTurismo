@@ -15,7 +15,7 @@ public sealed class ContactPageTests : BunitContext
     }
 
     [Fact]
-    public void OnInitialized_When_State_Already_Has_Contact_Info_Preloads_Existing_Values()
+    public void OnInitialized_when_state_already_has_contact_info_preloads_existing_values()
     {
         // Arrange
         _state.SetContactInfo(new ContactInfoFormModel
@@ -38,7 +38,7 @@ public sealed class ContactPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Submit_When_Form_Is_Valid_Saves_State_And_Navigates_To_Address()
+    public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_address()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();
@@ -62,7 +62,7 @@ public sealed class ContactPageTests : BunitContext
     }
 
     [Fact]
-    public async Task Back_Button_Navigates_To_Identification_And_Updates_Current_Step()
+    public async Task Back_button_navigates_to_identification_and_updates_current_step()
     {
         // Arrange
         var navigationManager = Services.GetRequiredService<NavigationManager>();

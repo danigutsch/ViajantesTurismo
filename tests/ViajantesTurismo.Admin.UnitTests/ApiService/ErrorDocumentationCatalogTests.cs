@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 public sealed class ErrorDocumentationCatalogTests
 {
     [Fact]
-    public void GetEntries_Collects_Generated_Error_Catalogs_From_Admin_Domain_And_Application()
+    public void GetEntries_collects_generated_error_catalogs_from_admin_domain_and_application()
     {
         // Arrange
         var catalogType = typeof(ResultExtensions).Assembly

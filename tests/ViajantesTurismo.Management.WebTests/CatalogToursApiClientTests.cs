@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests;
 public sealed class CatalogToursApiClientTests
 {
     [Fact]
-    public async Task GetTours_Requests_Management_Catalog_Endpoint_And_Skips_Null_Items()
+    public async Task GetTours_requests_management_catalog_endpoint_and_skips_null_items()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -52,7 +52,7 @@ public sealed class CatalogToursApiClientTests
     }
 
     [Fact]
-    public async Task GetTours_Returns_Empty_Array_When_Catalog_Returns_Only_Nulls()
+    public async Task GetTours_returns_empty_array_when_catalog_returns_only_nulls()
     {
         // Arrange
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("[null,null]"));

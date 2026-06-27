@@ -13,7 +13,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void After_File_Selected_Shows_Header_Mapping_Step()
+    public void After_file_selected_shows_header_mapping_step()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -28,7 +28,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void All_Canonical_Headers_Show_All_Required_Matched_Alert()
+    public void All_canonical_headers_show_all_required_matched_alert()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -43,7 +43,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Unknown_Headers_Show_Warning_And_Required_Field_Dropdowns()
+    public void Unknown_headers_show_warning_and_required_field_dropdowns()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -58,7 +58,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Warning_Message_States_Count_Of_Unmatched_Required_Fields()
+    public void Warning_message_states_count_of_unmatched_required_fields()
     {
         // Arrange — provide only Email so all other required fields are unmatched
         var cut = Render<ImportCustomers>();
@@ -74,7 +74,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Import_Button_Disabled_When_Required_Fields_Unmatched()
+    public void Import_button_disabled_when_required_fields_unmatched()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -89,7 +89,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Import_Button_Enabled_When_All_Required_Headers_Auto_Matched()
+    public void Import_button_enabled_when_all_required_headers_auto_matched()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -104,7 +104,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Choose_Different_File_Returns_To_File_Selection_Step()
+    public void Choose_different_file_returns_to_file_selection_step()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -120,7 +120,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void File_Name_Shown_In_Mapping_Card_Header()
+    public void File_name_shown_in_mapping_card_header()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -135,7 +135,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Detected_Column_Count_Shown_In_Mapping_Card_Header()
+    public void Detected_column_count_shown_in_mapping_card_header()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -150,7 +150,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     }
 
     [Fact]
-    public void Selecting_Column_For_Required_Field_Enables_Import_When_All_Assigned()
+    public void Selecting_column_for_required_field_enables_import_when_all_assigned()
     {
         // Arrange — only provide required fields via a single unknown column to test one-field scenario
         // Use canonical headers minus one required field, plus a custom column for that field

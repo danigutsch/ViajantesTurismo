@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Public.WebTests;
 public sealed class PublicComponentTests : BunitContext
 {
     [Fact]
-    public void TourCard_Renders_Default_Heading_Link_And_First_Image()
+    public void TourCard_renders_default_heading_link_and_first_image()
     {
         // Arrange
         var tour = PublicComponentTestsHelpers.CreateTour("camino norte", "Camino Norte", includeImage: true);
@@ -26,7 +26,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourCard_Renders_Level_Three_Heading_And_No_Image_When_Tour_Has_No_Images()
+    public void TourCard_renders_level_three_heading_and_no_image_when_tour_has_no_images()
     {
         // Arrange
         var tour = PublicComponentTestsHelpers.CreateTour("andes/ride", "Andes Ride", includeImage: false);
@@ -43,7 +43,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_Renders_Captions_Only_When_Present()
+    public void TourGallery_renders_captions_only_when_present()
     {
         // Arrange
         var images = new[]

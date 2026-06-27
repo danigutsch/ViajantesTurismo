@@ -18,7 +18,7 @@ public sealed class UpdateCustomerCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Succeeds_For_Valid_Update()
+    public async Task Handle_succeeds_for_valid_update()
     {
         // Arrange
         var existing = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "original@example.com"));
@@ -67,7 +67,7 @@ public sealed class UpdateCustomerCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Returns_NotFound_For_Missing_Customer()
+    public async Task Handle_returns_notfound_for_missing_customer()
     {
         // Arrange
         var command = new UpdateCustomerCommand(
@@ -110,7 +110,7 @@ public sealed class UpdateCustomerCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Returns_Invalid_For_Duplicate_Email()
+    public async Task Handle_returns_invalid_for_duplicate_email()
     {
         // Arrange
         var existing1 = EntityBuilders.BuildCustomer(new CustomerOptions(Email: "a@example.com"));

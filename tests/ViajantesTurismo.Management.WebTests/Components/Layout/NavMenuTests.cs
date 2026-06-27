@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 public class NavMenuTests : BunitContext
 {
     [Fact]
-    public void Renders_Brand_Name()
+    public void Renders_brand_name()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -16,7 +16,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Home_NavLink()
+    public void Renders_home_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -29,7 +29,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Add_Tour_NavLink()
+    public void Renders_add_tour_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -41,7 +41,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Tours_NavLink()
+    public void Renders_tours_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -53,7 +53,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Catalog_NavLink()
+    public void Renders_catalog_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -65,7 +65,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Public_Content_NavLink()
+    public void Renders_public_content_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -77,7 +77,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Bookings_NavLink()
+    public void Renders_bookings_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -89,7 +89,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Add_Customer_NavLink()
+    public void Renders_add_customer_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -101,7 +101,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Renders_Customers_NavLink()
+    public void Renders_customers_NavLink()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -113,7 +113,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void All_NavLinks_Have_Nav_Link_Class()
+    public void All_NavLinks_have_nav_link_class()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -124,7 +124,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void All_NavLinks_Have_Icons()
+    public void All_NavLinks_have_icons()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -139,7 +139,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Has_Navbar_Toggler_Checkbox()
+    public void Has_navbar_toggler_checkbox()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -151,7 +151,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Has_Scrollable_Navigation_Container()
+    public void Has_scrollable_navigation_container()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -162,7 +162,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Navigation_Uses_Flex_Column_Layout()
+    public void Navigation_uses_flex_column_layout()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -173,7 +173,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void All_Nav_Items_Have_Padding()
+    public void All_nav_items_have_padding()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -184,7 +184,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Top_Row_Has_Dark_Navbar_Theme()
+    public void Top_row_has_dark_navbar_theme()
     {
         // Act
         var cut = Render<NavMenu>();
@@ -195,7 +195,7 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
-    public void Brand_Link_Points_To_Root()
+    public void Brand_link_points_to_root()
     {
         // Act
         var cut = Render<NavMenu>();
