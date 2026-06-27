@@ -8,7 +8,7 @@ internal static class EditablePublicContentTestFactory
     {
         var enUs = CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
         var ptBr = CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview);
-        var result = EditablePublicContent.Create(key, PublicContentLanguage.EnUs, enUs, ptBr);
+        var result = EditablePublicContent.Create(key, PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         Assert.True(result.IsSuccess);
         return result.Value;

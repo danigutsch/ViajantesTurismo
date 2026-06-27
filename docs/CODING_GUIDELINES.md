@@ -344,6 +344,29 @@ public record TourDto : IValidatableObject
 public required int Duration { get; init; }
 ```
 
+### EF Core Migrations
+
+Create EF Core migrations from the model whenever possible:
+
+```bash
+dotnet tool run dotnet-ef migrations add <MigrationName> \
+    --project src/<Context>.Infrastructure \
+    --startup-project src/ViajantesTurismo.MigrationService \
+    --context <DbContextName>
+```
+
+- Change the domain model and EF configuration first, then scaffold the migration with `dotnet ef`.
+- Review scaffolded migrations before committing, but do not hand-write migrations by default.
+- Hand-edit migration code only when EF cannot infer intent, such as data-preserving transforms,
+  column renames that would otherwise become drop/add operations, or database objects outside the EF model.
+- Prefer model-driven constructs for dynamic concepts, such as owned collections for localized variants,
+  instead of hardcoded per-language columns.
+- Keep generated migration files in source control with the model snapshot.
+
+References: [EF Core migrations overview](https://learn.microsoft.com/ef/core/managing-schemas/migrations/),
+[managing migrations](https://learn.microsoft.com/ef/core/managing-schemas/migrations/managing), and
+[owned entity collections](https://learn.microsoft.com/ef/core/modeling/owned-entities#collections-of-owned-types).
+
 ### CreateSlimBuilder
 
 For AOT-optimized API applications, use `CreateSlimBuilder` instead of `CreateBuilder`:

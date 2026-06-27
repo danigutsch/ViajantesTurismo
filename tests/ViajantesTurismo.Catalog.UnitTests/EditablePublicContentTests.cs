@@ -14,14 +14,14 @@ public sealed class EditablePublicContentTests
         var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, enUs, ptBr);
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("HOME.HERO", result.Value.Key);
         Assert.Equal(PublicContentLanguage.EnUs, result.Value.SourceLanguage);
-        Assert.Equal(enUs, result.Value.EnUs);
-        Assert.Equal(ptBr, result.Value.PtBr);
+        Assert.Contains(enUs, result.Value.Variants);
+        Assert.Contains(ptBr, result.Value.Variants);
         Assert.Equal(PublicContentPublicationState.Draft, result.Value.PublicationState);
     }
 
@@ -33,7 +33,7 @@ public sealed class EditablePublicContentTests
         var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, enUs, ptBr);
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -48,7 +48,7 @@ public sealed class EditablePublicContentTests
         var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create(" ", PublicContentLanguage.EnUs, enUs, ptBr);
+        var result = EditablePublicContent.Create(" ", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -62,7 +62,7 @@ public sealed class EditablePublicContentTests
         var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("  Home.Hero  ", PublicContentLanguage.EnUs, enUs, ptBr);
+        var result = EditablePublicContent.Create("  Home.Hero  ", PublicContentLanguage.EnUs, [enUs, ptBr]);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -77,14 +77,14 @@ public sealed class EditablePublicContentTests
         var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.None, enUs, ptBr);
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.None, [enUs, ptBr]);
 
         // Assert
         Assert.True(result.IsFailure);
     }
 
     [Fact]
-    public void Create_rejects_a_variant_in_the_wrong_language_slot()
+    public void Create_rejects_duplicate_language_variants()
     {
         // Arrange
         var wrongLanguageVariant = EditablePublicContentTestFactory.CreateVariant(
@@ -96,11 +96,44 @@ public sealed class EditablePublicContentTests
         var result = EditablePublicContent.Create(
             "home.hero",
             PublicContentLanguage.EnUs,
-            wrongLanguageVariant,
-            ptBr);
+            [wrongLanguageVariant, ptBr]);
 
         // Assert
         Assert.True(result.IsFailure);
+    }
+
+    [Fact]
+    public void Create_rejects_missing_supported_language_variants()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+
+        // Act
+        var result = EditablePublicContent.Create(
+            "home.hero",
+            PublicContentLanguage.EnUs,
+            [enUs]);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.ErrorDetails);
+        Assert.Contains(nameof(EditablePublicContent.Variants), result.ErrorDetails.ValidationErrors?.Keys ?? []);
+    }
+
+    [Fact]
+    public void ReplaceVariants_rejects_missing_supported_language_variants_without_changing_content()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
+
+        // Act
+        var result = content.ReplaceVariants(PublicContentLanguage.EnUs, [enUs]);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal(PublicContentPublicationState.Draft, content.PublicationState);
+        Assert.Contains(content.Variants, variant => variant.Language == PublicContentLanguage.PtBr);
     }
 
     [Fact]

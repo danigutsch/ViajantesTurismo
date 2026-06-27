@@ -82,6 +82,17 @@ discovery and execution but delegates to the test-host process. This means:
 | `dotnet test --project <path-to-.csproj>`      | Run tests in a single project    |
 | `dotnet test --project <path> -- <args>`       | Pass extra args to the test host |
 
+### Dependency-heavy validation cost
+
+Dependency-heavy tests pay a large fixed startup and readiness cost. Examples include tests that
+start application hosts, containers, databases, browsers, queues, or other real infrastructure.
+Humans and agents should avoid repeated focused runs of these projects after each small edit.
+Prefer one bundled validation pass after a coherent change set, then use focused reruns only to
+diagnose a specific failure or confirm a small fix for that failure.
+
+Unit, contract, component, and architecture tests remain good candidates for focused inner-loop
+validation when they do not start external dependencies or hosted application resources.
+
 Example — run E2E tests in headed mode:
 
 ```powershell

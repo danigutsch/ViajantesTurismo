@@ -19,9 +19,25 @@ internal sealed class FakeCountryService : ICountryService
         new() { Code = "US", Name = "United States" }
     ];
 
+    private readonly Task<CountryInfo[]> countries;
+
+    public FakeCountryService()
+        : this(Task.FromResult(DefaultCountries.ToArray()))
+    {
+    }
+
+    public FakeCountryService(Task<CountryInfo[]> countries)
+    {
+        ArgumentNullException.ThrowIfNull(countries);
+
+        this.countries = countries;
+    }
+
     /// <inheritdoc />
     public Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
-        return Task.FromResult(DefaultCountries.ToArray());
+        ct.ThrowIfCancellationRequested();
+
+        return countries.WaitAsync(ct);
     }
 }

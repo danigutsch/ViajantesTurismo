@@ -34,7 +34,7 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
 
         if (existing is not null)
         {
-            var result = existing.ReplaceVariants(content.SourceLanguage, content.EnUs, content.PtBr);
+            var result = existing.ReplaceVariants(content.SourceLanguage, content.Variants);
             if (result.IsFailure)
             {
                 throw new InvalidOperationException("Stored public content replacement must be valid.");

@@ -65,6 +65,73 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
+    public void Creates_Review_Draft_From_Portuguese_Source_When_English_Target_Is_Missing()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#source-language").Change(PublicContentLanguageDto.PtBr.ToString());
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+        cut.Find("button.btn-outline-primary").Click();
+
+        // Assert
+        Assert.Equal("Bem-vindo", cut.Find("#en-us-title").GetAttribute("value"));
+        Assert.Contains("Draft created and marked for human review", cut.Markup, StringComparison.Ordinal);
+        Assert.True(cut.Find("#en-us-review").HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Does_Not_Overwrite_Target_Language_When_Target_Already_Has_Content()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Existing title");
+        cut.Find("#pt-br-body").Change("Existing body");
+        cut.Find("button.btn-outline-primary").Click();
+
+        // Assert
+        Assert.Contains("Clear one target language title and body", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        Assert.Equal("Existing title", cut.Find("#pt-br-title").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Renders_Accessible_Labels_For_Public_Content_Inputs()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        void AssertLabelFor(string id)
+        {
+            Assert.NotNull(cut.Find($"label[for='{id}']"));
+        }
+
+        // Assert
+        AssertLabelFor("content-key");
+        AssertLabelFor("source-language");
+        AssertLabelFor("en-us-title");
+        AssertLabelFor("en-us-body");
+        AssertLabelFor("en-us-seo-title");
+        AssertLabelFor("en-us-meta-description");
+        AssertLabelFor("en-us-share-summary");
+        AssertLabelFor("en-us-review");
+        AssertLabelFor("pt-br-title");
+        AssertLabelFor("pt-br-body");
+        AssertLabelFor("pt-br-seo-title");
+        AssertLabelFor("pt-br-meta-description");
+        AssertLabelFor("pt-br-share-summary");
+        AssertLabelFor("pt-br-review");
+    }
+
+    [Fact]
     public void Saves_Public_Content_With_Both_Language_Variants()
     {
         // Arrange
@@ -83,8 +150,8 @@ public sealed class PublicContentTests : BunitContext
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
         Assert.Equal("home.hero", publicContentApi.SavedKey);
         Assert.NotNull(publicContentApi.SavedRequest);
-        Assert.Equal("Welcome", publicContentApi.SavedRequest.EnUs.Title);
-        Assert.Equal("Pedale conosco", publicContentApi.SavedRequest.PtBr.Body);
+        Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.EnUs && variant.Title == "Welcome");
+        Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Body == "Pedale conosco");
         Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
     }
 
