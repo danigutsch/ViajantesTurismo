@@ -107,8 +107,16 @@ Official references:
 
 Mutation-testing note:
 
-- See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository decision on
+- See [Mutation Testing Evaluation](MUTATION_TESTING.md) for the current repository posture on
   `Stryker.NET` with xUnit v3 + Microsoft.Testing.Platform.
+- Limited local smoke targets exist for contained unit-test and Roslyn analyzer/source-generator
+  projects. Run all configured targets from the repository root:
+
+```bash
+bash scripts/run-mutation-smoke.sh
+```
+
+Do not gate CI on this while Stryker.NET MTP support remains in preview.
 
 ### Code Coverage with MTP + xUnit v3
 
