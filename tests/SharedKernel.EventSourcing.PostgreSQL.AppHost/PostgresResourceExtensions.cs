@@ -5,7 +5,8 @@ namespace SharedKernel.EventSourcing.PostgreSQL.AppHost;
 /// </summary>
 internal static class PostgresResourceExtensions
 {
-    private const string Postgres17_6ImageDigest = "00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929";
+    /// <summary>Digest for <c>docker.io/library/postgres:17.6</c>.</summary>
+    private const string PostgresImageDigest = "00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929";
 
     /// <summary>
     /// Adds the PostgreSQL server with the repository-pinned image digest.
@@ -18,6 +19,6 @@ internal static class PostgresResourceExtensions
         string name)
     {
         return builder.AddPostgres(name)
-            .WithImageSHA256(Postgres17_6ImageDigest);
+            .WithImageSHA256(PostgresImageDigest);
     }
 }
