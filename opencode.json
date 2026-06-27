@@ -9,7 +9,7 @@
       "command": [
         "bash",
         "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); cd \"$root\"; dotnet format ViajantesTurismo.slnx --include \"$1\" --no-restore",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; dotnet format ViajantesTurismo.slnx --include \"$rel\" --no-restore",
         "_",
         "$FILE"
       ],
@@ -29,7 +29,7 @@
       "command": [
         "bash",
         "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$1\"; else docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace mvdan/shfmt:v3.11.0 -w -i 4 -ci -bn -sr -- \"$rel\"; fi",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$rel\"; elif command -v docker >/dev/null 2>&1; then docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace mvdan/shfmt:v3.11.0 -w -i 4 -ci -bn -sr -- \"$rel\"; else echo \"Optional: shfmt requires local install or docker. Skipping shell autofix.\" >&2; fi",
         "_",
         "$FILE"
       ],
@@ -39,7 +39,7 @@
       "command": [
         "bash",
         "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); pwsh -NoProfile -File \"$root/scripts/format-powershell-file.ps1\" \"$1\"",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; pwsh -NoProfile -File scripts/format-powershell-file.ps1 \"$rel\"",
         "_",
         "$FILE"
       ],
