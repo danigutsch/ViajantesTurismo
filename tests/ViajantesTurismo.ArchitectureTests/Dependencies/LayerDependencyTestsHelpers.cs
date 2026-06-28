@@ -69,6 +69,6 @@ internal static partial class LayerDependencyTestsHelpers
             : ProductUsingDirectiveRegex().IsMatch(line);
     }
 
-    [GeneratedRegex(@"^\s*(global\s+)?using\s+(static\s+)?ViajantesTurismo(\.|;)")]
+    [GeneratedRegex(@"^\s*(global\s+)?using\s+(?:(static\s+)?(global::)?ViajantesTurismo(\.|;)|[A-Za-z_][A-Za-z0-9_]*\s*=\s*(global::)?ViajantesTurismo(\.|;))")]
     private static partial Regex ProductUsingDirectiveRegex();
 }
