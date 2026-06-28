@@ -156,6 +156,7 @@ Move into a feature-focused bundle when the code:
 - is reusable, but only within one vertical concern such as mediator, HTTP, ASP.NET Core, gRPC, or EF Core
 - requires technology-specific dependencies that would bloat a core runtime package
 - has naming/tagging/behavior tied to one technical subsystem
+- meets ADR-027's split threshold for adapter packages when an external provider SDK is involved
 
 Keep local when the code:
 
