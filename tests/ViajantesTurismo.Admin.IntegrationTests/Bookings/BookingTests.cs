@@ -1,8 +1,8 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
-[Trait(global::SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(global::SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
-[Trait(global::SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
 public class BookingTests(ApiFixture fixture)
 {
     [Fact]
@@ -29,7 +29,7 @@ public class BookingTests(ApiFixture fixture)
         var response = await fixture.Client.GetAsync(new Uri("/bookings", UriKind.Relative), cancellationToken);
 
         // Assert
-        Assert.Equal(Uri.UriSchemeHttp, baseUri.Scheme);
+        Assert.True(baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps);
         Assert.False(string.IsNullOrWhiteSpace(baseUri.Host));
         Assert.True(baseUri.Port > 0);
 

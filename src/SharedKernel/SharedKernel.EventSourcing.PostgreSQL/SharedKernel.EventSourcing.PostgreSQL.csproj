@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
-    <PackageReference Include="Npgsql" VersionOverride="10.0.1" />
+    <PackageReference Include="Npgsql" />
   </ItemGroup>
 
   <ItemGroup>

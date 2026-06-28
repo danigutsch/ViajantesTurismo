@@ -14,10 +14,10 @@ public sealed class AspireTestApplication : IAsyncDisposable
     /// </summary>
     public static readonly TimeSpan DefaultResourceStartupTimeout = TimeSpan.FromSeconds(90);
 
-    private IDistributedApplicationTestingBuilder? _appBuilder;
+    private IAsyncDisposable? _appBuilder;
     private DistributedApplication? _app;
 
-    private AspireTestApplication(IDistributedApplicationTestingBuilder appBuilder, DistributedApplication app)
+    private AspireTestApplication(IAsyncDisposable? appBuilder, DistributedApplication app)
     {
         _appBuilder = appBuilder;
         _app = app;
@@ -60,6 +60,46 @@ public sealed class AspireTestApplication : IAsyncDisposable
         catch
         {
             await DisposeAfterFailedStart(app, appBuilder);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Starts an Aspire application from an already configured builder.
+    /// </summary>
+    /// <param name="builder">The configured application builder.</param>
+    /// <param name="healthyResourceNames">Resource names that must become healthy before the method returns.</param>
+    /// <param name="resourceStartupTimeout">The resource startup timeout.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The started test application.</returns>
+    public static async Task<AspireTestApplication> Start(
+        IDistributedApplicationBuilder builder,
+        IEnumerable<string> healthyResourceNames,
+        TimeSpan? resourceStartupTimeout,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(healthyResourceNames);
+
+        DistributedApplication? app = null;
+
+        try
+        {
+            app = builder.Build();
+            await app.StartAsync(ct);
+
+            using var timeoutCts = new CancellationTokenSource(resourceStartupTimeout ?? DefaultResourceStartupTimeout);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+            foreach (var resourceName in healthyResourceNames)
+            {
+                await app.ResourceNotifications.WaitForResourceHealthyAsync(resourceName, linkedCts.Token);
+            }
+
+            return new AspireTestApplication(null, app);
+        }
+        catch
+        {
+            await DisposeAfterFailedStart(app, null);
             throw;
         }
     }
@@ -128,7 +168,7 @@ public sealed class AspireTestApplication : IAsyncDisposable
         Justification = "Cleanup after failed startup must not mask the original startup exception.")]
     private static async Task DisposeAfterFailedStart(
         DistributedApplication? app,
-        IDistributedApplicationTestingBuilder? appBuilder)
+        IAsyncDisposable? appBuilder)
     {
         try
         {

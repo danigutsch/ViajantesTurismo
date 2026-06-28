@@ -14,7 +14,11 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        app = await AspireTestApplication.Start<Projects.SharedKernel_EventSourcing_PostgreSQL_AppHost>([PostgreSqlResourceName], null, TestContext.Current.CancellationToken);
+        var appBuilder = DistributedApplication.CreateBuilder([]);
+        var databaseServer = appBuilder.AddPostgres(PostgreSqlResourceName);
+        _ = databaseServer.AddDatabase(DatabaseResourceName);
+
+        app = await AspireTestApplication.Start(appBuilder, [PostgreSqlResourceName], null, TestContext.Current.CancellationToken);
         connectionString = await app.GetConnectionString(DatabaseResourceName, TestContext.Current.CancellationToken);
     }
 
