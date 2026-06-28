@@ -55,12 +55,15 @@ internal sealed class EfCatalogTourReadModelStore(CatalogDbContext dbContext) : 
 
     public async ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
-        return await dbContext.CatalogTourReadModels
-            .OrderBy(tour => tour.Title)
-            .ThenBy(tour => tour.CatalogTourId)
-            .Select(tour => ToReadModel(tour))
+        var tours = await dbContext.CatalogTourReadModels
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
+
+        return tours
+            .OrderBy(tour => tour.Title, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(tour => tour.CatalogTourId)
+            .Select(ToReadModel)
+            .ToArray();
     }
 
     public async ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)

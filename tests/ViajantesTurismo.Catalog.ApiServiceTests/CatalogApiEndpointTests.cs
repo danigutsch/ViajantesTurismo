@@ -7,8 +7,8 @@ using ViajantesTurismo.Catalog.Contracts;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(global::SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(global::SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiEndpointTests
 {
     [Fact]
@@ -222,5 +222,32 @@ public sealed class CatalogApiEndpointTests
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         Assert.NotNull(problem);
         Assert.Contains("Variants", problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_presentation_endpoint_returns_validation_problem_when_values_are_too_long()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var request = new UpsertCatalogTourPresentationRequest
+        {
+            Title = new string('t', ContractConstants.MaxNameLength + 1),
+            Slug = new string('s', ContractConstants.MaxSlugLength + 1),
+            IsPublished = true
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/tours/{Guid.CreateVersion7()}/presentation", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(UpsertCatalogTourPresentationRequest.Title), problem.Errors.Keys);
+        Assert.Contains(nameof(UpsertCatalogTourPresentationRequest.Slug), problem.Errors.Keys);
     }
 }

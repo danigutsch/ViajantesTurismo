@@ -12,7 +12,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
         var sut = new EfCatalogTourReadModelStore(dbContext);
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Zulu"), TestContext.Current.CancellationToken);
-        await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Bravo"), TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "bravo"), TestContext.Current.CancellationToken);
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Alpha"), TestContext.Current.CancellationToken);
 
         // Act
@@ -22,7 +22,7 @@ public sealed class EfCatalogTourReadModelStoreTests
         Assert.Collection(
             tours,
             tour => Assert.Equal("Alpha", tour.Title),
-            tour => Assert.Equal("Bravo", tour.Title),
+            tour => Assert.Equal("bravo", tour.Title),
             tour => Assert.Equal("Zulu", tour.Title));
     }
 

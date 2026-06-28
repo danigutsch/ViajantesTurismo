@@ -114,25 +114,36 @@ static async Task<IResult> UpsertTourPresentation(
         return Results.BadRequest();
     }
 
-    if (string.IsNullOrWhiteSpace(request.Title))
+    var title = request.Title?.Trim() ?? string.Empty;
+    var slug = request.Slug?.Trim() ?? string.Empty;
+    var errors = new Dictionary<string, string[]>();
+
+    if (string.IsNullOrWhiteSpace(title))
     {
-        return Results.ValidationProblem(new Dictionary<string, string[]>
-        {
-            [nameof(request.Title)] = ["Title is required."]
-        });
+        errors[nameof(request.Title)] = ["Title is required."];
+    }
+    else if (title.Length > ContractConstants.MaxNameLength)
+    {
+        errors[nameof(request.Title)] = [$"Title cannot exceed {ContractConstants.MaxNameLength} characters."];
     }
 
-    if (string.IsNullOrWhiteSpace(request.Slug))
+    if (string.IsNullOrWhiteSpace(slug))
     {
-        return Results.ValidationProblem(new Dictionary<string, string[]>
-        {
-            [nameof(request.Slug)] = ["Slug is required."]
-        });
+        errors[nameof(request.Slug)] = ["Slug is required."];
+    }
+    else if (slug.Length > ContractConstants.MaxSlugLength)
+    {
+        errors[nameof(request.Slug)] = [$"Slug cannot exceed {ContractConstants.MaxSlugLength} characters."];
+    }
+
+    if (errors.Count > 0)
+    {
+        return Results.ValidationProblem(errors);
     }
 
     var updated = await store.UpdatePresentation(
         id,
-        new CatalogTourPresentationUpdate(request.Title, request.Slug, request.IsPublished),
+        new CatalogTourPresentationUpdate(title, slug, request.IsPublished),
         ct);
 
     return updated is null ? Results.NotFound() : Results.Ok(MapTour(updated));
