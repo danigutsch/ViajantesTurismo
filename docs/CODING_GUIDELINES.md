@@ -161,6 +161,36 @@ public static string NormalizeIdentifier(string value)
 }
 ```
 
+### String normalization and database comparisons
+
+Normalize strings at input boundaries only when the domain defines a canonical value. Reuse existing
+sanitizers such as `StringSanitizer.Sanitize` before adding new trimming or normalization code. Examples:
+
+- trim leading/trailing whitespace before persistence
+- normalize Unicode through `StringSanitizer` for user-entered text
+- uppercase fixed business codes only when the code format requires uppercase
+
+Do not use `ToLower`, `ToLowerInvariant`, `ToUpper`, or `ToUpperInvariant` inside EF Core queries to
+force case-insensitive matching or ordering. EF Core warns this can prevent index usage. If a database
+query needs case-insensitive equality or ordering, define that behavior in the database schema instead:
+
+- prefer a database or column collation that matches the required comparison behavior
+- for PostgreSQL, prefer an ICU nondeterministic collation for case-insensitive or accent-insensitive text
+- consider PostgreSQL `citext` only when collations are not suitable
+- use `EF.Functions.Collate` only for narrow query-specific exceptions, and verify the query plan because
+  an explicit query collation can make indexes unusable when it differs from the indexed collation
+
+If case-insensitive behavior is not a requirement, keep exact stored values and test the exact-match
+contract. For URL slugs in the Catalog read model, the current contract is exact match after sanitization;
+case-insensitive URL uniqueness would require a schema-level collation or type change plus migration.
+
+References:
+
+- [EF Core collations and case sensitivity](https://learn.microsoft.com/ef/core/miscellaneous/collations-and-case-sensitivity)
+- [Npgsql collations and case sensitivity](https://www.npgsql.org/efcore/misc/collations-and-case-sensitivity.html)
+- [PostgreSQL collation support](https://www.postgresql.org/docs/current/collation.html)
+- [PostgreSQL citext](https://www.postgresql.org/docs/current/citext.html)
+
 ### Primary Constructors
 
 Prefer primary constructors for simple classes:

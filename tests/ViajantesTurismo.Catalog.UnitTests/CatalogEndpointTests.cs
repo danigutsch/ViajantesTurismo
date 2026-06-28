@@ -28,6 +28,44 @@ public sealed class CatalogEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_tour_details_returns_matching_tour()
+    {
+        // Arrange
+        var tour = CatalogEndpointTestsHelpers.CreateTour("TOUR-002", "Dolomites");
+        var store = new StubCatalogTourReadModelStore(tour);
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/catalog/tours/{tour.CatalogTourId}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var dto = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(dto);
+        Assert.Equal(tour.CatalogTourId, dto.Id);
+        Assert.Equal("Dolomites", dto.Title);
+    }
+
+    [Fact]
+    public async Task Catalog_tour_details_returns_notfound_when_tour_is_missing()
+    {
+        // Arrange
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(new StubCatalogTourReadModelStore());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/catalog/tours/{Guid.CreateVersion7()}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Public_tour_list_returns_empty_list_when_no_tours_are_published()
     {
         // Arrange
@@ -77,5 +115,26 @@ public sealed class CatalogEndpointTests
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Public_tour_details_trims_slug_before_lookup()
+    {
+        // Arrange
+        var tour = CatalogEndpointTestsHelpers.CreateTour("published-tour", "Published") with { IsPublished = true };
+        var store = new StubCatalogTourReadModelStore(tour);
+        await using var factory = CatalogEndpointTestsHelpers.CreateFactory(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/public/catalog/tours/%20published-tour%20", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var dto = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(dto);
+        Assert.Equal("published-tour", dto.Slug);
     }
 }

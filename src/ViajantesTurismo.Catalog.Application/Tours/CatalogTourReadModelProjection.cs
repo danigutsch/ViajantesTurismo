@@ -28,6 +28,8 @@ public sealed class CatalogTourReadModelProjection(
                 draftCreated.AdminTourId,
                 draftCreated.Identifier,
                 draftCreated.Title,
+                draftCreated.Identifier.Trim(),
+                false,
                 envelope.Position,
                 envelope.RecordedAt),
             ct);

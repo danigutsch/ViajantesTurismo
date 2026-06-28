@@ -26,6 +26,8 @@ internal static class CatalogEndpointTestsHelpers
             Guid.CreateVersion7(),
             identifier,
             title,
+            identifier,
+            false,
             1,
             DateTimeOffset.UtcNow);
     }

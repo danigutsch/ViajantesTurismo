@@ -1,9 +1,8 @@
 using ViajantesTurismo.Catalog.Application.Tours;
-using ViajantesTurismo.Common.Sanitizers;
 
-namespace ViajantesTurismo.Catalog.UnitTests;
+namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
-public sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadModel[] tours) : ICatalogTourReadModelStore
+internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
 {
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
@@ -17,21 +16,17 @@ public sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadMod
 
     public ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
     {
-        var tour = tours.FirstOrDefault(tour => tour.CatalogTourId == catalogTourId);
-        return ValueTask.FromResult(tour);
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
     }
 
     public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
-        IReadOnlyList<CatalogTourDraftReadModel> snapshot = tours;
-        return ValueTask.FromResult(snapshot);
+        IReadOnlyList<CatalogTourDraftReadModel> tours = [];
+        return ValueTask.FromResult(tours);
     }
 
     public ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
-        var sanitizedSlug = StringSanitizer.Sanitize(slug) ?? string.Empty;
-        var tour = tours.FirstOrDefault(tour =>
-            tour.IsPublished && string.Equals(tour.Slug, sanitizedSlug, StringComparison.Ordinal));
-        return ValueTask.FromResult(tour);
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
     }
 }

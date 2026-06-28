@@ -34,6 +34,7 @@ public sealed class IndexPageTests : BunitContext
         Assert.Contains("Published", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Draft", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("2026-06-25", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Edit presentation", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]

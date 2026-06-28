@@ -1,6 +1,5 @@
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
-using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -162,21 +161,6 @@ public sealed class EditablePublicContentTests
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(PublicContentPublicationState.ReviewRequired, content.PublicationState);
-    }
-
-    [Fact]
-    public async Task InMemory_store_gets_content_by_sanitized_key()
-    {
-        // Arrange
-        var store = new InMemoryPublicContentStore();
-        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
-        await store.SaveContent(content, TestContext.Current.CancellationToken);
-
-        // Act
-        var saved = await store.GetContent($"  {content.Key}  ", TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Same(content, saved);
     }
 
     [Fact]

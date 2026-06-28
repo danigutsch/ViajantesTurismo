@@ -3,6 +3,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Common.Sanitizers;
 using ViajantesTurismo.ServiceDefaults;
 using SharedKernel.Results;
 
@@ -11,7 +12,6 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
-builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
 
 var app = builder.Build();
 
@@ -20,6 +20,19 @@ app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, Cancellati
     var tours = await store.ListTours(ct);
     return tours.Select(MapTour);
 });
+
+app.MapGet("/catalog/tours/{id:guid}", async (Guid id, ICatalogTourReadModelStore store, CancellationToken ct) =>
+{
+    if (id == Guid.Empty)
+    {
+        return Results.BadRequest();
+    }
+
+    var tour = await store.GetTour(id, ct);
+    return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
+});
+
+app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
 
 app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, CancellationToken ct) =>
 {
@@ -102,6 +115,52 @@ static async Task<IResult> UpsertPublicContent(
     return Results.Ok(MapPublicContent(content.Value));
 }
 
+static async Task<IResult> UpsertTourPresentation(
+    Guid id,
+    UpsertCatalogTourPresentationRequest request,
+    ICatalogTourReadModelStore store,
+    CancellationToken ct)
+{
+    if (id == Guid.Empty)
+    {
+        return Results.BadRequest();
+    }
+
+    var title = StringSanitizer.Sanitize(request.Title) ?? string.Empty;
+    var slug = StringSanitizer.Sanitize(request.Slug) ?? string.Empty;
+    var errors = new Dictionary<string, string[]>();
+
+    if (string.IsNullOrWhiteSpace(title))
+    {
+        errors[nameof(request.Title)] = ["Title is required."];
+    }
+    else if (title.Length > ContractConstants.MaxNameLength)
+    {
+        errors[nameof(request.Title)] = [$"Title cannot exceed {ContractConstants.MaxNameLength} characters."];
+    }
+
+    if (string.IsNullOrWhiteSpace(slug))
+    {
+        errors[nameof(request.Slug)] = ["Slug is required."];
+    }
+    else if (slug.Length > ContractConstants.MaxSlugLength)
+    {
+        errors[nameof(request.Slug)] = [$"Slug cannot exceed {ContractConstants.MaxSlugLength} characters."];
+    }
+
+    if (errors.Count > 0)
+    {
+        return Results.ValidationProblem(errors);
+    }
+
+    var updated = await store.UpdatePresentation(
+        id,
+        new CatalogTourPresentationUpdate(title, slug, request.IsPublished),
+        ct);
+
+    return updated is null ? Results.NotFound() : Results.Ok(MapTour(updated));
+}
+
 static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 {
     return new CatalogTourDto
@@ -110,8 +169,8 @@ static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
         AdminTourId = tour.AdminTourId,
         Identifier = tour.Identifier,
         Title = tour.Title,
-        Slug = CreateSlug(tour.Identifier),
-        IsPublished = IsPublished(tour),
+        Slug = tour.Slug,
+        IsPublished = tour.IsPublished,
         Images = [],
         UpdatedAt = tour.UpdatedAt
     };
@@ -119,11 +178,8 @@ static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 
 static bool IsPublished(CatalogTourDraftReadModel tour)
 {
-    // Publish state is intentionally false until Catalog publish events are added to the read model.
-    return false;
+    return tour.IsPublished;
 }
-
-static string CreateSlug(string identifier) => identifier.Trim();
 
 static PublicContentDto MapPublicContent(EditablePublicContent content)
 {

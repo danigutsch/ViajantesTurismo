@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.PublicContent;
+using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
@@ -29,6 +30,7 @@ public static class InfrastructureDependencyInjection
 
         builder.Services.AddCatalogApplication();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
+        builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
 
         return builder;
     }

@@ -13,6 +13,23 @@ public interface ICatalogTourReadModelStore
     ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct);
 
     /// <summary>
+    /// Updates customer-facing presentation values for an existing Catalog tour.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <param name="update">The presentation update.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The updated tour when one exists; otherwise, <see langword="null" />.</returns>
+    ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(Guid catalogTourId, CatalogTourPresentationUpdate update, CancellationToken ct);
+
+    /// <summary>
+    /// Gets a Catalog tour by its identifier.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The tour row when one exists; otherwise, <see langword="null" />.</returns>
+    ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct);
+
+    /// <summary>
     /// Lists Catalog tour projection rows for management workflows.
     /// </summary>
     /// <param name="ct">The cancellation token.</param>
