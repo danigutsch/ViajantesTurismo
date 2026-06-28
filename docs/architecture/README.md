@@ -64,7 +64,8 @@ flowchart TB
 ```
 
 Keep business rules in domain projects. Keep provider-specific persistence and external adapters in
-infrastructure projects.
+bounded-context infrastructure unless ADR-027's split threshold justifies a reusable
+`SharedKernel.<Capability>.<Provider>` adapter package.
 
 ## Current async content workflow
 
@@ -98,4 +99,5 @@ See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs i
 
 - Public website content variants and localization are tracked separately from core Admin CRUD.
 - Media/gallery management is planned under public-web media issues.
-- Adapter package splits should follow ADR-027 and any later adapter naming guidance.
+- Adapter package splits should follow ADR-027's capability-first naming, dependency-direction, and
+  split-threshold rules.

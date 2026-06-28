@@ -18,6 +18,8 @@ Use this naming pattern:
 
 - `SharedKernel.<Capability>` for provider-neutral contracts and primitives.
 - `SharedKernel.<Capability>.<Provider>` for reusable provider implementations.
+- `SharedKernel.<Capability>.<Adapter>` for reusable non-provider adapters when the adapter standard is
+  the meaningful boundary, such as `CloudEvents`.
 - `<BoundedContext>.Infrastructure` for bounded-context composition, schema ownership, migrations,
   and read models.
 
@@ -31,7 +33,55 @@ Current examples:
 - `SharedKernel.IntegrationEvents.CloudEvents` owns CloudEvents mapping as an adapter.
 - `SharedKernel.Idempotency` owns idempotency contracts and value types.
 
-Provider modules may reference provider packages such as `Npgsql`. Provider-neutral modules must not.
+Adapter modules may reference the external packages needed for their implementation, such as
+`Npgsql` for PostgreSQL or CloudEvents SDK packages for CloudEvents mapping. Provider-neutral modules
+must not.
+
+## Dependency Rules
+
+Reference direction stays inward:
+
+- Domain projects may reference provider-neutral SharedKernel contracts and primitives only.
+- Application projects may reference provider-neutral contracts, but not concrete infrastructure
+  adapters.
+- Provider-neutral SharedKernel modules must not reference EF Core, `Npgsql`, Dapper, Azure SDKs,
+  broker clients, storage clients, telemetry exporters, or bounded-context infrastructure projects.
+- SharedKernel adapter modules may reference only their neutral contract module and the external
+  package needed to implement the adapter.
+- Bounded-context infrastructure projects may reference provider-specific adapters during composition.
+- API and host projects may reference infrastructure only at the composition root.
+- ServiceDefaults may register stable telemetry names, but must not become the owner of provider
+  adapters.
+
+Examples:
+
+- EF Core owned by one bounded context stays in `<BoundedContext>.Infrastructure` because the DbContext,
+  migrations, and schema policy are context-specific.
+- Reusable raw PostgreSQL event-store code belongs in `SharedKernel.EventSourcing.PostgreSQL` because it
+  implements storage-neutral event-sourcing contracts without owning a bounded-context schema.
+- Optional Dapper implementations should use `SharedKernel.<Capability>.Dapper` only when the query or
+  store contract is reusable outside one context.
+- Azure Blob, Queue, Service Bus, or Event Hubs clients should use a capability-first name such as
+  `SharedKernel.<Capability>.AzureBlobStorage` or `SharedKernel.<Capability>.AzureServiceBus` only after
+  a stable neutral contract exists.
+- Messaging and storage client SDKs must stay out of domain/application projects; use an adapter or the
+  owning infrastructure project.
+- Telemetry exporters are startup/runtime adapters. Keep exporter dependencies in host/service-default
+  composition unless a reusable observability adapter has at least two real consumers.
+
+## Split Threshold
+
+Create a new adapter package only when all of these are true:
+
+1. A provider-neutral contract already exists or is being added in the same vertical slice.
+2. The implementation wraps an external dependency that should not leak into neutral contracts.
+3. At least two concrete consumers need the implementation now, or an accepted issue/ADR records the
+   near-term second consumer and migration path.
+4. The adapter can be named by capability and provider without mentioning a bounded context.
+5. Tests can validate the adapter independently from one bounded context.
+
+Do not split when the code is one context's DbContext, migrations, read model, seed workflow, or
+composition glue. Keep it local until reuse is real.
 
 Bounded-context infrastructure remains responsible for:
 
@@ -63,6 +113,21 @@ dependency.
 | Idempotency | `SharedKernel.Idempotency` | `SharedKernel.Idempotency.PostgreSQL` or `SharedKernel.Idempotency.Redis` | Candidate |
 | Inbox/outbox | Future `SharedKernel.Messaging` or focused contracts | PostgreSQL-backed stores | Candidate |
 | Caching | Future cache contracts only if reused | Redis-backed cache adapters | Candidate |
+| Telemetry export | `SharedKernel.Observability` only for neutral contracts | Exporter-specific adapter only after reuse is proven | Candidate |
+
+Follow-up split and audit issues that must reference these rules:
+
+- [#352](https://github.com/danigutsch/ViajantesTurismo/issues/352) audits current dependency leakage.
+- [#353](https://github.com/danigutsch/ViajantesTurismo/issues/353) covers PostgreSQL raw Npgsql and
+  EF Core adapter boundaries.
+- [#354](https://github.com/danigutsch/ViajantesTurismo/issues/354) covers optional Dapper adapter
+  naming.
+- [#355](https://github.com/danigutsch/ViajantesTurismo/issues/355) covers non-database external
+  dependency adapters.
+- [#356](https://github.com/danigutsch/ViajantesTurismo/issues/356) covers architecture tests for these
+  dependency boundaries.
+- [#357](https://github.com/danigutsch/ViajantesTurismo/issues/357) updates docs and package references
+  after accepted splits.
 
 ## Alternatives
 

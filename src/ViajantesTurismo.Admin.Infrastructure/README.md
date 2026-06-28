@@ -53,4 +53,9 @@ DbContext configuration and connection strings.
 ## Dependencies
 
 - **ViajantesTurismo.Admin.Domain**: Domain entities
+- **ViajantesTurismo.Admin.Application**: Repository and query contracts implemented at the
+  infrastructure boundary
 - **Entity Framework Core**: ORM and migrations
+
+External dependency adapters should stay in this project when they are Admin-specific. Reusable
+adapters must follow ADR-027 naming and dependency rules before moving into `SharedKernel.*`.
