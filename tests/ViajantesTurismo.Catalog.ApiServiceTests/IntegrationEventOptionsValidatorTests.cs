@@ -41,4 +41,17 @@ public sealed class IntegrationEventOptionsValidatorTests
             StringComparer.Ordinal);
     }
 
+    [Fact]
+    public void AddCatalogApplication_binds_idempotency_lock_duration_from_configuration()
+    {
+        // Arrange
+        var configuredDuration = TimeSpan.FromMinutes(2);
+
+        // Act
+        var options = IntegrationEventOptionsTestServices.GetConfiguredOptions(configuredDuration);
+
+        // Assert
+        Assert.Equal(configuredDuration, options.IdempotencyLockDuration);
+    }
+
 }
