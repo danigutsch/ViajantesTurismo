@@ -8,14 +8,26 @@ namespace ViajantesTurismo.AppHost;
 /// </summary>
 internal static class AppHostResourceExtensions
 {
+    /// <summary>Tag for <c>docker.io/library/postgres:18.4</c>.</summary>
+    private const string PostgresImageTag = "18.4";
+
     /// <summary>Digest for <c>docker.io/library/postgres:18.4</c>.</summary>
     private const string PostgresImageDigest = "4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20";
+
+    /// <summary>Tag for <c>docker.io/sosedoff/pgweb:0.17.0</c>.</summary>
+    private const string PgWebImageTag = "0.17.0";
 
     /// <summary>Digest for <c>docker.io/sosedoff/pgweb:0.17.0</c>.</summary>
     private const string PgWebImageDigest = "a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b";
 
+    /// <summary>Tag for <c>docker.io/library/redis:8.8</c>.</summary>
+    private const string RedisImageTag = "8.8";
+
     /// <summary>Digest for <c>docker.io/library/redis:8.8</c>.</summary>
     private const string RedisImageDigest = "2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32";
+
+    /// <summary>Tag for <c>docker.io/redis/redisinsight:3.6</c>.</summary>
+    private const string RedisInsightImageTag = "3.6";
 
     /// <summary>Digest for <c>docker.io/redis/redisinsight:3.6</c>.</summary>
     private const string RedisInsightImageDigest = "aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6";
@@ -28,8 +40,11 @@ internal static class AppHostResourceExtensions
     public static IResourceBuilder<PostgresServerResource> AddDatabaseServer(this IDistributedApplicationBuilder builder)
     {
         return builder.AddPostgres(ResourceNames.DatabaseServer)
+            .WithImageTag(PostgresImageTag)
             .WithImageSHA256(PostgresImageDigest)
-            .WithPgWeb(pgweb => pgweb.WithImageSHA256(PgWebImageDigest));
+            .WithPgWeb(pgweb => pgweb
+                .WithImageTag(PgWebImageTag)
+                .WithImageSHA256(PgWebImageDigest));
     }
 
     /// <summary>
@@ -40,8 +55,11 @@ internal static class AppHostResourceExtensions
     public static IResourceBuilder<RedisResource> AddCache(this IDistributedApplicationBuilder builder)
     {
         return builder.AddRedis(ResourceNames.Cache)
+            .WithImageTag(RedisImageTag)
             .WithImageSHA256(RedisImageDigest)
-            .WithRedisInsight(redisInsight => redisInsight.WithImageSHA256(RedisInsightImageDigest));
+            .WithRedisInsight(redisInsight => redisInsight
+                .WithImageTag(RedisInsightImageTag)
+                .WithImageSHA256(RedisInsightImageDigest));
     }
 
     /// <summary>

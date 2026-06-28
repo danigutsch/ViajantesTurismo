@@ -51,9 +51,14 @@ resource name strings in AppHost orchestration code.
 
 ## Container Images
 
-Infrastructure and companion tooling images are pinned by digest in `AppHostResourceExtensions.cs`
-to keep local runs reproducible. There is no production image policy yet. When one exists, update
-these digest pins to match the production-approved images.
+Infrastructure and companion tooling images are pinned by tag and digest in
+`AppHostResourceExtensions.cs` to keep local runs reproducible. There is no production image policy
+yet. When one exists, update each tag and digest pair to match the production-approved image.
+
+Do not commit placeholder digests. `WithImageSHA256(...)` must contain the verified 64-character
+digest without the `sha256:` prefix. The `SKSTYLE005` code fix may temporarily insert uncompilable
+placeholders to make the missing value obvious; replace them with verified registry values before the
+code builds or before committing.
 
 | Resource | Source tag used for pin | Digest |
 | --- | --- | --- |
@@ -65,7 +70,7 @@ these digest pins to match the production-approved images.
 ## Code Organization
 
 - `AppHost.cs`: primary orchestration map, kept short and dependency ordered
-- `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including image pins
+- `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including tag and digest pins
 - `DevelopmentProjectResourceExtensions.cs`: development endpoint and environment defaults
 - `PerformanceTestingResourceExtensions.cs`: opt-in performance-testing executable resource wiring
 
