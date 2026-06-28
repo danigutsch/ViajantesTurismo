@@ -692,6 +692,15 @@
         "resolved": "8.0.0",
         "contentHash": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q=="
       },
+      "sharedkernel.configuration": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "[10.0.8, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.8, )",
+          "Microsoft.Extensions.Options": "[10.0.8, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.8, )"
+        }
+      },
       "sharedkernel.domain": {
         "type": "Project"
       },
@@ -760,6 +769,7 @@
       "viajantesturismo.catalog.application": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.Configuration": "[1.0.0, )",
           "SharedKernel.EventSourcing": "[1.0.0, )",
           "SharedKernel.Idempotency": "[1.0.0, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
