@@ -60,13 +60,10 @@ internal static class LayerDependencyTestsHelpers
 
     private static bool IsProductReference(string filePath, string line)
     {
-        if (filePath.EndsWith(".csproj", StringComparison.Ordinal))
-        {
-            return line.Contains("<ProjectReference", StringComparison.Ordinal)
-                && line.Contains("ViajantesTurismo", StringComparison.Ordinal);
-        }
-
-        return line.Contains("using ViajantesTurismo", StringComparison.Ordinal)
+        return filePath.EndsWith(".csproj", StringComparison.Ordinal)
+            ? line.Contains("<ProjectReference", StringComparison.Ordinal)
+                && line.Contains("ViajantesTurismo", StringComparison.Ordinal)
+            : line.Contains("using ViajantesTurismo", StringComparison.Ordinal)
             || line.Contains("global::ViajantesTurismo", StringComparison.Ordinal);
     }
 }
