@@ -4,7 +4,7 @@ using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace ViajantesTurismo.ArchitectureTests.Dependencies;
 
-internal static class LayerDependencyTestsHelpers
+internal static partial class LayerDependencyTestsHelpers
 {
     public static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
     {
@@ -66,6 +66,9 @@ internal static class LayerDependencyTestsHelpers
         return filePath.EndsWith(".csproj", StringComparison.Ordinal)
             ? line.Contains("<ProjectReference", StringComparison.Ordinal)
                 && line.Contains("ViajantesTurismo", StringComparison.Ordinal)
-            : Regex.IsMatch(line, @"^\s*(global\s+)?using\s+(static\s+)?ViajantesTurismo(\.|;)");
+            : ProductUsingDirectiveRegex().IsMatch(line);
     }
+
+    [GeneratedRegex(@"^\s*(global\s+)?using\s+(static\s+)?ViajantesTurismo(\.|;)")]
+    private static partial Regex ProductUsingDirectiveRegex();
 }
