@@ -21,4 +21,18 @@ internal sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTou
 
         return tours?.ToArray() ?? [];
     }
+
+    public async Task<CatalogTourDto?> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
+    {
+        var response = await httpClient.PutAsJsonAsync($"/catalog/tours/{id}/presentation", request, ct);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        await Helpers.ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
+
+        return await response.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
+    }
 }

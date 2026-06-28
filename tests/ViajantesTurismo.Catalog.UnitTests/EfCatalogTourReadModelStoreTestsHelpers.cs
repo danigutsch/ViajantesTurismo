@@ -2,7 +2,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-public static class InMemoryCatalogTourReadModelStoreTestsHelpers
+internal static class EfCatalogTourReadModelStoreTestsHelpers
 {
     public static CatalogTourDraftReadModel CreateTour(Guid id, string title)
     {
@@ -11,6 +11,8 @@ public static class InMemoryCatalogTourReadModelStoreTestsHelpers
             Guid.CreateVersion7(),
             $"TOUR-{title}",
             title,
+            title,
+            false,
             1,
             DateTimeOffset.UtcNow);
     }

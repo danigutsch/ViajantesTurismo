@@ -1,8 +1,8 @@
 using ViajantesTurismo.Catalog.Application.Tours;
 
-namespace ViajantesTurismo.Catalog.UnitTests;
+namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
-public sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadModel[] tours) : ICatalogTourReadModelStore
+internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
 {
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
@@ -16,14 +16,12 @@ public sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadMod
 
     public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
-        IReadOnlyList<CatalogTourDraftReadModel> snapshot = tours;
-        return ValueTask.FromResult(snapshot);
+        IReadOnlyList<CatalogTourDraftReadModel> tours = [];
+        return ValueTask.FromResult(tours);
     }
 
     public ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
-        var tour = tours.FirstOrDefault(tour =>
-            tour.IsPublished && string.Equals(tour.Slug, slug, StringComparison.OrdinalIgnoreCase));
-        return ValueTask.FromResult(tour);
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
     }
 }

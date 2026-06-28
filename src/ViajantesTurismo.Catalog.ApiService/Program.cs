@@ -11,7 +11,6 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddCatalogInfrastructure();
-builder.Services.AddSingleton<ICatalogTourReadModelStore, InMemoryCatalogTourReadModelStore>();
 
 var app = builder.Build();
 
@@ -20,6 +19,8 @@ app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, Cancellati
     var tours = await store.ListTours(ct);
     return tours.Select(MapTour);
 });
+
+app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
 
 app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, CancellationToken ct) =>
 {
@@ -102,6 +103,41 @@ static async Task<IResult> UpsertPublicContent(
     return Results.Ok(MapPublicContent(content.Value));
 }
 
+static async Task<IResult> UpsertTourPresentation(
+    Guid id,
+    UpsertCatalogTourPresentationRequest request,
+    ICatalogTourReadModelStore store,
+    CancellationToken ct)
+{
+    if (id == Guid.Empty)
+    {
+        return Results.BadRequest();
+    }
+
+    if (string.IsNullOrWhiteSpace(request.Title))
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [nameof(request.Title)] = ["Title is required."]
+        });
+    }
+
+    if (string.IsNullOrWhiteSpace(request.Slug))
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [nameof(request.Slug)] = ["Slug is required."]
+        });
+    }
+
+    var updated = await store.UpdatePresentation(
+        id,
+        new CatalogTourPresentationUpdate(request.Title, request.Slug, request.IsPublished),
+        ct);
+
+    return updated is null ? Results.NotFound() : Results.Ok(MapTour(updated));
+}
+
 static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 {
     return new CatalogTourDto
@@ -110,8 +146,8 @@ static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
         AdminTourId = tour.AdminTourId,
         Identifier = tour.Identifier,
         Title = tour.Title,
-        Slug = CreateSlug(tour.Identifier),
-        IsPublished = IsPublished(tour),
+        Slug = tour.Slug,
+        IsPublished = tour.IsPublished,
         Images = [],
         UpdatedAt = tour.UpdatedAt
     };
@@ -119,11 +155,8 @@ static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
 
 static bool IsPublished(CatalogTourDraftReadModel tour)
 {
-    // Publish state is intentionally false until Catalog publish events are added to the read model.
-    return false;
+    return tour.IsPublished;
 }
-
-static string CreateSlug(string identifier) => identifier.Trim();
 
 static PublicContentDto MapPublicContent(EditablePublicContent content)
 {

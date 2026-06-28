@@ -47,6 +47,10 @@ else
             <TemplateColumn Title="Updated">
                 <span>@context.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
             </TemplateColumn>
+
+            <TemplateColumn Title="Actions">
+                <a class="btn btn-sm btn-outline-primary" href="@($"/catalog/tours/{context.Id}/presentation")">Edit presentation</a>
+            </TemplateColumn>
         </QuickGrid>
     </div>
 

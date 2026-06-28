@@ -44,4 +44,5 @@ internal static class CatalogToursApiClientTestsHelpers
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
     }
+
 }

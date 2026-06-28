@@ -14,6 +14,8 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     /// </summary>
     public DbSet<EditablePublicContent> PublicContent => Set<EditablePublicContent>();
 
+    internal DbSet<CatalogTourReadModelEntity> CatalogTourReadModels => Set<CatalogTourReadModelEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,5 +24,6 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new EditablePublicContentConfiguration());
+        modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
     }
 }
