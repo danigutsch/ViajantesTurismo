@@ -147,4 +147,17 @@ public sealed class LayerDependencyTests
         Assert.Empty(unexpectedReferences);
     }
 
+    [Fact]
+    public void SharedKernel_projects_should_not_reference_product_projects()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindSharedKernelProductReferences(repositoryRoot);
+
+        // Assert
+        Assert.Empty(unexpectedReferences);
+    }
+
 }

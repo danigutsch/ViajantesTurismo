@@ -8,17 +8,17 @@ namespace ViajantesTurismo.AppHost;
 /// </summary>
 internal static class AppHostResourceExtensions
 {
-    /// <summary>Digest for <c>docker.io/library/postgres:17.6</c>.</summary>
-    private const string PostgresImageDigest = "00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929";
+    /// <summary>Digest for <c>docker.io/library/postgres:18.4</c>.</summary>
+    private const string PostgresImageDigest = "4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20";
 
     /// <summary>Digest for <c>docker.io/sosedoff/pgweb:0.17.0</c>.</summary>
     private const string PgWebImageDigest = "a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b";
 
-    /// <summary>Digest for <c>docker.io/library/redis:8.6</c>.</summary>
-    private const string RedisImageDigest = "4483474d5e78c444ce180037def4430ec0d02553663ded2a6d7a1c922da00ecf";
+    /// <summary>Digest for <c>docker.io/library/redis:8.8</c>.</summary>
+    private const string RedisImageDigest = "2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32";
 
-    /// <summary>Digest for <c>docker.io/redis/redisinsight:3.0</c>.</summary>
-    private const string RedisInsightImageDigest = "4455c3304eafe1311d0a367022bad41520e307138b7272e1c0c308ce781f7162";
+    /// <summary>Digest for <c>docker.io/redis/redisinsight:3.6</c>.</summary>
+    private const string RedisInsightImageDigest = "aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6";
 
     /// <summary>
     /// Adds the PostgreSQL server and PgWeb companion resource.
