@@ -26,7 +26,7 @@ internal static class LayerDependencyTestsHelpers
     public static string[] FindSharedKernelProductReferences(string repositoryRoot)
     {
         return SharedKernelSourceFiles(repositoryRoot)
-            .SelectMany(FindProductReferenceLines)
+            .SelectMany(filePath => FindProductReferenceLines(repositoryRoot, filePath))
             .ToArray();
     }
 
@@ -50,12 +50,15 @@ internal static class LayerDependencyTestsHelpers
             && !normalizedPath.Contains("/obj/", StringComparison.Ordinal);
     }
 
-    private static IEnumerable<string> FindProductReferenceLines(string filePath)
+    private static IEnumerable<string> FindProductReferenceLines(string repositoryRoot, string filePath)
     {
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+
         return File.ReadLines(filePath)
             .Select((line, index) => new { Line = line, LineNumber = index + 1 })
             .Where(entry => IsProductReference(filePath, entry.Line))
-            .Select(entry => $"{filePath}:{entry.LineNumber}: {entry.Line.Trim()}");
+            .Select(entry => $"{relativePath}:{entry.LineNumber}: {entry.Line.Trim()}");
     }
 
     private static bool IsProductReference(string filePath, string line)
@@ -63,7 +66,6 @@ internal static class LayerDependencyTestsHelpers
         return filePath.EndsWith(".csproj", StringComparison.Ordinal)
             ? line.Contains("<ProjectReference", StringComparison.Ordinal)
                 && line.Contains("ViajantesTurismo", StringComparison.Ordinal)
-            : line.Contains("using ViajantesTurismo", StringComparison.Ordinal)
-            || line.Contains("global::ViajantesTurismo", StringComparison.Ordinal);
+            : Regex.IsMatch(line, @"^\s*(global\s+)?using\s+(static\s+)?ViajantesTurismo(\.|;)");
     }
 }
