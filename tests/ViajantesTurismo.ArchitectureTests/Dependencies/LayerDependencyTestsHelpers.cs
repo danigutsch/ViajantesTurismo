@@ -39,7 +39,15 @@ internal static class LayerDependencyTestsHelpers
             .Concat(Directory.EnumerateFiles(sourceRoot, "*.cs", SearchOption.AllDirectories))
             .Concat(Directory.EnumerateDirectories(testsRoot, "SharedKernel*", SearchOption.TopDirectoryOnly)
                 .SelectMany(directory => Directory.EnumerateFiles(directory, "*.csproj", SearchOption.AllDirectories)
-                    .Concat(Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))));
+                    .Concat(Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))))
+            .Where(IsSourceFile);
+    }
+
+    private static bool IsSourceFile(string filePath)
+    {
+        var normalizedPath = filePath.Replace(Path.DirectorySeparatorChar, '/');
+        return !normalizedPath.Contains("/bin/", StringComparison.Ordinal)
+            && !normalizedPath.Contains("/obj/", StringComparison.Ordinal);
     }
 
     private static IEnumerable<string> FindProductReferenceLines(string filePath)
