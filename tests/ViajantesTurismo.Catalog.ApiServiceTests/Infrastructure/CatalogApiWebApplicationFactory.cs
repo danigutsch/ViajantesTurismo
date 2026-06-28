@@ -5,7 +5,10 @@ using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
-internal sealed class CatalogApiWebApplicationFactory(string? environment) : WebApplicationFactory<CatalogApiEntryPoint>
+internal sealed class CatalogApiWebApplicationFactory(
+    string? environment,
+    TestCatalogTourReadModelStore? tourStore = null,
+    TestPublicContentStore? publicContentStore = null) : WebApplicationFactory<CatalogApiEntryPoint>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -16,8 +19,8 @@ internal sealed class CatalogApiWebApplicationFactory(string? environment) : Web
 
         builder.ConfigureServices(services =>
         {
-            services.Replace(ServiceDescriptor.Singleton<IPublicContentStore, TestPublicContentStore>());
-            services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore, TestCatalogTourReadModelStore>());
+            services.Replace(ServiceDescriptor.Singleton<IPublicContentStore>(publicContentStore ?? new TestPublicContentStore()));
+            services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(tourStore ?? new TestCatalogTourReadModelStore()));
             services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
         });
     }
