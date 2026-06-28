@@ -8,12 +8,16 @@ public sealed class CapturingIdempotencyStore(bool started = true) : IIdempotenc
 
     public IdempotencyEntryState? CompletedState { get; private set; }
 
+    public TimeSpan? CapturedLockDuration { get; private set; }
+
     public ValueTask<IdempotencyStartResult> TryStart(
         IdempotencyOperation operation,
         DateTimeOffset startedAt,
         TimeSpan? lockDuration,
         CancellationToken ct)
     {
+        CapturedLockDuration = lockDuration;
+
         if (entries.TryGetValue(operation, out var existingEntry))
         {
             return ValueTask.FromResult(IdempotencyStartResult.AlreadyStarted(existingEntry));

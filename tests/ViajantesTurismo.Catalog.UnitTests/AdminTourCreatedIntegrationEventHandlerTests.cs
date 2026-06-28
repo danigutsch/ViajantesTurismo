@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Contracts.Tours;
@@ -16,7 +17,8 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
-            idempotencyStore);
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -44,7 +46,8 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
-            idempotencyStore);
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -67,7 +70,8 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var eventStore = new CapturingEventStore();
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
-            idempotencyStore);
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -82,5 +86,29 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var typedEvent = Assert.IsType<CatalogTourDraftCreated>(draftCreated);
         Assert.Equal(integrationEvent.EventId, typedEvent.SourceEventId);
         Assert.Equal(IdempotencyEntryState.Completed, idempotencyStore.CompletedState);
+    }
+
+    [Fact]
+    public async Task Handle_uses_configured_idempotency_lock_duration()
+    {
+        // Arrange
+        var idempotencyStore = new CapturingIdempotencyStore();
+        var configuredDuration = TimeSpan.FromMinutes(2);
+        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
+            idempotencyStore,
+            Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }));
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026");
+
+        // Act
+        await handler.Handle(integrationEvent, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(configuredDuration, idempotencyStore.CapturedLockDuration);
     }
 }
