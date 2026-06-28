@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -39,6 +42,30 @@ public sealed class IntegrationEventOptionsValidatorTests
             "Catalog integration event idempotency lock duration must be greater than zero.",
             result.Failures,
             StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void AddCatalogApplication_binds_idempotency_lock_duration_from_configuration()
+    {
+        // Arrange
+        var configuredDuration = TimeSpan.FromMinutes(2);
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{IntegrationEventOptions.SectionName}:IdempotencyLockDuration"] = configuredDuration.ToString("c")
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddCatalogApplication();
+
+        using var provider = services.BuildServiceProvider();
+
+        // Act
+        var options = provider.GetRequiredService<IOptions<IntegrationEventOptions>>().Value;
+
+        // Assert
+        Assert.Equal(configuredDuration, options.IdempotencyLockDuration);
     }
 
 }
