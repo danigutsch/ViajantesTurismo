@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -46,12 +47,17 @@ public sealed class IntegrationEventOptionsValidatorTests
     {
         // Arrange
         var configuredDuration = TimeSpan.FromMinutes(2);
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{IntegrationEventOptions.SectionName}:IdempotencyLockDuration"] = configuredDuration.ToString("c")
+            })
+            .Build();
 
         // Act
-        var options = IntegrationEventOptionsTestServices.GetConfiguredOptions(configuredDuration);
+        var options = IntegrationEventOptionsTestServices.GetConfiguredOptions(configuration);
 
         // Assert
         Assert.Equal(configuredDuration, options.IdempotencyLockDuration);
     }
-
 }

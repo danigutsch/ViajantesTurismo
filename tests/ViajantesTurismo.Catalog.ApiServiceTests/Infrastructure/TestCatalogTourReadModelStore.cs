@@ -1,32 +1,71 @@
+using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
 internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
 {
+    private readonly ConcurrentDictionary<Guid, CatalogTourDraftReadModel> toursById = new();
+
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
-        throw new NotSupportedException();
+        ArgumentNullException.ThrowIfNull(tour);
+        ct.ThrowIfCancellationRequested();
+
+        toursById[tour.CatalogTourId] = tour;
+
+        return ValueTask.CompletedTask;
     }
 
     public ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(Guid catalogTourId, CatalogTourPresentationUpdate update, CancellationToken ct)
     {
-        throw new NotSupportedException();
+        ArgumentNullException.ThrowIfNull(update);
+        ct.ThrowIfCancellationRequested();
+
+        if (!toursById.TryGetValue(catalogTourId, out var current))
+        {
+            return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
+        }
+
+        var updated = current with
+        {
+            Title = StringSanitizer.Sanitize(update.Title) ?? string.Empty,
+            Slug = StringSanitizer.Sanitize(update.Slug) ?? string.Empty,
+            IsPublished = update.IsPublished,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        toursById[catalogTourId] = updated;
+
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(updated);
     }
 
     public ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
     {
-        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
+        ct.ThrowIfCancellationRequested();
+        toursById.TryGetValue(catalogTourId, out var tour);
+
+        return ValueTask.FromResult(tour);
     }
 
     public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
-        IReadOnlyList<CatalogTourDraftReadModel> tours = [];
+        ct.ThrowIfCancellationRequested();
+        IReadOnlyList<CatalogTourDraftReadModel> tours = toursById.Values
+            .OrderBy(tour => tour.Title)
+            .ThenBy(tour => tour.CatalogTourId)
+            .ToArray();
+
         return ValueTask.FromResult(tours);
     }
 
     public ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
-        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
+        ArgumentException.ThrowIfNullOrWhiteSpace(slug);
+        ct.ThrowIfCancellationRequested();
+        var sanitizedSlug = StringSanitizer.Sanitize(slug) ?? string.Empty;
+        var tour = toursById.Values.SingleOrDefault(tour => tour.IsPublished && tour.Slug == sanitizedSlug);
+
+        return ValueTask.FromResult(tour);
     }
 }
