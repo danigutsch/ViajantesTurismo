@@ -9,12 +9,9 @@ internal sealed class IntegrationEventOptionsValidator : IValidateOptions<Integr
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.IdempotencyLockDuration <= TimeSpan.Zero)
-        {
-            return ValidateOptionsResult.Fail(
+        return options.IdempotencyLockDuration > TimeSpan.Zero
+            ? ValidateOptionsResult.Success
+            : ValidateOptionsResult.Fail(
                 "Catalog integration event idempotency lock duration must be greater than zero.");
-        }
-
-        return ValidateOptionsResult.Success;
     }
 }
