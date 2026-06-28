@@ -276,6 +276,16 @@ dotnet test --solution ViajantesTurismo.slnx
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj
 ```
 
+**Benchmark local validation timing:**
+
+```bash
+bash scripts/benchmark-local-validation.sh
+```
+
+Use `--all-slices`, `--skip-restore`, `--skip-build`, or `--slice <name>` to measure a broader or focused path.
+See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md#local-validation-runtime) for baseline timings,
+recommended fast local paths, and improvement options.
+
 **Run SharedKernel mediator benchmarks:**
 
 ```powershell
