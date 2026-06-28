@@ -35,4 +35,32 @@ public sealed class EditPresentationPageTests : BunitContext
         Assert.Equal("published-tour", updated.Slug);
         Assert.True(updated.IsPublished);
     }
+
+    [Fact]
+    public void Shows_not_found_when_catalog_tour_is_missing()
+    {
+        // Arrange
+        catalogApi.Tours = [];
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.WaitForState(() => cut.Markup.Contains("Catalog tour not found", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        Assert.Contains("Catalog tour not found", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_load_error_when_catalog_api_fails()
+    {
+        // Arrange
+        catalogApi.ThrowOnGetTours = true;
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.WaitForState(() => cut.Markup.Contains("could not be loaded", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        Assert.Contains("Catalog tour presentation could not be loaded", cut.Markup, StringComparison.Ordinal);
+    }
 }

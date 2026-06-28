@@ -77,8 +77,7 @@ else
 
         try
         {
-            var tours = await CatalogToursApi.GetTours(CancellationToken.None);
-            var tour = tours.SingleOrDefault(tour => tour.Id == Id);
+            var tour = await CatalogToursApi.GetTour(Id, CancellationToken.None);
             if (tour is null)
             {
                 _notFound = true;

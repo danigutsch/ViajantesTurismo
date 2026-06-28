@@ -14,6 +14,11 @@ internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
         throw new NotSupportedException();
     }
 
+    public ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
+    {
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
+    }
+
     public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
         IReadOnlyList<CatalogTourDraftReadModel> tours = [];

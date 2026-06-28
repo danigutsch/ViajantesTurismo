@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -44,8 +45,8 @@ internal sealed class EfCatalogTourReadModelStore(CatalogDbContext dbContext) : 
             return null;
         }
 
-        existing.Title = update.Title.Trim();
-        existing.Slug = update.Slug.Trim();
+        existing.Title = StringSanitizer.Sanitize(update.Title) ?? string.Empty;
+        existing.Slug = StringSanitizer.Sanitize(update.Slug) ?? string.Empty;
         existing.IsPublished = update.IsPublished;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -55,24 +56,32 @@ internal sealed class EfCatalogTourReadModelStore(CatalogDbContext dbContext) : 
 
     public async ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
-        var tours = await dbContext.CatalogTourReadModels
+        return await dbContext.CatalogTourReadModels
+            .OrderBy(tour => tour.Title)
+            .ThenBy(tour => tour.CatalogTourId)
+            .Select(tour => ToReadModel(tour))
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
+    }
 
-        return tours
-            .OrderBy(tour => tour.Title, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(tour => tour.CatalogTourId)
-            .Select(ToReadModel)
-            .ToArray();
+    public async ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
+    {
+        var tour = await dbContext.CatalogTourReadModels
+            .SingleOrDefaultAsync(tour => tour.CatalogTourId == catalogTourId, ct)
+            .ConfigureAwait(false);
+
+        return tour is null ? null : ToReadModel(tour);
     }
 
     public async ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(slug);
 
+        var sanitizedSlug = StringSanitizer.Sanitize(slug) ?? string.Empty;
+
         var tour = await dbContext.CatalogTourReadModels
             .Where(tour => tour.IsPublished)
-            .SingleOrDefaultAsync(tour => tour.Slug == slug, ct)
+            .SingleOrDefaultAsync(tour => tour.Slug == sanitizedSlug, ct)
             .ConfigureAwait(false);
 
         return tour is null ? null : ToReadModel(tour);
@@ -85,8 +94,8 @@ internal sealed class EfCatalogTourReadModelStore(CatalogDbContext dbContext) : 
             CatalogTourId = tour.CatalogTourId,
             AdminTourId = tour.AdminTourId,
             Identifier = tour.Identifier,
-            Title = tour.Title,
-            Slug = tour.Slug,
+            Title = StringSanitizer.Sanitize(tour.Title) ?? string.Empty,
+            Slug = StringSanitizer.Sanitize(tour.Slug) ?? string.Empty,
             IsPublished = tour.IsPublished,
             Position = tour.Position,
             UpdatedAt = tour.UpdatedAt

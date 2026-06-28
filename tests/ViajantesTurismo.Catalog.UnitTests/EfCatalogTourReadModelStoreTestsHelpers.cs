@@ -16,4 +16,17 @@ internal static class EfCatalogTourReadModelStoreTestsHelpers
             1,
             DateTimeOffset.UtcNow);
     }
+
+    public static CatalogTourDraftReadModel CreateTour(Guid id, string title, string slug, bool isPublished)
+    {
+        return new CatalogTourDraftReadModel(
+            id,
+            Guid.CreateVersion7(),
+            $"TOUR-{title}",
+            title,
+            slug,
+            isPublished,
+            1,
+            DateTimeOffset.UtcNow);
+    }
 }

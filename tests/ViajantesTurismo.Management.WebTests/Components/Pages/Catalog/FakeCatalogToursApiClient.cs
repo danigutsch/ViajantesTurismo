@@ -17,6 +17,15 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : Task.FromResult(Tours);
     }
 
+    public Task<CatalogTourDto?> GetTour(Guid id, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ThrowOnGetTours
+            ? throw new HttpRequestException("Catalog unavailable.")
+            : Task.FromResult(Tours.SingleOrDefault(tour => tour.Id == id));
+    }
+
     public Task<CatalogTourDto?> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

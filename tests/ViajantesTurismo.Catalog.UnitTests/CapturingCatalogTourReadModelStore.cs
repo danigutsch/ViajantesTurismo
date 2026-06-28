@@ -24,6 +24,11 @@ public sealed class CapturingCatalogTourReadModelStore : ICatalogTourReadModelSt
         return ValueTask.FromResult(snapshot);
     }
 
+    public ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
+    {
+        return ValueTask.FromResult(drafts.FirstOrDefault(tour => tour.CatalogTourId == catalogTourId));
+    }
+
     public ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(Guid catalogTourId, CatalogTourPresentationUpdate update, CancellationToken ct)
     {
         throw new NotSupportedException();

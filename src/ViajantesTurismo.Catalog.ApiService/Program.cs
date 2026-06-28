@@ -3,6 +3,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Common.Sanitizers;
 using ViajantesTurismo.ServiceDefaults;
 using SharedKernel.Results;
 
@@ -18,6 +19,17 @@ app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, Cancellati
 {
     var tours = await store.ListTours(ct);
     return tours.Select(MapTour);
+});
+
+app.MapGet("/catalog/tours/{id:guid}", async (Guid id, ICatalogTourReadModelStore store, CancellationToken ct) =>
+{
+    if (id == Guid.Empty)
+    {
+        return Results.BadRequest();
+    }
+
+    var tour = await store.GetTour(id, ct);
+    return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
 });
 
 app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
@@ -114,8 +126,8 @@ static async Task<IResult> UpsertTourPresentation(
         return Results.BadRequest();
     }
 
-    var title = request.Title?.Trim() ?? string.Empty;
-    var slug = request.Slug?.Trim() ?? string.Empty;
+    var title = StringSanitizer.Sanitize(request.Title) ?? string.Empty;
+    var slug = StringSanitizer.Sanitize(request.Slug) ?? string.Empty;
     var errors = new Dictionary<string, string[]>();
 
     if (string.IsNullOrWhiteSpace(title))
