@@ -919,15 +919,6 @@
           "SharedKernel.EventSourcing": "[1.0.0, )"
         }
       },
-      "sharedkernel.eventsourcing.postgresql.apphost": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Dashboard.Sdk.linux-x64": "[13.3.4, )",
-          "Aspire.Hosting.AppHost": "[13.3.4, )",
-          "Aspire.Hosting.Orchestration.linux-x64": "[13.3.4, )",
-          "Aspire.Hosting.PostgreSQL": "[13.4.6, )"
-        }
-      },
       "sharedkernel.integrationtesting": {
         "type": "Project",
         "dependencies": {

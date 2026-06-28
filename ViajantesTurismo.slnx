@@ -68,7 +68,6 @@
         <Project Path="tests/SharedKernel.IntegrationEvents.Tests/SharedKernel.IntegrationEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.IntegrationEvents.CloudEvents.Tests/SharedKernel.IntegrationEvents.CloudEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
-        <Project Path="tests/SharedKernel.EventSourcing.PostgreSQL.AppHost/SharedKernel.EventSourcing.PostgreSQL.AppHost.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.PostgreSQL.Tests/SharedKernel.EventSourcing.PostgreSQL.Tests.csproj" />
         <Project Path="tests/SharedKernel.IntegrationTesting/SharedKernel.IntegrationTesting.csproj" />
         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
