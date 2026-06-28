@@ -49,9 +49,24 @@ Catalog.ApiService → Management.Web
 All resource names come from `ResourceNames` in `src/ViajantesTurismo.Resources`. Do not hardcode
 resource name strings in AppHost orchestration code.
 
+## Container Images
+
+Infrastructure and companion tooling images are pinned by digest in `AppHostResourceExtensions.cs`
+to keep local runs reproducible. There is no production image policy yet. When one exists, update
+these digest pins to match the production-approved images.
+
+| Resource | Source tag used for pin | Digest |
+| --- | --- | --- |
+| PostgreSQL | `docker.io/library/postgres:18.4` | `sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20` |
+| PgWeb | `docker.io/sosedoff/pgweb:0.17.0` | `sha256:a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b` |
+| Redis | `docker.io/library/redis:8.8` | `sha256:2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32` |
+| RedisInsight | `docker.io/redis/redisinsight:3.6` | `sha256:aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6` |
+
 ## Code Organization
 
 - `AppHost.cs`: primary orchestration map, kept short and dependency ordered
+- `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including image pins
+- `DevelopmentProjectResourceExtensions.cs`: development endpoint and environment defaults
 - `PerformanceTestingResourceExtensions.cs`: opt-in performance-testing executable resource wiring
 
 Optional resources should stay in focused extension files when their setup would otherwise clutter the

@@ -8,7 +8,11 @@ public sealed partial class AppHostOrchestrationTests
     public void Catalog_api_waits_for_database_migrations_when_it_uses_persisted_public_content()
     {
         // Arrange
-        var appHostText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHost.cs"));
+        var appHostText = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "ViajantesTurismo.AppHost",
+            "AppHostResourceExtensions.cs"));
 
         // Act
         var catalogApiBlock = CatalogApiResourceRegex().Match(appHostText).Value;
