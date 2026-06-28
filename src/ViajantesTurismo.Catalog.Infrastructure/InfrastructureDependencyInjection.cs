@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Resources;
 
@@ -26,6 +27,7 @@ public static class InfrastructureDependencyInjection
             ResourceNames.Database,
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
 
+        builder.Services.AddCatalogApplication();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
 
         return builder;

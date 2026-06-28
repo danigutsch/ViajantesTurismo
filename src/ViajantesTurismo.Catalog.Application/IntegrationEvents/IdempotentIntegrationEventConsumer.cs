@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Options;
 using SharedKernel.Idempotency;
 using SharedKernel.IntegrationEvents;
 
@@ -11,7 +12,7 @@ namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
     IIntegrationEventHandler<TIntegrationEvent> inner,
     IIdempotencyStore idempotencyStore,
-    IntegrationEventOptions options) : IIntegrationEventHandler<TIntegrationEvent>
+    IOptions<IntegrationEventOptions> options) : IIntegrationEventHandler<TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
 {
     private static readonly IdempotencyScope Scope = IdempotencyScope.From(
@@ -35,7 +36,7 @@ public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
             var startResult = await idempotencyStore.TryStart(
                 operation,
                 DateTimeOffset.UtcNow,
-                options.IdempotencyLockDuration,
+                options.Value.IdempotencyLockDuration,
                 ct);
             if (!startResult.Started)
             {

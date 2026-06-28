@@ -1,4 +1,3 @@
-using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;

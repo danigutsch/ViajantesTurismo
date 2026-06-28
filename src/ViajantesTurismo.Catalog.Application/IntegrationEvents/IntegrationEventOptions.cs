@@ -1,11 +1,9 @@
-using SharedKernel.Configuration;
-
 namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 /// <summary>
 /// Configures Catalog integration event handling policies.
 /// </summary>
-public class IntegrationEventOptions : IConfigurationSectionOptions
+public class IntegrationEventOptions
 {
     /// <summary>
     /// Configuration section name for Catalog integration event handling.

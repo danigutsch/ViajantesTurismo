@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Contracts.Tours;
@@ -17,7 +18,7 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
             idempotencyStore,
-            new IntegrationEventOptions());
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -46,7 +47,7 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
             idempotencyStore,
-            new IntegrationEventOptions());
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -70,7 +71,7 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(eventStore),
             idempotencyStore,
-            new IntegrationEventOptions());
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -96,7 +97,7 @@ public sealed class AdminTourCreatedIntegrationEventHandlerTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
             idempotencyStore,
-            new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration });
+            Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,

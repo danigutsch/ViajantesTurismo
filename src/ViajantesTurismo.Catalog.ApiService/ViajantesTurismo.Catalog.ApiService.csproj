@@ -15,7 +15,6 @@
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.Configuration\SharedKernel.Configuration.csproj" />
     </ItemGroup>
 
 </Project>

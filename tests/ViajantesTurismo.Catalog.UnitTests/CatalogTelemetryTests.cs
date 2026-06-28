@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Catalog.Application;
@@ -25,7 +26,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
             new CapturingIdempotencyStore(),
-            new IntegrationEventOptions());
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -57,7 +58,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
             new CapturingIdempotencyStore(started: false),
-            new IntegrationEventOptions());
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -124,7 +125,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationEventConsumer(new ThrowingEventStore()),
             new CapturingIdempotencyStore(),
-            new IntegrationEventOptions());
+            Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,

@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
-using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
-namespace ViajantesTurismo.Catalog.ApiService;
+namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 internal sealed class IntegrationEventOptionsValidator : IValidateOptions<IntegrationEventOptions>
 {
