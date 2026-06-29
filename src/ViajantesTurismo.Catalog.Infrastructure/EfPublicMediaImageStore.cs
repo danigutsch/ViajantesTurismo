@@ -96,51 +96,24 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     {
         var entity = new PublicMediaImageEntity
         {
-            Id = image.Id,
-            SourceUri = image.SourceUri.ToString(),
-            Checksum = image.Checksum,
-            ContentType = image.ContentType,
-            FileSizeBytes = image.FileSizeBytes,
-            Width = image.Dimensions.Width,
-            Height = image.Dimensions.Height,
-            ProcessingStatus = image.ProcessingStatus,
-            Tags = [.. image.Tags.Select(tag => StringSanitizer.Sanitize(tag) ?? string.Empty)],
-            AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
-            Caption = StringSanitizer.Sanitize(image.Caption),
-            Attribution = StringSanitizer.Sanitize(image.Attribution),
-            Copyright = StringSanitizer.Sanitize(image.Copyright)
+            Id = image.Id
         };
 
-        for (var index = 0; index < image.ResponsiveVariants.Count; index++)
-        {
-            var variant = image.ResponsiveVariants[index];
-            entity.ResponsiveVariants.Add(new PublicMediaImageResponsiveVariantEntity
-            {
-                PublicMediaImageId = image.Id,
-                SortOrder = index,
-                Uri = variant.Uri.ToString(),
-                Width = variant.Width,
-                Height = variant.Height,
-                ContentType = variant.ContentType,
-                FileSizeBytes = variant.FileSizeBytes
-            });
-        }
-
-        foreach (var link in image.TourLinks)
-        {
-            entity.TourLinks.Add(new PublicMediaImageTourLinkEntity
-            {
-                PublicMediaImageId = image.Id,
-                CatalogTourId = link.CatalogTourId,
-                DisplayOrder = link.DisplayOrder,
-                IsCover = link.IsCover
-            });
-        }
+        CopyScalarValues(image, entity);
+        CopyChildren(image, entity);
 
         return entity;
     }
 
     private static void CopyToEntity(PublicMediaImage image, PublicMediaImageEntity entity)
+    {
+        CopyScalarValues(image, entity);
+        entity.ResponsiveVariants.Clear();
+        entity.TourLinks.Clear();
+        CopyChildren(image, entity);
+    }
+
+    private static void CopyScalarValues(PublicMediaImage image, PublicMediaImageEntity entity)
     {
         entity.SourceUri = image.SourceUri.ToString();
         entity.Checksum = image.Checksum;
@@ -154,9 +127,16 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         entity.Caption = StringSanitizer.Sanitize(image.Caption);
         entity.Attribution = StringSanitizer.Sanitize(image.Attribution);
         entity.Copyright = StringSanitizer.Sanitize(image.Copyright);
-        entity.ResponsiveVariants.Clear();
-        entity.TourLinks.Clear();
+    }
 
+    private static void CopyChildren(PublicMediaImage image, PublicMediaImageEntity entity)
+    {
+        CopyResponsiveVariants(image, entity);
+        CopyTourLinks(image, entity);
+    }
+
+    private static void CopyResponsiveVariants(PublicMediaImage image, PublicMediaImageEntity entity)
+    {
         for (var index = 0; index < image.ResponsiveVariants.Count; index++)
         {
             var variant = image.ResponsiveVariants[index];
@@ -171,7 +151,10 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 FileSizeBytes = variant.FileSizeBytes
             });
         }
+    }
 
+    private static void CopyTourLinks(PublicMediaImage image, PublicMediaImageEntity entity)
+    {
         foreach (var link in image.TourLinks)
         {
             entity.TourLinks.Add(new PublicMediaImageTourLinkEntity
