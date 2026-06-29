@@ -144,13 +144,13 @@
         </div>
         @if (variant.RequiresHumanReview)
         {
-            <div class="alert alert-warning mt-3 mb-0" role="status">Review-required text. AI-assisted drafts need human review before publishing.</div>
+            <div class="alert alert-warning mt-3 mb-0" role="status">Review-required text. Starter drafts need human review before publishing.</div>
         }
         @if (variant.GeneratedDraft && !variant.RequiresHumanReview)
         {
             <div class="form-check mt-3">
                 <InputCheckbox id="@($"{idPrefix}-review-confirmed")" class="form-check-input" @bind-Value="variant.HumanReviewConfirmed" />
-                <label for="@($"{idPrefix}-review-confirmed")" class="form-check-label">I reviewed this generated draft</label>
+                <label for="@($"{idPrefix}-review-confirmed")" class="form-check-label">I reviewed this starter draft</label>
             </div>
         }
     </div>;
@@ -241,7 +241,7 @@
         target.RequiresHumanReview = true;
         target.GeneratedDraft = true;
         target.HumanReviewConfirmed = false;
-        _successMessage = "Draft created and marked for human review.";
+        _successMessage = "Starter draft copied from source content and marked for human review.";
     }
 
     private async Task SaveContent()

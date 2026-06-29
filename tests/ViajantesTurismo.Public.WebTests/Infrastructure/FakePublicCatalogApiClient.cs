@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<CatalogTourDto> tours = [];
-    private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByCulture = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByKeyAndCulture = new(StringComparer.OrdinalIgnoreCase);
 
     public bool FailListRequests { get; set; }
 
@@ -22,9 +22,16 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public void AddContent(string culture, PublicContentVariantDto content)
     {
-        ArgumentNullException.ThrowIfNull(content);
+        AddContent("home.hero", culture, content);
+    }
 
-        contentByCulture[culture] = content;
+    public void AddContent(string key, string culture, PublicContentVariantDto content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentException.ThrowIfNullOrWhiteSpace(culture);
+
+        contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
     public Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
@@ -60,7 +67,9 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         }
 
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
-        contentByCulture.TryGetValue(requestedCulture, out var content);
+        contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
         return Task.FromResult(content);
     }
+
+    private static string CreateContentKey(string key, string culture) => $"{key}\n{culture}";
 }
