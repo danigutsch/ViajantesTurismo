@@ -18,5 +18,5 @@ public sealed class UnexpectedCancelledEventStore : IEventStore
     public ValueTask<IReadOnlyCollection<EventEnvelope>> LoadAfter(
         long position,
         int maxCount,
-        CancellationToken ct) => ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>([]);
+        CancellationToken ct) => throw new OperationCanceledException(ct);
 }
