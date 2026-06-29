@@ -411,6 +411,9 @@ bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice f
 
 # Full measured path with a custom output file
 bash scripts/benchmark-local-validation.sh --all-slices --output TestResults/local-validation-$(date +%Y%m%d-%H%M%S).tsv
+
+# Solution-level all-tests baseline. This is a benchmark, not the CI lane policy.
+bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests
 ```
 
 Available slice names match `scripts/ci-test-slices/*.txt`:
@@ -434,6 +437,8 @@ Measured on this worktree on 2026-06-29:
 | Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/issue-426-admin-integration-benchmark.tsv` | 100s | success |
 | Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/issue-426-mediator-heavy-benchmark.tsv` | 65s | success |
 | Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/issue-426-admin-system-benchmark.tsv` | 71s | success |
+| Solution all-tests baseline | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --solution-tests --output TestResults/issue-438-solution-tests-baseline.tsv` | 131s | failure; hosted/system concurrency conflict |
+| Admin integration plus PostgreSQL event sourcing | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/issue-438-admin-integration-with-postgres.tsv` | 212s | success |
 
 Low-risk improvement implemented here: local timing can run test slices without coverage collection
 while CI keeps its existing coverage collection and required checks intact.
@@ -456,6 +461,9 @@ Concrete improvement options:
    hotspot; keep the current required checks intact until then.
 4. Consider a documented local prerequisite check for dependency-heavy slices if failures are mostly
    missing container runtime, certificates, or Playwright browsers rather than test regressions.
+
+See [ADR-030: CI Test Lane Selection](adr/20260629-ci-test-lane-selection.md) for the lane decision
+rules and decision diagram.
 
 ## Commit Message Conventions
 

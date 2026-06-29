@@ -93,6 +93,28 @@ diagnose a specific failure or confirm a small fix for that failure.
 Unit, contract, component, and architecture tests remain good candidates for focused inner-loop
 validation when they do not start external dependencies or hosted application resources.
 
+CI follows the same boundary: the `Fast Validation` slice must stay no-host and no-container.
+Tests that start Aspire, PostgreSQL, Playwright, browsers, or other real dependencies belong in a
+dependency-heavy slice even when the test count is small. Splitting dependency-heavy tests into more
+jobs is only a win when measurements show the parallel wall-clock gain is larger than duplicated
+restore, build, AppHost, container, database, or browser startup. Otherwise prefer one bundled lane
+or shared project fixtures that pay the dependency startup cost once.
+
+Current external guidance behind this policy:
+
+- GitHub Actions dependency caching improves restore time, but caches are branch-scoped and must not
+  contain secrets.
+- `actions/setup-dotnet` NuGet caching uses committed lock files and `NUGET_PACKAGES`; it does not
+  remove application-host, container, database, or browser startup cost.
+- Microsoft.Testing.Platform is a lightweight CI runner, but each test project is still its own test
+  module and project-level fixtures remain the right place to share expensive dependency lifetimes.
+- Aspire testing is closed-box integration testing: it launches the AppHost and resources as separate
+  processes. Use `WebApplicationFactory<T>` for isolated in-process API/component tests instead of
+  promoting them to Aspire-hosted tests.
+
+See [ADR-030: CI Test Lane Selection](adr/20260629-ci-test-lane-selection.md) for the decision
+diagram used when adding or moving test projects between CI lanes.
+
 Example — run E2E tests in headed mode:
 
 ```powershell
@@ -101,8 +123,11 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.
 
 Official references:
 
+- [GitHub Actions dependency caching](https://docs.github.com/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows)
+- [actions/setup-dotnet NuGet caching](https://github.com/actions/setup-dotnet#caching-nuget-packages)
 - [dotnet test with MTP](https://learn.microsoft.com/dotnet/core/tools/dotnet-test-mtp)
 - [MTP overview](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
+- [Aspire testing overview](https://learn.microsoft.com/dotnet/aspire/testing/overview)
 - [xUnit v3 on MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform)
 
 Mutation-testing note:

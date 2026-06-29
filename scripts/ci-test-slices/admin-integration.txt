@@ -1,1 +1,2 @@
 tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj
+tests/SharedKernel.EventSourcing.PostgreSQL.Tests/SharedKernel.EventSourcing.PostgreSQL.Tests.csproj
