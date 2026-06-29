@@ -51,14 +51,8 @@ EXCLUDED_RELATIVE_PATTERNS = (
     re.compile(r"^tests/ISSUE-[^/]*\.md$"),
 )
 
-INLINE_LINK = re.compile(
-    r"!??\[[^\]\n]*(?:\][^\]\n]*)*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)"
-)
 REFERENCE_DEFINITION = re.compile(r"^\s{0,3}\[[^\]]+\]:\s+(\S+)")
 AUTOLINK = re.compile(r'<([^<>"]+)>')
-GITHUB_ISSUE_OR_PR_URL = re.compile(
-    r'https?://github\.com/[^\s)>"]+/[^\s)>"]+/(?:issues|pull)/\d+\b'
-)
 REPO_RELATIVE_ISSUE_OR_PR = re.compile(r"(?:^|[\s(])(?:\.{0,2}/)*(?:issues|pull)/\d+\b")
 
 
@@ -103,7 +97,7 @@ def validate_file(path: Path) -> list[str]:
 def validate_policy_lines(relative: str, lines: list[str]) -> list[str]:
     errors: list[str] = []
     for line_number, line in iter_non_fenced_lines(lines):
-        if GITHUB_ISSUE_OR_PR_URL.search(line):
+        if has_github_issue_or_pr_url(line):
             errors.append(
                 f"{relative}:{line_number}: direct GitHub issue/PR link is not allowed; "
                 "summarize durable context or link a maintained doc instead"
@@ -215,8 +209,8 @@ def should_scan(path: Path) -> bool:
 
 def extract_link_targets(lines: list[str]):
     for line_number, line in iter_non_fenced_lines(lines):
-        for match in INLINE_LINK.finditer(line):
-            yield line_number, match.group(1)
+        for target in markdown_inline_link_targets(line):
+            yield line_number, target
         reference_match = REFERENCE_DEFINITION.match(line)
         if reference_match:
             yield line_number, reference_match.group(1)
@@ -224,6 +218,39 @@ def extract_link_targets(lines: list[str]):
             target = match.group(1)
             if "://" in target or target.startswith("#"):
                 yield line_number, target
+
+
+def has_github_issue_or_pr_url(line: str) -> bool:
+    return any(is_github_issue_or_pr_url(token) for token in line_tokens(line))
+
+
+def line_tokens(line: str):
+    for token in line.split():
+        yield token.strip("<>()[]{}\"'.,;")
+
+
+def is_github_issue_or_pr_url(value: str) -> bool:
+    parsed = urllib.parse.urlparse(value)
+    if parsed.scheme not in {"http", "https"} or parsed.netloc != "github.com":
+        return False
+    parts = [part for part in parsed.path.split("/") if part]
+    return len(parts) >= 4 and parts[2] in {"issues", "pull"} and parts[3].isdigit()
+
+
+def markdown_inline_link_targets(line: str):
+    search_start = 0
+    while True:
+        start = line.find("](", search_start)
+        if start == -1:
+            return
+        target_start = start + 2
+        target_end = line.find(")", target_start)
+        if target_end == -1:
+            return
+        target = line[target_start:target_end].split(maxsplit=1)[0]
+        if target:
+            yield target
+        search_start = target_end + 1
 
 
 def iter_non_fenced_lines(lines: list[str]):
