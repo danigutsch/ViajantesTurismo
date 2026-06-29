@@ -33,6 +33,7 @@ The repository already has a stronger analyzer baseline than when `#132` was ope
     - `SKSTYLE002` `CancellationToken` parameters must be named `ct`
     - `SKSTYLE003` `CancellationToken` parameters must not declare default values
     - `SKSTYLE004` one top-level type per file, staged as a rollout rule
+    - `SKSTYLE005` Aspire image pins must pair `WithImageTag` and `WithImageSHA256`
 - `SharedKernel.Style.CodeFixes`
     - safe rename for `SKSTYLE001`
     - safe rename for `SKSTYLE002`
@@ -98,6 +99,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Keep narrow scoped exceptions only when external contracts force a different name | Raise after repo cleanup |
 | CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Same as above | Raise after repo cleanup |
 | One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted with staged exclusions | `suggestion` globally, `none` in tests and explicit file exceptions | Small explicit allowlist in `.editorconfig` | Reduce allowlist over time |
+| Aspire image pins | `SKSTYLE005` require tag and verified digest together | `SharedKernel.Style.Analyzers` | Adopted | package default `warning` | Code fix inserts uncompilable placeholders only; placeholders must be replaced before commit/build | Keep active and resolve with registry-verified tag and digest values only |
 | Test pragma suppressions | `SKTEST001` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and narrow |
 | Test naming | `SKTEST002` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and use code fix during cleanup |
 | Mediator cancellation forwarding | `SKMED006` | `SharedKernel.Mediator.Analyzers` | Adopted | repository-configured `warning` | `.editorconfig`-tunable | Keep active |
