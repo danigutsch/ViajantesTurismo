@@ -80,7 +80,7 @@ def main() -> int:
         lines = text.splitlines()
         anchors = markdown_anchors(text)
 
-        for line_number, line in enumerate(lines, start=1):
+        for line_number, line in iter_non_fenced_lines(lines):
             if GITHUB_ISSUE_OR_PR_URL.search(line):
                 errors.append(
                     f"{relative}:{line_number}: direct GitHub issue/PR link is not allowed; "
@@ -207,6 +207,23 @@ def extract_link_targets(lines: list[str]):
             target = match.group(1)
             if "://" in target or target.startswith("#"):
                 yield line_number, target
+
+
+def iter_non_fenced_lines(lines: list[str]):
+    in_fence = False
+    fence_marker = ""
+    for line_number, line in enumerate(lines, start=1):
+        stripped = line.lstrip()
+        if stripped.startswith(("```", "~~~")):
+            marker = stripped[:3]
+            if not in_fence:
+                in_fence = True
+                fence_marker = marker
+            elif marker == fence_marker:
+                in_fence = False
+            continue
+        if not in_fence:
+            yield line_number, line
 
 
 def normalize_target(target: str) -> str:
