@@ -53,8 +53,8 @@ def architecture_replacements() -> dict[str, str]:
 def update_files(check_only: bool, replacements: dict[str, str]) -> list[str]:
     changed = []
     for path in architecture_docs():
-        updated = update_text(path.read_text(encoding="utf-8"), replacements)
         original = path.read_text(encoding="utf-8")
+        updated = update_text(original, replacements)
         if updated != original:
             changed.append(path.relative_to(ROOT).as_posix())
             if not check_only:
