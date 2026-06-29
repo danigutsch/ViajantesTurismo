@@ -419,8 +419,13 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
     return errors;
 }
 
-static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariantDto variant)
+static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariantDto? variant)
 {
+    if (variant is null)
+    {
+        return true;
+    }
+
     var contentType = StringSanitizer.Sanitize(variant.ContentType);
 
     return variant.Uri is null

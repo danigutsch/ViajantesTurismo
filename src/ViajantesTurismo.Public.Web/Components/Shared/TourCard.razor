@@ -1,11 +1,11 @@
-@if (CoverImage is not null)
+@if (GetCoverImage() is { } coverImage)
 {
     <picture>
-        @if (CoverImage.ResponsiveVariants.Count > 0)
+        @if (coverImage.ResponsiveVariants.Count > 0)
         {
-            <source srcset="@SrcSet(CoverImage)" sizes="(min-width: 48rem) 33vw, 100vw" />
+            <source srcset="@SrcSet(coverImage)" sizes="(min-width: 48rem) 33vw, 100vw" />
         }
-        <img src="@CoverImage.Uri" alt="@CoverImage.AltText" loading="lazy" />
+        <img src="@coverImage.Uri" alt="@coverImage.AltText" loading="lazy" />
     </picture>
 }
 
@@ -28,7 +28,7 @@ else
     [Parameter]
     public int HeadingLevel { get; set; } = 2;
 
-    private CatalogTourImageDto? CoverImage => Tour.Images
+    private CatalogTourImageDto? GetCoverImage() => Tour.Images
         .OrderByDescending(image => image.IsCover)
         .ThenBy(image => image.SortOrder)
         .FirstOrDefault();
