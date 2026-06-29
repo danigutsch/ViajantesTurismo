@@ -14,6 +14,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var existing = await dbContext.PublicMediaImages
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
+            .AsSplitQuery()
             .SingleOrDefaultAsync(current => current.Id == image.Id, ct)
             .ConfigureAwait(false);
 
@@ -33,6 +34,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var image = await dbContext.PublicMediaImages
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
+            .AsSplitQuery()
             .SingleOrDefaultAsync(current => current.Id == imageId, ct)
             .ConfigureAwait(false);
 
@@ -44,6 +46,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var images = await dbContext.PublicMediaImages
             .Include(image => image.ResponsiveVariants)
             .Include(image => image.TourLinks)
+            .AsSplitQuery()
             .Where(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId))
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
@@ -56,6 +59,37 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 .ThenBy(image => image.Id)
                 .Select(image => ToDomain(image, catalogTourId))
         ];
+    }
+
+    public async ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
+        IReadOnlyCollection<Guid> catalogTourIds,
+        CancellationToken ct)
+    {
+        var requestedIds = catalogTourIds.Where(id => id != Guid.Empty).Distinct().ToArray();
+        if (requestedIds.Length == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<PublicMediaImage>>();
+        }
+
+        var images = await dbContext.PublicMediaImages
+            .Include(image => image.ResponsiveVariants)
+            .Include(image => image.TourLinks)
+            .AsSplitQuery()
+            .Where(image => image.TourLinks.Any(link => requestedIds.Contains(link.CatalogTourId)))
+            .ToArrayAsync(ct)
+            .ConfigureAwait(false);
+
+        return requestedIds.ToDictionary(
+            tourId => tourId,
+            tourId => (IReadOnlyList<PublicMediaImage>)
+            [
+                .. images
+                    .Where(image => image.TourLinks.Any(link => link.CatalogTourId == tourId))
+                    .OrderByDescending(image => image.TourLinks.Single(link => link.CatalogTourId == tourId).IsCover)
+                    .ThenBy(image => image.TourLinks.Single(link => link.CatalogTourId == tourId).DisplayOrder)
+                    .ThenBy(image => image.Id)
+                    .Select(image => ToDomain(image, tourId))
+            ]);
     }
 
     private static PublicMediaImageEntity ToEntity(PublicMediaImage image)

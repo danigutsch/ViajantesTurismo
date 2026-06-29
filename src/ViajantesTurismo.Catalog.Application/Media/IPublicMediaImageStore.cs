@@ -29,4 +29,14 @@ public interface IPublicMediaImageStore
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The linked media images ordered by the store implementation.</returns>
     ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct);
+
+    /// <summary>
+    /// Lists public media images linked to multiple Catalog tours.
+    /// </summary>
+    /// <param name="catalogTourIds">The Catalog tour identifiers.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The linked media images keyed by Catalog tour identifier.</returns>
+    ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
+        IReadOnlyCollection<Guid> catalogTourIds,
+        CancellationToken ct);
 }

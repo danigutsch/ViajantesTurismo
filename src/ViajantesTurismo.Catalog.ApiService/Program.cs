@@ -17,19 +17,7 @@ builder.AddCatalogInfrastructure();
 
 var app = builder.Build();
 
-app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct) =>
-{
-    var tours = await store.ListTours(ct);
-    var dtos = new List<CatalogTourDto>();
-
-    foreach (var tour in tours)
-    {
-        var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        dtos.Add(MapTour(tour, images));
-    }
-
-    return dtos;
-});
+app.MapGet("/catalog/tours", GetTours);
 
 app.MapGet("/catalog/tours/{id:guid}", GetTour);
 
@@ -37,19 +25,7 @@ app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
 app.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
 app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage);
 
-app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct) =>
-{
-    var tours = await store.ListTours(ct);
-    var dtos = new List<CatalogTourDto>();
-
-    foreach (var tour in tours.Where(IsPublished))
-    {
-        var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        dtos.Add(MapTour(tour, GetReadyImages(images)));
-    }
-
-    return dtos;
-});
+app.MapGet("/public/catalog/tours", GetPublishedTours);
 
 app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour);
 
@@ -139,6 +115,35 @@ static async Task<IResult> GetPublicContentForManagement(string key, IPublicCont
 
     var content = await store.GetContent(key, ct);
     return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
+}
+
+static async Task<IReadOnlyList<CatalogTourDto>> GetTours(
+    ICatalogTourReadModelStore store,
+    IPublicMediaImageStore imageStore,
+    CancellationToken ct)
+{
+    var tours = await store.ListTours(ct);
+    var imagesByTour = await imageStore.ListByTours([.. tours.Select(tour => tour.CatalogTourId)], ct);
+
+    return
+    [
+        .. tours.Select(tour => MapTour(tour, GetImages(imagesByTour, tour.CatalogTourId)))
+    ];
+}
+
+static async Task<IReadOnlyList<CatalogTourDto>> GetPublishedTours(
+    ICatalogTourReadModelStore store,
+    IPublicMediaImageStore imageStore,
+    CancellationToken ct)
+{
+    var tours = await store.ListTours(ct);
+    var publishedTours = tours.Where(IsPublished).ToArray();
+    var imagesByTour = await imageStore.ListByTours([.. publishedTours.Select(tour => tour.CatalogTourId)], ct);
+
+    return
+    [
+        .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId))))
+    ];
 }
 
 static async Task<IResult> UpsertPublicContent(
@@ -371,15 +376,8 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
         errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions must be positive."];
     }
 
-    if (string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(image.Checksum)))
-    {
-        errors[nameof(PublicMediaImageDto.Checksum)] = ["Checksum is required."];
-    }
-
-    if (string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(image.ContentType)))
-    {
-        errors[nameof(PublicMediaImageDto.ContentType)] = ["Content type is required."];
-    }
+    ValidateRequiredLength(errors, nameof(PublicMediaImageDto.Checksum), image.Checksum, ContractConstants.MaxChecksumLength);
+    ValidateRequiredLength(errors, nameof(PublicMediaImageDto.ContentType), image.ContentType, ContractConstants.MaxContentTypeLength);
 
     if (image.FileSizeBytes <= 0)
     {
@@ -400,9 +398,9 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
         errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links require a tour id and non-negative display order."];
     }
 
-    if (image.ResponsiveVariants is null || image.ResponsiveVariants.Any(variant => variant.Uri is null || !variant.Uri.IsAbsoluteUri || variant.Width <= 0 || variant.Height <= 0))
+    if (image.ResponsiveVariants is null || image.ResponsiveVariants.Any(IsInvalidResponsiveVariant))
     {
-        errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute URIs and positive dimensions."];
+        errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute URIs, positive dimensions, content type, and file size."];
     }
     else if (image.ProcessingStatus == MediaImageProcessingStatusDto.Ready && image.ResponsiveVariants.Count == 0)
     {
@@ -419,6 +417,39 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
     ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Copyright), image.Copyright, ContractConstants.MaxCopyrightLength);
 
     return errors;
+}
+
+static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariantDto variant)
+{
+    var contentType = StringSanitizer.Sanitize(variant.ContentType);
+
+    return variant.Uri is null
+        || !variant.Uri.IsAbsoluteUri
+        || variant.Width <= 0
+        || variant.Height <= 0
+        || string.IsNullOrWhiteSpace(contentType)
+        || contentType.Length > ContractConstants.MaxContentTypeLength
+        || variant.FileSizeBytes <= 0;
+}
+
+static IReadOnlyList<PublicMediaImage> GetImages(
+    IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>> imagesByTour,
+    Guid tourId)
+{
+    return imagesByTour.TryGetValue(tourId, out var images) ? images : [];
+}
+
+static void ValidateRequiredLength(Dictionary<string, string[]> errors, string field, string? value, int maxLength)
+{
+    var sanitized = StringSanitizer.Sanitize(value);
+    if (string.IsNullOrWhiteSpace(sanitized))
+    {
+        errors[field] = [$"{field} is required."];
+    }
+    else if (sanitized.Length > maxLength)
+    {
+        errors[field] = [$"{field} cannot exceed {maxLength} characters."];
+    }
 }
 
 static void ValidateOptionalLength(Dictionary<string, string[]> errors, string field, string? value, int maxLength)

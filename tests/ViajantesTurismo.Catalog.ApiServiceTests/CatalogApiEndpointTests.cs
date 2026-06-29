@@ -441,6 +441,50 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_metadata_that_exceeds_contract_limits()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var tooLongContentType = new string('x', ContractConstants.MaxContentTypeLength + 1);
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = new string('a', ContractConstants.MaxChecksumLength + 1),
+            ContentType = tooLongContentType,
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Ready,
+            ResponsiveVariants =
+            [
+                new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.jpg"), Width = 640, Height = 427, ContentType = tooLongContentType, FileSizeBytes = 0 }
+            ],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = Guid.CreateVersion7(), DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = "First image"
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(PublicMediaImageDto.Checksum), problem.Errors.Keys);
+        Assert.Contains(nameof(PublicMediaImageDto.ContentType), problem.Errors.Keys);
+        Assert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
+    }
+
+    [Fact]
     public async Task Public_tour_endpoint_excludes_images_that_are_not_ready()
     {
         // Arrange

@@ -19,4 +19,12 @@ internal sealed class StubPublicMediaImageStore : IPublicMediaImageStore
     {
         return ValueTask.FromResult<IReadOnlyList<PublicMediaImage>>([]);
     }
+
+    public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
+        IReadOnlyCollection<Guid> catalogTourIds,
+        CancellationToken ct)
+    {
+        return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(
+            catalogTourIds.ToDictionary(tourId => tourId, _ => (IReadOnlyList<PublicMediaImage>)[]));
+    }
 }

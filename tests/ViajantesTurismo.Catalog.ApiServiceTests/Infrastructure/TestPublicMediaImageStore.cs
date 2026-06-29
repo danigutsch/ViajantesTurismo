@@ -28,13 +28,30 @@ internal sealed class TestPublicMediaImageStore : IPublicMediaImageStore
     public ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        IReadOnlyList<PublicMediaImage> images = imagesById.Values
-            .Where(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId))
-            .OrderByDescending(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId && link.IsCover))
-            .ThenBy(image => image.TourLinks.Where(link => link.CatalogTourId == catalogTourId).Min(link => link.DisplayOrder))
-            .ThenBy(image => image.Id)
-            .ToArray();
+        return ValueTask.FromResult(ListByTour(catalogTourId));
+    }
 
-        return ValueTask.FromResult(images);
+    public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
+        IReadOnlyCollection<Guid> catalogTourIds,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var result = catalogTourIds.ToDictionary(
+            tourId => tourId,
+            tourId => ListByTour(tourId));
+
+        return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(result);
+    }
+
+    private IReadOnlyList<PublicMediaImage> ListByTour(Guid catalogTourId)
+    {
+        return
+        [
+            .. imagesById.Values
+                .Where(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId))
+                .OrderByDescending(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId && link.IsCover))
+                .ThenBy(image => image.TourLinks.Where(link => link.CatalogTourId == catalogTourId).Min(link => link.DisplayOrder))
+                .ThenBy(image => image.Id)
+        ];
     }
 }
