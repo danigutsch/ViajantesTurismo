@@ -51,6 +51,33 @@ app.MapGet("/public/catalog/tours/{slug}", async (string slug, ICatalogTourReadM
     return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
 });
 
+app.MapGet("/public/catalog/content/{key}", async (
+    string key,
+    string? language,
+    string? culture,
+    IPublicContentStore store,
+    CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(key))
+    {
+        return Results.BadRequest();
+    }
+
+    if (!TryGetPublicContentLanguage(language, culture, out var requestedLanguage))
+    {
+        return Results.BadRequest();
+    }
+
+    var content = await store.GetContent(key, ct);
+    if (content is null || content.PublicationState != PublicContentPublicationState.Published)
+    {
+        return Results.NotFound();
+    }
+
+    var variant = GetApprovedVariant(content, requestedLanguage);
+    return variant is null ? Results.NotFound() : Results.Ok(MapVariant(variant));
+});
+
 app.MapGet("/catalog/public-content", async (IPublicContentStore store, CancellationToken ct) =>
 {
     var content = await store.ListContent(ct);
@@ -181,6 +208,17 @@ static bool IsPublished(CatalogTourDraftReadModel tour)
     return tour.IsPublished;
 }
 
+static PublicContentVariant? GetApprovedVariant(EditablePublicContent content, PublicContentLanguage requestedLanguage)
+{
+    var variant = content.Variants.FirstOrDefault(variant => variant.Language == requestedLanguage && !variant.RequiresHumanReview);
+    if (variant is not null || requestedLanguage == PublicContentLanguage.EnUs)
+    {
+        return variant;
+    }
+
+    return content.Variants.FirstOrDefault(variant => variant.Language == PublicContentLanguage.EnUs && !variant.RequiresHumanReview);
+}
+
 static PublicContentDto MapPublicContent(EditablePublicContent content)
 {
     var dto = new PublicContentDto
@@ -283,4 +321,17 @@ static PublicContentLanguageDto ToContractLanguage(PublicContentLanguage languag
     return language == PublicContentLanguage.None || !Enum.IsDefined(language)
         ? PublicContentLanguageDto.None
         : (PublicContentLanguageDto)(int)language;
+}
+
+static bool TryGetPublicContentLanguage(string? language, string? culture, out PublicContentLanguage publicContentLanguage)
+{
+    var requestedLanguage = string.IsNullOrWhiteSpace(language) ? culture : language;
+    publicContentLanguage = requestedLanguage?.Trim().ToUpperInvariant() switch
+    {
+        null or "" or "EN-US" or "EN" => PublicContentLanguage.EnUs,
+        "PT-BR" or "PT" => PublicContentLanguage.PtBr,
+        _ => PublicContentLanguage.None
+    };
+
+    return publicContentLanguage != PublicContentLanguage.None;
 }

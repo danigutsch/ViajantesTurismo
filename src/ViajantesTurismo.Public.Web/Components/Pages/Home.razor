@@ -1,10 +1,12 @@
 @page "/"
+@using Microsoft.AspNetCore.WebUtilities
 @inject IPublicCatalogApiClient CatalogApi
+@inject NavigationManager Navigation
 
-<PageTitle>Cycle Tourism Around the World - Viajantes Turismo</PageTitle>
+<PageTitle>@PageTitle</PageTitle>
 
-<h1>Cycle tourism around the world!</h1>
-<p>Travel differently. ViajantesTurismo is culture, health, and fun.</p>
+<h1>@HeroTitle</h1>
+<p>@HeroBody</p>
 
 <section aria-labelledby="published-tours">
     <h2 id="published-tours">Our tours</h2>
@@ -36,11 +38,27 @@
 
 @code {
     private CatalogTourDto[]? _tours;
+    private PublicContentVariantDto? _hero;
     private bool _loadFailed;
+
+    private string PageTitle => _hero?.SeoTitle ?? HeroTitle;
+
+    private string HeroTitle => _hero?.Title ?? "Cycle tourism around the world!";
+
+    private string HeroBody => _hero?.Body ?? "Travel differently. ViajantesTurismo is culture, health, and fun.";
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            _hero = await CatalogApi.GetPublicContent("home.hero", GetRequestedCulture(), CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _hero = null;
+        }
+
         try
         {
             _tours = await CatalogApi.GetPublishedTours(CancellationToken.None);
@@ -50,5 +68,28 @@
             _loadFailed = true;
             _tours = [];
         }
+    }
+
+    private string? GetRequestedCulture()
+    {
+        var query = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (query.TryGetValue("culture", out var culture))
+        {
+            return NormalizeCulture(culture.ToString());
+        }
+
+        return query.TryGetValue("language", out var language)
+            ? NormalizeCulture(language.ToString())
+            : null;
+    }
+
+    private static string? NormalizeCulture(string? culture)
+    {
+        return culture?.Trim().ToLowerInvariant() switch
+        {
+            "en-us" => "en-US",
+            "pt-br" => "pt-BR",
+            _ => null
+        };
     }
 }

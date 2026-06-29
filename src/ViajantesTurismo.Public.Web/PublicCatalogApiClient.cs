@@ -36,4 +36,21 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
 
         return await response.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
     }
+
+    public async Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct)
+    {
+        var escapedKey = Uri.EscapeDataString(key);
+        var escapedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : Uri.EscapeDataString(culture);
+        using var response = await httpClient.GetAsync(
+            new Uri($"/public/catalog/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative),
+            ct);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(ct);
+    }
 }

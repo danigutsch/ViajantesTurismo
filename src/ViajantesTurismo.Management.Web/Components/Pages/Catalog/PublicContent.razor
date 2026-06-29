@@ -144,7 +144,14 @@
         </div>
         @if (variant.RequiresHumanReview)
         {
-            <div class="alert alert-warning mt-3 mb-0" role="status">Review-required text. Review before publishing.</div>
+            <div class="alert alert-warning mt-3 mb-0" role="status">Review-required text. AI-assisted drafts need human review before publishing.</div>
+        }
+        @if (variant.GeneratedDraft && !variant.RequiresHumanReview)
+        {
+            <div class="form-check mt-3">
+                <InputCheckbox id="@($"{idPrefix}-review-confirmed")" class="form-check-input" @bind-Value="variant.HumanReviewConfirmed" />
+                <label for="@($"{idPrefix}-review-confirmed")" class="form-check-label">I reviewed this generated draft</label>
+            </div>
         }
     </div>;
 
@@ -232,6 +239,8 @@
         target.MetaDescription = source.MetaDescription;
         target.ShareSummary = source.ShareSummary;
         target.RequiresHumanReview = true;
+        target.GeneratedDraft = true;
+        target.HumanReviewConfirmed = false;
         _successMessage = "Draft created and marked for human review.";
     }
 
@@ -281,9 +290,30 @@
 
     private bool ValidateForm()
     {
+        var incompleteVariants = _model.Variants
+            .Where(variant => !IsBlankDraftTarget(variant))
+            .Where(variant => string.IsNullOrWhiteSpace(variant.Title) || string.IsNullOrWhiteSpace(variant.Body));
+
+        if (incompleteVariants.Any())
+        {
+            _errorMessage = "Enter both title and body for each edited language.";
+            return false;
+        }
+
+        if (_model.Variants.Any(IsBlankDraftTarget))
+        {
+            GenerateMissingDraft();
+        }
+
         if (_model.Variants.Any(variant => string.IsNullOrWhiteSpace(variant.Title) || string.IsNullOrWhiteSpace(variant.Body)))
         {
             _errorMessage = "Enter title and body for every supported language before saving.";
+            return false;
+        }
+
+        if (_model.Variants.Any(variant => variant.GeneratedDraft && !variant.RequiresHumanReview && !variant.HumanReviewConfirmed))
+        {
+            _errorMessage = "Confirm human review before clearing a generated draft review flag.";
             return false;
         }
 
@@ -376,11 +406,9 @@
     {
         public PublicContentLanguageDto Language { get; set; }
 
-        [Required]
         [StringLength(ContractConstants.MaxNameLength)]
         public string Title { get; set; } = string.Empty;
 
-        [Required]
         [StringLength(ContractConstants.MaxBodyLength)]
         public string Body { get; set; } = string.Empty;
 
@@ -395,6 +423,10 @@
 
         public bool RequiresHumanReview { get; set; }
 
+        public bool GeneratedDraft { get; set; }
+
+        public bool HumanReviewConfirmed { get; set; }
+
         public void CopyFrom(PublicContentVariantDto variant)
         {
             Title = variant.Title;
@@ -403,6 +435,8 @@
             MetaDescription = variant.MetaDescription;
             ShareSummary = variant.ShareSummary;
             RequiresHumanReview = variant.RequiresHumanReview;
+            GeneratedDraft = false;
+            HumanReviewConfirmed = false;
         }
 
         public PublicContentVariantDto ToDto()
