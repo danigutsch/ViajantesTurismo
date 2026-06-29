@@ -47,6 +47,191 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
+    public async Task Root_renders_public_content_for_requested_culture()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("pt-BR", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.PtBr,
+            Title = "Cicloturismo pelo mundo!",
+            Body = "Pedale com cultura, saúde e diversão.",
+            SeoTitle = "Cicloturismo - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/?culture=pt-BR", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<title>Cicloturismo - Viajantes Turismo</title>", content, StringComparison.Ordinal);
+        Assert.Contains("<h1>Cicloturismo pelo mundo!</h1>", content, StringComparison.Ordinal);
+        Assert.Contains("Pedale com cultura", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_uses_content_key_when_loading_public_content()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("other.section", "en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Wrong section",
+            Body = "This content belongs elsewhere.",
+            SeoTitle = "Wrong section - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("Wrong section", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_loads_public_content_and_tours_concurrently()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            ContentDelay = TimeSpan.FromSeconds(2),
+            ContentStarted = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously),
+            ListStarted = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Cycle safely",
+            Body = "Guided tours for everyone.",
+            SeoTitle = "Cycle safely - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        var responseTask = client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        await catalogApi.ContentStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        await catalogApi.ListStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        using var response = await responseTask;
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Cycle safely", content, StringComparison.Ordinal);
+        Assert.Contains("Camino Norte", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Fake_public_catalog_content_requires_a_culture()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        var content = new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Cycle safely",
+            Body = "Guided tours for everyone.",
+            SeoTitle = "Cycle safely - Viajantes Turismo"
+        };
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => catalogApi.AddContent(" ", content));
+
+        // Assert
+        Assert.Equal("culture", exception.ParamName);
+    }
+
+    [Fact]
+    public async Task Fake_public_catalog_content_keeps_newline_keys_distinct()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("home\nhero", "en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Newline key",
+            Body = "Key-specific content.",
+            SeoTitle = "Newline key - Viajantes Turismo"
+        });
+        catalogApi.AddContent("home", "hero\nen-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Other key",
+            Body = "Other content.",
+            SeoTitle = "Other key - Viajantes Turismo"
+        });
+
+        // Act
+        var content = await catalogApi.GetPublicContent(
+            "home\nhero",
+            "en-US",
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.Equal("Newline key", content.Title);
+    }
+
+    [Fact]
+    public async Task Root_ignores_unsupported_culture_query_and_uses_default_content()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Cycle safely",
+            Body = "Guided tours for everyone.",
+            SeoTitle = "Cycle safely - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/?culture=fr-FR", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<h1>Cycle safely</h1>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_still_renders_tours_when_public_content_load_fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient { FailContentRequests = true };
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
+        Assert.Contains("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("Tours could not be loaded", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Root_returns_unavailable_message_when_catalog_fails()
     {
         // Arrange

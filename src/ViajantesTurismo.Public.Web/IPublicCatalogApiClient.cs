@@ -7,4 +7,6 @@ internal interface IPublicCatalogApiClient
     Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct);
 
     Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct);
+
+    Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct);
 }

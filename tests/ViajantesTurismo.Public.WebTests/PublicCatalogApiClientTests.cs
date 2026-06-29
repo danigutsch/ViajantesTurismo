@@ -112,4 +112,53 @@ public sealed class PublicCatalogApiClientTests
         await Assert.ThrowsAsync<HttpRequestException>(async () => await act);
     }
 
+    [Theory]
+    [InlineData("home.hero", "pt-BR", "/public/catalog/content/home.hero?culture=pt-BR")]
+    [InlineData("home/hero", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
+    [InlineData("/home//hero/", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
+    [InlineData("home / hero", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
+    public async Task GetPublicContent_requests_public_content_endpoint(string key, string culture, string expectedPath)
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.Path + request.QueryString.Value;
+            return PublicCatalogApiClientTestsHelpers.JsonResponse("""
+                {
+                  "language":2,
+                  "title":"Bem-vindo",
+                  "body":"Pedale conosco",
+                  "seoTitle":"Cicloturismo no Brasil",
+                  "metaDescription":null,
+                  "shareSummary":null,
+                  "requiresHumanReview":false
+                }
+                """);
+        });
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var content = await sut.GetPublicContent(key, culture, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.Equal(expectedPath, requestPath);
+        Assert.Equal("Bem-vindo", content.Title);
+    }
+
+    [Fact]
+    public async Task GetPublicContent_returns_null_when_catalog_returns_notfound()
+    {
+        // Arrange
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var content = await sut.GetPublicContent("home.hero", "pt-BR", TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Null(content);
+    }
+
 }

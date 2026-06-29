@@ -60,8 +60,9 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         Assert.Equal("Welcome", cut.Find("#pt-br-title").GetAttribute("value"));
-        Assert.Contains("Draft created and marked for human review", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Starter draft copied from source content", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Review-required text", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("AI-assisted", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         Assert.Equal("Bem-vindo", cut.Find("#en-us-title").GetAttribute("value"));
-        Assert.Contains("Draft created and marked for human review", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Starter draft copied from source content", cut.Markup, StringComparison.Ordinal);
         Assert.True(cut.Find("#en-us-review").HasAttribute("checked"));
     }
 
@@ -156,6 +157,109 @@ public sealed class PublicContentTests : BunitContext
         Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.EnUs && variant.Title == "Welcome");
         Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Body == "Pedale conosco");
         Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Saving_one_language_creates_review_required_missing_language_draft()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
+        Assert.NotNull(publicContentApi.SavedRequest);
+        var portugueseVariant = Assert.Single(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr);
+        Assert.True(portugueseVariant.RequiresHumanReview);
+        Assert.Equal("Welcome", portugueseVariant.Title);
+        Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Saving_blank_languages_shows_draft_source_guidance()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("form").Submit();
+
+        // Assert
+        Assert.Contains("Enter source title and body before generating a draft", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        Assert.Null(publicContentApi.SavedRequest);
+    }
+
+    [Fact]
+    public void Clearing_generated_draft_review_flag_requires_human_review_confirmation()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("button.btn-outline-primary").Click();
+        cut.Find("#pt-br-review").Change(false);
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("form").Submit();
+
+        // Assert
+        Assert.Contains("Confirm human review", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        Assert.Null(publicContentApi.SavedRequest);
+    }
+
+    [Fact]
+    public void Persisted_review_required_content_can_be_saved_without_generated_draft_confirmation()
+    {
+        // Arrange
+        publicContentApi.Content = [PublicContentTestsHelpers.CreateContent("home.hero")];
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("home.hero", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("button.list-group-item").Click();
+        cut.WaitForState(() => cut.Find("#content-key").GetAttribute("value") == "home.hero", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#pt-br-review").Change(false);
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
+        Assert.DoesNotContain("Confirm human review", cut.Markup, StringComparison.Ordinal);
+        Assert.NotNull(publicContentApi.SavedRequest);
+        var portugueseVariant = Assert.Single(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr);
+        Assert.False(portugueseVariant.RequiresHumanReview);
+    }
+
+    [Fact]
+    public void Confirmed_generated_draft_can_be_saved_as_human_reviewed()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("button.btn-outline-primary").Click();
+        cut.Find("#pt-br-review").Change(false);
+        cut.Find("#pt-br-review-confirmed").Change(true);
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
+        Assert.NotNull(publicContentApi.SavedRequest);
+        var portugueseVariant = Assert.Single(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr);
+        Assert.False(portugueseVariant.RequiresHumanReview);
     }
 
     [Fact]

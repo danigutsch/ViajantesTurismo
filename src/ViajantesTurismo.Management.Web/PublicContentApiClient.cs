@@ -26,7 +26,7 @@ internal sealed class PublicContentApiClient(HttpClient httpClient) : IPublicCon
 
     public async Task<PublicContentDto?> GetContent(string key, CancellationToken ct)
     {
-        var requestUri = new Uri($"/catalog/public-content/{Uri.EscapeDataString(key)}", UriKind.Relative);
+        var requestUri = new Uri($"/catalog/public-content/{EscapePath(key)}", UriKind.Relative);
         using var response = await httpClient.GetAsync(requestUri, ct);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -40,11 +40,18 @@ internal sealed class PublicContentApiClient(HttpClient httpClient) : IPublicCon
 
     public async Task<PublicContentDto> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
     {
-        var requestUri = new Uri($"/catalog/public-content/{Uri.EscapeDataString(key)}", UriKind.Relative);
+        var requestUri = new Uri($"/catalog/public-content/{EscapePath(key)}", UriKind.Relative);
         using var response = await httpClient.PutAsJsonAsync(requestUri, request, ct);
         await ValidationErrorHelper.EnsureSuccessOrThrowValidationException(response);
 
         var content = await response.Content.ReadFromJsonAsync<PublicContentDto>(ct);
         return content ?? throw new InvalidOperationException("Catalog API returned an empty content response.");
+    }
+
+    private static string EscapePath(string path)
+    {
+        return string.Join('/', path
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(Uri.EscapeDataString));
     }
 }
