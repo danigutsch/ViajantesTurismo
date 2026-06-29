@@ -4,7 +4,7 @@ using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.StepDefinitions;
+namespace ViajantesTurismo.Catalog.BehaviorTests.StepDefinitions;
 
 [Binding]
 public sealed class CatalogTourWorkflowSteps
