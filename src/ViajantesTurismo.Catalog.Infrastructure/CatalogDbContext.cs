@@ -16,6 +16,8 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
     internal DbSet<CatalogTourReadModelEntity> CatalogTourReadModels => Set<CatalogTourReadModelEntity>();
 
+    internal DbSet<PublicMediaImageEntity> PublicMediaImages => Set<PublicMediaImageEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,5 +27,8 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
         modelBuilder.ApplyConfiguration(new EditablePublicContentConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicMediaImageEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicMediaImageResponsiveVariantEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicMediaImageTourLinkEntityConfiguration());
     }
 }

@@ -72,4 +72,31 @@ public sealed class PublicComponentTests : BunitContext
         Assert.Equal("Mountain pass", caption.TextContent);
     }
 
+    [Fact]
+    public void TourGallery_renders_responsive_sources_when_variants_are_present()
+    {
+        // Arrange
+        var images = new[]
+        {
+            new CatalogTourImageDto
+            {
+                Uri = new Uri("https://cdn.example/one.jpg"),
+                AltText = "First image",
+                ResponsiveVariants =
+                [
+                    new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-320.jpg"), Width = 320, Height = 213, ContentType = "image/jpeg", FileSizeBytes = 512 },
+                    new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+                ]
+            }
+        };
+
+        // Act
+        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+
+        // Assert
+        var source = cut.Find("source");
+        Assert.Equal("https://cdn.example/one-320.jpg 320w, https://cdn.example/one-640.jpg 640w", source.GetAttribute("srcset"));
+        Assert.Equal("(min-width: 48rem) 50vw, 100vw", source.GetAttribute("sizes"));
+    }
+
 }

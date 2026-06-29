@@ -1,7 +1,13 @@
 @foreach (var image in Images)
 {
     <figure>
-        <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
+        <picture>
+            @if (image.ResponsiveVariants.Count > 0)
+            {
+                <source srcset="@SrcSet(image)" sizes="(min-width: 48rem) 50vw, 100vw" />
+            }
+            <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
+        </picture>
         @if (!string.IsNullOrWhiteSpace(image.Caption))
         {
             <figcaption>@image.Caption</figcaption>
@@ -12,4 +18,11 @@
 @code {
     [Parameter, EditorRequired]
     public IReadOnlyList<CatalogTourImageDto> Images { get; set; } = [];
+
+    private static string SrcSet(CatalogTourImageDto image)
+    {
+        return string.Join(", ", image.ResponsiveVariants
+            .OrderBy(variant => variant.Width)
+            .Select(variant => $"{variant.Uri} {variant.Width}w"));
+    }
 }

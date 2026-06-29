@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -15,7 +16,9 @@ internal static class CatalogEndpointTestsHelpers
             configureTestServices: services =>
             {
                 services.RemoveAll<ICatalogTourReadModelStore>();
+                services.RemoveAll<IPublicMediaImageStore>();
                 services.AddSingleton(store);
+                services.AddSingleton<IPublicMediaImageStore, StubPublicMediaImageStore>();
             });
     }
 

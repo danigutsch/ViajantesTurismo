@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Catalog.Application;
+using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Resources;
@@ -30,7 +31,9 @@ public static class InfrastructureDependencyInjection
 
         builder.Services.AddCatalogApplication();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
-        builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
+        builder.Services.AddScoped<EfCatalogTourReadModelStore>();
+        builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
+        builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
 
         return builder;
     }

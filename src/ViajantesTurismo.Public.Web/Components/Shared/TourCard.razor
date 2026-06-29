@@ -1,6 +1,12 @@
-@if (Tour.Images.Count > 0)
+@if (CoverImage is not null)
 {
-    <img src="@Tour.Images[0].Uri" alt="@Tour.Images[0].AltText" loading="lazy" />
+    <picture>
+        @if (CoverImage.ResponsiveVariants.Count > 0)
+        {
+            <source srcset="@SrcSet(CoverImage)" sizes="(min-width: 48rem) 33vw, 100vw" />
+        }
+        <img src="@CoverImage.Uri" alt="@CoverImage.AltText" loading="lazy" />
+    </picture>
 }
 
 @if (HeadingLevel == 3)
@@ -22,5 +28,17 @@ else
     [Parameter]
     public int HeadingLevel { get; set; } = 2;
 
+    private CatalogTourImageDto? CoverImage => Tour.Images
+        .OrderByDescending(image => image.IsCover)
+        .ThenBy(image => image.SortOrder)
+        .FirstOrDefault();
+
     private static string TourUrl(CatalogTourDto tour) => $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}";
+
+    private static string SrcSet(CatalogTourImageDto image)
+    {
+        return string.Join(", ", image.ResponsiveVariants
+            .OrderBy(variant => variant.Width)
+            .Select(variant => $"{variant.Uri} {variant.Width}w"));
+    }
 }

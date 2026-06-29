@@ -1,6 +1,8 @@
+using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Common.Sanitizers;
@@ -15,20 +17,38 @@ builder.AddCatalogInfrastructure();
 
 var app = builder.Build();
 
-app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, CancellationToken ct) =>
+app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct) =>
 {
     var tours = await store.ListTours(ct);
-    return tours.Select(MapTour);
+    var dtos = new List<CatalogTourDto>();
+
+    foreach (var tour in tours)
+    {
+        var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
+        dtos.Add(MapTour(tour, images));
+    }
+
+    return dtos;
 });
 
 app.MapGet("/catalog/tours/{id:guid}", GetTour);
 
 app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
+app.MapGet("/catalog/tours/{id:guid}/images", ListTourImages);
+app.MapPut("/catalog/media/images/{id:guid}", UpsertMediaImage);
 
-app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, CancellationToken ct) =>
+app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct) =>
 {
     var tours = await store.ListTours(ct);
-    return tours.Where(IsPublished).Select(MapTour);
+    var dtos = new List<CatalogTourDto>();
+
+    foreach (var tour in tours.Where(IsPublished))
+    {
+        var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
+        dtos.Add(MapTour(tour, GetReadyImages(images)));
+    }
+
+    return dtos;
 });
 
 app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour);
@@ -49,7 +69,7 @@ app.MapDefaultEndpoints();
 
 await app.RunAsync();
 
-static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, CancellationToken ct)
+static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct)
 {
     if (id == Guid.Empty)
     {
@@ -57,10 +77,16 @@ static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, Ca
     }
 
     var tour = await store.GetTour(id, ct);
-    return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
+    if (tour is null)
+    {
+        return Results.NotFound();
+    }
+
+    var images = await imageStore.ListByTour(id, ct);
+    return Results.Ok(MapTour(tour, images));
 }
 
-static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, CancellationToken ct)
+static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct)
 {
     if (string.IsNullOrWhiteSpace(slug))
     {
@@ -68,7 +94,13 @@ static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelSt
     }
 
     var tour = await store.GetPublishedTourBySlug(slug, ct);
-    return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
+    if (tour is null)
+    {
+        return Results.NotFound();
+    }
+
+    var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
+    return Results.Ok(MapTour(tour, GetReadyImages(images)));
 }
 
 static async Task<IResult> GetPublicContent(
@@ -163,6 +195,7 @@ static async Task<IResult> UpsertTourPresentation(
     Guid id,
     UpsertCatalogTourPresentationRequest request,
     ICatalogTourReadModelStore store,
+    IPublicMediaImageStore imageStore,
     CancellationToken ct)
 {
     if (id == Guid.Empty)
@@ -202,10 +235,69 @@ static async Task<IResult> UpsertTourPresentation(
         new CatalogTourPresentationUpdate(title, slug, request.IsPublished),
         ct);
 
-    return updated is null ? Results.NotFound() : Results.Ok(MapTour(updated));
+    if (updated is null)
+    {
+        return Results.NotFound();
+    }
+
+    var images = await imageStore.ListByTour(id, ct);
+    return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images));
 }
 
-static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
+static async Task<IResult> ListTourImages(
+    Guid id,
+    ICatalogTourReadModelStore store,
+    IPublicMediaImageStore imageStore,
+    CancellationToken ct)
+{
+    if (id == Guid.Empty)
+    {
+        return Results.BadRequest();
+    }
+
+    var tour = await store.GetTour(id, ct);
+    if (tour is null)
+    {
+        return Results.NotFound();
+    }
+
+    var images = await imageStore.ListByTour(id, ct);
+    return Results.Ok(MapImages(images));
+}
+
+static async Task<IResult> UpsertMediaImage(
+    Guid id,
+    PublicMediaImageDto request,
+    ICatalogTourReadModelStore store,
+    IPublicMediaImageStore imageStore,
+    CancellationToken ct)
+{
+    if (id == Guid.Empty || id != request.Id)
+    {
+        return Results.BadRequest();
+    }
+
+    var errors = ValidateMediaImage(request);
+    if (errors.Count > 0)
+    {
+        return Results.ValidationProblem(errors);
+    }
+
+    foreach (var link in request.TourLinks)
+    {
+        var tour = await store.GetTour(link.CatalogTourId, ct);
+        if (tour is null)
+        {
+            return Results.NotFound();
+        }
+    }
+
+    var image = ToDomainMediaImage(request);
+    await imageStore.Upsert(image, ct);
+    return Results.Ok(MapMediaImage(image));
+}
+
+static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images = null)
 {
     return new CatalogTourDto
     {
@@ -215,9 +307,211 @@ static CatalogTourDto MapTour(CatalogTourDraftReadModel tour)
         Title = tour.Title,
         Slug = tour.Slug,
         IsPublished = tour.IsPublished,
-        Images = [],
+        Images = MapImages(images ?? []),
         UpdatedAt = tour.UpdatedAt
     };
+}
+
+static IReadOnlyList<CatalogTourImageDto> MapImages(IReadOnlyList<PublicMediaImage> images)
+{
+    return images
+        .OrderByDescending(IsCover)
+        .ThenBy(GetDisplayOrder)
+        .ThenBy(image => image.Id)
+        .Select(MapImage)
+        .ToArray();
+}
+
+static IReadOnlyList<PublicMediaImage> GetReadyImages(IReadOnlyList<PublicMediaImage> images)
+{
+    return [.. images.Where(image => image.ProcessingStatus == MediaImageProcessingStatus.Ready && image.ResponsiveVariants.Count > 0)];
+}
+
+static CatalogTourImageDto MapImage(PublicMediaImage image)
+{
+    return new CatalogTourImageDto
+    {
+        SortOrder = GetDisplayOrder(image),
+        IsCover = IsCover(image),
+        Uri = GetPublicImageUri(image),
+        AltText = image.AltText,
+        Caption = image.Caption,
+        ResponsiveVariants = image.ResponsiveVariants
+            .OrderBy(variant => variant.Width)
+            .Select(MapResponsiveVariant)
+            .ToArray()
+    };
+}
+
+static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image)
+{
+    var errors = new Dictionary<string, string[]>();
+
+    if (image.SourceUri is null || !image.SourceUri.IsAbsoluteUri)
+    {
+        errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be absolute."];
+    }
+
+    var altText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty;
+    if (string.IsNullOrWhiteSpace(altText))
+    {
+        errors[nameof(PublicMediaImageDto.AltText)] = ["Alt text is required."];
+    }
+    else if (altText.Length > ContractConstants.MaxAltTextLength)
+    {
+        errors[nameof(PublicMediaImageDto.AltText)] = [$"Alt text cannot exceed {ContractConstants.MaxAltTextLength} characters."];
+    }
+
+    if (image.Dimensions is null)
+    {
+        errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions are required."];
+    }
+    else if (image.Dimensions.Width <= 0 || image.Dimensions.Height <= 0)
+    {
+        errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions must be positive."];
+    }
+
+    if (string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(image.Checksum)))
+    {
+        errors[nameof(PublicMediaImageDto.Checksum)] = ["Checksum is required."];
+    }
+
+    if (string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(image.ContentType)))
+    {
+        errors[nameof(PublicMediaImageDto.ContentType)] = ["Content type is required."];
+    }
+
+    if (image.FileSizeBytes <= 0)
+    {
+        errors[nameof(PublicMediaImageDto.FileSizeBytes)] = ["File size must be positive."];
+    }
+
+    if (image.ProcessingStatus == MediaImageProcessingStatusDto.None || !Enum.IsDefined(image.ProcessingStatus))
+    {
+        errors[nameof(PublicMediaImageDto.ProcessingStatus)] = ["Processing status is required."];
+    }
+
+    if (image.TourLinks is null || image.TourLinks.Count == 0)
+    {
+        errors[nameof(PublicMediaImageDto.TourLinks)] = ["At least one tour link is required."];
+    }
+    else if (image.TourLinks.Any(link => link is null || link.CatalogTourId == Guid.Empty || link.DisplayOrder < 0))
+    {
+        errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links require a tour id and non-negative display order."];
+    }
+
+    if (image.ResponsiveVariants is null || image.ResponsiveVariants.Any(variant => variant.Uri is null || !variant.Uri.IsAbsoluteUri || variant.Width <= 0 || variant.Height <= 0))
+    {
+        errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute URIs and positive dimensions."];
+    }
+    else if (image.ProcessingStatus == MediaImageProcessingStatusDto.Ready && image.ResponsiveVariants.Count == 0)
+    {
+        errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Ready images require at least one processed public variant."];
+    }
+
+    if (image.Tags is null || image.Tags.Any(string.IsNullOrWhiteSpace))
+    {
+        errors[nameof(PublicMediaImageDto.Tags)] = ["Tags cannot contain blank values."];
+    }
+
+    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Caption), image.Caption, ContractConstants.MaxCaptionLength);
+    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Attribution), image.Attribution, ContractConstants.MaxAttributionLength);
+    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Copyright), image.Copyright, ContractConstants.MaxCopyrightLength);
+
+    return errors;
+}
+
+static void ValidateOptionalLength(Dictionary<string, string[]> errors, string field, string? value, int maxLength)
+{
+    var sanitized = StringSanitizer.Sanitize(value);
+    if (sanitized?.Length > maxLength)
+    {
+        errors[field] = [$"{field} cannot exceed {maxLength} characters."];
+    }
+}
+
+static PublicMediaImage ToDomainMediaImage(PublicMediaImageDto image)
+{
+    return new PublicMediaImage(
+        image.Id,
+        image.SourceUri,
+        StringSanitizer.Sanitize(image.Checksum) ?? string.Empty,
+        StringSanitizer.Sanitize(image.ContentType) ?? string.Empty,
+        image.FileSizeBytes,
+        new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
+        (MediaImageProcessingStatus)(int)image.ProcessingStatus,
+        image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
+        image.Tags.Select(tag => StringSanitizer.Sanitize(tag) ?? string.Empty).ToArray(),
+        image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray(),
+        StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
+        StringSanitizer.Sanitize(image.Caption),
+        StringSanitizer.Sanitize(image.Attribution),
+        StringSanitizer.Sanitize(image.Copyright));
+}
+
+static MediaImageResponsiveVariant ToDomainResponsiveVariant(MediaImageResponsiveVariantDto variant)
+{
+    return new MediaImageResponsiveVariant(
+        variant.Uri,
+        variant.Width,
+        variant.Height,
+        StringSanitizer.Sanitize(variant.ContentType) ?? string.Empty,
+        variant.FileSizeBytes);
+}
+
+static PublicMediaImageDto MapMediaImage(PublicMediaImage image)
+{
+    return new PublicMediaImageDto
+    {
+        Id = image.Id,
+        SourceUri = image.SourceUri,
+        Checksum = image.Checksum,
+        ContentType = image.ContentType,
+        FileSizeBytes = image.FileSizeBytes,
+        Dimensions = new MediaImageDimensionsDto { Width = image.Dimensions.Width, Height = image.Dimensions.Height },
+        ProcessingStatus = (MediaImageProcessingStatusDto)(int)image.ProcessingStatus,
+        ResponsiveVariants = image.ResponsiveVariants.Select(MapResponsiveVariant).ToArray(),
+        Tags = image.Tags,
+        TourLinks = image.TourLinks
+            .Select(link => new MediaImageTourLinkDto
+            {
+                CatalogTourId = link.CatalogTourId,
+                DisplayOrder = link.DisplayOrder,
+                IsCover = link.IsCover
+            })
+            .ToArray(),
+        AltText = image.AltText,
+        Caption = image.Caption,
+        Attribution = image.Attribution,
+        Copyright = image.Copyright
+    };
+}
+
+static MediaImageResponsiveVariantDto MapResponsiveVariant(MediaImageResponsiveVariant variant)
+{
+    return new MediaImageResponsiveVariantDto
+    {
+        Uri = variant.Uri,
+        Width = variant.Width,
+        Height = variant.Height,
+        ContentType = variant.ContentType,
+        FileSizeBytes = variant.FileSizeBytes
+    };
+}
+
+static Uri GetPublicImageUri(PublicMediaImage image)
+{
+    return image.ResponsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault()?.Uri ?? image.SourceUri;
+}
+
+static int GetDisplayOrder(PublicMediaImage image)
+{
+    return image.TourLinks.Count == 0 ? 0 : image.TourLinks.Min(link => link.DisplayOrder);
+}
+
+static bool IsCover(PublicMediaImage image)
+{
+    return image.TourLinks.Any(link => link.IsCover);
 }
 
 static bool IsPublished(CatalogTourDraftReadModel tour)
