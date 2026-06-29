@@ -87,10 +87,26 @@ run_test_slice() {
     local projects_file="$1"
     local project_path
     local exit_code=0
+    local project_output
+    local project_exit_code
 
     while IFS= read -r project_path || [[ -n "${project_path}" ]]; do
         [[ -z "${project_path}" ]] && continue
-        if ! dotnet test --project "${project_path}" --no-restore --no-build; then
+        project_output="$(mktemp)"
+        set +e
+        dotnet test --project "${project_path}" --no-restore --no-build > "${project_output}" 2>&1
+        project_exit_code="$?"
+        set -e
+
+        cat "${project_output}"
+
+        if [[ ${project_exit_code} -ne 0 ]] && grep -qx "No test projects were found\." "${project_output}"; then
+            project_exit_code=0
+        fi
+
+        rm -f "${project_output}"
+
+        if [[ ${project_exit_code} -ne 0 ]]; then
             exit_code=1
         fi
     done < "${projects_file}"
