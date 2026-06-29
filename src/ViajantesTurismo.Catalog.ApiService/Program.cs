@@ -418,7 +418,7 @@ static void ValidateProcessingStatus(Dictionary<string, string[]> errors, MediaI
     }
 }
 
-static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLinkDto>? tourLinks)
+static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLinkDto?>? tourLinks)
 {
     if (tourLinks is null || tourLinks.Count == 0)
     {
@@ -427,6 +427,10 @@ static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyColl
     else if (tourLinks.Any(link => link is null || link.CatalogTourId == Guid.Empty || link.DisplayOrder < 0))
     {
         errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links require a tour id and non-negative display order."];
+    }
+    else if (tourLinks.OfType<MediaImageTourLinkDto>().Select(link => link.CatalogTourId).Distinct().Count() != tourLinks.Count)
+    {
+        errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links cannot contain duplicate tour ids."];
     }
 }
 

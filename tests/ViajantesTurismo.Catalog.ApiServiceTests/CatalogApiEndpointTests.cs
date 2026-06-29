@@ -565,6 +565,90 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_null_tour_link_entries()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        using var content = new StringContent(
+            $$"""
+            {
+              "id": "{{imageId}}",
+              "sourceUri": "https://cdn.example/source.jpg",
+              "checksum": "sha256:abc",
+              "contentType": "image/jpeg",
+              "fileSizeBytes": 2048,
+              "dimensions": { "width": 1200, "height": 800 },
+              "processingStatus": 3,
+              "responsiveVariants": [
+                { "uri": "https://cdn.example/one-640.jpg", "width": 640, "height": 427, "contentType": "image/jpeg", "fileSizeBytes": 1024 }
+              ],
+              "tags": ["camino"],
+              "tourLinks": [null],
+              "altText": "First image"
+            }
+            """,
+            Encoding.UTF8,
+            "application/json");
+
+        // Act
+        using var response = await client.PutAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(PublicMediaImageDto.TourLinks), problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_duplicate_tour_links()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var tourId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Ready,
+            ResponsiveVariants =
+            [
+                new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+            ],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = tourId, DisplayOrder = 1, IsCover = true },
+                new MediaImageTourLinkDto { CatalogTourId = tourId, DisplayOrder = 2, IsCover = false }
+            ],
+            AltText = "First image"
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(PublicMediaImageDto.TourLinks), problem.Errors.Keys);
+    }
+
+    [Fact]
     public async Task Public_tour_list_returns_only_published_tours_with_ready_public_images()
     {
         // Arrange
