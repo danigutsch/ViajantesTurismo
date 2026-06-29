@@ -5,7 +5,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     private static readonly HashSet<string> ApprovedSuppressMessageFiles =
     [
         "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs",
-        "src/SharedKernel/SharedKernel.BuildingBlocks/ExceptionCancellationExtensions.cs",
         "tests/SharedKernel.IntegrationTesting/AspireTestApplication.cs"
     ];
 

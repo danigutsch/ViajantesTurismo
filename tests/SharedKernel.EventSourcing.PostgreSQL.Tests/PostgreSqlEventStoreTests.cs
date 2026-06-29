@@ -409,7 +409,9 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
     {
         // Arrange
         var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
         using var activityListener = PostgreSqlEventStoreTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = PostgreSqlEventStoreTestsHelpers.CreateMeterListener(measurements);
         var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
         await using var eventStore = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
         await using var checkpointStore = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
@@ -443,6 +445,9 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         Assert.DoesNotContain(stoppedActivities, activity =>
             activity.Status == ActivityStatusCode.Error
             || PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeError));
+        Assert.DoesNotContain(PostgreSqlEventSourcingTelemetry.MetricAppendDuration, measurements, StringComparer.Ordinal);
+        Assert.DoesNotContain(PostgreSqlEventSourcingTelemetry.MetricLoadDuration, measurements, StringComparer.Ordinal);
+        Assert.DoesNotContain(PostgreSqlEventSourcingTelemetry.MetricCheckpointDuration, measurements, StringComparer.Ordinal);
     }
 
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
