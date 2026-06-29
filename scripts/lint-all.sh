@@ -82,6 +82,11 @@ bash scripts/check-line-endings.sh
 bash scripts/lint-json.sh
 bash scripts/lint-gherkin.sh tests/**/*.feature
 bash scripts/lint-links.sh
+if [[ "${fix_mode}" == true ]]; then
+    bash scripts/update-architecture-diagrams.sh
+else
+    bash scripts/update-architecture-diagrams.sh --check
+fi
 
 if [[ "${skip_markdown}" != true ]]; then
     if ! command -v docker > /dev/null 2>&1; then
