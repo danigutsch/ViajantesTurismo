@@ -15,7 +15,6 @@ MERMAID_END = "```"
 FLOWCHART_TB = "flowchart TB"
 FLOWCHART_LR = "flowchart LR"
 JOB_HEADER = re.compile(r"^ {2}(\w[\w-]*):\s*$")
-JOB_NAME = re.compile(r"^ {4}name:\s+(.+)$")
 JOB_NEEDS = re.compile(r"^ {4}needs:\s+(\w[\w-]*)\s*$")
 JOB_NEEDS_BLOCK = re.compile(r"^ {4}needs:\s*$")
 JOB_NEED_ITEM = re.compile(r"^ {6}-\s+(\w[\w-]*)\s*$")
@@ -123,7 +122,7 @@ def sharedkernel_dependencies_diagram() -> str:
 
 def project_reference_edges(include_project) -> list[tuple[str, str]]:
     edges: list[tuple[str, str]] = []
-    for project in sorted(ROOT.glob("**/*.csproj")):
+    for project in sorted((ROOT / "src").glob("**/*.csproj")):
         relative = project.relative_to(ROOT)
         if not include_project(relative):
             continue
@@ -267,9 +266,9 @@ def parse_workflow_jobs(path: Path) -> list[tuple[str, str, list[str]]]:
             continue
         if not current.id:
             continue
-        name_match = JOB_NAME.match(line)
-        if name_match:
-            current.name = name_match.group(1).strip('"')
+        name = workflow_value(line, "name")
+        if name:
+            current.name = name.strip('"')
             continue
         needs_inline = JOB_NEEDS.match(line)
         if needs_inline:
@@ -317,10 +316,19 @@ def append_need(line: str, needs: list[str]) -> bool:
 
 def workflow_name(path: Path) -> str:
     for line in path.read_text(encoding="utf-8").splitlines():
-        match = re.match(r"name:\s+(.+)$", line)
-        if match:
-            return match.group(1).strip('"')
+        name = workflow_value(line, "name")
+        if name:
+            return name.strip('"')
     return path.stem
+
+
+def workflow_value(line: str, key: str) -> str:
+    prefix = f"{key}:"
+    if line.lstrip() != line:
+        prefix = f"    {prefix}"
+    if not line.startswith(prefix):
+        return ""
+    return line.removeprefix(prefix).strip()
 
 
 def format_edges(edges: list[tuple[str, str]]) -> list[str]:
