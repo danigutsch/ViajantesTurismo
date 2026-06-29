@@ -10,6 +10,15 @@ from pathlib import Path
 
 
 ROOT = Path.cwd()
+MERMAID_START = "```mermaid"
+MERMAID_END = "```"
+FLOWCHART_TB = "flowchart TB"
+FLOWCHART_LR = "flowchart LR"
+JOB_HEADER = re.compile(r"^[ ]{2}(\w[\w-]*):\s*$")
+JOB_NAME = re.compile(r"^[ ]{4}name:\s+(.+)$")
+JOB_NEEDS = re.compile(r"^[ ]{4}needs:\s+(\w[\w-]*)\s*$")
+JOB_NEEDS_BLOCK = re.compile(r"^[ ]{4}needs:\s*$")
+JOB_NEED_ITEM = re.compile(r"^[ ]{6}-\s+(\w[\w-]*)\s*$")
 
 
 def main() -> int:
@@ -21,7 +30,18 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    replacements = {
+    changed = update_files(args.check, architecture_replacements())
+
+    if args.check and changed:
+        report_stale_files(changed)
+        return 1
+
+    report_changed_files(changed)
+    return 0
+
+
+def architecture_replacements() -> dict[str, str]:
+    return {
         "project-dependencies": project_dependencies_diagram(),
         "sharedkernel-dependencies": sharedkernel_dependencies_diagram(),
         "apphost-resources": apphost_resources_diagram(),
@@ -29,31 +49,48 @@ def main() -> int:
         "ci-supplemental-workflows": ci_supplemental_workflows_diagram(),
     }
 
+
+def update_files(check_only: bool, replacements: dict[str, str]) -> list[str]:
     changed = []
-    for path in sorted((ROOT / "docs/architecture").glob("*.md")):
+    for path in architecture_docs():
+        updated = update_text(path.read_text(encoding="utf-8"), replacements)
         original = path.read_text(encoding="utf-8")
-        updated = original
-        for name, replacement in replacements.items():
-            updated = replace_generated_block(updated, name, replacement)
         if updated != original:
             changed.append(path.relative_to(ROOT).as_posix())
-            if not args.check:
-                path.write_text(updated, encoding="utf-8")
+            if not check_only:
+                write_text(path, updated)
+    return changed
 
-    if args.check and changed:
-        print("Generated architecture diagrams are stale:", file=sys.stderr)
-        for path in changed:
-            print(f"- {path}", file=sys.stderr)
-        print("Run: python3 scripts/update-architecture-diagrams.py", file=sys.stderr)
-        return 1
 
+def architecture_docs() -> tuple[Path, ...]:
+    return tuple(sorted((ROOT / "docs/architecture").glob("*.md")))
+
+
+def update_text(text: str, replacements: dict[str, str]) -> str:
+    for name, replacement in replacements.items():
+        text = replace_generated_block(text, name, replacement)
+    return text
+
+
+def write_text(path: Path, content: str) -> None:
+    with path.open("w", encoding="utf-8") as file:
+        file.write(content)
+
+
+def report_stale_files(changed: list[str]) -> None:
+    print("Generated architecture diagrams are stale:", file=sys.stderr)
+    for path in changed:
+        print(f"- {path}", file=sys.stderr)
+    print("Run: bash scripts/update-architecture-diagrams.sh", file=sys.stderr)
+
+
+def report_changed_files(changed: list[str]) -> None:
     if changed:
         print("Updated generated architecture diagrams:")
         for path in changed:
             print(f"- {path}")
     else:
         print("Generated architecture diagrams are current.")
-    return 0
 
 
 def replace_generated_block(text: str, name: str, replacement: str) -> str:
@@ -74,20 +111,14 @@ def project_dependencies_diagram() -> str:
     edges = project_reference_edges(
         lambda path: path.parts[0] == "src" and "SharedKernel" not in path.parts
     )
-    lines = ["```mermaid", "flowchart TB"]
-    lines.extend(format_edges(edges))
-    lines.append("```")
-    return "\n".join(lines)
+    return mermaid_diagram(FLOWCHART_TB, format_edges(edges))
 
 
 def sharedkernel_dependencies_diagram() -> str:
     edges = project_reference_edges(
         lambda path: path.parts[:2] == ("src", "SharedKernel")
     )
-    lines = ["```mermaid", "flowchart TB"]
-    lines.extend(format_edges(edges))
-    lines.append("```")
-    return "\n".join(lines)
+    return mermaid_diagram(FLOWCHART_TB, format_edges(edges))
 
 
 def project_reference_edges(include_project) -> list[tuple[str, str]]:
@@ -111,7 +142,7 @@ def apphost_resources_diagram() -> str:
     path = ROOT / "src/ViajantesTurismo.AppHost/AppHost.cs"
     variables: dict[str, str] = {}
     edges: list[tuple[str, str]] = []
-    assignment = re.compile(r"var\s+(\w+)\s+=\s+([\w.]+)\.([A-Za-z0-9_]+)\(([^)]*)\);")
+    assignment = re.compile(r"var\s+(\w+)\s+=\s+([\w.]+)\.(\w+)\(([^)]*)\);")
 
     for line in path.read_text(encoding="utf-8").splitlines():
         match = assignment.search(line)
@@ -128,7 +159,7 @@ def apphost_resources_diagram() -> str:
             if arg in variables:
                 edges.append((variable, arg))
 
-    invocation = re.compile(r"builder\.(Add[A-Za-z0-9_]+)\(([^)]*)\);")
+    invocation = re.compile(r"builder\.(Add\w+)\(([^)]*)\);")
     for line in path.read_text(encoding="utf-8").splitlines():
         match = invocation.search(line)
         if not match or "var " in line:
@@ -140,13 +171,12 @@ def apphost_resources_diagram() -> str:
             if arg in variables:
                 edges.append((node, arg))
 
-    lines = ["```mermaid", "flowchart LR"]
+    lines: list[str] = []
     for key, label in sorted(variables.items(), key=lambda item: item[1]):
         lines.append(f"    {node_id(key)}[{label}]")
     for source, target in sorted(set(edges)):
         lines.append(f"    {node_id(source)} --> {node_id(target)}")
-    lines.append("```")
-    return "\n".join(lines)
+    return mermaid_diagram(FLOWCHART_LR, lines)
 
 
 def parse_apphost_args(args: str) -> list[str]:
@@ -170,11 +200,7 @@ def apphost_label(variable: str, method: str) -> str:
 
 def ci_main_jobs_diagram() -> str:
     jobs = parse_workflow_jobs(ROOT / ".github/workflows/ci.yml")
-    lines = [
-        "```mermaid",
-        "flowchart TB",
-        "    trigger[Pull request, push to main, merge queue, or manual run]",
-    ]
+    lines = ["    trigger[Pull request, push to main, merge queue, or manual run]"]
     for job_id, name, _ in jobs:
         lines.append(f"    {node_id(job_id)}[{name}]")
     for job_id, _, needs in jobs:
@@ -183,26 +209,22 @@ def ci_main_jobs_diagram() -> str:
                 lines.append(f"    {node_id(need)} --> {node_id(job_id)}")
         else:
             lines.append(f"    trigger --> {node_id(job_id)}")
-    lines.append("```")
-    return "\n".join(lines)
+    return mermaid_diagram(FLOWCHART_TB, lines)
 
 
 def ci_supplemental_workflows_diagram() -> str:
-    lines = ["```mermaid", "flowchart LR", "    repo[Repository events]"]
+    lines = ["    repo[Repository events]"]
     for workflow in sorted((ROOT / ".github/workflows").glob("*.yml")):
         if workflow.name == "ci.yml":
             continue
         name = workflow_name(workflow)
         lines.append(f"    {node_id(workflow.stem)}[{name}]")
         lines.append(f"    repo --> {node_id(workflow.stem)}")
-    lines.append("```")
-    return "\n".join(lines)
+    return mermaid_diagram(FLOWCHART_LR, lines)
 
 
 def parse_workflow_jobs(path: Path) -> list[tuple[str, str, list[str]]]:
     jobs: list[tuple[str, str, list[str]]] = []
-    lines = path.read_text(encoding="utf-8").splitlines()
-    in_jobs = False
     current_id = ""
     current_name = ""
     needs: list[str] = []
@@ -217,38 +239,46 @@ def parse_workflow_jobs(path: Path) -> list[tuple[str, str, list[str]]]:
         needs = []
         needs_block = False
 
-    for line in lines:
-        if line == "jobs:":
-            in_jobs = True
-            continue
-        if not in_jobs:
-            continue
-        job_match = re.match(r"^  ([a-zA-Z0-9_-]+):\s*$", line)
+    for line in workflow_job_lines(path):
+        job_match = JOB_HEADER.match(line)
         if job_match:
             flush()
             current_id = job_match.group(1)
             continue
         if not current_id:
             continue
-        name_match = re.match(r"^    name:\s+(.+)$", line)
+        name_match = JOB_NAME.match(line)
         if name_match:
             current_name = name_match.group(1).strip('"')
             continue
-        needs_inline = re.match(r"^    needs:\s+([a-zA-Z0-9_-]+)\s*$", line)
+        needs_inline = JOB_NEEDS.match(line)
         if needs_inline:
             needs.append(needs_inline.group(1))
             continue
-        if re.match(r"^    needs:\s*$", line):
+        if JOB_NEEDS_BLOCK.match(line):
             needs_block = True
             continue
         if needs_block:
-            need_match = re.match(r"^      -\s+([a-zA-Z0-9_-]+)\s*$", line)
-            if need_match:
-                needs.append(need_match.group(1))
-                continue
-            needs_block = False
+            needs_block = append_need(line, needs)
     flush()
     return jobs
+
+
+def workflow_job_lines(path: Path):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    try:
+        start = lines.index("jobs:") + 1
+    except ValueError:
+        return []
+    return lines[start:]
+
+
+def append_need(line: str, needs: list[str]) -> bool:
+    need_match = JOB_NEED_ITEM.match(line)
+    if not need_match:
+        return False
+    needs.append(need_match.group(1))
+    return True
 
 
 def workflow_name(path: Path) -> str:
@@ -266,8 +296,12 @@ def format_edges(edges: list[tuple[str, str]]) -> list[str]:
     return lines or ["    empty[No project references]"]
 
 
+def mermaid_diagram(flowchart: str, body: list[str]) -> str:
+    return "\n".join([MERMAID_START, flowchart, *body, MERMAID_END])
+
+
 def node_id(value: str) -> str:
-    cleaned = re.sub(r"[^A-Za-z0-9_]", "_", value)
+    cleaned = re.sub(r"\W", "_", value)
     if cleaned and cleaned[0].isdigit():
         cleaned = f"n_{cleaned}"
     return cleaned
