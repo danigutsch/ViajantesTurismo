@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Contracts;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.StepDefinitions;
+namespace ViajantesTurismo.Catalog.BehaviorTests.StepDefinitions;
 
 [Binding]
 public sealed class PublicContentWorkflowSteps

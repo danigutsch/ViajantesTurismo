@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ViajantesTurismo.Catalog.BehaviorTests</RootNamespace>
+        <ReqnrollDeleteObsoleteCodeBehindFilesOnClean>true</ReqnrollDeleteObsoleteCodeBehindFilesOnClean>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="System.Net" />
+        <Using Include="Microsoft.AspNetCore.Hosting" />
+        <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
+        <Using Include="Reqnroll" />
+        <Using Include="ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure" />
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Reqnroll.xunit.v3" />
+        <PackageReference Include="xunit.v3.mtp-v2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\CatalogApiTestHost.cs" Link="Infrastructure\CatalogApiTestHost.cs" />
+        <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\CatalogApiWebApplicationFactory.cs" Link="Infrastructure\CatalogApiWebApplicationFactory.cs" />
+        <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\TestCatalogTourReadModelStore.cs" Link="Infrastructure\TestCatalogTourReadModelStore.cs" />
+        <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\TestPublicContentStore.cs" Link="Infrastructure\TestPublicContentStore.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="specs\**\*.feature">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="**/*.feature" />
+    </ItemGroup>
+
+</Project>
