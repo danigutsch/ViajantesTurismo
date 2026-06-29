@@ -59,7 +59,7 @@ public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
             CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeCompleted));
             CatalogTelemetry.IntegrationEvents.Add(1, CreateEventTags(CatalogTelemetry.OutcomeSuccess));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             SetError(activity, ex);
             CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeError));

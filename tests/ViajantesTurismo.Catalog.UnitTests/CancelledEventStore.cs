@@ -8,7 +8,11 @@ public sealed class CancelledEventStore : IEventStore
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
         IReadOnlyCollection<object> events,
-        CancellationToken ct) => throw new OperationCanceledException(ct);
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return ValueTask.CompletedTask;
+    }
 
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(
         StreamId streamId,

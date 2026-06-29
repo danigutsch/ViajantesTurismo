@@ -157,7 +157,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             throw new ExpectedStreamRevisionConflictException(streamId, expectedRevision, actualRevision);
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordAppendDuration(schemaName, PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
@@ -212,7 +212,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             return envelopes;
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordLoadDuration(schemaName, "load", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
@@ -270,7 +270,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             return envelopes;
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordLoadDuration(schemaName, "load_after", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));

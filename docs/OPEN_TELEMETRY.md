@@ -1,7 +1,7 @@
 # OpenTelemetry Custom Telemetry Surfaces
 
-This document lists repository-defined custom telemetry (ActivitySource and Meter), where each
-surface is registered, and how to verify the emitted signals locally.
+This document lists repository-defined custom telemetry (logs, ActivitySource, and Meter), where
+each surface is registered, and how to verify the emitted signals locally.
 
 ## Custom telemetry surfaces
 
@@ -19,26 +19,30 @@ surface is registered, and how to verify the emitted signals locally.
 
 Each repository-owned telemetry surface should document:
 
+- stable logger categories, event IDs, message templates, and structured log fields
 - stable ActivitySource and Meter names
 - span and metric names
 - units for duration/count metrics
-- tag names, allowed values, and outcome values
-- privacy and cardinality limits for every tag or metric dimension
+- log field, tag, metric dimension, and outcome allowed values
+- privacy and cardinality limits for every structured log field, tag, or metric dimension
 - registration point in service defaults or explicit service startup
 - compatibility notes for additive versus breaking telemetry changes
 
-Telemetry names, tag names, units, and outcome values are consumer-facing contracts. Additive spans,
-metrics, or tag values are normally safe. Renames, unit changes, or cardinality expansions are
+Telemetry names, logger categories, event IDs, message-template property names, tag names, units,
+and outcome values are consumer-facing contracts. Additive logs, spans, metrics, fields, or tag
+values are normally safe. Renames, unit changes, severity changes, or cardinality expansions are
 breaking and should be called out in release notes or ADRs when they affect operators.
 
-Do not put personal data, customer-entered content, raw identifiers, or unbounded values into tags
-or metric dimensions. Prefer low-cardinality outcome, operation, area, and provider values.
+Do not put personal data, customer-entered content, raw identifiers, or unbounded values into
+structured log fields, tags, or metric dimensions. Prefer low-cardinality outcome, operation, area,
+and provider values.
 
 ## Consumer documentation template
 
 Per-surface docs should answer these questions before adding dashboard-specific JSON:
 
-- Developers: which source or meter should be enabled, and which operation emits each signal?
+- Developers: which logger category, source, or meter should be enabled, and which operation emits
+  each signal?
 - Operators: which operational question does each metric or span answer?
 - Dashboard authors: which dimensions are safe to group by without cardinality risk?
 - Compatibility reviewers: which names and dimensions are stable contracts?
@@ -47,10 +51,13 @@ Per-surface docs should answer these questions before adding dashboard-specific 
 Each per-surface contract page should use these sections:
 
 - **Signal owner**: owning bounded context or SharedKernel package, source file, and registration point.
-- **Operational questions**: what an operator can decide from each span or metric.
+- **Operational questions**: what an operator can decide from each log, span, or metric.
+- **Log contract**: logger category, event IDs/names, severity, message template, structured fields,
+  scopes, exception rules, and correlation expectations.
 - **Trace contract**: ActivitySource name, span names, status behavior, tags, and correlation notes.
 - **Metric contract**: Meter name, instrument names, units, tag dimensions, and safe aggregations.
-- **Privacy and cardinality**: allowed tag values, explicitly forbidden values, and review triggers.
+- **Privacy and cardinality**: allowed structured field/tag values, explicitly forbidden values, and
+  review triggers.
 - **Compatibility**: additive changes, breaking changes, and migration notes for dashboard authors.
 - **Backend-neutral examples**: query intent in prose or pseudocode rather than vendor-specific JSON.
 
@@ -90,6 +97,20 @@ Dashboard design rules:
 - JSON/config validation must be wired into local scripts before dashboard assets become required CI
 
 ## Registration points
+
+### Shared logging registration
+
+`SharedKernel.Observability` configures the OpenTelemetry logging provider for services that call
+the shared defaults path:
+
+- `src/SharedKernel/SharedKernel.Observability/ObservabilityBuilderExtensions.cs`
+- `builder.Logging.AddOpenTelemetry(...)`
+- `IncludeFormattedMessage = true`
+- `IncludeScopes = true`
+
+The .NET logging category remains the `ILogger<TCategoryName>` category, normally the fully
+qualified type name. Active trace context is exported with log records by the OpenTelemetry provider
+when a log is written inside an `Activity`.
 
 ### Shared defaults registration
 
@@ -168,6 +189,49 @@ surface-owned tag contract.
 Surfaces that do not define a stable repository tag contract should still follow the
 status and exception-event rules above without inventing extra tags.
 
+## Repository log contract
+
+Repository-owned operational logs should be treated as contracts when operators, alerts, or support
+runbooks consume them. Logs are event records, not metrics or spans: use them for discrete facts and
+diagnostic context, then correlate to traces and metrics through trace context and shared fields.
+
+| Contract field | Rule |
+| --- | --- |
+| Category | Prefer `ILogger<TCategoryName>` so the category is the fully qualified emitting type. Use a fixed category only when multiple types intentionally emit one shared event family. |
+| Event ID/name | Use stable `EventId` values and names for logs that operators query or alerts consume. Do not recycle IDs for different meanings. |
+| Severity | Keep severity stable: `Information` for normal flow, `Warning` for abnormal recoverable conditions, `Error` for failed operation/request, `Critical` for urgent app or data-loss risk. |
+| Message template | Use static templates with named placeholders. Placeholder names become structured fields; changing them is a contract change. |
+| Structured fields | Use low-cardinality fields such as `operation`, `outcome`, `provider`, `area`, and bounded enum-like values. |
+| Scopes | Use scopes for values that apply to a whole operation, not for high-cardinality values or user content. |
+| Exceptions | Pass exceptions through the logger exception parameter. Do not duplicate stack traces or exception messages as custom fields. |
+| Correlation | Emit logs inside the active `Activity` when possible so `TraceId`, `SpanId`, and trace flags can correlate logs to spans. |
+| Resource identity | Rely on shared OpenTelemetry resource identity for service name/version/environment instead of repeating those values as custom fields. |
+
+### Log data-model rules
+
+- Treat OpenTelemetry log top-level fields as backend-facing contracts: `Timestamp`, `TraceId`,
+  `SpanId`, `SeverityText`, `SeverityNumber`, `Body`, `Resource`, `InstrumentationScope`,
+  `Attributes`, and `EventName`.
+- Keep structured logging stable. A JSON body is not enough; stable field names, types, and meaning
+  are required for backend queries.
+- Use OpenTelemetry semantic conventions before adding custom log attributes. Exception-related log
+  attributes should follow the OpenTelemetry exception conventions when exported by the provider.
+- Do not add `log.record.original` unless processing an original raw record where the body no
+  longer preserves it.
+- Do not use `log.record.uid` unless a deduplication requirement exists.
+
+### Cancellation and failure log rules
+
+- Cooperative cancellation should not be logged at `Error` and should not be counted as error
+  telemetry.
+- Only treat `OperationCanceledException` as cooperative cancellation when the operation's
+  `CancellationToken` is signaled.
+- Unexpected `OperationCanceledException` with an unsignaled token should follow the ordinary error
+  path.
+- Failure logs should pair with failure spans: one logged exception and one span exception event are
+  acceptable because they serve different consumers, but avoid extra duplicate error logs in nested
+  layers unless they add new operational context.
+
 ### Current repository examples
 
 - Mediator request, notification, and stream spans use `AddException(ex)` plus
@@ -195,7 +259,12 @@ and the direct tests already provide the drift protection needed for the current
 
 2. Open the Aspire dashboard URL shown in terminal output.
 
-3. Verify traces:
+3. Verify logs:
+    - Confirm service logs appear with the expected service resource identity.
+    - Confirm logs emitted inside request or worker activities include trace and span correlation.
+    - Confirm structured fields come from stable message-template placeholders or scopes.
+
+4. Verify traces:
     - Find mediator spans:
         - `mediator.send`
         - `mediator.stream`
@@ -212,7 +281,7 @@ and the direct tests already provide the drift protection needed for the current
         - `eventsourcing.postgresql.load`
         - `eventsourcing.postgresql.checkpoint`
 
-4. Verify metrics:
+5. Verify metrics:
     - Meter: `SharedKernel.Mediator`
     - Expected custom metric names:
         - `mediator.requests`
@@ -224,9 +293,9 @@ and the direct tests already provide the drift protection needed for the current
         - `ViajantesTurismo.Catalog`
         - `SharedKernel.EventSourcing.PostgreSQL`
 
-5. Optional OTLP path check:
-   - Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint before startup.
-   - Re-run `dotnet tool run aspire run` and confirm traces/metrics arrive in the configured backend.
+6. Optional OTLP path check:
+    - Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint before startup.
+    - Re-run `dotnet tool run aspire run` and confirm logs/traces/metrics arrive in the configured backend.
 
 ## Quick code map
 
@@ -234,6 +303,7 @@ and the direct tests already provide the drift protection needed for the current
 - Shared telemetry runtime instrumentation: `src/SharedKernel/SharedKernel.Mediator/AppMediatorInstrumentation.cs`
 - Shared service registration: `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
 - Shared OTel pipeline setup: `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
+- Shared OTel logging setup: `src/SharedKernel/SharedKernel.Observability/ObservabilityBuilderExtensions.cs`
 - Catalog telemetry names and instrumentation helpers: `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs`
 - PostgreSQL event-sourcing telemetry names and instrumentation helpers:
   `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs`
@@ -253,5 +323,13 @@ future `SharedKernel.*` extraction, see
   `https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-instrumentation-walkthroughs`
 - .NET metrics instrumentation:
   `https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation`
+- .NET logging:
+  `https://learn.microsoft.com/dotnet/core/extensions/logging`
+- OpenTelemetry logs concept:
+  `https://opentelemetry.io/docs/concepts/signals/logs/`
+- OpenTelemetry logs data model:
+  `https://opentelemetry.io/docs/specs/otel/logs/data-model/`
+- OpenTelemetry general log attributes:
+  `https://opentelemetry.io/docs/specs/semconv/general/logs/`
 - Grafana observability as code:
   `https://grafana.com/docs/grafana/latest/observability-as-code/`

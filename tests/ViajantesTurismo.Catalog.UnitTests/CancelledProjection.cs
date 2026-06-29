@@ -6,5 +6,9 @@ public sealed class CancelledProjection : IProjection
 {
     public string Name => "catalog.cancelled";
 
-    public ValueTask Apply(EventEnvelope envelope, CancellationToken ct) => throw new OperationCanceledException(ct);
+    public ValueTask Apply(EventEnvelope envelope, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return ValueTask.CompletedTask;
+    }
 }

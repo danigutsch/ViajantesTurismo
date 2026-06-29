@@ -57,7 +57,7 @@ public sealed class CatalogProjectionRunner(
                 CatalogTelemetry.ProjectionEvents.Add(envelopes.Count, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSuccess));
                 CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSuccess));
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 SetError(activity, ex);
                 CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeError));

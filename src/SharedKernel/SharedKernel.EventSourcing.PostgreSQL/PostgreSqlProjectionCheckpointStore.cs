@@ -106,7 +106,7 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
 
             return checkpoint;
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordCheckpointDuration(schemaName, "get_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
@@ -146,7 +146,7 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeSuccess);
             RecordCheckpointDuration(schemaName, "save_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeSuccess, Stopwatch.GetElapsedTime(start));
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordCheckpointDuration(schemaName, "save_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));

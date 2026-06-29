@@ -201,10 +201,12 @@ public sealed class CatalogTelemetryTests
             Guid.CreateVersion7(),
             "andes-2026",
             "Andes 2026");
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
 
         // Act
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
+            await handler.Handle(integrationEvent, cancellation.Token));
 
         // Assert
         var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
@@ -236,10 +238,12 @@ public sealed class CatalogTelemetryTests
             "Andes 2026",
             Guid.CreateVersion7());
         eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
 
         // Act
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await runner.Project(TestContext.Current.CancellationToken));
+            await runner.Project(cancellation.Token));
 
         // Assert
         var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
