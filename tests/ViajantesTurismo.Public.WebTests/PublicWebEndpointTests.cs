@@ -74,6 +74,52 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
+    public async Task Root_uses_content_key_when_loading_public_content()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("other.section", "en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Wrong section",
+            Body = "This content belongs elsewhere.",
+            SeoTitle = "Wrong section - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Cycle tourism around the world!", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("Wrong section", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Fake_public_catalog_content_requires_a_culture()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        var content = new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Cycle safely",
+            Body = "Guided tours for everyone.",
+            SeoTitle = "Cycle safely - Viajantes Turismo"
+        };
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => catalogApi.AddContent(" ", content));
+
+        // Assert
+        Assert.Equal("culture", exception.ParamName);
+    }
+
+    [Fact]
     public async Task Root_ignores_unsupported_culture_query_and_uses_default_content()
     {
         // Arrange

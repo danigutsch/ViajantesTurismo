@@ -62,6 +62,7 @@ public sealed class PublicContentTests : BunitContext
         Assert.Equal("Welcome", cut.Find("#pt-br-title").GetAttribute("value"));
         Assert.Contains("Starter draft copied from source content", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Review-required text", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("AI-assisted", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
