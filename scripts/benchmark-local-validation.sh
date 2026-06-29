@@ -171,9 +171,10 @@ main() {
 
     local -a slices=()
     if [[ "${skip_tests}" != true ]] && [[ "${all_slices}" == true || ${#requested_slices[@]} -gt 0 ]]; then
-        slices=("${requested_slices[@]}")
-        if [[ ${#slices[@]} -eq 0 ]]; then
+        if [[ "${all_slices}" == true ]]; then
             slices=("${default_slices[@]}")
+        else
+            slices=("${requested_slices[@]}")
         fi
 
         validate_slices "${slices[@]}"
