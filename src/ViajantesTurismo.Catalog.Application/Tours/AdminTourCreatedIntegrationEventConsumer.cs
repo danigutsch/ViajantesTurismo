@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.EventSourcing;
 using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.Tours;
@@ -44,7 +45,19 @@ public sealed class AdminTourCreatedIntegrationEventConsumer(
             SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
             CatalogTelemetry.TourStreamUpdates.Add(1, CreateTags(CatalogTelemetry.OutcomeSuccess));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        catch (OperationCanceledException ex)
+        {
+            if (!ex.ShouldHandleAsFailure(ct))
+            {
+                throw;
+            }
+
+            SetError(activity, ex);
+            CatalogTelemetry.TourStreamUpdates.Add(1, CreateTags(CatalogTelemetry.OutcomeError));
+
+            throw;
+        }
+        catch (Exception ex)
         {
             SetError(activity, ex);
             CatalogTelemetry.TourStreamUpdates.Add(1, CreateTags(CatalogTelemetry.OutcomeError));

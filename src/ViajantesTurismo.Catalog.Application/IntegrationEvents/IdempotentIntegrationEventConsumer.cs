@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.Idempotency;
 using SharedKernel.IntegrationEvents;
 
@@ -59,7 +60,20 @@ public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
             CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeCompleted));
             CatalogTelemetry.IntegrationEvents.Add(1, CreateEventTags(CatalogTelemetry.OutcomeSuccess));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        catch (OperationCanceledException ex)
+        {
+            if (!ex.ShouldHandleAsFailure(ct))
+            {
+                throw;
+            }
+
+            SetError(activity, ex);
+            CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeError));
+            CatalogTelemetry.IntegrationEvents.Add(1, CreateEventTags(CatalogTelemetry.OutcomeError));
+
+            throw;
+        }
+        catch (Exception ex)
         {
             SetError(activity, ex);
             CatalogTelemetry.IdempotencyOperations.Add(1, CreateEventTags(CatalogTelemetry.OutcomeError));

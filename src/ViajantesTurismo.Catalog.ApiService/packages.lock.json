@@ -164,6 +164,12 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "sharedkernel.domain": {
         "type": "Project"
       },
@@ -203,6 +209,7 @@
       "viajantesturismo.catalog.application": {
         "type": "Project",
         "dependencies": {
+          "SharedKernel.BuildingBlocks": "[1.0.0, )",
           "SharedKernel.EventSourcing": "[1.0.0, )",
           "SharedKernel.Idempotency": "[1.0.0, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
