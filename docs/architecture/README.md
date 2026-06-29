@@ -1,7 +1,8 @@
 # Architecture Overview
 
 This page links the current implementation shape to the longer-lived ADR and domain docs. Diagrams
-show current repository structure unless a section is explicitly marked as planned.
+show current repository structure unless a section is explicitly marked as planned. Generated
+diagram sections are refreshed with `bash scripts/update-architecture-diagrams.sh`.
 
 ## Current runtime resources
 
