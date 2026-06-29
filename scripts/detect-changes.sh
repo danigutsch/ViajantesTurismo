@@ -166,7 +166,6 @@ admin_integration_patterns=(
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
     "tests/SharedKernel.EventSourcing.PostgreSQL.Tests/**"
-    "tests/SharedKernel.EventSourcing.PostgreSQL.AppHost/**"
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
 )
