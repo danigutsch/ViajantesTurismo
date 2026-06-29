@@ -23,11 +23,11 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     Width = table.Column<int>(type: "integer", nullable: false),
                     Height = table.Column<int>(type: "integer", nullable: false),
                     ProcessingStatus = table.Column<string>(type: "text", nullable: false),
-                    Tags = table.Column<string[]>(type: "text[]", nullable: false),
                     AltText = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     Caption = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Attribution = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Copyright = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true)
+                    Copyright = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Tags = table.Column<string[]>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,8 +61,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 name: "PublicMediaImageTourLinks",
                 columns: table => new
                 {
-                    PublicMediaImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     CatalogTourId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PublicMediaImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsCover = table.Column<bool>(type: "boolean", nullable: false)
                 },

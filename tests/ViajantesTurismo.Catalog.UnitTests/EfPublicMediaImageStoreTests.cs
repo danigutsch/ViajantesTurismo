@@ -31,7 +31,7 @@ public sealed class EfPublicMediaImageStoreTests
     }
 
     [Fact]
-    public async Task Store_updates_existing_image_without_deleting_on_replace()
+    public async Task Store_replaces_existing_image_metadata()
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();

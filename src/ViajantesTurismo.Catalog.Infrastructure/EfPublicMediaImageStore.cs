@@ -11,21 +11,24 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     {
         ArgumentNullException.ThrowIfNull(image);
 
+        var sanitizedImage = Sanitize(image);
+
         var existing = await dbContext.PublicMediaImages
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
             .AsSplitQuery()
-            .SingleOrDefaultAsync(current => current.Id == image.Id, ct)
+            .SingleOrDefaultAsync(current => current.Id == sanitizedImage.Id, ct)
             .ConfigureAwait(false);
 
         if (existing is not null)
         {
-            CopyToEntity(image, existing);
+            dbContext.PublicMediaImages.Remove(existing);
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
-            return;
         }
 
-        dbContext.PublicMediaImages.Add(ToEntity(image));
+        dbContext.PublicMediaImages.Add(sanitizedImage);
+        SetResponsiveVariantSortOrder(sanitizedImage);
+
         await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
     }
 
@@ -38,7 +41,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             .SingleOrDefaultAsync(current => current.Id == imageId, ct)
             .ConfigureAwait(false);
 
-        return image is null ? null : ToDomain(image);
+        return image is null ? null : ToReturnedImage(image, catalogTourId: null);
     }
 
     public async ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
@@ -57,7 +60,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 .OrderByDescending(image => image.TourLinks.Single(link => link.CatalogTourId == catalogTourId).IsCover)
                 .ThenBy(image => image.TourLinks.Single(link => link.CatalogTourId == catalogTourId).DisplayOrder)
                 .ThenBy(image => image.Id)
-                .Select(image => ToDomain(image, catalogTourId))
+                .Select(image => ForTour(image, catalogTourId))
         ];
     }
 
@@ -88,116 +91,69 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                     .OrderByDescending(image => image.TourLinks.Single(link => link.CatalogTourId == tourId).IsCover)
                     .ThenBy(image => image.TourLinks.Single(link => link.CatalogTourId == tourId).DisplayOrder)
                     .ThenBy(image => image.Id)
-                    .Select(image => ToDomain(image, tourId))
+                    .Select(image => ForTour(image, tourId))
             ]);
     }
 
-    private static PublicMediaImageEntity ToEntity(PublicMediaImage image)
-    {
-        var entity = new PublicMediaImageEntity
-        {
-            Id = image.Id
-        };
-
-        CopyScalarValues(image, entity);
-        CopyChildren(image, entity);
-
-        return entity;
-    }
-
-    private static void CopyToEntity(PublicMediaImage image, PublicMediaImageEntity entity)
-    {
-        CopyScalarValues(image, entity);
-        entity.ResponsiveVariants.Clear();
-        entity.TourLinks.Clear();
-        CopyChildren(image, entity);
-    }
-
-    private static void CopyScalarValues(PublicMediaImage image, PublicMediaImageEntity entity)
-    {
-        entity.SourceUri = image.SourceUri.ToString();
-        entity.Checksum = image.Checksum;
-        entity.ContentType = image.ContentType;
-        entity.FileSizeBytes = image.FileSizeBytes;
-        entity.Width = image.Dimensions.Width;
-        entity.Height = image.Dimensions.Height;
-        entity.ProcessingStatus = image.ProcessingStatus;
-        entity.Tags = StringSanitizer.SanitizeCollection(image.Tags);
-        entity.AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty;
-        entity.Caption = StringSanitizer.Sanitize(image.Caption);
-        entity.Attribution = StringSanitizer.Sanitize(image.Attribution);
-        entity.Copyright = StringSanitizer.Sanitize(image.Copyright);
-    }
-
-    private static void CopyChildren(PublicMediaImage image, PublicMediaImageEntity entity)
-    {
-        CopyResponsiveVariants(image, entity);
-        CopyTourLinks(image, entity);
-    }
-
-    private static void CopyResponsiveVariants(PublicMediaImage image, PublicMediaImageEntity entity)
-    {
-        for (var index = 0; index < image.ResponsiveVariants.Count; index++)
-        {
-            var variant = image.ResponsiveVariants[index];
-            entity.ResponsiveVariants.Add(new PublicMediaImageResponsiveVariantEntity
-            {
-                PublicMediaImageId = image.Id,
-                SortOrder = index,
-                Uri = variant.Uri.ToString(),
-                Width = variant.Width,
-                Height = variant.Height,
-                ContentType = variant.ContentType,
-                FileSizeBytes = variant.FileSizeBytes
-            });
-        }
-    }
-
-    private static void CopyTourLinks(PublicMediaImage image, PublicMediaImageEntity entity)
-    {
-        foreach (var link in image.TourLinks)
-        {
-            entity.TourLinks.Add(new PublicMediaImageTourLinkEntity
-            {
-                PublicMediaImageId = image.Id,
-                CatalogTourId = link.CatalogTourId,
-                DisplayOrder = link.DisplayOrder,
-                IsCover = link.IsCover
-            });
-        }
-    }
-
-    private static PublicMediaImage ToDomain(PublicMediaImageEntity image)
-    {
-        return ToDomain(image, catalogTourId: null);
-    }
-
-    private static PublicMediaImage ToDomain(PublicMediaImageEntity image, Guid? catalogTourId)
+    private static PublicMediaImage Sanitize(PublicMediaImage image)
     {
         return new PublicMediaImage(
             image.Id,
-            new Uri(image.SourceUri, UriKind.RelativeOrAbsolute),
+            image.SourceUri,
             image.Checksum,
             image.ContentType,
             image.FileSizeBytes,
-            new MediaImageDimensions(image.Width, image.Height),
+            image.Dimensions,
             image.ProcessingStatus,
-            [.. image.ResponsiveVariants
-                .OrderBy(variant => variant.SortOrder)
-                .Select(variant => new MediaImageResponsiveVariant(
-                    new Uri(variant.Uri, UriKind.RelativeOrAbsolute),
-                    variant.Width,
-                    variant.Height,
-                    variant.ContentType,
-                    variant.FileSizeBytes))],
-            image.Tags,
-            [.. image.TourLinks
+            image.ResponsiveVariants,
+            StringSanitizer.SanitizeCollection(image.Tags),
+            [.. image.TourLinks.OrderBy(link => link.DisplayOrder)],
+            StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
+            StringSanitizer.Sanitize(image.Caption),
+            StringSanitizer.Sanitize(image.Attribution),
+            StringSanitizer.Sanitize(image.Copyright));
+    }
+
+    private PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)
+    {
+        return ToReturnedImage(image, catalogTourId);
+    }
+
+    private PublicMediaImage ToReturnedImage(PublicMediaImage image, Guid? catalogTourId)
+    {
+        var sanitizedImage = Sanitize(image);
+
+        return new PublicMediaImage(
+            sanitizedImage.Id,
+            sanitizedImage.SourceUri,
+            sanitizedImage.Checksum,
+            sanitizedImage.ContentType,
+            sanitizedImage.FileSizeBytes,
+            sanitizedImage.Dimensions,
+            sanitizedImage.ProcessingStatus,
+            [.. sanitizedImage.ResponsiveVariants.OrderBy(ResponsiveVariantSortOrder)],
+            sanitizedImage.Tags,
+            [.. sanitizedImage.TourLinks
                 .Where(link => catalogTourId is null || link.CatalogTourId == catalogTourId.Value)
-                .OrderBy(link => link.DisplayOrder)
-                .Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover))],
-            image.AltText,
-            image.Caption,
-            image.Attribution,
-            image.Copyright);
+                .OrderBy(link => link.DisplayOrder)],
+            sanitizedImage.AltText,
+            sanitizedImage.Caption,
+            sanitizedImage.Attribution,
+            sanitizedImage.Copyright);
+    }
+
+    private void SetResponsiveVariantSortOrder(PublicMediaImage image)
+    {
+        dbContext.ChangeTracker.DetectChanges();
+
+        for (var index = 0; index < image.ResponsiveVariants.Count; index++)
+        {
+            dbContext.Entry(image.ResponsiveVariants[index]).Property("SortOrder").CurrentValue = index;
+        }
+    }
+
+    private int ResponsiveVariantSortOrder(MediaImageResponsiveVariant variant)
+    {
+        return dbContext.Entry(variant).Property<int>("SortOrder").CurrentValue;
     }
 }
