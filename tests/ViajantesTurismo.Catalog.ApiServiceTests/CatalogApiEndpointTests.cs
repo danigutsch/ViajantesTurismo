@@ -485,6 +485,48 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_non_http_image_uris()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("file:///tmp/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Ready,
+            ResponsiveVariants =
+            [
+                new MediaImageResponsiveVariantDto { Uri = new Uri("data:image/gif;base64,R0lGODlhAQABAAAAACw="), Width = 1, Height = 1, ContentType = "image/gif", FileSizeBytes = 35 }
+            ],
+            Tags = ["camino"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = Guid.CreateVersion7(), DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = "First image"
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(PublicMediaImageDto.SourceUri), problem.Errors.Keys);
+        Assert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
+    }
+
+    [Fact]
     public async Task Catalog_media_image_endpoint_rejects_null_responsive_variant_entries()
     {
         // Arrange

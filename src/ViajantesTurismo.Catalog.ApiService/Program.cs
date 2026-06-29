@@ -371,9 +371,9 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
 
 static void ValidateSourceUri(Dictionary<string, string[]> errors, Uri? sourceUri)
 {
-    if (sourceUri is null || !sourceUri.IsAbsoluteUri)
+    if (!IsHttpUri(sourceUri))
     {
-        errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be absolute."];
+        errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI."];
     }
 }
 
@@ -467,12 +467,19 @@ static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariantDto? variant)
     var contentType = StringSanitizer.Sanitize(variant.ContentType);
 
     return variant.Uri is null
-        || !variant.Uri.IsAbsoluteUri
+        || !IsHttpUri(variant.Uri)
         || variant.Width <= 0
         || variant.Height <= 0
         || string.IsNullOrWhiteSpace(contentType)
         || contentType.Length > ContractConstants.MaxContentTypeLength
         || variant.FileSizeBytes <= 0;
+}
+
+static bool IsHttpUri(Uri? uri)
+{
+    return uri is not null
+        && uri.IsAbsoluteUri
+        && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }
 
 static IReadOnlyList<PublicMediaImage> GetImages(
