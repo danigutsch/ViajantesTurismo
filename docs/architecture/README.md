@@ -30,6 +30,9 @@ flowchart LR
 
 Source: `src/ViajantesTurismo.AppHost/AppHost.cs`.
 
+For deployment mapping, service discovery, migration startup, and secret boundaries, see
+[Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md).
+
 ## Current project boundary map
 
 ```mermaid
@@ -67,6 +70,9 @@ Keep business rules in domain projects. Keep provider-specific persistence and e
 bounded-context infrastructure unless ADR-027's split threshold justifies a reusable
 `SharedKernel.<Capability>.<Provider>` adapter package.
 
+For bounded-context ownership, SharedKernel modules, and allowed or forbidden dependency directions,
+see [Architecture boundaries and dependency flow](boundaries-and-dependencies.md).
+
 ## Current async content workflow
 
 ```mermaid
@@ -94,6 +100,12 @@ See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs i
 - [Catalog bounded context](../bounded-contexts/Catalog.md)
 - [Domain aggregates](../domain/AGGREGATES.md)
 - [Glossary](../domain/GLOSSARY.md)
+
+## Flow references
+
+- [Architecture boundaries and dependency flow](boundaries-and-dependencies.md)
+- [Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md)
+- [CI and local validation flow](ci-validation-flows.md)
 
 ## Planned or evolving areas
 
