@@ -404,6 +404,47 @@ public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
         Assert.Contains(PostgreSqlEventSourcingTelemetry.MetricCheckpointDuration, measurements, StringComparer.Ordinal);
     }
 
+    [Fact]
+    public async Task Cancelled_operations_do_not_emit_error_telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        using var activityListener = PostgreSqlEventStoreTestsHelpers.CreateActivityListener(stoppedActivities);
+        var options = PostgreSqlEventStoreTestsHelpers.CreateOptions();
+        await using var eventStore = new PostgreSqlEventStore(ConnectionString, new TestEventSerializer(), options);
+        await using var checkpointStore = new PostgreSqlProjectionCheckpointStore(ConnectionString, options);
+        await eventStore.Initialize(TestContext.Current.CancellationToken);
+        await checkpointStore.Initialize(TestContext.Current.CancellationToken);
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        // Act
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await eventStore.Append(
+            StreamId.From("catalog-tour-cancelled-append"),
+            ExpectedStreamRevision.NoStream,
+            [new TestEvent("draft-created")],
+            cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await eventStore.Load(
+            StreamId.From("catalog-tour-cancelled-load"),
+            afterRevision: null,
+            cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await eventStore.LoadAfter(
+            position: 0,
+            maxCount: 1,
+            cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await checkpointStore.GetCheckpoint(
+            "catalog-cancelled-projection",
+            cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await checkpointStore.Save(
+            new ProjectionCheckpoint("catalog-cancelled-projection", 1),
+            cancellation.Token));
+
+        // Assert
+        Assert.DoesNotContain(stoppedActivities, activity =>
+            activity.Status == ActivityStatusCode.Error
+            || PostgreSqlEventStoreTestsHelpers.HasTag(activity, PostgreSqlEventSourcingTelemetry.TagOutcome, PostgreSqlEventSourcingTelemetry.OutcomeError));
+    }
+
     private string ConnectionString => connectionString ?? throw new InvalidOperationException("Fixture is not initialized.");
 
 }
