@@ -13,7 +13,16 @@ internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
         ArgumentNullException.ThrowIfNull(tour);
         ct.ThrowIfCancellationRequested();
 
-        toursById[tour.CatalogTourId] = tour;
+        toursById.AddOrUpdate(
+            tour.CatalogTourId,
+            tour,
+            (_, current) => current with
+            {
+                AdminTourId = tour.AdminTourId,
+                Identifier = tour.Identifier,
+                Position = tour.Position,
+                UpdatedAt = tour.UpdatedAt
+            });
 
         return ValueTask.CompletedTask;
     }
