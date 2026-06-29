@@ -114,7 +114,7 @@ public sealed class PublicCatalogApiClientTests
 
     [Theory]
     [InlineData("home.hero", "pt-BR", "/public/catalog/content/home.hero?culture=pt-BR")]
-    [InlineData("home/hero", "en-US", "/public/catalog/content/home%2Fhero?culture=en-US")]
+    [InlineData("home/hero", "en-US", "/public/catalog/content/home/hero?culture=en-US")]
     public async Task GetPublicContent_requests_public_content_endpoint(string key, string culture, string expectedPath)
     {
         // Arrange

@@ -316,49 +316,35 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_content_read_endpoint_falls_back_to_approved_english_variant()
+    public async Task Public_content_write_endpoint_publishes_approved_content_for_public_reads()
     {
         // Arrange
         var publicContentStore = new TestPublicContentStore();
-        var enUs = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
-            "Welcome",
-            "Ride with us",
-            null,
-            null,
-            null,
-            requiresHumanReview: false);
-        var ptBr = PublicContentVariant.Create(
-            PublicContentLanguage.PtBr,
-            "Bem-vindo",
-            "Pedale conosco",
-            null,
-            null,
-            null,
-            requiresHumanReview: true);
-        Assert.True(enUs.IsSuccess);
-        Assert.True(ptBr.IsSuccess);
-        var content = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
-        Assert.True(content.IsSuccess);
-        var publicationState = typeof(EditablePublicContent).GetProperty(nameof(EditablePublicContent.PublicationState));
-        Assert.NotNull(publicationState);
-        publicationState.SetValue(content.Value, PublicContentPublicationState.Published);
-        await publicContentStore.SaveContent(content.Value, TestContext.Current.CancellationToken);
-
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
         using var client = factory.CreateClient();
+        var request = new UpsertPublicContentRequest
+        {
+            SourceLanguage = PublicContentLanguageDto.EnUs
+        };
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
+        using var writeResponse = await client.PutAsJsonAsync(
+            new Uri("/catalog/public-content/home.hero", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
         using var response = await client.GetAsync(
             new Uri("/public/catalog/content/home.hero?culture=pt-BR", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
 
         // Assert
+        Assert.Equal(HttpStatusCode.OK, writeResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(variant);
-        Assert.Equal(PublicContentLanguageDto.EnUs, variant.Language);
-        Assert.Equal("Welcome", variant.Title);
+        Assert.Equal(PublicContentLanguageDto.PtBr, variant.Language);
+        Assert.Equal("Bem-vindo", variant.Title);
         Assert.False(variant.RequiresHumanReview);
     }
 

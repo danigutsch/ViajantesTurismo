@@ -39,7 +39,7 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
 
     public async Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct)
     {
-        var escapedKey = Uri.EscapeDataString(key);
+        var escapedKey = EscapePath(key);
         var escapedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : Uri.EscapeDataString(culture);
         using var response = await httpClient.GetAsync(
             new Uri($"/public/catalog/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative),
@@ -52,5 +52,10 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(ct);
+    }
+
+    private static string EscapePath(string path)
+    {
+        return string.Join('/', path.Split('/').Select(Uri.EscapeDataString));
     }
 }

@@ -81,11 +81,11 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
-        var saved = await sut.SaveContent("home.hero", request, Xunit.TestContext.Current.CancellationToken);
+        var saved = await sut.SaveContent("home/hero", request, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("PUT", requestMethod);
-        Assert.Equal("/catalog/public-content/home.hero", requestPath);
+        Assert.Equal("/catalog/public-content/home/hero", requestPath);
         Assert.Equal("ReviewRequired", saved.PublicationState);
     }
 

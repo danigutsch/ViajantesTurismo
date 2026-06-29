@@ -138,6 +138,15 @@ static async Task<IResult> UpsertPublicContent(
         return ToValidationProblem(content.ErrorDetails);
     }
 
+    if (content.Value.Variants.All(variant => !variant.RequiresHumanReview))
+    {
+        var publish = content.Value.Publish();
+        if (publish.IsFailure)
+        {
+            return ToValidationProblem(publish.ErrorDetails);
+        }
+    }
+
     await store.SaveContent(content.Value, ct);
     return Results.Ok(MapPublicContent(content.Value));
 }
