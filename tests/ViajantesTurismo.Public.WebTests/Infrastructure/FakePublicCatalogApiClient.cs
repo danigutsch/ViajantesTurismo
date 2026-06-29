@@ -13,6 +13,14 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
     public bool FailContentRequests { get; set; }
 
+    public TimeSpan ListDelay { get; set; }
+
+    public TimeSpan ContentDelay { get; set; }
+
+    public TaskCompletionSource<object?>? ListStarted { get; set; }
+
+    public TaskCompletionSource<object?>? ContentStarted { get; set; }
+
     public void AddTour(CatalogTourDto tour)
     {
         ArgumentNullException.ThrowIfNull(tour);
@@ -34,13 +42,19 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
-    public Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
+    public async Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ListStarted?.TrySetResult(null);
+
+        if (ListDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(ListDelay, ct);
+        }
 
         return FailListRequests
             ? throw new HttpRequestException("Catalog unavailable.")
-            : Task.FromResult(tours.Where(tour => tour.IsPublished).ToArray());
+            : tours.Where(tour => tour.IsPublished).ToArray();
     }
 
     public Task<CatalogTourDto?> GetPublishedTourBySlug(string slug, CancellationToken ct)
@@ -57,9 +71,15 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         return Task.FromResult(tour);
     }
 
-    public Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct)
+    public async Task<PublicContentVariantDto?> GetPublicContent(string key, string? culture, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ContentStarted?.TrySetResult(null);
+
+        if (ContentDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(ContentDelay, ct);
+        }
 
         if (FailContentRequests)
         {
@@ -68,8 +88,8 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
         contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
-        return Task.FromResult(content);
+        return content;
     }
 
-    private static string CreateContentKey(string key, string culture) => $"{key}\n{culture}";
+    private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";
 }

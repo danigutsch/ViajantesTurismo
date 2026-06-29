@@ -50,6 +50,8 @@ internal sealed class PublicContentApiClient(HttpClient httpClient) : IPublicCon
 
     private static string EscapePath(string path)
     {
-        return string.Join('/', path.Split('/').Select(Uri.EscapeDataString));
+        return string.Join('/', path
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(Uri.EscapeDataString));
     }
 }

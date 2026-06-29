@@ -53,6 +53,36 @@ public sealed class PublicContentApiClientTests
         Assert.Null(content);
     }
 
+    [Theory]
+    [InlineData("home/hero", "/catalog/public-content/home/hero")]
+    [InlineData("/home//hero/", "/catalog/public-content/home/hero")]
+    [InlineData("home / hero", "/catalog/public-content/home/hero")]
+    public async Task GetContent_by_key_normalizes_and_escapes_key_segments(string key, string expectedPath)
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.Path + request.QueryString.Value;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                {
+                  "key":"home.hero",
+                  "sourceLanguage":1,
+                  "variants":[{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false}],
+                  "publicationState":"Published"
+                }
+                """);
+        });
+        var sut = new PublicContentApiClient(httpClient);
+
+        // Act
+        var content = await sut.GetContent(key, Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.Equal(expectedPath, requestPath);
+    }
+
     [Fact]
     public async Task SaveContent_sends_upsert_request_to_keyed_endpoint()
     {
@@ -81,7 +111,7 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
-        var saved = await sut.SaveContent("home/hero", request, Xunit.TestContext.Current.CancellationToken);
+        var saved = await sut.SaveContent("/home//hero/", request, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("PUT", requestMethod);

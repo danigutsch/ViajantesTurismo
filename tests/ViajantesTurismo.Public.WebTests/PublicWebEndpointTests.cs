@@ -100,6 +100,41 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
+    public async Task Root_loads_public_content_and_tours_concurrently()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            ContentDelay = TimeSpan.FromSeconds(2),
+            ContentStarted = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously),
+            ListStarted = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
+        catalogApi.AddContent("en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Cycle safely",
+            Body = "Guided tours for everyone.",
+            SeoTitle = "Cycle safely - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        var responseTask = client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        await catalogApi.ContentStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        await catalogApi.ListStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        using var response = await responseTask;
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Cycle safely", content, StringComparison.Ordinal);
+        Assert.Contains("Camino Norte", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Fake_public_catalog_content_requires_a_culture()
     {
         // Arrange
@@ -117,6 +152,37 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         Assert.Equal("culture", exception.ParamName);
+    }
+
+    [Fact]
+    public async Task Fake_public_catalog_content_keeps_newline_keys_distinct()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("home\nhero", "en-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Newline key",
+            Body = "Key-specific content.",
+            SeoTitle = "Newline key - Viajantes Turismo"
+        });
+        catalogApi.AddContent("home", "hero\nen-US", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.EnUs,
+            Title = "Other key",
+            Body = "Other content.",
+            SeoTitle = "Other key - Viajantes Turismo"
+        });
+
+        // Act
+        var content = await catalogApi.GetPublicContent(
+            "home\nhero",
+            "en-US",
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.Equal("Newline key", content.Title);
     }
 
     [Fact]

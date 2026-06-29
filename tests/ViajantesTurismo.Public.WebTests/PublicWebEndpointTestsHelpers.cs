@@ -22,7 +22,7 @@ internal static class PublicWebEndpointTestsHelpers
     }
 
     public static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
-            FakePublicCatalogApiClient? catalogApiClient = null,
+            IPublicCatalogApiClient? catalogApiClient = null,
             string? environment = null)
     {
         return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(
@@ -30,7 +30,7 @@ internal static class PublicWebEndpointTestsHelpers
             services =>
             {
                 services.RemoveAll<IPublicCatalogApiClient>();
-                services.AddSingleton<IPublicCatalogApiClient>(catalogApiClient ?? new FakePublicCatalogApiClient());
+                services.AddSingleton(catalogApiClient ?? new FakePublicCatalogApiClient());
             });
     }
 }
