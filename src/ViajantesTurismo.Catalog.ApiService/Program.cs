@@ -21,16 +21,7 @@ app.MapGet("/catalog/tours", async (ICatalogTourReadModelStore store, Cancellati
     return tours.Select(MapTour);
 });
 
-app.MapGet("/catalog/tours/{id:guid}", async (Guid id, ICatalogTourReadModelStore store, CancellationToken ct) =>
-{
-    if (id == Guid.Empty)
-    {
-        return Results.BadRequest();
-    }
-
-    var tour = await store.GetTour(id, ct);
-    return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
-});
+app.MapGet("/catalog/tours/{id:guid}", GetTour);
 
 app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
 
@@ -40,7 +31,36 @@ app.MapGet("/public/catalog/tours", async (ICatalogTourReadModelStore store, Can
     return tours.Where(IsPublished).Select(MapTour);
 });
 
-app.MapGet("/public/catalog/tours/{slug}", async (string slug, ICatalogTourReadModelStore store, CancellationToken ct) =>
+app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour);
+
+app.MapGet("/public/catalog/content/{**key}", GetPublicContent);
+
+app.MapGet("/catalog/public-content", async (IPublicContentStore store, CancellationToken ct) =>
+{
+    var content = await store.ListContent(ct);
+    return content.Select(MapPublicContent);
+});
+
+app.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
+
+app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent);
+
+app.MapDefaultEndpoints();
+
+await app.RunAsync();
+
+static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, CancellationToken ct)
+{
+    if (id == Guid.Empty)
+    {
+        return Results.BadRequest();
+    }
+
+    var tour = await store.GetTour(id, ct);
+    return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
+}
+
+static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, CancellationToken ct)
 {
     if (string.IsNullOrWhiteSpace(slug))
     {
@@ -49,14 +69,14 @@ app.MapGet("/public/catalog/tours/{slug}", async (string slug, ICatalogTourReadM
 
     var tour = await store.GetPublishedTourBySlug(slug, ct);
     return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
-});
+}
 
-app.MapGet("/public/catalog/content/{**key}", async (
+static async Task<IResult> GetPublicContent(
     string key,
     string? language,
     string? culture,
     IPublicContentStore store,
-    CancellationToken ct) =>
+    CancellationToken ct)
 {
     if (string.IsNullOrWhiteSpace(key))
     {
@@ -76,15 +96,9 @@ app.MapGet("/public/catalog/content/{**key}", async (
 
     var variant = GetApprovedVariant(content, requestedLanguage);
     return variant is null ? Results.NotFound() : Results.Ok(MapVariant(variant));
-});
+}
 
-app.MapGet("/catalog/public-content", async (IPublicContentStore store, CancellationToken ct) =>
-{
-    var content = await store.ListContent(ct);
-    return content.Select(MapPublicContent);
-});
-
-app.MapGet("/catalog/public-content/{**key}", async (string key, IPublicContentStore store, CancellationToken ct) =>
+static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, CancellationToken ct)
 {
     if (string.IsNullOrWhiteSpace(key))
     {
@@ -93,13 +107,7 @@ app.MapGet("/catalog/public-content/{**key}", async (string key, IPublicContentS
 
     var content = await store.GetContent(key, ct);
     return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
-});
-
-app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent);
-
-app.MapDefaultEndpoints();
-
-await app.RunAsync();
+}
 
 static async Task<IResult> UpsertPublicContent(
     string key,
@@ -220,12 +228,9 @@ static bool IsPublished(CatalogTourDraftReadModel tour)
 static PublicContentVariant? GetApprovedVariant(EditablePublicContent content, PublicContentLanguage requestedLanguage)
 {
     var variant = content.Variants.FirstOrDefault(variant => variant.Language == requestedLanguage && !variant.RequiresHumanReview);
-    if (variant is not null || requestedLanguage == PublicContentLanguage.EnUs)
-    {
-        return variant;
-    }
-
-    return content.Variants.FirstOrDefault(variant => variant.Language == PublicContentLanguage.EnUs && !variant.RequiresHumanReview);
+    return variant is not null || requestedLanguage == PublicContentLanguage.EnUs
+        ? variant
+        : content.Variants.FirstOrDefault(variant => variant.Language == PublicContentLanguage.EnUs && !variant.RequiresHumanReview);
 }
 
 static PublicContentDto MapPublicContent(EditablePublicContent content)

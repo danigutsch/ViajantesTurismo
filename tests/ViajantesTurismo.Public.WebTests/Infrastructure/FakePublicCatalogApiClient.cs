@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
+
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
 internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<CatalogTourDto> tours = [];
-    private readonly Dictionary<string, PublicContentVariantDto> contentByCulture = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByCulture = new(StringComparer.OrdinalIgnoreCase);
 
     public bool FailListRequests { get; set; }
 
