@@ -133,7 +133,7 @@ def project_reference_edges(include_project) -> list[tuple[str, str]]:
             include = reference.attrib.get("Include")
             if not include:
                 continue
-            target = (project.parent / include).resolve().stem
+            target = (project.parent / include.replace("\\", "/")).resolve().stem
             edges.append((source, target))
     return sorted(set(edges))
 
