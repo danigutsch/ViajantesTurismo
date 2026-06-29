@@ -100,10 +100,6 @@ run_test_slice() {
 
         cat "${project_output}"
 
-        if [[ ${project_exit_code} -ne 0 ]] && grep -qx "No test projects were found\." "${project_output}"; then
-            project_exit_code=0
-        fi
-
         rm -f "${project_output}"
 
         if [[ ${project_exit_code} -ne 0 ]]; then

@@ -424,18 +424,16 @@ Dependency-heavy slices may require a running container runtime, trusted develop
 or Playwright browsers. If a local machine cannot run those prerequisites, capture the restore,
 build, and feasible slice timings, then state which slice was skipped and why in the pull request.
 
-Measured on this worktree on 2026-06-28:
+Measured on this worktree on 2026-06-29:
 
 | Phase | Command | Duration | Status |
 | --- | --- | ---: | --- |
-| Restore | `bash scripts/benchmark-local-validation.sh --output TestResults/issue-426-local-validation-benchmark-current.tsv` | 2s | success |
-| Build, first measured run | `bash scripts/benchmark-local-validation.sh --skip-tests --output TestResults/issue-426-local-validation-benchmark.tsv` | 28s | success |
-| Build, warm repeat | same run as restore | 5s | success |
-| Fast validation slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation --output TestResults/issue-426-fast-validation-benchmark.tsv` | 190s | success |
-
-Admin integration, mediator-heavy, and admin system slice timings were not captured in this pass to
-avoid starting dependency-heavy or browser-backed validation during a documentation-and-script change.
-Capture them with the same `--slice <name>` command on a machine prepared for those dependencies.
+| Restore | `bash scripts/benchmark-local-validation.sh --skip-build --skip-tests --output TestResults/issue-426-restore-benchmark.tsv` | 2s | success |
+| Build, warm repeat | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-tests --output TestResults/issue-426-build-benchmark.tsv` | 26s | success |
+| Fast validation slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation --output TestResults/issue-426-fast-validation-benchmark.tsv` | 167s | success |
+| Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/issue-426-admin-integration-benchmark.tsv` | 100s | success |
+| Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/issue-426-mediator-heavy-benchmark.tsv` | 65s | success |
+| Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/issue-426-admin-system-benchmark.tsv` | 71s | success |
 
 Low-risk improvement implemented here: local timing can run test slices without coverage collection
 while CI keeps its existing coverage collection and required checks intact.
