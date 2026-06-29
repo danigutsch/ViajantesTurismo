@@ -12,6 +12,8 @@ This project uses automated tools to enforce consistent formatting and style acr
   (runs via local Python or Docker fallback)
 - **Python JSON validator** (`scripts/lint-json.py`) - JSON and JSONC validation with repo-specific exclusions
   (runs via local Python or Docker fallback)
+- **Repository link validator** (`scripts/lint-links.py`) - Local Markdown/text link, anchor, and
+  durable docs-link validation (runs via local Python or Docker fallback)
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code
@@ -151,6 +153,32 @@ The validator focuses on parse correctness for repository JSON files without a r
 ### Tool
 
 - **PSScriptAnalyzer** - Lints PowerShell scripts for best practices, security issues, and code quality
+
+## Link Validation
+
+The repository validates maintained Markdown and selected text links with `scripts/lint-links.sh`. The chosen
+approach is a repository-owned Python script with the same local Python or Docker fallback pattern
+as the JSON and Gherkin linters. This avoids transient npm execution and avoids adding a new package
+ecosystem for documentation checks.
+
+The validator checks stable PR-gating rules:
+
+- local relative Markdown and selected text links resolve to files inside the repository
+- Markdown heading anchors resolve when the target is a Markdown file
+- maintained docs do not link directly to GitHub issue or pull request URLs
+- maintained docs do not use repo-relative issue or pull request links such as `issues/123` or
+  `pull/123`
+
+External URLs are intentionally not probed by the required lint path because network checks are
+slow and flaky. If external URL checking is added later, prefer a scheduled or opt-in workflow with
+a documented allowlist for confirmed false positives.
+
+When the durable GitHub issue or pull request rule fails, replace the link with durable context in
+the document, link to an ADR or maintained doc, or move short-lived tracking details to an excluded
+template, changelog, or test fixture when that file type is the correct home.
+
+Current exclusions are narrow: generated Markdown, repository templates, and issue-specific test
+planning notes are not part of the maintained-docs link policy.
 
 ### How to Install
 
@@ -352,6 +380,13 @@ bash scripts/lint-gherkin.sh tests/**/*.feature     # Repository Gherkin lint wr
 bash scripts/lint-json.sh **/*.json        # Check all JSON files
 ```
 
+**Links:**
+
+```powershell
+bash scripts/lint-links.sh                 # Check maintained Markdown links and durable link policy
+bash scripts/lint-links.sh docs README.md  # Check selected Markdown paths
+```
+
 **All Linters:**
 
 ```powershell
@@ -375,6 +410,8 @@ The repository no longer installs git hooks by default.
 - Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action,
   and locally through the Docker image `davidanson/markdownlint-cli2`.
 - Gherkin lint runs via the repository-owned `scripts/lint-gherkin.py` (Python-based, no npm).
+- Link validation runs via the repository-owned `scripts/lint-links.py` (Python-based, no npm) and
+  is included in `bash scripts/lint-all.sh`.
 - Running `bash scripts/lint-all.sh` locally does not require manual linter installs when Docker is
   available; wrappers fall back to pinned Docker images for shellcheck, shfmt, markdown lint, and
   Python-based linters.

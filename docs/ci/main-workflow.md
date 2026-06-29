@@ -138,8 +138,7 @@ SDK bump pull requests must refresh committed `packages.lock.json` files when `g
 changes. The repository provides `bash scripts/refresh-sdk-lockfiles.sh` as the canonical
 command for that maintenance step.
 
-> **Note:** The CI setup path works around a
-> [known SDK bug](https://github.com/dotnet/aspnetcore/issues/65391) where
+> **Note:** The CI setup path works around a known SDK Linux dev-certs issue where
 > `dotnet dev-certs https --trust` can exit with code 4 on Linux CI runners in SDK 10.0.103+
 > builds. The setup action uses `|| true` to tolerate the non-zero exit and then sets
 > `SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust` via `$GITHUB_ENV` so that .NET HTTP
