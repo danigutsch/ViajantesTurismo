@@ -87,5 +87,3 @@ Accepted.
 - [CI main workflow](../ci/main-workflow.md)
 - [Test guidelines](../TEST_GUIDELINES.md)
 - [Code quality local validation runtime](../CODE_QUALITY.md#local-validation-runtime)
-- [Issue #426](https://github.com/danigutsch/ViajantesTurismo/issues/426)
-- [Issue #438](https://github.com/danigutsch/ViajantesTurismo/issues/438)

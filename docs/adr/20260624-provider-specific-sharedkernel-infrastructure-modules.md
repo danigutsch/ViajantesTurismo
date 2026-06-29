@@ -115,19 +115,14 @@ dependency.
 | Caching | Future cache contracts only if reused | Redis-backed cache adapters | Candidate |
 | Telemetry export | `SharedKernel.Observability` only for neutral contracts | Exporter-specific adapter only after reuse is proven | Candidate |
 
-Follow-up split and audit issues that must reference these rules:
+Follow-up split and audit work must reference these rules:
 
-- [#352](https://github.com/danigutsch/ViajantesTurismo/issues/352) audits current dependency leakage.
-- [#353](https://github.com/danigutsch/ViajantesTurismo/issues/353) covers PostgreSQL raw Npgsql and
-  EF Core adapter boundaries.
-- [#354](https://github.com/danigutsch/ViajantesTurismo/issues/354) covers optional Dapper adapter
-  naming.
-- [#355](https://github.com/danigutsch/ViajantesTurismo/issues/355) covers non-database external
-  dependency adapters.
-- [#356](https://github.com/danigutsch/ViajantesTurismo/issues/356) covers architecture tests for these
-  dependency boundaries.
-- [#357](https://github.com/danigutsch/ViajantesTurismo/issues/357) updates docs and package references
-  after accepted splits.
+- audit current dependency leakage
+- cover PostgreSQL raw Npgsql and EF Core adapter boundaries
+- cover optional Dapper adapter naming
+- cover non-database external dependency adapters
+- cover architecture tests for these dependency boundaries
+- update docs and package references after accepted splits
 
 ## Alternatives
 

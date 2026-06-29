@@ -119,7 +119,7 @@ Optional local tools by task:
 
 CI-only tools by default:
 
-- Markdown/Gherkin/JSON lint containers and wrappers used by `bash scripts/lint-all.sh`
+- Markdown/Gherkin/JSON/link lint containers and wrappers used by `bash scripts/lint-all.sh`
 - SonarCloud scanner and hosted quality-gate processing
 - dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
 
@@ -138,6 +138,10 @@ Local worktree convention:
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
 `.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package
 execution. See [docs/local-tool-security.md](docs/local-tool-security.md).
+
+Documentation link checks use `bash scripts/lint-links.sh`. The check validates local Markdown and
+selected text links and anchors, blocks direct GitHub issue and pull request links in maintained
+docs, and avoids external URL probing in PR gating to keep lint stable.
 
 ### Manual Setup (Alternative)
 

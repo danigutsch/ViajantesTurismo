@@ -20,7 +20,7 @@ Requirements:
 
 Useful references:
 
-- [`commitlint.config.mjs`](../../commitlint.config.mjs)
+- [`scripts/commitlint.sh`](../../scripts/commitlint.sh)
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
 Return:

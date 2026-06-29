@@ -75,6 +75,3 @@ Adopt audience-oriented web frontends:
 
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
 - [Management.Web module boundary governance](../../src/ViajantesTurismo.Management.Web/README.md#module-boundary-governance)
-- Related: [Epic #45 — vertical slice migration](https://github.com/danigutsch/ViajantesTurismo/issues/45)
-- Related: [Issue #43 — Admin BC vertical-slice alignment](https://github.com/danigutsch/ViajantesTurismo/issues/43)
-- Related: [Issue #128 — Management.Web module boundaries](https://github.com/danigutsch/ViajantesTurismo/issues/128)

@@ -69,4 +69,3 @@ If a production scenario temporarily requires direct `Task.Delay`, it must be tr
 ## Links
 
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)
-- Related: [PBI-2026-03-21-01 — Add a repository guard against Task.Delay in production code](../backlog/PBI-2026-03-21-01-task-delay-production-code-guard.md)

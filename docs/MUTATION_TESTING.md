@@ -104,5 +104,5 @@ Revisit mutation-testing adoption only when at least one of these becomes true:
 - `global.json`
 - `Directory.Packages.props`
 - <https://stryker-mutator.io/docs/stryker-net/configuration/>
-- <https://github.com/stryker-mutator/stryker-net/issues/3117>
+- upstream `Stryker.NET` xUnit v3/MTP support issue tracker
 - <https://xunit.net/docs/getting-started/v3/microsoft-testing-platform>

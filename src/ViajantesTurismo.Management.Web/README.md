@@ -41,8 +41,7 @@ and real-time updates using Blazor Server components.
 `ViajantesTurismo.Management.Web` is the internal management portal for operator workflows. It can compose data from
 multiple bounded-context backends, but bounded-context ownership still belongs to backend contracts and typed clients.
 This follows [ADR-020](../../docs/adr/20260523-web-frontends-by-audience-not-by-bounded-context.md) and implements the
-governance described by [issue #128](https://github.com/danigutsch/ViajantesTurismo/issues/128) and
-[issue #270](https://github.com/danigutsch/ViajantesTurismo/issues/270).
+documented module-boundary and typed-client governance.
 
 ### Folder Ownership
 

@@ -25,6 +25,9 @@ existing `.NET`, Python, shell, or Docker path already covers the same need.
   fallbacks in `scripts/lint-all.sh`.
 - Gherkin and JSON lint: repository-owned Python wrappers, with Docker fallback where the
   wrapper already provides it.
+- Link validation: repository-owned Python wrapper (`scripts/lint-links.sh`), with Docker
+  fallback. It validates local Markdown links and enforces durable documentation link rules;
+  it does not probe external URLs in PR gating.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
 - Agent/editor project formatters: limited to repository-approved single-file formatters. They
