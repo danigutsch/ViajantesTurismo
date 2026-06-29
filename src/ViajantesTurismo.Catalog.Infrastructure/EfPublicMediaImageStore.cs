@@ -122,7 +122,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         entity.Width = image.Dimensions.Width;
         entity.Height = image.Dimensions.Height;
         entity.ProcessingStatus = image.ProcessingStatus;
-        entity.Tags = [.. image.Tags.Select(tag => StringSanitizer.Sanitize(tag) ?? string.Empty)];
+        entity.Tags = StringSanitizer.SanitizeCollection(image.Tags);
         entity.AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty;
         entity.Caption = StringSanitizer.Sanitize(image.Caption);
         entity.Attribution = StringSanitizer.Sanitize(image.Attribution);

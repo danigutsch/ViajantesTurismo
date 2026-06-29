@@ -34,7 +34,7 @@ public sealed record PublicMediaImageDto
     /// <summary>
     /// Gets the source file size in bytes.
     /// </summary>
-    [Required, Range(0, long.MaxValue)]
+    [Required, Range(1, long.MaxValue)]
     public required long FileSizeBytes { get; init; }
 
     /// <summary>

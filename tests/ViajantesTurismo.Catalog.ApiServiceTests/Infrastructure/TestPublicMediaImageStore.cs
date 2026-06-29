@@ -36,9 +36,11 @@ internal sealed class TestPublicMediaImageStore : IPublicMediaImageStore
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        var result = catalogTourIds.ToDictionary(
-            tourId => tourId,
-            tourId => ListByTour(tourId));
+        var result = catalogTourIds
+            .Distinct()
+            .ToDictionary(
+                tourId => tourId,
+                tourId => ListByTour(tourId));
 
         return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(result);
     }

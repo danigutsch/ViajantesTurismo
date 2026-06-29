@@ -407,7 +407,7 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
         errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Ready images require at least one processed public variant."];
     }
 
-    if (image.Tags is null || image.Tags.Any(string.IsNullOrWhiteSpace))
+    if (image.Tags is null || image.Tags.Any(tag => string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(tag))))
     {
         errors[nameof(PublicMediaImageDto.Tags)] = ["Tags cannot contain blank values."];
     }
@@ -472,7 +472,7 @@ static PublicMediaImage ToDomainMediaImage(PublicMediaImageDto image)
         new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
         (MediaImageProcessingStatus)(int)image.ProcessingStatus,
         image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
-        image.Tags.Select(tag => StringSanitizer.Sanitize(tag) ?? string.Empty).ToArray(),
+        StringSanitizer.SanitizeCollection(image.Tags),
         image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray(),
         StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
         StringSanitizer.Sanitize(image.Caption),

@@ -34,6 +34,6 @@ public sealed record MediaImageResponsiveVariantDto
     /// <summary>
     /// Gets the rendition file size in bytes.
     /// </summary>
-    [Required, Range(0, long.MaxValue)]
+    [Required, Range(1, long.MaxValue)]
     public required long FileSizeBytes { get; init; }
 }

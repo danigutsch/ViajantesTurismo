@@ -25,6 +25,6 @@ internal sealed class StubPublicMediaImageStore : IPublicMediaImageStore
         CancellationToken ct)
     {
         return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(
-            catalogTourIds.ToDictionary(tourId => tourId, _ => (IReadOnlyList<PublicMediaImage>)[]));
+            catalogTourIds.Distinct().ToDictionary(tourId => tourId, _ => (IReadOnlyList<PublicMediaImage>)[]));
     }
 }
