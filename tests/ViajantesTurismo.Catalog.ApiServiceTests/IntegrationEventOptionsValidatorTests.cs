@@ -46,12 +46,10 @@ public sealed class IntegrationEventOptionsValidatorTests
     {
         // Arrange
         var configuredDuration = TimeSpan.FromMinutes(2);
-
         // Act
         var options = IntegrationEventOptionsTestServices.GetConfiguredOptions(configuredDuration);
 
         // Assert
         Assert.Equal(configuredDuration, options.IdempotencyLockDuration);
     }
-
 }

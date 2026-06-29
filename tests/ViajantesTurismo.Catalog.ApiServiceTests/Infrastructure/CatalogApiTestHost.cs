@@ -8,4 +8,11 @@ internal static class CatalogApiTestHost
     {
         return new CatalogApiWebApplicationFactory(environment);
     }
+
+    public static WebApplicationFactory<CatalogApiEntryPoint> Create(
+        TestCatalogTourReadModelStore tourStore,
+        TestPublicContentStore publicContentStore)
+    {
+        return new CatalogApiWebApplicationFactory(null, tourStore, publicContentStore);
+    }
 }
