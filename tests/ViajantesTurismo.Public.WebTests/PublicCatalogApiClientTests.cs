@@ -50,6 +50,51 @@ public sealed class PublicCatalogApiClientTests
             tour => Assert.Equal("second-tour", tour.Slug));
     }
 
+    [Fact]
+    public async Task GetPublishedTours_deserializes_public_media_images_and_variants()
+    {
+        // Arrange
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => PublicCatalogApiClientTestsHelpers.JsonResponse("""
+            [
+              {
+                "id":"11111111-1111-1111-1111-111111111111",
+                "adminTourId":"22222222-2222-2222-2222-222222222222",
+                "identifier":"TOUR-1",
+                "title":"First tour",
+                "slug":"first-tour",
+                "isPublished":true,
+                "images":[
+                  {
+                    "uri":"https://cdn.example/cover.jpg",
+                    "altText":"Cover image",
+                    "caption":"Mountain pass",
+                    "sortOrder":1,
+                    "isCover":true,
+                    "responsiveVariants":[
+                      {"uri":"https://cdn.example/cover-320.jpg","width":320,"height":213,"contentType":"image/jpeg","fileSizeBytes":512}
+                    ]
+                  }
+                ],
+                "updatedAt":"2026-06-25T10:00:00+00:00"
+              }
+            ]
+            """));
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var tours = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
+
+        // Assert
+        var tour = Assert.Single(tours);
+        var image = Assert.Single(tour.Images);
+        Assert.True(image.IsCover);
+        Assert.Equal("https://cdn.example/cover.jpg", image.Uri.ToString());
+        Assert.Equal("Mountain pass", image.Caption);
+        var variant = Assert.Single(image.ResponsiveVariants);
+        Assert.Equal(320, variant.Width);
+        Assert.Equal("https://cdn.example/cover-320.jpg", variant.Uri.ToString());
+    }
+
     [Theory]
     [InlineData("group tour", "/public/catalog/tours/group%20tour")]
     [InlineData("camino/norte", "/public/catalog/tours/camino%2Fnorte")]

@@ -524,6 +524,223 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_tags_that_sanitize_to_blank()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        var request = new PublicMediaImageDto
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensionsDto { Width = 1200, Height = 800 },
+            ProcessingStatus = MediaImageProcessingStatusDto.Ready,
+            ResponsiveVariants =
+            [
+                new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+            ],
+            Tags = ["\u0001"],
+            TourLinks =
+            [
+                new MediaImageTourLinkDto { CatalogTourId = Guid.CreateVersion7(), DisplayOrder = 1, IsCover = true }
+            ],
+            AltText = "First image"
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(PublicMediaImageDto.Tags), problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Public_tour_list_returns_only_published_tours_with_ready_public_images()
+    {
+        // Arrange
+        var publishedTourId = Guid.CreateVersion7();
+        var draftTourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                publishedTourId,
+                Guid.CreateVersion7(),
+                "TOUR-2026",
+                "Camino Norte",
+                "camino-norte",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                draftTourId,
+                Guid.CreateVersion7(),
+                "TOUR-DRAFT",
+                "Draft Tour",
+                "draft-tour",
+                false,
+                2,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(
+            new PublicMediaImage(
+                Guid.CreateVersion7(),
+                new Uri("https://private.example/source.jpg"),
+                "sha256:abc",
+                "image/jpeg",
+                2048,
+                new MediaImageDimensions(1200, 800),
+                MediaImageProcessingStatus.Ready,
+                [new MediaImageResponsiveVariant(new Uri("https://cdn.example/published-640.jpg"), 640, 427, "image/jpeg", 1024)],
+                ["camino"],
+                [new MediaImageTourLink(publishedTourId, DisplayOrder: 1, IsCover: true)],
+                "Published image",
+                Caption: null,
+                Attribution: null,
+                Copyright: null),
+            TestContext.Current.CancellationToken);
+        await mediaStore.Upsert(
+            new PublicMediaImage(
+                Guid.CreateVersion7(),
+                new Uri("https://private.example/draft-source.jpg"),
+                "sha256:def",
+                "image/jpeg",
+                2048,
+                new MediaImageDimensions(1200, 800),
+                MediaImageProcessingStatus.Ready,
+                [new MediaImageResponsiveVariant(new Uri("https://cdn.example/draft-640.jpg"), 640, 427, "image/jpeg", 1024)],
+                ["draft"],
+                [new MediaImageTourLink(draftTourId, DisplayOrder: 1, IsCover: true)],
+                "Draft image",
+                Caption: null,
+                Attribution: null,
+                Copyright: null),
+            TestContext.Current.CancellationToken);
+        await mediaStore.Upsert(
+            new PublicMediaImage(
+                Guid.CreateVersion7(),
+                new Uri("https://private.example/failed-source.jpg"),
+                "sha256:ghi",
+                "image/jpeg",
+                2048,
+                new MediaImageDimensions(1200, 800),
+                MediaImageProcessingStatus.Failed,
+                [new MediaImageResponsiveVariant(new Uri("https://cdn.example/failed-640.jpg"), 640, 427, "image/jpeg", 1024)],
+                ["failed"],
+                [new MediaImageTourLink(publishedTourId, DisplayOrder: 2, IsCover: false)],
+                "Failed image",
+                Caption: null,
+                Attribution: null,
+                Copyright: null),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
+        Assert.NotNull(tours);
+        var tour = Assert.Single(tours);
+        Assert.Equal("camino-norte", tour.Slug);
+        var image = Assert.Single(tour.Images);
+        Assert.Equal("https://cdn.example/published-640.jpg", image.Uri.ToString());
+        Assert.Equal("Published image", image.AltText);
+    }
+
+    [Fact]
+    public async Task Public_tour_endpoint_orders_cover_image_before_gallery_images()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId,
+                Guid.CreateVersion7(),
+                "TOUR-2026",
+                "Camino Norte",
+                "camino-norte",
+                true,
+                1,
+                DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(
+            new PublicMediaImage(
+                Guid.CreateVersion7(),
+                new Uri("https://private.example/gallery-source.jpg"),
+                "sha256:abc",
+                "image/jpeg",
+                2048,
+                new MediaImageDimensions(1200, 800),
+                MediaImageProcessingStatus.Ready,
+                [new MediaImageResponsiveVariant(new Uri("https://cdn.example/gallery-640.jpg"), 640, 427, "image/jpeg", 1024)],
+                ["gallery"],
+                [new MediaImageTourLink(tourId, DisplayOrder: 0, IsCover: false)],
+                "Gallery image",
+                Caption: null,
+                Attribution: null,
+                Copyright: null),
+            TestContext.Current.CancellationToken);
+        await mediaStore.Upsert(
+            new PublicMediaImage(
+                Guid.CreateVersion7(),
+                new Uri("https://private.example/cover-source.jpg"),
+                "sha256:def",
+                "image/jpeg",
+                2048,
+                new MediaImageDimensions(1200, 800),
+                MediaImageProcessingStatus.Ready,
+                [new MediaImageResponsiveVariant(new Uri("https://cdn.example/cover-640.jpg"), 640, 427, "image/jpeg", 1024)],
+                ["cover"],
+                [new MediaImageTourLink(tourId, DisplayOrder: 10, IsCover: true)],
+                "Cover image",
+                Caption: null,
+                Attribution: null,
+                Copyright: null),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/public/catalog/tours/camino-norte", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(tour);
+        Assert.Collection(
+            tour.Images,
+            image =>
+            {
+                Assert.True(image.IsCover);
+                Assert.Equal("https://cdn.example/cover-640.jpg", image.Uri.ToString());
+            },
+            image =>
+            {
+                Assert.False(image.IsCover);
+                Assert.Equal("https://cdn.example/gallery-640.jpg", image.Uri.ToString());
+            });
+    }
+
+    [Fact]
     public async Task Public_tour_endpoint_excludes_images_that_are_not_ready()
     {
         // Arrange

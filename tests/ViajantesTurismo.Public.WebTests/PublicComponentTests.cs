@@ -43,6 +43,53 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
+    public void TourCard_renders_cover_image_and_responsive_source()
+    {
+        // Arrange
+        var tour = new CatalogTourDto
+        {
+            Id = Guid.CreateVersion7(),
+            AdminTourId = Guid.CreateVersion7(),
+            Identifier = "TOUR-2026",
+            Title = "Camino Norte",
+            Slug = "camino-norte",
+            IsPublished = true,
+            Images =
+            [
+                new CatalogTourImageDto
+                {
+                    Uri = new Uri("https://cdn.example/gallery.jpg"),
+                    AltText = "Gallery image",
+                    SortOrder = 0,
+                    IsCover = false
+                },
+                new CatalogTourImageDto
+                {
+                    Uri = new Uri("https://cdn.example/cover.jpg"),
+                    AltText = "Cover image",
+                    SortOrder = 10,
+                    IsCover = true,
+                    ResponsiveVariants =
+                    [
+                        new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/cover-320.jpg"), Width = 320, Height = 213, ContentType = "image/jpeg", FileSizeBytes = 512 },
+                        new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/cover-640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+                    ]
+                }
+            ],
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        // Act
+        var cut = Render<TourCard>(parameters => parameters.Add(component => component.Tour, tour));
+
+        // Assert
+        var source = cut.Find("source");
+        Assert.Equal("https://cdn.example/cover-320.jpg 320w, https://cdn.example/cover-640.jpg 640w", source.GetAttribute("srcset"));
+        Assert.Equal("https://cdn.example/cover.jpg", cut.Find("img").GetAttribute("src"));
+        Assert.Equal("Cover image", cut.Find("img").GetAttribute("alt"));
+    }
+
+    [Fact]
     public void TourGallery_renders_captions_only_when_present()
     {
         // Arrange

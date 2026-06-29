@@ -40,7 +40,7 @@ internal sealed class TestPublicMediaImageStore : IPublicMediaImageStore
             .Distinct()
             .ToDictionary(
                 tourId => tourId,
-                tourId => ListByTour(tourId));
+                ListByTour);
 
         return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(result);
     }
