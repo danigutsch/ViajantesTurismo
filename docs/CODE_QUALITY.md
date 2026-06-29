@@ -388,6 +388,75 @@ The repository no longer installs git hooks by default.
 - For the repository's explicit local helper-tool acquisition rules, see
   [Local tool security model](local-tool-security.md).
 
+### Local validation runtime
+
+Use the repository benchmark script when a change may affect local validation time:
+
+```bash
+bash scripts/benchmark-local-validation.sh
+```
+
+The script writes tab-separated phase timings to `TestResults/local-validation-benchmark-timings.tsv`
+and logs beside that file. It uses Bash, the .NET SDK, and standard POSIX utilities available on
+Unix-like development environments.
+
+Useful focused runs:
+
+```bash
+# Restore and build only. This is the safe default.
+bash scripts/benchmark-local-validation.sh
+
+# One CI test slice only, after a successful build
+bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation
+
+# Full measured path with a custom output file
+bash scripts/benchmark-local-validation.sh --all-slices --output TestResults/local-validation-$(date +%Y%m%d-%H%M%S).tsv
+```
+
+Available slice names match `scripts/ci-test-slices/*.txt`:
+
+- `fast-validation`
+- `admin-integration`
+- `mediator-heavy`
+- `admin-system`
+
+Dependency-heavy slices may require a running container runtime, trusted development certificates,
+or Playwright browsers. If a local machine cannot run those prerequisites, capture the restore,
+build, and feasible slice timings, then state which slice was skipped and why in the pull request.
+
+Measured on this worktree on 2026-06-29:
+
+| Phase | Command | Duration | Status |
+| --- | --- | ---: | --- |
+| Restore | `bash scripts/benchmark-local-validation.sh --skip-build --skip-tests --output TestResults/issue-426-restore-benchmark.tsv` | 2s | success |
+| Build, warm repeat | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-tests --output TestResults/issue-426-build-benchmark.tsv` | 26s | success |
+| Fast validation slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice fast-validation --output TestResults/issue-426-fast-validation-benchmark.tsv` | 167s | success |
+| Admin integration slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-integration --output TestResults/issue-426-admin-integration-benchmark.tsv` | 100s | success |
+| Mediator heavy slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice mediator-heavy --output TestResults/issue-426-mediator-heavy-benchmark.tsv` | 65s | success |
+| Admin system slice | `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system --output TestResults/issue-426-admin-system-benchmark.tsv` | 71s | success |
+
+Low-risk improvement implemented here: local timing can run test slices without coverage collection
+while CI keeps its existing coverage collection and required checks intact.
+
+Recommended fast local path by change type:
+
+| Change type | Fast local path | Full confidence before PR when risk is real |
+| --- | --- | --- |
+| Package-only change | `dotnet restore ViajantesTurismo.slnx --force-evaluate`, then `dotnet restore ViajantesTurismo.slnx --locked-mode` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
+| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice admin-system` |
+| Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `bash scripts/benchmark-local-validation.sh --skip-restore --skip-build --slice <name>` |
+
+Concrete improvement options:
+
+1. Keep using `scripts/ci-test-slices/*.txt` as the single slice membership source for CI and local
+   benchmarks so project lists do not drift.
+2. Compare local no-coverage slice timings with CI coverage slice timings before changing any CI
+   coverage behavior.
+3. Split hosted browser/system tests further by trait only after measured timings show one stable
+   hotspot; keep the current required checks intact until then.
+4. Consider a documented local prerequisite check for dependency-heavy slices if failures are mostly
+   missing container runtime, certificates, or Playwright browsers rather than test regressions.
+
 ## Commit Message Conventions
 
 This repository uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and enforces them with `scripts/validate-commit-message.sh`.
