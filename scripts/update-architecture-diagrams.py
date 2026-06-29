@@ -14,11 +14,11 @@ MERMAID_START = "```mermaid"
 MERMAID_END = "```"
 FLOWCHART_TB = "flowchart TB"
 FLOWCHART_LR = "flowchart LR"
-JOB_HEADER = re.compile(r"^[ ]{2}(\w[\w-]*):\s*$")
-JOB_NAME = re.compile(r"^[ ]{4}name:\s+(.+)$")
-JOB_NEEDS = re.compile(r"^[ ]{4}needs:\s+(\w[\w-]*)\s*$")
-JOB_NEEDS_BLOCK = re.compile(r"^[ ]{4}needs:\s*$")
-JOB_NEED_ITEM = re.compile(r"^[ ]{6}-\s+(\w[\w-]*)\s*$")
+JOB_HEADER = re.compile(r"^ {2}(\w[\w-]*):\s*$")
+JOB_NAME = re.compile(r"^ {4}name:\s+(.+)$")
+JOB_NEEDS = re.compile(r"^ {4}needs:\s+(\w[\w-]*)\s*$")
+JOB_NEEDS_BLOCK = re.compile(r"^ {4}needs:\s*$")
+JOB_NEED_ITEM = re.compile(r"^ {6}-\s+(\w[\w-]*)\s*$")
 
 
 def main() -> int:
@@ -140,43 +140,73 @@ def project_reference_edges(include_project) -> list[tuple[str, str]]:
 
 def apphost_resources_diagram() -> str:
     path = ROOT / "src/ViajantesTurismo.AppHost/AppHost.cs"
+    lines = path.read_text(encoding="utf-8").splitlines()
     variables: dict[str, str] = {}
     edges: list[tuple[str, str]] = []
-    assignment = re.compile(r"var\s+(\w+)\s+=\s+([\w.]+)\.(\w+)\(([^)]*)\);")
+    add_apphost_assignments(lines, variables, edges)
+    add_apphost_invocations(lines, variables, edges)
 
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = assignment.search(line)
-        if not match:
-            continue
-        variable, receiver, method, args = match.groups()
-        if method == "CreateBuilder":
-            continue
-        variables[variable] = apphost_label(variable, method)
-        receiver_name = receiver.rsplit(".", 1)[-1]
-        if receiver_name in variables:
-            edges.append((variable, receiver_name))
-        for arg in parse_apphost_args(args):
-            if arg in variables:
-                edges.append((variable, arg))
-
-    invocation = re.compile(r"builder\.(Add\w+)\(([^)]*)\);")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = invocation.search(line)
-        if not match or "var " in line:
-            continue
-        method, args = match.groups()
-        node = method[3:]
-        variables[node] = apphost_label(node, method)
-        for arg in parse_apphost_args(args):
-            if arg in variables:
-                edges.append((node, arg))
-
-    lines: list[str] = []
+    diagram_lines: list[str] = []
     for key, label in sorted(variables.items(), key=lambda item: item[1]):
-        lines.append(f"    {node_id(key)}[{label}]")
+        diagram_lines.append(f"    {node_id(key)}[{label}]")
     for source, target in sorted(set(edges)):
-        lines.append(f"    {node_id(source)} --> {node_id(target)}")
-    return mermaid_diagram(FLOWCHART_LR, lines)
+        diagram_lines.append(f"    {node_id(source)} --> {node_id(target)}")
+    return mermaid_diagram(FLOWCHART_LR, diagram_lines)
+
+
+def add_apphost_assignments(
+    lines: list[str], variables: dict[str, str], edges: list[tuple[str, str]]
+) -> None:
+    assignment = re.compile(r"var\s+(\w+)\s+=\s+([\w.]+)\.(\w+)\(([^)]*)\);")
+    for line in lines:
+        match = assignment.search(line)
+        if match:
+            add_apphost_assignment(
+                (match.group(1), match.group(2), match.group(3), match.group(4)),
+                variables,
+                edges,
+            )
+
+
+def add_apphost_assignment(
+    groups: tuple[str, str, str, str],
+    variables: dict[str, str],
+    edges: list[tuple[str, str]],
+) -> None:
+    variable, receiver, method, args = groups
+    if method == "CreateBuilder":
+        return
+    variables[variable] = apphost_label(variable, method)
+    receiver_name = receiver.rsplit(".", 1)[-1]
+    add_edge_if_known(edges, variable, receiver_name, variables)
+    add_argument_edges(edges, variable, args, variables)
+
+
+def add_apphost_invocations(
+    lines: list[str], variables: dict[str, str], edges: list[tuple[str, str]]
+) -> None:
+    invocation = re.compile(r"builder\.(Add\w+)\(([^)]*)\);")
+    for line in lines:
+        match = invocation.search(line)
+        if match and "var " not in line:
+            method, args = match.groups()
+            node = method[3:]
+            variables[node] = apphost_label(node, method)
+            add_argument_edges(edges, node, args, variables)
+
+
+def add_argument_edges(
+    edges: list[tuple[str, str]], source: str, args: str, variables: dict[str, str]
+) -> None:
+    for arg in parse_apphost_args(args):
+        add_edge_if_known(edges, source, arg, variables)
+
+
+def add_edge_if_known(
+    edges: list[tuple[str, str]], source: str, target: str, variables: dict[str, str]
+) -> None:
+    if target in variables:
+        edges.append((source, target))
 
 
 def parse_apphost_args(args: str) -> list[str]:
@@ -225,43 +255,47 @@ def ci_supplemental_workflows_diagram() -> str:
 
 def parse_workflow_jobs(path: Path) -> list[tuple[str, str, list[str]]]:
     jobs: list[tuple[str, str, list[str]]] = []
-    current_id = ""
-    current_name = ""
-    needs: list[str] = []
+    current = WorkflowJob()
     needs_block = False
-
-    def flush() -> None:
-        nonlocal current_id, current_name, needs, needs_block
-        if current_id:
-            jobs.append((current_id, current_name or current_id, needs))
-        current_id = ""
-        current_name = ""
-        needs = []
-        needs_block = False
 
     for line in workflow_job_lines(path):
         job_match = JOB_HEADER.match(line)
         if job_match:
-            flush()
-            current_id = job_match.group(1)
+            flush_workflow_job(jobs, current)
+            current = WorkflowJob(job_match.group(1))
+            needs_block = False
             continue
-        if not current_id:
+        if not current.id:
             continue
         name_match = JOB_NAME.match(line)
         if name_match:
-            current_name = name_match.group(1).strip('"')
+            current.name = name_match.group(1).strip('"')
             continue
         needs_inline = JOB_NEEDS.match(line)
         if needs_inline:
-            needs.append(needs_inline.group(1))
+            current.needs.append(needs_inline.group(1))
             continue
         if JOB_NEEDS_BLOCK.match(line):
             needs_block = True
             continue
         if needs_block:
-            needs_block = append_need(line, needs)
-    flush()
+            needs_block = append_need(line, current.needs)
+    flush_workflow_job(jobs, current)
     return jobs
+
+
+class WorkflowJob:
+    def __init__(self, job_id: str = "") -> None:
+        self.id = job_id
+        self.name = ""
+        self.needs: list[str] = []
+
+
+def flush_workflow_job(
+    jobs: list[tuple[str, str, list[str]]], current: WorkflowJob
+) -> None:
+    if current.id:
+        jobs.append((current.id, current.name or current.id, current.needs))
 
 
 def workflow_job_lines(path: Path):
