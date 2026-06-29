@@ -157,6 +157,10 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             throw new ExpectedStreamRevisionConflictException(streamId, expectedRevision, actualRevision);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
@@ -211,6 +215,10 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
             RecordEventsLoaded(schemaName, "load", envelopes.Count);
 
             return envelopes;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch
         {
@@ -269,6 +277,10 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
             RecordEventsLoaded(schemaName, "load_after", envelopes.Count);
 
             return envelopes;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch
         {

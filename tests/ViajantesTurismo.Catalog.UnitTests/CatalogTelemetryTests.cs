@@ -182,4 +182,72 @@ public sealed class CatalogTelemetryTests
         Assert.Contains(CatalogTelemetry.MetricProjectionBatch, measurements, StringComparer.Ordinal);
     }
 
+    [Fact]
+    public async Task Integration_event_cancellation_does_not_emit_error_telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
+        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationEventConsumer(new CancelledEventStore()),
+            new CapturingIdempotencyStore(),
+            Options.Create(new IntegrationEventOptions()));
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026");
+
+        // Act
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
+
+        // Assert
+        var handlingActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
+        var streamActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityTourStreamUpdate);
+        Assert.Equal(ActivityStatusCode.Unset, handlingActivity.Status);
+        Assert.Equal(ActivityStatusCode.Unset, streamActivity.Status);
+        Assert.DoesNotContain(handlingActivity.Events, static activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
+        Assert.DoesNotContain(streamActivity.Events, static activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
+        Assert.DoesNotContain(CatalogTelemetry.MetricIntegrationEvent, measurements, StringComparer.Ordinal);
+        Assert.DoesNotContain(CatalogTelemetry.MetricTourStreamUpdate, measurements, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Projection_cancellation_does_not_emit_error_telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
+        var eventStore = new CapturingEventStore();
+        var projection = new CancelledProjection();
+        var runner = new CatalogProjectionRunner(eventStore, new CapturingProjectionCheckpointStore(), [projection]);
+        var draftCreated = new CatalogTourDraftCreated(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026",
+            Guid.CreateVersion7());
+        eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, DateTimeOffset.UtcNow));
+
+        // Act
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await runner.Project(TestContext.Current.CancellationToken));
+
+        // Assert
+        var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
+        Assert.Equal(ActivityStatusCode.Unset, projectionActivity.Status);
+        Assert.True(CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagProjectionName, projection.Name));
+        Assert.DoesNotContain(projectionActivity.Events, static activityEvent => string.Equals(activityEvent.Name, "exception", StringComparison.Ordinal));
+        Assert.DoesNotContain(CatalogTelemetry.MetricProjectionBatch, measurements, StringComparer.Ordinal);
+        Assert.DoesNotContain(CatalogTelemetry.MetricProjectionEvent, measurements, StringComparer.Ordinal);
+    }
+
 }

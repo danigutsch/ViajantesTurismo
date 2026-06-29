@@ -107,6 +107,7 @@ See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs i
 - [Architecture boundaries and dependency flow](boundaries-and-dependencies.md)
 - [Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md)
 - [CI and local validation flow](ci-validation-flows.md)
+- [Observability signal and dashboard consumption flows](observability-consumption-flows.md)
 
 ## Planned or evolving areas
 

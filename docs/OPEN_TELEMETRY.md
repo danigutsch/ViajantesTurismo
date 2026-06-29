@@ -44,6 +44,51 @@ Per-surface docs should answer these questions before adding dashboard-specific 
 - Compatibility reviewers: which names and dimensions are stable contracts?
 - Backend users: how can the signal be queried without binding the repository to one vendor?
 
+Each per-surface contract page should use these sections:
+
+- **Signal owner**: owning bounded context or SharedKernel package, source file, and registration point.
+- **Operational questions**: what an operator can decide from each span or metric.
+- **Trace contract**: ActivitySource name, span names, status behavior, tags, and correlation notes.
+- **Metric contract**: Meter name, instrument names, units, tag dimensions, and safe aggregations.
+- **Privacy and cardinality**: allowed tag values, explicitly forbidden values, and review triggers.
+- **Compatibility**: additive changes, breaking changes, and migration notes for dashboard authors.
+- **Backend-neutral examples**: query intent in prose or pseudocode rather than vendor-specific JSON.
+
+Surface-specific docs should be created only when the code owns stable names worth consuming. Do
+not create dashboard JSON before the surface has enough traffic and operational questions to justify
+panels.
+
+## Dashboard strategy
+
+Dashboard assets should stay backend-optional until the repository has a stable local Grafana path.
+Grafana's current guidance supports observability-as-code through source-controlled dashboards,
+provisioning, Git Sync, CLI/API workflows, and Foundation SDK models. This repository should adopt
+that model incrementally:
+
+1. Document the telemetry contract first.
+2. Add backend-neutral query intent next.
+3. Add source-controlled Grafana assets only when a dashboard has a clear owner and validation path.
+
+Recommended future layout, once dashboards are implemented:
+
+```text
+observability/
+  grafana/
+    dashboards/
+      catalog.json
+      mediator.json
+    provisioning/
+      dashboards.yaml
+```
+
+Dashboard design rules:
+
+- variables may use service, bounded context, operation, provider, and outcome dimensions only
+- never group by raw IDs, user text, event IDs, stream IDs, trace IDs, or exception messages
+- panel descriptions should name the metric, unit, and operational question
+- alerts should be added separately from dashboard panels so alert policy can be reviewed on its own
+- JSON/config validation must be wired into local scripts before dashboard assets become required CI
+
 ## Registration points
 
 ### Shared defaults registration
@@ -130,8 +175,9 @@ status and exception-event rules above without inventing extra tags.
   and emit outcome tags.
 - Migration service seeding spans use the same failure-status and exception-event pattern,
   while keeping seeding-specific operation tags on all paths.
-- Catalog and PostgreSQL event-sourcing surfaces are registered through service defaults and should
-  keep their tag sets low-cardinality because they are used by traces and metrics.
+- Catalog and PostgreSQL event-sourcing surfaces are registered through service defaults, leave
+  cooperative cancellation out of error metrics, and keep their tag sets low-cardinality because
+  they are used by traces and metrics.
 
 ### Helper abstraction decision
 
@@ -193,9 +239,19 @@ and the direct tests already provide the drift protection needed for the current
   `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs`
 - Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/SeederWorker.cs`
 - Migration custom source registration: `src/ViajantesTurismo.MigrationService/Program.cs`
+- Architecture consumption flow: `docs/architecture/observability-consumption-flows.md`
 
 ## Related package grouping guidance
 
 For the repository-wide review of what observability and runtime code looks reusable enough for
 future `SharedKernel.*` extraction, see
 `docs/SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md`.
+
+## Research references
+
+- .NET distributed tracing instrumentation:
+  `https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-instrumentation-walkthroughs`
+- .NET metrics instrumentation:
+  `https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation`
+- Grafana observability as code:
+  `https://grafana.com/docs/grafana/latest/observability-as-code/`

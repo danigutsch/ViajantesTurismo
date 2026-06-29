@@ -106,6 +106,10 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
 
             return checkpoint;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
@@ -145,6 +149,10 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
 
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeSuccess);
             RecordCheckpointDuration(schemaName, "save_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeSuccess, Stopwatch.GetElapsedTime(start));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch
         {
