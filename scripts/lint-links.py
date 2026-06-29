@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import sys
 import urllib.parse
@@ -87,6 +86,8 @@ def validate_file(path: Path) -> list[str]:
     errors = validate_policy_lines(relative, lines)
 
     for line_number, target in extract_link_targets(lines):
+        if is_github_issue_or_pr_url(normalize_target(target)):
+            errors.append(github_issue_or_pr_error(relative, line_number))
         error = validate_link_target(path, relative, anchors, line_number, target)
         if error:
             errors.append(error)
@@ -98,16 +99,20 @@ def validate_policy_lines(relative: str, lines: list[str]) -> list[str]:
     errors: list[str] = []
     for line_number, line in iter_non_fenced_lines(lines):
         if has_github_issue_or_pr_url(line):
-            errors.append(
-                f"{relative}:{line_number}: direct GitHub issue/PR link is not allowed; "
-                "summarize durable context or link a maintained doc instead"
-            )
+            errors.append(github_issue_or_pr_error(relative, line_number))
         if REPO_RELATIVE_ISSUE_OR_PR.search(line):
             errors.append(
                 f"{relative}:{line_number}: repo-relative issue/PR link is not allowed; "
                 "summarize durable context or link a maintained doc instead"
             )
     return errors
+
+
+def github_issue_or_pr_error(relative: str, line_number: int) -> str:
+    return (
+        f"{relative}:{line_number}: direct GitHub issue/PR link is not allowed; "
+        "summarize durable context or link a maintained doc instead"
+    )
 
 
 def validate_link_target(
