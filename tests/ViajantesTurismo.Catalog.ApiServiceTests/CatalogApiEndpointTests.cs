@@ -272,6 +272,50 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Public_content_read_endpoint_supports_slashes_in_content_key()
+    {
+        // Arrange
+        var publicContentStore = new TestPublicContentStore();
+        var enUs = PublicContentVariant.Create(
+            PublicContentLanguage.EnUs,
+            "Welcome",
+            "Ride with us",
+            null,
+            null,
+            null,
+            requiresHumanReview: false);
+        var ptBr = PublicContentVariant.Create(
+            PublicContentLanguage.PtBr,
+            "Bem-vindo",
+            "Pedale conosco",
+            null,
+            null,
+            null,
+            requiresHumanReview: false);
+        Assert.True(enUs.IsSuccess);
+        Assert.True(ptBr.IsSuccess);
+        var content = EditablePublicContent.Create("home/hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
+        Assert.True(content.IsSuccess);
+        var publish = content.Value.Publish();
+        Assert.True(publish.IsSuccess);
+        await publicContentStore.SaveContent(content.Value, TestContext.Current.CancellationToken);
+
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/public/catalog/content/home/hero?culture=en-US", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(variant);
+        Assert.Equal("Welcome", variant.Title);
+    }
+
+    [Fact]
     public async Task Public_content_read_endpoint_falls_back_to_approved_english_variant()
     {
         // Arrange

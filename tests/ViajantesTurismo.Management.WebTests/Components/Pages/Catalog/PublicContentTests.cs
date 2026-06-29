@@ -181,6 +181,22 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
+    public void Saving_blank_languages_shows_draft_source_guidance()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("form").Submit();
+
+        // Assert
+        Assert.Contains("Enter source title and body before generating a draft", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        Assert.Null(publicContentApi.SavedRequest);
+    }
+
+    [Fact]
     public void Clearing_generated_draft_review_flag_requires_human_review_confirmation()
     {
         // Arrange

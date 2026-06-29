@@ -51,7 +51,7 @@ app.MapGet("/public/catalog/tours/{slug}", async (string slug, ICatalogTourReadM
     return tour is null ? Results.NotFound() : Results.Ok(MapTour(tour));
 });
 
-app.MapGet("/public/catalog/content/{key}", async (
+app.MapGet("/public/catalog/content/{**key}", async (
     string key,
     string? language,
     string? culture,
@@ -84,7 +84,7 @@ app.MapGet("/catalog/public-content", async (IPublicContentStore store, Cancella
     return content.Select(MapPublicContent);
 });
 
-app.MapGet("/catalog/public-content/{key}", async (string key, IPublicContentStore store, CancellationToken ct) =>
+app.MapGet("/catalog/public-content/{**key}", async (string key, IPublicContentStore store, CancellationToken ct) =>
 {
     if (string.IsNullOrWhiteSpace(key))
     {
@@ -95,7 +95,7 @@ app.MapGet("/catalog/public-content/{key}", async (string key, IPublicContentSto
     return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
 });
 
-app.MapPut("/catalog/public-content/{key}", UpsertPublicContent);
+app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent);
 
 app.MapDefaultEndpoints();
 

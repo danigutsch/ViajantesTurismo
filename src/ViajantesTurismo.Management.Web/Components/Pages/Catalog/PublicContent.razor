@@ -303,6 +303,10 @@
         if (_model.Variants.Any(IsBlankDraftTarget))
         {
             GenerateMissingDraft();
+            if (_errorMessage is not null)
+            {
+                return false;
+            }
         }
 
         if (_model.Variants.Any(variant => string.IsNullOrWhiteSpace(variant.Title) || string.IsNullOrWhiteSpace(variant.Body)))
