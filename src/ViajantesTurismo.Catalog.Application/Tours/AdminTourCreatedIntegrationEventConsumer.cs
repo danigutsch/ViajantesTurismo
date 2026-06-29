@@ -44,13 +44,8 @@ public sealed class AdminTourCreatedIntegrationEventConsumer(
             SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
             CatalogTelemetry.TourStreamUpdates.Add(1, CreateTags(CatalogTelemetry.OutcomeSuccess));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            if (ex is OperationCanceledException && ct.IsCancellationRequested)
-            {
-                throw;
-            }
-
             SetError(activity, ex);
             CatalogTelemetry.TourStreamUpdates.Add(1, CreateTags(CatalogTelemetry.OutcomeError));
 
