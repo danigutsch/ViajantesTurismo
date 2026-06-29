@@ -37,6 +37,7 @@ Decisions about code quality standards and testing practices.
 - **[ADR-019](adr/20260321-no-task-delay-in-production-code.md)** — No Direct Task.Delay in Production Code
 - **[ADR-028](adr/20260625-api-entrypoint-test-markers.md)** — API Entry Point Test Markers
 - **[ADR-029](adr/20260626-test-helper-placement-and-readability.md)** — Test Helper Placement and Readability
+- **[ADR-030](adr/20260629-ci-test-lane-selection.md)** — CI Test Lane Selection
 
 ### Architecture & Layers
 

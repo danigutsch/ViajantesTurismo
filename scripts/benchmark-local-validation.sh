@@ -6,7 +6,7 @@ usage() {
     local exit_code="${1:-1}"
 
     cat >&2 << 'EOF'
-Usage: bash scripts/benchmark-local-validation.sh [--skip-restore] [--skip-build] [--skip-tests] [--all-slices] [--slice <name>] [--output <path>]
+Usage: bash scripts/benchmark-local-validation.sh [--skip-restore] [--skip-build] [--skip-tests] [--solution-tests] [--all-slices] [--slice <name>] [--output <path>]
 
 Slice names: fast-validation, admin-integration, admin-system, mediator-heavy
 EOF
@@ -127,6 +127,7 @@ main() {
     local skip_restore=false
     local skip_build=false
     local skip_tests=false
+    local solution_tests=false
     local all_slices=false
     local output="TestResults/local-validation-benchmark-timings.tsv"
     local -a requested_slices=()
@@ -146,6 +147,10 @@ main() {
                 ;;
             --skip-tests)
                 skip_tests=true
+                shift
+                ;;
+            --solution-tests)
+                solution_tests=true
                 shift
                 ;;
             --all-slices)
@@ -231,6 +236,14 @@ main() {
                 "${output%.tsv}-${slice}.log" \
                 run_test_slice "${projects_file}"
         done
+    fi
+
+    if [[ "${skip_tests}" != true && "${solution_tests}" == true ]]; then
+        run_timed \
+            "test_solution" \
+            "Run all solution tests without restore or build" \
+            "${output%.tsv}-solution-tests.log" \
+            dotnet test --solution ViajantesTurismo.slnx --no-restore --no-build
     fi
 
     echo "Timing data written to ${timings_file}."

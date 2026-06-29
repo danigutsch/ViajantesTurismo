@@ -49,8 +49,7 @@ matches_any_pattern() {
         fi
 
         case "${file}" in
-            *)
-                ;;
+            *) ;;
         esac
     done
 
@@ -109,7 +108,6 @@ low_risk_maintenance_patterns=(
 
 fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing/**"
-    "src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/**"
     "src/SharedKernel/SharedKernel.BuildingBlocks/**"
     "src/SharedKernel/SharedKernel.Domain/**"
     "src/SharedKernel/SharedKernel.DomainEvents/**"
@@ -134,8 +132,6 @@ fast_validation_patterns=(
     "src/ViajantesTurismo.Management.Web/**"
     "src/ViajantesTurismo.Public.Web/**"
     "tests/SharedKernel.EventSourcing.Tests/**"
-    "tests/SharedKernel.EventSourcing.PostgreSQL.Tests/**"
-    "tests/SharedKernel.EventSourcing.PostgreSQL.AppHost/**"
     "tests/SharedKernel.BuildingBlocks.Tests/**"
     "tests/SharedKernel.Domain.Tests/**"
     "tests/SharedKernel.DomainEvents.Tests/**"
@@ -152,6 +148,7 @@ fast_validation_patterns=(
     "tests/SharedKernel.Testing.Analyzers.Tests/**"
     "tests/ViajantesTurismo.Admin.BehaviorTests/**"
     "tests/ViajantesTurismo.Admin.ContractTests/**"
+    "tests/ViajantesTurismo.Admin.UiIntegrationTests/**"
     "tests/ViajantesTurismo.Admin.UnitTests/**"
     "tests/ViajantesTurismo.ArchitectureTests/**"
     "tests/ViajantesTurismo.Common.UnitTests/**"
@@ -160,6 +157,7 @@ fast_validation_patterns=(
 )
 
 admin_integration_patterns=(
+    "src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
     "src/ViajantesTurismo.Admin.Contracts/**"
@@ -167,6 +165,7 @@ admin_integration_patterns=(
     "src/ViajantesTurismo.Admin.Infrastructure/**"
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
+    "tests/SharedKernel.EventSourcing.PostgreSQL.Tests/**"
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
 )

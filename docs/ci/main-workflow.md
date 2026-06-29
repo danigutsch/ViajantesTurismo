@@ -63,10 +63,15 @@ part of the failure-investigation path.
 | Job name | `Admin Integration Tests` |
 | Runner | Repository CI baseline |
 
-This slice runs only when `detect-changes` reports that admin integration-sensitive paths
-changed. It restores shared prerequisites, then builds and executes only
-`tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj`,
-then uploads slice-local results and diagnostics.
+This slice runs only when `detect-changes` reports that dependency-heavy integration-sensitive
+paths changed. It restores shared prerequisites, then builds and executes the Admin API
+integration project plus the PostgreSQL event-sourcing integration project, then uploads
+slice-local results and diagnostics.
+
+The PostgreSQL event-sourcing tests live here instead of in `Fast Validation` because that project
+uses `Aspire.Hosting.Testing` and starts a real PostgreSQL resource. Keeping it out of the fast lane
+protects the no-host/no-container fast-feedback contract while avoiding another CI job for the same
+class of dependency-heavy work.
 
 ### Mediator Heavy Tests
 
@@ -119,6 +124,15 @@ skip.
 Test-slice project membership is now centralized under `scripts/ci-test-slices/*.txt` so the
 restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
+
+Lane placement follows [ADR-030: CI Test Lane Selection](../adr/20260629-ci-test-lane-selection.md).
+Benchmark locally with `scripts/benchmark-local-validation.sh` before changing CI slice membership.
+
+Fast-slice membership is intentionally stricter than "small test count." A project that starts an
+AppHost, container, database, browser, queue, or other external dependency is dependency-heavy and
+must not be added to `scripts/ci-test-slices/fast-validation.txt`. Prefer bundling tests that share a
+slow dependency class into an existing dependency-heavy lane before adding another parallel job;
+split only after CI timing data shows duplicated setup is cheaper than serial execution.
 
 SDK bump pull requests must refresh committed `packages.lock.json` files when `global.json`
 changes. The repository provides `bash scripts/refresh-sdk-lockfiles.sh` as the canonical
