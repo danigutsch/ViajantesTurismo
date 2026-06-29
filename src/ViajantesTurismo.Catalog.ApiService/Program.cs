@@ -352,12 +352,34 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
 {
     var errors = new Dictionary<string, string[]>();
 
-    if (image.SourceUri is null || !image.SourceUri.IsAbsoluteUri)
+    ValidateSourceUri(errors, image.SourceUri);
+    ValidateAltText(errors, image.AltText);
+    ValidateDimensions(errors, image.Dimensions);
+    ValidateRequiredLength(errors, nameof(PublicMediaImageDto.Checksum), image.Checksum, ContractConstants.MaxChecksumLength);
+    ValidateRequiredLength(errors, nameof(PublicMediaImageDto.ContentType), image.ContentType, ContractConstants.MaxContentTypeLength);
+    ValidatePositiveFileSize(errors, image.FileSizeBytes);
+    ValidateProcessingStatus(errors, image.ProcessingStatus);
+    ValidateTourLinks(errors, image.TourLinks);
+    ValidateResponsiveVariants(errors, image.ResponsiveVariants, image.ProcessingStatus);
+    ValidateTags(errors, image.Tags);
+    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Caption), image.Caption, ContractConstants.MaxCaptionLength);
+    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Attribution), image.Attribution, ContractConstants.MaxAttributionLength);
+    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Copyright), image.Copyright, ContractConstants.MaxCopyrightLength);
+
+    return errors;
+}
+
+static void ValidateSourceUri(Dictionary<string, string[]> errors, Uri? sourceUri)
+{
+    if (sourceUri is null || !sourceUri.IsAbsoluteUri)
     {
         errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be absolute."];
     }
+}
 
-    var altText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty;
+static void ValidateAltText(Dictionary<string, string[]> errors, string? value)
+{
+    var altText = StringSanitizer.Sanitize(value) ?? string.Empty;
     if (string.IsNullOrWhiteSpace(altText))
     {
         errors[nameof(PublicMediaImageDto.AltText)] = ["Alt text is required."];
@@ -366,57 +388,69 @@ static Dictionary<string, string[]> ValidateMediaImage(PublicMediaImageDto image
     {
         errors[nameof(PublicMediaImageDto.AltText)] = [$"Alt text cannot exceed {ContractConstants.MaxAltTextLength} characters."];
     }
+}
 
-    if (image.Dimensions is null)
+static void ValidateDimensions(Dictionary<string, string[]> errors, MediaImageDimensionsDto? dimensions)
+{
+    if (dimensions is null)
     {
         errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions are required."];
     }
-    else if (image.Dimensions.Width <= 0 || image.Dimensions.Height <= 0)
+    else if (dimensions.Width <= 0 || dimensions.Height <= 0)
     {
         errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions must be positive."];
     }
+}
 
-    ValidateRequiredLength(errors, nameof(PublicMediaImageDto.Checksum), image.Checksum, ContractConstants.MaxChecksumLength);
-    ValidateRequiredLength(errors, nameof(PublicMediaImageDto.ContentType), image.ContentType, ContractConstants.MaxContentTypeLength);
-
-    if (image.FileSizeBytes <= 0)
+static void ValidatePositiveFileSize(Dictionary<string, string[]> errors, long fileSizeBytes)
+{
+    if (fileSizeBytes <= 0)
     {
         errors[nameof(PublicMediaImageDto.FileSizeBytes)] = ["File size must be positive."];
     }
+}
 
-    if (image.ProcessingStatus == MediaImageProcessingStatusDto.None || !Enum.IsDefined(image.ProcessingStatus))
+static void ValidateProcessingStatus(Dictionary<string, string[]> errors, MediaImageProcessingStatusDto processingStatus)
+{
+    if (processingStatus == MediaImageProcessingStatusDto.None || !Enum.IsDefined(processingStatus))
     {
         errors[nameof(PublicMediaImageDto.ProcessingStatus)] = ["Processing status is required."];
     }
+}
 
-    if (image.TourLinks is null || image.TourLinks.Count == 0)
+static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLinkDto>? tourLinks)
+{
+    if (tourLinks is null || tourLinks.Count == 0)
     {
         errors[nameof(PublicMediaImageDto.TourLinks)] = ["At least one tour link is required."];
     }
-    else if (image.TourLinks.Any(link => link is null || link.CatalogTourId == Guid.Empty || link.DisplayOrder < 0))
+    else if (tourLinks.Any(link => link is null || link.CatalogTourId == Guid.Empty || link.DisplayOrder < 0))
     {
         errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links require a tour id and non-negative display order."];
     }
+}
 
-    if (image.ResponsiveVariants is null || image.ResponsiveVariants.Any(IsInvalidResponsiveVariant))
+static void ValidateResponsiveVariants(
+    Dictionary<string, string[]> errors,
+    IReadOnlyCollection<MediaImageResponsiveVariantDto?>? responsiveVariants,
+    MediaImageProcessingStatusDto processingStatus)
+{
+    if (responsiveVariants is null || responsiveVariants.Any(IsInvalidResponsiveVariant))
     {
         errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute URIs, positive dimensions, content type, and file size."];
     }
-    else if (image.ProcessingStatus == MediaImageProcessingStatusDto.Ready && image.ResponsiveVariants.Count == 0)
+    else if (processingStatus == MediaImageProcessingStatusDto.Ready && responsiveVariants.Count == 0)
     {
         errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Ready images require at least one processed public variant."];
     }
+}
 
-    if (image.Tags is null || image.Tags.Any(tag => string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(tag))))
+static void ValidateTags(Dictionary<string, string[]> errors, IReadOnlyCollection<string>? tags)
+{
+    if (tags is null || tags.Any(tag => string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(tag))))
     {
         errors[nameof(PublicMediaImageDto.Tags)] = ["Tags cannot contain blank values."];
     }
-
-    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Caption), image.Caption, ContractConstants.MaxCaptionLength);
-    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Attribution), image.Attribution, ContractConstants.MaxAttributionLength);
-    ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Copyright), image.Copyright, ContractConstants.MaxCopyrightLength);
-
-    return errors;
 }
 
 static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariantDto? variant)
