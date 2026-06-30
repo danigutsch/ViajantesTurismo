@@ -24,6 +24,8 @@ tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
 tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
 tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
 tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
+tests/SharedKernel.Aspire.Analyzers.Tests/SharedKernel.Aspire.Analyzers.Tests.csproj
+tests/SharedKernel.Aspire.CodeFixes.Tests/SharedKernel.Aspire.CodeFixes.Tests.csproj
 tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj
 tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj
 tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
