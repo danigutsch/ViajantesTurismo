@@ -36,6 +36,7 @@
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing/SharedKernel.EventSourcing.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/SharedKernel.EventSourcing.PostgreSQL.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Domain.SourceGenerator/SharedKernel.Domain.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.SourceGenerator/SharedKernel.Results.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.AspNet/SharedKernel.Results.AspNet.csproj" />
@@ -84,6 +85,7 @@
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.CodeFixes.Tests/SharedKernel.Mediator.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Domain.GeneratorTests/SharedKernel.Domain.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj" />
         <Project Path="tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.csproj" />
