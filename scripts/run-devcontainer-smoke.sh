@@ -36,7 +36,7 @@ write_devcontainer_wrapper() {
     local node_version_dir="$2"
     local cli_version_dir="$3"
 
-    cat >"${wrapper_path}" <<EOF
+    cat > "${wrapper_path}" << EOF
 #!/usr/bin/env bash
 set -euo pipefail
 exec "${node_version_dir}/bin/node" "${cli_version_dir}/package/devcontainer.js" "\$@"
@@ -62,7 +62,7 @@ verify_cli_archive() {
     local cli_archive="$1"
     local metadata_file="$2"
 
-    python3 - "${cli_archive}" "${metadata_file}" <<'PY'
+    python3 - "${cli_archive}" "${metadata_file}" << 'PY'
 import base64
 import hashlib
 import json
@@ -96,7 +96,7 @@ PY
 get_cli_tarball_url() {
     local metadata_file="$1"
 
-    python3 - "${metadata_file}" <<'PY'
+    python3 - "${metadata_file}" << 'PY'
 import json
 import sys
 
@@ -121,7 +121,7 @@ print_step() {
 require_command() {
     local command_name="$1"
 
-    if ! command -v "${command_name}" >/dev/null 2>&1; then
+    if ! command -v "${command_name}" > /dev/null 2>&1; then
         printf "Required command '%s' was not found on PATH.\n" "${command_name}" >&2
         exit 1
     fi
@@ -241,7 +241,7 @@ configure_git_worktree_mount() {
         return 0
     fi
 
-    git_common_dir="$(git -C "${workspace_folder}" rev-parse --git-common-dir 2>/dev/null || true)"
+    git_common_dir="$(git -C "${workspace_folder}" rev-parse --git-common-dir 2> /dev/null || true)"
     if [[ -z "${git_common_dir}" ]]; then
         return 0
     fi
@@ -259,7 +259,7 @@ configure_git_worktree_mount() {
 write_metadata() {
     local metadata_path="$1"
 
-    cat >"${metadata_path}" <<EOF
+    cat > "${metadata_path}" << EOF
 workspace_folder=${workspace_folder}
 log_dir=${log_dir}
 devcontainer_cli_version=${devcontainer_cli_version}
@@ -280,7 +280,7 @@ cleanup() {
             printf "Keeping devcontainer '%s' because DEVCONTAINER_SMOKE_KEEP_CONTAINER=1.\n" "${container_id}"
         else
             print_step "Cleaning up devcontainer ${container_id}"
-            docker rm -f "${container_id}" >/dev/null 2>&1 || true
+            docker rm -f "${container_id}" > /dev/null 2>&1 || true
         fi
     fi
 
@@ -309,7 +309,7 @@ main() {
             --run-tests)
                 run_tests="1"
                 ;;
-            --help|-h)
+            --help | -h)
                 printf "Usage: %s [--run-tests] [workspace-folder]\n" "$0"
                 exit 0
                 ;;
@@ -407,17 +407,12 @@ main() {
 
                 while IFS= read -r project_path; do
                     [[ -z "${project_path}" ]] && continue
-                    dotnet build "${project_path}" --no-restore
                     dotnet test --project "${project_path}" --no-restore --no-build
                 done < "${projects_file}"
             }
 
-            for projects_file in scripts/ci-test-slices/*.txt; do
-                while IFS= read -r project_path; do
-                    [[ -z "${project_path}" ]] && continue
-                    dotnet restore "${project_path}"
-                done < "${projects_file}"
-            done
+            dotnet restore ViajantesTurismo.slnx --locked-mode
+            dotnet build ViajantesTurismo.slnx --no-restore
 
             run_test_projects "Devcontainer Fast Validation" scripts/ci-test-slices/fast-validation.txt
             run_test_projects "Devcontainer Admin Integration Tests" scripts/ci-test-slices/admin-integration.txt

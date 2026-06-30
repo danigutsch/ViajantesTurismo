@@ -116,8 +116,8 @@ The script:
   than a remote installer pipe
 - lets the configured lifecycle hooks run
 - verifies `.NET`, Git, and Docker access inside the container
-- optionally runs `dotnet test --solution ViajantesTurismo.slnx --no-build` inside the
-  container when `--run-tests` is passed
+- optionally restores and builds the solution once, then runs the existing CI test
+  slice project lists sequentially with `--no-build` when `--run-tests` is passed
 - writes logs to `TestResults/devcontainer-smoke`
 - removes the temporary container automatically when it finishes
 
@@ -137,6 +137,11 @@ The GitHub Actions workflow uses the same option surface:
 - manual dispatch lets you choose either mode
 - the workflow uses the shared smoke script and a bundled Dev Container CLI install path instead of
   a repo-owned npm toolchain
+
+Full validation intentionally keeps the same CI slice membership files while reusing one
+solution restore and build. That avoids repeated per-project restore/build setup inside the
+temporary container without reintroducing concurrent all-solution test execution, which was the
+flake source this workflow avoids.
 
 Recommended follow-up validation while iterating:
 
