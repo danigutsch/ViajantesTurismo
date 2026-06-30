@@ -31,6 +31,26 @@ public static class ContractConstants
     public const int MaxCaptionLength = 256;
 
     /// <summary>
+    /// The maximum length for media checksums.
+    /// </summary>
+    public const int MaxChecksumLength = 128;
+
+    /// <summary>
+    /// The maximum length for media content types.
+    /// </summary>
+    public const int MaxContentTypeLength = 128;
+
+    /// <summary>
+    /// The maximum length for media attribution text.
+    /// </summary>
+    public const int MaxAttributionLength = 256;
+
+    /// <summary>
+    /// The maximum length for media copyright notices.
+    /// </summary>
+    public const int MaxCopyrightLength = 256;
+
+    /// <summary>
     /// The maximum length for public content body text.
     /// </summary>
     public const int MaxBodyLength = 4000;

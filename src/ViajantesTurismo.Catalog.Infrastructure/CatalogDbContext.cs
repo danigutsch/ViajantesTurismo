@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 
@@ -16,6 +17,8 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
     internal DbSet<CatalogTourReadModelEntity> CatalogTourReadModels => Set<CatalogTourReadModelEntity>();
 
+    internal DbSet<PublicMediaImage> PublicMediaImages => Set<PublicMediaImage>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,5 +28,6 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
         modelBuilder.ApplyConfiguration(new EditablePublicContentConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicMediaImageConfiguration());
     }
 }

@@ -8,6 +8,18 @@ namespace ViajantesTurismo.Catalog.Contracts;
 public sealed record CatalogTourImageDto
 {
     /// <summary>
+    /// Gets the display order for the image inside its tour gallery.
+    /// </summary>
+    [Required, Range(0, int.MaxValue)]
+    public int SortOrder { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether this image is the preferred tour cover.
+    /// </summary>
+    [Required]
+    public bool IsCover { get; init; }
+
+    /// <summary>
     /// Gets the public image URI.
     /// </summary>
     [Required]
@@ -24,4 +36,10 @@ public sealed record CatalogTourImageDto
     /// </summary>
     [StringLength(ContractConstants.MaxCaptionLength)]
     public string? Caption { get; init; }
+
+    /// <summary>
+    /// Gets processed variants for responsive image rendering.
+    /// </summary>
+    [Required]
+    public IReadOnlyList<MediaImageResponsiveVariantDto> ResponsiveVariants { get; init; } = [];
 }
