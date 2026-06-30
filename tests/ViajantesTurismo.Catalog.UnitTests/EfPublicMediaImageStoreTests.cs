@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -52,5 +53,44 @@ public sealed class EfPublicMediaImageStoreTests
         var link = Assert.Single(saved.TourLinks);
         Assert.True(link.IsCover);
         Assert.Equal(0, link.DisplayOrder);
+    }
+
+    [Fact]
+    public async Task Store_persists_multiple_responsive_variants()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicMediaImageStore(dbContext);
+        var tourId = Guid.CreateVersion7();
+        var imageId = Guid.CreateVersion7();
+        var image = new PublicMediaImage(
+            new PublicMediaImageMetadata
+            {
+                Id = imageId,
+                SourceUri = new Uri("https://cdn.example/source.jpg"),
+                Checksum = "sha256:abc",
+                ContentType = "image/jpeg",
+                FileSizeBytes = 4096,
+                Dimensions = new MediaImageDimensions(1200, 800),
+                ProcessingStatus = MediaImageProcessingStatus.Ready,
+                AltText = "Cyclists in the mountains"
+            },
+            [
+                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-320.jpg"), 320, 213, "image/jpeg", 512),
+                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024)
+            ],
+            ["mountain"],
+            [new MediaImageTourLink(tourId, 1, true)]);
+
+        // Act
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        var saved = await store.GetImage(imageId, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.NotNull(saved);
+        Assert.Collection(
+            saved.ResponsiveVariants,
+            variant => Assert.Equal(320, variant.Width),
+            variant => Assert.Equal(640, variant.Width));
     }
 }

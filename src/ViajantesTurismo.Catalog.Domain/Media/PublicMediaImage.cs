@@ -13,16 +13,19 @@ public sealed class PublicMediaImage
     /// Initializes a new instance of the <see cref="PublicMediaImage"/> class.
     /// </summary>
     /// <param name="metadata">The scalar media image metadata.</param>
-    /// <param name="ResponsiveVariants">The public responsive renditions.</param>
-    /// <param name="Tags">The editorial tags for discovery and grouping.</param>
-    /// <param name="TourLinks">The tour gallery placements.</param>
+    /// <param name="responsiveVariants">The public responsive renditions.</param>
+    /// <param name="tags">The editorial tags for discovery and grouping.</param>
+    /// <param name="tourLinks">The tour gallery placements.</param>
     public PublicMediaImage(
         PublicMediaImageMetadata metadata,
-        IReadOnlyList<MediaImageResponsiveVariant> ResponsiveVariants,
-        IReadOnlyList<string> Tags,
-        IReadOnlyList<MediaImageTourLink> TourLinks)
+        IReadOnlyList<MediaImageResponsiveVariant> responsiveVariants,
+        IReadOnlyList<string> tags,
+        IReadOnlyList<MediaImageTourLink> tourLinks)
     {
         ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(responsiveVariants);
+        ArgumentNullException.ThrowIfNull(tags);
+        ArgumentNullException.ThrowIfNull(tourLinks);
 
         Id = metadata.Id;
         SourceUri = metadata.SourceUri;
@@ -31,9 +34,9 @@ public sealed class PublicMediaImage
         FileSizeBytes = metadata.FileSizeBytes;
         Dimensions = metadata.Dimensions;
         ProcessingStatus = metadata.ProcessingStatus;
-        _responsiveVariants = [.. ResponsiveVariants];
-        _tags.AddRange(Tags);
-        _tourLinks = [.. TourLinks];
+        _responsiveVariants = [.. responsiveVariants.Select((variant, index) => variant with { SortOrder = index })];
+        _tags.AddRange(tags);
+        _tourLinks = [.. tourLinks];
         AltText = metadata.AltText;
         Caption = metadata.Caption;
         Attribution = metadata.Attribution;

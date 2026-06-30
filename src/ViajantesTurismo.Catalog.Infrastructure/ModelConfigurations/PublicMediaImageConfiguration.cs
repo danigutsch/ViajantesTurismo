@@ -33,8 +33,8 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
         {
             variant.ToTable("PublicMediaImageResponsiveVariants");
             variant.WithOwner().HasForeignKey("PublicMediaImageId");
-            variant.Property<int>("SortOrder").ValueGeneratedNever();
-            variant.HasKey("PublicMediaImageId", "SortOrder");
+            variant.HasKey("PublicMediaImageId", nameof(MediaImageResponsiveVariant.SortOrder));
+            variant.Property(item => item.SortOrder).ValueGeneratedNever();
             variant.Property(item => item.Uri).HasConversion<string>().IsRequired();
             variant.Property(item => item.Width).IsRequired();
             variant.Property(item => item.Height).IsRequired();

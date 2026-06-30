@@ -33,7 +33,6 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             dbContext.PublicMediaImages.Remove(existing);
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
             dbContext.PublicMediaImages.Add(image);
-            SetResponsiveVariantSortOrder(image);
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
         }
@@ -46,7 +45,6 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             }
 
             dbContext.PublicMediaImages.Add(image);
-            SetResponsiveVariantSortOrder(image);
 
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
         }
@@ -137,12 +135,12 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             [.. image.TourLinks.OrderBy(link => link.DisplayOrder)]);
     }
 
-    private PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)
+    private static PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)
     {
         return ToReturnedImage(image, catalogTourId);
     }
 
-    private PublicMediaImage ToReturnedImage(PublicMediaImage image, Guid? catalogTourId)
+    private static PublicMediaImage ToReturnedImage(PublicMediaImage image, Guid? catalogTourId)
     {
         var sanitizedImage = Sanitize(image);
 
@@ -161,25 +159,10 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 Attribution = sanitizedImage.Attribution,
                 Copyright = sanitizedImage.Copyright
             },
-            [.. sanitizedImage.ResponsiveVariants.OrderBy(ResponsiveVariantSortOrder)],
+            [.. sanitizedImage.ResponsiveVariants.OrderBy(variant => variant.SortOrder)],
             sanitizedImage.Tags,
             [.. sanitizedImage.TourLinks
                 .Where(link => catalogTourId is null || link.CatalogTourId == catalogTourId.Value)
                 .OrderBy(link => link.DisplayOrder)]);
-    }
-
-    private void SetResponsiveVariantSortOrder(PublicMediaImage image)
-    {
-        dbContext.ChangeTracker.DetectChanges();
-
-        for (var index = 0; index < image.ResponsiveVariants.Count; index++)
-        {
-            dbContext.Entry(image.ResponsiveVariants[index]).Property("SortOrder").CurrentValue = index;
-        }
-    }
-
-    private int ResponsiveVariantSortOrder(MediaImageResponsiveVariant variant)
-    {
-        return dbContext.Entry(variant).Property<int>("SortOrder").CurrentValue;
     }
 }

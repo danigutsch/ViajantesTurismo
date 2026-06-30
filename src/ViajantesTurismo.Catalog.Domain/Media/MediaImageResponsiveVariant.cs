@@ -8,9 +8,11 @@ namespace ViajantesTurismo.Catalog.Domain.Media;
 /// <param name="Height">The rendition height in pixels.</param>
 /// <param name="ContentType">The rendition media content type.</param>
 /// <param name="FileSizeBytes">The rendition file size in bytes.</param>
+/// <param name="SortOrder">The persisted display order.</param>
 public sealed record MediaImageResponsiveVariant(
     Uri Uri,
     int Width,
     int Height,
     string ContentType,
-    long FileSizeBytes);
+    long FileSizeBytes,
+    int SortOrder = 0);
