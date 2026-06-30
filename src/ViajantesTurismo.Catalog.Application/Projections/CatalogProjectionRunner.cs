@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.EventSourcing;
 
 namespace ViajantesTurismo.Catalog.Application.Projections;
@@ -56,6 +57,18 @@ public sealed class CatalogProjectionRunner(
                 SetOutcome(activity, CatalogTelemetry.OutcomeSuccess);
                 CatalogTelemetry.ProjectionEvents.Add(envelopes.Count, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSuccess));
                 CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeSuccess));
+            }
+            catch (OperationCanceledException ex)
+            {
+                if (!ex.ShouldHandleAsFailure(ct))
+                {
+                    throw;
+                }
+
+                SetError(activity, ex);
+                CatalogTelemetry.ProjectionBatches.Add(1, CreateProjectionTags(projection.Name, CatalogTelemetry.OutcomeError));
+
+                throw;
             }
             catch (Exception ex)
             {

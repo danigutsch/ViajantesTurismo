@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Npgsql;
+using SharedKernel.BuildingBlocks;
 
 namespace SharedKernel.EventSourcing.PostgreSQL;
 
@@ -106,7 +107,7 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
 
             return checkpoint;
         }
-        catch
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordCheckpointDuration(schemaName, "get_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
@@ -146,7 +147,7 @@ public sealed class PostgreSqlProjectionCheckpointStore : IProjectionCheckpointS
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeSuccess);
             RecordCheckpointDuration(schemaName, "save_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeSuccess, Stopwatch.GetElapsedTime(start));
         }
-        catch
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordCheckpointDuration(schemaName, "save_checkpoint", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));

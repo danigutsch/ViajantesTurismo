@@ -31,7 +31,16 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
         }
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "sharedkernel.eventsourcing": {
+        "type": "Project"
+      },
+      "sharedkernel.results": {
         "type": "Project"
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {

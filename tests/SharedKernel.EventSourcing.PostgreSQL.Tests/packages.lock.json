@@ -911,6 +911,12 @@
         "resolved": "16.3.0",
         "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "sharedkernel.eventsourcing": {
         "type": "Project"
       },
@@ -918,6 +924,7 @@
         "type": "Project",
         "dependencies": {
           "Npgsql": "[10.0.3, )",
+          "SharedKernel.BuildingBlocks": "[1.0.0, )",
           "SharedKernel.EventSourcing": "[1.0.0, )"
         }
       },
@@ -926,6 +933,9 @@
         "dependencies": {
           "Aspire.Hosting.Testing": "[13.4.6, )"
         }
+      },
+      "sharedkernel.results": {
+        "type": "Project"
       },
       "sharedkernel.testing": {
         "type": "Project"

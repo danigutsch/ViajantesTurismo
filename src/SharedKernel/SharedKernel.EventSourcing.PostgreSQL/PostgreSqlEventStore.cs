@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Npgsql;
 using NpgsqlTypes;
+using SharedKernel.BuildingBlocks;
 
 namespace SharedKernel.EventSourcing.PostgreSQL;
 
@@ -157,7 +158,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             throw new ExpectedStreamRevisionConflictException(streamId, expectedRevision, actualRevision);
         }
-        catch
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordAppendDuration(schemaName, PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
@@ -212,7 +213,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             return envelopes;
         }
-        catch
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordLoadDuration(schemaName, "load", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
@@ -270,7 +271,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
             return envelopes;
         }
-        catch
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             CompleteActivity(activity, PostgreSqlEventSourcingTelemetry.OutcomeError);
             RecordLoadDuration(schemaName, "load_after", PostgreSqlEventSourcingTelemetry.OutcomeError, Stopwatch.GetElapsedTime(start));
