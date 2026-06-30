@@ -88,6 +88,7 @@ flowchart TB
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_Domain[SharedKernel.Domain]
+    ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_Domain_SourceGenerator[SharedKernel.Domain.SourceGenerator]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_EventSourcing[SharedKernel.EventSourcing]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Catalog_Domain[ViajantesTurismo.Catalog.Domain] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]

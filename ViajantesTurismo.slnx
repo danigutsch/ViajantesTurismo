@@ -67,7 +67,6 @@
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/SharedKernel.Testing/SharedKernel.Testing.csproj" />
-        <Project Path="tests/SharedKernel.Domain.Tests/SharedKernel.Domain.Tests.csproj" />
         <Project Path="tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj" />
         <Project Path="tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.IntegrationEvents.Tests/SharedKernel.IntegrationEvents.Tests.csproj" />

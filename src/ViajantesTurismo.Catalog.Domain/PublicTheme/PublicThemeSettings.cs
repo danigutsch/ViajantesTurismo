@@ -10,8 +10,11 @@ namespace ViajantesTurismo.Catalog.Domain.PublicTheme;
 /// <summary>
 /// Business-editable public website theme settings.
 /// </summary>
-public sealed class PublicThemeSettings : AggregateRoot<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class PublicThemeSettings : IAggregateRoot<Guid>
 {
+    private readonly List<IDomainEvent> _domainEvents = [];
+
     /// <summary>
     /// Gets the single theme row identifier.
     /// </summary>
@@ -39,8 +42,8 @@ public sealed class PublicThemeSettings : AggregateRoot<Guid>
         string textColor,
         string headingFontFamily,
         string bodyFontFamily)
-        : base(ThemeId)
     {
+        Id = ThemeId;
         PrimaryColor = primaryColor;
         AccentColor = accentColor;
         BackgroundColor = backgroundColor;
@@ -48,6 +51,11 @@ public sealed class PublicThemeSettings : AggregateRoot<Guid>
         HeadingFontFamily = headingFontFamily;
         BodyFontFamily = bodyFontFamily;
     }
+
+    /// <summary>
+    /// Gets the singleton theme identifier.
+    /// </summary>
+    public Guid Id { get; private init; }
 
     /// <summary>
     /// Gets the primary brand color.
@@ -78,6 +86,12 @@ public sealed class PublicThemeSettings : AggregateRoot<Guid>
     /// Gets the body font family.
     /// </summary>
     public string BodyFontFamily { get; private set; }
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
+
+    /// <inheritdoc />
+    public void ClearDomainEvents() => _domainEvents.Clear();
 
     /// <summary>
     /// Creates the default public website theme.

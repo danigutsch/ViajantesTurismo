@@ -15,8 +15,7 @@ OpenAPI, and observability. Reusable DDD primitives should follow the same focus
 
 Create focused SharedKernel projects for DDD primitives and reusable value objects.
 
-- `SharedKernel.Domain` owns identity interfaces, transitional `Entity<TId>` and
-  `AggregateRoot<TId>` base classes, `IAggregateRoot`, and `IDomainEvent`.
+- `SharedKernel.Domain` owns identity interfaces, aggregate-root contracts, and `IDomainEvent`.
 - `SharedKernel.BuildingBlocks` owns reusable value objects such as `ValueObject` and `DateRange`.
 
 Migrate `ViajantesTurismo.Common` gradually into these projects. Decide separately whether `Currency`
@@ -32,8 +31,8 @@ owning bounded context.
 - Existing code must be migrated carefully to avoid large noisy changes.
 - `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` was removed after Admin moved to
   SharedKernel identity interfaces and generated identity support.
-- Base-class consumers should move toward `IIdentified<TId>`, `IEntity<TId>`,
-  `IAggregateRoot<TId>`, and opt-in generated identity support before the base classes are removed.
+- SharedKernel base-class consumers moved toward `IIdentified<TId>`, `IEntity<TId>`,
+  `IAggregateRoot<TId>`, and opt-in generated identity support before the base classes were removed.
 - Future Vogen-like source generation can be added around `SharedKernel.BuildingBlocks` without
   blocking current Catalog work.
 

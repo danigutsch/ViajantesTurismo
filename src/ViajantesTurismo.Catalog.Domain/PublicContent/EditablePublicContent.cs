@@ -10,9 +10,11 @@ namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 /// <summary>
 /// Business-editable public website content with localized variants.
 /// </summary>
-public sealed class EditablePublicContent : AggregateRoot<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
 {
     private readonly List<PublicContentVariant> _variants = [];
+    private readonly List<IDomainEvent> _domainEvents = [];
 
     /// <summary>
     /// DO NOT USE. This constructor is required by Entity Framework Core for materialisation.
@@ -30,13 +32,18 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
         PublicContentLanguage sourceLanguage,
         IEnumerable<PublicContentVariant> variants,
         PublicContentPublicationState publicationState)
-        : base(id)
     {
+        Id = id;
         Key = key;
         SourceLanguage = sourceLanguage;
         _variants.AddRange(variants);
         PublicationState = publicationState;
     }
+
+    /// <summary>
+    /// Gets the unique content identifier.
+    /// </summary>
+    public Guid Id { get; private init; }
 
     /// <summary>
     /// Gets the stable content key, such as a page or section identifier.
@@ -52,6 +59,12 @@ public sealed class EditablePublicContent : AggregateRoot<Guid>
     /// Gets the localized content variants.
     /// </summary>
     public IReadOnlyCollection<PublicContentVariant> Variants => _variants.AsReadOnly();
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
+
+    /// <inheritdoc />
+    public void ClearDomainEvents() => _domainEvents.Clear();
 
     /// <summary>
     /// Gets the publication state for the content entry.

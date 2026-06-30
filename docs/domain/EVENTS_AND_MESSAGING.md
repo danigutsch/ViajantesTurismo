@@ -23,8 +23,6 @@ Owns DDD primitives:
 - `IEntity<TId>`.
 - `IAggregateRoot`.
 - `IAggregateRoot<TId>`.
-- `Entity<TId>` while base-class consumers are migrated.
-- `AggregateRoot<TId>`.
 - `IDomainEvent`.
 - Domain event recording and dequeueing.
 
