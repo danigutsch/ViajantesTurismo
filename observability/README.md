@@ -6,7 +6,7 @@ Aspire AppHost stack.
 ## Enable
 
 ```bash
-VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
+ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
 ```
 
 The stack is disabled by default. Regular local runs can use the Aspire dashboard without starting

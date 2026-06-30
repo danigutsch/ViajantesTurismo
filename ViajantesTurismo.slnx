@@ -31,6 +31,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator/SharedKernel.Mediator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Domain/SharedKernel.Domain.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/SharedKernel.Aspire.Hosting.Grafana.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.BuildingBlocks/SharedKernel.BuildingBlocks.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.DomainEvents/SharedKernel.DomainEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.IntegrationEvents/SharedKernel.IntegrationEvents.csproj" />
