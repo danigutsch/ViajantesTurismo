@@ -97,12 +97,17 @@ No additional database containers are configured in the dev container - Aspire h
    `.github/workflows/devcontainer-smoke.yml` and writes logs to
    `TestResults/devcontainer-smoke`.
 
-   If you also want the temporary container to run the full solution test suite,
+   If you also want the temporary container to run the full CI slice test suite,
    use:
 
    ```bash
    bash scripts/run-devcontainer-smoke.sh --run-tests
    ```
+
+   Full mode restores and builds each unique CI slice project once, then runs the
+   CI slice project lists sequentially with `--no-build`. This keeps the
+   isolation that avoids all-solution test concurrency flakes while removing
+   repeated per-project restore/build setup.
 
 ## Port Forwarding
 

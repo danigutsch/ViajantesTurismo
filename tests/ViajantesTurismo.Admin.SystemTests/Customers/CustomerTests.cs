@@ -100,6 +100,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Expect(Page).ToHaveTitleAsync("Create Customer - Accommodation Preferences");
         await Expect(Page.GetByText("Step 6 of 8")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Loading customers...")).ToBeHiddenAsync();
 
         var roomTypeInput = Page.Locator("#roomType");
         await roomTypeInput.SelectOptionAsync("SingleOccupancy");
