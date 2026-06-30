@@ -248,13 +248,52 @@ All value objects validated on creation and update.
 
 ---
 
+## Catalog Bounded Context
+
+The Catalog context owns customer-facing tour presentation and business-editable public website
+content. See [Catalog bounded context](../bounded-contexts/Catalog.md) and
+[Architecture flows](../architecture/FLOWS.md) for current-versus-planned flow diagrams.
+
+### CatalogTour
+
+**Purpose**: Own the customer-facing presentation stream for one Admin tour.
+
+Current implementation:
+
+- Event-sourced aggregate root keyed by Catalog tour id.
+- Creates draft state from an Admin tour id, identifier, title, and source event id.
+- Currently raises/applies `CatalogTourDraftCreated` only.
+
+Planned/evolving:
+
+- Presentation field changes, publication transitions, gallery changes, SEO changes, and itinerary
+  changes should become event-sourced commands before read models are treated as rebuildable source of
+  truth.
+
+### EditablePublicContent
+
+**Purpose**: Own localized business-editable public website text and SEO fields.
+
+Current implementation:
+
+- Requires explicit `en-US` and `pt-BR` variants.
+- Stores the editor source language.
+- Marks content `ReviewRequired` when any variant requires human review.
+- Blocks `Publish()` while review-required variants remain.
+
+Planned/evolving:
+
+- Approval, publication endpoints, and published-only public rendering are still future slices.
+
+---
+
 ## Future Bounded Contexts
 
 As new bounded contexts are added to the system, document their aggregates here following the template above.
 
 **Potential contexts to add:**
 
-- **Sales/Marketing** — Public tour catalog, promotional campaigns, customer inquiries
+- **Sales/Marketing** — Promotional campaigns, customer inquiries
 - **Operations** — Guide scheduling, equipment management, logistics
 - **Accounting** — Financial reporting, invoicing, expense tracking
 - **Analytics** — Business intelligence, customer insights, tour performance

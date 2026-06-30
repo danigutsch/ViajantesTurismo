@@ -50,7 +50,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 
 - `AspireSystemTestFixture` launches the AppHost-managed stack once for the assembly; each test gets a fresh `BrowserContext`.
 - Tests seed their own data and don't depend on each other.
-- `Shared.NavigationTests` is the canonical first parallel-safe Aspire-hosted migration slice for narrow reliability checks under `#157`.
+- `Shared.NavigationTests` is the canonical first parallel-safe Aspire-hosted migration slice for narrow reliability checks.
 - Blazor Server uses SignalR — use `WaitUntil = WaitUntilState.NetworkIdle` and web-first assertions
   for async rendering.
 - Call `await Page.PauseAsync()` to open Playwright Inspector mid-test.
