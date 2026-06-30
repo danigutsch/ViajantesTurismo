@@ -250,6 +250,68 @@ Compatibility rules:
 4. Reuse the existing Roslyn packaging and test harness patterns already established in the
    SharedKernel analyzer and code-fix projects.
 
+## Analyzer and code-fix package consumption boundaries
+
+Analyzer and code-fix packages are developer tooling packages. They should follow consumer dependency
+needs, not repository folder convenience.
+
+Package layout rules:
+
+1. Pack analyzer and code-fix assemblies under `analyzers/dotnet/cs` and keep an empty
+   `lib/netstandard2.0/_._` marker when the package has no runtime assembly.
+2. Set `IncludeBuildOutput=false` so Roslyn assemblies are delivered as analyzer assets, not as
+   runtime library output.
+3. Keep Roslyn and test-harness package references private with `PrivateAssets=all`; analyzer
+   implementation dependencies must not flow to consumers as compile or runtime dependencies.
+4. Keep analyzer release notes, public API baselines, README diagnostic tables, and tests in the
+   owning package family.
+
+Boundary rules:
+
+1. Keep repository-wide, dependency-free style rules in `SharedKernel.Style.*`.
+2. Keep test-only rules in `SharedKernel.Testing.*` so production projects do not consume test
+   policy by accident.
+3. Keep mediator contract and generated-dispatch rules in `SharedKernel.Mediator.*` because they
+   follow the mediator API and source generator.
+4. Do not add references to optional technology packages such as Aspire, EF Core, Dapper, Azure
+   SDKs, or browser-test tooling to broad analyzer/code-fix packages.
+5. If a rule needs optional technology symbols, metadata, or package APIs, create a dedicated
+   capability package only when there is a real consumer. Use the smallest matching name, for
+   example `SharedKernel.Aspire.Analyzers` and `SharedKernel.Aspire.CodeFixes`.
+6. If a rule only checks repository source shape and does not reference the optional technology
+   package, it can stay in the current owner. `SKSTYLE005` is the current example: it protects
+   AppHost image pin shape without adding an Aspire package dependency to `SharedKernel.Style.*`.
+
+Analyzer and code-fix pairing rules:
+
+1. Prefer shipping a code fix with the analyzer family that owns the diagnostic when remediation is
+   local, deterministic, and safe.
+2. Keep a separate code-fix package only when it prevents extra workspace dependencies from loading
+   for consumers that only need diagnostics. This matches the current `SharedKernel.*.Analyzers` and
+   `SharedKernel.*.CodeFixes` split.
+3. Do not create a broad catch-all code-fix package. Cross-family packages obscure ownership and can
+   pull unrelated optional dependencies into consumers.
+4. Do not create code fixes for judgment-heavy refactors. Keep those as documentation, tests, or
+   manual cleanup issues.
+
+Package naming rules:
+
+1. Name packages by consumer capability: `SharedKernel.Style.*`, `SharedKernel.Testing.*`,
+   `SharedKernel.Mediator.*`, or a future optional capability such as `SharedKernel.Aspire.*`.
+2. Avoid names based on implementation mechanics such as `SharedKernel.CommonAnalyzers` or
+   `SharedKernel.AllCodeFixes`.
+3. Add implementation split issues only after a documented recommendation identifies the concrete
+   package name, consumer, optional dependency, and migration path.
+
+Recommendation for `#435` and `#436`:
+
+- Keep the current analyzer/code-fix package split.
+- Do not create new implementation split issues now.
+- Revisit a dedicated Aspire analyzer/code-fix package only if a future rule needs Aspire package
+  references or reusable external consumption beyond the repository AppHost shape rule.
+- Close `#436` with this documentation update. Close `#435` if review accepts that no implementation
+  split is currently needed.
+
 ## Migration guidance for teams
 
 When adopting or tightening analyzer rules:
@@ -292,6 +354,7 @@ When adopting or tightening analyzer rules:
   roadmap.
 - Prefer adopting and tuning existing analyzers before inventing more custom rules.
 - Keep custom analyzers focused on conventions the built-in and Sonar layers do not enforce well.
+- Keep analyzer/code-fix packages split by consumer capability and optional dependency needs.
 
 ## References
 
@@ -305,3 +368,9 @@ When adopting or tightening analyzer rules:
 - `src/SharedKernel/SharedKernel.Testing.CodeFixes/README.md`
 - `src/SharedKernel/SharedKernel.Mediator.Analyzers/README.md`
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/README.md`
+- Microsoft Learn, ".NET Compiler Platform Analyzer Formats for NuGet":
+  <https://learn.microsoft.com/nuget/guides/analyzers-conventions>
+- Microsoft Learn, "NuGet PackageReference in project files":
+  <https://learn.microsoft.com/nuget/consume-packages/package-references-in-project-files>
+- Microsoft Learn, "Getting Started with Roslyn Analyzers":
+  <https://learn.microsoft.com/visualstudio/extensibility/getting-started-with-roslyn-analyzers>
