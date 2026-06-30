@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Common.BuildingBlocks;
+using SharedKernel.Domain;
 using SharedKernel.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
@@ -13,7 +13,8 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// <remarks>
 /// Part of the Tour aggregate. In production code, modify through <c>Tour</c> methods only (e.g., <c>Tour.ConfirmBooking()</c>, <c>Tour.UpdateBookingNotes()</c>).
 /// </remarks>
-public sealed class Booking : Entity<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class Booking : IEntity<Guid>
 {
     private readonly List<Payment> _payments = [];
 
@@ -35,8 +36,8 @@ public sealed class Booking : Entity<Guid>
         BookingCustomer? companionCustomer,
         Discount discount,
         string? notes)
-        : base(Guid.CreateVersion7())
     {
+        Id = Guid.CreateVersion7();
         TourId = tourId;
         BasePrice = basePrice;
         RoomType = room.RoomType;
@@ -54,6 +55,11 @@ public sealed class Booking : Entity<Guid>
     private Booking()
     {
     }
+
+    /// <summary>
+    /// Gets the unique booking identifier.
+    /// </summary>
+    public Guid Id { get; private init; }
 
     /// <summary>
     /// The ID of the tour that was booked.

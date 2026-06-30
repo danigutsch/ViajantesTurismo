@@ -32,14 +32,19 @@ public sealed class DddConventionsTests
     [Fact]
     public void Entities_must_be_located_in_domain_namespace()
     {
-        var domainNamespace = ArchitectureProvider.Namespaces.Domain;
+        var domainNamespaces = new[]
+        {
+            ArchitectureProvider.Namespaces.Domain,
+            ArchitectureProvider.Namespaces.CatalogDomain
+        };
         var violatingTypes = EntityTypes
-            .Where(type => type.Namespace is null || !type.Namespace.StartsWith(domainNamespace, StringComparison.Ordinal))
+            .Where(type => type.Namespace is null || !domainNamespaces.Any(domainNamespace =>
+                type.Namespace.StartsWith(domainNamespace, StringComparison.Ordinal)))
             .ToArray();
 
         Assert.False(
             violatingTypes.Length != 0,
-            $"Expected all entities to reside in namespace '{domainNamespace}', but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
+            $"Expected all entities to reside in a domain namespace, but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
     [Fact]

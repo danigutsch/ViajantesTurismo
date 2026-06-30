@@ -1,12 +1,13 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Common.BuildingBlocks;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
 /// Represents a customer entity.
 /// </summary>
-public sealed class Customer : Entity<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class Customer : IEntity<Guid>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class.
@@ -29,8 +30,8 @@ public sealed class Customer : Entity<Guid>
         EmergencyContact emergencyContact,
         MedicalInfo medicalInfo
     )
-        : base(Guid.CreateVersion7())
     {
+        Id = Guid.CreateVersion7();
         PersonalInfo = personalInfo;
         IdentificationInfo = identificationInfo;
         ContactInfo = contactInfo;
@@ -40,6 +41,17 @@ public sealed class Customer : Entity<Guid>
         EmergencyContact = emergencyContact;
         MedicalInfo = medicalInfo;
     }
+
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+    [UsedImplicitly]
+    private Customer()
+    {
+    }
+
+    /// <summary>Unique customer identifier.</summary>
+    public Guid Id { get; private init; }
 
     /// <summary>Personal information.</summary>
     public PersonalInfo PersonalInfo { get; private set; }
@@ -137,11 +149,4 @@ public sealed class Customer : Entity<Guid>
         MedicalInfo = medicalInfo;
     }
 
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-    [UsedImplicitly]
-    private Customer()
-    {
-    }
 }

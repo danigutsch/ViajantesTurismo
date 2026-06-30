@@ -58,6 +58,8 @@ flowchart TB
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain]
     ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts] --> SharedKernel_IntegrationEvents[SharedKernel.IntegrationEvents]
     ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
+    ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Domain[SharedKernel.Domain]
+    ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Domain_SourceGenerator[SharedKernel.Domain.SourceGenerator]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> SharedKernel_Results_SourceGenerator[SharedKernel.Results.SourceGenerator]
     ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain] --> ViajantesTurismo_Admin_Contracts[ViajantesTurismo.Admin.Contracts]

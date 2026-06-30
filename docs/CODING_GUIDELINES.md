@@ -80,11 +80,11 @@ public sealed record TourPricing(Money BasePrice, Money RoomSupplement, Money Bi
 Use file-scoped namespaces (enforced by EditorConfig):
 
 ```csharp
-using SharedKernel.Results;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
-public sealed class Tour : Entity<Guid> { }
+public sealed partial class Tour : IEntity<Guid> { }
 ```
 
 ### Using Directives
@@ -264,8 +264,10 @@ public static Result<Tour> Create(string identifier, string name) { }
 ```csharp
 public sealed record Money(decimal Amount, Currency Currency);
 
-public sealed class Tour : Entity<Guid>
+public sealed partial class Tour : IEntity<Guid>
 {
+    public Guid Id { get; private init; }
+
     private readonly List<Booking> _bookings = [];
     public IReadOnlyList<Booking> Bookings => _bookings.AsReadOnly();
 }

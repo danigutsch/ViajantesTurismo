@@ -8,7 +8,6 @@ See [SharedKernel.Results](../SharedKernel/SharedKernel.Results/README.md) for r
 
 ### Base Types
 
-- **`Entity<TId>`** — Base class for domain entities with identity
 - **`ValueObject`** — Base class for immutable value objects compared by attributes
 
 ### Enumerations

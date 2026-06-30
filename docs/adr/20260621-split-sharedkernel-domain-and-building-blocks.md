@@ -4,7 +4,7 @@
 
 ## Context
 
-`ViajantesTurismo.Common` currently contains reusable domain primitives such as `Entity<TId>`,
+`ViajantesTurismo.Common` originally contained reusable domain primitives such as `Entity<TId>`,
 `ValueObject`, and `DateRange`. New Catalog, event sourcing, and event dispatch work needs these
 primitives without keeping a broad catch-all common project.
 
@@ -15,8 +15,8 @@ OpenAPI, and observability. Reusable DDD primitives should follow the same focus
 
 Create focused SharedKernel projects for DDD primitives and reusable value objects.
 
-- `SharedKernel.Domain` owns `Entity<TId>`, `IAggregateRoot`, `AggregateRoot<TId>`, and
-  `IDomainEvent`.
+- `SharedKernel.Domain` owns identity interfaces, transitional `Entity<TId>` and
+  `AggregateRoot<TId>` base classes, `IAggregateRoot`, and `IDomainEvent`.
 - `SharedKernel.BuildingBlocks` owns reusable value objects such as `ValueObject` and `DateRange`.
 
 Migrate `ViajantesTurismo.Common` gradually into these projects. Decide separately whether `Currency`
@@ -30,6 +30,10 @@ owning bounded context.
 - Aggregate root and domain event recording can be standardized across bounded contexts.
 - Value objects that are truly reusable get a clear home.
 - Existing code must be migrated carefully to avoid large noisy changes.
+- `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` was removed after Admin moved to
+  SharedKernel identity interfaces and generated identity support.
+- Base-class consumers should move toward `IIdentified<TId>`, `IEntity<TId>`,
+  `IAggregateRoot<TId>`, and opt-in generated identity support before the base classes are removed.
 - Future Vogen-like source generation can be added around `SharedKernel.BuildingBlocks` without
   blocking current Catalog work.
 

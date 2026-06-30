@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using ViajantesTurismo.Common.BuildingBlocks;
+using SharedKernel.Domain;
 using SharedKernel.Results;
 using ViajantesTurismo.Common.Sanitizers;
 
@@ -9,7 +9,8 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// Represents a payment recorded for a booking.
 /// Payments are immutable once created.
 /// </summary>
-public sealed class Payment : Entity<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class Payment : IEntity<Guid>
 {
     /// <summary>
     /// Initialises a new instance of the <see cref="Payment"/> class.
@@ -29,8 +30,8 @@ public sealed class Payment : Entity<Guid>
         string? referenceNumber,
         string? notes,
         DateTime recordedAt)
-        : base(Guid.CreateVersion7())
     {
+        Id = Guid.CreateVersion7();
         BookingId = bookingId;
         Amount = amount;
         PaymentDate = paymentDate;
@@ -47,6 +48,11 @@ public sealed class Payment : Entity<Guid>
     private Payment()
     {
     }
+
+    /// <summary>
+    /// Gets the unique payment identifier.
+    /// </summary>
+    public Guid Id { get; private init; }
 
     /// <summary>
     /// The ID of the booking this payment is for.
