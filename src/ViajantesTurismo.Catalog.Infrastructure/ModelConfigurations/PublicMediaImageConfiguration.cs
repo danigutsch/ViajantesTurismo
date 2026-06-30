@@ -48,6 +48,7 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
             link.WithOwner().HasForeignKey("PublicMediaImageId");
             link.HasKey("PublicMediaImageId", nameof(MediaImageTourLink.CatalogTourId));
             link.HasIndex(item => new { item.CatalogTourId, item.DisplayOrder });
+            link.Property(item => item.CatalogTourId).ValueGeneratedNever();
             link.Property(item => item.DisplayOrder).IsRequired();
             link.Property(item => item.IsCover).IsRequired();
         });

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -27,7 +28,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     Caption = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Attribution = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Copyright = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Tags = table.Column<string[]>(type: "text[]", nullable: false)
+                    Tags = table.Column<List<string>>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
                 {
