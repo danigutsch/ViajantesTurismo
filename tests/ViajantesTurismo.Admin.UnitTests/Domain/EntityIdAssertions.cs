@@ -7,4 +7,12 @@ internal static class EntityIdAssertions
         var guidText = id.ToString("D");
         Assert.Equal('7', guidText[14]);
     }
+
+    public static void SetId<T>(T entity, Guid id)
+    {
+        var idProperty = typeof(T).GetProperty("Id");
+        Assert.NotNull(idProperty);
+
+        idProperty.SetValue(entity, id);
+    }
 }

@@ -44,7 +44,7 @@ public sealed class DddConventionsTests
 
         Assert.False(
             violatingTypes.Length != 0,
-            $"Expected all entities to reside in a domain namespace, but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
+            $"Expected all entities to reside in one of [{string.Join(", ", domainNamespaces)}], but found: {string.Join(", ", violatingTypes.Select(t => t.FullName))}");
     }
 
     [Fact]

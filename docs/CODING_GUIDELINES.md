@@ -84,7 +84,10 @@ using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
-public sealed partial class Tour : IEntity<Guid> { }
+public sealed partial class Tour : IEntity<Guid>
+{
+    public Guid Id { get; private init; }
+}
 ```
 
 ### Using Directives
