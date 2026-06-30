@@ -21,6 +21,7 @@ Start here when looking for repository-wide guidance.
 - [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md)
 - [Mutation testing evaluation](MUTATION_TESTING.md)
 - [Dev containers](DEVCONTAINERS.md)
+- [Configurable model source generation](MODEL_SOURCE_GENERATION.md)
 
 ## Maintenance notes
 
