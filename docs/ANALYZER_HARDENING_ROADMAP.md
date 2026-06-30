@@ -34,10 +34,13 @@ The repository already has a stronger analyzer baseline than when this roadmap b
     - `SKSTYLE002` `CancellationToken` parameters must be named `ct`
     - `SKSTYLE003` `CancellationToken` parameters must not declare default values
     - `SKSTYLE004` one top-level type per file, staged as a rollout rule
-    - `SKSTYLE005` Aspire image pins must pair `WithImageTag` and `WithImageSHA256`
 - `SharedKernel.Style.CodeFixes`
     - safe rename for `SKSTYLE001`
     - safe rename for `SKSTYLE002`
+- `SharedKernel.Aspire.Analyzers`
+    - `SKASPIRE001` Aspire image pins must pair `WithImageTag` and `WithImageSHA256`
+- `SharedKernel.Aspire.CodeFixes`
+    - placeholder image pin fixes for `SKASPIRE001`
 - `SharedKernel.Testing.Analyzers`
     - `SKTEST001` forbid local pragma suppression inside xUnit test methods
     - `SKTEST002` enforce underscore naming for xUnit test methods
@@ -100,7 +103,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Keep narrow scoped exceptions only when external contracts force a different name | Raise after repo cleanup |
 | CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `suggestion` | Same as above | Raise after repo cleanup |
 | One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted with staged exclusions | `suggestion` globally, `none` in tests and explicit file exceptions | Small explicit allowlist in `.editorconfig` | Reduce allowlist over time |
-| Aspire image pins | `SKSTYLE005` require tag and verified digest together | `SharedKernel.Style.Analyzers` | Adopted | package default `warning` | Code fix inserts uncompilable placeholders only; placeholders must be replaced before commit/build | Keep active and resolve with registry-verified tag and digest values only |
+| Aspire image pins | `SKASPIRE001` require tag and verified digest together | `SharedKernel.Aspire.Analyzers` | Adopted | package default `warning` | Code fix inserts uncompilable placeholders only; placeholders must be replaced before commit/build | Keep active and resolve with registry-verified tag and digest values only |
 | Test pragma suppressions | `SKTEST001` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and narrow |
 | Test naming | `SKTEST002` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and use code fix during cleanup |
 | Mediator cancellation forwarding | `SKMED006` | `SharedKernel.Mediator.Analyzers` | Adopted | repository-configured `warning` | `.editorconfig`-tunable | Keep active |
@@ -275,12 +278,9 @@ Boundary rules:
    follow the mediator API and source generator.
 4. Do not add references to optional technology packages such as Aspire, EF Core, Dapper, Azure
    SDKs, or browser-test tooling to broad analyzer/code-fix packages.
-5. If a rule needs optional technology symbols, metadata, or package APIs, create a dedicated
-   capability package only when there is a real consumer. Use the smallest matching name, for
-   example `SharedKernel.Aspire.Analyzers` and `SharedKernel.Aspire.CodeFixes`.
-6. If a rule only checks repository source shape and does not reference the optional technology
-   package, it can stay in the current owner. `SKSTYLE005` is the current example: it protects
-   AppHost image pin shape without adding an Aspire package dependency to `SharedKernel.Style.*`.
+5. Optional technology rules belong in a dedicated capability package when they have a real
+   repository consumer. Use the smallest matching name, such as `SharedKernel.Aspire.Analyzers` and
+   `SharedKernel.Aspire.CodeFixes`.
 
 Analyzer and code-fix pairing rules:
 
@@ -297,20 +297,15 @@ Analyzer and code-fix pairing rules:
 Package naming rules:
 
 1. Name packages by consumer capability: `SharedKernel.Style.*`, `SharedKernel.Testing.*`,
-   `SharedKernel.Mediator.*`, or a future optional capability such as `SharedKernel.Aspire.*`.
+   `SharedKernel.Mediator.*`, or an optional capability such as `SharedKernel.Aspire.*`.
 2. Avoid names based on implementation mechanics such as `SharedKernel.CommonAnalyzers` or
    `SharedKernel.AllCodeFixes`.
-3. Add implementation split issues only after a documented recommendation identifies the concrete
-   package name, consumer, optional dependency, and migration path.
+3. Keep new package split proposals outside repository docs until they are accepted as active work.
 
-Recommendation for `#435` and `#436`:
+Current package split:
 
-- Keep the current analyzer/code-fix package split.
-- Do not create new implementation split issues now.
-- Revisit a dedicated Aspire analyzer/code-fix package only if a future rule needs Aspire package
-  references or reusable external consumption beyond the repository AppHost shape rule.
-- Close `#436` with this documentation update. Close `#435` if review accepts that no implementation
-  split is currently needed.
+- Keep repository-wide style diagnostics in `SharedKernel.Style.*`.
+- Keep Aspire-specific diagnostics in `SharedKernel.Aspire.*`.
 
 ## Migration guidance for teams
 
@@ -364,6 +359,8 @@ When adopting or tightening analyzer rules:
 - `docs/CODE_QUALITY.md`
 - `src/SharedKernel/SharedKernel.Style.Analyzers/README.md`
 - `src/SharedKernel/SharedKernel.Style.CodeFixes/README.md`
+- `src/SharedKernel/SharedKernel.Aspire.Analyzers/README.md`
+- `src/SharedKernel/SharedKernel.Aspire.CodeFixes/README.md`
 - `src/SharedKernel/SharedKernel.Testing.Analyzers/README.md`
 - `src/SharedKernel/SharedKernel.Testing.CodeFixes/README.md`
 - `src/SharedKernel/SharedKernel.Mediator.Analyzers/README.md`

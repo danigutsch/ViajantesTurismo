@@ -56,7 +56,7 @@ Infrastructure and companion tooling images are pinned by tag and digest in
 yet. When one exists, update each tag and digest pair to match the production-approved image.
 
 Do not commit placeholder digests. `WithImageSHA256(...)` must contain the verified 64-character
-digest without the `sha256:` prefix. The `SKSTYLE005` code fix may temporarily insert uncompilable
+digest without the `sha256:` prefix. The `SKASPIRE001` code fix may temporarily insert uncompilable
 placeholders to make the missing value obvious; replace them with verified registry values before the
 code builds or before committing.
 
