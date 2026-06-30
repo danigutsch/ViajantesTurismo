@@ -127,40 +127,71 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 
 ### Target shape
 
-Introduce interface-first identity before removing base classes:
+Introduce DDD-named interfaces before removing base classes:
 
 ```csharp
 public interface IIdentified<out TId>
 {
     TId Id { get; }
 }
+
+public interface IEntity<out TId> : IIdentified<TId>
+{
+}
+
+public interface IAggregateRoot<out TId> : IEntity<TId>
+{
+    IReadOnlyCollection<IDomainEvent> GetDomainEvents();
+
+    void ClearDomainEvents();
+}
 ```
 
-Generated identity support can then target partial types implementing `IIdentified<TId>` without
-requiring inheritance.
+Domain models should use `IEntity<TId>` or `IAggregateRoot<TId>` rather than `IIdentified<TId>`.
+`IIdentified<TId>` remains the non-DDD primitive for read models, DTO-adjacent models, and generator
+internals. Generated identity support can target all identified models, while DDD-specific behavior
+targets the DDD interfaces.
+
+Aggregate roots, not child entities, record domain events. Domain events are internal bounded-context
+facts; integration events remain the externally visible contracts. Child entities can participate in
+behavior, but the aggregate root records the domain event after invariants pass.
+
+Generated support should keep that boundary explicit:
+
+- identity/equality generation can target `IEntity<TId>`;
+- domain-event collection helpers can target `IAggregateRoot<TId>`;
+- non-domain models can use `IIdentified<TId>` only when identity support is useful.
 
 ### Stages
 
-1. Add identity interfaces and analyzer diagnostics.
-   - No model behavior changes.
-   - Keep existing `Entity<TId>` and `AggregateRoot<TId>`.
+1. Add DDD identity interfaces and analyzer diagnostics.
+    - No model behavior changes.
+    - Keep existing `Entity<TId>` and `AggregateRoot<TId>`.
 
-2. Make current base classes implement identity interfaces.
-   - Preserve equality semantics.
-   - Add tests around default identifiers, type checks, and hash behavior.
+2. Make current base classes implement DDD interfaces.
+    - Preserve equality semantics.
+    - Add core behavior tests around default identifiers, type checks, hash behavior, aggregate-root
+      domain-event recording, and domain-event clearing.
 
-3. Opt in one small model group to generated identity.
-   - Prefer a non-hot-path model with direct tests.
-   - Do not mix this with EF mapping generation.
+3. Add DDD rule behavior tests before generator migration.
+    - Mirror the SharedKernel functional pattern tests: focused xUnit tests, explicit Arrange/Act/Assert,
+      behavior traits, and no infrastructure dependencies.
+    - Cover that aggregate roots can record/clear domain events.
+    - Cover that plain entities expose identity/equality only and do not expose domain-event collection.
+    - Cover that generated support preserves the current base-class equality semantics.
 
-4. Migrate Admin aggregate roots one group at a time.
-   - `Customer`, then `Tour`, then `Booking`/`Payment`.
-   - Run Admin unit/integration tests after each group.
+4. Opt in one small model group to generated identity.
+    - Prefer a non-hot-path model with direct tests.
+    - Do not mix this with EF mapping generation.
 
-5. Migrate Catalog aggregate/read models only after Catalog persistence tests cover identity and EF
+5. Migrate Admin aggregate roots one group at a time.
+    - `Customer`, then `Tour`, then `Booking`/`Payment`.
+    - Run Admin unit/integration tests after each group.
+
+6. Migrate Catalog aggregate/read models only after Catalog persistence tests cover identity and EF
    materialization.
 
-6. Deprecate duplicate base classes.
+7. Deprecate duplicate base classes.
    - Remove `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` only after consumers move to
      `SharedKernel.Domain` or generated identity support.
 
