@@ -1,8 +1,7 @@
 # Configurable Model Source Generation
 
-This design note covers issues #459, #461, and #464 under the configurable model source-generation
-epic. It defines the option shape, records the first repository audit, and gives a migration plan
-away from shared entity base classes.
+This design note defines the option shape for configurable model generation, records the first
+repository audit, and gives a migration plan away from shared entity base classes.
 
 ## Goals
 
@@ -175,7 +174,7 @@ requiring inheritance.
 
 ## Recommended follow-up order
 
-1. Implement identity interfaces and diagnostics (#462).
-2. Implement Vogen-like scalar value objects for one SharedKernel candidate (#460).
-3. Add explicit JSON generation after identity/value-object shape is stable (#463).
-4. Add optional EF Core mapping generation last (#465).
+1. Implement identity interfaces and diagnostics.
+2. Implement Vogen-like scalar value objects for one SharedKernel candidate.
+3. Add explicit JSON generation after identity/value-object shape is stable.
+4. Add optional EF Core mapping generation last.
