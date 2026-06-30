@@ -7,7 +7,7 @@ public sealed class PublicMediaImage
 {
     private readonly List<MediaImageResponsiveVariant> _responsiveVariants = [];
     private readonly List<MediaImageTourLink> _tourLinks = [];
-    private readonly string[] _tags = [];
+    private readonly List<string> _tags = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PublicMediaImage"/> class.
@@ -50,7 +50,7 @@ public sealed class PublicMediaImage
         this.Dimensions = Dimensions;
         this.ProcessingStatus = ProcessingStatus;
         _responsiveVariants = [.. ResponsiveVariants];
-        _tags = [.. Tags];
+        _tags.AddRange(Tags);
         _tourLinks = [.. TourLinks];
         this.AltText = AltText;
         this.Caption = Caption;

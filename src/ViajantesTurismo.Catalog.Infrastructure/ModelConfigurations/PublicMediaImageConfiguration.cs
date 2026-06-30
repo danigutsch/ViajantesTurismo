@@ -17,7 +17,7 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
         entity.Property(image => image.Checksum).HasMaxLength(ContractConstants.MaxChecksumLength).IsRequired();
         entity.Property(image => image.ContentType).HasMaxLength(ContractConstants.MaxContentTypeLength).IsRequired();
         entity.Property(image => image.ProcessingStatus).HasConversion<string>().IsRequired();
-        entity.Property<string[]>("_tags").HasColumnName("Tags").IsRequired();
+        entity.Property<List<string>>("_tags").HasColumnName("Tags").IsRequired();
         entity.Property(image => image.AltText).HasMaxLength(ContractConstants.MaxAltTextLength).IsRequired();
         entity.Property(image => image.Caption).HasMaxLength(ContractConstants.MaxCaptionLength);
         entity.Property(image => image.Attribution).HasMaxLength(ContractConstants.MaxAttributionLength);
