@@ -514,20 +514,23 @@ static void ValidateOptionalLength(Dictionary<string, string[]> errors, string f
 static PublicMediaImage ToDomainMediaImage(PublicMediaImageDto image)
 {
     return new PublicMediaImage(
-        image.Id,
-        image.SourceUri,
-        StringSanitizer.Sanitize(image.Checksum) ?? string.Empty,
-        StringSanitizer.Sanitize(image.ContentType) ?? string.Empty,
-        image.FileSizeBytes,
-        new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
-        (MediaImageProcessingStatus)(int)image.ProcessingStatus,
+        new PublicMediaImageMetadata
+        {
+            Id = image.Id,
+            SourceUri = image.SourceUri,
+            Checksum = StringSanitizer.Sanitize(image.Checksum) ?? string.Empty,
+            ContentType = StringSanitizer.Sanitize(image.ContentType) ?? string.Empty,
+            FileSizeBytes = image.FileSizeBytes,
+            Dimensions = new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
+            ProcessingStatus = (MediaImageProcessingStatus)(int)image.ProcessingStatus,
+            AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
+            Caption = StringSanitizer.Sanitize(image.Caption),
+            Attribution = StringSanitizer.Sanitize(image.Attribution),
+            Copyright = StringSanitizer.Sanitize(image.Copyright)
+        },
         image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
         StringSanitizer.SanitizeCollection(image.Tags),
-        image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray(),
-        StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
-        StringSanitizer.Sanitize(image.Caption),
-        StringSanitizer.Sanitize(image.Attribution),
-        StringSanitizer.Sanitize(image.Copyright));
+        image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray());
 }
 
 static MediaImageResponsiveVariant ToDomainResponsiveVariant(MediaImageResponsiveVariantDto variant)

@@ -12,50 +12,32 @@ public sealed class PublicMediaImage
     /// <summary>
     /// Initializes a new instance of the <see cref="PublicMediaImage"/> class.
     /// </summary>
-    /// <param name="Id">The stable media image identifier.</param>
-    /// <param name="SourceUri">The original source URI.</param>
-    /// <param name="Checksum">The content checksum supplied by the media source.</param>
-    /// <param name="ContentType">The source media content type.</param>
-    /// <param name="FileSizeBytes">The source file size in bytes.</param>
-    /// <param name="Dimensions">The source image dimensions.</param>
-    /// <param name="ProcessingStatus">The external processing state.</param>
+    /// <param name="metadata">The scalar media image metadata.</param>
     /// <param name="ResponsiveVariants">The public responsive renditions.</param>
     /// <param name="Tags">The editorial tags for discovery and grouping.</param>
     /// <param name="TourLinks">The tour gallery placements.</param>
-    /// <param name="AltText">The accessible image description.</param>
-    /// <param name="Caption">The optional public caption.</param>
-    /// <param name="Attribution">The optional attribution text.</param>
-    /// <param name="Copyright">The optional copyright notice.</param>
     public PublicMediaImage(
-        Guid Id,
-        Uri SourceUri,
-        string Checksum,
-        string ContentType,
-        long FileSizeBytes,
-        MediaImageDimensions Dimensions,
-        MediaImageProcessingStatus ProcessingStatus,
+        PublicMediaImageMetadata metadata,
         IReadOnlyList<MediaImageResponsiveVariant> ResponsiveVariants,
         IReadOnlyList<string> Tags,
-        IReadOnlyList<MediaImageTourLink> TourLinks,
-        string AltText,
-        string? Caption,
-        string? Attribution,
-        string? Copyright)
+        IReadOnlyList<MediaImageTourLink> TourLinks)
     {
-        this.Id = Id;
-        this.SourceUri = SourceUri;
-        this.Checksum = Checksum;
-        this.ContentType = ContentType;
-        this.FileSizeBytes = FileSizeBytes;
-        this.Dimensions = Dimensions;
-        this.ProcessingStatus = ProcessingStatus;
+        ArgumentNullException.ThrowIfNull(metadata);
+
+        Id = metadata.Id;
+        SourceUri = metadata.SourceUri;
+        Checksum = metadata.Checksum;
+        ContentType = metadata.ContentType;
+        FileSizeBytes = metadata.FileSizeBytes;
+        Dimensions = metadata.Dimensions;
+        ProcessingStatus = metadata.ProcessingStatus;
         _responsiveVariants = [.. ResponsiveVariants];
         _tags.AddRange(Tags);
         _tourLinks = [.. TourLinks];
-        this.AltText = AltText;
-        this.Caption = Caption;
-        this.Attribution = Attribution;
-        this.Copyright = Copyright;
+        AltText = metadata.AltText;
+        Caption = metadata.Caption;
+        Attribution = metadata.Attribution;
+        Copyright = metadata.Copyright;
     }
 
     private PublicMediaImage()

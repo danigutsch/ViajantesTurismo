@@ -722,54 +722,54 @@ public sealed class CatalogApiEndpointTests
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(
             new PublicMediaImage(
-                Guid.CreateVersion7(),
-                new Uri("https://private.example/source.jpg"),
-                "sha256:abc",
-                "image/jpeg",
-                2048,
-                new MediaImageDimensions(1200, 800),
-                MediaImageProcessingStatus.Ready,
+                new PublicMediaImageMetadata
+                {
+                    Id = Guid.CreateVersion7(),
+                    SourceUri = new Uri("https://private.example/source.jpg"),
+                    Checksum = "sha256:abc",
+                    ContentType = "image/jpeg",
+                    FileSizeBytes = 2048,
+                    Dimensions = new MediaImageDimensions(1200, 800),
+                    ProcessingStatus = MediaImageProcessingStatus.Ready,
+                    AltText = "Published image"
+                },
                 [new MediaImageResponsiveVariant(new Uri("https://cdn.example/published-640.jpg"), 640, 427, "image/jpeg", 1024)],
                 ["camino"],
-                [new MediaImageTourLink(publishedTourId, DisplayOrder: 1, IsCover: true)],
-                "Published image",
-                Caption: null,
-                Attribution: null,
-                Copyright: null),
+                [new MediaImageTourLink(publishedTourId, DisplayOrder: 1, IsCover: true)]),
             TestContext.Current.CancellationToken);
         await mediaStore.Upsert(
             new PublicMediaImage(
-                Guid.CreateVersion7(),
-                new Uri("https://private.example/draft-source.jpg"),
-                "sha256:def",
-                "image/jpeg",
-                2048,
-                new MediaImageDimensions(1200, 800),
-                MediaImageProcessingStatus.Ready,
+                new PublicMediaImageMetadata
+                {
+                    Id = Guid.CreateVersion7(),
+                    SourceUri = new Uri("https://private.example/draft-source.jpg"),
+                    Checksum = "sha256:def",
+                    ContentType = "image/jpeg",
+                    FileSizeBytes = 2048,
+                    Dimensions = new MediaImageDimensions(1200, 800),
+                    ProcessingStatus = MediaImageProcessingStatus.Ready,
+                    AltText = "Draft image"
+                },
                 [new MediaImageResponsiveVariant(new Uri("https://cdn.example/draft-640.jpg"), 640, 427, "image/jpeg", 1024)],
                 ["draft"],
-                [new MediaImageTourLink(draftTourId, DisplayOrder: 1, IsCover: true)],
-                "Draft image",
-                Caption: null,
-                Attribution: null,
-                Copyright: null),
+                [new MediaImageTourLink(draftTourId, DisplayOrder: 1, IsCover: true)]),
             TestContext.Current.CancellationToken);
         await mediaStore.Upsert(
             new PublicMediaImage(
-                Guid.CreateVersion7(),
-                new Uri("https://private.example/failed-source.jpg"),
-                "sha256:ghi",
-                "image/jpeg",
-                2048,
-                new MediaImageDimensions(1200, 800),
-                MediaImageProcessingStatus.Failed,
+                new PublicMediaImageMetadata
+                {
+                    Id = Guid.CreateVersion7(),
+                    SourceUri = new Uri("https://private.example/failed-source.jpg"),
+                    Checksum = "sha256:ghi",
+                    ContentType = "image/jpeg",
+                    FileSizeBytes = 2048,
+                    Dimensions = new MediaImageDimensions(1200, 800),
+                    ProcessingStatus = MediaImageProcessingStatus.Failed,
+                    AltText = "Failed image"
+                },
                 [new MediaImageResponsiveVariant(new Uri("https://cdn.example/failed-640.jpg"), 640, 427, "image/jpeg", 1024)],
                 ["failed"],
-                [new MediaImageTourLink(publishedTourId, DisplayOrder: 2, IsCover: false)],
-                "Failed image",
-                Caption: null,
-                Attribution: null,
-                Copyright: null),
+                [new MediaImageTourLink(publishedTourId, DisplayOrder: 2, IsCover: false)]),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
         using var client = factory.CreateClient();
@@ -808,37 +808,37 @@ public sealed class CatalogApiEndpointTests
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(
             new PublicMediaImage(
-                Guid.CreateVersion7(),
-                new Uri("https://private.example/gallery-source.jpg"),
-                "sha256:abc",
-                "image/jpeg",
-                2048,
-                new MediaImageDimensions(1200, 800),
-                MediaImageProcessingStatus.Ready,
+                new PublicMediaImageMetadata
+                {
+                    Id = Guid.CreateVersion7(),
+                    SourceUri = new Uri("https://private.example/gallery-source.jpg"),
+                    Checksum = "sha256:abc",
+                    ContentType = "image/jpeg",
+                    FileSizeBytes = 2048,
+                    Dimensions = new MediaImageDimensions(1200, 800),
+                    ProcessingStatus = MediaImageProcessingStatus.Ready,
+                    AltText = "Gallery image"
+                },
                 [new MediaImageResponsiveVariant(new Uri("https://cdn.example/gallery-640.jpg"), 640, 427, "image/jpeg", 1024)],
                 ["gallery"],
-                [new MediaImageTourLink(tourId, DisplayOrder: 0, IsCover: false)],
-                "Gallery image",
-                Caption: null,
-                Attribution: null,
-                Copyright: null),
+                [new MediaImageTourLink(tourId, DisplayOrder: 0, IsCover: false)]),
             TestContext.Current.CancellationToken);
         await mediaStore.Upsert(
             new PublicMediaImage(
-                Guid.CreateVersion7(),
-                new Uri("https://private.example/cover-source.jpg"),
-                "sha256:def",
-                "image/jpeg",
-                2048,
-                new MediaImageDimensions(1200, 800),
-                MediaImageProcessingStatus.Ready,
+                new PublicMediaImageMetadata
+                {
+                    Id = Guid.CreateVersion7(),
+                    SourceUri = new Uri("https://private.example/cover-source.jpg"),
+                    Checksum = "sha256:def",
+                    ContentType = "image/jpeg",
+                    FileSizeBytes = 2048,
+                    Dimensions = new MediaImageDimensions(1200, 800),
+                    ProcessingStatus = MediaImageProcessingStatus.Ready,
+                    AltText = "Cover image"
+                },
                 [new MediaImageResponsiveVariant(new Uri("https://cdn.example/cover-640.jpg"), 640, 427, "image/jpeg", 1024)],
                 ["cover"],
-                [new MediaImageTourLink(tourId, DisplayOrder: 10, IsCover: true)],
-                "Cover image",
-                Caption: null,
-                Attribution: null,
-                Copyright: null),
+                [new MediaImageTourLink(tourId, DisplayOrder: 10, IsCover: true)]),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
         using var client = factory.CreateClient();
@@ -949,20 +949,20 @@ public sealed class CatalogApiEndpointTests
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(
             new PublicMediaImage(
-                Guid.CreateVersion7(),
-                new Uri("https://private.example/source.jpg"),
-                "sha256:abc",
-                "image/jpeg",
-                2048,
-                new MediaImageDimensions(1200, 800),
-                MediaImageProcessingStatus.Ready,
+                new PublicMediaImageMetadata
+                {
+                    Id = Guid.CreateVersion7(),
+                    SourceUri = new Uri("https://private.example/source.jpg"),
+                    Checksum = "sha256:abc",
+                    ContentType = "image/jpeg",
+                    FileSizeBytes = 2048,
+                    Dimensions = new MediaImageDimensions(1200, 800),
+                    ProcessingStatus = MediaImageProcessingStatus.Ready,
+                    AltText = "First image"
+                },
                 [],
                 ["camino"],
-                [new MediaImageTourLink(tourId, DisplayOrder: 1, IsCover: true)],
-                "First image",
-                Caption: null,
-                Attribution: null,
-                Copyright: null),
+                [new MediaImageTourLink(tourId, DisplayOrder: 1, IsCover: true)]),
             TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
         using var client = factory.CreateClient();

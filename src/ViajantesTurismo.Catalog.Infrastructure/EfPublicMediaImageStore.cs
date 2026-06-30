@@ -118,20 +118,23 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     private static PublicMediaImage Sanitize(PublicMediaImage image)
     {
         return new PublicMediaImage(
-            image.Id,
-            image.SourceUri,
-            image.Checksum,
-            image.ContentType,
-            image.FileSizeBytes,
-            image.Dimensions,
-            image.ProcessingStatus,
+            new PublicMediaImageMetadata
+            {
+                Id = image.Id,
+                SourceUri = image.SourceUri,
+                Checksum = image.Checksum,
+                ContentType = image.ContentType,
+                FileSizeBytes = image.FileSizeBytes,
+                Dimensions = image.Dimensions,
+                ProcessingStatus = image.ProcessingStatus,
+                AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
+                Caption = StringSanitizer.Sanitize(image.Caption),
+                Attribution = StringSanitizer.Sanitize(image.Attribution),
+                Copyright = StringSanitizer.Sanitize(image.Copyright)
+            },
             image.ResponsiveVariants,
             StringSanitizer.SanitizeCollection(image.Tags),
-            [.. image.TourLinks.OrderBy(link => link.DisplayOrder)],
-            StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
-            StringSanitizer.Sanitize(image.Caption),
-            StringSanitizer.Sanitize(image.Attribution),
-            StringSanitizer.Sanitize(image.Copyright));
+            [.. image.TourLinks.OrderBy(link => link.DisplayOrder)]);
     }
 
     private PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)
@@ -144,22 +147,25 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         var sanitizedImage = Sanitize(image);
 
         return new PublicMediaImage(
-            sanitizedImage.Id,
-            sanitizedImage.SourceUri,
-            sanitizedImage.Checksum,
-            sanitizedImage.ContentType,
-            sanitizedImage.FileSizeBytes,
-            sanitizedImage.Dimensions,
-            sanitizedImage.ProcessingStatus,
+            new PublicMediaImageMetadata
+            {
+                Id = sanitizedImage.Id,
+                SourceUri = sanitizedImage.SourceUri,
+                Checksum = sanitizedImage.Checksum,
+                ContentType = sanitizedImage.ContentType,
+                FileSizeBytes = sanitizedImage.FileSizeBytes,
+                Dimensions = sanitizedImage.Dimensions,
+                ProcessingStatus = sanitizedImage.ProcessingStatus,
+                AltText = sanitizedImage.AltText,
+                Caption = sanitizedImage.Caption,
+                Attribution = sanitizedImage.Attribution,
+                Copyright = sanitizedImage.Copyright
+            },
             [.. sanitizedImage.ResponsiveVariants.OrderBy(ResponsiveVariantSortOrder)],
             sanitizedImage.Tags,
             [.. sanitizedImage.TourLinks
                 .Where(link => catalogTourId is null || link.CatalogTourId == catalogTourId.Value)
-                .OrderBy(link => link.DisplayOrder)],
-            sanitizedImage.AltText,
-            sanitizedImage.Caption,
-            sanitizedImage.Attribution,
-            sanitizedImage.Copyright);
+                .OrderBy(link => link.DisplayOrder)]);
     }
 
     private void SetResponsiveVariantSortOrder(PublicMediaImage image)

@@ -22,19 +22,19 @@ internal static class PublicMediaImageTestFactory
         string altText = "Cyclists in the mountains")
     {
         return new PublicMediaImage(
-            imageId,
-            new Uri("https://cdn.example/source.jpg"),
-            "sha256:abc",
-            "image/jpeg",
-            2048,
-            new MediaImageDimensions(1200, 800),
-            MediaImageProcessingStatus.Ready,
+            new PublicMediaImageMetadata
+            {
+                Id = imageId,
+                SourceUri = new Uri("https://cdn.example/source.jpg"),
+                Checksum = "sha256:abc",
+                ContentType = "image/jpeg",
+                FileSizeBytes = 2048,
+                Dimensions = new MediaImageDimensions(1200, 800),
+                ProcessingStatus = MediaImageProcessingStatus.Ready,
+                AltText = altText
+            },
             [new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024)],
             ["mountain"],
-            [new MediaImageTourLink(tourId, displayOrder, isCover)],
-            altText,
-            Caption: null,
-            Attribution: null,
-            Copyright: null);
+            [new MediaImageTourLink(tourId, displayOrder, isCover)]);
     }
 }
