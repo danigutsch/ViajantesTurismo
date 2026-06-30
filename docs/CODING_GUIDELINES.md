@@ -297,6 +297,31 @@ if (_bookings.Count > Capacity.MaxCustomers)
 
 Use argument exceptions for invalid caller input and `Result` for expected business validation.
 
+## Logging
+
+Production logging should use source-generated `LoggerMessage` methods for stable event IDs, event
+names, message templates, severity, and structured fields.
+
+```csharp
+internal static partial class SeederWorkerLog
+{
+    [LoggerMessage(EventId = 1, EventName = nameof(SeedingStarted), Level = LogLevel.Information,
+        Message = "Starting database seeding...")]
+    public static partial void SeedingStarted(this ILogger logger);
+}
+```
+
+- Do not call `ILogger.Log`, `LogInformation`, `LogWarning`, `LogError`, or similar direct logging
+  extension methods in production code when a source-generated logging method can express the event.
+- Keep `EventId`, `EventName`, `Level`, and `Message` explicit for logs consumed by operators,
+  dashboards, alerts, or support workflows.
+- Use static message templates with named placeholders. Placeholder names are structured field
+  contracts.
+- Pass exceptions through the logger exception parameter; do not duplicate stack traces or exception
+  messages as custom fields.
+- If source generation cannot express a needed logging shape, keep the exception local and documented
+  in code near the call site.
+
 ## Testing
 
 Keep methods focused, avoid static dependencies, use interfaces for repositories.

@@ -17,6 +17,7 @@ flowchart LR
     catalogApiService[Catalog.ApiService]
     ManagementWeb[Management.Web]
     migrationService[MigrationService]
+    ObservabilityStack[Observability Stack]
     databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
     cache[Redis cache]

@@ -96,6 +96,17 @@ Dashboard design rules:
 - alerts should be added separately from dashboard panels so alert policy can be reviewed on its own
 - JSON/config validation must be wired into local scripts before dashboard assets become required CI
 
+The repository now provides an opt-in local Grafana LGTM stack through the Aspire AppHost. Set
+`VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before startup to add the OpenTelemetry Collector,
+Grafana, Loki, Tempo, and Prometheus resources. The stack is local-development infrastructure and
+stays out of `SharedKernel.*` runtime packages.
+
+Telemetry instrumentation should stay with the component being instrumented: `SharedKernel.Mediator`
+owns mediator sources/meters, `SharedKernel.EventSourcing.PostgreSQL` owns provider telemetry,
+Catalog owns Catalog telemetry, and AppHost owns local collector/backend wiring. This matches the
+.NET instrumentation model where libraries emit through `ActivitySource`, `Meter`, and `ILogger`,
+while applications choose the OpenTelemetry SDK, exporters, collectors, and vendors.
+
 ## Registration points
 
 ### Shared logging registration
@@ -207,6 +218,11 @@ diagnostic context, then correlate to traces and metrics through trace context a
 | Correlation | Emit logs inside the active `Activity` when possible so `TraceId`, `SpanId`, and trace flags can correlate logs to spans. |
 | Resource identity | Rely on shared OpenTelemetry resource identity for service name/version/environment instead of repeating those values as custom fields. |
 
+Production code should emit operational logs through source-generated `LoggerMessage` methods. Direct
+`ILogger.Log*` calls are reserved for cases that source generation cannot express and should be kept
+as explicit local exceptions. This keeps log event IDs, event names, severity, message templates, and
+structured fields reviewable as telemetry contracts.
+
 ### Log data-model rules
 
 - Treat OpenTelemetry log top-level fields as backend-facing contracts: `Timestamp`, `TraceId`,
@@ -248,6 +264,13 @@ diagnostic context, then correlate to traces and metrics through trace context a
 The repository currently keeps this contract documentation-first. No shared helper is added
 in this issue because the active span producers do not share the same repo-specific tag set,
 and the direct tests already provide the drift protection needed for the current surfaces.
+
+Do not add an `IObserver<T>` or repository-specific observer abstraction yet. The current Catalog,
+provider, mediator, and migration surfaces have different lifetimes, tag sets, and ownership
+boundaries, so a shared observer would hide useful local intent instead of removing duplicated
+behavior. Prefer surface-owned telemetry helpers, source-generated logging methods, explicit
+cancellation/failure paths, and tests around emitted spans/metrics. Revisit an observer only when at
+least two production surfaces need the same lifecycle API and tag contract.
 
 ## Local verification (Aspire)
 
