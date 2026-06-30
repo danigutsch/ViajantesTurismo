@@ -9,7 +9,9 @@ Instructions for files under `src/ViajantesTurismo.AppHost/`.
 
 ## Resource naming
 
-- All resource names must come from `ResourceNames` in `src/ViajantesTurismo.Resources/`.
+- Application resource names must come from `ResourceNames` in `src/ViajantesTurismo.Resources/`.
+- Optional reusable hosting libraries may provide their own resource-name defaults when AppHost does
+  not need app-specific names, for example `SharedKernel.Aspire.Hosting.Grafana`.
 - Never hardcode resource name strings inline in AppHost orchestration code.
 
 ## Resource declaration order
