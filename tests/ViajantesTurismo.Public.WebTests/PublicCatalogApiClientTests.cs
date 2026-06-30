@@ -206,4 +206,48 @@ public sealed class PublicCatalogApiClientTests
         Assert.Null(content);
     }
 
+    [Fact]
+    public async Task GetThemeSettings_requests_public_theme_endpoint()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.Path + request.QueryString.Value;
+            return PublicCatalogApiClientTestsHelpers.JsonResponse("""
+                {
+                  "primaryColor":"#112233",
+                  "accentColor":"#445566",
+                  "backgroundColor":"#FFFFFF",
+                  "textColor":"#000000",
+                  "headingFontFamily":"Inter",
+                  "bodyFontFamily":"Verdana"
+                }
+                """);
+        });
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var theme = await sut.GetThemeSettings(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal("/public/catalog/theme", requestPath);
+        Assert.Equal("#112233", theme.PrimaryColor);
+        Assert.Equal("Inter", theme.HeadingFontFamily);
+    }
+
+    [Fact]
+    public async Task GetThemeSettings_fails_when_response_body_is_empty()
+    {
+        // Arrange
+        using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => PublicCatalogApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new PublicCatalogApiClient(httpClient);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetThemeSettings(TestContext.Current.CancellationToken));
+
+        // Assert
+        Assert.Equal("Catalog returned an empty public theme response.", exception.Message);
+    }
+
 }

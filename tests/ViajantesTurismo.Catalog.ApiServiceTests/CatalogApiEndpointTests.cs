@@ -93,6 +93,86 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Public_theme_endpoint_returns_defaults_when_no_theme_is_configured()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
+        var theme = await response.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(theme);
+        Assert.Equal("#0F766E", theme.PrimaryColor);
+        Assert.Equal("Georgia", theme.HeadingFontFamily);
+    }
+
+    [Fact]
+    public async Task Public_theme_management_endpoint_saves_supported_theme_settings()
+    {
+        // Arrange
+        var store = new TestPublicThemeSettingsStore();
+        await using var factory = CatalogApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var request = new PublicThemeSettingsDto
+        {
+            PrimaryColor = "#112233",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "Inter",
+            BodyFontFamily = "Verdana"
+        };
+
+        // Act
+        using var writeResponse = await client.PutAsJsonAsync(
+            new Uri("/catalog/public-theme", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+        using var readResponse = await client.GetAsync(new Uri("/public/catalog/theme", UriKind.Relative), TestContext.Current.CancellationToken);
+        var theme = await readResponse.Content.ReadFromJsonAsync<PublicThemeSettingsDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, writeResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, readResponse.StatusCode);
+        Assert.NotNull(theme);
+        Assert.Equal("#112233", theme.PrimaryColor);
+        Assert.Equal("Inter", theme.HeadingFontFamily);
+    }
+
+    [Fact]
+    public async Task Public_theme_management_endpoint_rejects_unsafe_values()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var request = new PublicThemeSettingsDto
+        {
+            PrimaryColor = "red; background:url(javascript:alert(1))",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "Inter",
+            BodyFontFamily = "Verdana"
+        };
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri("/catalog/public-theme", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problem);
+        Assert.Contains(nameof(PublicThemeSettingsDto.PrimaryColor), problem.Errors.Keys);
+    }
+
+    [Fact]
     public async Task Public_content_endpoint_returns_validation_problem_when_body_is_invalid()
     {
         // Arrange

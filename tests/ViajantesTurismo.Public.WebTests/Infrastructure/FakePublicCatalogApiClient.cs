@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
@@ -6,12 +7,21 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<CatalogTourDto> tours = [];
     private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByKeyAndCulture = new(StringComparer.OrdinalIgnoreCase);
+    private PublicThemeSettingsDto theme = PublicThemeSettingsDefaults.CreateDto();
 
     public bool FailListRequests { get; set; }
 
     public bool FailDetailsRequests { get; set; }
 
     public bool FailContentRequests { get; set; }
+
+    public bool FailThemeRequests { get; set; }
+
+    public bool ReturnEmptyThemeResponse { get; set; }
+
+    public bool ReturnMalformedThemeResponse { get; set; }
+
+    public bool ReturnUnsupportedThemeResponse { get; set; }
 
     public TimeSpan ListDelay { get; set; }
 
@@ -40,6 +50,12 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         ArgumentException.ThrowIfNullOrWhiteSpace(culture);
 
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
+    }
+
+    public void SetTheme(PublicThemeSettingsDto theme)
+    {
+        ArgumentNullException.ThrowIfNull(theme);
+        this.theme = theme;
     }
 
     public async Task<CatalogTourDto[]> GetPublishedTours(CancellationToken ct)
@@ -89,6 +105,37 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         var requestedCulture = string.IsNullOrWhiteSpace(culture) ? "en-US" : culture;
         contentByKeyAndCulture.TryGetValue(CreateContentKey(key, requestedCulture), out var content);
         return content;
+    }
+
+    public Task<PublicThemeSettingsDto> GetThemeSettings(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        if (FailThemeRequests)
+        {
+            throw new HttpRequestException("Catalog unavailable.");
+        }
+
+        if (ReturnEmptyThemeResponse)
+        {
+            throw new InvalidOperationException("Catalog returned an empty public theme response.");
+        }
+
+        ThrowIfThemeContentShouldFail();
+        return Task.FromResult(theme);
+    }
+
+    private void ThrowIfThemeContentShouldFail()
+    {
+        if (ReturnMalformedThemeResponse)
+        {
+            throw new JsonException("Catalog returned malformed public theme JSON.");
+        }
+
+        if (ReturnUnsupportedThemeResponse)
+        {
+            throw new NotSupportedException("Catalog returned unsupported public theme content.");
+        }
     }
 
     private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";

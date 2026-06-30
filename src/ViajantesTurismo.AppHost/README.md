@@ -21,7 +21,7 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 - **MigrationService**: applies database migrations and seed data, then exits
 - **Admin.ApiService**: Admin REST API; waits for the database and migration completion
-- **Catalog.ApiService**: localized public content API
+- **Catalog.ApiService**: localized public content and public theme API
 - **Management.Web**: Blazor management UI; waits for Redis, the Admin API, and the Catalog API
 - **Public.Web**: public-facing Blazor UI; waits for the Catalog API and exposes an external HTTP endpoint
 

@@ -54,4 +54,14 @@ public static class ContractConstants
     /// The maximum length for public content body text.
     /// </summary>
     public const int MaxBodyLength = 4000;
+
+    /// <summary>
+    /// The maximum length for CSS color values supported by public theme settings.
+    /// </summary>
+    public const int MaxCssColorLength = 7;
+
+    /// <summary>
+    /// The maximum length for CSS font family values supported by public theme settings.
+    /// </summary>
+    public const int MaxCssFontFamilyLength = 64;
 }

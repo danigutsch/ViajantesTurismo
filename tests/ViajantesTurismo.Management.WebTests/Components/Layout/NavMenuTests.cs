@@ -77,6 +77,18 @@ public class NavMenuTests : BunitContext
     }
 
     [Fact]
+    public void Renders_public_theme_NavLink()
+    {
+        // Act
+        var cut = Render<NavMenu>();
+
+        // Assert
+        var publicThemeLink = cut.Find("a[href='catalog/theme']");
+        Assert.Contains("Public Theme", publicThemeLink.TextContent, StringComparison.Ordinal);
+        Assert.Contains("bi-palette", publicThemeLink.InnerHtml, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Renders_bookings_NavLink()
     {
         // Act
@@ -120,7 +132,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navLinks = cut.FindAll(".nav-link");
-        Assert.Equal(8, navLinks.Count);
+        Assert.Equal(9, navLinks.Count);
     }
 
     [Fact]
@@ -180,7 +192,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         var navItems = cut.FindAll(".nav-item.px-3");
-        Assert.Equal(8, navItems.Count);
+        Assert.Equal(9, navItems.Count);
     }
 
     [Fact]

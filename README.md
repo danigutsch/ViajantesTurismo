@@ -10,9 +10,9 @@ A modern tourism agency application specialising in group bike tours around the 
 
 ## Overview
 
-ViajantesTurismo is a platform for operating and selling group bike tours. It combines an
-admin API, a Blazor frontend, and supporting services so teams can manage tours,
-travellers, bookings, and payments in one place.
+ViajantesTurismo is a platform for operating and selling group bike tours. It combines Admin
+and Catalog APIs, management and public Blazor frontends, and supporting services so teams can
+manage tours, travellers, bookings, payments, and customer-facing tour content in one place.
 
 ## Features
 
@@ -24,6 +24,8 @@ travellers, bookings, and payments in one place.
     rental options, and payment status tracking.
 - **Admin surfaces**: Work through a resource-oriented API and a Blazor-based web
     frontend.
+- **Public website content**: Publish Catalog-backed tour listings, detail pages, galleries,
+    and localized editable content for customer-facing pages.
 
 ## Technology Stack
 
@@ -45,7 +47,13 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Admin.Infrastructure/      # Infrastructure (EF Core, DB context, stores)
 │   ├── ViajantesTurismo.Admin.Contracts/           # API contracts and DTOs
 │   ├── ViajantesTurismo.Admin.ApiService/          # Main API service
-│   ├── ViajantesTurismo.Management.Web/                 # Blazor admin web frontend
+│   ├── ViajantesTurismo.Catalog.Domain/            # Public tour presentation domain
+│   ├── ViajantesTurismo.Catalog.Application/       # Catalog application services and projections
+│   ├── ViajantesTurismo.Catalog.Infrastructure/    # Catalog EF Core persistence and read models
+│   ├── ViajantesTurismo.Catalog.Contracts/         # Catalog public and management DTOs
+│   ├── ViajantesTurismo.Catalog.ApiService/        # Catalog public content API
+│   ├── ViajantesTurismo.Management.Web/            # Blazor management web frontend
+│   ├── ViajantesTurismo.Public.Web/                # Blazor public website frontend
 │   ├── ViajantesTurismo.AppHost/                   # Aspire orchestration
 │   ├── ViajantesTurismo.Common/                    # Shared domain models and utilities
 │   ├── ViajantesTurismo.MigrationService/          # Database migration worker

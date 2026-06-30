@@ -1,5 +1,4 @@
 @page "/"
-@using Microsoft.AspNetCore.WebUtilities
 @inject IPublicCatalogApiClient CatalogApi
 @inject NavigationManager Navigation
 
@@ -60,7 +59,7 @@
     {
         try
         {
-            _hero = await CatalogApi.GetPublicContent("home.hero", GetRequestedCulture(), CancellationToken.None);
+            _hero = await CatalogApi.GetPublicContent("home.hero", PublicCultureQuery.GetRequestedCulture(Navigation.Uri), CancellationToken.None);
         }
         catch (HttpRequestException)
         {
@@ -79,28 +78,5 @@
             _loadFailed = true;
             _tours = [];
         }
-    }
-
-    private string? GetRequestedCulture()
-    {
-        var query = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
-        if (query.TryGetValue("culture", out var culture))
-        {
-            return NormalizeCulture(culture.ToString());
-        }
-
-        return query.TryGetValue("language", out var language)
-            ? NormalizeCulture(language.ToString())
-            : null;
-    }
-
-    private static string? NormalizeCulture(string? culture)
-    {
-        return culture?.Trim().ToLowerInvariant() switch
-        {
-            "en-us" => "en-US",
-            "pt-br" => "pt-BR",
-            _ => null
-        };
     }
 }

@@ -118,9 +118,12 @@ consumer/projection components, but the durable outbox/transport/inbox path is s
 - [CI and local validation flow](ci-validation-flows.md)
 - [Observability signal and dashboard consumption flows](observability-consumption-flows.md)
 
-## Planned or evolving areas
+## Current public content status
 
-- Public website content variants and localization are tracked separately from core Admin CRUD.
+- Core public website content variants and localization are implemented through Catalog-owned content
+  contracts and Public.Web rendering, separate from core Admin CRUD.
+- Configurable public website theme settings are implemented separately from page text content and
+  rendered by Public.Web through safe SSR-friendly CSS variables.
 - Media/gallery management is planned under public-web media issues.
 - Adapter package splits should follow ADR-027's capability-first naming, dependency-direction, and
   split-threshold rules.

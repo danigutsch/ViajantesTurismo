@@ -36,6 +36,7 @@
         <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\TestCatalogTourReadModelStore.cs" Link="Infrastructure\TestCatalogTourReadModelStore.cs" />
         <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\TestPublicMediaImageStore.cs" Link="Infrastructure\TestPublicMediaImageStore.cs" />
         <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\TestPublicContentStore.cs" Link="Infrastructure\TestPublicContentStore.cs" />
+        <Compile Include="..\ViajantesTurismo.Catalog.ApiServiceTests\Infrastructure\TestPublicThemeSettingsStore.cs" Link="Infrastructure\TestPublicThemeSettingsStore.cs" />
     </ItemGroup>
 
     <ItemGroup>

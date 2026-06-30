@@ -1,12 +1,97 @@
+@inject IPublicCatalogApiClient CatalogApi
+@inject NavigationManager Navigation
+
 <!doctype html>
-<html lang="en">
+<html lang="@DocumentLanguage">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    <style>@ThemeCss</style>
     <HeadOutlet />
 </head>
 <body>
     <Routes />
 </body>
 </html>
+
+@code {
+    private PublicThemeSettingsDto _theme = DefaultTheme();
+
+    private string DocumentLanguage => PublicCultureQuery.GetDocumentLanguage(Navigation.Uri);
+
+    private string ThemeCss => $$"""
+        :root {
+            --vt-color-primary: {{SafeColor(_theme.PrimaryColor, PublicThemeSettingsDefaults.PrimaryColor)}};
+            --vt-color-accent: {{SafeColor(_theme.AccentColor, PublicThemeSettingsDefaults.AccentColor)}};
+            --vt-color-background: {{SafeColor(_theme.BackgroundColor, PublicThemeSettingsDefaults.BackgroundColor)}};
+            --vt-color-text: {{SafeColor(_theme.TextColor, PublicThemeSettingsDefaults.TextColor)}};
+            --vt-font-heading: {{SafeFont(_theme.HeadingFontFamily, PublicThemeSettingsDefaults.HeadingFontFamily)}};
+            --vt-font-body: {{SafeFont(_theme.BodyFontFamily, PublicThemeSettingsDefaults.BodyFontFamily)}};
+        }
+
+        body {
+            background: var(--vt-color-background);
+            color: var(--vt-color-text);
+            font-family: var(--vt-font-body);
+        }
+
+        h1, h2, h3 {
+            color: var(--vt-color-primary);
+            font-family: var(--vt-font-heading);
+        }
+
+        a {
+            color: var(--vt-color-accent);
+        }
+
+        button, .button {
+            background: var(--vt-color-primary);
+            color: var(--vt-color-background);
+        }
+        """;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _theme = await CatalogApi.GetThemeSettings(CancellationToken.None);
+        }
+        catch (HttpRequestException)
+        {
+            _theme = DefaultTheme();
+        }
+        catch (InvalidOperationException)
+        {
+            _theme = DefaultTheme();
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            _theme = DefaultTheme();
+        }
+        catch (NotSupportedException)
+        {
+            _theme = DefaultTheme();
+        }
+    }
+
+    private static PublicThemeSettingsDto DefaultTheme()
+    {
+        return PublicThemeSettingsDefaults.CreateDto();
+    }
+
+    private static string SafeColor(string? color, string fallback)
+    {
+        var value = color?.Trim().ToUpperInvariant();
+        return value is { Length: 7 } && value[0] == '#' && value[1..].All(Uri.IsHexDigit)
+            ? value
+            : fallback;
+    }
+
+    private static string SafeFont(string? fontFamily, string fallback)
+    {
+        var value = fontFamily?.Trim();
+        return value is not null && PublicThemeSettingsDefaults.AllowedFontFamilies.Contains(value, StringComparer.Ordinal) ? value : fallback;
+    }
+}

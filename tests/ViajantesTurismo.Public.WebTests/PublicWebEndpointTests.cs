@@ -68,9 +68,150 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<html lang=\"pt-BR\">", content, StringComparison.Ordinal);
         Assert.Contains("<title>Cicloturismo - Viajantes Turismo</title>", content, StringComparison.Ordinal);
         Assert.Contains("<h1>Cicloturismo pelo mundo!</h1>", content, StringComparison.Ordinal);
         Assert.Contains("Pedale com cultura", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_renders_public_content_for_requested_language()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddContent("pt-BR", new PublicContentVariantDto
+        {
+            Language = PublicContentLanguageDto.PtBr,
+            Title = "Cicloturismo pelo mundo!",
+            Body = "Pedale com cultura, saúde e diversão.",
+            SeoTitle = "Cicloturismo - Viajantes Turismo"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/?language=pt-BR", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<html lang=\"pt-BR\">", content, StringComparison.Ordinal);
+        Assert.Contains("<h1>Cicloturismo pelo mundo!</h1>", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_uses_requested_english_language_metadata()
+    {
+        // Arrange
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<html lang=\"en-US\">", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_renders_public_theme_css_variables()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.SetTheme(new PublicThemeSettingsDto
+        {
+            PrimaryColor = "#112233",
+            AccentColor = "#445566",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "Inter",
+            BodyFontFamily = "Verdana"
+        });
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("--vt-color-primary: #112233;", content, StringComparison.Ordinal);
+        Assert.Contains("--vt-font-heading: Inter;", content, StringComparison.Ordinal);
+        Assert.Contains("font-family: var(--vt-font-body);", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_uses_default_theme_when_theme_load_fails()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            FailThemeRequests = true
+        };
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("--vt-color-primary: #0F766E;", content, StringComparison.Ordinal);
+        Assert.Contains("--vt-font-body: system-ui;", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Root_uses_default_theme_when_theme_response_is_empty()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            ReturnEmptyThemeResponse = true
+        };
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("--vt-color-primary: #0F766E;", content, StringComparison.Ordinal);
+        Assert.Contains("--vt-font-body: system-ui;", content, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("malformed")]
+    [InlineData("unsupported")]
+    public async Task Root_uses_default_theme_when_theme_response_cannot_be_deserialized(string responseFailure)
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            ReturnMalformedThemeResponse = string.Equals(responseFailure, "malformed", StringComparison.Ordinal),
+            ReturnUnsupportedThemeResponse = string.Equals(responseFailure, "unsupported", StringComparison.Ordinal)
+        };
+
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("--vt-color-primary: #0F766E;", content, StringComparison.Ordinal);
+        Assert.Contains("--vt-font-body: system-ui;", content, StringComparison.Ordinal);
     }
 
     [Fact]

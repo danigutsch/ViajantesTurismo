@@ -1,0 +1,195 @@
+@page "/catalog/theme"
+@using System.ComponentModel.DataAnnotations
+@using ViajantesTurismo.Catalog.Contracts
+@using ViajantesTurismo.Management.Web.Exceptions
+@using ViajantesTurismo.Management.Web.Helpers
+@rendermode InteractiveServer
+
+@inject IPublicThemeApiClient PublicThemeApi
+
+<PageTitle>Public Theme</PageTitle>
+
+<h1><i class="bi bi-palette" aria-hidden="true"></i> Public Theme</h1>
+
+<p class="text-muted">Edit customer-facing website colors and typography.</p>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@if (_successMessage is not null)
+{
+    <div class="alert alert-success" role="status">@_successMessage</div>
+}
+
+@if (_loading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="@_model" OnValidSubmit="@SaveTheme" FormName="publicThemeEditor">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 h5">Colors</legend>
+            <div class="mb-3">
+                <label for="theme-primary-color" class="form-label">Primary color</label>
+                <InputText id="theme-primary-color" class="form-control" @bind-Value="_model.PrimaryColor" />
+            </div>
+            <div class="mb-3">
+                <label for="theme-accent-color" class="form-label">Accent color</label>
+                <InputText id="theme-accent-color" class="form-control" @bind-Value="_model.AccentColor" />
+            </div>
+            <div class="mb-3">
+                <label for="theme-background-color" class="form-label">Background color</label>
+                <InputText id="theme-background-color" class="form-control" @bind-Value="_model.BackgroundColor" />
+            </div>
+            <div class="mb-3">
+                <label for="theme-text-color" class="form-label">Text color</label>
+                <InputText id="theme-text-color" class="form-control" @bind-Value="_model.TextColor" />
+            </div>
+            <div class="form-text">Colors must use safe #RRGGBB hex values.</div>
+        </fieldset>
+
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 h5">Typography</legend>
+            <div class="mb-3">
+                <label for="theme-heading-font" class="form-label">Heading font</label>
+                <InputSelect id="theme-heading-font" class="form-select" @bind-Value="_model.HeadingFontFamily">
+                    @foreach (var font in PublicThemeSettingsDefaults.AllowedFontFamilies)
+                    {
+                        <option value="@font">@font</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="mb-3">
+                <label for="theme-body-font" class="form-label">Body font</label>
+                <InputSelect id="theme-body-font" class="form-select" @bind-Value="_model.BodyFontFamily">
+                    @foreach (var font in PublicThemeSettingsDefaults.AllowedFontFamilies)
+                    {
+                        <option value="@font">@font</option>
+                    }
+                </InputSelect>
+            </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary" disabled="@_saving">@(_saving ? "Saving..." : "Save theme")</button>
+    </EditForm>
+}
+
+@code {
+    private PublicThemeFormModel _model = PublicThemeFormModel.Default();
+    private bool _loading = true;
+    private bool _saving;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var theme = await PublicThemeApi.GetTheme(CancellationToken.None);
+            _model = PublicThemeFormModel.FromDto(theme);
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load public theme");
+        }
+        catch (InvalidOperationException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("load public theme");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveTheme()
+    {
+        _saving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var saved = await PublicThemeApi.SaveTheme(_model.ToDto(), CancellationToken.None);
+            _model = PublicThemeFormModel.FromDto(saved);
+            _successMessage = "Public theme saved.";
+        }
+        catch (ApiValidationException ex)
+        {
+            _errorMessage = string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("save public theme");
+        }
+        catch (InvalidOperationException)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("save public theme");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private sealed class PublicThemeFormModel
+    {
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string PrimaryColor { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string AccentColor { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string BackgroundColor { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Use a safe #RRGGBB hex color.")]
+        public string TextColor { get; set; } = string.Empty;
+
+        public string HeadingFontFamily { get; set; } = PublicThemeSettingsDefaults.HeadingFontFamily;
+
+        public string BodyFontFamily { get; set; } = PublicThemeSettingsDefaults.BodyFontFamily;
+
+        public static PublicThemeFormModel Default()
+        {
+            return FromDto(PublicThemeSettingsDefaults.CreateDto());
+        }
+
+        public static PublicThemeFormModel FromDto(PublicThemeSettingsDto theme)
+        {
+            return new PublicThemeFormModel
+            {
+                PrimaryColor = theme.PrimaryColor,
+                AccentColor = theme.AccentColor,
+                BackgroundColor = theme.BackgroundColor,
+                TextColor = theme.TextColor,
+                HeadingFontFamily = theme.HeadingFontFamily,
+                BodyFontFamily = theme.BodyFontFamily
+            };
+        }
+
+        public PublicThemeSettingsDto ToDto()
+        {
+            return new PublicThemeSettingsDto
+            {
+                PrimaryColor = PrimaryColor,
+                AccentColor = AccentColor,
+                BackgroundColor = BackgroundColor,
+                TextColor = TextColor,
+                HeadingFontFamily = HeadingFontFamily,
+                BodyFontFamily = BodyFontFamily
+            };
+        }
+    }
+}
