@@ -48,9 +48,9 @@ interface or attribute that makes the target unambiguous.
 | `EfCore` | Off | `Microsoft.EntityFrameworkCore` | Emits mapping helpers only when requested and EF Core is referenced. |
 | `DtoConversion` | Off | None | Deferred; only when source and target are explicit and same-boundary safe. |
 
-DDD/core generation should be available by default after a model opts in. Cross-cutting support that
-depends on packages, such as EF Core or `System.Text.Json`, must either be explicitly enabled or
-enabled only when the dependency exists and assembly defaults requested it.
+DDD/core generation is dependency-free and available when explicitly enabled for an opted-in model.
+Cross-cutting support that depends on packages, such as EF Core or `System.Text.Json`, must either be
+explicitly enabled or enabled only when the dependency exists and assembly defaults requested it.
 
 ### Diagnostics
 
@@ -146,6 +146,9 @@ public interface IAggregateRoot<out TId> : IEntity<TId>
     void ClearDomainEvents();
 }
 ```
+
+The snippet shows the intended relationships only. Each top-level interface should be implemented in
+its own C# file, following repository conventions.
 
 Domain models should use `IEntity<TId>` or `IAggregateRoot<TId>` rather than `IIdentified<TId>`.
 `IIdentified<TId>` remains the non-DDD primitive for read models, DTO-adjacent models, and generator
