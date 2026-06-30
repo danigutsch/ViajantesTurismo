@@ -186,7 +186,6 @@ public sealed class ImportContext
             address,
             physicalInfo,
             accommodationPreferences,
-            emergencyContact,
-            medicalInfo);
+            new CustomerHealthInfo(emergencyContact, medicalInfo));
     }
 }

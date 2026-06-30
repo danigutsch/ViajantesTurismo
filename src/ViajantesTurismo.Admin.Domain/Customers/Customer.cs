@@ -18,8 +18,7 @@ public sealed partial class Customer : IEntity<Guid>
     /// <param name="address">The physical address.</param>
     /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
     /// <param name="accommodationPreferences">The accommodation preferences.</param>
-    /// <param name="emergencyContact">The emergency contact information.</param>
-    /// <param name="medicalInfo">The medical information and allergies.</param>
+    /// <param name="healthInfo">The emergency contact and medical information.</param>
     public Customer(
         PersonalInfo personalInfo,
         IdentificationInfo identificationInfo,
@@ -27,10 +26,11 @@ public sealed partial class Customer : IEntity<Guid>
         Address address,
         PhysicalInfo physicalInfo,
         AccommodationPreferences accommodationPreferences,
-        EmergencyContact emergencyContact,
-        MedicalInfo medicalInfo
+        CustomerHealthInfo healthInfo
     )
     {
+        ArgumentNullException.ThrowIfNull(healthInfo);
+
         Id = Guid.CreateVersion7();
         PersonalInfo = personalInfo;
         IdentificationInfo = identificationInfo;
@@ -38,8 +38,8 @@ public sealed partial class Customer : IEntity<Guid>
         Address = address;
         PhysicalInfo = physicalInfo;
         AccommodationPreferences = accommodationPreferences;
-        EmergencyContact = emergencyContact;
-        MedicalInfo = medicalInfo;
+        EmergencyContact = healthInfo.EmergencyContact;
+        MedicalInfo = healthInfo.MedicalInfo;
     }
 
     /// <summary>

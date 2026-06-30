@@ -81,8 +81,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             context.AddressResult.Value,
             context.PhysicalInfoResult!.Value.Value,
             context.AccommodationPreferencesResult!.Value.Value,
-            context.EmergencyContactResult.Value,
-            context.MedicalInfoResult!.Value.Value);
+            new CustomerHealthInfo(context.EmergencyContactResult.Value, context.MedicalInfoResult!.Value.Value));
     }
 
     [Then("the customer should be created successfully")]

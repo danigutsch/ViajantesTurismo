@@ -61,8 +61,7 @@ internal static class EntityIdTestData
             address,
             physicalInfo,
             accommodation,
-            emergency,
-            medical);
+            new CustomerHealthInfo(emergency, medical));
     }
 
     public static Payment CreatePayment()

@@ -84,8 +84,7 @@ public sealed class CreateCustomerCommandHandler(
             address,
             physicalInfo,
             accommodationPreferences,
-            emergencyContact,
-            medicalInfo);
+            new CustomerHealthInfo(emergencyContact, medicalInfo));
 
         customerStore.Add(customer);
         await unitOfWork.SaveEntities(ct);
