@@ -102,8 +102,8 @@ script from the repository root:
 bash scripts/run-devcontainer-smoke.sh
 ```
 
-To run the same bootstrap path and then execute the full test suite inside the temporary
-container, pass the optional test flag:
+To run the same bootstrap path and then execute the full CI slice test suite inside the
+temporary container, pass the optional test flag:
 
 ```bash
 bash scripts/run-devcontainer-smoke.sh --run-tests
@@ -116,8 +116,8 @@ The script:
   than a remote installer pipe
 - lets the configured lifecycle hooks run
 - verifies `.NET`, Git, and Docker access inside the container
-- optionally restores and builds the solution once, then runs the existing CI test
-  slice project lists sequentially with `--no-build` when `--run-tests` is passed
+- optionally restores and builds each CI slice project once, then runs the existing
+  CI test slice project lists sequentially with `--no-build` when `--run-tests` is passed
 - writes logs to `TestResults/devcontainer-smoke`
 - removes the temporary container automatically when it finishes
 
@@ -138,10 +138,10 @@ The GitHub Actions workflow uses the same option surface:
 - the workflow uses the shared smoke script and a bundled Dev Container CLI install path instead of
   a repo-owned npm toolchain
 
-Full validation intentionally keeps the same CI slice membership files while reusing one
-solution restore and build. That avoids repeated per-project restore/build setup inside the
-temporary container without reintroducing concurrent all-solution test execution, which was the
-flake source this workflow avoids.
+Full validation intentionally keeps the same CI slice membership files while restoring and
+building each unique slice project once. That avoids repeated per-project restore/build setup
+inside the temporary container without building unrelated solution projects or reintroducing
+concurrent all-solution test execution, which was the flake source this workflow avoids.
 
 Recommended follow-up validation while iterating:
 

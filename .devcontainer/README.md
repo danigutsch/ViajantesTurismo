@@ -104,10 +104,10 @@ No additional database containers are configured in the dev container - Aspire h
    bash scripts/run-devcontainer-smoke.sh --run-tests
    ```
 
-   Full mode restores and builds the solution once, then runs the CI slice project
-   lists sequentially with `--no-build`. This keeps the isolation that avoids
-   all-solution test concurrency flakes while removing repeated per-project
-   restore/build setup.
+   Full mode restores and builds each unique CI slice project once, then runs the
+   CI slice project lists sequentially with `--no-build`. This keeps the
+   isolation that avoids all-solution test concurrency flakes while removing
+   repeated per-project restore/build setup.
 
 ## Port Forwarding
 
