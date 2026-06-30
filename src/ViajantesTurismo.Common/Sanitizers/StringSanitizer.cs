@@ -95,7 +95,7 @@ public static partial class StringSanitizer
     }
 
     /// <summary>
-    /// Normalizes a string by trimming and converting to uppercase.
+    /// Normalizes a string by applying general string sanitization and converting to uppercase.
     /// </summary>
     /// <param name="value">String value to normalize.</param>
     /// <returns>Normalized string value.</returns>
@@ -103,7 +103,7 @@ public static partial class StringSanitizer
     public static string NormalizeKey(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return value.Trim().ToUpperInvariant();
+        return Sanitize(value).ToUpperInvariant();
     }
 
     private static string RemoveControlCharacters(string value) => ControlCharacterRegex().Replace(value, string.Empty);

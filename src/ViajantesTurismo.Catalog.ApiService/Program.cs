@@ -1,9 +1,11 @@
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
+using ViajantesTurismo.Catalog.Application.PublicTheme;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Catalog.Domain.PublicTheme;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Common.Sanitizers;
 using ViajantesTurismo.ServiceDefaults;
@@ -31,6 +33,8 @@ app.MapGet("/public/catalog/tours/{slug}", GetPublishedTour);
 
 app.MapGet("/public/catalog/content/{**key}", GetPublicContent);
 
+app.MapGet("/public/catalog/theme", GetPublicTheme);
+
 app.MapGet("/catalog/public-content", async (IPublicContentStore store, CancellationToken ct) =>
 {
     var content = await store.ListContent(ct);
@@ -40,6 +44,10 @@ app.MapGet("/catalog/public-content", async (IPublicContentStore store, Cancella
 app.MapGet("/catalog/public-content/{**key}", GetPublicContentForManagement);
 
 app.MapPut("/catalog/public-content/{**key}", UpsertPublicContent);
+
+app.MapGet("/catalog/public-theme", GetPublicTheme);
+
+app.MapPut("/catalog/public-theme", UpsertPublicTheme);
 
 app.MapDefaultEndpoints();
 
@@ -115,6 +123,34 @@ static async Task<IResult> GetPublicContentForManagement(string key, IPublicCont
 
     var content = await store.GetContent(key, ct);
     return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
+}
+
+static async Task<IResult> GetPublicTheme(IPublicThemeSettingsStore store, CancellationToken ct)
+{
+    var theme = await store.GetTheme(ct) ?? PublicThemeSettings.Default();
+    return Results.Ok(MapTheme(theme));
+}
+
+static async Task<IResult> UpsertPublicTheme(
+    PublicThemeSettingsDto request,
+    IPublicThemeSettingsStore store,
+    CancellationToken ct)
+{
+    var theme = PublicThemeSettings.Create(
+        request.PrimaryColor,
+        request.AccentColor,
+        request.BackgroundColor,
+        request.TextColor,
+        request.HeadingFontFamily,
+        request.BodyFontFamily);
+
+    if (theme.IsFailure)
+    {
+        return ToValidationProblem(theme.ErrorDetails);
+    }
+
+    await store.SaveTheme(theme.Value, ct);
+    return Results.Ok(MapTheme(theme.Value));
 }
 
 static async Task<IReadOnlyList<CatalogTourDto>> GetTours(
@@ -626,6 +662,19 @@ static PublicContentDto MapPublicContent(EditablePublicContent content)
     }
 
     return dto;
+}
+
+static PublicThemeSettingsDto MapTheme(PublicThemeSettings theme)
+{
+    return new PublicThemeSettingsDto
+    {
+        PrimaryColor = theme.PrimaryColor,
+        AccentColor = theme.AccentColor,
+        BackgroundColor = theme.BackgroundColor,
+        TextColor = theme.TextColor,
+        HeadingFontFamily = theme.HeadingFontFamily,
+        BodyFontFamily = theme.BodyFontFamily
+    };
 }
 
 static PublicContentVariantDto MapVariant(PublicContentVariant variant)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Catalog.Domain.PublicTheme;
 using ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
@@ -15,6 +16,11 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     /// </summary>
     public DbSet<EditablePublicContent> PublicContent => Set<EditablePublicContent>();
 
+    /// <summary>
+    /// Gets editable public theme settings.
+    /// </summary>
+    public DbSet<PublicThemeSettings> PublicThemeSettings => Set<PublicThemeSettings>();
+
     internal DbSet<CatalogTourReadModelEntity> CatalogTourReadModels => Set<CatalogTourReadModelEntity>();
 
     internal DbSet<PublicMediaImage> PublicMediaImages => Set<PublicMediaImage>();
@@ -27,6 +33,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new EditablePublicContentConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicThemeSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
         modelBuilder.ApplyConfiguration(new PublicMediaImageConfiguration());
     }

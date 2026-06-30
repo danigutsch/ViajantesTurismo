@@ -222,6 +222,19 @@ public class StringSanitizerTests
     }
 
     [Fact]
+    public void Sanitize_normalizes_unicode_to_form_c()
+    {
+        // Arrange
+        var input = "Cafe\u0301";
+
+        // Act
+        var result = StringSanitizer.Sanitize(input);
+
+        // Assert
+        Assert.Equal("Café", result);
+    }
+
+    [Fact]
     public void Sanitize_handles_string_with_emoji()
     {
         // Arrange
@@ -546,5 +559,18 @@ public class StringSanitizerTests
         Assert.Equal(2, result.Length);
         Assert.Contains("José", result);
         Assert.Contains("María", result);
+    }
+
+    [Fact]
+    public void Normalize_key_sanitizes_before_uppercase_conversion()
+    {
+        // Arrange
+        var input = "  Cafe\u0301" + "\x00" + "  name  ";
+
+        // Act
+        var result = StringSanitizer.NormalizeKey(input);
+
+        // Assert
+        Assert.Equal("CAFÉ NAME", result);
     }
 }

@@ -23,4 +23,9 @@ internal static class CatalogApiTestHost
     {
         return new CatalogApiWebApplicationFactory(null, tourStore, publicContentStore, mediaStore);
     }
+
+    public static WebApplicationFactory<CatalogApiEntryPoint> Create(TestPublicThemeSettingsStore publicThemeStore)
+    {
+        return new CatalogApiWebApplicationFactory(null, publicThemeStore: publicThemeStore);
+    }
 }
