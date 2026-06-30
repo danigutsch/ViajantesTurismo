@@ -59,6 +59,16 @@ Catalog publishes projections
 Public.Web renders published tours
 ```
 
+Current runtime notes:
+
+- `AdminTourCreatedIntegrationEvent` exists and Admin dispatches it in-process after tour creation.
+- Catalog has a tested consumer that can append a `CatalogTourDraftCreated` event.
+- The durable outbox/transport/inbox path between running Admin.ApiService and Catalog.ApiService is
+  still planned/evolving.
+
+See [Architecture flows](../architecture/FLOWS.md#catalog-event-sourcing-and-projection-flows)
+for current and planned event-sourcing diagrams.
+
 ## Aggregate Model
 
 ### CatalogTour
@@ -91,6 +101,15 @@ Expected invariants:
 - Published tours require title, summary, slug, and minimum public content.
 - Archived tours cannot be published without explicit reactivation.
 - Public detail projections are built from published Catalog state only.
+
+Current implementation:
+
+- `CatalogTour` is an event-sourced aggregate that currently creates and applies
+  `CatalogTourDraftCreated` only.
+- The current management presentation endpoint updates `CatalogTourReadModels` directly; presentation
+  edit events are planned/evolving.
+- `CatalogTourDto.Images` is populated from Catalog media metadata; public endpoints include only
+  images whose processing status is ready.
 
 ### Slug Policy
 
@@ -138,8 +157,42 @@ Initial rules:
 - Conventional labels such as About and Gallery stay in code or localization resources unless a
   business-editing need appears.
 
-The initial domain model is `EditablePublicContent` with `PublicContentVariant` values. Persistent
-tables and public/management API contracts should be added with the rendering/editor slices.
+The initial domain model is `EditablePublicContent` with `PublicContentVariant` values. Management
+editor persistence, management API routes, and published-only public read routes are implemented.
+
+Current implementation:
+
+- `EditablePublicContent` and `PublicContentVariant` are implemented in Catalog domain.
+- `PublicContent` and `PublicContentVariants` are persisted by Catalog infrastructure.
+- `GET /catalog/public-content`, `GET /catalog/public-content/{**key}`, and
+  `PUT /catalog/public-content/{**key}` are implemented as management-facing routes.
+- `GET /public/catalog/content/{**key}` is implemented as a published-only public route with approved
+  language-variant selection.
+- Explicit review approval and manual publication endpoints are still planned/evolving.
+
+See [Architecture flows](../architecture/FLOWS.md#public-content-localization-and-review-flows)
+for the localization and review flow.
+
+### Media and Gallery Metadata
+
+Current implementation:
+
+- `CatalogTourImageDto` defines public image metadata with required `Uri`, required `AltText`,
+  optional `Caption`, responsive variants, ordering, and cover-image data.
+- `CatalogTourDto.Images` is populated on management and public tour responses.
+- `GET /catalog/tours/{id}/images` and `PUT /catalog/media/images/{id}` persist Catalog-owned image
+  metadata and tour associations.
+
+Planned/evolving:
+
+- Gallery changes should move behind event-sourced Catalog commands before image read models are
+  treated as rebuildable projections.
+- Binary storage/upload remains an adapter concern outside the Catalog aggregate.
+- Upload processing, AI-assisted alt text/caption review, and geolocation policy remain future design
+  work.
+
+See [Architecture flows](../architecture/FLOWS.md#media-gallery-and-image-metadata-flows)
+for the media/gallery flow.
 
 ## Event Sourcing
 
@@ -158,6 +211,9 @@ Initial domain events:
 - `CatalogTourUnpublished`.
 - `CatalogTourArchived`.
 
+Current implementation applies `CatalogTourDraftCreated` only. The remaining events above describe the
+accepted direction and should be added with their owning feature slices.
+
 Projection types:
 
 - Management editor read model.
@@ -173,15 +229,18 @@ Projection consistency:
 
 ## Integration Events Consumed
 
-Initial Admin events consumed by Catalog:
+Current Admin event contract with Catalog consumer coverage:
 
 - `AdminTourCreatedIntegrationEvent`.
+
+Planned/evolving Admin event contracts:
+
 - `AdminTourDetailsChangedIntegrationEvent`.
 - `AdminTourScheduleChangedIntegrationEvent`.
 - `AdminTourArchivedIntegrationEvent`.
 
-Catalog consumers must be idempotent. The Catalog inbox records processed integration event ids so
-at-least-once delivery can safely retry.
+Catalog consumers must be idempotent. The current consumer wrapper uses `IIdempotencyStore`; durable
+Catalog inbox persistence is still part of the planned/evolving runtime path.
 
 ## Persistence
 
@@ -201,11 +260,14 @@ Expected tables:
 
 Management-facing endpoints should edit customer-facing presentation data only.
 
-Initial management endpoints:
+Current management endpoints:
 
 - `GET /catalog/tours`.
 - `GET /catalog/tours/{id}`.
 - `PUT /catalog/tours/{id}/presentation`.
+
+Planned/evolving management endpoints:
+
 - `POST /catalog/tours/{id}/publish`.
 - `POST /catalog/tours/{id}/unpublish`.
 

@@ -74,7 +74,13 @@ bounded-context infrastructure unless ADR-027's split threshold justifies a reus
 For bounded-context ownership, SharedKernel modules, and allowed or forbidden dependency directions,
 see [Architecture boundaries and dependency flow](boundaries-and-dependencies.md).
 
-## Current async content workflow
+## Admin-to-Catalog content workflow
+
+See [Architecture flows](FLOWS.md) for Admin workflows, Catalog event-sourcing/projection flows,
+localized public-content review flows, and media/gallery metadata flows. Those diagrams separate
+current implementation from planned/evolving work.
+
+### Planned Admin-to-Catalog publication direction
 
 ```mermaid
 sequenceDiagram
@@ -92,13 +98,16 @@ sequenceDiagram
     Public->>Projection: Read published tour presentation
 ```
 
-See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs in
+The diagram above is the intended durable flow. Current production runtime has typed event and Catalog
+consumer/projection components, but the durable outbox/transport/inbox path is still evolving. See
+[Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs in
 [Architecture decisions](../ARCHITECTURE_DECISIONS.md#architecture--layers).
 
 ## Domain references
 
 - [Admin bounded context](../bounded-contexts/Admin.md)
 - [Catalog bounded context](../bounded-contexts/Catalog.md)
+- [Architecture flows](FLOWS.md)
 - [Domain aggregates](../domain/AGGREGATES.md)
 - [Glossary](../domain/GLOSSARY.md)
 

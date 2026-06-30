@@ -1,8 +1,8 @@
 # Generated Dispatching Evaluation
 
-This document records the outcome of issue `#180`, which reviewed older dispatching
-experiments preserved on stale local branches and compared them against the current
-`SharedKernel.Mediator` source-generator direction.
+This document records the generated dispatching evaluation, which reviewed older
+dispatching experiments preserved on stale local branches and compared them against the
+current `SharedKernel.Mediator` source-generator direction.
 
 ## Reviewed preserved commit set
 
@@ -175,8 +175,7 @@ follow-up questions for the current mediator stack:
 
 ## Final decision
 
-Issue `#180` should be treated as an evaluation-and-recording task, not as a code-porting
-task.
+This evaluation should be treated as a decision record, not as a code-porting task.
 
 The preserved branch contained useful transitional thinking, but the repository has already
 landed on a cleaner destination:

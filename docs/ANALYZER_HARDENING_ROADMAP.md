@@ -1,6 +1,7 @@
 # Analyzer Hardening Roadmap
 
-This document records the staged analyzer-adoption plan for issue `#132`.
+This document records the staged analyzer-adoption plan for repository convention
+enforcement.
 
 It covers:
 
@@ -16,7 +17,7 @@ maintained analyzer stack with staged rollout.
 
 ## Current baseline
 
-The repository already has a stronger analyzer baseline than when `#132` was opened.
+The repository already has a stronger analyzer baseline than when this roadmap began.
 
 ### Build-level baseline
 
@@ -49,14 +50,14 @@ The repository already has a stronger analyzer baseline than when `#132` was ope
     - remains the generator-owned source of mediator discovery diagnostics and generated dispatch
       behavior
 
-### Related issues already closed or split out
+### Related analyzer work already completed
 
-- `#125` established the SharedKernel style analyzer/code-fix family
-- `#145` landed `SKTEST001`
-- `#163` landed the `CancellationToken` convention rules
+- the SharedKernel style analyzer/code-fix family
+- `SKTEST001`
+- the `CancellationToken` convention rules
 
-That means `#132` is now primarily a roadmap, adoption, and coordination item rather than a
-greenfield analyzer implementation issue.
+That means this document is now primarily a roadmap, adoption, and coordination record
+rather than a greenfield analyzer implementation plan.
 
 ## Canonical severity policy
 
@@ -286,9 +287,9 @@ When adopting or tightening analyzer rules:
 
 ## Recommendation summary
 
-- Treat `#132` as the umbrella roadmap and adoption record.
-- Treat closed implementation issues such as `#125`, `#145`, and `#163` as completed slices under
-  that roadmap.
+- Treat this document as the umbrella roadmap and adoption record.
+- Treat the shipped style, testing, and cancellation analyzer work as completed slices under that
+  roadmap.
 - Prefer adopting and tuning existing analyzers before inventing more custom rules.
 - Keep custom analyzers focused on conventions the built-in and Sonar layers do not enforce well.
 

@@ -63,7 +63,7 @@ Smallest useful implementation sequence:
 
 1. Centralize test-slice project membership so the generated guardrail projects are declared in
    one place.
-   Status: addressed by `#175`.
+   Status: addressed by centralized test-slice membership data.
 2. Document that `Mediator Heavy Tests` is the repository's generated-output guardrail lane.
 3. Document that `SharedKernel.Observability.Tests` protects the runtime observability contract
    while `GeneratorTelemetryBehaviorTests` protects generated telemetry behavior.

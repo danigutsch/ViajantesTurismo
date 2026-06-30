@@ -9,8 +9,9 @@ The repository has multiple test costs:
 - hosted integration tests: tests that start Aspire, containers, databases, or app hosts
 - system tests: Playwright tests against the running application
 
-Issue #426 added `scripts/benchmark-local-validation.sh` so validation timing can be measured locally before CI changes. Issue #438 confirmed that a
-solution-level no-build/no-restore test run is not a safe CI baseline on this repository: `dotnet test --solution ViajantesTurismo.slnx --no-restore
+The local validation benchmark script added `scripts/benchmark-local-validation.sh` so validation
+timing can be measured locally before CI changes. Local benchmarking confirmed that a solution-level
+no-build/no-restore test run is not a safe CI baseline on this repository: `dotnet test --solution ViajantesTurismo.slnx --no-restore
 --no-build` failed locally after 131 seconds because hosted/system tests ran concurrently and interfered with shared AppHost, database, and browser state.
 
 Splitting every slow test project into its own CI job is also not the default answer. Dependency-heavy tests pay fixed startup costs for restore, build,
