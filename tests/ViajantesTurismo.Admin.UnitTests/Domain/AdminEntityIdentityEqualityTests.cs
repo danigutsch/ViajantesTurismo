@@ -8,79 +8,47 @@ public sealed class AdminEntityIdentityEqualityTests
     public void Customer_identity_equality_matches_existing_entity_semantics()
     {
         // Arrange
-        var id = Guid.CreateVersion7();
         var first = EntityIdTestData.CreateCustomer();
         var second = EntityIdTestData.CreateCustomer();
-        EntityIdAssertions.SetId(first, id);
-        EntityIdAssertions.SetId(second, id);
+        var different = EntityIdTestData.CreateCustomer();
 
         // Act
-        var equalsOther = first.Equals(second);
-        var equalsDifferentType = first.Equals(new object());
-
-        // Assert
-        Assert.True(equalsOther);
-        Assert.False(equalsDifferentType);
-        Assert.Equal(first.GetHashCode(), second.GetHashCode());
+        EntityIdAssertions.AssertGeneratedIdentitySemantics(first, second, different);
     }
 
     [Fact]
     public void Tour_identity_equality_matches_existing_entity_semantics()
     {
         // Arrange
-        var id = Guid.CreateVersion7();
         var first = EntityBuilders.BuildTour();
         var second = EntityBuilders.BuildTour();
-        EntityIdAssertions.SetId(first, id);
-        EntityIdAssertions.SetId(second, id);
+        var different = EntityBuilders.BuildTour();
 
         // Act
-        var equalsOther = first.Equals(second);
-        var equalsDifferentType = first.Equals(new object());
-
-        // Assert
-        Assert.True(equalsOther);
-        Assert.False(equalsDifferentType);
-        Assert.Equal(first.GetHashCode(), second.GetHashCode());
+        EntityIdAssertions.AssertGeneratedIdentitySemantics(first, second, different);
     }
 
     [Fact]
     public void Booking_identity_equality_matches_existing_entity_semantics()
     {
         // Arrange
-        var id = Guid.CreateVersion7();
         var first = BookingDomainTestDataFactory.CreateSingleBooking();
         var second = BookingDomainTestDataFactory.CreateSingleBooking();
-        EntityIdAssertions.SetId(first, id);
-        EntityIdAssertions.SetId(second, id);
+        var different = BookingDomainTestDataFactory.CreateSingleBooking();
 
         // Act
-        var equalsOther = first.Equals(second);
-        var equalsDifferentType = first.Equals(new object());
-
-        // Assert
-        Assert.True(equalsOther);
-        Assert.False(equalsDifferentType);
-        Assert.Equal(first.GetHashCode(), second.GetHashCode());
+        EntityIdAssertions.AssertGeneratedIdentitySemantics(first, second, different);
     }
 
     [Fact]
     public void Payment_identity_equality_matches_existing_entity_semantics()
     {
         // Arrange
-        var id = Guid.CreateVersion7();
         var first = EntityIdTestData.CreatePayment();
         var second = EntityIdTestData.CreatePayment();
-        EntityIdAssertions.SetId(first, id);
-        EntityIdAssertions.SetId(second, id);
+        var different = EntityIdTestData.CreatePayment();
 
         // Act
-        var equalsOther = first.Equals(second);
-        var equalsDifferentType = first.Equals(new object());
-
-        // Assert
-        Assert.True(equalsOther);
-        Assert.False(equalsDifferentType);
-        Assert.Equal(first.GetHashCode(), second.GetHashCode());
+        EntityIdAssertions.AssertGeneratedIdentitySemantics(first, second, different);
     }
 }
