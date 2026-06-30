@@ -29,6 +29,8 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 
 - **admin-performance-smoke**: opt-in k6 smoke scenario resource; enabled only when
   `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set before AppHost starts
+- **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
+  `VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
 
 ## Service Dependencies
 
@@ -66,6 +68,11 @@ code builds or before committing.
 | PgWeb | `docker.io/sosedoff/pgweb:0.17.0` | `sha256:a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b` |
 | Redis | `docker.io/library/redis:8.8` | `sha256:2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32` |
 | RedisInsight | `docker.io/redis/redisinsight:3.6` | `sha256:aa21bbd198455b4ad964f76782db951155aa0d712321f599972d1525f031f0e6` |
+| OpenTelemetry Collector | `docker.io/otel/opentelemetry-collector-contrib:0.130.1` | `sha256:9c247564e65ca19f97d891cca19a1a8d291ce631b890885b44e3503c5fdb3895` |
+| Grafana | `docker.io/grafana/grafana:12.0.2` | `sha256:b5b59bfc7561634c2d7b136c4543d702ebcc94a3da477f21ff26f89ffd4214fa` |
+| Loki | `docker.io/grafana/loki:3.5.1` | `sha256:a74594532eec4cc313401beedc4dd2708c43674c032084b1aeb87c14a5be1745` |
+| Tempo | `docker.io/grafana/tempo:2.8.1` | `sha256:bc9245fe3da4e63dc4c6862d9c2dad9bcd8be13d0ba4f7705fa6acda4c904d0e` |
+| Prometheus | `docker.io/prom/prometheus:v3.5.0` | `sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996` |
 
 ## Code Organization
 
@@ -73,6 +80,7 @@ code builds or before committing.
 - `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including tag and digest pins
 - `DevelopmentProjectResourceExtensions.cs`: development endpoint and environment defaults
 - `PerformanceTestingResourceExtensions.cs`: opt-in performance-testing executable resource wiring
+- `ObservabilityStackResourceExtensions.cs`: opt-in Grafana LGTM stack and OpenTelemetry Collector wiring
 
 Optional resources should stay in focused extension files when their setup would otherwise clutter the
 main orchestration map.
@@ -84,6 +92,7 @@ main orchestration map.
 - dependency orchestration with `WaitFor()` and `WaitForCompletion()`
 - local admin tools through `.WithPgWeb()` and `.WithRedisInsight()`
 - opt-in performance smoke execution through `admin-performance-smoke`
+- opt-in local Grafana LGTM stack through `VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1`
 
 ## Running
 
@@ -116,6 +125,27 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 The resource is intentionally disabled by default so regular AppHost runs do not execute load tooling.
 For profiles, thresholds, wrapper behavior, and result output, see
 `tests/performance/README.md` and `tests/performance/k6/README.md`.
+
+## Observability Stack Resource
+
+The AppHost can run a local Grafana LGTM stack and route application telemetry through an
+OpenTelemetry Collector:
+
+```bash
+VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
+```
+
+The optional stack includes:
+
+- `opentelemetry-collector`: receives OTLP telemetry from AppHost resources and routes signals
+- `grafana`: local dashboard UI with provisioned datasources and dashboards
+- `loki`: log backend
+- `tempo`: trace backend
+- `prometheus`: metric backend scraping the collector's Prometheus exporter
+
+The Aspire dashboard remains available for local inspection. Grafana is added for source-controlled
+datasource, provisioning, and dashboard validation work. Provisioning files live under
+`observability/` at the repository root.
 
 ## Coverage
 

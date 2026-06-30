@@ -20,4 +20,6 @@ builder.AddPublicWeb(catalogApiService);
 
 builder.AddAdminPerformanceSmoke(apiService);
 
+builder.AddObservabilityStack();
+
 await builder.Build().RunAsync();

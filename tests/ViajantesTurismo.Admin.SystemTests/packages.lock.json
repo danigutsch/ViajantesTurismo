@@ -1084,6 +1084,7 @@
           "Aspire.Hosting.Orchestration.linux-x64": "[13.4.6, )",
           "Aspire.Hosting.PostgreSQL": "[13.4.6, )",
           "Aspire.Hosting.Redis": "[13.4.6, )",
+          "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "[13.4.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
@@ -1095,6 +1096,15 @@
       },
       "viajantesturismo.resources": {
         "type": "Project"
+      },
+      "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": {
+        "type": "CentralTransitive",
+        "requested": "[13.4.0, )",
+        "resolved": "13.4.0",
+        "contentHash": "4675hN78TeQxM4/UdlJ4jzZ5Zn15LKfzifiXNGEjvDIuMt+sC/DAicna+QLj2mXiVlYeVNdhw0KhMLPVFby+aQ==",
+        "dependencies": {
+          "Aspire.Hosting": "13.4.0"
+        }
       },
       "JetBrains.Annotations": {
         "type": "CentralTransitive",

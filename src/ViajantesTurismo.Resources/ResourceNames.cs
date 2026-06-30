@@ -49,4 +49,29 @@ public static class ResourceNames
     /// The name of the Admin performance smoke test resource.
     /// </summary>
     public const string AdminPerformanceSmoke = "admin-performance-smoke";
+
+    /// <summary>
+    /// The name of the OpenTelemetry Collector resource.
+    /// </summary>
+    public const string OpenTelemetryCollector = "opentelemetry-collector";
+
+    /// <summary>
+    /// The name of the Grafana resource.
+    /// </summary>
+    public const string Grafana = "grafana";
+
+    /// <summary>
+    /// The name of the Loki resource.
+    /// </summary>
+    public const string Loki = "loki";
+
+    /// <summary>
+    /// The name of the Tempo resource.
+    /// </summary>
+    public const string Tempo = "tempo";
+
+    /// <summary>
+    /// The name of the Prometheus resource.
+    /// </summary>
+    public const string Prometheus = "prometheus";
 }

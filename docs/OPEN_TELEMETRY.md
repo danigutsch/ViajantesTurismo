@@ -96,6 +96,17 @@ Dashboard design rules:
 - alerts should be added separately from dashboard panels so alert policy can be reviewed on its own
 - JSON/config validation must be wired into local scripts before dashboard assets become required CI
 
+The repository now provides an opt-in local Grafana LGTM stack through the Aspire AppHost. Set
+`VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before startup to add the OpenTelemetry Collector,
+Grafana, Loki, Tempo, and Prometheus resources. The stack is local-development infrastructure and
+stays out of `SharedKernel.*` runtime packages.
+
+Telemetry instrumentation should stay with the component being instrumented: `SharedKernel.Mediator`
+owns mediator sources/meters, `SharedKernel.EventSourcing.PostgreSQL` owns provider telemetry,
+Catalog owns Catalog telemetry, and AppHost owns local collector/backend wiring. This matches the
+.NET instrumentation model where libraries emit through `ActivitySource`, `Meter`, and `ILogger`,
+while applications choose the OpenTelemetry SDK, exporters, collectors, and vendors.
+
 ## Registration points
 
 ### Shared logging registration
