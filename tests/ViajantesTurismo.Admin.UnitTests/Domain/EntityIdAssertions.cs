@@ -23,6 +23,7 @@ internal static class EntityIdAssertions
         SetId(first, id);
         SetId(second, id);
         SetId(different, Guid.CreateVersion7());
+        var set = new HashSet<T> { first };
 
         Assert.True(first.Equals(first));
         Assert.True(first.Equals(second));
@@ -30,11 +31,13 @@ internal static class EntityIdAssertions
         Assert.False(first.Equals(new object()));
         Assert.False(first.Equals(null));
         Assert.Equal(first.GetHashCode(), second.GetHashCode());
-        Assert.NotEqual(first.GetHashCode(), different.GetHashCode());
+        Assert.Contains(second, set);
+        Assert.DoesNotContain(different, set);
 
         SetId(second, Guid.Empty);
 
         Assert.False(first.Equals(second));
         Assert.False(second.Equals(first));
+        Assert.DoesNotContain(second, set);
     }
 }
