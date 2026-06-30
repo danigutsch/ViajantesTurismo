@@ -12,24 +12,44 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         ArgumentNullException.ThrowIfNull(image);
 
         var sanitizedImage = Sanitize(image);
+        var strategy = dbContext.Database.CreateExecutionStrategy();
 
+        await strategy.ExecuteAsync(() => ReplaceImage(sanitizedImage, ct)).ConfigureAwait(false);
+    }
+
+    private async Task ReplaceImage(PublicMediaImage image, CancellationToken ct)
+    {
         var existing = await dbContext.PublicMediaImages
             .Include(current => current.ResponsiveVariants)
             .Include(current => current.TourLinks)
             .AsSplitQuery()
-            .SingleOrDefaultAsync(current => current.Id == sanitizedImage.Id, ct)
+            .SingleOrDefaultAsync(current => current.Id == image.Id, ct)
             .ConfigureAwait(false);
 
-        if (existing is not null)
+        if (existing is not null && dbContext.Database.IsRelational())
         {
+            var transaction = await dbContext.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
+            await using var _ = transaction.ConfigureAwait(false);
             dbContext.PublicMediaImages.Remove(existing);
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            dbContext.PublicMediaImages.Add(image);
+            SetResponsiveVariantSortOrder(image);
+            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
         }
+        else
+        {
+            if (existing is not null)
+            {
+                dbContext.PublicMediaImages.Remove(existing);
+                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            }
 
-        dbContext.PublicMediaImages.Add(sanitizedImage);
-        SetResponsiveVariantSortOrder(sanitizedImage);
+            dbContext.PublicMediaImages.Add(image);
+            SetResponsiveVariantSortOrder(image);
 
-        await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+        }
     }
 
     public async ValueTask<PublicMediaImage?> GetImage(Guid imageId, CancellationToken ct)
