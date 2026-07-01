@@ -13,6 +13,11 @@
         <ProjectReference Include="..\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Hosting.Grafana\SharedKernel.Aspire.Hosting.Grafana.csproj" IsAspireProjectResource="false"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Analyzers\SharedKernel.Aspire.Analyzers.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+            PrivateAssets="all"
+            IsAspireProjectResource="false"/>
     </ItemGroup>
 
     <ItemGroup>

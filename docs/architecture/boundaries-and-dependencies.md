@@ -67,6 +67,7 @@ flowchart TB
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain]
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
+    ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> SharedKernel_Aspire_Analyzers[SharedKernel.Aspire.Analyzers]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> SharedKernel_Aspire_Hosting_Grafana[SharedKernel.Aspire.Hosting.Grafana]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService]
