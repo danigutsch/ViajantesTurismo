@@ -15,7 +15,7 @@ Implement **`Payment` as an immutable entity** with full audit trail:
 ```csharp
 public sealed partial class Payment : IEntity<long>
 {
-    public long Id { get; }
+    public long Id { get; private init; }
     public long BookingId { get; }
     public decimal Amount { get; }
     public DateTime PaymentDate { get; }
