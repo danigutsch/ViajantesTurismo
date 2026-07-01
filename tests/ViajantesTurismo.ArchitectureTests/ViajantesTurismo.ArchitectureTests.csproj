@@ -32,6 +32,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Aspire.Hosting.Grafana\SharedKernel.Aspire.Hosting.Grafana.csproj" />
     </ItemGroup>
 
 </Project>
