@@ -65,6 +65,10 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create a customer")]
     public void WhenICreateACustomer()
     {
+        Assert.NotNull(context.PhysicalInfoResult);
+        Assert.NotNull(context.AccommodationPreferencesResult);
+        Assert.NotNull(context.MedicalInfoResult);
+
         context.PersonalInfoResult = PersonalInfo.Create(
             "John",
             "Smith",
@@ -79,10 +83,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             context.IdentificationInfoResult.Value,
             context.ContactInfoResult.Value,
             context.AddressResult.Value,
-            context.PhysicalInfoResult!.Value.Value,
-            context.AccommodationPreferencesResult!.Value.Value,
-            context.EmergencyContactResult.Value,
-            context.MedicalInfoResult!.Value.Value);
+            context.PhysicalInfoResult.Value.Value,
+            context.AccommodationPreferencesResult.Value.Value,
+            new CustomerHealthInfo(context.EmergencyContactResult.Value, context.MedicalInfoResult.Value.Value));
     }
 
     [Then("the customer should be created successfully")]
@@ -95,14 +98,18 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     public void ThenTheCustomerShouldContainAllTheProvidedInformation()
     {
         Assert.NotNull(context.Customer);
+        Assert.NotNull(context.PhysicalInfoResult);
+        Assert.NotNull(context.AccommodationPreferencesResult);
+        Assert.NotNull(context.MedicalInfoResult);
+
         Assert.Equal(context.PersonalInfoResult.Value, context.Customer.PersonalInfo);
         Assert.Equal(context.IdentificationInfoResult.Value, context.Customer.IdentificationInfo);
         Assert.Equal(context.ContactInfoResult.Value, context.Customer.ContactInfo);
         Assert.Equal(context.AddressResult.Value, context.Customer.Address);
-        Assert.Equal(context.PhysicalInfoResult!.Value.Value, context.Customer.PhysicalInfo);
-        Assert.Equal(context.AccommodationPreferencesResult!.Value.Value, context.Customer.AccommodationPreferences);
+        Assert.Equal(context.PhysicalInfoResult.Value.Value, context.Customer.PhysicalInfo);
+        Assert.Equal(context.AccommodationPreferencesResult.Value.Value, context.Customer.AccommodationPreferences);
         Assert.Equal(context.EmergencyContactResult.Value, context.Customer.EmergencyContact);
-        Assert.Equal(context.MedicalInfoResult!.Value.Value, context.Customer.MedicalInfo);
+        Assert.Equal(context.MedicalInfoResult.Value.Value, context.Customer.MedicalInfo);
     }
 
     [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]
@@ -285,13 +292,15 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized allergies should be ""(.*)""")]
     public void ThenTheSanitizedAllergiesShouldBe(string expectedAllergies)
     {
-        Assert.Equal(expectedAllergies, context.MedicalInfoResult!.Value.Value.Allergies);
+        Assert.NotNull(context.MedicalInfoResult);
+        Assert.Equal(expectedAllergies, context.MedicalInfoResult.Value.Value.Allergies);
     }
 
     [Then(@"the sanitized additional info should be ""(.*)""")]
     public void ThenTheSanitizedAdditionalInfoShouldBe(string expectedAdditionalInfo)
     {
-        Assert.Equal(expectedAdditionalInfo, context.MedicalInfoResult!.Value.Value.AdditionalInfo);
+        Assert.NotNull(context.MedicalInfoResult);
+        Assert.Equal(expectedAdditionalInfo, context.MedicalInfoResult.Value.Value.AdditionalInfo);
     }
 
     [When(@"I attempt to create another customer with email ""(.*)""")]

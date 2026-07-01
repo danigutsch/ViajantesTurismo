@@ -13,8 +13,9 @@ Payment history is critical for financial reconciliation.
 Implement **`Payment` as an immutable entity** with full audit trail:
 
 ```csharp
-public sealed class Payment : Entity<long>
+public sealed partial class Payment : IEntity<long>
 {
+    public long Id { get; private init; }
     public long BookingId { get; }
     public decimal Amount { get; }
     public DateTime PaymentDate { get; }

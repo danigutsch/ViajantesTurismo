@@ -89,8 +89,7 @@ public static class RowToCustomerMapper
             addressResult.Value,
             physicalInfoResult.Value,
             accommodationPreferencesResult.Value,
-            emergencyContactResult.Value,
-            medicalInfoResult.Value));
+            new CustomerHealthInfo(emergencyContactResult.Value, medicalInfoResult.Value)));
     }
 
     private static Result<PersonalInfo> MapPersonalInfo(IImportDocument document, IImportRow row, TimeProvider timeProvider)

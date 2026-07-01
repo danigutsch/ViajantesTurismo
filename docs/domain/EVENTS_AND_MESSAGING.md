@@ -19,9 +19,10 @@ This document defines the durable event and messaging direction for ViajantesTur
 
 Owns DDD primitives:
 
-- `Entity<TId>`.
+- `IIdentified<TId>`.
+- `IEntity<TId>`.
 - `IAggregateRoot`.
-- `AggregateRoot<TId>`.
+- `IAggregateRoot<TId>`.
 - `IDomainEvent`.
 - Domain event recording and dequeueing.
 

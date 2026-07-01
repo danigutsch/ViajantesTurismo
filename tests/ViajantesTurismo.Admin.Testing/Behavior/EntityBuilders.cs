@@ -152,8 +152,7 @@ public static class EntityBuilders
                 address,
                 physicalInfo,
                 accommodationPreferences,
-                emergencyContact,
-                medicalInfo);
+                new CustomerHealthInfo(emergencyContact, medicalInfo));
         }
     }
 }

@@ -54,8 +54,10 @@ and [ADR-002: Result Pattern Over Exceptions](adr/20251108-result-pattern-over-e
 Entities use static factory methods instead of public constructors:
 
 ```csharp
-public sealed class Tour : Entity<int>
+public sealed partial class Tour : IEntity<int>
 {
+    public int Id { get; private init; }
+
     public static Result<Tour> Create(string identifier, string name, ...)
     {
         if (string.IsNullOrWhiteSpace(identifier))

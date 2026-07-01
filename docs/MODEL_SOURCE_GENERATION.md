@@ -169,7 +169,7 @@ Generated support should keep that boundary explicit:
 
 1. Add DDD identity interfaces and analyzer diagnostics.
     - No model behavior changes.
-    - Keep existing `Entity<TId>` and `AggregateRoot<TId>`.
+    - Avoid introducing new base-class consumers.
 
 2. Make current base classes implement DDD interfaces.
     - Preserve equality semantics.
@@ -194,17 +194,77 @@ Generated support should keep that boundary explicit:
 6. Migrate Catalog aggregate/read models only after Catalog persistence tests cover identity and EF
    materialization.
 
-7. Deprecate duplicate base classes.
-   - Remove `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` only after consumers move to
-     `SharedKernel.Domain` or generated identity support.
+7. Remove duplicate base classes after consumers move.
+   - `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` was removed after Admin consumers moved to
+     SharedKernel identity interfaces and generated identity support.
+
+### Current inventory
+
+Models migrated from base-class identity to generated identity support:
+
+| Model | Project | Current identity shape | Notes |
+| --- | --- | --- | --- |
+| `Customer` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | EF key configured with `ValueGeneratedNever()`; direct entity, no domain events. |
+| `Tour` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Aggregate root by behavior; owns `Booking` collection but does not yet use SharedKernel domain events. |
+| `Booking` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Child entity inside `Tour`; EF key configured with `ValueGeneratedNever()`. |
+| `Payment` | `src/ViajantesTurismo.Admin.Domain` | `IEntity<Guid>` plus generated identity support | Child entity inside `Booking`; immutable after creation; EF key configured with `ValueGeneratedNever()`. |
+| `EditablePublicContent` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Aggregate root with EF materialization constructor and explicit key generation. |
+| `PublicThemeSettings` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Singleton aggregate root with fixed `ThemeId`; EF key configured with `ValueGeneratedNever()`. |
+
+Removed test-only consumers:
+
+- `tests/SharedKernel.Domain.Tests`: the legacy project was removed with the SharedKernel base-class
+  primitive/equality tests.
+- `tests/ViajantesTurismo.Common.UnitTests`: common entity tests were removed with
+  `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>`.
+- `tests/ViajantesTurismo.ArchitectureTests`: DDD convention helpers identify entity types through
+  `IEntity<TId>` and allow both Admin and Catalog domain namespaces.
+
+Docs and ADRs refreshed with the migration:
+
+- `docs/CODING_GUIDELINES.md` examples.
+- `docs/DOMAIN_VALIDATION.md` factory-method examples.
+- `docs/domain/EVENTS_AND_MESSAGING.md` SharedKernel domain primitive list.
+- `docs/adr/20260621-split-sharedkernel-domain-and-building-blocks.md` SharedKernel ownership notes.
+- `docs/adr/20251108-payment-tracking-immutable-records.md` payment example.
+- `src/ViajantesTurismo.Common/README.md` base-type list now documents only remaining common base types.
+
+### Inheritance and persistence assumptions
+
+- Equality remains same runtime type, non-default identity, then identity comparer equality. Generated
+  identity support preserves that shape after models drop the base class.
+- EF mappings own keys explicitly through `HasKey(...Id)` and `ValueGeneratedNever()` for persisted
+  Admin and Catalog models. Migration PRs must not change key generation or migrations unless that PR
+  is explicitly about persistence.
+- EF materialization constructors are private and marked for tooling; keep them unchanged while only
+  moving identity/equality support.
+- Admin `Tour`, `Booking`, and `Payment` have aggregate-boundary assumptions. Migrate `Tour` behavior
+  tests before migrating its child entities.
+
+### Staged migration order
+
+1. `Customer` first.
+   - Lowest aggregate-boundary risk among Admin entities.
+   - Add/keep Admin unit tests for identity equality and EF materialization before removing the base.
+2. `Tour` aggregate root next.
+   - Add behavior tests for booking collection invariants and identity equality before migration.
+3. `Booking`, then `Payment`.
+   - Keep child-entity changes separate from `Tour` root migration.
+   - Preserve payment immutability and booking payment-status tests.
+4. `EditablePublicContent`.
+   - Keep domain-event behavior and EF `ValueGeneratedNever()` covered by Catalog tests.
+5. `PublicThemeSettings` last.
+   - Preserve fixed singleton `ThemeId` and theme replacement behavior.
+6. `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` is removed in this migration.
+7. `SharedKernel.Domain.Entity<TId>` and `SharedKernel.Domain.AggregateRoot<TId>` are removed in this
+   migration after concrete consumers move to interfaces and generated identity support.
 
 ### Guardrails
 
-- Do not change database keys and source-generation setup in the same PR.
 - Do not change equality semantics silently.
 - Keep EF value generation explicit with `ValueGeneratedNever()` unless a migration deliberately
   changes key ownership.
-- Add architecture or analyzer coverage before forbidding the old base classes.
+- Keep architecture or analyzer coverage in place before forbidding old base-class patterns.
 
 ## Recommended follow-up order
 

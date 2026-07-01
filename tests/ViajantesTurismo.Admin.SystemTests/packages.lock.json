@@ -994,6 +994,9 @@
           "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "[13.4.0, )"
         }
       },
+      "sharedkernel.domain": {
+        "type": "Project"
+      },
       "sharedkernel.integrationevents": {
         "type": "Project",
         "dependencies": {
@@ -1036,6 +1039,7 @@
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
+          "SharedKernel.Domain": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Common": "[1.0.0, )"

@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
+using SharedKernel.Domain;
 using ViajantesTurismo.Common.BuildingBlocks;
 using ViajantesTurismo.Common.Monies;
 using SharedKernel.Results;
@@ -16,7 +17,8 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// <para>All Booking entities must be created and modified through Tour methods to maintain consistency.</para>
 /// <para>Tour enforces business rules and invariants for all bookings within its aggregate boundary.</para>
 /// </remarks>
-public sealed class Tour : Entity<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class Tour : IEntity<Guid>
 {
     private readonly List<Booking> _bookings = [];
     private string[] _includedServices = [];
@@ -28,8 +30,8 @@ public sealed class Tour : Entity<Guid>
         TourPricing pricing,
         TourCapacity capacity,
         IEnumerable<string> includedServices)
-        : base(Guid.CreateVersion7())
     {
+        Id = Guid.CreateVersion7();
         Identifier = identifier;
         Name = name;
         Schedule = schedule;
@@ -47,29 +49,34 @@ public sealed class Tour : Entity<Guid>
     }
 
     /// <summary>
+    /// Gets the unique tour identifier.
+    /// </summary>
+    public Guid Id { get; private init; }
+
+    /// <summary>
     /// Gets the unique business identifier for the tour.
     /// </summary>
-    public string Identifier { get; private set; }
+    public string Identifier { get; private set; } = default!;
 
     /// <summary>
     /// Gets the name of the tour.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; private set; } = default!;
 
     /// <summary>
     /// Gets the schedule (date range) for the tour.
     /// </summary>
-    public DateRange Schedule { get; private set; }
+    public DateRange Schedule { get; private set; } = default!;
 
     /// <summary>
     /// Gets the pricing information for the tour.
     /// </summary>
-    public TourPricing Pricing { get; private set; }
+    public TourPricing Pricing { get; private set; } = default!;
 
     /// <summary>
     /// Gets the capacity constraints for the tour.
     /// </summary>
-    public TourCapacity Capacity { get; private set; }
+    public TourCapacity Capacity { get; private set; } = default!;
 
     /// <summary>
     /// Gets the array of services included in the tour package (e.g. "Hotel", "Breakfast", "City Tour").

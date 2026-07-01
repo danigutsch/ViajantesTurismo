@@ -1,15 +1,9 @@
 using System.Reflection;
 
-namespace ViajantesTurismo.Admin.UnitTests.Domain;
+namespace ViajantesTurismo.Catalog.UnitTests;
 
-internal static class EntityIdAssertions
+internal static class CatalogIdentityAssertions
 {
-    public static void AssertUuidV7(Guid id)
-    {
-        var guidText = id.ToString("D");
-        Assert.Equal('7', guidText[14]);
-    }
-
     public static void SetId<T>(T entity, Guid id)
     {
         var idProperty = typeof(T).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);

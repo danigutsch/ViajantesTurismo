@@ -1,12 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
-using ViajantesTurismo.Common.BuildingBlocks;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 
 /// <summary>
 /// Represents a customer entity.
 /// </summary>
-public sealed class Customer : Entity<Guid>
+[GenerateModelSupport(Identity = true)]
+public sealed partial class Customer : IEntity<Guid>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class.
@@ -17,8 +19,42 @@ public sealed class Customer : Entity<Guid>
     /// <param name="address">The physical address.</param>
     /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
     /// <param name="accommodationPreferences">The accommodation preferences.</param>
+    /// <param name="healthInfo">The emergency contact and medical information.</param>
+    public Customer(
+        PersonalInfo personalInfo,
+        IdentificationInfo identificationInfo,
+        ContactInfo contactInfo,
+        Address address,
+        PhysicalInfo physicalInfo,
+        AccommodationPreferences accommodationPreferences,
+        CustomerHealthInfo healthInfo
+    )
+    {
+        ArgumentNullException.ThrowIfNull(healthInfo);
+
+        Id = Guid.CreateVersion7();
+        PersonalInfo = personalInfo;
+        IdentificationInfo = identificationInfo;
+        ContactInfo = contactInfo;
+        Address = address;
+        PhysicalInfo = physicalInfo;
+        AccommodationPreferences = accommodationPreferences;
+        EmergencyContact = healthInfo.EmergencyContact;
+        MedicalInfo = healthInfo.MedicalInfo;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Customer"/> class from separate health details.
+    /// </summary>
+    /// <param name="personalInfo">The personal information.</param>
+    /// <param name="identificationInfo">The identification information.</param>
+    /// <param name="contactInfo">The contact information.</param>
+    /// <param name="address">The physical address.</param>
+    /// <param name="physicalInfo">The physical characteristics and bike preferences.</param>
+    /// <param name="accommodationPreferences">The accommodation preferences.</param>
     /// <param name="emergencyContact">The emergency contact information.</param>
     /// <param name="medicalInfo">The medical information and allergies.</param>
+    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Preserves existing seed data construction while the primary constructor groups health details.")]
     public Customer(
         PersonalInfo personalInfo,
         IdentificationInfo identificationInfo,
@@ -29,41 +65,51 @@ public sealed class Customer : Entity<Guid>
         EmergencyContact emergencyContact,
         MedicalInfo medicalInfo
     )
-        : base(Guid.CreateVersion7())
+        : this(
+            personalInfo,
+            identificationInfo,
+            contactInfo,
+            address,
+            physicalInfo,
+            accommodationPreferences,
+            new CustomerHealthInfo(emergencyContact, medicalInfo))
     {
-        PersonalInfo = personalInfo;
-        IdentificationInfo = identificationInfo;
-        ContactInfo = contactInfo;
-        Address = address;
-        PhysicalInfo = physicalInfo;
-        AccommodationPreferences = accommodationPreferences;
-        EmergencyContact = emergencyContact;
-        MedicalInfo = medicalInfo;
     }
 
+    /// <summary>
+    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
+    /// </summary>
+    [UsedImplicitly]
+    private Customer()
+    {
+    }
+
+    /// <summary>Unique customer identifier.</summary>
+    public Guid Id { get; private init; }
+
     /// <summary>Personal information.</summary>
-    public PersonalInfo PersonalInfo { get; private set; }
+    public PersonalInfo PersonalInfo { get; private set; } = default!;
 
     /// <summary>Identification information.</summary>
-    public IdentificationInfo IdentificationInfo { get; private set; }
+    public IdentificationInfo IdentificationInfo { get; private set; } = default!;
 
     /// <summary>Contact information.</summary>
-    public ContactInfo ContactInfo { get; private set; }
+    public ContactInfo ContactInfo { get; private set; } = default!;
 
     /// <summary>Physical address.</summary>
-    public Address Address { get; private set; }
+    public Address Address { get; private set; } = default!;
 
     /// <summary>Physical characteristics and bike preferences.</summary>
-    public PhysicalInfo PhysicalInfo { get; private set; }
+    public PhysicalInfo PhysicalInfo { get; private set; } = default!;
 
     /// <summary>Accommodation preferences.</summary>
-    public AccommodationPreferences AccommodationPreferences { get; private set; }
+    public AccommodationPreferences AccommodationPreferences { get; private set; } = default!;
 
     /// <summary>Emergency contact information.</summary>
-    public EmergencyContact EmergencyContact { get; private set; }
+    public EmergencyContact EmergencyContact { get; private set; } = default!;
 
     /// <summary>Medical information and allergies.</summary>
-    public MedicalInfo MedicalInfo { get; private set; }
+    public MedicalInfo MedicalInfo { get; private set; } = default!;
 
     /// <summary>
     /// Updates the customer's personal information.
@@ -137,11 +183,4 @@ public sealed class Customer : Entity<Guid>
         MedicalInfo = medicalInfo;
     }
 
-    /// <summary>
-    /// DO NOT USE. This constructor is required by Entity Framework Core for materialization.
-    /// </summary>
-    [UsedImplicitly]
-    private Customer()
-    {
-    }
 }
