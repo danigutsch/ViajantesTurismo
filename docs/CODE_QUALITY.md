@@ -265,6 +265,9 @@ defaults that may drift between releases.
 - `Directory.Build.props` sets `NuGetAudit=true`, `NuGetAuditMode=all`, and
   `NuGetAuditLevel=high` so transitive dependency auditing stays on, but restore failures focus on
   high and critical advisories instead of every low-severity bulletin.
+- Transitive security pins belong in a distinctive `Transitive security pins` block in
+  `Directory.Packages.props` near the parent package. Each pin must name the parent package, the
+  vulnerable transitive package/version, the advisory, and the removal condition.
 - Local restores stay unlocked by default to keep everyday dependency maintenance practical.
 - CI restores run in locked mode and now also set `ContinuousIntegrationBuild=true` explicitly so
   deterministic build behavior is owned by repository policy rather than ambient environment luck.
