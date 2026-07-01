@@ -30,7 +30,7 @@ projects, and reusable service defaults belong in `ViajantesTurismo.ServiceDefau
 - **admin-performance-smoke**: opt-in k6 smoke scenario resource; enabled only when
   `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set before AppHost starts
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
-  `VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
+  `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
 
 ## Service Dependencies
 
@@ -48,14 +48,16 @@ Catalog.ApiService → Management.Web
 
 ## Resource Names
 
-All resource names come from `ResourceNames` in `src/ViajantesTurismo.Resources`. Do not hardcode
-resource name strings in AppHost orchestration code.
+Application resource names come from `ResourceNames` in `src/ViajantesTurismo.Resources`. The
+optional Grafana LGTM stack uses defaults from `SharedKernel.Aspire.Hosting.Grafana`. Do not
+hardcode resource name strings in AppHost orchestration code.
 
 ## Container Images
 
-Infrastructure and companion tooling images are pinned by tag and digest in
-`AppHostResourceExtensions.cs` to keep local runs reproducible. There is no production image policy
-yet. When one exists, update each tag and digest pair to match the production-approved image.
+Infrastructure and companion tooling images are pinned by tag and digest to keep local runs
+reproducible. Core AppHost resource pins live in `AppHostResourceExtensions.cs`. Optional Grafana
+LGTM stack pins live in `SharedKernel.Aspire.Hosting.Grafana` so the local backend wiring can be
+reused by AppHosts without putting exporter choices into runtime observability packages.
 
 Do not commit placeholder digests. `WithImageSHA256(...)` must contain the verified 64-character
 digest without the `sha256:` prefix. The `SKASPIRE001` code fix may temporarily insert uncompilable
@@ -77,10 +79,11 @@ code builds or before committing.
 ## Code Organization
 
 - `AppHost.cs`: primary orchestration map, kept short and dependency ordered
-- `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including tag and digest pins
+- `AppHostResourceExtensions.cs`: infrastructure and service resource wiring, including core tag and digest pins
 - `DevelopmentProjectResourceExtensions.cs`: development endpoint and environment defaults
 - `PerformanceTestingResourceExtensions.cs`: opt-in performance-testing executable resource wiring
-- `ObservabilityStackResourceExtensions.cs`: opt-in Grafana LGTM stack and OpenTelemetry Collector wiring
+- `ObservabilityStackResourceExtensions.cs`: opt-in gate and AppHost-specific Grafana LGTM stack naming
+- `SharedKernel.Aspire.Hosting.Grafana`: reusable Aspire hosting wiring for the Grafana LGTM stack
 
 Optional resources should stay in focused extension files when their setup would otherwise clutter the
 main orchestration map.
@@ -92,7 +95,7 @@ main orchestration map.
 - dependency orchestration with `WaitFor()` and `WaitForCompletion()`
 - local admin tools through `.WithPgWeb()` and `.WithRedisInsight()`
 - opt-in performance smoke execution through `admin-performance-smoke`
-- opt-in local Grafana LGTM stack through `VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1`
+- opt-in local Grafana LGTM stack through `ASPIRE_ENABLE_OBSERVABILITY_STACK=1`
 
 ## Running
 
@@ -132,7 +135,7 @@ The AppHost can run a local Grafana LGTM stack and route application telemetry t
 OpenTelemetry Collector:
 
 ```bash
-VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
+ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
 ```
 
 The optional stack includes:
@@ -145,7 +148,9 @@ The optional stack includes:
 
 The Aspire dashboard remains available for local inspection. Grafana is added for source-controlled
 datasource, provisioning, and dashboard validation work. Provisioning files live under
-`observability/` at the repository root.
+`observability/` at the repository root. The reusable stack wiring lives in
+`SharedKernel.Aspire.Hosting.Grafana`; the AppHost only owns the opt-in environment gate and
+configuration path.
 
 ## Coverage
 

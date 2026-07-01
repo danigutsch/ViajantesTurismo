@@ -12,12 +12,12 @@
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" IsAspireProjectResource="false"/>
         <ProjectReference Include="..\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Aspire.Hosting.Grafana\SharedKernel.Aspire.Hosting.Grafana.csproj" IsAspireProjectResource="false"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
         <PackageReference Include="Aspire.Hosting.Redis"/>
-        <PackageReference Include="CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector"/>
     </ItemGroup>
 
 </Project>

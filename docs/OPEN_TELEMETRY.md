@@ -97,15 +97,17 @@ Dashboard design rules:
 - JSON/config validation must be wired into local scripts before dashboard assets become required CI
 
 The repository now provides an opt-in local Grafana LGTM stack through the Aspire AppHost. Set
-`VT_ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before startup to add the OpenTelemetry Collector,
-Grafana, Loki, Tempo, and Prometheus resources. The stack is local-development infrastructure and
-stays out of `SharedKernel.*` runtime packages.
+`ASPIRE_ENABLE_OBSERVABILITY_STACK=1` before startup to add the OpenTelemetry Collector,
+Grafana, Loki, Tempo, and Prometheus resources. Reusable resource wiring lives in
+`SharedKernel.Aspire.Hosting.Grafana`, an Aspire hosting library. The stack remains
+local-development infrastructure and stays out of `SharedKernel.*` runtime packages.
 
 Telemetry instrumentation should stay with the component being instrumented: `SharedKernel.Mediator`
 owns mediator sources/meters, `SharedKernel.EventSourcing.PostgreSQL` owns provider telemetry,
-Catalog owns Catalog telemetry, and AppHost owns local collector/backend wiring. This matches the
-.NET instrumentation model where libraries emit through `ActivitySource`, `Meter`, and `ILogger`,
-while applications choose the OpenTelemetry SDK, exporters, collectors, and vendors.
+Catalog owns Catalog telemetry, and AppHost/shared Aspire hosting code owns local collector/backend
+wiring. This matches the .NET instrumentation model where libraries emit through `ActivitySource`,
+`Meter`, and `ILogger`, while applications choose the OpenTelemetry SDK, exporters, collectors, and
+vendors.
 
 ## Registration points
 
