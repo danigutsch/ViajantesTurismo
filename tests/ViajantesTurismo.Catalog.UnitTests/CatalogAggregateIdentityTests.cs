@@ -40,7 +40,6 @@ public sealed class CatalogAggregateIdentityTests
         var createResult = PublicThemeSettings.Create("#112233", "#AABBCC", "#FFFFFF", "#000000", "Inter", "Verdana");
         Assert.True(createResult.IsSuccess);
         var different = createResult.Value;
-        CatalogIdentityAssertions.SetId(different, Guid.CreateVersion7());
 
         // Act
         CatalogIdentityAssertions.AssertGeneratedIdentitySemantics(first, second, different);
