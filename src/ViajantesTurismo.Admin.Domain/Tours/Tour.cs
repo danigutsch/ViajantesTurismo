@@ -56,27 +56,27 @@ public sealed partial class Tour : IEntity<Guid>
     /// <summary>
     /// Gets the unique business identifier for the tour.
     /// </summary>
-    public string Identifier { get; private set; }
+    public string Identifier { get; private set; } = default!;
 
     /// <summary>
     /// Gets the name of the tour.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; private set; } = default!;
 
     /// <summary>
     /// Gets the schedule (date range) for the tour.
     /// </summary>
-    public DateRange Schedule { get; private set; }
+    public DateRange Schedule { get; private set; } = default!;
 
     /// <summary>
     /// Gets the pricing information for the tour.
     /// </summary>
-    public TourPricing Pricing { get; private set; }
+    public TourPricing Pricing { get; private set; } = default!;
 
     /// <summary>
     /// Gets the capacity constraints for the tour.
     /// </summary>
-    public TourCapacity Capacity { get; private set; }
+    public TourCapacity Capacity { get; private set; } = default!;
 
     /// <summary>
     /// Gets the array of services included in the tour package (e.g. "Hotel", "Breakfast", "City Tour").

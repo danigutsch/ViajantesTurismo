@@ -84,7 +84,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// The principal customer's booking details including bike selection and price.
     /// </summary>
-    public BookingCustomer PrincipalCustomer { get; private set; }
+    public BookingCustomer PrincipalCustomer { get; private set; } = default!;
 
     /// <summary>
     /// The companion customer's booking details including bike selection and price, if any.
@@ -94,7 +94,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// The discount applied to this booking.
     /// </summary>
-    public Discount Discount { get; private set; }
+    public Discount Discount { get; private set; } = default!;
 
     /// <summary>
     /// The date when the booking was made.
