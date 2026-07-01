@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
 internal static class EntityIdAssertions
@@ -10,10 +12,12 @@ internal static class EntityIdAssertions
 
     public static void SetId<T>(T entity, Guid id)
     {
-        var idProperty = typeof(T).GetProperty("Id");
+        var idProperty = typeof(T).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         Assert.NotNull(idProperty);
+        var idSetter = idProperty.GetSetMethod(nonPublic: true);
+        Assert.NotNull(idSetter);
 
-        idProperty.SetValue(entity, id);
+        idSetter.Invoke(entity, [id]);
     }
 
     public static void AssertGeneratedIdentitySemantics<T>(T first, T second, T different)
