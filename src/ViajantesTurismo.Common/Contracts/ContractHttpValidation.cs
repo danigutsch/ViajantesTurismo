@@ -41,16 +41,14 @@ public static class ContractHttpValidation
         {
             problem = await response.Content.ReadFromJsonAsync(jsonTypeInfo, ct).ConfigureAwait(false);
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
-            response.EnsureSuccessStatusCode();
-            return;
+            throw new ContractValidationException("Validation problem response body was malformed.", exception);
         }
 
         if (problem?.Errors is null || problem.Errors.Count == 0)
         {
-            response.EnsureSuccessStatusCode();
-            return;
+            throw new ContractValidationException("Validation problem response body did not contain errors.");
         }
 
         var message = string.Join(Environment.NewLine, problem.Errors.SelectMany(error => error.Value));
