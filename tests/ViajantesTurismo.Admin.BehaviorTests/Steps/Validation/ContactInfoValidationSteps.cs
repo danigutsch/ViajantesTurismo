@@ -17,8 +17,6 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
         context.ContactInfoResult = ContactInfo.Create(email, "+1234567890", null, null);
     }
 
-
-
     [When("I create contact info with email \"([^\"]*)\" and mobile \"([^\"]*)\"")]
     public void WhenICreateContactInfoWithEmail(string email, string mobile)
     {
