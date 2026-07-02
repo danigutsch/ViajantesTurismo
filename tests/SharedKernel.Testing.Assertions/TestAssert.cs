@@ -244,18 +244,18 @@ public static class TestAssert
     /// <summary>
     /// Verifies that an async action throws the expected exception.
     /// </summary>
-    public static Task<T> ThrowsAsync<T>(Func<Task> testCode)
+    public static Task<T> Throws<T>(Func<Task> testCode)
         where T : Exception => Xunit.Assert.ThrowsAsync<T>(testCode);
 
     /// <summary>
     /// Verifies that an async action throws the expected exception.
     /// </summary>
-    public static Task<T> ThrowsAsync<T>(string? paramName, Func<Task> testCode)
+    public static Task<T> Throws<T>(string? paramName, Func<Task> testCode)
         where T : ArgumentException => Xunit.Assert.ThrowsAsync<T>(paramName, testCode);
 
     /// <summary>
     /// Verifies that an async action throws an exception assignable to the expected type.
     /// </summary>
-    public static Task<T> ThrowsAnyAsync<T>(Func<Task> testCode)
+    public static Task<T> ThrowsAny<T>(Func<Task> testCode)
         where T : Exception => Xunit.Assert.ThrowsAnyAsync<T>(testCode);
 }
