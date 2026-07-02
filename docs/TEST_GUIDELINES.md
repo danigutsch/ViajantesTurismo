@@ -365,8 +365,10 @@ Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expec
 repository assertion surface when no extension exists yet. Direct `Xunit.Assert` is allowed
 inside `tests/SharedKernel.Testing.Assertions` because that project implements the wrappers.
 Generated, sample, or explicitly non-maintained test assets may keep direct assertions until
-they are regenerated or brought under maintenance. Add new extension wrappers only for
-assertion patterns with repeated callers; do not introduce an external fluent assertion package.
+they are regenerated or brought under maintenance. A documented temporary migration exception
+may also keep direct assertions while a broader test area is being converted. Add new extension
+wrappers only for assertion patterns with repeated callers; do not introduce an external fluent
+assertion package.
 
 Keep method calls and computed values out of assertion arguments when practical.
 Assign them to local variables first so failures are easier to inspect while debugging.
