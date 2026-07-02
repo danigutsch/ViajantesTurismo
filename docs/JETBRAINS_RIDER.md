@@ -14,11 +14,11 @@ state part of normal code changes.
 ## Do not commit
 
 - `*.sln.DotSettings.user` personal Rider/ReSharper overrides.
-- `.idea/**/workspace.xml`, `tasks.xml`, `usage.statistics.xml`, `dictionaries/`, and
-  `shelf/`.
-- Generated, sensitive, or high-churn `.idea` files such as `contentModel.xml`, `dataSources/`,
-  `dataSources.local.xml`, `sqlDataSources.xml`, `dynamic.xml`, `httpRequests/`, `caches/`, and
-  plugin-local state.
+- `.idea/**/workspace.xml`, `.idea/**/tasks.xml`, `.idea/**/usage.statistics.xml`,
+  `.idea/**/dictionaries/`, and `.idea/**/shelf/`.
+- Generated, sensitive, or high-churn `.idea` files such as `.idea/**/contentModel.xml`,
+  `.idea/**/dataSources/`, `.idea/**/dataSources.local.xml`, `.idea/**/sqlDataSources.xml`,
+  `.idea/**/dynamic.xml`, `.idea/**/httpRequests/`, `.idea/**/caches/`, and plugin-local state.
 - `http-client.private.env.json` or other local HTTP-client secrets.
 
 ## C#/.NET settings
