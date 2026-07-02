@@ -188,8 +188,12 @@ Planned/evolving:
 - Gallery changes should move behind event-sourced Catalog commands before image read models are
   treated as rebuildable projections.
 - Binary storage/upload remains an adapter concern outside the Catalog aggregate.
-- Upload processing, AI-assisted alt text/caption review, and geolocation policy remain future design
-  work.
+- Upload processing remains asynchronous future work after original storage.
+- AI-assisted alt text/caption generation remains a separate C# implementation slice; generated text is
+  review-required by default and should be evaluated before publication.
+- Grafana-visible observability for generation, evaluation, review outcomes, and publication blockers
+  remains future work.
+- Geolocation policy remains future design work.
 
 See [Architecture flows](../architecture/FLOWS.md#media-gallery-and-image-metadata-flows)
 for the media/gallery flow.
