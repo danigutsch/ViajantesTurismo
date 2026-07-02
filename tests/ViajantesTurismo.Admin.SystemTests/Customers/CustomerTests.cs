@@ -175,6 +175,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.FillAsync("#occupation", "Senior QA Engineer");
         await Page.FillAsync("#mobile", "");
         await Page.FillAsync("#mobile", "+5511999990099");
+        await Page.Locator("#mobile").BlurAsync();
+        await Expect(Page.Locator("#occupation")).ToHaveValueAsync("Senior QA Engineer");
+        await Expect(Page.Locator("#mobile")).ToHaveValueAsync("+5511999990099");
 
         await Page.GetButton("Update Customer").ClickAsync();
 

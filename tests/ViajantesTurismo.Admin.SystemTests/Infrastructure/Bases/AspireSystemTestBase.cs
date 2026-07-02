@@ -34,7 +34,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     protected async Task NavigateTo(string relativePath)
     {
-        const int maxAttempts = 3;
+        const int maxAttempts = 5;
 
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
