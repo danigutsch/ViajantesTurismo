@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using SharedKernel.Testing.Assertions;
+using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
 
@@ -14,7 +16,10 @@ public sealed class InfrastructureDependencyInjectionTests
         using var provider = CatalogInfrastructureTestServices.CreateProvider();
 
         // Assert
-        Assert.NotNull(provider.GetRequiredService<CatalogDbContext>());
-        Assert.IsType<EfPublicContentStore>(provider.GetRequiredService<IPublicContentStore>());
+        provider.GetRequiredService<CatalogDbContext>().ShouldNotBeNull();
+        provider.GetRequiredService<IPublicContentStore>().ShouldBeOfType<EfPublicContentStore>();
+        provider.GetRequiredService<IMediaObjectStore>().ShouldBeOfType<LocalMediaObjectStore>();
+        provider.GetRequiredService<IMediaUploadScanner>().ShouldBeOfType<NoOpMediaUploadScanner>();
+        provider.GetRequiredService<IMediaUploadValidator>().ShouldBeOfType<MediaUploadValidator>();
     }
 }

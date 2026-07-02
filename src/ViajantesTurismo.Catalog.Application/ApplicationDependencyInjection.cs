@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
+using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.Application;
 
@@ -26,6 +27,7 @@ public static class ApplicationDependencyInjection
             ServiceDescriptor.Singleton<
                 IValidateOptions<IntegrationEventOptions>,
                 IntegrationEventOptionsValidator>());
+        services.AddCatalogMediaApplication();
 
         return services;
     }

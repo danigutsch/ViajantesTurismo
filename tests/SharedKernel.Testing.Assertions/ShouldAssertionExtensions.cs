@@ -48,4 +48,54 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The expected fragment.</param>
     public static void ShouldContain(this string? actual, string expected) => TestAssert.Contains(expected, actual, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Verifies that a collection contains the expected item.
+    /// </summary>
+    /// <typeparam name="T">The item type.</typeparam>
+    /// <param name="actual">The actual collection.</param>
+    /// <param name="expected">The expected item.</param>
+    public static void ShouldContain<T>(this IEnumerable<T> actual, T expected) => TestAssert.Contains(expected, actual);
+
+    /// <summary>
+    /// Verifies that a collection is empty.
+    /// </summary>
+    /// <typeparam name="T">The item type.</typeparam>
+    /// <param name="actual">The actual collection.</param>
+    public static void ShouldBeEmpty<T>(this IEnumerable<T> actual) => TestAssert.Empty(actual);
+
+    /// <summary>
+    /// Verifies that a value has the expected runtime type.
+    /// </summary>
+    /// <typeparam name="T">The expected type.</typeparam>
+    /// <param name="actual">The actual value.</param>
+    /// <returns>The typed value.</returns>
+    public static T ShouldBeOfType<T>(this object? actual) => TestAssert.IsType<T>(actual);
+
+    /// <summary>
+    /// Verifies that an action throws the expected exception.
+    /// </summary>
+    /// <typeparam name="T">The expected exception type.</typeparam>
+    /// <param name="action">The action.</param>
+    /// <returns>The thrown exception.</returns>
+    public static T ShouldThrow<T>(this Action action)
+        where T : Exception => TestAssert.Throws<T>(action);
+
+    /// <summary>
+    /// Verifies that an async action throws the expected exception.
+    /// </summary>
+    /// <typeparam name="T">The expected exception type.</typeparam>
+    /// <param name="action">The async action.</param>
+    /// <returns>The thrown exception.</returns>
+    public static Task<T> ShouldThrow<T>(this Func<Task> action)
+        where T : Exception => TestAssert.Throws<T>(action);
+
+    /// <summary>
+    /// Verifies that a reflection invocation throws an inner exception of the expected type.
+    /// </summary>
+    /// <typeparam name="T">The expected inner exception type.</typeparam>
+    /// <param name="action">The reflection action.</param>
+    /// <returns>The typed inner exception.</returns>
+    public static T ShouldThrowInner<T>(this Action action)
+        where T : Exception => ExceptionAssertions.ThrowsInner<T>(action);
 }

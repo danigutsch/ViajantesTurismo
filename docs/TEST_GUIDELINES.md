@@ -353,13 +353,17 @@ Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 
 ### Assertion readability
 
-Prefer repository-owned assertion wrappers from `SharedKernel.Testing.Assertions` for new
-and touched tests. Direct `Xunit.Assert` calls are legacy-compatible during migration, but
-`SKTEST006` reports them so projects can move to the wrapper API incrementally.
+Use repository-owned assertion wrappers from `SharedKernel.Testing.Assertions` across the
+repository. Direct `Xunit.Assert` calls are legacy-compatible during migration, but
+`SKTEST006` reports them and new code must not add them unless there is a specific
+documented reason that the wrapper surface cannot express the assertion.
 
-Use wrapper APIs when they exist, especially nullability-aware checks such as
-`ShouldNotBeNull()` or `TestAssert.NotNull(...)`. Add new wrappers only for assertion
-patterns with repeated callers; do not introduce an external fluent assertion package.
+Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expected)`,
+`actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`, and
+`action.ShouldThrow<InvalidOperationException>()`. Use `TestAssert` only as the low-level
+repository assertion surface when no extension exists yet. Add new extension wrappers only
+for assertion patterns with repeated callers; do not introduce an external fluent assertion
+package.
 
 Keep method calls and computed values out of assertion arguments when practical.
 Assign them to local variables first so failures are easier to inspect while debugging.
