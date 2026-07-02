@@ -9,10 +9,10 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
 {
     private static readonly InvariantCoverageValidator Validator = new();
 
-    private static readonly string ReportTitle = string.Concat("INVARIANT", " COVERAGE REPORT");
-    private static readonly string UncoveredInvariantsHeading = string.Concat('\n', "UNCOVERED INVARIANTS:");
-    private static readonly string CoverageByInvariantHeading = string.Concat('\n', "COVERAGE BY INVARIANT:");
-    private static readonly string CoverageReportsWrittenMessage = string.Concat("Coverage reports", " written to:");
+    private static readonly string ReportTitle = string.Join(' ', "INVARIANT", "COVERAGE", "REPORT");
+    private static readonly string UncoveredInvariantsHeading = string.Join(Environment.NewLine, string.Empty, "UNCOVERED INVARIANTS:");
+    private static readonly string CoverageByInvariantHeading = string.Join(Environment.NewLine, string.Empty, "COVERAGE BY INVARIANT:");
+    private static readonly string CoverageReportsWrittenMessage = string.Join(' ', "Coverage", "reports", "written", "to:");
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = true };
 
@@ -64,7 +64,6 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
         }
 
         Console.WriteLine(new string('=', 80) + "\n");
-
 
         Directory.CreateDirectory("TestResults");
 
