@@ -40,7 +40,10 @@ This file overrides root guidance where test-specific behavior is needed.
 - Feature files should follow `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
-- Prefer repository-owned assertions from `SharedKernel.Testing.Assertions` in new and touched tests;
+- Use repository-owned extension assertions from `SharedKernel.Testing.Assertions` across tests,
+  for example `actual.ShouldBe(expected)`, `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
+  and `action.ShouldThrow<InvalidOperationException>()`.
+- Use `TestAssert` only when no extension wrapper exists yet and there is a specific reason not to add one;
   direct `Xunit.Assert` is legacy-compatible only while the wrapper migration is incomplete.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.

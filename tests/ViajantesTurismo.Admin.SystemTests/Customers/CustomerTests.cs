@@ -133,7 +133,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var additionalInfoInput = Page.Locator("#additionalInfo");
 
         await allergiesInput.FillAsync("None known");
+        await allergiesInput.BlurAsync();
         await additionalInfoInput.FillAsync("E2E test medical info");
+        await additionalInfoInput.BlurAsync();
         await Expect(allergiesInput).ToHaveValueAsync("None known");
         await Expect(additionalInfoInput).ToHaveValueAsync("E2E test medical info");
 
