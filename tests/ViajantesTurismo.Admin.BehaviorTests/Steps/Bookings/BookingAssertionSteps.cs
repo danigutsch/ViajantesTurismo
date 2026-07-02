@@ -44,7 +44,8 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
         TestAssert.NotNull(context.BookingOperationResult);
         var result = context.BookingOperationResult.Value;
         TestAssert.True(result.IsFailure);
-        TestAssert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        var errorDetails = TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.Contains(expectedMessage, errorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Then(@"the result should fail with message starting with ""(.*)""")]
@@ -53,7 +54,8 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
         TestAssert.NotNull(context.BookingOperationResult);
         var result = context.BookingOperationResult.Value;
         TestAssert.True(result.IsFailure);
-        TestAssert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        var errorDetails = TestAssert.NotNull(result.ErrorDetails);
+        TestAssert.StartsWith(expectedMessagePrefix, errorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Then("the booking room additional cost should be (.*)")]

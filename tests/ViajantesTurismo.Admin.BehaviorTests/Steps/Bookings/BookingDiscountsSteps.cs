@@ -165,7 +165,8 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     {
         TestAssert.NotNull(bookingContext.BookingCreationResult);
         TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        TestAssert.Contains(expectedErrorText, bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+        var errorDetails = TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
+        TestAssert.Contains(expectedErrorText, errorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [When(@"I attempt to apply a (-?\d+(?:\.\d+)?)% discount to a booking")]
@@ -203,7 +204,8 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     {
         TestAssert.NotNull(bookingContext.BookingCreationResult);
         TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        TestAssert.Contains("percentage", bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+        var errorDetails = TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
+        TestAssert.Contains("percentage", errorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [When("I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]
