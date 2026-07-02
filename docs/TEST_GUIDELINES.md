@@ -344,8 +344,8 @@ public void Invalid_Amount_Should_Return_Invalid_Result()
     var result = PaymentErrors.InvalidAmount(invalidAmount);
 
     // Assert
-    Assert.False(result.IsSuccess);
-    Assert.Contains("Payment amount must be greater than zero", result.ErrorDetails.Detail);
+    result.IsSuccess.ShouldBeFalse();
+    result.ErrorDetails.Detail.ShouldContain("Payment amount must be greater than zero");
 }
 ```
 
@@ -354,16 +354,21 @@ Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 ### Assertion readability
 
 Use repository-owned assertion wrappers from `SharedKernel.Testing.Assertions` across the
-repository. Direct `Xunit.Assert` calls are legacy-compatible during migration, but
-`SKTEST006` reports them and new code must not add them unless there is a specific
-documented reason that the wrapper surface cannot express the assertion.
+repository. Wrapper-first is the policy for maintained test code. `SKTEST006`
+reports direct `Xunit.Assert` calls, and new or touched tests must not add them
+unless there is a specific documented reason that the wrapper surface cannot
+express the assertion.
 
 Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expected)`,
 `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`, and
 `action.ShouldThrow<InvalidOperationException>()`. Use `TestAssert` only as the low-level
-repository assertion surface when no extension exists yet. Add new extension wrappers only
-for assertion patterns with repeated callers; do not introduce an external fluent assertion
-package.
+repository assertion surface when no extension exists yet. Direct `Xunit.Assert` is allowed
+inside `tests/SharedKernel.Testing.Assertions` because that project implements the wrappers.
+Generated, sample, or explicitly non-maintained test assets may keep direct assertions until
+they are regenerated or brought under maintenance. A documented temporary migration exception
+may also keep direct assertions while a broader test area is being converted. Add new extension
+wrappers only for assertion patterns with repeated callers; do not introduce an external fluent
+assertion package.
 
 Keep method calls and computed values out of assertion arguments when practical.
 Assign them to local variables first so failures are easier to inspect while debugging.
@@ -371,10 +376,10 @@ Assign them to local variables first so failures are easier to inspect while deb
 ```csharp
 // Good
 var errorType = span.GetTagItem("error.type");
-Assert.Equal("InvalidOperationException", errorType);
+errorType.ShouldBe("InvalidOperationException");
 
 // Avoid
-Assert.Equal("InvalidOperationException", span.GetTagItem("error.type"));
+span.GetTagItem("error.type").ShouldBe("InvalidOperationException");
 ```
 
 ## Blazor Component Testing (bUnit)
@@ -399,7 +404,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
 
         // Assert
         var badge = cut.Find("span.badge");
-        Assert.Contains(expectedCssClass, badge.ClassList);
+        badge.ClassList.ShouldContain(expectedCssClass);
     }
 }
 ```
@@ -428,7 +433,7 @@ Use `[Theory]` with `[InlineData]` for multiple inputs:
 public void Maps_all_supported_currency_values(Currency domain, CurrencyDto expected)
 {
     var result = TourMapper.MapToCurrencyDto(domain);
-    Assert.Equal(expected, result);
+    result.ShouldBe(expected);
 }
 ```
 
@@ -444,7 +449,7 @@ public void Map_To_Currency_Dto_Should_Cover_All_Enum_Values()
     foreach (var domainValue in allDomainValues)
     {
         var mappedEnum = TourMapper.MapToCurrencyDto(domainValue);
-        Assert.True(Enum.IsDefined(mappedEnum));
+        Enum.IsDefined(mappedEnum).ShouldBeTrue();
     }
 }
 ```
@@ -458,9 +463,9 @@ Always test error conditions:
 public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
 {
     const Currency invalidValue = (Currency)999;
-    var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-        TourMapper.MapToCurrencyDto(invalidValue));
-    Assert.Contains("Invalid currency value", exception.Message);
+    Action action = () => TourMapper.MapToCurrencyDto(invalidValue);
+    action.ShouldThrow<ArgumentOutOfRangeException>()
+        .Message.ShouldContain("Invalid currency value");
 }
 ```
 
@@ -505,7 +510,7 @@ public static class TestHelpers
 
 ## Assertions Best Practices
 
-- Use specific assertions (`Assert.Equal`, `Assert.Contains`) over generic `Assert.True`
+- Use specific wrapper assertions (`ShouldBe`, `ShouldContain`) over generic `ShouldBeTrue`
 - Multiple related assertions in one test are acceptable
 - Avoid conditional logic in assertions
 - Be specific but not fragile (e.g. check that the message contains key phrase, not exact text)
@@ -636,15 +641,15 @@ All mapper methods need three tests:
 public sealed class ToursApiTests : IDisposable
 {
     // Assert status codes
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
     // Assert response content
     var tour = await response.Content.ReadFromJsonAsync<GetTourDto>();
-    Assert.NotNull(tour);
+    tour.ShouldNotBeNull();
 
     // Assert database state
     var dbTour = _dbContext.Tours.FirstOrDefault(t => t.Id == tourId);
-    Assert.NotNull(dbTour);
+    dbTour.ShouldNotBeNull();
 }
 ```
 
@@ -839,8 +844,8 @@ public void Given_A_Tour_Exists_With_Min_And_Max_Customers(int min, int max)
 [Then(@"the booking should fail with ""(.*)"" error")]
 public void Then_The_Booking_Should_Fail_With_Error(string expectedError)
 {
-    Assert.False(bookingContext.Result.IsSuccess);
-    Assert.Contains(expectedError, bookingContext.Result.ErrorDetails.Detail);
+    bookingContext.Result.IsSuccess.ShouldBeFalse();
+    bookingContext.Result.ErrorDetails.Detail.ShouldContain(expectedError);
 }
 ```
 

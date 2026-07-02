@@ -1,4 +1,3 @@
-using SharedKernel.Testing.Assertions;
 using SharedKernel.Testing.Contracts;
 
 namespace ViajantesTurismo.Admin.ContractTests.Tours;

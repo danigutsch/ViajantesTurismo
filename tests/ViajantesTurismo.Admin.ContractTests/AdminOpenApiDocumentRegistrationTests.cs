@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>
@@ -17,10 +15,10 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapCustomerEndpoints",
             "MapBookingEndpoints");
 
-        Assert.Contains("/tours", document.Paths.Keys);
-        Assert.Contains("/tours/{id}", document.Paths.Keys);
-        Assert.DoesNotContain("/customers", document.Paths.Keys);
-        Assert.DoesNotContain("/bookings", document.Paths.Keys);
+        document.Paths.Keys.ShouldContain("/tours");
+        document.Paths.Keys.ShouldContain("/tours/{id}");
+        document.Paths.Keys.ShouldNotContain("/customers");
+        document.Paths.Keys.ShouldNotContain("/bookings");
     }
 
     [Fact]
@@ -33,16 +31,16 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapCustomerImportEndpoints",
             "MapToursEndpoints");
 
-        Assert.Contains("/customers", document.Paths.Keys);
-        Assert.Contains("/customers/{id}", document.Paths.Keys);
-        Assert.Contains("/customers/import", document.Paths.Keys);
-        Assert.Contains("/customers/import/commit", document.Paths.Keys);
-        Assert.DoesNotContain("/tours", document.Paths.Keys);
+        document.Paths.Keys.ShouldContain("/customers");
+        document.Paths.Keys.ShouldContain("/customers/{id}");
+        document.Paths.Keys.ShouldContain("/customers/import");
+        document.Paths.Keys.ShouldContain("/customers/import/commit");
+        document.Paths.Keys.ShouldNotContain("/tours");
 
         var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/customers/import/commit");
-        Assert.NotNull(importSchema.AllOf);
-        Assert.Contains(importSchema.AllOf, static item => item.Properties?.ContainsKey("file") == true);
-        Assert.Contains(importSchema.AllOf, static item => item.Properties?.ContainsKey("conflictResolutions") == true);
+        importSchema.AllOf.ShouldNotBeNull();
+        importSchema.AllOf.ShouldContain(static item => item.Properties?.ContainsKey("file") == true);
+        importSchema.AllOf.ShouldContain(static item => item.Properties?.ContainsKey("conflictResolutions") == true);
     }
 
     [Fact]
@@ -57,8 +55,8 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "MapBookingEndpoints",
             "MapErrorDocumentationEndpoints");
 
-        Assert.Contains("/docs/errors", document.Paths.Keys);
-        Assert.Contains("/docs/errors/{identifier}", document.Paths.Keys);
+        document.Paths.Keys.ShouldContain("/docs/errors");
+        document.Paths.Keys.ShouldContain("/docs/errors/{identifier}");
     }
 
 }

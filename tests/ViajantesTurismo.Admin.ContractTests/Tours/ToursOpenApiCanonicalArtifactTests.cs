@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace ViajantesTurismo.Admin.ContractTests.Tours;
 
 /// <summary>
