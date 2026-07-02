@@ -20,7 +20,7 @@ public sealed class MediaUploadValidationOptionsValidatorTests
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
-        exception.Message.ShouldContain("Media upload maximum length must be greater than zero.");
+        exception.Message.ShouldContain("Media upload maximum length must be greater than zero.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class MediaUploadValidationOptionsValidatorTests
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
-        exception.Message.ShouldContain("At least one media upload content type must be allowed.");
+        exception.Message.ShouldContain("At least one media upload content type must be allowed.", StringComparison.Ordinal);
     }
 
     [Fact]
