@@ -1,3 +1,6 @@
+using SharedKernel.Testing.Assertions;
+using SharedKernel.Testing.Contracts;
+
 namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 
 /// <summary>
@@ -12,26 +15,26 @@ internal static class BookingsOpenApiAssertions
     {
         ArgumentNullException.ThrowIfNull(contract);
 
-        Xunit.Assert.Equal("3.1.1", contract.OpenApiVersion);
-        Xunit.Assert.Equal("ViajantesTurismo.Admin.ApiService | bookings", contract.Title);
-        Xunit.Assert.Equal("GetBookings", contract.ListBookingsOperationId);
-        Xunit.Assert.Equal("GetBookingById", contract.GetBookingByIdOperationId);
-        Xunit.Assert.Equal("CreateBooking", contract.CreateBookingOperationId);
-        Xunit.Assert.Equal("#/components/schemas/CreateBookingDto", contract.CreateBookingSchemaReference);
-        Xunit.Assert.Equal("DeleteBooking", contract.DeleteBookingOperationId);
-        Xunit.Assert.Equal("GetBookingsByTourId", contract.GetBookingsByTourIdOperationId);
-        Xunit.Assert.Equal("GetBookingsByCustomerId", contract.GetBookingsByCustomerIdOperationId);
-        Xunit.Assert.Equal("UpdateBookingDiscount", contract.UpdateBookingDiscountOperationId);
-        Xunit.Assert.Equal("#/components/schemas/UpdateBookingDiscountDto", contract.UpdateBookingDiscountSchemaReference);
-        Xunit.Assert.Equal("UpdateBookingDetails", contract.UpdateBookingDetailsOperationId);
-        Xunit.Assert.Equal("#/components/schemas/UpdateBookingDetailsDto", contract.UpdateBookingDetailsSchemaReference);
-        Xunit.Assert.Equal("UpdateBookingNotes", contract.UpdateBookingNotesOperationId);
-        Xunit.Assert.Equal("#/components/schemas/UpdateBookingNotesDto", contract.UpdateBookingNotesSchemaReference);
-        Xunit.Assert.Equal("ConfirmBooking", contract.ConfirmBookingOperationId);
-        Xunit.Assert.Equal("CancelBooking", contract.CancelBookingOperationId);
-        Xunit.Assert.Equal("CompleteBooking", contract.CompleteBookingOperationId);
-        Xunit.Assert.Equal("RecordPayment", contract.RecordPaymentOperationId);
-        Xunit.Assert.Equal("#/components/schemas/CreatePaymentDto", contract.RecordPaymentSchemaReference);
+        contract.OpenApiVersion.ShouldBe("3.1.1");
+        contract.Title.ShouldBe("ViajantesTurismo.Admin.ApiService | bookings");
+        contract.ListBookingsOperationId.ShouldBe("GetBookings");
+        contract.GetBookingByIdOperationId.ShouldBe("GetBookingById");
+        contract.CreateBookingOperationId.ShouldBe("CreateBooking");
+        contract.CreateBookingSchemaReference.ShouldBe("#/components/schemas/CreateBookingDto");
+        contract.DeleteBookingOperationId.ShouldBe("DeleteBooking");
+        contract.GetBookingsByTourIdOperationId.ShouldBe("GetBookingsByTourId");
+        contract.GetBookingsByCustomerIdOperationId.ShouldBe("GetBookingsByCustomerId");
+        contract.UpdateBookingDiscountOperationId.ShouldBe("UpdateBookingDiscount");
+        contract.UpdateBookingDiscountSchemaReference.ShouldBe("#/components/schemas/UpdateBookingDiscountDto");
+        contract.UpdateBookingDetailsOperationId.ShouldBe("UpdateBookingDetails");
+        contract.UpdateBookingDetailsSchemaReference.ShouldBe("#/components/schemas/UpdateBookingDetailsDto");
+        contract.UpdateBookingNotesOperationId.ShouldBe("UpdateBookingNotes");
+        contract.UpdateBookingNotesSchemaReference.ShouldBe("#/components/schemas/UpdateBookingNotesDto");
+        contract.ConfirmBookingOperationId.ShouldBe("ConfirmBooking");
+        contract.CancelBookingOperationId.ShouldBe("CancelBooking");
+        contract.CompleteBookingOperationId.ShouldBe("CompleteBooking");
+        contract.RecordPaymentOperationId.ShouldBe("RecordPayment");
+        contract.RecordPaymentSchemaReference.ShouldBe("#/components/schemas/CreatePaymentDto");
     }
 
     /// <summary>
@@ -44,6 +47,6 @@ internal static class BookingsOpenApiAssertions
         ArgumentNullException.ThrowIfNull(canonicalContract);
         ArgumentNullException.ThrowIfNull(generatedContract);
 
-        Xunit.Assert.Equal(canonicalContract, generatedContract);
+        ContractArtifactAssertions.MatchesGeneratedArtifact(canonicalContract, generatedContract);
     }
 }

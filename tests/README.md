@@ -91,10 +91,10 @@ fixture contract as a repository-wide test abstraction.
 
 ### UI integration tests
 
-- Verify hosted UI composition, route-level rendering, and web-app wiring below full browser E2E.
+- Verify hosted UI composition, route-level rendering, and web-app wiring below full browser system tests.
 - Prefer app-visible entrypoints over internal service reach-through.
 - Reuse typed contract clients where the running web application composes over them.
-- Do not collapse this layer into bUnit component tests or Playwright E2E.
+- Do not collapse this layer into bUnit component tests or Playwright system tests.
 - This layer is defined by responsibility, not by a promise that every web project will implement it the same way.
 
 ### Integration tests
@@ -111,7 +111,7 @@ fixture contract as a repository-wide test abstraction.
 - Verify compatibility of a public or external boundary independently of broader runtime behavior.
 - Prefer boundary artifacts such as generated OpenAPI documents, serialized request or response payloads, schema fragments, or consumer-provider contracts.
 - Snapshot testing is allowed here when the snapshot represents the published contract artifact rather than private implementation structure.
-- Do not use this lane for seeded database behavior, end-to-end workflows, UI
+- Do not use this lane for seeded database behavior, full-system workflows, UI
   rendering, or broad request lifecycle coverage that belongs in integration or
   system tests.
 - If the test must prove business behavior through real HTTP plus persistence, it is an integration test instead.
@@ -136,7 +136,7 @@ fixture contract as a repository-wide test abstraction.
 
 - Name projects by **system under test** and **scope**.
 - Do not encode temporary host technology in permanent project names.
-- Prefer `SystemTests` over `E2ETests` for the long-term full-system browser lane.
+- Use `SystemTests` for the long-term full-system browser lane; do not introduce alternate end-to-end project names.
 - Use `ContractTests` only when a public or external compatibility boundary matters independently.
 - Treat snapshot testing as a technique inside a project before promoting it to a project family.
 
@@ -152,7 +152,7 @@ Keep tags orthogonal and stable across host-model migration.
 - `Scope=contract`
 - `Scope=ui-integration`
 - `Scope=integration`
-- `Scope=e2e`
+- `Scope=system`
 - `Scope=architecture`
 
 ### Surface
@@ -189,5 +189,5 @@ Keep tags orthogonal and stable across host-model migration.
 
 - Prefer the cheapest layer that proves the behavior.
 - Keep host model separate from business scope.
-- Full-host integration and E2E execution use Aspire-managed hosting.
+- Full-host integration and system-test execution use Aspire-managed hosting.
 - Do not add host abstractions that conflict with Aspire-managed execution.

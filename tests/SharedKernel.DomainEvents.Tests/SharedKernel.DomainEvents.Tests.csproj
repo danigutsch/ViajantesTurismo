@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
+        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
     </ItemGroup>
 
 </Project>

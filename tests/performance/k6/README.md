@@ -21,7 +21,7 @@ The `smoke` and `average-load` profiles are intended for:
 
 - local repeatable verification
 - lightweight reliability investigation
-- support work for flaky E2E investigation
+- support work for flaky system-test investigation
 
 The `stress` profile is manual-only for now. These assets are not intended for:
 

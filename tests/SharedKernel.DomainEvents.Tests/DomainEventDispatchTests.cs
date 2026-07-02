@@ -1,4 +1,5 @@
 using SharedKernel.Mediator;
+using SharedKernel.Testing.Assertions;
 
 namespace SharedKernel.DomainEvents.Tests;
 
@@ -17,24 +18,20 @@ public sealed class DomainEventDispatchTests
         await dispatcher.Dispatch(domainEvent, cancellationTokenSource.Token);
 
         // Assert
-        var notification = Assert.IsType<DomainEventNotification<TestDomainEvent>>(publisher.Notification);
-        Assert.Same(domainEvent, notification.DomainEvent);
-        Assert.Equal(cancellationTokenSource.Token, publisher.CancellationToken);
+        var notification = TestAssert.IsType<DomainEventNotification<TestDomainEvent>>(publisher.Notification);
+        TestAssert.Same(domainEvent, notification.DomainEvent);
+        publisher.CancellationToken.ShouldBe(cancellationTokenSource.Token);
     }
 
     [Fact]
     public void Dispatcher_constructor_rejects_null_publisher()
     {
         // Arrange
-        var constructor = typeof(MediatorDomainEventDispatcher).GetConstructor([typeof(IPublisher)]);
-        Assert.NotNull(constructor);
+        var constructor = typeof(MediatorDomainEventDispatcher).GetConstructor([typeof(IPublisher)]).ShouldNotBeNull();
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => constructor.Invoke([null]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("publisher", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => constructor.Invoke([null]));
+        argumentException.ParamName.ShouldBe("publisher");
     }
 
     [Fact]
@@ -42,16 +39,12 @@ public sealed class DomainEventDispatchTests
     {
         // Arrange
         var dispatcher = new MediatorDomainEventDispatcher(new CapturingPublisher());
-        var method = typeof(MediatorDomainEventDispatcher).GetMethod(nameof(MediatorDomainEventDispatcher.Dispatch));
-        Assert.NotNull(method);
+        var method = typeof(MediatorDomainEventDispatcher).GetMethod(nameof(MediatorDomainEventDispatcher.Dispatch)).ShouldNotBeNull();
         var genericMethod = method.MakeGenericMethod(typeof(TestDomainEvent));
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => genericMethod.Invoke(dispatcher, [null, CancellationToken.None]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("domainEvent", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => genericMethod.Invoke(dispatcher, [null, CancellationToken.None]));
+        argumentException.ParamName.ShouldBe("domainEvent");
     }
 
     [Fact]
@@ -59,7 +52,7 @@ public sealed class DomainEventDispatchTests
     {
         var domainEvent = new TestDomainEvent("tour-created");
 
-        Assert.IsNotAssignableFrom<INotification>(domainEvent);
+        TestAssert.IsNotAssignableFrom<INotification>(domainEvent);
     }
 
     [Fact]
@@ -75,38 +68,30 @@ public sealed class DomainEventDispatchTests
         await adapter.Handle(new DomainEventNotification<TestDomainEvent>(domainEvent), cancellationTokenSource.Token);
 
         // Assert
-        Assert.Same(domainEvent, handler.HandledEvent);
-        Assert.Equal(cancellationTokenSource.Token, handler.CancellationToken);
+        TestAssert.Same(domainEvent, handler.HandledEvent);
+        handler.CancellationToken.ShouldBe(cancellationTokenSource.Token);
     }
 
     [Fact]
     public void Domain_event_notification_rejects_null_domain_events()
     {
         // Arrange
-        var constructor = typeof(DomainEventNotification<TestDomainEvent>).GetConstructor([typeof(TestDomainEvent)]);
-        Assert.NotNull(constructor);
+        var constructor = typeof(DomainEventNotification<TestDomainEvent>).GetConstructor([typeof(TestDomainEvent)]).ShouldNotBeNull();
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => constructor.Invoke([null]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("domainEvent", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => constructor.Invoke([null]));
+        argumentException.ParamName.ShouldBe("domainEvent");
     }
 
     [Fact]
     public void Notification_handler_rejects_null_handlers()
     {
         // Arrange
-        var constructor = typeof(DomainEventNotificationHandler<TestDomainEvent>).GetConstructor([typeof(IDomainEventHandler<TestDomainEvent>)]);
-        Assert.NotNull(constructor);
+        var constructor = typeof(DomainEventNotificationHandler<TestDomainEvent>).GetConstructor([typeof(IDomainEventHandler<TestDomainEvent>)]).ShouldNotBeNull();
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => constructor.Invoke([null]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("handler", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => constructor.Invoke([null]));
+        argumentException.ParamName.ShouldBe("handler");
     }
 
     [Fact]
@@ -114,14 +99,10 @@ public sealed class DomainEventDispatchTests
     {
         // Arrange
         var adapter = new DomainEventNotificationHandler<TestDomainEvent>(new TestDomainEventHandler());
-        var method = typeof(DomainEventNotificationHandler<TestDomainEvent>).GetMethod(nameof(DomainEventNotificationHandler<TestDomainEvent>.Handle));
-        Assert.NotNull(method);
+        var method = typeof(DomainEventNotificationHandler<TestDomainEvent>).GetMethod(nameof(DomainEventNotificationHandler<TestDomainEvent>.Handle)).ShouldNotBeNull();
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => method.Invoke(adapter, [null, CancellationToken.None]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("notification", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => method.Invoke(adapter, [null, CancellationToken.None]));
+        argumentException.ParamName.ShouldBe("notification");
     }
 }

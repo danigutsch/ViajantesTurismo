@@ -4,7 +4,7 @@
 
 ## Context
 
-Previously, all E2E and integration tests ran sequentially due to the `[Collection("E2E")]` and
+Previously, all system and integration tests ran sequentially due to the browser-test collection and
 `[Collection("Admin API")]` collection definitions. This caused the test suite to be slow and inefficient, even though
 most individual tests were parallel-safe.
 
@@ -52,7 +52,7 @@ We implement test parallelization using:
 
 ### Pros
 
-- **Speed**: Full E2E suite runs ~30% faster (18 tests in parallel vs. sequential); integration suite similarly
+- **Speed**: Full system-test suite runs ~30% faster (18 tests in parallel vs. sequential); integration suite similarly
 improved.
 - **Clarity**: Tests declare intent—parallel tests are explicitly data-independent; serial tests are marked with a
   collection.

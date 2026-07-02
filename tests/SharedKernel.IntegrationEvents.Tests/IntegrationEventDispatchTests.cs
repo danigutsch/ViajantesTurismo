@@ -1,4 +1,5 @@
 using SharedKernel.Mediator;
+using SharedKernel.Testing.Assertions;
 
 namespace SharedKernel.IntegrationEvents.Tests;
 
@@ -17,23 +18,19 @@ public sealed class IntegrationEventDispatchTests
         await dispatcher.Dispatch(integrationEvent, cancellationTokenSource.Token);
 
         // Assert
-        Assert.Same(integrationEvent, publisher.Notification);
-        Assert.Equal(cancellationTokenSource.Token, publisher.CancellationToken);
+        TestAssert.Same(integrationEvent, publisher.Notification);
+        publisher.CancellationToken.ShouldBe(cancellationTokenSource.Token);
     }
 
     [Fact]
     public void Constructor_rejects_null_publisher()
     {
         // Arrange
-        var constructor = typeof(MediatorIntegrationEventDispatcher).GetConstructor([typeof(IPublisher)]);
-        Assert.NotNull(constructor);
+        var constructor = typeof(MediatorIntegrationEventDispatcher).GetConstructor([typeof(IPublisher)]).ShouldNotBeNull();
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => constructor.Invoke([null]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("publisher", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => constructor.Invoke([null]));
+        argumentException.ParamName.ShouldBe("publisher");
     }
 
     [Fact]
@@ -41,16 +38,12 @@ public sealed class IntegrationEventDispatchTests
     {
         // Arrange
         var dispatcher = new MediatorIntegrationEventDispatcher(new CapturingPublisher());
-        var method = typeof(MediatorIntegrationEventDispatcher).GetMethod(nameof(MediatorIntegrationEventDispatcher.Dispatch));
-        Assert.NotNull(method);
+        var method = typeof(MediatorIntegrationEventDispatcher).GetMethod(nameof(MediatorIntegrationEventDispatcher.Dispatch)).ShouldNotBeNull();
         var genericMethod = method.MakeGenericMethod(typeof(TestIntegrationEvent));
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => genericMethod.Invoke(dispatcher, [null, CancellationToken.None]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("integrationEvent", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => genericMethod.Invoke(dispatcher, [null, CancellationToken.None]));
+        argumentException.ParamName.ShouldBe("integrationEvent");
     }
 
     [Fact]
@@ -58,7 +51,7 @@ public sealed class IntegrationEventDispatchTests
     {
         TestIntegrationEventHandler handler = new();
 
-        Assert.IsAssignableFrom<INotificationHandler<TestIntegrationEvent>>(handler);
+        TestAssert.IsAssignableFrom<INotificationHandler<TestIntegrationEvent>>(handler);
     }
 
     [Fact]
@@ -72,11 +65,11 @@ public sealed class IntegrationEventDispatchTests
         var integrationEvent = new TestIntegrationEvent(eventId, occurredAt, "tour-created");
 
         // Assert
-        Assert.Equal(eventId, integrationEvent.EventId);
-        Assert.Equal(occurredAt, integrationEvent.OccurredAt);
-        Assert.Equal("tour-created", integrationEvent.Name);
-        Assert.Equal("admin.tour.created", TestIntegrationEvent.EventType);
-        Assert.Equal(1, TestIntegrationEvent.EventVersion);
+        integrationEvent.EventId.ShouldBe(eventId);
+        integrationEvent.OccurredAt.ShouldBe(occurredAt);
+        integrationEvent.Name.ShouldBe("tour-created");
+        TestIntegrationEvent.EventType.ShouldBe("admin.tour.created");
+        TestIntegrationEvent.EventVersion.ShouldBe(1);
     }
 
 }

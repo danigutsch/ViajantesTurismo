@@ -67,6 +67,15 @@
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/SharedKernel.Testing/SharedKernel.Testing.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Assertions/SharedKernel.Testing.Assertions.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Contracts/SharedKernel.Testing.Contracts.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Data/SharedKernel.Testing.Data.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Http/SharedKernel.Testing.Http.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Integration/SharedKernel.Testing.Integration.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Scenarios/SharedKernel.Testing.Scenarios.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Snapshots/SharedKernel.Testing.Snapshots.csproj" />
+        <Project Path="tests/SharedKernel.Testing.System/SharedKernel.Testing.System.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Web/SharedKernel.Testing.Web.csproj" />
         <Project Path="tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj" />
         <Project Path="tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.IntegrationEvents.Tests/SharedKernel.IntegrationEvents.Tests.csproj" />

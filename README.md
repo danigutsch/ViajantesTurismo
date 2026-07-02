@@ -34,7 +34,7 @@ manage tours, travellers, bookings, payments, and customer-facing tour content i
 - **Persistence**: Entity Framework Core with PostgreSQL for relational storage and
     migrations.
 - **Quality**: xUnit v3 and Microsoft.Testing.Platform for unit, integration, behavior,
-    and end-to-end testing.
+    and system testing.
 - **Contracts**: OpenAPI for endpoint discovery and API exploration.
 
 ## Project Structure
@@ -195,7 +195,7 @@ The setup scripts check both conditions.
 
 On Linux distributions where `bash scripts/install-playwright.sh` skips
 `install --with-deps` (for example Ubuntu 25.10), browser download alone is not
-enough. Install the runtime libraries manually before running E2E tests:
+enough. Install the runtime libraries manually before running system tests:
 
 ```bash
 sudo apt-get update

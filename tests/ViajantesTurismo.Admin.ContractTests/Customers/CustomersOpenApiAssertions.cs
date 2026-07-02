@@ -1,3 +1,6 @@
+using SharedKernel.Testing.Assertions;
+using SharedKernel.Testing.Contracts;
+
 namespace ViajantesTurismo.Admin.ContractTests.Customers;
 
 /// <summary>
@@ -12,18 +15,18 @@ internal static class CustomersOpenApiAssertions
     {
         ArgumentNullException.ThrowIfNull(contract);
 
-        Xunit.Assert.Equal("3.1.1", contract.OpenApiVersion);
-        Xunit.Assert.Equal("ViajantesTurismo.Admin.ApiService | customers", contract.Title);
-        Xunit.Assert.Equal("GetCustomers", contract.ListCustomersOperationId);
-        Xunit.Assert.Equal("GetCustomerById", contract.GetCustomerByIdOperationId);
-        Xunit.Assert.Equal("CreateCustomer", contract.CreateCustomerOperationId);
-        Xunit.Assert.Equal("#/components/schemas/CreateCustomerDto", contract.CreateCustomerSchemaReference);
-        Xunit.Assert.Equal("UpdateCustomer", contract.UpdateCustomerOperationId);
-        Xunit.Assert.Equal("#/components/schemas/UpdateCustomerDto", contract.UpdateCustomerSchemaReference);
-        Xunit.Assert.Equal("ImportCustomers", contract.ImportCustomersOperationId);
-        Xunit.Assert.Equal("#/components/schemas/IFormFile", contract.ImportCustomersSchemaReference);
-        Xunit.Assert.Equal("CommitImportWithResolutions", contract.CommitImportOperationId);
-        Xunit.Assert.Equal("multipart-object-allOf:file+conflictResolutions", contract.CommitImportSchemaToken);
+        contract.OpenApiVersion.ShouldBe("3.1.1");
+        contract.Title.ShouldBe("ViajantesTurismo.Admin.ApiService | customers");
+        contract.ListCustomersOperationId.ShouldBe("GetCustomers");
+        contract.GetCustomerByIdOperationId.ShouldBe("GetCustomerById");
+        contract.CreateCustomerOperationId.ShouldBe("CreateCustomer");
+        contract.CreateCustomerSchemaReference.ShouldBe("#/components/schemas/CreateCustomerDto");
+        contract.UpdateCustomerOperationId.ShouldBe("UpdateCustomer");
+        contract.UpdateCustomerSchemaReference.ShouldBe("#/components/schemas/UpdateCustomerDto");
+        contract.ImportCustomersOperationId.ShouldBe("ImportCustomers");
+        contract.ImportCustomersSchemaReference.ShouldBe("#/components/schemas/IFormFile");
+        contract.CommitImportOperationId.ShouldBe("CommitImportWithResolutions");
+        contract.CommitImportSchemaToken.ShouldBe("multipart-object-allOf:file+conflictResolutions");
     }
 
     /// <summary>
@@ -36,6 +39,6 @@ internal static class CustomersOpenApiAssertions
         ArgumentNullException.ThrowIfNull(canonicalContract);
         ArgumentNullException.ThrowIfNull(generatedContract);
 
-        Xunit.Assert.Equal(canonicalContract, generatedContract);
+        ContractArtifactAssertions.MatchesGeneratedArtifact(canonicalContract, generatedContract);
     }
 }

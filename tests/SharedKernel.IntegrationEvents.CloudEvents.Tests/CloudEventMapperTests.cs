@@ -1,3 +1,5 @@
+using SharedKernel.Testing.Assertions;
+
 namespace SharedKernel.IntegrationEvents.CloudEvents.Tests;
 
 public sealed class CloudEventMapperTests
@@ -14,16 +16,16 @@ public sealed class CloudEventMapperTests
 
         var envelope = CloudEventMapper.ToCloudEvent(integrationEvent, metadata);
 
-        Assert.Equal(eventId.ToString("D"), envelope.Id);
-        Assert.Equal(source, envelope.Source);
-        Assert.Equal("admin.tour.created", envelope.Type);
-        Assert.Equal("1.0", envelope.SpecVersion);
-        Assert.Equal(occurredAt, envelope.Time);
-        Assert.Equal("tour-42", envelope.Subject);
-        Assert.Equal("application/json", envelope.DataContentType);
-        Assert.Equal(dataSchema, envelope.DataSchema);
-        Assert.Equal(1, envelope.Version);
-        Assert.Same(integrationEvent, envelope.Data);
+        envelope.Id.ShouldBe(eventId.ToString("D"));
+        envelope.Source.ShouldBe(source);
+        envelope.Type.ShouldBe("admin.tour.created");
+        envelope.SpecVersion.ShouldBe("1.0");
+        envelope.Time.ShouldBe(occurredAt);
+        envelope.Subject.ShouldBe("tour-42");
+        envelope.DataContentType.ShouldBe("application/json");
+        envelope.DataSchema.ShouldBe(dataSchema);
+        envelope.Version.ShouldBe(1);
+        envelope.Data.ShouldBeSameAs(integrationEvent);
     }
 
     [Fact]
@@ -37,9 +39,9 @@ public sealed class CloudEventMapperTests
         var envelope = CloudEventMapper.ToCloudEvent(integrationEvent, metadata);
 
         // Assert
-        Assert.Null(envelope.Subject);
-        Assert.Null(envelope.DataContentType);
-        Assert.Null(envelope.DataSchema);
+        TestAssert.Null(envelope.Subject);
+        TestAssert.Null(envelope.DataContentType);
+        TestAssert.Null(envelope.DataSchema);
     }
 
     [Fact]
@@ -47,16 +49,12 @@ public sealed class CloudEventMapperTests
     {
         // Arrange
         var metadata = new CloudEventMetadata(new Uri("https://viajantes.example/admin/tours"));
-        var method = typeof(CloudEventMapper).GetMethod(nameof(CloudEventMapper.ToCloudEvent));
-        Assert.NotNull(method);
+        var method = typeof(CloudEventMapper).GetMethod(nameof(CloudEventMapper.ToCloudEvent)).ShouldNotBeNull();
         var genericMethod = method.MakeGenericMethod(typeof(TestIntegrationEvent));
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => genericMethod.Invoke(null, [null, metadata]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("integrationEvent", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => genericMethod.Invoke(null, [null, metadata]));
+        argumentException.ParamName.ShouldBe("integrationEvent");
     }
 
     [Fact]
@@ -64,15 +62,11 @@ public sealed class CloudEventMapperTests
     {
         // Arrange
         var integrationEvent = new TestIntegrationEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "tour-created");
-        var method = typeof(CloudEventMapper).GetMethod(nameof(CloudEventMapper.ToCloudEvent));
-        Assert.NotNull(method);
+        var method = typeof(CloudEventMapper).GetMethod(nameof(CloudEventMapper.ToCloudEvent)).ShouldNotBeNull();
         var genericMethod = method.MakeGenericMethod(typeof(TestIntegrationEvent));
 
         // Act
-        var exception = Assert.Throws<System.Reflection.TargetInvocationException>(() => genericMethod.Invoke(null, [integrationEvent, null]));
-
-        // Assert
-        var argumentException = Assert.IsType<ArgumentNullException>(exception.InnerException);
-        Assert.Equal("metadata", argumentException.ParamName);
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => genericMethod.Invoke(null, [integrationEvent, null]));
+        argumentException.ParamName.ShouldBe("metadata");
     }
 }

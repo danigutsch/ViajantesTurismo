@@ -44,7 +44,7 @@ New full-host Admin fixtures must follow those exact seam boundaries instead of 
 - Do not add seed/reset operations or generic API clients to a contract-test fixture unless that specific artifact truly requires them.
 - Do not broaden a contract fixture into a general-purpose integration host.
 
-### System UI / E2E tests
+### System UI tests
 
 - Keep browser entrypoints primary.
 - Allow narrow API-assisted setup through fixture-owned setup clients while keeping baseline control inside fixture or base-class infrastructure.
