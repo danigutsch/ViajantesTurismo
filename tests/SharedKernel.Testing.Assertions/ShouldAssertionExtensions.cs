@@ -13,13 +13,7 @@ public static class ShouldAssertionExtensions
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The expected value.</param>
-    public static void ShouldBe<T>(this T actual, T expected)
-    {
-        if (!EqualityComparer<T>.Default.Equals(actual, expected))
-        {
-            throw new InvalidOperationException($"Expected '{expected}', but got '{actual}'.");
-        }
-    }
+    public static void ShouldBe<T>(this T actual, T expected) => TestAssert.Equal(expected, actual);
 
     /// <summary>
     /// Verifies reference equality with the expected value.
@@ -28,13 +22,7 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The expected reference.</param>
     public static void ShouldBeSameAs<T>(this T actual, T expected)
-        where T : class
-    {
-        if (!ReferenceEquals(actual, expected))
-        {
-            throw new InvalidOperationException("Expected values to reference the same object.");
-        }
-    }
+        where T : class => TestAssert.Same(expected, actual);
 
     /// <summary>
     /// Verifies that a nullable reference is not null and updates compiler null-state flow.
@@ -43,15 +31,7 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <returns>The non-null value.</returns>
     public static T ShouldNotBeNull<T>([NotNull] this T? actual)
-        where T : class
-    {
-        if (actual is null)
-        {
-            throw new InvalidOperationException("Expected value not to be null.");
-        }
-
-        return actual;
-    }
+        where T : class => TestAssert.NotNull(actual);
 
     /// <summary>
     /// Verifies that a nullable value type is not null.
@@ -60,28 +40,12 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <returns>The non-null value.</returns>
     public static T ShouldNotBeNull<T>(this T? actual)
-        where T : struct
-    {
-        if (!actual.HasValue)
-        {
-            throw new InvalidOperationException("Expected value not to be null.");
-        }
-
-        return actual.Value;
-    }
+        where T : struct => TestAssert.NotNull(actual);
 
     /// <summary>
     /// Verifies that a string contains the expected fragment with ordinal comparison.
     /// </summary>
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The expected fragment.</param>
-    public static void ShouldContain(this string? actual, string expected)
-    {
-        ArgumentNullException.ThrowIfNull(expected);
-
-        if (actual is null || !actual.Contains(expected, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException($"Expected '{actual}' to contain '{expected}'.");
-        }
-    }
+    public static void ShouldContain(this string? actual, string expected) => TestAssert.Contains(expected, actual, StringComparison.Ordinal);
 }
