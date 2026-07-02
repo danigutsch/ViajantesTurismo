@@ -247,16 +247,35 @@ Current constraints visible in contracts:
 Future media work should move gallery metadata changes behind Catalog event-sourced commands if tour
 presentation read models become rebuildable from event streams.
 
+Image processing should remain asynchronous after the original upload is accepted and stored. The upload
+flow should raise a domain event, and the domain event dispatch path should save an integration event to
+the Catalog outbox only when downstream image processing is required. A background publisher can then
+deliver the typed event through the transport adapter, where CloudEvents becomes the external envelope.
+The image processor consumes the stored original, creates thumbnails, icons, and responsive variants, and
+then records processing status and generated variant metadata.
+
 ```mermaid
 flowchart TB
     upload[Media upload/storage adapter planned]
     asset[(Stored media asset planned)]
+    domainEvent[Media uploaded domain event planned]
+    domainDispatch[Domain event dispatch planned]
+    outbox[(Catalog integration outbox planned)]
+    processor[Async image processor planned]
+    variants[(Generated variants planned)]
     metadata[Catalog image metadata]
     review[Alt text/caption review planned]
     projection[Published tour projection planned]
     publicWeb[Public.Web gallery]
 
     upload -. planned .-> asset
+    upload -. records .-> domainEvent
+    domainEvent -. dispatch .-> domainDispatch
+    domainDispatch -. save processing-requested integration event .-> outbox
+    outbox -. publish/consume .-> processor
+    asset -. original image .-> processor
+    processor -. thumbnails/icons/responsive variants .-> variants
+    processor -. processing status + variant metadata .-> metadata
     asset -. public URI .-> metadata
     metadata -. requires alt text .-> review
     review -. approved .-> projection
@@ -269,6 +288,7 @@ Open design points for future issues:
 - Storage provider and upload policy.
 - Image ordering, hero-image selection, and removal behavior.
 - Whether image metadata changes are Catalog tour events or a separate media stream.
+- Final transport for media processing integration events after outbox publication.
 - Accessibility review requirements beyond required `AltText`.
 
 ## References
