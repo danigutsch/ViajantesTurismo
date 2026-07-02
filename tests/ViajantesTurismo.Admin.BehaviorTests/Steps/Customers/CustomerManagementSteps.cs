@@ -126,9 +126,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create personal information from sanitization inputs")]
-    public static void WhenICreatePersonalInformationFromSanitizationInputs()
+    public void WhenICreatePersonalInformationFromSanitizationInputs()
     {
-        // Result already stored in context by Given step
+        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then("the personal information should be created successfully from sanitization")]
@@ -164,9 +164,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create address information from sanitization inputs")]
-    public static void WhenICreateAddressInformationFromSanitizationInputs()
+    public void WhenICreateAddressInformationFromSanitizationInputs()
     {
-        // Result already stored in context by Given step.
+        (context.AddressResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized address city should be ""(.*)""")]
@@ -188,9 +188,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create contact information")]
-    public static void WhenICreateContactInformation()
+    public void WhenICreateContactInformation()
     {
-        // Result already stored in context by Given step.
+        (context.ContactInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized email should be ""(.*)""")]
@@ -212,9 +212,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create contact information with social media")]
-    public static void WhenICreateContactInformationWithSocialMedia()
+    public void WhenICreateContactInformationWithSocialMedia()
     {
-        // Result already stored in context by Given step.
+        (context.ContactInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized Instagram should be ""(.*)""")]
@@ -236,9 +236,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create identification information")]
-    public static void WhenICreateIdentificationInformation()
+    public void WhenICreateIdentificationInformation()
     {
-        // Result already stored in context by Given step.
+        (context.IdentificationInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized national ID should be ""(.*)""")]
@@ -260,9 +260,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create emergency contact information")]
-    public static void WhenICreateEmergencyContactInformation()
+    public void WhenICreateEmergencyContactInformation()
     {
-        // Result already stored in context by Given step.
+        (context.EmergencyContactResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized emergency contact name should be ""(.*)""")]
@@ -284,9 +284,10 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create medical information")]
-    public static void WhenICreateMedicalInformation()
+    public void WhenICreateMedicalInformation()
     {
-        // Result already stored in context by Given step.
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized allergies should be ""(.*)""")]

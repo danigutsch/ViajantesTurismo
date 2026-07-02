@@ -36,7 +36,8 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
     {
         var report = Validator.GenerateReport();
 
-        Console.WriteLine("\n" + new string('=', 80));
+        Console.WriteLine();
+        Console.WriteLine(new string('=', 80));
         Console.WriteLine(ReportTitle);
         Console.WriteLine(new string('=', 80));
         Console.WriteLine($"Total Invariants: {report.TotalInvariants}");
@@ -63,7 +64,8 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
             }
         }
 
-        Console.WriteLine(new string('=', 80) + "\n");
+        Console.WriteLine(new string('=', 80));
+        Console.WriteLine();
 
         Directory.CreateDirectory("TestResults");
 
