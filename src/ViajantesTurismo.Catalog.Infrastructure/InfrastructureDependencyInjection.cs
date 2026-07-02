@@ -31,6 +31,7 @@ public static class InfrastructureDependencyInjection
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
 
         builder.Services.AddCatalogApplication();
+        builder.Services.AddLocalMediaObjectStorage();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
         builder.Services.AddScoped<IPublicThemeSettingsStore, EfPublicThemeSettingsStore>();
         builder.Services.AddScoped<EfCatalogTourReadModelStore>();
