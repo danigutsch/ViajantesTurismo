@@ -263,6 +263,12 @@ Purpose:
 - Store receive and processing status.
 - Support retries and diagnostics.
 
+Consumers should use CloudEvents `source` plus `id` or the equivalent typed integration event identity as
+the idempotency key. Handler side effects must also be idempotent: use deterministic object keys,
+database unique constraints, and upsert-or-skip behavior for externally visible outputs. The inbox guards
+message handling, but the handler still owns safe replay behavior if work partially completed before a
+retry.
+
 Ownership:
 
 - Core idempotency contracts live in `SharedKernel.Idempotency`.

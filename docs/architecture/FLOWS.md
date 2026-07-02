@@ -254,6 +254,12 @@ deliver the typed event through the transport adapter, where CloudEvents becomes
 The image processor consumes the stored original, creates thumbnails, icons, and responsive variants, and
 then records processing status and generated variant metadata.
 
+The async processing consumer must assume at-least-once delivery. It should use the typed integration
+event id or CloudEvents `source` plus `id` as the inbox/idempotency key, then make image outputs
+deterministic so replay is safe. Variant object keys should be derived from media id, processing version,
+variant name, and format. Variant metadata should be upserted with a unique key such as media id,
+processing version, variant name, and format rather than appended blindly.
+
 ```mermaid
 flowchart TB
     upload[Media upload/storage adapter planned]
@@ -261,6 +267,7 @@ flowchart TB
     domainEvent[Media uploaded domain event planned]
     domainDispatch[Domain event dispatch planned]
     outbox[(Catalog integration outbox planned)]
+    inbox[(Image processing inbox planned)]
     processor[Async image processor planned]
     variants[(Generated variants planned)]
     metadata[Catalog image metadata]
@@ -276,7 +283,8 @@ flowchart TB
     upload -. records .-> domainEvent
     domainEvent -. dispatch .-> domainDispatch
     domainDispatch -. save processing-requested integration event .-> outbox
-    outbox -. publish/consume .-> processor
+    outbox -. publish .-> inbox
+    inbox -. first source+id wins .-> processor
     asset -. original image .-> processor
     processor -. thumbnails/icons/responsive variants .-> variants
     processor -. processing status + variant metadata .-> metadata
