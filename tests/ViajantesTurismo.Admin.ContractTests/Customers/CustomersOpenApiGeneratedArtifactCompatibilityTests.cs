@@ -1,6 +1,3 @@
-using SharedKernel.Testing.Assertions;
-using Xunit;
-
 namespace ViajantesTurismo.Admin.ContractTests.Customers;
 
 /// <summary>
