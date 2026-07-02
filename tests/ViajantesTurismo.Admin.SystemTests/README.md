@@ -1,6 +1,6 @@
 # ViajantesTurismo.Admin.SystemTests
 
-End-to-end browser tests using [Playwright for .NET](https://playwright.dev/dotnet/) against the full stack
+System browser tests using [Playwright for .NET](https://playwright.dev/dotnet/) against the full stack
 (Blazor, API, PostgreSQL, Redis) managed by Aspire.
 
 ## Setup
@@ -33,7 +33,7 @@ sudo apt-get install -y libnspr4 libnss3 libasound2t64
 ## Running
 
 ```powershell
-# All E2E tests (headless)
+# All system tests (headless)
 dotnet test --project tests/ViajantesTurismo.Admin.SystemTests
 
 # Visible browser
@@ -80,7 +80,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.
 
 ## Specialized helper classes
 
-The E2E project uses a small set of specialized helper classes to keep tests readable
+The system-test project uses a small set of specialized helper classes to keep tests readable
 without hiding the behavior under test.
 
 Common helper categories include:

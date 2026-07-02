@@ -40,6 +40,8 @@ This file overrides root guidance where test-specific behavior is needed.
 - Feature files should follow `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
+- Prefer repository-owned assertions from `SharedKernel.Testing.Assertions` in new and touched tests;
+  direct `Xunit.Assert` is legacy-compatible only while the wrapper migration is incomplete.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.
 - Do not use the null-forgiving operator (`!`) in tests; assert non-null explicitly before dereferencing.
@@ -62,7 +64,7 @@ This file overrides root guidance where test-specific behavior is needed.
 ## Test boundaries
 
 - Keep unit tests isolated from real external dependencies; use mocks, fakes, or test doubles where appropriate.
-- Reserve real browser, network, database, or container interactions for integration, behavior, or E2E tests.
+- Reserve real browser, network, database, or container interactions for integration, behavior, or system tests.
 - Do not silently broaden a test from unit scope to integration scope
   unless that wider interaction is the behavior being verified.
 

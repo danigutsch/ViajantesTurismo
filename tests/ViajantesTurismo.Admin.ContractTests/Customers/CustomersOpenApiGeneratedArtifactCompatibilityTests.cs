@@ -1,3 +1,4 @@
+using SharedKernel.Testing.Assertions;
 using Xunit;
 
 namespace ViajantesTurismo.Admin.ContractTests.Customers;
@@ -15,6 +16,7 @@ public sealed class CustomersOpenApiGeneratedArtifactCompatibilityTests
         var canonicalContract = await CustomersOpenApiDocumentClient.GetContract(TestContext.Current.CancellationToken);
 
         // Assert
-        CustomersOpenApiAssertions.MatchesGeneratedArtifact(canonicalContract, generatedContract);
+        var nonNullGeneratedContract = generatedContract.ShouldNotBeNull();
+        CustomersOpenApiAssertions.MatchesGeneratedArtifact(canonicalContract, nonNullGeneratedContract);
     }
 }

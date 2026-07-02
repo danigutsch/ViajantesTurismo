@@ -1,3 +1,6 @@
+using SharedKernel.Testing.Assertions;
+using SharedKernel.Testing.Contracts;
+
 namespace ViajantesTurismo.Admin.ContractTests.Tours;
 
 /// <summary>
@@ -12,12 +15,12 @@ internal static class ToursOpenApiAssertions
     {
         ArgumentNullException.ThrowIfNull(contract);
 
-        Xunit.Assert.Equal("3.1.1", contract.OpenApiVersion);
-        Xunit.Assert.Equal("ViajantesTurismo.Admin.ApiService | tours", contract.Title);
-        Xunit.Assert.Equal("GetTours", contract.ListToursOperationId);
-        Xunit.Assert.Equal("GetTourById", contract.GetTourByIdOperationId);
-        Xunit.Assert.Equal("#/components/schemas/CreateTourDto", contract.CreateTourSchemaReference);
-        Xunit.Assert.Equal("#/components/schemas/UpdateTourDto", contract.UpdateTourSchemaReference);
+        contract.OpenApiVersion.ShouldBe("3.1.1");
+        contract.Title.ShouldBe("ViajantesTurismo.Admin.ApiService | tours");
+        contract.ListToursOperationId.ShouldBe("GetTours");
+        contract.GetTourByIdOperationId.ShouldBe("GetTourById");
+        contract.CreateTourSchemaReference.ShouldBe("#/components/schemas/CreateTourDto");
+        contract.UpdateTourSchemaReference.ShouldBe("#/components/schemas/UpdateTourDto");
     }
 
     /// <summary>
@@ -30,6 +33,6 @@ internal static class ToursOpenApiAssertions
         ArgumentNullException.ThrowIfNull(canonicalContract);
         ArgumentNullException.ThrowIfNull(generatedContract);
 
-        Xunit.Assert.Equal(canonicalContract, generatedContract);
+        ContractArtifactAssertions.MatchesGeneratedArtifact(canonicalContract, generatedContract);
     }
 }

@@ -11,10 +11,11 @@ Our strategy follows a test pyramid approach:
 - **Contract Tests** (published boundary artifacts) — Stable compatibility checks for external consumers
 - **Integration Tests** (database, HTTP) — Key API scenarios
 - **Behaviour Tests** (BDD/Gherkin) — Business-critical scenarios
-- **End-to-End/Acceptance** (Playwright) — Thin layer of critical user journeys through the real UI
+- **System Tests** (Playwright) — Thin layer of critical user journeys through the real UI
 
 **Philosophy:** Fast feedback through comprehensive unit tests, confidence through API and UI integration tests,
-business alignment through BDD scenarios, durable boundary confidence through contract tests, and a small deterministic E2E lane for critical user flows.
+business alignment through BDD scenarios, durable boundary confidence through contract tests, and a small deterministic
+system-test lane for critical user flows.
 
 ## Canonical Admin Test Boundaries
 
@@ -39,7 +40,7 @@ integration tests instead.
 
 When tags or traits are used, keep them orthogonal:
 
-- `Scope`: unit, behavior, component, contract, ui-integration, integration, e2e, architecture
+- `Scope`: unit, behavior, component, contract, ui-integration, integration, system, architecture
 - `Surface`: domain, application, api, web, workflow, solution
 - `Area`: bookings, customers, tours, payments, shared
 - `Category`: smoke, regression, happy-path, edge-case
@@ -115,7 +116,7 @@ Current external guidance behind this policy:
 See [ADR-030: CI Test Lane Selection](adr/20260629-ci-test-lane-selection.md) for the decision
 diagram used when adding or moving test projects between CI lanes.
 
-Example — run E2E tests in headed mode:
+Example — run system tests in headed mode:
 
 ```powershell
 dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj -- Playwright.LaunchOptions.Headless=false
@@ -352,6 +353,14 @@ Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 
 ### Assertion readability
 
+Prefer repository-owned assertion wrappers from `SharedKernel.Testing.Assertions` for new
+and touched tests. Direct `Xunit.Assert` calls are legacy-compatible during migration, but
+`SKTEST006` reports them so projects can move to the wrapper API incrementally.
+
+Use wrapper APIs when they exist, especially nullability-aware checks such as
+`ShouldNotBeNull()` or `TestAssert.NotNull(...)`. Add new wrappers only for assertion
+patterns with repeated callers; do not introduce an external fluent assertion package.
+
 Keep method calls and computed values out of assertion arguments when practical.
 Assign them to local variables first so failures are easier to inspect while debugging.
 
@@ -458,14 +467,14 @@ public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception(
 - **Unit Tests:** Direct instantiation with factory methods (e.g., `Tour.Create()`)
 - **Integration Tests:** Fixture-owned HTTP entrypoints plus infrastructure-owned baseline control where clean-slate behavior is required
 - **Behaviour Tests:** Context objects to share state between steps
-- **E2E Tests:** Playwright plus deterministic helper/page abstractions backed by fixture-owned baseline control
+- **System Tests:** Playwright plus deterministic helper/page abstractions backed by fixture-owned baseline control
 
 ### Best Practices
 
 - **Prefer object mothers/builders** for complex aggregates and value objects
 - **Keep test data in code** (avoid external files unless absolutely necessary)
 - **Avoid shared mutable state** between tests
-- **Use fixture-owned ephemeral resources** for integration and E2E tests instead of exposing raw container or DI
+- **Use fixture-owned ephemeral resources** for integration and system tests instead of exposing raw container or DI
   plumbing to test bodies
 - **Use FakeTimeProvider** instead of `DateTime.UtcNow` for deterministic time-based tests
 
@@ -529,7 +538,7 @@ Antipatterns to avoid:
 - assertions that only pass because the item happened to land on page 1
 - pagination traversal helpers that click through pages until a matching row eventually appears
 
-### E2E-specific base class guidance
+### System-test-specific base class guidance
 
 - Use `AspireSystemTestBase<TFixture>` for tests that can safely run in parallel with owned data.
 - Use `AspireSerialSystemTestBase` for tests that require infrastructure-owned clean-slate isolation.
@@ -560,7 +569,7 @@ apply the rules above before increasing timeouts.
 
 ### FIRST Principles
 
-- **Fast**: Unit tests < 100 ms, Integration ~24 s (includes database setup), Behaviour < 10s (frontend E2E tests when
+- **Fast**: Unit tests < 100 ms, Integration ~24 s (includes database setup), Behaviour < 10s (frontend system tests when
   added will be slower)
 - **Independent**: Tests run in any order without a shared state
 - **Repeatable**: Same result every time (use `FakeTimeProvider` instead of `DateTime.UtcNow`)
@@ -590,7 +599,7 @@ apply the rules above before increasing timeouts.
 - Avoid `Thread.Sleep()` and unnecessary waits
 - No test execution order dependencies
 
-### E2E selector strategy
+### System-test selector strategy
 
 Prefer selectors in this order:
 
@@ -614,7 +623,7 @@ All mapper methods need three tests:
 2. **Coverage** (Iterate all enum values)
 3. **Error Handling** (Invalid value throws ArgumentOutOfRangeException)
 
-## Integration and E2E Host Essentials
+## Integration and System Test Host Essentials
 
 ### Integration tests
 
@@ -648,14 +657,14 @@ Integration tests should:
 
 UI integration tests should:
 
-- exercise the running web application below full browser E2E workflow depth
+- exercise the running web application below full browser system-test workflow depth
 - focus on hosted route/page composition and application wiring
 - keep the browser-system entrypoint separate from non-browser setup/reset support seams
-- avoid drifting into either raw component tests or full user-journey E2E coverage
+- avoid drifting into either raw component tests or full user-journey system coverage
 
-### E2E tests
+### System tests
 
-E2E tests should:
+System tests should:
 
 - exercise the system through Playwright and visible business behavior
 - treat the browser-visible web entrypoint as the SUT seam
@@ -886,7 +895,7 @@ guidelines to maintain a high-quality test suite that gives confidence when maki
 
 **Key Principles:**
 
-- Test pyramid: More unit tests, fewer integration tests, minimal E2E
+- Test pyramid: More unit tests, fewer integration tests, minimal system tests
 - Use declarative BDD scenarios in domain language
 - Prefer object mothers/builders over complex test data
 - Tag scenarios to link business requirements with technical implementation
