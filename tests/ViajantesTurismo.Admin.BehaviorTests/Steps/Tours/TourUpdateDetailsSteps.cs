@@ -114,39 +114,38 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [Then("the tour details update should succeed")]
     public void ThenTheTourDetailsUpdateShouldSucceed()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
-            $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails}");
+        (tourContext.UpdateResult).ShouldNotBeNull();
+        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeTrue($"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails}");
     }
 
     [Then("the tour details update should fail")]
     public void ThenTheTourDetailsUpdateShouldFail()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
+        (tourContext.UpdateResult).ShouldNotBeNull();
+        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeFalse();
     }
 
     [Then(@"the tour should have identifier ""(.*)""")]
     public async Task ThenTheTourShouldHaveIdentifier(string expectedIdentifier)
     {
         var tour = await tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None);
-        Assert.NotNull(tour);
-        Assert.Equal(expectedIdentifier, tour.Identifier);
+        (tour).ShouldNotBeNull();
+        (tour.Identifier).ShouldBe(expectedIdentifier);
     }
 
     [Then(@"the tour should have name ""(.*)""")]
     public async Task ThenTheTourShouldHaveName(string expectedName)
     {
         var tour = await tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None);
-        Assert.NotNull(tour);
-        Assert.Equal(expectedName, tour.Name);
+        (tour).ShouldNotBeNull();
+        (tour.Name).ShouldBe(expectedName);
     }
 
     [Then(@"the error should contain ""(.*)""")]
     public void ThenTheErrorShouldContain(string expectedText)
     {
-        Assert.NotNull(tourContext.UpdateResult);
+        (tourContext.UpdateResult).ShouldNotBeNull();
         var errorMessage = tourContext.UpdateResult.Value.ErrorDetails?.Detail ?? string.Empty;
-        Assert.Contains(expectedText, errorMessage, StringComparison.OrdinalIgnoreCase);
+        (errorMessage).ShouldContain(expectedText, StringComparison.OrdinalIgnoreCase);
     }
 }

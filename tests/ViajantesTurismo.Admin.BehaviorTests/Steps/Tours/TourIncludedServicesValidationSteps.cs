@@ -12,6 +12,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     [Given("a valid tour exists with the following details:")]
     public void GivenAValidTourExistsWithTheFollowingDetails(Table table)
     {
+        ArgumentNullException.ThrowIfNull(table);
         var data = table.Rows.ToDictionary(row => row["Field"], row => row["Value"]);
 
         var startDate = DateTime.Parse(data["StartDate"], CultureInfo.InvariantCulture).ToUniversalTime();
@@ -40,6 +41,7 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     [When("I update the tour's included services with:")]
     public void WhenIUpdateTheToursIncludedServicesWith(Table table)
     {
+        ArgumentNullException.ThrowIfNull(table);
         _servicesToUpdate = [.. table.Rows.Select(row => row["Service"])];
         tourContext.Tour.UpdateIncludedServices(_servicesToUpdate);
         tourContext.UpdateResult = Result.Ok();
@@ -69,16 +71,14 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     [Then("the tour update should succeed")]
     public void ThenTheTourUpdateShouldSucceed()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        var result = tourContext.UpdateResult.Value;
-        Assert.True(result.IsSuccess,
-            $"Expected success but got failure: {result.ErrorDetails?.Detail ?? "Unknown error"}");
+        var result = (tourContext.UpdateResult).ShouldNotBeNull();
+        (result.IsSuccess).ShouldBeTrue($"Expected success but got failure: {result.ErrorDetails?.Detail ?? "Unknown error"}");
     }
 
     [Then(@"the tour should have (\d+) included services")]
     public void ThenTheTourShouldHaveDIncludedServices(int expectedCount)
     {
-        Assert.Equal(expectedCount, tourContext.Tour.IncludedServices.Count);
+        (tourContext.Tour.IncludedServices.Count).ShouldBe(expectedCount);
     }
 
     [Then("the services should be properly sanitized")]
@@ -88,16 +88,16 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
 
         foreach (var service in services)
         {
-            Assert.Equal(service.Trim(), service);
+            (service).ShouldBe(service.Trim());
         }
 
-        Assert.DoesNotContain(services, s => s.Contains("  ", StringComparison.Ordinal));
+        services.ShouldNotContain(s => s.Contains("  ", StringComparison.Ordinal));
     }
 
     [Then(@"the included services should contain ""(.*)""")]
     public void ThenTheIncludedServicesShouldContain(string expectedService)
     {
-        Assert.Contains(expectedService, tourContext.Tour.IncludedServices, StringComparer.Ordinal);
+        (tourContext.Tour.IncludedServices).ShouldContain(expectedService, StringComparer.Ordinal);
     }
 
     private static Currency ParseCurrency(string currencyCode) => currencyCode.ToUpperInvariant() switch

@@ -8,13 +8,13 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     [Given("a principal customer exists")]
     public static void GivenAPrincipalCustomerExists()
     {
-        Assert.True(true);
+        (true).ShouldBeTrue();
     }
 
     [Given("a companion customer exists")]
     public static void GivenACompanionCustomerExists()
     {
-        Assert.True(true);
+        (true).ShouldBeTrue();
     }
 
     [When(
@@ -91,91 +91,91 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     [Then("the booking should have a companion customer")]
     public void ThenTheBookingShouldHaveACompanionCustomer()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
-        Assert.NotNull(bookingContext.BookingCreationResult.Value.Value.CompanionCustomer);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
+        (bookingContext.BookingCreationResult.Value.Value.CompanionCustomer).ShouldNotBeNull();
     }
 
     [Then("the booking should not have a companion customer")]
     public void ThenTheBookingShouldNotHaveACompanionCustomer()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
-        Assert.Null(bookingContext.BookingCreationResult.Value.Value.CompanionCustomer);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
+        (bookingContext.BookingCreationResult.Value.Value.CompanionCustomer).ShouldBeNull();
     }
 
     [Then("the booking should include principal bike price")]
     public void ThenTheBookingShouldIncludePrincipalBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
         var tour = tourContext.Tour;
         var expectedBikePrice = tour.Pricing.RegularBikePrice;
-        Assert.Equal(expectedBikePrice, booking.PrincipalCustomer.BikePrice);
+        (booking.PrincipalCustomer.BikePrice).ShouldBe(expectedBikePrice);
     }
 
     [Then("the booking should include companion bike price")]
     public void ThenTheBookingShouldIncludeCompanionBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.CompanionCustomer);
+        (booking.CompanionCustomer).ShouldNotBeNull();
         var tour = tourContext.Tour;
         var expectedBikePrice = tour.Pricing.RegularBikePrice;
-        Assert.Equal(expectedBikePrice, booking.CompanionCustomer.BikePrice);
+        (booking.CompanionCustomer.BikePrice).ShouldBe(expectedBikePrice);
     }
 
     [Then("the booking should include principal regular bike price")]
     public void ThenTheBookingShouldIncludePrincipalRegularBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.RegularBikePrice, booking.PrincipalCustomer.BikePrice);
+        (booking.PrincipalCustomer.BikePrice).ShouldBe(tour.Pricing.RegularBikePrice);
     }
 
     [Then("the booking should include companion e-bike price")]
     public void ThenTheBookingShouldIncludeCompanionEBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.CompanionCustomer);
+        (booking.CompanionCustomer).ShouldNotBeNull();
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.EBikePrice, booking.CompanionCustomer.BikePrice);
+        (booking.CompanionCustomer.BikePrice).ShouldBe(tour.Pricing.EBikePrice);
     }
 
     [Then("both customers should have e-bike pricing")]
     public void ThenBothCustomersShouldHaveEBikePricing()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.CompanionCustomer);
+        (booking.CompanionCustomer).ShouldNotBeNull();
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.EBikePrice, booking.PrincipalCustomer.BikePrice);
-        Assert.Equal(tour.Pricing.EBikePrice, booking.CompanionCustomer.BikePrice);
+        (booking.PrincipalCustomer.BikePrice).ShouldBe(tour.Pricing.EBikePrice);
+        (booking.CompanionCustomer.BikePrice).ShouldBe(tour.Pricing.EBikePrice);
     }
 
     [Then("the booking should include single room supplement")]
     public void ThenTheBookingShouldIncludeSingleRoomSupplement()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.SingleRoomSupplementPrice, booking.RoomAdditionalCost);
+        (booking.RoomAdditionalCost).ShouldBe(tour.Pricing.SingleRoomSupplementPrice);
     }
 
     [Then("the booking should not include single room supplement")]
     public void ThenTheBookingShouldNotIncludeSingleRoomSupplement()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.Equal(0m, booking.RoomAdditionalCost);
+        (booking.RoomAdditionalCost).ShouldBe(0m);
     }
 }

@@ -6,77 +6,76 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then("the booking update should fail with conflict error")]
     public void ThenTheBookingUpdateShouldFailWithConflictError()
     {
-        Assert.NotNull(context.BookingOperationResult);
-        var result = context.BookingOperationResult.Value;
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
+        var result = (context.BookingOperationResult).ShouldNotBeNull();
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.Conflict);
     }
 
     [Then(@"the booking status should be ""(.*)""")]
     public void ThenTheBookingStatusShouldBe(string expectedStatus)
     {
         var expected = EntityBuilders.ParseBookingStatus(expectedStatus);
-        Assert.Equal(expected, context.Booking.Status);
+        (context.Booking.Status).ShouldBe(expected);
     }
 
     [Then(@"the booking notes should be ""(.*)""")]
     public void ThenTheBookingNotesShouldBe(string expectedNotes)
     {
-        Assert.Equal(expectedNotes, context.Booking.Notes);
+        (context.Booking.Notes).ShouldBe(expectedNotes);
     }
 
     [Then("the booking notes should be null")]
     public void ThenTheBookingNotesShouldBeNull()
     {
-        Assert.True(string.IsNullOrEmpty(context.Booking.Notes));
+        (string.IsNullOrEmpty(context.Booking.Notes)).ShouldBeTrue();
     }
 
     [Then(@"the booking payment status should be ""(.*)""")]
     public void ThenTheBookingPaymentStatusShouldBe(string expectedStatusString)
     {
         var expected = EntityBuilders.ParsePaymentStatus(expectedStatusString);
-        Assert.Equal(expected, context.Booking.PaymentStatus);
+        (context.Booking.PaymentStatus).ShouldBe(expected);
     }
 
     [Then(@"the result should fail with message ""(.*)""")]
     public void ThenTheResultShouldFailWithMessage(string expectedMessage)
     {
-        Assert.NotNull(context.BookingOperationResult);
-        var result = context.BookingOperationResult.Value;
-        Assert.True(result.IsFailure);
-        Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        var result = (context.BookingOperationResult).ShouldNotBeNull();
+        (result.IsFailure).ShouldBeTrue();
+        var errorDetails = (result.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain(expectedMessage, StringComparison.Ordinal);
     }
 
     [Then(@"the result should fail with message starting with ""(.*)""")]
     public void ThenTheResultShouldFailWithMessageStartingWith(string expectedMessagePrefix)
     {
-        Assert.NotNull(context.BookingOperationResult);
-        var result = context.BookingOperationResult.Value;
-        Assert.True(result.IsFailure);
-        Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        var result = (context.BookingOperationResult).ShouldNotBeNull();
+        (result.IsFailure).ShouldBeTrue();
+        var errorDetails = (result.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldStartWith(expectedMessagePrefix);
     }
 
     [Then("the booking room additional cost should be (.*)")]
     public void ThenTheBookingRoomAdditionalCostShouldBe(decimal expectedCost)
     {
-        Assert.Equal(expectedCost, context.Booking.RoomAdditionalCost);
+        (context.Booking.RoomAdditionalCost).ShouldBe(expectedCost);
     }
 
     [Then("the booking room additional cost should be the tour single room supplement")]
     public void ThenTheBookingRoomAdditionalCostShouldBeTheTourSingleRoomSupplement()
     {
-        Assert.Equal(tourContext.Tour.Pricing.SingleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
+        (context.Booking.RoomAdditionalCost).ShouldBe(tourContext.Tour.Pricing.SingleRoomSupplementPrice);
     }
 
     [Then("the booking principal customer bike price should be the tour regular bike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourRegularBikePrice()
     {
-        Assert.Equal(tourContext.Tour.Pricing.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+        (context.Booking.PrincipalCustomer.BikePrice).ShouldBe(tourContext.Tour.Pricing.RegularBikePrice);
     }
 
     [Then("the booking principal customer bike price should be the tour ebike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourEbikePrice()
     {
-        Assert.Equal(tourContext.Tour.Pricing.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+        (context.Booking.PrincipalCustomer.BikePrice).ShouldBe(tourContext.Tour.Pricing.EBikePrice);
     }
 }

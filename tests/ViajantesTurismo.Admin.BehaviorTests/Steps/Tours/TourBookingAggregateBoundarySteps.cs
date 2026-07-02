@@ -12,33 +12,32 @@ public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingCont
     [Then("the methods should not be accessible")]
     public void ThenTheMethodsShouldNotBeAccessible()
     {
-        Assert.NotNull(bookingContext.Action);
+        (bookingContext.Action).ShouldNotBeNull();
     }
 
     [Then("only tour methods should be available")]
     public void ThenOnlyTourMethodsShouldBeAvailable()
     {
         var tourType = tourContext.Tour.GetType();
-        Assert.NotNull(tourType.GetMethod("AddBooking"));
-        Assert.NotNull(tourType.GetMethod("ConfirmBooking"));
-        Assert.NotNull(tourType.GetMethod("CancelBooking"));
-        Assert.NotNull(tourType.GetMethod("CompleteBooking"));
-        Assert.NotNull(tourType.GetMethod("UpdateBookingNotes"));
-        Assert.NotNull(tourType.GetMethod("RemoveBooking"));
+        (tourType.GetMethod("AddBooking")).ShouldNotBeNull();
+        (tourType.GetMethod("ConfirmBooking")).ShouldNotBeNull();
+        (tourType.GetMethod("CancelBooking")).ShouldNotBeNull();
+        (tourType.GetMethod("CompleteBooking")).ShouldNotBeNull();
+        (tourType.GetMethod("UpdateBookingNotes")).ShouldNotBeNull();
+        (tourType.GetMethod("RemoveBooking")).ShouldNotBeNull();
     }
 
     [Then("the operation should fail with not found error")]
     public void ThenTheOperationShouldFailWithNotFoundError()
     {
-        Assert.NotNull(bookingContext.BookingOperationResult);
-        var result = bookingContext.BookingOperationResult.Value;
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.NotFound, result.Status);
+        var result = (bookingContext.BookingOperationResult).ShouldNotBeNull();
+        (result.IsSuccess).ShouldBeFalse();
+        (result.Status).ShouldBe(ResultStatus.NotFound);
     }
 
     [Then(@"the tour should have (\d+) bookings")]
     public void ThenTheTourShouldHaveDBookings(int expectedCount)
     {
-        Assert.Equal(expectedCount, tourContext.Tour.Bookings.Count);
+        (tourContext.Tour.Bookings.Count).ShouldBe(expectedCount);
     }
 }

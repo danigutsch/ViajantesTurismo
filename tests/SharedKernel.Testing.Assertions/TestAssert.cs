@@ -83,7 +83,7 @@ public static class TestAssert
     /// <summary>
     /// Verifies that a nullable value type is not null.
     /// </summary>
-    public static T NotNull<T>(T? value)
+    public static T NotNull<T>([NotNull] T? value)
         where T : struct => Xunit.Assert.NotNull(value);
 
     /// <summary>
@@ -100,6 +100,11 @@ public static class TestAssert
     /// Verifies that a collection is not empty.
     /// </summary>
     public static void NotEmpty<T>(IEnumerable<T> collection) => Xunit.Assert.NotEmpty(collection);
+
+    /// <summary>
+    /// Verifies that a collection contains exactly one item.
+    /// </summary>
+    public static T ExactlyOne<T>(IEnumerable<T> collection) => Xunit.Assert.Single(collection);
 
     /// <summary>
     /// Verifies that a collection contains an expected item.

@@ -49,6 +49,7 @@ public sealed class CustomerImportSteps(ImportContext context)
     [Given("I have a canonical CSV with the following customer rows")]
     public void GivenIHaveACanonicalCsvWithTheFollowingCustomerRows(Table table)
     {
+        ArgumentNullException.ThrowIfNull(table);
         var rows = table.Rows
             .Select(r => (FirstName: r["FirstName"], Email: r["Email"]))
             .ToList();
@@ -86,6 +87,7 @@ public sealed class CustomerImportSteps(ImportContext context)
     [When("I commit the import workflow with resolutions")]
     public async Task WhenICommitTheImportWorkflowWithResolutions(Table table)
     {
+        ArgumentNullException.ThrowIfNull(table);
         var resolutions = table.Rows
             .ToDictionary(
                 r => r["Email"],
@@ -109,50 +111,44 @@ public sealed class CustomerImportSteps(ImportContext context)
 
     [Then("{int} customer should be imported successfully")]
     [Then("{int} customers should be imported successfully")]
+    [Then("{int} customer success should be reported")]
+    [Then("{int} customers success should be reported")]
     public void ThenCustomersShouldBeImportedSuccessfully(int expectedCount)
     {
-        Assert.NotNull(context.Result);
-        Assert.Equal(expectedCount, context.Result.Value.SuccessCount);
+        (context.Result).ShouldNotBeNull();
+        (context.Result.Value.SuccessCount).ShouldBe(expectedCount);
     }
 
     [Then("{int} rows should have errors")]
     [Then("{int} row should have errors")]
     public void ThenRowsShouldHaveErrors(int expectedCount)
     {
-        Assert.NotNull(context.Result);
-        Assert.Equal(expectedCount, context.Result.Value.ErrorCount);
-    }
-
-    [Then("{int} customer success should be reported")]
-    [Then("{int} customers success should be reported")]
-    public void ThenCustomerSuccessShouldBeReported(int expectedCount)
-    {
-        Assert.NotNull(context.Result);
-        Assert.Equal(expectedCount, context.Result.Value.SuccessCount);
+        (context.Result).ShouldNotBeNull();
+        (context.Result.Value.ErrorCount).ShouldBe(expectedCount);
     }
 
     [Then("no customers should exist in the store")]
     public void ThenNoCustomersShouldExistInTheStore()
     {
-        Assert.Empty(context.CustomerStore.AllCustomers);
+        (context.CustomerStore.AllCustomers).ShouldBeEmpty();
     }
 
     [Then("{int} duplicate conflict should be surfaced")]
     [Then("{int} duplicate conflicts should be surfaced")]
     public void ThenDuplicateConflictsShouldBeSurfaced(int expectedCount)
     {
-        Assert.NotNull(context.WorkflowResult);
-        Assert.NotNull(context.WorkflowResult.Conflicts);
-        Assert.Equal(expectedCount, context.WorkflowResult.Conflicts.Count);
+        (context.WorkflowResult).ShouldNotBeNull();
+        (context.WorkflowResult.Conflicts).ShouldNotBeNull();
+        (context.WorkflowResult.Conflicts.Count).ShouldBe(expectedCount);
     }
 
     [Then("the duplicate conflict should contain email {string}")]
     public void ThenTheDuplicateConflictShouldContainEmail(string expectedEmail)
     {
-        Assert.NotNull(context.WorkflowResult);
-        Assert.NotNull(context.WorkflowResult.Conflicts);
-        var conflict = Assert.Single(context.WorkflowResult.Conflicts);
-        Assert.Equal(expectedEmail, conflict.Email, ignoreCase: true);
+        (context.WorkflowResult).ShouldNotBeNull();
+        (context.WorkflowResult.Conflicts).ShouldNotBeNull();
+        var conflict = (context.WorkflowResult.Conflicts).ShouldHaveSingleItem();
+        (conflict.Email).ShouldBe(expectedEmail, StringComparer.OrdinalIgnoreCase);
     }
 
     [Then("import summary should report {int} created, {int} updated, {int} skipped, and {int} failed")]
@@ -162,7 +158,7 @@ public sealed class CustomerImportSteps(ImportContext context)
         int expectedSkipped,
         int expectedFailed)
     {
-        Assert.NotNull(context.WorkflowCommitResult);
+        (context.WorkflowCommitResult).ShouldNotBeNull();
 
         var updatedCount = context.ConflictResolutions.Values.Count(v =>
             v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
@@ -172,32 +168,32 @@ public sealed class CustomerImportSteps(ImportContext context)
         var createdCount = Math.Max(0, context.WorkflowCommitResult.SuccessCount - updatedCount);
         var failedCount = context.WorkflowCommitResult.ErrorCount;
 
-        Assert.Equal(expectedCreated, createdCount);
-        Assert.Equal(expectedUpdated, updatedCount);
-        Assert.Equal(expectedSkipped, skippedCount);
-        Assert.Equal(expectedFailed, failedCount);
+        (createdCount).ShouldBe(expectedCreated);
+        (updatedCount).ShouldBe(expectedUpdated);
+        (skippedCount).ShouldBe(expectedSkipped);
+        (failedCount).ShouldBe(expectedFailed);
     }
 
     [Then("customer with email {string} should have first name {string}")]
     public void ThenCustomerWithEmailShouldHaveFirstName(string email, string expectedFirstName)
     {
         var customer = context.GetCustomerByEmail(email);
-        Assert.NotNull(customer);
-        Assert.Equal(expectedFirstName, customer.PersonalInfo.FirstName);
+        (customer).ShouldNotBeNull();
+        (customer.PersonalInfo.FirstName).ShouldBe(expectedFirstName);
     }
 
     [Then("customer with email {string} should exist in the store")]
     public void ThenCustomerWithEmailShouldExistInTheStore(string email)
     {
         var customer = context.GetCustomerByEmail(email);
-        Assert.NotNull(customer);
+        (customer).ShouldNotBeNull();
     }
 
     [Then("imported customer with email {string} should have a stable identifier")]
     public void ThenImportedCustomerWithEmailShouldHaveAStableIdentifier(string email)
     {
         var customer = context.GetCustomerByEmail(email);
-        Assert.NotNull(customer);
-        Assert.NotEqual(Guid.Empty, customer.Id);
+        (customer).ShouldNotBeNull();
+        (customer.Id).ShouldNotBe(Guid.Empty);
     }
 }

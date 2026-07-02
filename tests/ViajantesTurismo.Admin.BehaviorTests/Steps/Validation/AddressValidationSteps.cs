@@ -174,149 +174,148 @@ public sealed class AddressValidationSteps(CustomerContext context)
     [Then("the address should be successfully created")]
     public void ThenTheAddressShouldBeSuccessfullyCreated()
     {
-        Assert.True(context.AddressResult.IsSuccess,
-            context.AddressResult.ErrorDetails?.Detail ?? "Address creation failed");
-        Assert.NotNull(context.AddressResult.Value);
+        (context.AddressResult.IsSuccess).ShouldBeTrue(context.AddressResult.ErrorDetails?.Detail ?? "Address creation failed");
+        (context.AddressResult.Value).ShouldNotBeNull();
     }
 
     [Then("I should be informed that street is required")]
     public void ThenIShouldBeInformedThatStreetIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Street is required.", allErrors);
+        (allErrors).ShouldContain("Street is required.");
     }
 
     [Then("I should be informed that street cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatStreetCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Street cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Street cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that neighborhood is required")]
     public void ThenIShouldBeInformedThatNeighborhoodIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Neighborhood is required.", allErrors);
+        (allErrors).ShouldContain("Neighborhood is required.");
     }
 
     [Then("I should be informed that neighborhood cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatNeighborhoodCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Neighborhood cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Neighborhood cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that postal code is required")]
     public void ThenIShouldBeInformedThatPostalCodeIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Postal code is required.", allErrors);
+        (allErrors).ShouldContain("Postal code is required.");
     }
 
     [Then("I should be informed that postal code cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatPostalCodeCannotExceed64Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Postal code cannot exceed 64 characters.", allErrors);
+        (allErrors).ShouldContain("Postal code cannot exceed 64 characters.");
     }
 
     [Then("I should be informed that city is required")]
     public void ThenIShouldBeInformedThatCityIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("City is required.", allErrors);
+        (allErrors).ShouldContain("City is required.");
     }
 
     [Then("I should be informed that city cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatCityCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("City cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("City cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that state is required")]
     public void ThenIShouldBeInformedThatStateIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("State is required.", allErrors);
+        (allErrors).ShouldContain("State is required.");
     }
 
     [Then("I should be informed that state cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatStateCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("State cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("State cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that country is required")]
     public void ThenIShouldBeInformedThatCountryIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Country is required.", allErrors);
+        (allErrors).ShouldContain("Country is required.");
     }
 
     [Then("I should be informed that country cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatCountryCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Country cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Country cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that complement cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatComplementCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        (context.AddressResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Complement cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Complement cannot exceed 128 characters.");
     }
 
     [Then(@"the complement should be ""(.*)""")]
     public void ThenTheComplementShouldBe(string expectedComplement)
     {
-        Assert.Equal(expectedComplement, context.AddressResult.Value.Complement);
+        (context.AddressResult.Value.Complement).ShouldBe(expectedComplement);
     }
 
     [Then("the complement should be empty")]
     public void ThenTheComplementShouldBeEmpty()
     {
-        Assert.Null(context.AddressResult.Value.Complement);
+        (context.AddressResult.Value.Complement).ShouldBeNull();
     }
 
     [Then("all address fields should have normalized whitespace")]
     public void ThenAllAddressFieldsShouldHaveNormalizedWhitespace()
     {
-        Assert.Equal("123 Main St", context.AddressResult.Value.Street);
-        Assert.Equal("Apt 5B", context.AddressResult.Value.Complement);
-        Assert.Equal("Downtown Area", context.AddressResult.Value.Neighborhood);
-        Assert.Equal("10001", context.AddressResult.Value.PostalCode);
-        Assert.Equal("New York", context.AddressResult.Value.City);
-        Assert.Equal("NY", context.AddressResult.Value.State);
-        Assert.Equal("USA", context.AddressResult.Value.Country);
+        (context.AddressResult.Value.Street).ShouldBe("123 Main St");
+        (context.AddressResult.Value.Complement).ShouldBe("Apt 5B");
+        (context.AddressResult.Value.Neighborhood).ShouldBe("Downtown Area");
+        (context.AddressResult.Value.PostalCode).ShouldBe("10001");
+        (context.AddressResult.Value.City).ShouldBe("New York");
+        (context.AddressResult.Value.State).ShouldBe("NY");
+        (context.AddressResult.Value.Country).ShouldBe("USA");
     }
 }

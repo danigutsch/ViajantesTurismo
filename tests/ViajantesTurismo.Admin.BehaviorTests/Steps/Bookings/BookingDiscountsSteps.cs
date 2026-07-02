@@ -143,29 +143,29 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Then(@"the booking total price should be approximately (\d+\.\d+)")]
     public void ThenTheBookingTotalPriceShouldBeApproximately(decimal expectedPrice)
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.True(Math.Abs(booking.TotalPrice - expectedPrice) < 0.1m,
-            $"Expected approximately {expectedPrice}, but got {booking.TotalPrice}");
+        (Math.Abs(booking.TotalPrice - expectedPrice) < 0.1m).ShouldBeTrue($"Expected approximately {expectedPrice}, but got {booking.TotalPrice}");
     }
 
     [Then(@"the booking should have discount reason ""(.*)""")]
     public void ThenTheBookingShouldHaveDiscountReason(string expectedReason)
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeTrue();
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.Discount);
-        Assert.Equal(expectedReason, booking.Discount.Reason);
+        (booking.Discount).ShouldNotBeNull();
+        (booking.Discount.Reason).ShouldBe(expectedReason);
     }
 
     [Then(@"the booking should fail with error containing ""(.*)""")]
     public void ThenTheBookingShouldFailWithErrorContaining(string expectedErrorText)
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        Assert.Contains(expectedErrorText, bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+        var errorDetails = (bookingContext.BookingCreationResult.Value.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain(expectedErrorText, StringComparison.OrdinalIgnoreCase);
     }
 
     [When(@"I attempt to apply a (-?\d+(?:\.\d+)?)% discount to a booking")]
@@ -201,9 +201,10 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Then(@"I should be informed that percentage discounts cannot exceed (\d+)%")]
     public void ThenIShouldBeInformedThatPercentageDiscountsCannotExceed(int maxPercentage)
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        Assert.Contains("percentage", bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+        var errorDetails = (bookingContext.BookingCreationResult.Value.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain("percentage", StringComparison.OrdinalIgnoreCase);
     }
 
     [When("I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]
@@ -216,16 +217,18 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Then("I should be informed that the discount reason is too short")]
     public void ThenIShouldBeInformedThatTheDiscountReasonIsTooShort()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        Assert.Contains("Reason must be at least", bookingContext.BookingCreationResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+        var errorDetails = (bookingContext.BookingCreationResult.Value.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain("Reason must be at least", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("I should be informed that the discount reason is too long")]
     public void ThenIShouldBeInformedThatTheDiscountReasonIsTooLong()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        Assert.Contains("Reason cannot exceed", bookingContext.BookingCreationResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
+        var errorDetails = (bookingContext.BookingCreationResult.Value.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain("Reason cannot exceed", StringComparison.OrdinalIgnoreCase);
     }
 }

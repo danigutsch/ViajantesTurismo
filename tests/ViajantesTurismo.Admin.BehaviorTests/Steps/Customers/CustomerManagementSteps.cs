@@ -65,9 +65,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create a customer")]
     public void WhenICreateACustomer()
     {
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.NotNull(context.AccommodationPreferencesResult);
-        Assert.NotNull(context.MedicalInfoResult);
+        (context.PhysicalInfoResult).ShouldNotBeNull();
+        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        (context.MedicalInfoResult).ShouldNotBeNull();
 
         context.PersonalInfoResult = PersonalInfo.Create(
             "John",
@@ -91,25 +91,25 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the customer should be created successfully")]
     public void ThenTheCustomerShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(context.Customer);
+        (context.Customer).ShouldNotBeNull();
     }
 
     [Then("the customer should contain all the provided information")]
     public void ThenTheCustomerShouldContainAllTheProvidedInformation()
     {
-        Assert.NotNull(context.Customer);
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.NotNull(context.AccommodationPreferencesResult);
-        Assert.NotNull(context.MedicalInfoResult);
+        (context.Customer).ShouldNotBeNull();
+        (context.PhysicalInfoResult).ShouldNotBeNull();
+        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        (context.MedicalInfoResult).ShouldNotBeNull();
 
-        Assert.Equal(context.PersonalInfoResult.Value, context.Customer.PersonalInfo);
-        Assert.Equal(context.IdentificationInfoResult.Value, context.Customer.IdentificationInfo);
-        Assert.Equal(context.ContactInfoResult.Value, context.Customer.ContactInfo);
-        Assert.Equal(context.AddressResult.Value, context.Customer.Address);
-        Assert.Equal(context.PhysicalInfoResult.Value.Value, context.Customer.PhysicalInfo);
-        Assert.Equal(context.AccommodationPreferencesResult.Value.Value, context.Customer.AccommodationPreferences);
-        Assert.Equal(context.EmergencyContactResult.Value, context.Customer.EmergencyContact);
-        Assert.Equal(context.MedicalInfoResult.Value.Value, context.Customer.MedicalInfo);
+        (context.Customer.PersonalInfo).ShouldBe(context.PersonalInfoResult.Value);
+        (context.Customer.IdentificationInfo).ShouldBe(context.IdentificationInfoResult.Value);
+        (context.Customer.ContactInfo).ShouldBe(context.ContactInfoResult.Value);
+        (context.Customer.Address).ShouldBe(context.AddressResult.Value);
+        (context.Customer.PhysicalInfo).ShouldBe(context.PhysicalInfoResult.Value.Value);
+        (context.Customer.AccommodationPreferences).ShouldBe(context.AccommodationPreferencesResult.Value.Value);
+        (context.Customer.EmergencyContact).ShouldBe(context.EmergencyContactResult.Value);
+        (context.Customer.MedicalInfo).ShouldBe(context.MedicalInfoResult.Value.Value);
     }
 
     [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]
@@ -126,28 +126,28 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create personal information from sanitization inputs")]
-    public static void WhenICreatePersonalInformationFromSanitizationInputs()
+    public void WhenICreatePersonalInformationFromSanitizationInputs()
     {
-        // Result already stored in context by Given step
+        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then("the personal information should be created successfully from sanitization")]
     public void ThenThePersonalInformationShouldBeCreatedSuccessfullyFromSanitization()
     {
-        Assert.True(context.PersonalInfoResult.IsSuccess);
-        Assert.NotNull(context.PersonalInfoResult.Value);
+        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue();
+        (context.PersonalInfoResult.Value).ShouldNotBeNull();
     }
 
     [Then(@"the sanitized first name should be ""(.*)""")]
     public void ThenTheSanitizedFirstNameShouldBe(string expectedFirstName)
     {
-        Assert.Equal(expectedFirstName, context.PersonalInfoResult.Value.FirstName);
+        (context.PersonalInfoResult.Value.FirstName).ShouldBe(expectedFirstName);
     }
 
     [Then(@"the sanitized last name should be ""(.*)""")]
     public void ThenTheSanitizedLastNameShouldBe(string expectedLastName)
     {
-        Assert.Equal(expectedLastName, context.PersonalInfoResult.Value.LastName);
+        (context.PersonalInfoResult.Value.LastName).ShouldBe(expectedLastName);
     }
 
     [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")]
@@ -166,19 +166,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create address information from sanitization inputs")]
     public void WhenICreateAddressInformationFromSanitizationInputs()
     {
-        // Result already stored in context by Given step.
+        (context.AddressResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized address city should be ""(.*)""")]
     public void ThenTheSanitizedAddressCityShouldBe(string expectedCity)
     {
-        Assert.Equal(expectedCity, context.AddressResult.Value.City);
+        (context.AddressResult.Value.City).ShouldBe(expectedCity);
     }
 
     [Then(@"the sanitized address country should be ""(.*)""")]
     public void ThenTheSanitizedAddressCountryShouldBe(string expectedCountry)
     {
-        Assert.Equal(expectedCountry, context.AddressResult.Value.Country);
+        (context.AddressResult.Value.Country).ShouldBe(expectedCountry);
     }
 
     [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
@@ -190,19 +190,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create contact information")]
     public void WhenICreateContactInformation()
     {
-        // Result already stored in context by Given step.
+        (context.ContactInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized email should be ""(.*)""")]
     public void ThenTheSanitizedEmailShouldBe(string expectedEmail)
     {
-        Assert.Equal(expectedEmail, context.ContactInfoResult.Value.Email);
+        (context.ContactInfoResult.Value.Email).ShouldBe(expectedEmail);
     }
 
     [Then(@"the sanitized mobile should be ""(.*)""")]
     public void ThenTheSanitizedMobileShouldBe(string expectedMobile)
     {
-        Assert.Equal(expectedMobile, context.ContactInfoResult.Value.Mobile);
+        (context.ContactInfoResult.Value.Mobile).ShouldBe(expectedMobile);
     }
 
     [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
@@ -214,19 +214,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create contact information with social media")]
     public void WhenICreateContactInformationWithSocialMedia()
     {
-        // Result already stored in context by Given step.
+        (context.ContactInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized Instagram should be ""(.*)""")]
     public void ThenTheSanitizedInstagramShouldBe(string expectedInstagram)
     {
-        Assert.Equal(expectedInstagram, context.ContactInfoResult.Value.Instagram);
+        (context.ContactInfoResult.Value.Instagram).ShouldBe(expectedInstagram);
     }
 
     [Then(@"the sanitized Facebook should be ""(.*)""")]
     public void ThenTheSanitizedFacebookShouldBe(string expectedFacebook)
     {
-        Assert.Equal(expectedFacebook, context.ContactInfoResult.Value.Facebook);
+        (context.ContactInfoResult.Value.Facebook).ShouldBe(expectedFacebook);
     }
 
     [Given(@"I have identification info with national ID ""(.*)"" and nationality ""(.*)""")]
@@ -238,19 +238,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create identification information")]
     public void WhenICreateIdentificationInformation()
     {
-        // Result already stored in context by Given step.
+        (context.IdentificationInfoResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized national ID should be ""(.*)""")]
     public void ThenTheSanitizedNationalIdShouldBe(string expectedNationalId)
     {
-        Assert.Equal(expectedNationalId, context.IdentificationInfoResult.Value.NationalId);
+        (context.IdentificationInfoResult.Value.NationalId).ShouldBe(expectedNationalId);
     }
 
     [Then(@"the sanitized ID nationality should be ""(.*)""")]
     public void ThenTheSanitizedIdNationalityShouldBe(string expectedNationality)
     {
-        Assert.Equal(expectedNationality, context.IdentificationInfoResult.Value.IdNationality);
+        (context.IdentificationInfoResult.Value.IdNationality).ShouldBe(expectedNationality);
     }
 
     [Given(@"I have emergency contact with name ""(.*)"" and mobile ""(.*)""")]
@@ -262,19 +262,19 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create emergency contact information")]
     public void WhenICreateEmergencyContactInformation()
     {
-        // Result already stored in context by Given step.
+        (context.EmergencyContactResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized emergency contact name should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactNameShouldBe(string expectedName)
     {
-        Assert.Equal(expectedName, context.EmergencyContactResult.Value.Name);
+        (context.EmergencyContactResult.Value.Name).ShouldBe(expectedName);
     }
 
     [Then(@"the sanitized emergency contact mobile should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactMobileShouldBe(string expectedMobile)
     {
-        Assert.Equal(expectedMobile, context.EmergencyContactResult.Value.Mobile);
+        (context.EmergencyContactResult.Value.Mobile).ShouldBe(expectedMobile);
     }
 
     [Given(@"I have medical info with allergies ""(.*)"" and additional info ""(.*)""")]
@@ -286,21 +286,22 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create medical information")]
     public void WhenICreateMedicalInformation()
     {
-        // Result already stored in context by Given step.
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the sanitized allergies should be ""(.*)""")]
     public void ThenTheSanitizedAllergiesShouldBe(string expectedAllergies)
     {
-        Assert.NotNull(context.MedicalInfoResult);
-        Assert.Equal(expectedAllergies, context.MedicalInfoResult.Value.Value.Allergies);
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.Value.Allergies).ShouldBe(expectedAllergies);
     }
 
     [Then(@"the sanitized additional info should be ""(.*)""")]
     public void ThenTheSanitizedAdditionalInfoShouldBe(string expectedAdditionalInfo)
     {
-        Assert.NotNull(context.MedicalInfoResult);
-        Assert.Equal(expectedAdditionalInfo, context.MedicalInfoResult.Value.Value.AdditionalInfo);
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.Value.AdditionalInfo).ShouldBe(expectedAdditionalInfo);
     }
 
     [When(@"I attempt to create another customer with email ""(.*)""")]
@@ -378,7 +379,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the customer creation should fail")]
     public void ThenTheCustomerCreationShouldFail()
     {
-        Assert.NotNull(context.CommandResult);
-        Assert.True(context.CommandResult.Value.IsFailure);
+        (context.CommandResult).ShouldNotBeNull();
+        (context.CommandResult.Value.IsFailure).ShouldBeTrue();
     }
 }

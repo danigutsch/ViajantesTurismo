@@ -67,50 +67,50 @@ public sealed class IdentificationInfoValidationSteps(CustomerContext context)
     [Then("the identification info should be successfully created")]
     public void ThenTheIdentificationInfoShouldBeSuccessfullyCreated()
     {
-        Assert.True(context.IdentificationInfoResult.IsSuccess, context.IdentificationInfoResult.ErrorDetails?.Detail ?? "Creation failed");
-        Assert.NotNull(context.IdentificationInfoResult.Value);
+        (context.IdentificationInfoResult.IsSuccess).ShouldBeTrue(context.IdentificationInfoResult.ErrorDetails?.Detail ?? "Creation failed");
+        (context.IdentificationInfoResult.Value).ShouldNotBeNull();
     }
 
     [Then("I should be informed that national ID is required")]
     public void ThenIShouldBeInformedThatNationalIdIsRequired()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        (context.IdentificationInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("National ID is required.", allErrors, StringComparer.Ordinal);
+        (allErrors).ShouldContain("National ID is required.", StringComparer.Ordinal);
     }
 
     [Then("I should be informed that national ID cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatNationalIdCannotExceed64Characters()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        (context.IdentificationInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("National ID cannot exceed 64 characters.", allErrors, StringComparer.Ordinal);
+        (allErrors).ShouldContain("National ID cannot exceed 64 characters.", StringComparer.Ordinal);
     }
 
     [Then("I should be informed that ID nationality is required")]
     public void ThenIShouldBeInformedThatIdNationalityIsRequired()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        (context.IdentificationInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("ID nationality is required.", allErrors, StringComparer.Ordinal);
+        (allErrors).ShouldContain("ID nationality is required.", StringComparer.Ordinal);
     }
 
     [Then("I should be informed that ID nationality cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatIdNationalityCannotExceed64Characters()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        (context.IdentificationInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("ID nationality cannot exceed 64 characters.", allErrors, StringComparer.Ordinal);
+        (allErrors).ShouldContain("ID nationality cannot exceed 64 characters.", StringComparer.Ordinal);
     }
 
     [Then("all identification fields should have normalized whitespace")]
     public void ThenAllIdentificationFieldsShouldHaveNormalizedWhitespace()
     {
-        Assert.Equal("12345678", context.IdentificationInfoResult.Value.NationalId, StringComparer.Ordinal);
-        Assert.Equal("Brazilian", context.IdentificationInfoResult.Value.IdNationality, StringComparer.Ordinal);
+        (context.IdentificationInfoResult.Value.NationalId).ShouldBe("12345678", StringComparer.Ordinal);
+        (context.IdentificationInfoResult.Value.IdNationality).ShouldBe("Brazilian", StringComparer.Ordinal);
     }
 }

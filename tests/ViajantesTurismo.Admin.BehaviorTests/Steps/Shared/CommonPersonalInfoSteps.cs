@@ -42,13 +42,13 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("the creation should succeed")]
     public void ThenTheCreationShouldSucceed()
     {
-        Assert.True(context.PersonalInfoResult.IsSuccess, context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
+        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue(context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
     }
 
     [Then("the personal info should be successfully created")]
     public void ThenThePersonalInfoShouldBeSuccessfullyCreated()
     {
-        Assert.True(context.PersonalInfoResult.IsSuccess, context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
+        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue(context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
     }
 
     [When(@"I attempt to create personal info with first name ""(.*)""")]
@@ -90,13 +90,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [When(@"I create personal info with first name ""(.*)""")]
     public void WhenICreatePersonalInfoWithFirstName(string firstName)
     {
-        context.FirstName = firstName;
-        context.LastName = "Smith";
-        context.Gender = "Male";
-        context.BirthDate = ValidBirthDate;
-        context.Nationality = "American";
-        context.Occupation = "Software Engineer";
-        WhenICreateThePersonalInfo();
+        WhenIAttemptToCreatePersonalInfoWithFirstName(firstName);
     }
 
     [When(@"I create personal info with first name of (\d+) characters")]
@@ -108,53 +102,51 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should not be able to create the personal info")]
     public void ThenIShouldNotBeAbleToCreateThePersonalInfo()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected personal info creation to fail, but it succeeded.");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected personal info creation to fail, but it succeeded.");
     }
 
     [Then("I should be informed that first name is required")]
     public void ThenIShouldBeInformedThatFirstNameIsRequired()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure);
-        Assert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
-            "Expected validation error for FirstName");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue();
+        (context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false).ShouldBeTrue("Expected validation error for FirstName");
     }
 
     [Then(@"I should be informed that first name cannot exceed (\d+) characters")]
     public void ThenIShouldBeInformedThatFirstNameCannotExceedCharacters(int maxLength)
     {
-        Assert.True(context.PersonalInfoResult.IsFailure);
-        Assert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
-            "Expected validation error for FirstName");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue();
+        (context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false).ShouldBeTrue("Expected validation error for FirstName");
     }
 
     [Then("the personal info should contain the provided data")]
     public void ThenThePersonalInfoShouldContainTheProvidedData()
     {
-        Assert.True(context.PersonalInfoResult.IsSuccess);
+        (context.PersonalInfoResult.IsSuccess).ShouldBeTrue();
 
         var info = context.PersonalInfoResult.Value;
-        Assert.Equal(context.FirstName, info.FirstName, StringComparer.Ordinal);
-        Assert.Equal(context.LastName, info.LastName, StringComparer.Ordinal);
-        Assert.Equal(context.Gender, info.Gender, StringComparer.Ordinal);
-        Assert.Equal(context.Nationality, info.Nationality, StringComparer.Ordinal);
-        Assert.Equal(context.Occupation, info.Occupation, StringComparer.Ordinal);
+        (info.FirstName).ShouldBe(context.FirstName, StringComparer.Ordinal);
+        (info.LastName).ShouldBe(context.LastName, StringComparer.Ordinal);
+        (info.Gender).ShouldBe(context.Gender, StringComparer.Ordinal);
+        (info.Nationality).ShouldBe(context.Nationality, StringComparer.Ordinal);
+        (info.Occupation).ShouldBe(context.Occupation, StringComparer.Ordinal);
     }
 
     [Then("the creation should fail")]
     public void ThenTheCreationShouldFail()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenTheErrorShouldBe(string expectedError)
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
 
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
 
-        Assert.Contains(expectedError, allErrors);
+        (allErrors).ShouldContain(expectedError);
     }
 
     [Given(@"I have personal information with first name ""(.*)""")]
@@ -240,13 +232,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [When(@"I create personal info with last name ""(.*)""")]
     public void WhenICreatePersonalInfoWithLastName(string lastName)
     {
-        context.FirstName = "John";
-        context.LastName = lastName;
-        context.Gender = "Male";
-        context.BirthDate = ValidBirthDate;
-        context.Nationality = "American";
-        context.Occupation = "Software Engineer";
-        WhenICreateThePersonalInfo();
+        WhenIAttemptToCreatePersonalInfoWithLastName(lastName);
     }
 
     [When(@"I create personal info with last name of (\d+) characters")]
@@ -258,17 +244,15 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that last name is required")]
     public void ThenIShouldBeInformedThatLastNameIsRequired()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure);
-        Assert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
-            "Expected validation error for LastName");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue();
+        (context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false).ShouldBeTrue("Expected validation error for LastName");
     }
 
     [Then(@"I should be informed that last name cannot exceed (\d+) characters")]
     public void ThenIShouldBeInformedThatLastNameCannotExceedCharacters(int maxLength)
     {
-        Assert.True(context.PersonalInfoResult.IsFailure);
-        Assert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
-            "Expected validation error for LastName");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue();
+        (context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false).ShouldBeTrue("Expected validation error for LastName");
     }
 
     [Given(@"I have personal information with gender ""(.*)""")]
@@ -362,12 +346,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Given("I have personal information with birth date one day in the future")]
     public void GivenIHavePersonalInformationWithBirthDateOneDayInTheFuture()
     {
-        context.FirstName = "John";
-        context.LastName = "Smith";
-        context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
-        context.Nationality = "American";
-        context.Occupation = "Software Engineer";
+        GivenIHavePersonalInformationWithBirthDateInTheFuture();
     }
 
     [Given("I have personal information with birth date one day in the past")]
@@ -407,13 +386,7 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [When("I attempt to create personal info with birth date one day in the future")]
     public void WhenIAttemptToCreatePersonalInfoWithBirthDateOneDayInTheFuture()
     {
-        context.FirstName = "John";
-        context.LastName = "Smith";
-        context.Gender = "Male";
-        context.BirthDate = DateTime.UtcNow.Date.AddDays(1);
-        context.Nationality = "American";
-        context.Occupation = "Software Engineer";
-        WhenICreateThePersonalInfo();
+        WhenIAttemptToCreatePersonalInfoWithBirthDateInTheFuture();
     }
 
     [When("I create personal info with birth date today")]
@@ -455,9 +428,8 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that birth date cannot be in the future")]
     public void ThenIShouldBeInformedThatBirthDateCannotBeInTheFuture()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure);
-        Assert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("BirthDate") ?? false,
-            "Expected validation error for BirthDate");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue();
+        (context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("BirthDate") ?? false).ShouldBeTrue("Expected validation error for BirthDate");
     }
 
     [Given(@"I have personal information with first name of (\d+) characters")]
@@ -588,25 +560,25 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that gender is required")]
     public void ThenIShouldBeInformedThatGenderIsRequired()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Gender is required.", allErrors);
+        (allErrors).ShouldContain("Gender is required.");
     }
 
     [Then("I should be informed that gender cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatGenderCannotExceed64Characters()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Gender cannot exceed 64 characters.", allErrors);
+        (allErrors).ShouldContain("Gender cannot exceed 64 characters.");
     }
 
     [Then(@"the gender should be ""([^""]*)""")]
     public void ThenTheGenderShouldBe(string expectedGender)
     {
-        Assert.Equal(expectedGender, context.PersonalInfoResult.Value.Gender);
+        (context.PersonalInfoResult.Value.Gender).ShouldBe(expectedGender);
     }
 
     [When("I attempt to create personal info without nationality")]
@@ -682,25 +654,25 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that nationality is required")]
     public void ThenIShouldBeInformedThatNationalityIsRequired()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Nationality is required.", allErrors);
+        (allErrors).ShouldContain("Nationality is required.");
     }
 
     [Then("I should be informed that nationality cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatNationalityCannotExceed128Characters()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Nationality cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Nationality cannot exceed 128 characters.");
     }
 
     [Then(@"the nationality should be ""([^""]*)""")]
     public void ThenTheNationalityShouldBe(string expectedNationality)
     {
-        Assert.Equal(expectedNationality, context.PersonalInfoResult.Value.Nationality);
+        (context.PersonalInfoResult.Value.Nationality).ShouldBe(expectedNationality);
     }
 
     [When("I attempt to create personal info without occupation")]
@@ -776,24 +748,24 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that occupation is required")]
     public void ThenIShouldBeInformedThatOccupationIsRequired()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Occupation is required.", allErrors);
+        (allErrors).ShouldContain("Occupation is required.");
     }
 
     [Then("I should be informed that occupation cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatOccupationCannotExceed128Characters()
     {
-        Assert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        (context.PersonalInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        Assert.Contains("Occupation cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Occupation cannot exceed 128 characters.");
     }
 
     [Then(@"the occupation should be ""([^""]*)""")]
     public void ThenTheOccupationShouldBe(string expectedOccupation)
     {
-        Assert.Equal(expectedOccupation, context.PersonalInfoResult.Value.Occupation);
+        (context.PersonalInfoResult.Value.Occupation).ShouldBe(expectedOccupation);
     }
 }

@@ -35,29 +35,29 @@ public sealed class BookingCustomerEntitySteps(BookingContext bookingContext)
     [Then("the booking customer should be created successfully")]
     public void ThenTheBookingCustomerShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(bookingContext.BookingCustomerResult);
-        Assert.True(bookingContext.BookingCustomerResult.Value.IsSuccess);
+        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
+        (bookingContext.BookingCustomerResult.Value.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the booking customer should have bike type ""(.*)""")]
     public void ThenTheBookingCustomerShouldHaveBikeType(string expectedBikeType)
     {
-        Assert.NotNull(bookingContext.BookingCustomerResult);
+        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
         var type = Enum.Parse<BikeType>(expectedBikeType);
-        Assert.Equal(type, bookingContext.BookingCustomerResult.Value.Value.BikeType);
+        (bookingContext.BookingCustomerResult.Value.Value.BikeType).ShouldBe(type);
     }
 
     [Then("the booking customer should have bike price (.*)")]
     public void ThenTheBookingCustomerShouldHaveBikePrice(decimal expectedPrice)
     {
-        Assert.NotNull(bookingContext.BookingCustomerResult);
-        Assert.Equal(expectedPrice, bookingContext.BookingCustomerResult.Value.Value.BikePrice);
+        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
+        (bookingContext.BookingCustomerResult.Value.Value.BikePrice).ShouldBe(expectedPrice);
     }
 
     [Then("the booking customer creation should fail")]
     public void ThenTheBookingCustomerCreationShouldFail()
     {
-        Assert.NotNull(bookingContext.BookingCustomerResult);
-        Assert.False(bookingContext.BookingCustomerResult.Value.IsSuccess);
+        (bookingContext.BookingCustomerResult).ShouldNotBeNull();
+        (bookingContext.BookingCustomerResult.Value.IsSuccess).ShouldBeFalse();
     }
 }

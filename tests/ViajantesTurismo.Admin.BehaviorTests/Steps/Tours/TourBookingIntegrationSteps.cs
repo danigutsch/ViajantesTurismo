@@ -14,7 +14,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Given("a customer exists")]
     public static void GivenACustomerExists()
     {
-        Assert.True(true);
+        (true).ShouldBeTrue();
     }
 
     [Given("a tour exists with a pending booking")]
@@ -26,9 +26,9 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
-        Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
     }
 
     [Given("a tour exists with a confirmed booking")]
@@ -40,11 +40,11 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        Assert.True(addResult.IsSuccess);
+        (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
-        Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
+        (result.IsSuccess).ShouldBeTrue();
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Confirmed);
     }
 
     [Given("a tour exists with a cancelled booking")]
@@ -56,11 +56,11 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        Assert.True(addResult.IsSuccess);
+        (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
-        Assert.Equal(BookingStatus.Cancelled, bookingContext.Booking.Status);
+        (result.IsSuccess).ShouldBeTrue();
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Cancelled);
     }
 
     [Given("a tour exists with a completed booking")]
@@ -72,16 +72,16 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        Assert.True(addResult.IsSuccess);
+        (addResult.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
 
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        Assert.True(confirmResult.IsSuccess);
-        Assert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
+        (confirmResult.IsSuccess).ShouldBeTrue();
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Confirmed);
 
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
-        Assert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
+        (result.IsSuccess).ShouldBeTrue();
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Completed);
     }
 
     [Given("a tour exists with a booking")]
@@ -93,7 +93,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -107,7 +107,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             RoomType.DoubleOccupancy,
             DiscountType.None,
             notes: notes));
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -119,7 +119,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -133,7 +133,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             RoomType.DoubleOccupancy,
             DiscountType.None));
         bookingContext.BookingCreationResult = result;
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -147,7 +147,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             roomType,
             DiscountType.None));
         bookingContext.BookingCreationResult = result;
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -155,35 +155,35 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     public void WhenIConfirmTheBookingThroughTheTour()
     {
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [When("I cancel the booking through the tour")]
     public void WhenICancelTheBookingThroughTheTour()
     {
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [When("I complete the booking through the tour")]
     public void WhenICompleteTheBookingThroughTheTour()
     {
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [When(@"I update the booking notes to ""(.*)"" through the tour")]
     public void WhenIUpdateTheBookingNotesToThroughTheTour(string notes)
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [When("I remove the booking from the tour")]
     public void WhenIRemoveTheBookingFromTheTour()
     {
         var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
-        Assert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [When("I try to confirm a non-existent booking")]
@@ -224,18 +224,18 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
     [Then("the tour should have the booking")]
     public void ThenTheTourShouldHaveTheBooking()
     {
-        Assert.Contains(bookingContext.Booking, tourContext.Tour.Bookings);
+        (tourContext.Tour.Bookings).ShouldContain(bookingContext.Booking);
     }
 
     [Then("the booking should be in pending status")]
     public void ThenTheBookingShouldBeInPendingStatus()
     {
-        Assert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
     }
 
     [Then("the tour should not have the booking")]
     public void ThenTheTourShouldNotHaveTheBooking()
     {
-        Assert.DoesNotContain(bookingContext.Booking, tourContext.Tour.Bookings);
+        (tourContext.Tour.Bookings).ShouldNotContain(bookingContext.Booking);
     }
 }
