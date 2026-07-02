@@ -174,149 +174,149 @@ public sealed class AddressValidationSteps(CustomerContext context)
     [Then("the address should be successfully created")]
     public void ThenTheAddressShouldBeSuccessfullyCreated()
     {
-        Assert.True(context.AddressResult.IsSuccess,
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsSuccess,
             context.AddressResult.ErrorDetails?.Detail ?? "Address creation failed");
-        Assert.NotNull(context.AddressResult.Value);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.AddressResult.Value);
     }
 
     [Then("I should be informed that street is required")]
     public void ThenIShouldBeInformedThatStreetIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Street is required.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Street is required.", allErrors);
     }
 
     [Then("I should be informed that street cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatStreetCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Street cannot exceed 128 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Street cannot exceed 128 characters.", allErrors);
     }
 
     [Then("I should be informed that neighborhood is required")]
     public void ThenIShouldBeInformedThatNeighborhoodIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Neighborhood is required.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Neighborhood is required.", allErrors);
     }
 
     [Then("I should be informed that neighborhood cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatNeighborhoodCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Neighborhood cannot exceed 128 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Neighborhood cannot exceed 128 characters.", allErrors);
     }
 
     [Then("I should be informed that postal code is required")]
     public void ThenIShouldBeInformedThatPostalCodeIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Postal code is required.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Postal code is required.", allErrors);
     }
 
     [Then("I should be informed that postal code cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatPostalCodeCannotExceed64Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Postal code cannot exceed 64 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Postal code cannot exceed 64 characters.", allErrors);
     }
 
     [Then("I should be informed that city is required")]
     public void ThenIShouldBeInformedThatCityIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("City is required.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("City is required.", allErrors);
     }
 
     [Then("I should be informed that city cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatCityCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("City cannot exceed 128 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("City cannot exceed 128 characters.", allErrors);
     }
 
     [Then("I should be informed that state is required")]
     public void ThenIShouldBeInformedThatStateIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("State is required.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("State is required.", allErrors);
     }
 
     [Then("I should be informed that state cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatStateCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("State cannot exceed 128 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("State cannot exceed 128 characters.", allErrors);
     }
 
     [Then("I should be informed that country is required")]
     public void ThenIShouldBeInformedThatCountryIsRequired()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Country is required.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Country is required.", allErrors);
     }
 
     [Then("I should be informed that country cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatCountryCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Country cannot exceed 128 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Country cannot exceed 128 characters.", allErrors);
     }
 
     [Then("I should be informed that complement cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatComplementCannotExceed128Characters()
     {
-        Assert.True(context.AddressResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AddressResult.IsFailure, "Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Complement cannot exceed 128 characters.", allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Complement cannot exceed 128 characters.", allErrors);
     }
 
     [Then(@"the complement should be ""(.*)""")]
     public void ThenTheComplementShouldBe(string expectedComplement)
     {
-        Assert.Equal(expectedComplement, context.AddressResult.Value.Complement);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedComplement, context.AddressResult.Value.Complement);
     }
 
     [Then("the complement should be empty")]
     public void ThenTheComplementShouldBeEmpty()
     {
-        Assert.Null(context.AddressResult.Value.Complement);
+        global::SharedKernel.Testing.Assertions.TestAssert.Null(context.AddressResult.Value.Complement);
     }
 
     [Then("all address fields should have normalized whitespace")]
     public void ThenAllAddressFieldsShouldHaveNormalizedWhitespace()
     {
-        Assert.Equal("123 Main St", context.AddressResult.Value.Street);
-        Assert.Equal("Apt 5B", context.AddressResult.Value.Complement);
-        Assert.Equal("Downtown Area", context.AddressResult.Value.Neighborhood);
-        Assert.Equal("10001", context.AddressResult.Value.PostalCode);
-        Assert.Equal("New York", context.AddressResult.Value.City);
-        Assert.Equal("NY", context.AddressResult.Value.State);
-        Assert.Equal("USA", context.AddressResult.Value.Country);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("123 Main St", context.AddressResult.Value.Street);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("Apt 5B", context.AddressResult.Value.Complement);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("Downtown Area", context.AddressResult.Value.Neighborhood);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("10001", context.AddressResult.Value.PostalCode);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("New York", context.AddressResult.Value.City);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("NY", context.AddressResult.Value.State);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("USA", context.AddressResult.Value.Country);
     }
 }

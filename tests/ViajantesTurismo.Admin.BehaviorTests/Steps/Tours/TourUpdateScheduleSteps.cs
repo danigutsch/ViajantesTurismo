@@ -28,29 +28,29 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     [Then("the tour schedule update should succeed")]
     public void ThenTheTourScheduleUpdateShouldSucceed()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
             $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour schedule update should fail")]
     public void ThenTheTourScheduleUpdateShouldFail()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then(@"the tour start date should be ""(.*)""")]
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        Assert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
     }
 
     [Then(@"the tour end date should be ""(.*)""")]
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        Assert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
     }
 }

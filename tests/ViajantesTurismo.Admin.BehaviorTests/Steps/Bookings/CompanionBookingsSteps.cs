@@ -8,13 +8,13 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     [Given("a principal customer exists")]
     public static void GivenAPrincipalCustomerExists()
     {
-        Assert.True(true);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(true);
     }
 
     [Given("a companion customer exists")]
     public static void GivenACompanionCustomerExists()
     {
-        Assert.True(true);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(true);
     }
 
     [When(
@@ -91,91 +91,91 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     [Then("the booking should have a companion customer")]
     public void ThenTheBookingShouldHaveACompanionCustomer()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
-        Assert.NotNull(bookingContext.BookingCreationResult.Value.Value.CompanionCustomer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult.Value.Value.CompanionCustomer);
     }
 
     [Then("the booking should not have a companion customer")]
     public void ThenTheBookingShouldNotHaveACompanionCustomer()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
-        Assert.Null(bookingContext.BookingCreationResult.Value.Value.CompanionCustomer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.Null(bookingContext.BookingCreationResult.Value.Value.CompanionCustomer);
     }
 
     [Then("the booking should include principal bike price")]
     public void ThenTheBookingShouldIncludePrincipalBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
         var tour = tourContext.Tour;
         var expectedBikePrice = tour.Pricing.RegularBikePrice;
-        Assert.Equal(expectedBikePrice, booking.PrincipalCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedBikePrice, booking.PrincipalCustomer.BikePrice);
     }
 
     [Then("the booking should include companion bike price")]
     public void ThenTheBookingShouldIncludeCompanionBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.CompanionCustomer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(booking.CompanionCustomer);
         var tour = tourContext.Tour;
         var expectedBikePrice = tour.Pricing.RegularBikePrice;
-        Assert.Equal(expectedBikePrice, booking.CompanionCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedBikePrice, booking.CompanionCustomer.BikePrice);
     }
 
     [Then("the booking should include principal regular bike price")]
     public void ThenTheBookingShouldIncludePrincipalRegularBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.RegularBikePrice, booking.PrincipalCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tour.Pricing.RegularBikePrice, booking.PrincipalCustomer.BikePrice);
     }
 
     [Then("the booking should include companion e-bike price")]
     public void ThenTheBookingShouldIncludeCompanionEBikePrice()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.CompanionCustomer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(booking.CompanionCustomer);
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.EBikePrice, booking.CompanionCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tour.Pricing.EBikePrice, booking.CompanionCustomer.BikePrice);
     }
 
     [Then("both customers should have e-bike pricing")]
     public void ThenBothCustomersShouldHaveEBikePricing()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.NotNull(booking.CompanionCustomer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(booking.CompanionCustomer);
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.EBikePrice, booking.PrincipalCustomer.BikePrice);
-        Assert.Equal(tour.Pricing.EBikePrice, booking.CompanionCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tour.Pricing.EBikePrice, booking.PrincipalCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tour.Pricing.EBikePrice, booking.CompanionCustomer.BikePrice);
     }
 
     [Then("the booking should include single room supplement")]
     public void ThenTheBookingShouldIncludeSingleRoomSupplement()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
         var tour = tourContext.Tour;
-        Assert.Equal(tour.Pricing.SingleRoomSupplementPrice, booking.RoomAdditionalCost);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tour.Pricing.SingleRoomSupplementPrice, booking.RoomAdditionalCost);
     }
 
     [Then("the booking should not include single room supplement")]
     public void ThenTheBookingShouldNotIncludeSingleRoomSupplement()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        Assert.Equal(0m, booking.RoomAdditionalCost);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(0m, booking.RoomAdditionalCost);
     }
 }

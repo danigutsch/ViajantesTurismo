@@ -6,77 +6,77 @@ public sealed class BookingAssertionSteps(BookingContext context, TourContext to
     [Then("the booking update should fail with conflict error")]
     public void ThenTheBookingUpdateShouldFailWithConflictError()
     {
-        Assert.NotNull(context.BookingOperationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.BookingOperationResult);
         var result = context.BookingOperationResult.Value;
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Conflict, result.Status);
+        global::SharedKernel.Testing.Assertions.TestAssert.False(result.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(ResultStatus.Conflict, result.Status);
     }
 
     [Then(@"the booking status should be ""(.*)""")]
     public void ThenTheBookingStatusShouldBe(string expectedStatus)
     {
         var expected = EntityBuilders.ParseBookingStatus(expectedStatus);
-        Assert.Equal(expected, context.Booking.Status);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expected, context.Booking.Status);
     }
 
     [Then(@"the booking notes should be ""(.*)""")]
     public void ThenTheBookingNotesShouldBe(string expectedNotes)
     {
-        Assert.Equal(expectedNotes, context.Booking.Notes);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedNotes, context.Booking.Notes);
     }
 
     [Then("the booking notes should be null")]
     public void ThenTheBookingNotesShouldBeNull()
     {
-        Assert.True(string.IsNullOrEmpty(context.Booking.Notes));
+        global::SharedKernel.Testing.Assertions.TestAssert.True(string.IsNullOrEmpty(context.Booking.Notes));
     }
 
     [Then(@"the booking payment status should be ""(.*)""")]
     public void ThenTheBookingPaymentStatusShouldBe(string expectedStatusString)
     {
         var expected = EntityBuilders.ParsePaymentStatus(expectedStatusString);
-        Assert.Equal(expected, context.Booking.PaymentStatus);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expected, context.Booking.PaymentStatus);
     }
 
     [Then(@"the result should fail with message ""(.*)""")]
     public void ThenTheResultShouldFailWithMessage(string expectedMessage)
     {
-        Assert.NotNull(context.BookingOperationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.BookingOperationResult);
         var result = context.BookingOperationResult.Value;
-        Assert.True(result.IsFailure);
-        Assert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsFailure);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedMessage, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 
     [Then(@"the result should fail with message starting with ""(.*)""")]
     public void ThenTheResultShouldFailWithMessageStartingWith(string expectedMessagePrefix)
     {
-        Assert.NotNull(context.BookingOperationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.BookingOperationResult);
         var result = context.BookingOperationResult.Value;
-        Assert.True(result.IsFailure);
-        Assert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsFailure);
+        global::SharedKernel.Testing.Assertions.TestAssert.StartsWith(expectedMessagePrefix, result.ErrorDetails!.Detail, StringComparison.Ordinal);
     }
 
     [Then("the booking room additional cost should be (.*)")]
     public void ThenTheBookingRoomAdditionalCostShouldBe(decimal expectedCost)
     {
-        Assert.Equal(expectedCost, context.Booking.RoomAdditionalCost);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCost, context.Booking.RoomAdditionalCost);
     }
 
     [Then("the booking room additional cost should be the tour single room supplement")]
     public void ThenTheBookingRoomAdditionalCostShouldBeTheTourSingleRoomSupplement()
     {
-        Assert.Equal(tourContext.Tour.Pricing.SingleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tourContext.Tour.Pricing.SingleRoomSupplementPrice, context.Booking.RoomAdditionalCost);
     }
 
     [Then("the booking principal customer bike price should be the tour regular bike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourRegularBikePrice()
     {
-        Assert.Equal(tourContext.Tour.Pricing.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tourContext.Tour.Pricing.RegularBikePrice, context.Booking.PrincipalCustomer.BikePrice);
     }
 
     [Then("the booking principal customer bike price should be the tour ebike price")]
     public void ThenTheBookingPrincipalCustomerBikePriceShouldBeTheTourEbikePrice()
     {
-        Assert.Equal(tourContext.Tour.Pricing.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(tourContext.Tour.Pricing.EBikePrice, context.Booking.PrincipalCustomer.BikePrice);
     }
 }

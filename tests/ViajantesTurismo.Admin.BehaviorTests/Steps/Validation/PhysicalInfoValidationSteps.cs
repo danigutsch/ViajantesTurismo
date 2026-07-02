@@ -41,24 +41,24 @@ public sealed class PhysicalInfoValidationSteps(CustomerContext context)
     [Then("the physical info should be created successfully")]
     public void ThenThePhysicalInfoShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.True(context.PhysicalInfoResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.PhysicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PhysicalInfoResult.Value.IsSuccess);
     }
 
     [Then("the physical info creation should fail")]
     public void ThenThePhysicalInfoCreationShouldFail()
     {
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.False(context.PhysicalInfoResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.PhysicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.False(context.PhysicalInfoResult.Value.IsSuccess);
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenThePhysicalInfoErrorShouldBe(string expectedError)
     {
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.True(context.PhysicalInfoResult.Value.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.PhysicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PhysicalInfoResult.Value.IsFailure, "Expected failure but got success");
         var errors = context.PhysicalInfoResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains(expectedError, allErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedError, allErrors);
     }
 }
