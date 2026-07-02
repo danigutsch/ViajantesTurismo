@@ -6,40 +6,40 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Infrastructure.Coverage;
 public class InvariantCoverageTests
 {
     [Fact]
-    public void Registry_ShouldContain_Exactly24TourInvariants()
+    public void Registry_should_contain_exactly_24_tour_invariants()
     {
         // Arrange
         // Act
         var tourInvariants = InvariantRegistry.GetTourInvariants();
 
         // Assert
-        Assert.Equal(24, tourInvariants.Length);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(24, tourInvariants.Length);
     }
 
     [Fact]
-    public void Registry_ShouldContain_Exactly30CustomerInvariants()
+    public void Registry_should_contain_exactly_30_customer_invariants()
     {
         // Arrange
         // Act
         var customerInvariants = InvariantRegistry.GetCustomerInvariants();
 
         // Assert
-        Assert.Equal(30, customerInvariants.Length);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(30, customerInvariants.Length);
     }
 
     [Fact]
-    public void Registry_ShouldReturn_TotalOf54Invariants()
+    public void Registry_should_return_total_of_54_invariants()
     {
         // Arrange
         // Act
         var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Assert
-        Assert.Equal(54, allInvariants.Length);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(54, allInvariants.Length);
     }
 
     [Fact]
-    public void TourInvariants_ShouldFollow_NamingConvention()
+    public void Tour_invariants_should_follow_naming_convention()
     {
         // Arrange
         // Act
@@ -48,12 +48,12 @@ public class InvariantCoverageTests
         // Assert
         foreach (var invariant in tourInvariants)
         {
-            Assert.Matches(@"^INV-TOUR-\d{3}$", invariant);
+            SharedKernel.Testing.Assertions.TestAssert.Matches(@"^INV-TOUR-\d{3}$", invariant);
         }
     }
 
     [Fact]
-    public void CustomerInvariants_ShouldFollow_NamingConvention()
+    public void Customer_invariants_should_follow_naming_convention()
     {
         // Arrange
         // Act
@@ -62,12 +62,12 @@ public class InvariantCoverageTests
         // Assert
         foreach (var invariant in customerInvariants)
         {
-            Assert.Matches(@"^INV-CUST-\d{3}$", invariant);
+            SharedKernel.Testing.Assertions.TestAssert.Matches(@"^INV-CUST-\d{3}$", invariant);
         }
     }
 
     [Fact]
-    public void TourInvariants_ShouldBe_Sequential()
+    public void Tour_invariants_should_be_sequential()
     {
         // Arrange
         // Act
@@ -80,12 +80,12 @@ public class InvariantCoverageTests
         // Assert
         for (var i = 0; i < numbers.Length; i++)
         {
-            Assert.Equal(i + 1, numbers[i]);
+            SharedKernel.Testing.Assertions.TestAssert.Equal(i + 1, numbers[i]);
         }
     }
 
     [Fact]
-    public void CustomerInvariants_ShouldBe_Sequential()
+    public void Customer_invariants_should_be_sequential()
     {
         // Arrange
         // Act
@@ -98,23 +98,23 @@ public class InvariantCoverageTests
         // Assert
         for (var i = 0; i < numbers.Length; i++)
         {
-            Assert.Equal(i + 1, numbers[i]);
+            SharedKernel.Testing.Assertions.TestAssert.Equal(i + 1, numbers[i]);
         }
     }
 
     [Fact]
-    public void AllInvariants_ShouldBe_Unique()
+    public void All_invariants_should_be_unique()
     {
         // Arrange
         // Act
         var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Assert
-        Assert.Equal(allInvariants.Length, allInvariants.Distinct().Count());
+        SharedKernel.Testing.Assertions.TestAssert.Equal(allInvariants.Length, allInvariants.Distinct().Count());
     }
 
     [Fact]
-    public void Registry_ShouldReturn_EmptyArray_ForUnknownAggregate()
+    public void Registry_should_return_empty_array_for_unknown_aggregate()
     {
         // Arrange
         var unknownAggregateType = typeof(string);
@@ -123,7 +123,7 @@ public class InvariantCoverageTests
         var invariants = InvariantRegistry.GetInvariantsForAggregate(unknownAggregateType);
 
         // Assert
-        Assert.Empty(invariants);
+        SharedKernel.Testing.Assertions.TestAssert.Empty(invariants);
     }
 
     [Theory]
@@ -131,18 +131,18 @@ public class InvariantCoverageTests
     [InlineData(InvariantRegistry.Tour.PercentageDiscountMax100)]
     [InlineData(InvariantRegistry.Customer.EmailUnique)]
     [InlineData(InvariantRegistry.Customer.MedicalInfoMaxLength)]
-    public void Registry_ShouldContain_BoundaryInvariants(string invariantId)
+    public void Registry_should_contain_boundary_invariants(string invariantId)
     {
         // Arrange
         // Act
         var allInvariants = InvariantRegistry.GetAllInvariants();
 
         // Assert
-        Assert.Contains(invariantId, allInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Contains(invariantId, allInvariants);
     }
 
     [Fact]
-    public void CoverageValidator_ShouldInitialize_WithAllInvariants()
+    public void Coverage_validator_should_initialize_with_all_invariants()
     {
         // Arrange
         // Act
@@ -150,14 +150,14 @@ public class InvariantCoverageTests
         var report = validator.GenerateReport();
 
         // Assert
-        Assert.Equal(54, report.TotalInvariants);
-        Assert.Equal(0, report.CoveredInvariants);
-        Assert.Equal(54, report.UncoveredInvariants.Count);
-        Assert.Equal(0.0, report.CoveragePercentage);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(54, report.TotalInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(0, report.CoveredInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(54, report.UncoveredInvariants.Count);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(0.0, report.CoveragePercentage);
     }
 
     [Fact]
-    public void CoverageValidator_ShouldTrack_ScenarioCoverage()
+    public void Coverage_validator_should_track_scenario_coverage()
     {
         // Arrange
         var validator = new InvariantCoverageValidator();
@@ -170,21 +170,21 @@ public class InvariantCoverageTests
         var report = validator.GenerateReport();
 
         // Assert
-        Assert.Equal(54, report.TotalInvariants);
-        Assert.Equal(2, report.CoveredInvariants);
-        Assert.Equal(52, report.UncoveredInvariants.Count);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(54, report.TotalInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(2, report.CoveredInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(52, report.UncoveredInvariants.Count);
         const double expectedCoveragePercentage = 3.7;
         const double tolerance = 0.2;
-        Assert.InRange(report.CoveragePercentage, expectedCoveragePercentage - tolerance,
+        SharedKernel.Testing.Assertions.TestAssert.InRange(report.CoveragePercentage, expectedCoveragePercentage - tolerance,
             expectedCoveragePercentage + tolerance);
-        Assert.Contains(InvariantRegistry.Tour.UniqueIdentifier, report.InvariantToScenarios.Keys);
-        Assert.Contains(InvariantRegistry.Customer.EmailUnique, report.InvariantToScenarios.Keys);
-        Assert.Equal(2, report.InvariantToScenarios[InvariantRegistry.Tour.UniqueIdentifier].Count);
-        Assert.Single(report.InvariantToScenarios[InvariantRegistry.Customer.EmailUnique]);
+        SharedKernel.Testing.Assertions.TestAssert.Contains(InvariantRegistry.Tour.UniqueIdentifier, report.InvariantToScenarios.Keys);
+        SharedKernel.Testing.Assertions.TestAssert.Contains(InvariantRegistry.Customer.EmailUnique, report.InvariantToScenarios.Keys);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(2, report.InvariantToScenarios[InvariantRegistry.Tour.UniqueIdentifier].Count);
+        SharedKernel.Testing.Assertions.TestAssert.ExactlyOne(report.InvariantToScenarios[InvariantRegistry.Customer.EmailUnique]);
     }
 
     [Fact]
-    public void CoverageValidator_Should_Calculate100PercentCoverage_WhenAllInvariantsCovered()
+    public void Coverage_validator_should_calculate_100_percent_coverage_when_all_invariants_covered()
     {
         // Arrange
         var validator = new InvariantCoverageValidator();
@@ -199,9 +199,9 @@ public class InvariantCoverageTests
         var report = validator.GenerateReport();
 
         // Assert
-        Assert.Equal(54, report.TotalInvariants);
-        Assert.Equal(54, report.CoveredInvariants);
-        Assert.Empty(report.UncoveredInvariants);
-        Assert.Equal(100.0, report.CoveragePercentage);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(54, report.TotalInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(54, report.CoveredInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Empty(report.UncoveredInvariants);
+        SharedKernel.Testing.Assertions.TestAssert.Equal(100.0, report.CoveragePercentage);
     }
 }

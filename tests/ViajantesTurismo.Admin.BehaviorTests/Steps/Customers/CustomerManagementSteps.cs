@@ -65,9 +65,9 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [When("I create a customer")]
     public void WhenICreateACustomer()
     {
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.NotNull(context.AccommodationPreferencesResult);
-        Assert.NotNull(context.MedicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.PhysicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.AccommodationPreferencesResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
 
         context.PersonalInfoResult = PersonalInfo.Create(
             "John",
@@ -91,25 +91,25 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the customer should be created successfully")]
     public void ThenTheCustomerShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(context.Customer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.Customer);
     }
 
     [Then("the customer should contain all the provided information")]
     public void ThenTheCustomerShouldContainAllTheProvidedInformation()
     {
-        Assert.NotNull(context.Customer);
-        Assert.NotNull(context.PhysicalInfoResult);
-        Assert.NotNull(context.AccommodationPreferencesResult);
-        Assert.NotNull(context.MedicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.Customer);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.PhysicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.AccommodationPreferencesResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
 
-        Assert.Equal(context.PersonalInfoResult.Value, context.Customer.PersonalInfo);
-        Assert.Equal(context.IdentificationInfoResult.Value, context.Customer.IdentificationInfo);
-        Assert.Equal(context.ContactInfoResult.Value, context.Customer.ContactInfo);
-        Assert.Equal(context.AddressResult.Value, context.Customer.Address);
-        Assert.Equal(context.PhysicalInfoResult.Value.Value, context.Customer.PhysicalInfo);
-        Assert.Equal(context.AccommodationPreferencesResult.Value.Value, context.Customer.AccommodationPreferences);
-        Assert.Equal(context.EmergencyContactResult.Value, context.Customer.EmergencyContact);
-        Assert.Equal(context.MedicalInfoResult.Value.Value, context.Customer.MedicalInfo);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.PersonalInfoResult.Value, context.Customer.PersonalInfo);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.IdentificationInfoResult.Value, context.Customer.IdentificationInfo);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.ContactInfoResult.Value, context.Customer.ContactInfo);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.AddressResult.Value, context.Customer.Address);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.PhysicalInfoResult.Value.Value, context.Customer.PhysicalInfo);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.AccommodationPreferencesResult.Value.Value, context.Customer.AccommodationPreferences);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.EmergencyContactResult.Value, context.Customer.EmergencyContact);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.MedicalInfoResult.Value.Value, context.Customer.MedicalInfo);
     }
 
     [Given(@"I have personal information for sanitization with first name ""([^""]*)"" and last name ""([^""]*)""")]
@@ -134,20 +134,20 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the personal information should be created successfully from sanitization")]
     public void ThenThePersonalInformationShouldBeCreatedSuccessfullyFromSanitization()
     {
-        Assert.True(context.PersonalInfoResult.IsSuccess);
-        Assert.NotNull(context.PersonalInfoResult.Value);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.PersonalInfoResult.Value);
     }
 
     [Then(@"the sanitized first name should be ""(.*)""")]
     public void ThenTheSanitizedFirstNameShouldBe(string expectedFirstName)
     {
-        Assert.Equal(expectedFirstName, context.PersonalInfoResult.Value.FirstName);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedFirstName, context.PersonalInfoResult.Value.FirstName);
     }
 
     [Then(@"the sanitized last name should be ""(.*)""")]
     public void ThenTheSanitizedLastNameShouldBe(string expectedLastName)
     {
-        Assert.Equal(expectedLastName, context.PersonalInfoResult.Value.LastName);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedLastName, context.PersonalInfoResult.Value.LastName);
     }
 
     [Given(@"I have address for sanitization with city ""(.*)"" and country ""(.*)""")]
@@ -164,7 +164,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create address information from sanitization inputs")]
-    public void WhenICreateAddressInformationFromSanitizationInputs()
+    public static void WhenICreateAddressInformationFromSanitizationInputs()
     {
         // Result already stored in context by Given step.
     }
@@ -172,13 +172,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized address city should be ""(.*)""")]
     public void ThenTheSanitizedAddressCityShouldBe(string expectedCity)
     {
-        Assert.Equal(expectedCity, context.AddressResult.Value.City);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCity, context.AddressResult.Value.City);
     }
 
     [Then(@"the sanitized address country should be ""(.*)""")]
     public void ThenTheSanitizedAddressCountryShouldBe(string expectedCountry)
     {
-        Assert.Equal(expectedCountry, context.AddressResult.Value.Country);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCountry, context.AddressResult.Value.Country);
     }
 
     [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
@@ -188,7 +188,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create contact information")]
-    public void WhenICreateContactInformation()
+    public static void WhenICreateContactInformation()
     {
         // Result already stored in context by Given step.
     }
@@ -196,13 +196,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized email should be ""(.*)""")]
     public void ThenTheSanitizedEmailShouldBe(string expectedEmail)
     {
-        Assert.Equal(expectedEmail, context.ContactInfoResult.Value.Email);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedEmail, context.ContactInfoResult.Value.Email);
     }
 
     [Then(@"the sanitized mobile should be ""(.*)""")]
     public void ThenTheSanitizedMobileShouldBe(string expectedMobile)
     {
-        Assert.Equal(expectedMobile, context.ContactInfoResult.Value.Mobile);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedMobile, context.ContactInfoResult.Value.Mobile);
     }
 
     [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
@@ -212,7 +212,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create contact information with social media")]
-    public void WhenICreateContactInformationWithSocialMedia()
+    public static void WhenICreateContactInformationWithSocialMedia()
     {
         // Result already stored in context by Given step.
     }
@@ -220,13 +220,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized Instagram should be ""(.*)""")]
     public void ThenTheSanitizedInstagramShouldBe(string expectedInstagram)
     {
-        Assert.Equal(expectedInstagram, context.ContactInfoResult.Value.Instagram);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedInstagram, context.ContactInfoResult.Value.Instagram);
     }
 
     [Then(@"the sanitized Facebook should be ""(.*)""")]
     public void ThenTheSanitizedFacebookShouldBe(string expectedFacebook)
     {
-        Assert.Equal(expectedFacebook, context.ContactInfoResult.Value.Facebook);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedFacebook, context.ContactInfoResult.Value.Facebook);
     }
 
     [Given(@"I have identification info with national ID ""(.*)"" and nationality ""(.*)""")]
@@ -236,7 +236,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create identification information")]
-    public void WhenICreateIdentificationInformation()
+    public static void WhenICreateIdentificationInformation()
     {
         // Result already stored in context by Given step.
     }
@@ -244,13 +244,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized national ID should be ""(.*)""")]
     public void ThenTheSanitizedNationalIdShouldBe(string expectedNationalId)
     {
-        Assert.Equal(expectedNationalId, context.IdentificationInfoResult.Value.NationalId);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedNationalId, context.IdentificationInfoResult.Value.NationalId);
     }
 
     [Then(@"the sanitized ID nationality should be ""(.*)""")]
     public void ThenTheSanitizedIdNationalityShouldBe(string expectedNationality)
     {
-        Assert.Equal(expectedNationality, context.IdentificationInfoResult.Value.IdNationality);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedNationality, context.IdentificationInfoResult.Value.IdNationality);
     }
 
     [Given(@"I have emergency contact with name ""(.*)"" and mobile ""(.*)""")]
@@ -260,7 +260,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create emergency contact information")]
-    public void WhenICreateEmergencyContactInformation()
+    public static void WhenICreateEmergencyContactInformation()
     {
         // Result already stored in context by Given step.
     }
@@ -268,13 +268,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized emergency contact name should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactNameShouldBe(string expectedName)
     {
-        Assert.Equal(expectedName, context.EmergencyContactResult.Value.Name);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedName, context.EmergencyContactResult.Value.Name);
     }
 
     [Then(@"the sanitized emergency contact mobile should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactMobileShouldBe(string expectedMobile)
     {
-        Assert.Equal(expectedMobile, context.EmergencyContactResult.Value.Mobile);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedMobile, context.EmergencyContactResult.Value.Mobile);
     }
 
     [Given(@"I have medical info with allergies ""(.*)"" and additional info ""(.*)""")]
@@ -284,7 +284,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     }
 
     [When("I create medical information")]
-    public void WhenICreateMedicalInformation()
+    public static void WhenICreateMedicalInformation()
     {
         // Result already stored in context by Given step.
     }
@@ -292,15 +292,15 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized allergies should be ""(.*)""")]
     public void ThenTheSanitizedAllergiesShouldBe(string expectedAllergies)
     {
-        Assert.NotNull(context.MedicalInfoResult);
-        Assert.Equal(expectedAllergies, context.MedicalInfoResult.Value.Value.Allergies);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedAllergies, context.MedicalInfoResult.Value.Value.Allergies);
     }
 
     [Then(@"the sanitized additional info should be ""(.*)""")]
     public void ThenTheSanitizedAdditionalInfoShouldBe(string expectedAdditionalInfo)
     {
-        Assert.NotNull(context.MedicalInfoResult);
-        Assert.Equal(expectedAdditionalInfo, context.MedicalInfoResult.Value.Value.AdditionalInfo);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedAdditionalInfo, context.MedicalInfoResult.Value.Value.AdditionalInfo);
     }
 
     [When(@"I attempt to create another customer with email ""(.*)""")]
@@ -378,7 +378,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then("the customer creation should fail")]
     public void ThenTheCustomerCreationShouldFail()
     {
-        Assert.NotNull(context.CommandResult);
-        Assert.True(context.CommandResult.Value.IsFailure);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.CommandResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.CommandResult.Value.IsFailure);
     }
 }

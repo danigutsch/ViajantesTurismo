@@ -32,21 +32,21 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
     [Then("the tour base price update should succeed")]
     public void ThenTheTourBasePriceUpdateShouldSucceed()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.True(tourContext.UpdateResult.Value.IsSuccess,
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
             $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour base price update should fail")]
     public void ThenTheTourBasePriceUpdateShouldFail()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then("the tour should have base price (.*)")]
     public void ThenTheTourShouldHaveBasePrice(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
     }
 }

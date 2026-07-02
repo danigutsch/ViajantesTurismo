@@ -51,10 +51,10 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then("I should be informed that the tour identifier must be unique")]
     public void ThenIShouldBeInformedThatTheTourIdentifierMustBeUnique()
     {
-        Assert.NotNull(tourContext.CommandResult);
-        Assert.False(tourContext.CommandResult.Value.IsSuccess);
-        Assert.NotNull(tourContext.CommandResult.Value.ErrorDetails);
-        Assert.Contains("already exists", tourContext.CommandResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CommandResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.CommandResult.Value.IsSuccess);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CommandResult.Value.ErrorDetails);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("already exists", tourContext.CommandResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
@@ -78,6 +78,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Given(@"an existing tour with services ""(.*)""")]
     public void GivenAnExistingTourWithServices(string servicesString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(servicesString);
         var services = servicesString.Split(", ");
         tourContext.Tour = Tour.Create(new TourDefinition(
             "TEST2024",
@@ -173,6 +174,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Given(@"I have tour details with services ""(.*)""")]
     public void GivenIHaveTourDetailsWithServices(string servicesString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(servicesString);
         ContextHelpers.SetupValidTour(tourContext);
         tourContext.IncludedServices.Clear();
         foreach (var service in servicesString.Split(", "))
@@ -237,6 +239,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [When(@"I update the services to ""(.*)""")]
     public void WhenIUpdateTheServicesTo(string servicesString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(servicesString);
         var services = servicesString.Split(", ");
         tourContext.Tour.UpdateIncludedServices(services);
     }
@@ -244,7 +247,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then("the tour should be created successfully")]
     public void ThenTheTourShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(tourContext.Tour);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.Tour);
     }
 
     [Then("I should not be able to create the tour")]
@@ -253,23 +256,23 @@ public sealed class TourManagementSteps(TourContext tourContext)
         // Check either CreationResult (domain call) or CommandResult (command handler call)
         if (tourContext.CreationResult.HasValue)
         {
-            Assert.True(tourContext.CreationResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
+            global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
         }
         else if (tourContext.CommandResult.HasValue)
         {
-            Assert.True(tourContext.CommandResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
+            global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CommandResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
         }
         else
         {
-            Assert.Fail("No creation result found. Ensure the When step sets either CreationResult or CommandResult.");
+            global::SharedKernel.Testing.Assertions.TestAssert.Fail("No creation result found. Ensure the When step sets either CreationResult or CommandResult.");
         }
     }
 
     [Then(@"the tour creation should fail with argument exception ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithArgumentException(string expectedMessage)
     {
-        Assert.NotNull(tourContext.CreationResult);
-        Assert.True(tourContext.CreationResult.Value.IsFailure);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
 
         var errorDetails = tourContext.CreationResult.Value.ErrorDetails;
         var messageFound = errorDetails?.Detail.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
@@ -281,123 +284,124 @@ public sealed class TourManagementSteps(TourContext tourContext)
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
 
-        Assert.True(messageFound,
+        global::SharedKernel.Testing.Assertions.TestAssert.True(messageFound,
             $"Expected message '{expectedMessage}' not found in error details or validation errors.");
     }
 
     [Then(@"the tour identifier should be ""(.*)""")]
     public void ThenTheTourIdentifierShouldBe(string expectedIdentifier)
     {
-        Assert.Equal(expectedIdentifier, tourContext.Tour.Identifier);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedIdentifier, tourContext.Tour.Identifier);
     }
 
     [Then(@"the tour name should be ""(.*)""")]
     public void ThenTheTourNameShouldBe(string expectedName)
     {
-        Assert.Equal(expectedName, tourContext.Tour.Name);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedName, tourContext.Tour.Name);
     }
 
     [Then("the tour base price should be (.*)")]
     public void ThenTheTourBasePriceShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
     }
 
     [Then(@"the tour should include services ""(.*)""")]
     public void ThenTheTourShouldIncludeServices(string servicesString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(servicesString);
         var expectedServices = servicesString.Split(", ");
-        Assert.Equal(expectedServices.Length, tourContext.Tour.IncludedServices.Count);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedServices.Length, tourContext.Tour.IncludedServices.Count);
 
         foreach (var service in expectedServices)
         {
-            Assert.Contains(service, tourContext.Tour.IncludedServices);
+            global::SharedKernel.Testing.Assertions.TestAssert.Contains(service, tourContext.Tour.IncludedServices);
         }
     }
 
     [Then(@"the tour creation should fail with validation error for ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithValidationErrorFor(string fieldName)
     {
-        Assert.NotNull(tourContext.CreationResult);
-        Assert.True(tourContext.CreationResult.Value.IsFailure);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
 
         var validationErrors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var foundKeys = validationErrors?.Keys.ToArray() ?? [];
-        Assert.True(validationErrors?.ContainsKey(fieldName) ?? false,
+        global::SharedKernel.Testing.Assertions.TestAssert.True(validationErrors?.ContainsKey(fieldName) ?? false,
             $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", foundKeys)}");
     }
 
     [Then("the tour creation should fail with multiple validation errors")]
     public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
     {
-        Assert.NotNull(tourContext.CreationResult);
-        Assert.True(tourContext.CreationResult.Value.IsFailure);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
 
         var validationErrors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
-        Assert.NotNull(validationErrors);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(validationErrors);
 
         var totalErrors = validationErrors.Values.SelectMany(e => e).Count();
-        Assert.True(totalErrors > 1, $"Expected multiple validation errors but found {totalErrors}");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(totalErrors > 1, $"Expected multiple validation errors but found {totalErrors}");
     }
 
     [Then("the tour single room supplement should be (.*)")]
     public void ThenTheTourSingleRoomSupplementShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.SingleRoomSupplementPrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.SingleRoomSupplementPrice);
     }
 
     [Then("the tour regular bike price should be (.*)")]
     public void ThenTheTourRegularBikePriceShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
     }
 
     [Then("the tour e-bike price should be (.*)")]
     public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
     {
-        Assert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
     }
 
     [Then("the tour should preserve UTC time zone")]
     public void ThenTheTourShouldPreserveUtcTimeZone()
     {
-        Assert.NotNull(tourContext.Tour);
-        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.StartDate.Kind);
-        Assert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.EndDate.Kind);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.Tour);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.StartDate.Kind);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.EndDate.Kind);
     }
 
     [Then("the tour duration should be greater than (.*) days")]
     public void ThenTheTourDurationShouldBeGreaterThanDays(int days)
     {
-        Assert.NotNull(tourContext.Tour);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.Tour);
         var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
-        Assert.True(duration > days, $"Expected duration greater than {days} days but got {duration:F1}");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(duration > days, $"Expected duration greater than {days} days but got {duration:F1}");
     }
 
     [Then("the tour duration should be (.*) days")]
     public void ThenTheTourDurationShouldBeDays(int expectedDays)
     {
-        Assert.NotNull(tourContext.Tour);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.Tour);
         var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
-        Assert.Equal(expectedDays, duration);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedDays, duration);
     }
 
     [Then(@"the tour StartDate should be ""(.*)""")]
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
-        Assert.NotNull(tourContext.Tour);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.Tour);
         var expectedDate =
             DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        Assert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
     }
 
     [Then(@"the tour EndDate should be ""(.*)""")]
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
-        Assert.NotNull(tourContext.Tour);
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.Tour);
         var expectedDate =
             DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        Assert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
     }
 
     [Then("I should be informed that the end date must be after the start date")]

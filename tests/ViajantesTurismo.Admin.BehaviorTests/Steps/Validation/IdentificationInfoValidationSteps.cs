@@ -67,50 +67,50 @@ public sealed class IdentificationInfoValidationSteps(CustomerContext context)
     [Then("the identification info should be successfully created")]
     public void ThenTheIdentificationInfoShouldBeSuccessfullyCreated()
     {
-        Assert.True(context.IdentificationInfoResult.IsSuccess, context.IdentificationInfoResult.ErrorDetails?.Detail ?? "Creation failed");
-        Assert.NotNull(context.IdentificationInfoResult.Value);
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.IdentificationInfoResult.IsSuccess, context.IdentificationInfoResult.ErrorDetails?.Detail ?? "Creation failed");
+        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.IdentificationInfoResult.Value);
     }
 
     [Then("I should be informed that national ID is required")]
     public void ThenIShouldBeInformedThatNationalIdIsRequired()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("National ID is required.", allErrors, StringComparer.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("National ID is required.", allErrors, StringComparer.Ordinal);
     }
 
     [Then("I should be informed that national ID cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatNationalIdCannotExceed64Characters()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("National ID cannot exceed 64 characters.", allErrors, StringComparer.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("National ID cannot exceed 64 characters.", allErrors, StringComparer.Ordinal);
     }
 
     [Then("I should be informed that ID nationality is required")]
     public void ThenIShouldBeInformedThatIdNationalityIsRequired()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("ID nationality is required.", allErrors, StringComparer.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("ID nationality is required.", allErrors, StringComparer.Ordinal);
     }
 
     [Then("I should be informed that ID nationality cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatIdNationalityCannotExceed64Characters()
     {
-        Assert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
+        global::SharedKernel.Testing.Assertions.TestAssert.True(context.IdentificationInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.IdentificationInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("ID nationality cannot exceed 64 characters.", allErrors, StringComparer.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.Contains("ID nationality cannot exceed 64 characters.", allErrors, StringComparer.Ordinal);
     }
 
     [Then("all identification fields should have normalized whitespace")]
     public void ThenAllIdentificationFieldsShouldHaveNormalizedWhitespace()
     {
-        Assert.Equal("12345678", context.IdentificationInfoResult.Value.NationalId, StringComparer.Ordinal);
-        Assert.Equal("Brazilian", context.IdentificationInfoResult.Value.IdNationality, StringComparer.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("12345678", context.IdentificationInfoResult.Value.NationalId, StringComparer.Ordinal);
+        global::SharedKernel.Testing.Assertions.TestAssert.Equal("Brazilian", context.IdentificationInfoResult.Value.IdNationality, StringComparer.Ordinal);
     }
 }
