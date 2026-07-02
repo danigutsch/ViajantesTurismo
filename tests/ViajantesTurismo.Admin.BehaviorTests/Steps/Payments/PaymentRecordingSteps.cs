@@ -17,9 +17,9 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [When("I record a payment with the following details:")]
@@ -52,7 +52,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var method = Enum.Parse<PaymentMethod>(methodString);
 
         _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(_paymentResult.IsSuccess);
+        TestAssert.True(_paymentResult.IsSuccess);
     }
 
     [When("I attempt to record a payment of (.*) on (.*) using (.*)")]
@@ -114,56 +114,56 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [Then("the payment should be recorded successfully")]
     public void ThenThePaymentShouldBeRecordedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(_paymentResult.IsSuccess);
+        TestAssert.True(_paymentResult.IsSuccess);
     }
 
     [Then(@"the payment should be rejected with error ""(.*)""")]
     public void ThenThePaymentShouldBeRejectedWithError(string expectedError)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.False(_paymentResult.IsSuccess);
-        var errorDetails = global::SharedKernel.Testing.Assertions.TestAssert.NotNull(_paymentResult.ErrorDetails);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedError, errorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.False(_paymentResult.IsSuccess);
+        var errorDetails = TestAssert.NotNull(_paymentResult.ErrorDetails);
+        TestAssert.Contains(expectedError, errorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Then(@"the payment should be rejected with error containing ""(.*)""")]
     public void ThenThePaymentShouldBeRejectedWithErrorContaining(string expectedErrorFragment)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.False(_paymentResult.IsSuccess);
-        var errorDetails = global::SharedKernel.Testing.Assertions.TestAssert.NotNull(_paymentResult.ErrorDetails);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedErrorFragment, errorDetails.Detail, StringComparison.Ordinal);
+        TestAssert.False(_paymentResult.IsSuccess);
+        var errorDetails = TestAssert.NotNull(_paymentResult.ErrorDetails);
+        TestAssert.Contains(expectedErrorFragment, errorDetails.Detail, StringComparison.Ordinal);
     }
 
     [Then("the amount paid should be (.*)")]
     public void ThenTheAmountPaidShouldBe(decimal expectedAmount)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedAmount, bookingContext.Booking.AmountPaid);
+        TestAssert.Equal(expectedAmount, bookingContext.Booking.AmountPaid);
     }
 
     [Then("the remaining balance should be (.*)")]
     public void ThenTheRemainingBalanceShouldBe(decimal expectedBalance)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedBalance, bookingContext.Booking.RemainingBalance);
+        TestAssert.Equal(expectedBalance, bookingContext.Booking.RemainingBalance);
     }
 
     [Then("the payment reference number should be empty")]
     public void ThenThePaymentReferenceNumberShouldBeEmpty()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(_paymentResult.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.Null(_paymentResult.Value.ReferenceNumber);
+        TestAssert.True(_paymentResult.IsSuccess);
+        TestAssert.Null(_paymentResult.Value.ReferenceNumber);
     }
 
     [Then("the payment notes should be empty")]
     public void ThenThePaymentNotesShouldBeEmpty()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(_paymentResult.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.Null(_paymentResult.Value.Notes);
+        TestAssert.True(_paymentResult.IsSuccess);
+        TestAssert.Null(_paymentResult.Value.Notes);
     }
 
     [Then("all payments should be recorded successfully")]
     public void ThenAllPaymentsShouldBeRecordedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.AllPaymentsSuccessful);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.AllPaymentsSuccessful.Value);
+        TestAssert.NotNull(bookingContext.AllPaymentsSuccessful);
+        TestAssert.True(bookingContext.AllPaymentsSuccessful.Value);
     }
 
     [Given("I record a payment of (.*) on (.*) using (.*)")]
@@ -176,6 +176,6 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void GivenTheBookingPaymentStatusIs(string expectedStatus)
     {
         var status = EntityBuilders.ParsePaymentStatus(expectedStatus);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(status, bookingContext.Booking.PaymentStatus);
+        TestAssert.Equal(status, bookingContext.Booking.PaymentStatus);
     }
 }

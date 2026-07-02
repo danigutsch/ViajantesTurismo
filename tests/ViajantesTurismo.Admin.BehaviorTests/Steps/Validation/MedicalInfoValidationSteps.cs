@@ -67,49 +67,49 @@ public sealed class MedicalInfoValidationSteps(CustomerContext context)
     [Then("the medical info should be successfully created")]
     public void ThenTheMedicalInfoShouldBeSuccessfullyCreated()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.MedicalInfoResult.Value.IsSuccess, context.MedicalInfoResult.Value.ErrorDetails?.Detail ?? "Creation failed");
+        TestAssert.NotNull(context.MedicalInfoResult);
+        TestAssert.True(context.MedicalInfoResult.Value.IsSuccess, context.MedicalInfoResult.Value.ErrorDetails?.Detail ?? "Creation failed");
     }
 
     [Then("the allergies should be empty")]
     public void ThenTheAllergiesShouldBeEmpty()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.Null(context.MedicalInfoResult.Value.Value.Allergies);
+        TestAssert.NotNull(context.MedicalInfoResult);
+        TestAssert.Null(context.MedicalInfoResult.Value.Value.Allergies);
     }
 
     [Then("the additional info should be empty")]
     public void ThenTheAdditionalInfoShouldBeEmpty()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.Null(context.MedicalInfoResult.Value.Value.AdditionalInfo);
+        TestAssert.NotNull(context.MedicalInfoResult);
+        TestAssert.Null(context.MedicalInfoResult.Value.Value.AdditionalInfo);
     }
 
     [Then("I should be informed that allergies cannot exceed 500 characters")]
     public void ThenIShouldBeInformedThatAllergiesCannotExceed500Characters()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.MedicalInfoResult.Value.IsFailure, "Expected failure but got success");
+        TestAssert.NotNull(context.MedicalInfoResult);
+        TestAssert.True(context.MedicalInfoResult.Value.IsFailure, "Expected failure but got success");
         var errors = context.MedicalInfoResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Allergies cannot exceed 500 characters.", allErrors);
+        TestAssert.Contains("Allergies cannot exceed 500 characters.", allErrors);
     }
 
     [Then("I should be informed that additional information cannot exceed 500 characters")]
     public void ThenIShouldBeInformedThatAdditionalInformationCannotExceed500Characters()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.MedicalInfoResult.Value.IsFailure, "Expected failure but got success");
+        TestAssert.NotNull(context.MedicalInfoResult);
+        TestAssert.True(context.MedicalInfoResult.Value.IsFailure, "Expected failure but got success");
         var errors = context.MedicalInfoResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Additional information cannot exceed 500 characters.", allErrors);
+        TestAssert.Contains("Additional information cannot exceed 500 characters.", allErrors);
     }
 
     [Then("all medical info fields should have normalized whitespace")]
     public void ThenAllMedicalInfoFieldsShouldHaveNormalizedWhitespace()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.MedicalInfoResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal("Peanuts, Shellfish, Dairy", context.MedicalInfoResult.Value.Value.Allergies);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal("Requires medication daily", context.MedicalInfoResult.Value.Value.AdditionalInfo);
+        TestAssert.NotNull(context.MedicalInfoResult);
+        TestAssert.Equal("Peanuts, Shellfish, Dairy", context.MedicalInfoResult.Value.Value.Allergies);
+        TestAssert.Equal("Requires medication daily", context.MedicalInfoResult.Value.Value.AdditionalInfo);
     }
 }

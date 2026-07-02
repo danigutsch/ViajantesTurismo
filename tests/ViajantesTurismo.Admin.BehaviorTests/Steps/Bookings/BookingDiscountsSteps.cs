@@ -143,29 +143,29 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Then(@"the booking total price should be approximately (\d+\.\d+)")]
     public void ThenTheBookingTotalPriceShouldBeApproximately(decimal expectedPrice)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.True(Math.Abs(booking.TotalPrice - expectedPrice) < 0.1m,
+        TestAssert.True(Math.Abs(booking.TotalPrice - expectedPrice) < 0.1m,
             $"Expected approximately {expectedPrice}, but got {booking.TotalPrice}");
     }
 
     [Then(@"the booking should have discount reason ""(.*)""")]
     public void ThenTheBookingShouldHaveDiscountReason(string expectedReason)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         var booking = bookingContext.BookingCreationResult.Value.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(booking.Discount);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedReason, booking.Discount.Reason);
+        TestAssert.NotNull(booking.Discount);
+        TestAssert.Equal(expectedReason, booking.Discount.Reason);
     }
 
     [Then(@"the booking should fail with error containing ""(.*)""")]
     public void ThenTheBookingShouldFailWithErrorContaining(string expectedErrorText)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedErrorText, bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.Contains(expectedErrorText, bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [When(@"I attempt to apply a (-?\d+(?:\.\d+)?)% discount to a booking")]
@@ -201,9 +201,9 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Then(@"I should be informed that percentage discounts cannot exceed (\d+)%")]
     public void ThenIShouldBeInformedThatPercentageDiscountsCannotExceed(int maxPercentage)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("percentage", bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.Contains("percentage", bookingContext.BookingCreationResult.Value.ErrorDetails!.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [When("I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]
@@ -216,18 +216,18 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [Then("I should be informed that the discount reason is too short")]
     public void ThenIShouldBeInformedThatTheDiscountReasonIsTooShort()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        var errorDetails = global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Reason must be at least", errorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        var errorDetails = TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
+        TestAssert.Contains("Reason must be at least", errorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("I should be informed that the discount reason is too long")]
     public void ThenIShouldBeInformedThatTheDiscountReasonIsTooLong()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        var errorDetails = global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Reason cannot exceed", errorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        var errorDetails = TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
+        TestAssert.Contains("Reason cannot exceed", errorDetails.Detail, StringComparison.OrdinalIgnoreCase);
     }
 }

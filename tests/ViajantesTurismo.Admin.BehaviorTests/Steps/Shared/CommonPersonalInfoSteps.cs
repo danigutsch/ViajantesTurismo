@@ -42,13 +42,13 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("the creation should succeed")]
     public void ThenTheCreationShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsSuccess, context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
+        TestAssert.True(context.PersonalInfoResult.IsSuccess, context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
     }
 
     [Then("the personal info should be successfully created")]
     public void ThenThePersonalInfoShouldBeSuccessfullyCreated()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsSuccess, context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
+        TestAssert.True(context.PersonalInfoResult.IsSuccess, context.PersonalInfoResult.ErrorDetails?.Detail ?? "Result failed");
     }
 
     [When(@"I attempt to create personal info with first name ""(.*)""")]
@@ -102,53 +102,53 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should not be able to create the personal info")]
     public void ThenIShouldNotBeAbleToCreateThePersonalInfo()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected personal info creation to fail, but it succeeded.");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected personal info creation to fail, but it succeeded.");
     }
 
     [Then("I should be informed that first name is required")]
     public void ThenIShouldBeInformedThatFirstNameIsRequired()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
+        TestAssert.True(context.PersonalInfoResult.IsFailure);
+        TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
             "Expected validation error for FirstName");
     }
 
     [Then(@"I should be informed that first name cannot exceed (\d+) characters")]
     public void ThenIShouldBeInformedThatFirstNameCannotExceedCharacters(int maxLength)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
+        TestAssert.True(context.PersonalInfoResult.IsFailure);
+        TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false,
             "Expected validation error for FirstName");
     }
 
     [Then("the personal info should contain the provided data")]
     public void ThenThePersonalInfoShouldContainTheProvidedData()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsSuccess);
+        TestAssert.True(context.PersonalInfoResult.IsSuccess);
 
         var info = context.PersonalInfoResult.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.FirstName, info.FirstName, StringComparer.Ordinal);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.LastName, info.LastName, StringComparer.Ordinal);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.Gender, info.Gender, StringComparer.Ordinal);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.Nationality, info.Nationality, StringComparer.Ordinal);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.Occupation, info.Occupation, StringComparer.Ordinal);
+        TestAssert.Equal(context.FirstName, info.FirstName, StringComparer.Ordinal);
+        TestAssert.Equal(context.LastName, info.LastName, StringComparer.Ordinal);
+        TestAssert.Equal(context.Gender, info.Gender, StringComparer.Ordinal);
+        TestAssert.Equal(context.Nationality, info.Nationality, StringComparer.Ordinal);
+        TestAssert.Equal(context.Occupation, info.Occupation, StringComparer.Ordinal);
     }
 
     [Then("the creation should fail")]
     public void ThenTheCreationShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenTheErrorShouldBe(string expectedError)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
 
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
 
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedError, allErrors);
+        TestAssert.Contains(expectedError, allErrors);
     }
 
     [Given(@"I have personal information with first name ""(.*)""")]
@@ -246,16 +246,16 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that last name is required")]
     public void ThenIShouldBeInformedThatLastNameIsRequired()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
+        TestAssert.True(context.PersonalInfoResult.IsFailure);
+        TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
             "Expected validation error for LastName");
     }
 
     [Then(@"I should be informed that last name cannot exceed (\d+) characters")]
     public void ThenIShouldBeInformedThatLastNameCannotExceedCharacters(int maxLength)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
+        TestAssert.True(context.PersonalInfoResult.IsFailure);
+        TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false,
             "Expected validation error for LastName");
     }
 
@@ -432,8 +432,8 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that birth date cannot be in the future")]
     public void ThenIShouldBeInformedThatBirthDateCannotBeInTheFuture()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("BirthDate") ?? false,
+        TestAssert.True(context.PersonalInfoResult.IsFailure);
+        TestAssert.True(context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("BirthDate") ?? false,
             "Expected validation error for BirthDate");
     }
 
@@ -565,25 +565,25 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that gender is required")]
     public void ThenIShouldBeInformedThatGenderIsRequired()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Gender is required.", allErrors);
+        TestAssert.Contains("Gender is required.", allErrors);
     }
 
     [Then("I should be informed that gender cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatGenderCannotExceed64Characters()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Gender cannot exceed 64 characters.", allErrors);
+        TestAssert.Contains("Gender cannot exceed 64 characters.", allErrors);
     }
 
     [Then(@"the gender should be ""([^""]*)""")]
     public void ThenTheGenderShouldBe(string expectedGender)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedGender, context.PersonalInfoResult.Value.Gender);
+        TestAssert.Equal(expectedGender, context.PersonalInfoResult.Value.Gender);
     }
 
     [When("I attempt to create personal info without nationality")]
@@ -659,25 +659,25 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that nationality is required")]
     public void ThenIShouldBeInformedThatNationalityIsRequired()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Nationality is required.", allErrors);
+        TestAssert.Contains("Nationality is required.", allErrors);
     }
 
     [Then("I should be informed that nationality cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatNationalityCannotExceed128Characters()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Nationality cannot exceed 128 characters.", allErrors);
+        TestAssert.Contains("Nationality cannot exceed 128 characters.", allErrors);
     }
 
     [Then(@"the nationality should be ""([^""]*)""")]
     public void ThenTheNationalityShouldBe(string expectedNationality)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedNationality, context.PersonalInfoResult.Value.Nationality);
+        TestAssert.Equal(expectedNationality, context.PersonalInfoResult.Value.Nationality);
     }
 
     [When("I attempt to create personal info without occupation")]
@@ -753,24 +753,24 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
     [Then("I should be informed that occupation is required")]
     public void ThenIShouldBeInformedThatOccupationIsRequired()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Occupation is required.", allErrors);
+        TestAssert.Contains("Occupation is required.", allErrors);
     }
 
     [Then("I should be informed that occupation cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatOccupationCannotExceed128Characters()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.PersonalInfoResult.IsFailure, "Expected failure but got success");
         var errors = context.PersonalInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Occupation cannot exceed 128 characters.", allErrors);
+        TestAssert.Contains("Occupation cannot exceed 128 characters.", allErrors);
     }
 
     [Then(@"the occupation should be ""([^""]*)""")]
     public void ThenTheOccupationShouldBe(string expectedOccupation)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedOccupation, context.PersonalInfoResult.Value.Occupation);
+        TestAssert.Equal(expectedOccupation, context.PersonalInfoResult.Value.Occupation);
     }
 }

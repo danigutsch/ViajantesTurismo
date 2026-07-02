@@ -115,40 +115,40 @@ public sealed class CustomerImportSteps(ImportContext context)
     [Then("{int} customers success should be reported")]
     public void ThenCustomersShouldBeImportedSuccessfully(int expectedCount)
     {
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.Result);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCount, context.Result.Value.SuccessCount);
+        TestAssert.NotNull(context.Result);
+        TestAssert.Equal(expectedCount, context.Result.Value.SuccessCount);
     }
 
     [Then("{int} rows should have errors")]
     [Then("{int} row should have errors")]
     public void ThenRowsShouldHaveErrors(int expectedCount)
     {
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.Result);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCount, context.Result.Value.ErrorCount);
+        TestAssert.NotNull(context.Result);
+        TestAssert.Equal(expectedCount, context.Result.Value.ErrorCount);
     }
 
     [Then("no customers should exist in the store")]
     public void ThenNoCustomersShouldExistInTheStore()
     {
-        SharedKernel.Testing.Assertions.TestAssert.Empty(context.CustomerStore.AllCustomers);
+        TestAssert.Empty(context.CustomerStore.AllCustomers);
     }
 
     [Then("{int} duplicate conflict should be surfaced")]
     [Then("{int} duplicate conflicts should be surfaced")]
     public void ThenDuplicateConflictsShouldBeSurfaced(int expectedCount)
     {
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.WorkflowResult);
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.WorkflowResult.Conflicts);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCount, context.WorkflowResult.Conflicts.Count);
+        TestAssert.NotNull(context.WorkflowResult);
+        TestAssert.NotNull(context.WorkflowResult.Conflicts);
+        TestAssert.Equal(expectedCount, context.WorkflowResult.Conflicts.Count);
     }
 
     [Then("the duplicate conflict should contain email {string}")]
     public void ThenTheDuplicateConflictShouldContainEmail(string expectedEmail)
     {
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.WorkflowResult);
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.WorkflowResult.Conflicts);
-        var conflict = SharedKernel.Testing.Assertions.TestAssert.ExactlyOne(context.WorkflowResult.Conflicts);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedEmail, conflict.Email, StringComparer.OrdinalIgnoreCase);
+        TestAssert.NotNull(context.WorkflowResult);
+        TestAssert.NotNull(context.WorkflowResult.Conflicts);
+        var conflict = TestAssert.ExactlyOne(context.WorkflowResult.Conflicts);
+        TestAssert.Equal(expectedEmail, conflict.Email, StringComparer.OrdinalIgnoreCase);
     }
 
     [Then("import summary should report {int} created, {int} updated, {int} skipped, and {int} failed")]
@@ -158,7 +158,7 @@ public sealed class CustomerImportSteps(ImportContext context)
         int expectedSkipped,
         int expectedFailed)
     {
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(context.WorkflowCommitResult);
+        TestAssert.NotNull(context.WorkflowCommitResult);
 
         var updatedCount = context.ConflictResolutions.Values.Count(v =>
             v.Equals("overwrite", StringComparison.OrdinalIgnoreCase)
@@ -168,32 +168,32 @@ public sealed class CustomerImportSteps(ImportContext context)
         var createdCount = Math.Max(0, context.WorkflowCommitResult.SuccessCount - updatedCount);
         var failedCount = context.WorkflowCommitResult.ErrorCount;
 
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCreated, createdCount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedUpdated, updatedCount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedSkipped, skippedCount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedFailed, failedCount);
+        TestAssert.Equal(expectedCreated, createdCount);
+        TestAssert.Equal(expectedUpdated, updatedCount);
+        TestAssert.Equal(expectedSkipped, skippedCount);
+        TestAssert.Equal(expectedFailed, failedCount);
     }
 
     [Then("customer with email {string} should have first name {string}")]
     public void ThenCustomerWithEmailShouldHaveFirstName(string email, string expectedFirstName)
     {
         var customer = context.GetCustomerByEmail(email);
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(customer);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedFirstName, customer.PersonalInfo.FirstName);
+        TestAssert.NotNull(customer);
+        TestAssert.Equal(expectedFirstName, customer.PersonalInfo.FirstName);
     }
 
     [Then("customer with email {string} should exist in the store")]
     public void ThenCustomerWithEmailShouldExistInTheStore(string email)
     {
         var customer = context.GetCustomerByEmail(email);
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(customer);
+        TestAssert.NotNull(customer);
     }
 
     [Then("imported customer with email {string} should have a stable identifier")]
     public void ThenImportedCustomerWithEmailShouldHaveAStableIdentifier(string email)
     {
         var customer = context.GetCustomerByEmail(email);
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(customer);
-        SharedKernel.Testing.Assertions.TestAssert.NotEqual(Guid.Empty, customer.Id);
+        TestAssert.NotNull(customer);
+        TestAssert.NotEqual(Guid.Empty, customer.Id);
     }
 }

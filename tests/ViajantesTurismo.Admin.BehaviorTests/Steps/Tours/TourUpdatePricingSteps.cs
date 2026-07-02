@@ -36,33 +36,33 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     [Then("the tour pricing update should succeed")]
     public void ThenTheTourPricingUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
+        TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
             $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour pricing update should fail")]
     public void ThenTheTourPricingUpdateShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
+        TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then("the tour should have single room supplement (.*)")]
     public void ThenTheTourShouldHaveSingleRoomSupplement(decimal expectedPrice)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.SingleRoomSupplementPrice);
+        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.SingleRoomSupplementPrice);
     }
 
     [Then("the tour should have regular bike price (.*)")]
     public void ThenTheTourShouldHaveRegularBikePrice(decimal expectedPrice)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
+        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
     }
 
     [Then("the tour should have e-bike price (.*)")]
     public void ThenTheTourShouldHaveEBikePrice(decimal expectedPrice)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
+        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
     }
 }

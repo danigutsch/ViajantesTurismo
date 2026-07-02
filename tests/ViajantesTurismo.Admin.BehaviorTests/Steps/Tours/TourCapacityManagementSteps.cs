@@ -133,7 +133,7 @@ public sealed class TourCapacityManagementSteps(
             RoomType.DoubleOccupancy,
             DiscountType.None));
 
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         result.Value.Confirm();
 
         bookingContext.BookingCreationResult = result;
@@ -164,116 +164,116 @@ public sealed class TourCapacityManagementSteps(
     [Then("the minimum capacity should be (.*)")]
     public void ThenTheMinimumCapacityShouldBe(int expected)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expected, tourContext.Tour.Capacity.MinCustomers);
+        TestAssert.Equal(expected, tourContext.Tour.Capacity.MinCustomers);
     }
 
     [Then("the maximum capacity should be (.*)")]
     public void ThenTheMaximumCapacityShouldBe(int expected)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expected, tourContext.Tour.Capacity.MaxCustomers);
+        TestAssert.Equal(expected, tourContext.Tour.Capacity.MaxCustomers);
     }
 
     [Then("the capacity update should succeed")]
     public void ThenTheCapacityUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CapacityUpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CapacityUpdateResult.Value.IsSuccess);
+        TestAssert.NotNull(tourContext.CapacityUpdateResult);
+        TestAssert.True(tourContext.CapacityUpdateResult.Value.IsSuccess);
     }
 
     [Then("the capacity update should fail")]
     public void ThenTheCapacityUpdateShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CapacityUpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CapacityUpdateResult.Value.IsFailure);
+        TestAssert.NotNull(tourContext.CapacityUpdateResult);
+        TestAssert.True(tourContext.CapacityUpdateResult.Value.IsFailure);
     }
 
     [Then("the error should indicate cannot reduce capacity below current bookings")]
     public void ThenTheErrorShouldIndicateCannotReduceCapacityBelowCurrentBookings()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CapacityUpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CapacityUpdateResult.Value.IsFailure);
+        TestAssert.NotNull(tourContext.CapacityUpdateResult);
+        TestAssert.True(tourContext.CapacityUpdateResult.Value.IsFailure);
 
         var error = tourContext.CapacityUpdateResult.Value.ErrorDetails;
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(error);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("capacity", error.Detail, StringComparison.OrdinalIgnoreCase);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("current", error.Detail, StringComparison.OrdinalIgnoreCase);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("booking", error.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.NotNull(error);
+        TestAssert.Contains("capacity", error.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains("current", error.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains("booking", error.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the tour creation should fail")]
     public void ThenTheTourCreationShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        TestAssert.NotNull(tourContext.CreationResult);
+        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
     }
 
     [Then("the error should indicate max must be at least min")]
     public void ThenTheErrorShouldIndicateMaxMustBeAtLeastMin()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        TestAssert.NotNull(tourContext.CreationResult);
+        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains("maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains("minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the error should indicate minimum must be at least 1")]
     public void ThenTheErrorShouldIndicateMinimumMustBeAtLeast()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        TestAssert.NotNull(tourContext.CreationResult);
+        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("1", combinedErrors, StringComparison.Ordinal);
+        TestAssert.Contains("Minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains("1", combinedErrors, StringComparison.Ordinal);
     }
 
     [Then("the error should indicate maximum cannot exceed 20")]
     public void ThenTheErrorShouldIndicateMaximumCannotExceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.CreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        TestAssert.NotNull(tourContext.CreationResult);
+        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("Maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("20", combinedErrors, StringComparison.Ordinal);
+        TestAssert.Contains("Maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains("20", combinedErrors, StringComparison.Ordinal);
     }
 
     [Then("the error should indicate the tour is fully booked")]
     public void ThenTheErrorShouldIndicateTheTourIsFullyBooked()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
         var error = bookingContext.BookingCreationResult.Value.ErrorDetails;
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(error);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("fully booked", error.Detail, StringComparison.OrdinalIgnoreCase);
+        TestAssert.NotNull(error);
+        TestAssert.Contains("fully booked", error.Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the current customer count should be (.*)")]
     public void ThenTheCurrentCustomerCountShouldBe(int expected)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expected, tourContext.Tour.CurrentCustomerCount);
+        TestAssert.Equal(expected, tourContext.Tour.CurrentCustomerCount);
     }
 
     [Then("the available spots should be (.*)")]
     public void ThenTheAvailableSpotsShouldBe(int expected)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expected, tourContext.Tour.AvailableSpots);
+        TestAssert.Equal(expected, tourContext.Tour.AvailableSpots);
     }
 
     [Then("the tour should not be at minimum capacity")]
     public void ThenTheTourShouldNotBeAtMinimumCapacity()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.Tour.IsAtMinimumCapacity);
+        TestAssert.False(tourContext.Tour.IsAtMinimumCapacity);
     }
 
     [Then("the tour should not be fully booked")]
     public void ThenTheTourShouldNotBeFullyBooked()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.Tour.IsFullyBooked);
+        TestAssert.False(tourContext.Tour.IsFullyBooked);
     }
 }

@@ -10,8 +10,8 @@ public sealed class BookingValidationSteps(
 {
     private void AssertBookingCreationFailed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
     }
 
     [When("I try to add a booking to tour with invalid room type (.*)")]
@@ -57,16 +57,16 @@ public sealed class BookingValidationSteps(
     [Then("the booking update should fail with validation error")]
     public void ThenTheBookingUpdateShouldFailWithValidationError()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingOperationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
     }
 
     [Then("the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         bookingContext.Booking = bookingContext.BookingCreationResult.Value.Value;
     }
 
@@ -105,7 +105,7 @@ public sealed class BookingValidationSteps(
             errorDetails = customerContext.CommandResult.Value.ErrorDetails;
         }
 
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(errorDetails);
+        TestAssert.NotNull(errorDetails);
 
         var messageFound = errorDetails.Detail.Contains(expectedMessage, StringComparison.Ordinal);
         if (!messageFound && errorDetails.ValidationErrors != null)
@@ -115,20 +115,20 @@ public sealed class BookingValidationSteps(
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
 
-        global::SharedKernel.Testing.Assertions.TestAssert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details.");
+        TestAssert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details.");
     }
 
     [Then("the booking notes should be updated successfully")]
     public void ThenTheBookingNotesShouldBeUpdatedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingOperationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 
     [Then("the booking notes should be null or empty")]
     public void ThenTheBookingNotesShouldBeNullOrEmpty()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(string.IsNullOrWhiteSpace(bookingContext.Booking.Notes));
+        TestAssert.True(string.IsNullOrWhiteSpace(bookingContext.Booking.Notes));
     }
 
     [Then(@"I should be informed that (.+) cannot exceed (\d+) characters")]
@@ -139,21 +139,21 @@ public sealed class BookingValidationSteps(
 
         if (bookingContext.BookingCreationResult.HasValue)
         {
-            global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+            TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
             errorDetails = bookingContext.BookingCreationResult.Value.ErrorDetails;
         }
         else if (bookingContext.BookingOperationResult.HasValue)
         {
-            global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingOperationResult.Value.IsFailure);
+            TestAssert.True(bookingContext.BookingOperationResult.Value.IsFailure);
             errorDetails = bookingContext.BookingOperationResult.Value.ErrorDetails;
         }
         else
         {
-            global::SharedKernel.Testing.Assertions.TestAssert.Fail("Expected either BookingCreationResult or BookingOperationResult to be set");
+            TestAssert.Fail("Expected either BookingCreationResult or BookingOperationResult to be set");
         }
 
         var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(errorDetails?.ValidationErrors?.Any(kvp =>
+        TestAssert.True(errorDetails?.ValidationErrors?.Any(kvp =>
                 kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
             $"Expected validation error for {normalizedFieldName}");
     }
@@ -185,9 +185,9 @@ public sealed class BookingValidationSteps(
     [Then("I should be informed that the room type is invalid")]
     public void ThenIShouldBeInformedThatTheRoomTypeIsInvalid()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCreationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains("room", bookingContext.BookingCreationResult.Value.ErrorDetails?.Detail ?? string.Empty,
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.Contains("room", bookingContext.BookingCreationResult.Value.ErrorDetails?.Detail ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
     }
 
