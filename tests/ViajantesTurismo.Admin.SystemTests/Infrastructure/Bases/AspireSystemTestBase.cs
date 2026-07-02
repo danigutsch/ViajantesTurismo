@@ -34,7 +34,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     protected async Task NavigateTo(string relativePath)
     {
-        const int maxAttempts = 3;
+        const int maxAttempts = 5;
 
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
@@ -54,11 +54,28 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
             await Page.GotoAsync(relativePath, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             return true;
         }
-        catch (PlaywrightException exception) when (canRetry && IsRetryableNavigationFailure(exception))
+        catch (PlaywrightException exception) when (IsRetryableNavigationFailure(exception))
         {
+            if (IsCurrentRoute(relativePath))
+            {
+                return true;
+            }
+
+            if (!canRetry)
+            {
+                throw;
+            }
+
             // Retry immediately on transient AppHost network switches instead of relying on a fixed delay.
             return false;
         }
+    }
+
+    private bool IsCurrentRoute(string relativePath)
+    {
+        var targetUri = new Uri(Fixture.WebAppUrl, relativePath);
+        return Uri.TryCreate(Page.Url, UriKind.Absolute, out var currentUri)
+            && currentUri.PathAndQuery.Equals(targetUri.PathAndQuery, StringComparison.Ordinal);
     }
 
     private static bool IsRetryableNavigationFailure(PlaywrightException exception) =>

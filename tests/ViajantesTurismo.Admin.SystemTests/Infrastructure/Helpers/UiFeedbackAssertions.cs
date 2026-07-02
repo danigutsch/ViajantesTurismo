@@ -12,7 +12,7 @@ internal sealed class UiFeedbackAssertions(IPage page)
     /// <param name="expectedText">The expected toast text.</param>
     public async Task ExpectToast(string expectedText)
     {
-        var toast = page.Locator(".toast.show");
+        var toast = page.Locator(".toast.show").Filter(new LocatorFilterOptions { HasText = expectedText });
         await toast.First.WaitForAsync();
         Assert.Contains(expectedText, await toast.First.InnerTextAsync(), StringComparison.Ordinal);
     }

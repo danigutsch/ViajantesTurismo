@@ -90,10 +90,15 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page).ToHaveTitleAsync("Create Customer - Physical Information");
         await Expect(Page.GetByText("Step 5 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#weightKg", "65");
-        await Page.FillAsync("#heightCm", "170");
+        var weightInput = Page.Locator("#weightKg");
+        var heightInput = Page.Locator("#heightCm");
+        await weightInput.FillAsync("65");
+        await heightInput.FillAsync("170");
+        await heightInput.BlurAsync();
         var bikeTypeInput = Page.Locator("#bikeType");
         await bikeTypeInput.SelectOptionAsync("Regular");
+        await Expect(weightInput).ToHaveValueAsync("65");
+        await Expect(heightInput).ToHaveValueAsync("170");
         await Expect(bikeTypeInput).ToHaveValueAsync("Regular");
 
         await Page.GetButton("Next").ClickAsync();
@@ -175,6 +180,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.FillAsync("#occupation", "Senior QA Engineer");
         await Page.FillAsync("#mobile", "");
         await Page.FillAsync("#mobile", "+5511999990099");
+        await Page.Locator("#mobile").BlurAsync();
+        await Expect(Page.Locator("#occupation")).ToHaveValueAsync("Senior QA Engineer");
+        await Expect(Page.Locator("#mobile")).ToHaveValueAsync("+5511999990099");
 
         await Page.GetButton("Update Customer").ClickAsync();
 

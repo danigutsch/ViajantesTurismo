@@ -1,5 +1,6 @@
 using System.Globalization;
 using ViajantesTurismo.Admin.Contracts;
+using static Microsoft.Playwright.Assertions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
@@ -99,7 +100,11 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await NavigateToEdit(bookingId);
 
         await page.Locator("#notes").FillAsync("E2E test booking - notes updated during edit");
-        await page.SelectOptionAsync("#discountType", "Percentage");
+        var discountType = page.Locator("#discountType");
+        await discountType.SelectOptionAsync("Percentage");
+        await discountType.BlurAsync();
+        await Expect(discountType).ToHaveValueAsync("Percentage");
+        await page.Locator("#discountAmount").WaitForAsync();
         await page.FillAsync("#discountAmount", "10");
         await page.FillAsync("#discountReason", "E2E test discount applied for loyal customer testing");
 

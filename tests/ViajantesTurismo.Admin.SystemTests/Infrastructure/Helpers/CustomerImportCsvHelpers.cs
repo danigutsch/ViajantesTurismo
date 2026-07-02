@@ -33,5 +33,6 @@ internal static class CustomerImportCsvHelpers
     public static async Task UploadCsv(IPage page, string csvContent)
     {
         await page.Locator("input[type='file']").SetInputFilesAsync(ToCsvPayload(csvContent));
+        await page.Locator(".alert-success, .alert-warning, .alert-danger").First.WaitForAsync();
     }
 }

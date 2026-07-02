@@ -144,11 +144,39 @@ Integration events are explicit contracts between bounded contexts or external s
 
 Integration events should:
 
-- Be published intentionally by application or infrastructure boundary logic.
+- Be saved intentionally from domain event dispatch when a domain event needs cross-boundary
+  notification.
 - Be versioned and named with stable event type identifiers.
 - Avoid referencing domain entity types.
 - Be persisted through outbox when they must be reliably published with local state changes.
 - Be processed through inbox when consumed from another boundary.
+
+Not every domain event produces an integration event. Domain event handlers can perform in-process work,
+call local application dependencies, update local read models, or do nothing externally. When an
+integration event is required, the domain event dispatch path is the only place that should create and
+save that integration event. Controllers, API endpoints, command handlers, and background jobs should not
+publish or persist integration events directly.
+
+This keeps outbound contracts tied to committed domain facts while avoiding accidental external messages
+for domain events that are purely local.
+
+```mermaid
+flowchart LR
+    aggregate[Aggregate records domain event]
+    handler[Application handler saves domain state]
+    dispatcher[Domain event dispatcher]
+    domainHandler[Domain event handler]
+    outbox[(Integration outbox)]
+    publisher[Outbox publisher]
+    transport[Transport adapter]
+
+    aggregate --> handler
+    handler --> dispatcher
+    dispatcher --> domainHandler
+    domainHandler -->|only when external notification is needed| outbox
+    outbox --> publisher
+    publisher --> transport
+```
 
 Example shape:
 
@@ -234,6 +262,12 @@ Purpose:
 - Deduplicate at-least-once message delivery.
 - Store receive and processing status.
 - Support retries and diagnostics.
+
+Consumers should use CloudEvents `source` plus `id` or the equivalent typed integration event identity as
+the idempotency key. Handler side effects must also be idempotent: use deterministic object keys,
+database unique constraints, and upsert-or-skip behavior for externally visible outputs. The inbox guards
+message handling, but the handler still owns safe replay behavior if work partially completed before a
+retry.
 
 Ownership:
 

@@ -247,17 +247,55 @@ Current constraints visible in contracts:
 Future media work should move gallery metadata changes behind Catalog event-sourced commands if tour
 presentation read models become rebuildable from event streams.
 
+Image processing should remain asynchronous after the original upload is accepted and stored. The upload
+flow should raise a domain event, and the domain event dispatch path should save an integration event to
+the Catalog outbox only when downstream image processing is required. A background publisher can then
+deliver the typed event through the transport adapter, where CloudEvents becomes the external envelope.
+The image processor consumes the stored original, creates thumbnails, icons, and responsive variants, and
+then records processing status and generated variant metadata.
+
+The async processing consumer must assume at-least-once delivery. It should use the typed integration
+event id or CloudEvents `source` plus `id` as the inbox/idempotency key, then make image outputs
+deterministic so replay is safe. Variant object keys should be derived from media id, processing version,
+variant name, and format. Variant metadata should be upserted with a unique key such as media id,
+processing version, variant name, and format rather than appended blindly.
+
 ```mermaid
 flowchart TB
     upload[Media upload/storage adapter planned]
     asset[(Stored media asset planned)]
+    domainEvent[Media uploaded domain event planned]
+    domainDispatch[Domain event dispatch planned]
+    outbox[(Catalog integration outbox planned)]
+    inbox[(Image processing inbox planned)]
+    processor[Async image processor planned]
+    variants[(Generated variants planned)]
     metadata[Catalog image metadata]
+    ai[AI alt text and caption draft planned]
+    eval[AI output evaluation planned]
+    telemetry[OpenTelemetry metrics planned]
+    grafana[Grafana dashboards planned]
     review[Alt text/caption review planned]
     projection[Published tour projection planned]
     publicWeb[Public.Web gallery]
 
     upload -. planned .-> asset
+    upload -. records .-> domainEvent
+    domainEvent -. dispatch .-> domainDispatch
+    domainDispatch -. save processing-requested integration event .-> outbox
+    outbox -. publish .-> inbox
+    inbox -. first source+id wins .-> processor
+    asset -. original image .-> processor
+    processor -. thumbnails/icons/responsive variants .-> variants
+    processor -. processing status + variant metadata .-> metadata
     asset -. public URI .-> metadata
+    metadata -. image + tour context .-> ai
+    ai -. generated draft .-> eval
+    eval -. review-required text .-> review
+    ai -. generation metrics .-> telemetry
+    eval -. quality metrics .-> telemetry
+    review -. approval/edit/reject metrics .-> telemetry
+    telemetry -. dashboards .-> grafana
     metadata -. requires alt text .-> review
     review -. approved .-> projection
     metadata -. event-sourced changes planned .-> projection
@@ -269,6 +307,10 @@ Open design points for future issues:
 - Storage provider and upload policy.
 - Image ordering, hero-image selection, and removal behavior.
 - Whether image metadata changes are Catalog tour events or a separate media stream.
+- Final transport for media processing integration events after outbox publication.
+- Whether AI alt text orchestration needs Semantic Kernel or a smaller C# provider adapter.
+- Evaluation rubric and golden fixture shape for AI-generated accessibility text.
+- Grafana dashboard panels for generation quality, review outcomes, and publication blockers.
 - Accessibility review requirements beyond required `AltText`.
 
 ## References
