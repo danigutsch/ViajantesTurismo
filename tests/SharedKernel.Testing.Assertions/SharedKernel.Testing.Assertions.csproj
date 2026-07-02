@@ -3,8 +3,6 @@
     <PropertyGroup>
         <RootNamespace>SharedKernel.Testing.Assertions</RootNamespace>
         <IsPackable>false</IsPackable>
-        <!-- Assertion wrappers intentionally delegate to Xunit.Assert. -->
-        <NoWarn>$(NoWarn);SKTEST006</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
