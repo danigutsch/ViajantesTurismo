@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Components;
 using ViajantesTurismo.Management.Web.Services;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
@@ -37,10 +36,7 @@ app.UseAntiforgery();
 
 app.UseOutputCache();
 
-app.MapStaticAssets();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapManagementWebEndpoints();
 
 app.MapDefaultEndpoints();
 
