@@ -1,5 +1,3 @@
-using ViajantesTurismo.Management.Web;
-
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
 internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient

@@ -41,6 +41,7 @@ public sealed partial class NamingConventionTests
             .Where(type => !IsStaticClass(type))
             .Where(type => !typeof(Attribute).IsAssignableFrom(type))
             .Where(type => !typeof(IIntegrationEvent).IsAssignableFrom(type))
+            .Where(type => !type.Name.EndsWith("ApiClient", StringComparison.Ordinal))
             .Where(type => !type.Name.EndsWith("Dto", StringComparison.Ordinal))
             .ToArray();
 

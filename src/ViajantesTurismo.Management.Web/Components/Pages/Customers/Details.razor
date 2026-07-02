@@ -1,6 +1,6 @@
 @page "/customers/{id:guid}"
 @using ViajantesTurismo.Admin.Contracts
-@using ViajantesTurismo.Management.Web.Exceptions
+@using ViajantesTurismo.Common.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
 @rendermode InteractiveServer
 
@@ -404,7 +404,7 @@ else if (_customer != null)
             HideBookingForm();
             _toast.ShowSuccess("Booking created successfully.");
         }
-        catch (ApiValidationException ex)
+        catch (ContractValidationException ex)
         {
             if (_bookingCreateFormRef?.EditContext is not null)
             {

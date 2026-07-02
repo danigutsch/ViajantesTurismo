@@ -10,6 +10,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents\SharedKernel.IntegrationEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
     </ItemGroup>

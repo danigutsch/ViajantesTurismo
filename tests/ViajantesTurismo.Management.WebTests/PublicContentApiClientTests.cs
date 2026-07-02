@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -144,7 +143,7 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
-        var exception = await Assert.ThrowsAsync<ApiValidationException>(() =>
+        var exception = await Assert.ThrowsAsync<ContractValidationException>(() =>
             sut.SaveContent("home.hero", request, Xunit.TestContext.Current.CancellationToken));
 
         // Assert

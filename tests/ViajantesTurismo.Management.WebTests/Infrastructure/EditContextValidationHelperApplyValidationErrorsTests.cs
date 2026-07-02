@@ -1,4 +1,4 @@
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -11,7 +11,7 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         // Arrange
         var model = new TestFormModel();
         var editContext = new EditContext(model);
-        var serverValidationException = new ApiValidationException("Validation failed", new Dictionary<string, string[]>());
+        var serverValidationException = new ContractValidationException("Validation failed", new Dictionary<string, string[]>());
         var validationStateChangedNotifications = 0;
 
         editContext.OnValidationStateChanged += (_, _) => validationStateChangedNotifications++;
@@ -30,7 +30,7 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         // Arrange
         var model = new TestFormModel();
         var editContext = new EditContext(model);
-        var serverValidationException = new ApiValidationException("Validation failed", new Dictionary<string, string[]>
+        var serverValidationException = new ContractValidationException("Validation failed", new Dictionary<string, string[]>
         {
             [nameof(TestFormModel.Email)] = ["Email is required.", "Email is invalid."]
         });
@@ -54,7 +54,7 @@ public class EditContextValidationHelperApplyValidationErrorsTests
         // Arrange
         var model = new TestFormModel();
         var editContext = new EditContext(model);
-        var serverValidationException = new ApiValidationException("Validation failed", new Dictionary<string, string[]>
+        var serverValidationException = new ContractValidationException("Validation failed", new Dictionary<string, string[]>
         {
             [nameof(TestFormModel.Email)] = ["Email is invalid."],
             [nameof(TestFormModel.FirstName)] = ["First name is required."]

@@ -1,7 +1,7 @@
 @page "/catalog/tours/{id:guid}/presentation"
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Catalog.Contracts
-@using ViajantesTurismo.Management.Web.Exceptions
+@using ViajantesTurismo.Common.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
 @inject ICatalogToursApiClient CatalogToursApi
 @rendermode InteractiveServer
@@ -130,7 +130,7 @@ else
             _model.IsPublished = updated.IsPublished;
             _success = true;
         }
-        catch (ApiValidationException exception)
+        catch (ContractValidationException exception)
         {
             _errorMessage = exception.Message;
         }

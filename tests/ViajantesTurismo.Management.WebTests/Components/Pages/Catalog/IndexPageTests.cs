@@ -1,5 +1,4 @@
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Catalog.Index;
-using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 

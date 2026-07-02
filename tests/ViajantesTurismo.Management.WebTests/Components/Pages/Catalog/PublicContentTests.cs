@@ -1,6 +1,5 @@
 using PublicContent = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicContent;
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -266,7 +265,7 @@ public sealed class PublicContentTests : BunitContext
     public void Shows_server_validation_message_when_save_fails_validation()
     {
         // Arrange
-        publicContentApi.ValidationException = new ApiValidationException(
+        publicContentApi.ValidationException = new ContractValidationException(
             "Validation failed",
             new Dictionary<string, string[]> { [nameof(PublicContentVariantDto.Title)] = ["Title is required."] });
         var cut = Render<PublicContent>();

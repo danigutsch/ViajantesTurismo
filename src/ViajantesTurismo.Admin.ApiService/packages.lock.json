@@ -228,7 +228,8 @@
         "type": "Project",
         "dependencies": {
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
+          "ViajantesTurismo.Common": "[1.0.0, )"
         }
       },
       "viajantesturismo.admin.domain": {
