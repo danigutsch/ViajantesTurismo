@@ -332,6 +332,14 @@ internal static partial class SeederWorkerLog
 Keep methods focused, avoid static dependencies, use interfaces for repositories.
 See [TEST_GUIDELINES.md](TEST_GUIDELINES.md).
 
+## Endpoint mapping
+
+- Keep `Program.cs` focused on host setup, middleware order, and top-level calls.
+- Put app-specific route/component/static asset mappings in one or more nearby `*Endpoints.cs` files.
+- Name the extension `Map<Area>Endpoints` and call it before `MapDefaultEndpoints()`.
+- Preserve existing route templates, middleware order, authorization, validation, and contracts.
+- Do not add endpoint registries, reflection scanning, or framework layers for simple mappings.
+
 ## Native AOT Compatibility
 
 ### Project Configuration
