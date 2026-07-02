@@ -17,7 +17,7 @@ public sealed class TourDeletionSteps(TourContext tourContext)
     {
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
         var result = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [Given("the tour has a confirmed booking")]
@@ -29,9 +29,9 @@ public sealed class TourDeletionSteps(TourContext tourContext)
         }
 
         var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(addResult.IsSuccess);
+        TestAssert.True(addResult.IsSuccess);
         var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(confirmResult.IsSuccess);
+        TestAssert.True(confirmResult.IsSuccess);
     }
 
     [Given(@"the tour has (\d+) confirmed bookings")]
@@ -45,9 +45,9 @@ public sealed class TourDeletionSteps(TourContext tourContext)
         for (var i = 0; i < count; i++)
         {
             var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-            global::SharedKernel.Testing.Assertions.TestAssert.True(addResult.IsSuccess);
+            TestAssert.True(addResult.IsSuccess);
             var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
-            global::SharedKernel.Testing.Assertions.TestAssert.True(confirmResult.IsSuccess);
+            TestAssert.True(confirmResult.IsSuccess);
         }
     }
 
@@ -60,9 +60,9 @@ public sealed class TourDeletionSteps(TourContext tourContext)
         }
 
         var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(addResult.IsSuccess);
+        TestAssert.True(addResult.IsSuccess);
         var cancelResult = tourContext.Tour.CancelBooking(addResult.Value.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(cancelResult.IsSuccess);
+        TestAssert.True(cancelResult.IsSuccess);
     }
 
     [When("I delete the tour")]
@@ -82,12 +82,12 @@ public sealed class TourDeletionSteps(TourContext tourContext)
     [Then("the tour should be deleted successfully")]
     public void ThenTheTourShouldBeDeletedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.DeleteResult?.IsSuccess);
+        TestAssert.True(tourContext.DeleteResult?.IsSuccess);
     }
 
     [Then("the deletion should fail")]
     public void ThenTheDeletionShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.DeleteResult?.IsSuccess);
+        TestAssert.False(tourContext.DeleteResult?.IsSuccess);
     }
 }

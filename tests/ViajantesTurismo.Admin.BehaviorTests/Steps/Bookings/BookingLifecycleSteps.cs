@@ -8,7 +8,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("I am authenticated as a tour operator")]
     public static void GivenIAmAuthenticatedAsATourOperator()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.True(true);
+        TestAssert.True(true);
     }
 
     [Given("a pending booking exists")]
@@ -20,9 +20,9 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [Given("a confirmed booking exists")]
@@ -34,10 +34,10 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
         tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
+        TestAssert.Equal(BookingStatus.Confirmed, bookingContext.Booking.Status);
     }
 
     [Given("a cancelled booking exists")]
@@ -49,11 +49,11 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(addResult.IsSuccess);
+        TestAssert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(BookingStatus.Cancelled, bookingContext.Booking.Status);
+        TestAssert.True(result.IsSuccess);
+        TestAssert.Equal(BookingStatus.Cancelled, bookingContext.Booking.Status);
     }
 
     [Given("a completed booking exists")]
@@ -65,34 +65,34 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(addResult.IsSuccess);
+        TestAssert.True(addResult.IsSuccess);
         bookingContext.Booking = addResult.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(confirmResult.IsSuccess);
+        TestAssert.True(confirmResult.IsSuccess);
         var completeResult = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(completeResult.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
+        TestAssert.True(completeResult.IsSuccess);
+        TestAssert.Equal(BookingStatus.Completed, bookingContext.Booking.Status);
     }
 
     [When("the operator confirms the booking")]
     public void WhenTheOperatorConfirmsTheBooking()
     {
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator cancels the booking")]
     public void WhenTheOperatorCancelsTheBooking()
     {
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator completes the booking")]
     public void WhenTheOperatorCompletesTheBooking()
     {
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator tries to confirm the booking")]
@@ -120,14 +120,14 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void WhenTheOperatorUpdatesTheNotesTo(string notes)
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator updates the notes to null")]
     public void WhenTheOperatorUpdatesTheNotesToNull()
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator tries to update the notes to a string longer than (.*) characters")]
@@ -147,7 +147,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             DateTime.UtcNow,
             PaymentMethod.CreditCard,
             TimeProvider.System);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator records a payment for {int} percent of the total")]
@@ -160,7 +160,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             DateTime.UtcNow,
             PaymentMethod.CreditCard,
             TimeProvider.System);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [When("the operator attempts to remove the booking")]
@@ -174,15 +174,15 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void WhenTheOperatorRemovesTheBooking()
     {
         var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.BookingOperationResult = result;
     }
 
     [Then("the removal should fail")]
     public void ThenTheRemovalShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingOperationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 
     [Then("the operation should fail")]
@@ -194,7 +194,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Then("the booking should be removed successfully")]
     public void ThenTheBookingShouldBeRemovedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingOperationResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 }

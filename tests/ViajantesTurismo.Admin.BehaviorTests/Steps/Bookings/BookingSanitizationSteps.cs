@@ -14,7 +14,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             RoomType.DoubleOccupancy,
             DiscountType.None,
             notes: notes));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
 
@@ -46,7 +46,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
 
@@ -54,15 +54,15 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     public void WhenIUpdateTheBookingNotesToNullThroughTheTour()
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [Then("the booking creation should fail with notes validation error")]
     public void ThenTheBookingCreationShouldFailWithNotesValidationError()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
         var result = bookingContext.BookingOperationResult.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.False(result.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false);
     }
 }

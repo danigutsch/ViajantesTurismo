@@ -7,14 +7,14 @@ internal static class BookingStepDataFactory
     public static BookingCustomer CreatePrincipalCustomer(decimal bikePrice = 100m, BikeType bikeType = BikeType.Regular)
     {
         var result = BookingCustomer.Create(Guid.CreateVersion7(), bikeType, bikePrice);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess, "Failed to create principal customer for test setup.");
+        TestAssert.True(result.IsSuccess, "Failed to create principal customer for test setup.");
         return result.Value;
     }
 
     public static BookingCustomer CreateCompanionCustomer(decimal bikePrice = 200m, BikeType bikeType = BikeType.EBike)
     {
         var result = BookingCustomer.Create(Guid.CreateVersion7(), bikeType, bikePrice);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess, "Failed to create companion customer for test setup.");
+        TestAssert.True(result.IsSuccess, "Failed to create companion customer for test setup.");
         return result.Value;
     }
 

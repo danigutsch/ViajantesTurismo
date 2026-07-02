@@ -35,29 +35,29 @@ public sealed class BookingCustomerEntitySteps(BookingContext bookingContext)
     [Then("the booking customer should be created successfully")]
     public void ThenTheBookingCustomerShouldBeCreatedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCustomerResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(bookingContext.BookingCustomerResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingCustomerResult);
+        TestAssert.True(bookingContext.BookingCustomerResult.Value.IsSuccess);
     }
 
     [Then(@"the booking customer should have bike type ""(.*)""")]
     public void ThenTheBookingCustomerShouldHaveBikeType(string expectedBikeType)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCustomerResult);
+        TestAssert.NotNull(bookingContext.BookingCustomerResult);
         var type = Enum.Parse<BikeType>(expectedBikeType);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(type, bookingContext.BookingCustomerResult.Value.Value.BikeType);
+        TestAssert.Equal(type, bookingContext.BookingCustomerResult.Value.Value.BikeType);
     }
 
     [Then("the booking customer should have bike price (.*)")]
     public void ThenTheBookingCustomerShouldHaveBikePrice(decimal expectedPrice)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCustomerResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPrice, bookingContext.BookingCustomerResult.Value.Value.BikePrice);
+        TestAssert.NotNull(bookingContext.BookingCustomerResult);
+        TestAssert.Equal(expectedPrice, bookingContext.BookingCustomerResult.Value.Value.BikePrice);
     }
 
     [Then("the booking customer creation should fail")]
     public void ThenTheBookingCustomerCreationShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingCustomerResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.False(bookingContext.BookingCustomerResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingCustomerResult);
+        TestAssert.False(bookingContext.BookingCustomerResult.Value.IsSuccess);
     }
 }

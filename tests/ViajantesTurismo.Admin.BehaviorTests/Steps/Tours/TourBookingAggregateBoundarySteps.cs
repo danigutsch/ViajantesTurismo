@@ -12,33 +12,33 @@ public sealed class TourBookingAggregateBoundarySteps(BookingContext bookingCont
     [Then("the methods should not be accessible")]
     public void ThenTheMethodsShouldNotBeAccessible()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.Action);
+        TestAssert.NotNull(bookingContext.Action);
     }
 
     [Then("only tour methods should be available")]
     public void ThenOnlyTourMethodsShouldBeAvailable()
     {
         var tourType = tourContext.Tour.GetType();
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourType.GetMethod("AddBooking"));
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourType.GetMethod("ConfirmBooking"));
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourType.GetMethod("CancelBooking"));
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourType.GetMethod("CompleteBooking"));
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourType.GetMethod("UpdateBookingNotes"));
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourType.GetMethod("RemoveBooking"));
+        TestAssert.NotNull(tourType.GetMethod("AddBooking"));
+        TestAssert.NotNull(tourType.GetMethod("ConfirmBooking"));
+        TestAssert.NotNull(tourType.GetMethod("CancelBooking"));
+        TestAssert.NotNull(tourType.GetMethod("CompleteBooking"));
+        TestAssert.NotNull(tourType.GetMethod("UpdateBookingNotes"));
+        TestAssert.NotNull(tourType.GetMethod("RemoveBooking"));
     }
 
     [Then("the operation should fail with not found error")]
     public void ThenTheOperationShouldFailWithNotFoundError()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
         var result = bookingContext.BookingOperationResult.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.False(result.IsSuccess);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(ResultStatus.NotFound, result.Status);
+        TestAssert.False(result.IsSuccess);
+        TestAssert.Equal(ResultStatus.NotFound, result.Status);
     }
 
     [Then(@"the tour should have (\d+) bookings")]
     public void ThenTheTourShouldHaveDBookings(int expectedCount)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCount, tourContext.Tour.Bookings.Count);
+        TestAssert.Equal(expectedCount, tourContext.Tour.Bookings.Count);
     }
 }

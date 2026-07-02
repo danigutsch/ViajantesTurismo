@@ -71,16 +71,16 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
     [Then("the tour update should succeed")]
     public void ThenTheTourUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.NotNull(tourContext.UpdateResult);
         var result = tourContext.UpdateResult.Value;
-        global::SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess,
+        TestAssert.True(result.IsSuccess,
             $"Expected success but got failure: {result.ErrorDetails?.Detail ?? "Unknown error"}");
     }
 
     [Then(@"the tour should have (\d+) included services")]
     public void ThenTheTourShouldHaveDIncludedServices(int expectedCount)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCount, tourContext.Tour.IncludedServices.Count);
+        TestAssert.Equal(expectedCount, tourContext.Tour.IncludedServices.Count);
     }
 
     [Then("the services should be properly sanitized")]
@@ -90,16 +90,16 @@ public sealed class TourIncludedServicesValidationSteps(TourContext tourContext)
 
         foreach (var service in services)
         {
-            global::SharedKernel.Testing.Assertions.TestAssert.Equal(service.Trim(), service);
+            TestAssert.Equal(service.Trim(), service);
         }
 
-        global::SharedKernel.Testing.Assertions.TestAssert.DoesNotContain(services, s => s.Contains("  ", StringComparison.Ordinal));
+        TestAssert.DoesNotContain(services, s => s.Contains("  ", StringComparison.Ordinal));
     }
 
     [Then(@"the included services should contain ""(.*)""")]
     public void ThenTheIncludedServicesShouldContain(string expectedService)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedService, tourContext.Tour.IncludedServices, StringComparer.Ordinal);
+        TestAssert.Contains(expectedService, tourContext.Tour.IncludedServices, StringComparer.Ordinal);
     }
 
     private static Currency ParseCurrency(string currencyCode) => currencyCode.ToUpperInvariant() switch

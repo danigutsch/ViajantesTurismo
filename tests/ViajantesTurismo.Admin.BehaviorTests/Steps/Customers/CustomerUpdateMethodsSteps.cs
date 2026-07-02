@@ -125,109 +125,109 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Then("the customer personal info update should succeed")]
     public void ThenTheCustomerPersonalInfoUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer identification info update should succeed")]
     public void ThenTheCustomerIdentificationInfoUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer contact info update should succeed")]
     public void ThenTheCustomerContactInfoUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer address update should succeed")]
     public void ThenTheCustomerAddressUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer physical info update should succeed")]
     public void ThenTheCustomerPhysicalInfoUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer accommodation preferences update should succeed")]
     public void ThenTheCustomerAccommodationPreferencesUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer emergency contact update should succeed")]
     public void ThenTheCustomerEmergencyContactUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer medical info update should succeed")]
     public void ThenTheCustomerMedicalInfoUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("all customer updates should succeed")]
     public void ThenAllCustomerUpdatesShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then(@"the customer should have first name ""(.*)""")]
     public void ThenTheCustomerShouldHaveFirstName(string expectedFirstName)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedFirstName, customerContext.Customer.PersonalInfo.FirstName);
+        TestAssert.Equal(expectedFirstName, customerContext.Customer.PersonalInfo.FirstName);
     }
 
     [Then(@"the customer should have last name ""(.*)""")]
     public void ThenTheCustomerShouldHaveLastName(string expectedLastName)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedLastName, customerContext.Customer.PersonalInfo.LastName);
+        TestAssert.Equal(expectedLastName, customerContext.Customer.PersonalInfo.LastName);
     }
 
     [Then(@"the customer should have passport ""(.*)""")]
     public void ThenTheCustomerShouldHavePassport(string expectedPassport)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedPassport, customerContext.Customer.IdentificationInfo.NationalId);
+        TestAssert.Equal(expectedPassport, customerContext.Customer.IdentificationInfo.NationalId);
     }
 
     [Then(@"the customer should have email ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmail(string expectedEmail)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedEmail, customerContext.Customer.ContactInfo.Email);
+        TestAssert.Equal(expectedEmail, customerContext.Customer.ContactInfo.Email);
     }
 
     [Then(@"the customer should have city ""(.*)""")]
     public void ThenTheCustomerShouldHaveCity(string expectedCity)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCity, customerContext.Customer.Address.City);
+        TestAssert.Equal(expectedCity, customerContext.Customer.Address.City);
     }
 
     [Then("the customer should have height (.*)")]
     public void ThenTheCustomerShouldHaveHeight(int expectedHeight)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedHeight, customerContext.Customer.PhysicalInfo.HeightCentimeters);
+        TestAssert.Equal(expectedHeight, customerContext.Customer.PhysicalInfo.HeightCentimeters);
     }
 
     [Then(@"the customer should have bed type ""(.*)""")]
     public void ThenTheCustomerShouldHaveBedType(string expectedBedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(expectedBedType + "Bed");
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(bedTypeEnum, customerContext.Customer.AccommodationPreferences.BedType);
+        TestAssert.Equal(bedTypeEnum, customerContext.Customer.AccommodationPreferences.BedType);
     }
 
     [Then(@"the customer should have emergency contact ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmergencyContact(string expectedName)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedName, customerContext.Customer.EmergencyContact.Name);
+        TestAssert.Equal(expectedName, customerContext.Customer.EmergencyContact.Name);
     }
 
     [Then(@"the customer should have allergies ""(.*)""")]
     public void ThenTheCustomerShouldHaveAllergies(string expectedAllergies)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedAllergies, customerContext.Customer.MedicalInfo.Allergies);
+        TestAssert.Equal(expectedAllergies, customerContext.Customer.MedicalInfo.Allergies);
     }
 }

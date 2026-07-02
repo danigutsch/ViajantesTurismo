@@ -12,27 +12,27 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [Then("the booking should have (.*) payments")]
     public void ThenTheBookingShouldHavePayments(int expectedCount)
     {
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedCount, bookingContext.Booking.Payments.Count);
+        TestAssert.Equal(expectedCount, bookingContext.Booking.Payments.Count);
     }
 
     [Then("the payment history should be empty")]
     public void ThenThePaymentHistoryShouldBeEmpty()
     {
-        SharedKernel.Testing.Assertions.TestAssert.Empty(bookingContext.Booking.Payments);
+        TestAssert.Empty(bookingContext.Booking.Payments);
     }
 
     [Then("the first payment amount should be (.*)")]
     public void ThenTheFirstPaymentAmountShouldBe(decimal expectedAmount)
     {
         var firstPayment = bookingContext.Booking.Payments.First();
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedAmount, firstPayment.Amount);
+        TestAssert.Equal(expectedAmount, firstPayment.Amount);
     }
 
     [Then("the second payment amount should be (.*)")]
     public void ThenTheSecondPaymentAmountShouldBe(decimal expectedAmount)
     {
         var secondPayment = bookingContext.Booking.Payments.Skip(1).First();
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedAmount, secondPayment.Amount);
+        TestAssert.Equal(expectedAmount, secondPayment.Amount);
     }
 
     [Then("the payment history should be ordered by payment date")]
@@ -43,7 +43,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
 
         for (var i = 0; i < payments.Count; i++)
         {
-            SharedKernel.Testing.Assertions.TestAssert.Equal(orderedPayments[i].Id, payments[i].Id);
+            TestAssert.Equal(orderedPayments[i].Id, payments[i].Id);
         }
     }
 
@@ -51,7 +51,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void ThenThePaymentShouldHaveARecordedTimestamp()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        SharedKernel.Testing.Assertions.TestAssert.NotEqual(default, payment.RecordedAt);
+        TestAssert.NotEqual(default, payment.RecordedAt);
     }
 
     [Then("the recorded timestamp should be recent")]
@@ -59,7 +59,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payment = bookingContext.Booking.Payments.Last();
         var timeDifference = DateTime.UtcNow - payment.RecordedAt;
-        SharedKernel.Testing.Assertions.TestAssert.True(timeDifference.TotalMinutes < 1,
+        TestAssert.True(timeDifference.TotalMinutes < 1,
             $"Timestamp should be recent, but was {timeDifference.TotalMinutes} minutes ago");
     }
 
@@ -68,18 +68,18 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payment = bookingContext.Booking.Payments.Last();
         _retrievedPayment = bookingContext.Booking.Payments.FirstOrDefault(p => p.Id == payment.Id);
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(_retrievedPayment);
+        TestAssert.NotNull(_retrievedPayment);
     }
 
     [Then("the payment details should match the recorded payment")]
     public void ThenThePaymentDetailsShouldMatchTheRecordedPayment()
     {
         var originalPayment = bookingContext.Booking.Payments.Last();
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(_retrievedPayment);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(originalPayment.Id, _retrievedPayment.Id);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(originalPayment.Amount, _retrievedPayment.Amount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(originalPayment.PaymentDate, _retrievedPayment.PaymentDate);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(originalPayment.Method, _retrievedPayment.Method);
+        TestAssert.NotNull(_retrievedPayment);
+        TestAssert.Equal(originalPayment.Id, _retrievedPayment.Id);
+        TestAssert.Equal(originalPayment.Amount, _retrievedPayment.Amount);
+        TestAssert.Equal(originalPayment.PaymentDate, _retrievedPayment.PaymentDate);
+        TestAssert.Equal(originalPayment.Method, _retrievedPayment.Method);
     }
 
     [Then("each payment should have its distinct method")]
@@ -87,7 +87,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payments = bookingContext.Booking.Payments.ToList();
         var distinctMethods = payments.Select(p => p.Method).Distinct().Count();
-        SharedKernel.Testing.Assertions.TestAssert.Equal(payments.Count, distinctMethods);
+        TestAssert.Equal(payments.Count, distinctMethods);
     }
 
     [Then("the payment amount should be sanitized to valid precision")]
@@ -96,16 +96,16 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var payment = bookingContext.Booking.Payments.Last();
         var amountString = payment.Amount.ToString("F2", CultureInfo.InvariantCulture);
         var roundedAmount = decimal.Parse(amountString, CultureInfo.InvariantCulture);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(roundedAmount, payment.Amount);
+        TestAssert.Equal(roundedAmount, payment.Amount);
     }
 
     [Then("the payment notes should be sanitized")]
     public void ThenThePaymentNotesShouldBeSanitized()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        SharedKernel.Testing.Assertions.TestAssert.NotNull(payment.Notes);
-        SharedKernel.Testing.Assertions.TestAssert.DoesNotContain("😊", payment.Notes, StringComparison.Ordinal);
-        SharedKernel.Testing.Assertions.TestAssert.DoesNotContain("👍", payment.Notes, StringComparison.Ordinal);
+        TestAssert.NotNull(payment.Notes);
+        TestAssert.DoesNotContain("😊", payment.Notes, StringComparison.Ordinal);
+        TestAssert.DoesNotContain("👍", payment.Notes, StringComparison.Ordinal);
     }
 
     [When("I record a payment with today's date")]
@@ -153,7 +153,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [Given("the booking is pending")]
     public void GivenTheBookingIsPending()
     {
-        SharedKernel.Testing.Assertions.TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
     }
 
     [Then("the payments should maintain their recording order")]
@@ -161,14 +161,14 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payments = bookingContext.Booking.Payments.ToList();
 
-        SharedKernel.Testing.Assertions.TestAssert.Equal(100m, payments[0].Amount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc), payments[0].PaymentDate);
+        TestAssert.Equal(100m, payments[0].Amount);
+        TestAssert.Equal(new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc), payments[0].PaymentDate);
 
-        SharedKernel.Testing.Assertions.TestAssert.Equal(200m, payments[1].Amount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc), payments[1].PaymentDate);
+        TestAssert.Equal(200m, payments[1].Amount);
+        TestAssert.Equal(new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc), payments[1].PaymentDate);
 
-        SharedKernel.Testing.Assertions.TestAssert.Equal(150m, payments[2].Amount);
-        SharedKernel.Testing.Assertions.TestAssert.Equal(new DateTime(2025, 2, 15, 0, 0, 0, DateTimeKind.Utc), payments[2].PaymentDate);
+        TestAssert.Equal(150m, payments[2].Amount);
+        TestAssert.Equal(new DateTime(2025, 2, 15, 0, 0, 0, DateTimeKind.Utc), payments[2].PaymentDate);
     }
 
     [Then("all payments should have the same payment date")]
@@ -176,9 +176,9 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payments = bookingContext.Booking.Payments.ToList();
         var firstDate = payments[0].PaymentDate;
-        SharedKernel.Testing.Assertions.TestAssert.All(
+        TestAssert.All(
             payments,
-            p => SharedKernel.Testing.Assertions.TestAssert.Equal(firstDate, p.PaymentDate));
+            p => TestAssert.Equal(firstDate, p.PaymentDate));
     }
 
     [Given(@"I record a payment of (.*) on (.*) using (.*) with reference ""(.*)""")]
@@ -189,7 +189,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var method = Enum.Parse<PaymentMethod>(methodString);
 
         var result = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, reference);
-        SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [Given("another tour exists with a pending booking for payment tests")]
@@ -201,7 +201,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
 
@@ -210,14 +210,14 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var result = bookingContext.Booking.RecordPayment(100m, DateTime.UtcNow.AddDays(-1), PaymentMethod.CreditCard,
             _timeProvider, reference);
-        SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
     }
 
     [Then("both payments should have the same reference number")]
     public void ThenBothPaymentsShouldHaveTheSameReferenceNumber()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        SharedKernel.Testing.Assertions.TestAssert.Equal("REF-123", payment.ReferenceNumber);
+        TestAssert.Equal("REF-123", payment.ReferenceNumber);
     }
 
     [Given("the booking has a (.*)% discount applied")]
@@ -231,13 +231,13 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
             DiscountType.Percentage,
             discountAmount: discountPercentage,
             discountReason: "Test discount"));
-        SharedKernel.Testing.Assertions.TestAssert.True(result.IsSuccess);
+        TestAssert.True(result.IsSuccess);
         bookingContext.Booking = result.Value;
     }
 
     [Given("the booking total price is (.*)")]
     public void GivenTheBookingTotalPriceIs(decimal expectedTotal)
     {
-        SharedKernel.Testing.Assertions.TestAssert.Equal(expectedTotal, bookingContext.Booking.TotalPrice);
+        TestAssert.Equal(expectedTotal, bookingContext.Booking.TotalPrice);
     }
 }

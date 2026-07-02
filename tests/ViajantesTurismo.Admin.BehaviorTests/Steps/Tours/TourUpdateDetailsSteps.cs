@@ -114,39 +114,39 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
     [Then("the tour details update should succeed")]
     public void ThenTheTourDetailsUpdateShouldSucceed()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
+        TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
             $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails}");
     }
 
     [Then("the tour details update should fail")]
     public void ThenTheTourDetailsUpdateShouldFail()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
+        TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 
     [Then(@"the tour should have identifier ""(.*)""")]
     public async Task ThenTheTourShouldHaveIdentifier(string expectedIdentifier)
     {
         var tour = await tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None);
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tour);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedIdentifier, tour.Identifier);
+        TestAssert.NotNull(tour);
+        TestAssert.Equal(expectedIdentifier, tour.Identifier);
     }
 
     [Then(@"the tour should have name ""(.*)""")]
     public async Task ThenTheTourShouldHaveName(string expectedName)
     {
         var tour = await tourContext.TourStore.GetById(tourContext.Tour.Id, CancellationToken.None);
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tour);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(expectedName, tour.Name);
+        TestAssert.NotNull(tour);
+        TestAssert.Equal(expectedName, tour.Name);
     }
 
     [Then(@"the error should contain ""(.*)""")]
     public void ThenTheErrorShouldContain(string expectedText)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.NotNull(tourContext.UpdateResult);
         var errorMessage = tourContext.UpdateResult.Value.ErrorDetails?.Detail ?? string.Empty;
-        global::SharedKernel.Testing.Assertions.TestAssert.Contains(expectedText, errorMessage, StringComparison.OrdinalIgnoreCase);
+        TestAssert.Contains(expectedText, errorMessage, StringComparison.OrdinalIgnoreCase);
     }
 }

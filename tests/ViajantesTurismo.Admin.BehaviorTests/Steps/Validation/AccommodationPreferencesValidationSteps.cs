@@ -41,21 +41,21 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     [Then("the accommodation preferences should be created successfully")]
     public void ThenTheAccommodationPreferencesShouldBeCreatedSuccessfully()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.AccommodationPreferencesResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.True(context.AccommodationPreferencesResult.Value.IsSuccess);
+        TestAssert.NotNull(context.AccommodationPreferencesResult);
+        TestAssert.True(context.AccommodationPreferencesResult.Value.IsSuccess);
     }
 
     [Then(@"the companion ID should be (\d+)")]
     public void ThenTheCompanionIdShouldBe(int expectedCompanionId)
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.AccommodationPreferencesResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.Equal(context.CompanionId, context.AccommodationPreferencesResult.Value.Value.CompanionId);
+        TestAssert.NotNull(context.AccommodationPreferencesResult);
+        TestAssert.Equal(context.CompanionId, context.AccommodationPreferencesResult.Value.Value.CompanionId);
     }
 
     [Then("the companion ID should be null")]
     public void ThenTheCompanionIdShouldBeNull()
     {
-        global::SharedKernel.Testing.Assertions.TestAssert.NotNull(context.AccommodationPreferencesResult);
-        global::SharedKernel.Testing.Assertions.TestAssert.Null(context.AccommodationPreferencesResult.Value.Value.CompanionId);
+        TestAssert.NotNull(context.AccommodationPreferencesResult);
+        TestAssert.Null(context.AccommodationPreferencesResult.Value.Value.CompanionId);
     }
 }
