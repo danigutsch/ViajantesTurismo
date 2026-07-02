@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 namespace ViajantesTurismo.Common.Contracts;
@@ -35,7 +36,17 @@ public static class ContractHttpValidation
             return;
         }
 
-        var problem = await response.Content.ReadFromJsonAsync(jsonTypeInfo, ct).ConfigureAwait(false);
+        ContractValidationProblemDto? problem;
+        try
+        {
+            problem = await response.Content.ReadFromJsonAsync(jsonTypeInfo, ct).ConfigureAwait(false);
+        }
+        catch (JsonException)
+        {
+            response.EnsureSuccessStatusCode();
+            return;
+        }
+
         if (problem?.Errors is null || problem.Errors.Count == 0)
         {
             response.EnsureSuccessStatusCode();

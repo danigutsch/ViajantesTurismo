@@ -53,7 +53,7 @@ public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync(new Uri("/tours", UriKind.Relative), dto, Json.CreateTourDto, cancellationToken).ConfigureAwait(false);
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
 
         return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
@@ -64,7 +64,7 @@ public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, Json.UpdateTourDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"/tours/{id}", dto, Json.UpdateTourDto, cancellationToken).ConfigureAwait(false);
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, cancellationToken).ConfigureAwait(false);
     }
 }

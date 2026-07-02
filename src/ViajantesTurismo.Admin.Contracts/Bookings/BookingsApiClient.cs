@@ -41,7 +41,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), dto, Json.CreateBookingDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync(new Uri("/bookings", UriKind.Relative), dto, Json.CreateBookingDto, cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
 
         return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
@@ -52,7 +52,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/discount", dto, Json.UpdateBookingDiscountDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/discount", dto, Json.UpdateBookingDiscountDto, cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -61,7 +61,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/details", dto, Json.UpdateBookingDetailsDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PutAsJsonAsync($"/bookings/{id}/details", dto, Json.UpdateBookingDetailsDto, cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -70,7 +70,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PatchAsJsonAsync($"/bookings/{id}/notes", dto, Json.UpdateBookingNotesDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PatchAsJsonAsync($"/bookings/{id}/notes", dto, Json.UpdateBookingNotesDto, cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -89,7 +89,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     /// <inheritdoc />
     public async Task DeleteBooking(Guid id, CancellationToken cancellationToken)
     {
-        var response = await httpClient.DeleteAsync(new Uri($"/bookings/{id}", UriKind.Relative), cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.DeleteAsync(new Uri($"/bookings/{id}", UriKind.Relative), cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -98,7 +98,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PostAsJsonAsync($"/bookings/{bookingId}/payments", dto, Json.CreatePaymentDto, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PostAsJsonAsync($"/bookings/{bookingId}/payments", dto, Json.CreatePaymentDto, cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
 
         return response.Headers.Location ?? throw new InvalidOperationException("The Location header is missing in the response.");
@@ -124,7 +124,7 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
 
     private async Task PostCommand(string requestUri, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsync(new Uri(requestUri, UriKind.Relative), null, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PostAsync(new Uri(requestUri, UriKind.Relative), null, cancellationToken).ConfigureAwait(false);
         await EnsureSuccess(response, cancellationToken).ConfigureAwait(false);
     }
 

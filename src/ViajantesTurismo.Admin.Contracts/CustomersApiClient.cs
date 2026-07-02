@@ -101,7 +101,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var response = await httpClient.PutAsJsonAsync(
+        using var response = await httpClient.PutAsJsonAsync(
             $"/customers/{id}",
             dto,
             Json.UpdateCustomerDto,
@@ -123,7 +123,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         using var content = new MultipartFormDataContent();
         content.Add(fileBytes, "file", fileName);
 
-        var response = await httpClient.PostAsync(new Uri("/customers/import", UriKind.Relative), content, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsync(new Uri("/customers/import", UriKind.Relative), content, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync(Json.ImportResultDto, ct).ConfigureAwait(false)
@@ -143,7 +143,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         content.Add(fileBytes, "file", fileName);
         content.Add(new StringContent(ConflictResolutionSerialization.Serialize(conflictResolutions)), "conflictResolutions");
 
-        var response = await httpClient.PostAsync(new Uri("/customers/import/commit", UriKind.Relative), content, ct).ConfigureAwait(false);
+        using var response = await httpClient.PostAsync(new Uri("/customers/import/commit", UriKind.Relative), content, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync(Json.ImportResultDto, ct).ConfigureAwait(false)
