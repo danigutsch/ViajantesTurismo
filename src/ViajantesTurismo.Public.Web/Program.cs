@@ -1,4 +1,3 @@
-using ViajantesTurismo.Public.Web.Components;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
@@ -21,12 +20,7 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.MapGet("/Error", () => Results.Problem())
-    .ExcludeFromDescription();
-
-app.MapStaticAssets();
-
-app.MapRazorComponents<App>();
+app.MapPublicWebEndpoints();
 
 app.MapDefaultEndpoints();
 
