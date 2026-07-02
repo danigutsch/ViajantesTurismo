@@ -245,11 +245,16 @@
         {
             var dto = State.ToCreateCustomerDto();
 
-            var location = await ApiClient.CreateCustomer(dto, CancellationToken.None);
+            var outcome = await ApiClient.CreateCustomer(dto, CancellationToken.None);
+            if (outcome.Kind != CustomerCreateOutcomeKind.Succeeded)
+            {
+                _errorMessage = UserFacingErrorMessage.ForOperation("create the customer");
+                return;
+            }
 
             State.Reset();
 
-            Navigation.NavigateTo(GetCustomerLocation(location));
+            Navigation.NavigateTo(outcome.Location is null ? "/customers" : GetCustomerLocation(outcome.Location));
         }
         catch (Exception)
         {

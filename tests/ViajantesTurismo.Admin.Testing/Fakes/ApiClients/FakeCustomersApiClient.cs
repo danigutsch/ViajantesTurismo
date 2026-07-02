@@ -8,6 +8,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private readonly List<GetCustomerDto> _customers = [];
     private ImportResultDto? _commitImportResult;
     private Exception? _createCustomerException;
+    private CustomerCreateOutcome? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
     private Exception? _importCustomersException;
     private ImportResultDto? _importResult;
@@ -32,15 +33,25 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(_customerDetails.FirstOrDefault(c => c.Id == id));
     }
 
-    public Task<Uri> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
+    public Task<CustomerCreateOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         if (_createCustomerException is not null)
         {
             throw _createCustomerException;
         }
 
+        if (_createCustomerOutcome is not null)
+        {
+            return Task.FromResult(_createCustomerOutcome);
+        }
+
         var customerId = Guid.NewGuid();
-        return Task.FromResult(new Uri($"/customers/{customerId}", UriKind.Relative));
+        return Task.FromResult(new CustomerCreateOutcome
+        {
+            Kind = CustomerCreateOutcomeKind.Succeeded,
+            StatusCode = System.Net.HttpStatusCode.Created,
+            Location = new Uri($"/customers/{customerId}", UriKind.Relative)
+        });
     }
 
     public Task UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct)
@@ -89,6 +100,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
 
     public void SetCreateCustomerException(Exception exception) => _createCustomerException = exception;
+
+    public void SetCreateCustomerOutcome(CustomerCreateOutcome outcome) => _createCustomerOutcome = outcome;
 
     public void SetUpdateCustomerException(Exception exception) => _updateCustomerException = exception;
 

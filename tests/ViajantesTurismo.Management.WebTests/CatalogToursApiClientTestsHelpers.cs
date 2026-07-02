@@ -37,9 +37,9 @@ internal static class CatalogToursApiClientTestsHelpers
         return new StubHttpClient(host);
     }
 
-    public static HttpResponseMessage JsonResponse(string json)
+    public static HttpResponseMessage JsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
-        return new HttpResponseMessage(HttpStatusCode.OK)
+        return new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };

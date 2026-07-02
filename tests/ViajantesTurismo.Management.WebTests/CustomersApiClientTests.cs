@@ -84,11 +84,112 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var location = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("/customers", requestPath);
-        Assert.Equal(new Uri("https://management.example/customers/created", UriKind.Absolute), location);
+        Assert.Equal(CustomerCreateOutcomeKind.Succeeded, outcome.Kind);
+        Assert.Equal(HttpStatusCode.Created, outcome.StatusCode);
+        Assert.Equal(new Uri("https://management.example/customers/created", UriKind.Absolute), outcome.Location);
+    }
+
+    [Fact]
+    public async Task CreateCustomer_returns_success_when_location_header_is_absent()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.Created));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(CustomerCreateOutcomeKind.Succeeded, outcome.Kind);
+        Assert.Equal(HttpStatusCode.Created, outcome.StatusCode);
+        Assert.Null(outcome.Location);
+    }
+
+    [Fact]
+    public async Task CreateCustomer_returns_validation_problem_for_validation_errors()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse(
+                """
+                {
+                  "type":"https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                  "title":"One or more validation errors occurred.",
+                  "status":400,
+                  "errors":{"Email":["The Email field is not a valid e-mail address."]}
+                }
+                """,
+                HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(CustomerCreateOutcomeKind.ValidationProblem, outcome.Kind);
+        Assert.Equal(HttpStatusCode.BadRequest, outcome.StatusCode);
+        Assert.NotNull(outcome.ValidationErrors);
+        Assert.True(outcome.ValidationErrors.ContainsKey("Email"));
+        Assert.Contains("not a valid e-mail address", outcome.ValidationErrors["Email"][0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateCustomer_returns_empty_body_for_empty_validation_problem()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(CustomerCreateOutcomeKind.EmptyBody, outcome.Kind);
+        Assert.Equal(HttpStatusCode.BadRequest, outcome.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("{ \"errors\": {} }")]
+    public async Task CreateCustomer_returns_malformed_body_for_invalid_validation_problem(string content)
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse(content, HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(CustomerCreateOutcomeKind.MalformedBody, outcome.Kind);
+        Assert.Equal(HttpStatusCode.BadRequest, outcome.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound, CustomerCreateOutcomeKind.NotFound)]
+    [InlineData(HttpStatusCode.Unauthorized, CustomerCreateOutcomeKind.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden, CustomerCreateOutcomeKind.Forbidden)]
+    [InlineData(HttpStatusCode.Conflict, CustomerCreateOutcomeKind.Conflict)]
+    [InlineData(HttpStatusCode.TooManyRequests, CustomerCreateOutcomeKind.UnexpectedStatus)]
+    public async Task CreateCustomer_returns_status_outcome_for_non_validation_failures(
+        HttpStatusCode statusCode,
+        CustomerCreateOutcomeKind expectedKind)
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(statusCode));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expectedKind, outcome.Kind);
+        Assert.Equal(statusCode, outcome.StatusCode);
     }
 
     [Fact]

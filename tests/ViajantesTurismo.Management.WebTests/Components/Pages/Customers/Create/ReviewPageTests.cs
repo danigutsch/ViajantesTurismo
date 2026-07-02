@@ -39,6 +39,34 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
+    public async Task SubmitCustomer_when_create_returns_non_success_outcome_shows_sanitized_error_message()
+    {
+        // Arrange
+        CustomerCreationStateTestHelper.SeedCompletedState(_state);
+        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcome
+        {
+            Kind = CustomerCreateOutcomeKind.Conflict,
+            StatusCode = System.Net.HttpStatusCode.Conflict,
+            Message = "Duplicate email"
+        });
+
+        var cut = Render<Review>();
+
+        // Act
+        var submitButton = cut.FindAll("button")
+            .First(button => button.TextContent.Contains("Create Customer", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => submitButton.Click());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            var alert = cut.Find(".alert.alert-danger");
+            Assert.Contains("We couldn't create the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
+            Assert.DoesNotContain("Duplicate email", alert.TextContent, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public async Task When_state_is_incomplete_shows_warning_and_go_to_step_1_button_navigates()
     {
         // Arrange
@@ -140,6 +168,28 @@ public sealed class ReviewPageTests : BunitContext
 
         // Assert
         await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/absolute-id?source=review", navigationManager.Uri, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SubmitCustomer_when_create_succeeds_without_location_navigates_to_customers_fallback()
+    {
+        // Arrange
+        CustomerCreationStateTestHelper.SeedCompletedState(_state);
+        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcome
+        {
+            Kind = CustomerCreateOutcomeKind.Succeeded,
+            StatusCode = System.Net.HttpStatusCode.Created
+        });
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var cut = Render<Review>();
+
+        // Act
+        var submitButton = cut.FindAll("button")
+            .First(button => button.TextContent.Contains("Create Customer", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => submitButton.Click());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers", navigationManager.Uri, StringComparison.Ordinal));
     }
 
     [Fact]
