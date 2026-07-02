@@ -212,6 +212,8 @@ by Visual Studio, Rider, and VS Code.
 
 See `.editorconfig` for complete formatting rules, naming conventions, and code style preferences.
 
+For JetBrains Rider and ReSharper repository hygiene, see `docs/JETBRAINS_RIDER.md`.
+
 #### Build Configuration
 
 **`Directory.Build.props`** enforces strict code analysis at build time (warnings as errors, all analyzer categories
