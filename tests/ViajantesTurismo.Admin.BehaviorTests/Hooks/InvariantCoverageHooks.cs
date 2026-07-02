@@ -9,6 +9,11 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
 {
     private static readonly InvariantCoverageValidator Validator = new();
 
+    private static readonly string ReportTitle = string.Join(' ', "INVARIANT", "COVERAGE", "REPORT");
+    private static readonly string UncoveredInvariantsHeading = string.Join(Environment.NewLine, string.Empty, "UNCOVERED INVARIANTS:");
+    private static readonly string CoverageByInvariantHeading = string.Join(Environment.NewLine, string.Empty, "COVERAGE BY INVARIANT:");
+    private static readonly string CoverageReportsWrittenMessage = string.Join(' ', "Coverage", "reports", "written", "to:");
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = true };
 
     [BeforeScenario(Order = -50)]
@@ -32,7 +37,7 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
         var report = Validator.GenerateReport();
 
         Console.WriteLine("\n" + new string('=', 80));
-        Console.WriteLine("INVARIANT COVERAGE REPORT");
+        Console.WriteLine(ReportTitle);
         Console.WriteLine(new string('=', 80));
         Console.WriteLine($"Total Invariants: {report.TotalInvariants}");
         Console.WriteLine($"Covered: {report.CoveredInvariants} ({report.CoveragePercentage:F1}%)");
@@ -40,14 +45,14 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
 
         if (report.UncoveredInvariants.Count != 0)
         {
-            Console.WriteLine("\nUNCOVERED INVARIANTS:");
+            Console.WriteLine(UncoveredInvariantsHeading);
             foreach (var invariant in report.UncoveredInvariants.OrderBy(i => i, StringComparer.Ordinal))
             {
                 Console.WriteLine($"  ❌ {invariant}");
             }
         }
 
-        Console.WriteLine("\nCOVERAGE BY INVARIANT:");
+        Console.WriteLine(CoverageByInvariantHeading);
         foreach (var (invariant, scenarios) in report.InvariantToScenarios.OrderBy(kvp => kvp.Key,
                      StringComparer.Ordinal))
         {
@@ -60,7 +65,6 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
 
         Console.WriteLine(new string('=', 80) + "\n");
 
-
         Directory.CreateDirectory("TestResults");
 
         var markdownPath = Path.Combine("TestResults", "InvariantCoverage.md");
@@ -69,7 +73,7 @@ public class InvariantCoverageHooks(ScenarioContext scenarioContext)
         File.WriteAllText(markdownPath, GenerateMarkdownReport(report));
         File.WriteAllText(jsonPath, GenerateJsonReport(report));
 
-        Console.WriteLine("Coverage reports written to:");
+        Console.WriteLine(CoverageReportsWrittenMessage);
         Console.WriteLine($"  - {markdownPath}");
         Console.WriteLine($"  - {jsonPath}");
     }

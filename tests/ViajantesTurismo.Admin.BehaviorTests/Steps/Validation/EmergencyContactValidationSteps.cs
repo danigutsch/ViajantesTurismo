@@ -61,50 +61,50 @@ public sealed class EmergencyContactValidationSteps(CustomerContext context)
     [Then("the emergency contact should be successfully created")]
     public void ThenTheEmergencyContactShouldBeSuccessfullyCreated()
     {
-        Assert.True(context.EmergencyContactResult.IsSuccess, context.EmergencyContactResult.ErrorDetails?.Detail ?? "Creation failed");
-        Assert.NotNull(context.EmergencyContactResult.Value);
+        TestAssert.True(context.EmergencyContactResult.IsSuccess, context.EmergencyContactResult.ErrorDetails?.Detail ?? "Creation failed");
+        TestAssert.NotNull(context.EmergencyContactResult.Value);
     }
 
     [Then("I should be informed that emergency contact name is required")]
     public void ThenIShouldBeInformedThatEmergencyContactNameIsRequired()
     {
-        Assert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Emergency contact name is required.", allErrors);
+        TestAssert.Contains("Emergency contact name is required.", allErrors);
     }
 
     [Then("I should be informed that emergency contact name cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatEmergencyContactNameCannotExceed128Characters()
     {
-        Assert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Emergency contact name cannot exceed 128 characters.", allErrors);
+        TestAssert.Contains("Emergency contact name cannot exceed 128 characters.", allErrors);
     }
 
     [Then("I should be informed that emergency contact mobile is required")]
     public void ThenIShouldBeInformedThatEmergencyContactMobileIsRequired()
     {
-        Assert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Emergency contact mobile is required.", allErrors);
+        TestAssert.Contains("Emergency contact mobile is required.", allErrors);
     }
 
     [Then("I should be informed that emergency contact mobile cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatEmergencyContactMobileCannotExceed64Characters()
     {
-        Assert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        Assert.Contains("Emergency contact mobile cannot exceed 64 characters.", allErrors);
+        TestAssert.Contains("Emergency contact mobile cannot exceed 64 characters.", allErrors);
     }
 
     [Then("all emergency contact fields should have normalized whitespace")]
     public void ThenAllEmergencyContactFieldsShouldHaveNormalizedWhitespace()
     {
-        Assert.Equal("Jane Doe", context.EmergencyContactResult.Value.Name);
-        Assert.Equal("+1234 567890", context.EmergencyContactResult.Value.Mobile);
+        TestAssert.Equal("Jane Doe", context.EmergencyContactResult.Value.Name);
+        TestAssert.Equal("+1234 567890", context.EmergencyContactResult.Value.Mobile);
     }
 }

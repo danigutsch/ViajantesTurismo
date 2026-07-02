@@ -4,7 +4,6 @@
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Admin.BehaviorTests</RootNamespace>
         <ReqnrollDeleteObsoleteCodeBehindFilesOnClean>true</ReqnrollDeleteObsoleteCodeBehindFilesOnClean>
-        <EnableSharedKernelTestingAnalyzers>false</EnableSharedKernelTestingAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,6 +14,7 @@
         <Using Include="ViajantesTurismo.Admin.Domain.Tours"/>
         <Using Include="ViajantesTurismo.Admin.Testing.Behavior"/>
         <Using Include="SharedKernel.Results"/>
+        <Using Include="SharedKernel.Testing.Assertions"/>
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -28,6 +28,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
+        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 

@@ -10,8 +10,8 @@ public sealed class BookingValidationSteps(
 {
     private void AssertBookingCreationFailed()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
     }
 
     [When("I try to add a booking to tour with invalid room type (.*)")]
@@ -57,16 +57,16 @@ public sealed class BookingValidationSteps(
     [Then("the booking update should fail with validation error")]
     public void ThenTheBookingUpdateShouldFailWithValidationError()
     {
-        Assert.NotNull(bookingContext.BookingOperationResult);
-        Assert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
+        TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
     }
 
     [Then("the booking should be created successfully")]
     public void ThenTheBookingShouldBeCreatedSuccessfully()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsSuccess);
         bookingContext.Booking = bookingContext.BookingCreationResult.Value.Value;
     }
 
@@ -105,7 +105,7 @@ public sealed class BookingValidationSteps(
             errorDetails = customerContext.CommandResult.Value.ErrorDetails;
         }
 
-        Assert.NotNull(errorDetails);
+        TestAssert.NotNull(errorDetails);
 
         var messageFound = errorDetails.Detail.Contains(expectedMessage, StringComparison.Ordinal);
         if (!messageFound && errorDetails.ValidationErrors != null)
@@ -115,44 +115,45 @@ public sealed class BookingValidationSteps(
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
 
-        Assert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details.");
+        TestAssert.True(messageFound, $"Expected message '{expectedMessage}' not found in error details.");
     }
 
     [Then("the booking notes should be updated successfully")]
     public void ThenTheBookingNotesShouldBeUpdatedSuccessfully()
     {
-        Assert.NotNull(bookingContext.BookingOperationResult);
-        Assert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
+        TestAssert.NotNull(bookingContext.BookingOperationResult);
+        TestAssert.True(bookingContext.BookingOperationResult.Value.IsSuccess);
     }
 
     [Then("the booking notes should be null or empty")]
     public void ThenTheBookingNotesShouldBeNullOrEmpty()
     {
-        Assert.True(string.IsNullOrWhiteSpace(bookingContext.Booking.Notes));
+        TestAssert.True(string.IsNullOrWhiteSpace(bookingContext.Booking.Notes));
     }
 
     [Then(@"I should be informed that (.+) cannot exceed (\d+) characters")]
     public void ThenIShouldBeInformedThatFieldCannotExceedCharacters(string fieldName, int maxLength)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
         ResultError? errorDetails = null;
 
         if (bookingContext.BookingCreationResult.HasValue)
         {
-            Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+            TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
             errorDetails = bookingContext.BookingCreationResult.Value.ErrorDetails;
         }
         else if (bookingContext.BookingOperationResult.HasValue)
         {
-            Assert.True(bookingContext.BookingOperationResult.Value.IsFailure);
+            TestAssert.True(bookingContext.BookingOperationResult.Value.IsFailure);
             errorDetails = bookingContext.BookingOperationResult.Value.ErrorDetails;
         }
         else
         {
-            Assert.Fail("Expected either BookingCreationResult or BookingOperationResult to be set");
+            TestAssert.Fail("Expected either BookingCreationResult or BookingOperationResult to be set");
         }
 
         var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
-        Assert.True(errorDetails?.ValidationErrors?.Any(kvp =>
+        TestAssert.True(errorDetails?.ValidationErrors?.Any(kvp =>
                 kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
             $"Expected validation error for {normalizedFieldName}");
     }
@@ -184,9 +185,9 @@ public sealed class BookingValidationSteps(
     [Then("I should be informed that the room type is invalid")]
     public void ThenIShouldBeInformedThatTheRoomTypeIsInvalid()
     {
-        Assert.NotNull(bookingContext.BookingCreationResult);
-        Assert.True(bookingContext.BookingCreationResult.Value.IsFailure);
-        Assert.Contains("room", bookingContext.BookingCreationResult.Value.ErrorDetails?.Detail ?? string.Empty,
+        TestAssert.NotNull(bookingContext.BookingCreationResult);
+        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        TestAssert.Contains("room", bookingContext.BookingCreationResult.Value.ErrorDetails?.Detail ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
     }
 

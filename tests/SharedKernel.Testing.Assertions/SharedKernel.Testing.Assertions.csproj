@@ -3,7 +3,6 @@
     <PropertyGroup>
         <RootNamespace>SharedKernel.Testing.Assertions</RootNamespace>
         <IsPackable>false</IsPackable>
-        <EnableSharedKernelTestingAnalyzers>false</EnableSharedKernelTestingAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>

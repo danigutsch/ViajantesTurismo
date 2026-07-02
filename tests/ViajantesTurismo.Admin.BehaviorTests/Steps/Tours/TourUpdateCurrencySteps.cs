@@ -54,7 +54,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     public void ThenTheTourShouldHaveCurrency(string expectedCurrencyCode)
     {
         var expectedCurrency = EntityBuilders.ParseCurrency(expectedCurrencyCode);
-        Assert.Equal(expectedCurrency, tourContext.Tour.Pricing.Currency);
+        TestAssert.Equal(expectedCurrency, tourContext.Tour.Pricing.Currency);
     }
 
     [When(@"I try to update the currency to ""(.*)""")]
@@ -66,7 +66,7 @@ public sealed class TourUpdateCurrencySteps(TourContext tourContext)
     [Then("the currency update should fail")]
     public void ThenTheCurrencyUpdateShouldFail()
     {
-        Assert.NotNull(tourContext.UpdateResult);
-        Assert.False(tourContext.UpdateResult.Value.IsSuccess);
+        TestAssert.NotNull(tourContext.UpdateResult);
+        TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
     }
 }

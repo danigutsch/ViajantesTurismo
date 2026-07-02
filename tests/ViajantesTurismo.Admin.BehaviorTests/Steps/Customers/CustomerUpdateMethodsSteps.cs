@@ -125,109 +125,109 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Then("the customer personal info update should succeed")]
     public void ThenTheCustomerPersonalInfoUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer identification info update should succeed")]
     public void ThenTheCustomerIdentificationInfoUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer contact info update should succeed")]
     public void ThenTheCustomerContactInfoUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer address update should succeed")]
     public void ThenTheCustomerAddressUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer physical info update should succeed")]
     public void ThenTheCustomerPhysicalInfoUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer accommodation preferences update should succeed")]
     public void ThenTheCustomerAccommodationPreferencesUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer emergency contact update should succeed")]
     public void ThenTheCustomerEmergencyContactUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("the customer medical info update should succeed")]
     public void ThenTheCustomerMedicalInfoUpdateShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then("all customer updates should succeed")]
     public void ThenAllCustomerUpdatesShouldSucceed()
     {
-        Assert.NotNull(customerContext.Customer);
+        TestAssert.NotNull(customerContext.Customer);
     }
 
     [Then(@"the customer should have first name ""(.*)""")]
     public void ThenTheCustomerShouldHaveFirstName(string expectedFirstName)
     {
-        Assert.Equal(expectedFirstName, customerContext.Customer.PersonalInfo.FirstName);
+        TestAssert.Equal(expectedFirstName, customerContext.Customer.PersonalInfo.FirstName);
     }
 
     [Then(@"the customer should have last name ""(.*)""")]
     public void ThenTheCustomerShouldHaveLastName(string expectedLastName)
     {
-        Assert.Equal(expectedLastName, customerContext.Customer.PersonalInfo.LastName);
+        TestAssert.Equal(expectedLastName, customerContext.Customer.PersonalInfo.LastName);
     }
 
     [Then(@"the customer should have passport ""(.*)""")]
     public void ThenTheCustomerShouldHavePassport(string expectedPassport)
     {
-        Assert.Equal(expectedPassport, customerContext.Customer.IdentificationInfo.NationalId);
+        TestAssert.Equal(expectedPassport, customerContext.Customer.IdentificationInfo.NationalId);
     }
 
     [Then(@"the customer should have email ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmail(string expectedEmail)
     {
-        Assert.Equal(expectedEmail, customerContext.Customer.ContactInfo.Email);
+        TestAssert.Equal(expectedEmail, customerContext.Customer.ContactInfo.Email);
     }
 
     [Then(@"the customer should have city ""(.*)""")]
     public void ThenTheCustomerShouldHaveCity(string expectedCity)
     {
-        Assert.Equal(expectedCity, customerContext.Customer.Address.City);
+        TestAssert.Equal(expectedCity, customerContext.Customer.Address.City);
     }
 
     [Then("the customer should have height (.*)")]
     public void ThenTheCustomerShouldHaveHeight(int expectedHeight)
     {
-        Assert.Equal(expectedHeight, customerContext.Customer.PhysicalInfo.HeightCentimeters);
+        TestAssert.Equal(expectedHeight, customerContext.Customer.PhysicalInfo.HeightCentimeters);
     }
 
     [Then(@"the customer should have bed type ""(.*)""")]
     public void ThenTheCustomerShouldHaveBedType(string expectedBedType)
     {
         var bedTypeEnum = Enum.Parse<BedType>(expectedBedType + "Bed");
-        Assert.Equal(bedTypeEnum, customerContext.Customer.AccommodationPreferences.BedType);
+        TestAssert.Equal(bedTypeEnum, customerContext.Customer.AccommodationPreferences.BedType);
     }
 
     [Then(@"the customer should have emergency contact ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmergencyContact(string expectedName)
     {
-        Assert.Equal(expectedName, customerContext.Customer.EmergencyContact.Name);
+        TestAssert.Equal(expectedName, customerContext.Customer.EmergencyContact.Name);
     }
 
     [Then(@"the customer should have allergies ""(.*)""")]
     public void ThenTheCustomerShouldHaveAllergies(string expectedAllergies)
     {
-        Assert.Equal(expectedAllergies, customerContext.Customer.MedicalInfo.Allergies);
+        TestAssert.Equal(expectedAllergies, customerContext.Customer.MedicalInfo.Allergies);
     }
 }
