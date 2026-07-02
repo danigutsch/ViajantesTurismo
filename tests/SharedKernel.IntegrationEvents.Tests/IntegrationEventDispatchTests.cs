@@ -18,7 +18,7 @@ public sealed class IntegrationEventDispatchTests
         await dispatcher.Dispatch(integrationEvent, cancellationTokenSource.Token);
 
         // Assert
-        TestAssert.Same(integrationEvent, publisher.Notification);
+        (publisher.Notification).ShouldBeSameAs(integrationEvent);
         publisher.CancellationToken.ShouldBe(cancellationTokenSource.Token);
     }
 
@@ -51,7 +51,7 @@ public sealed class IntegrationEventDispatchTests
     {
         TestIntegrationEventHandler handler = new();
 
-        TestAssert.IsAssignableFrom<INotificationHandler<TestIntegrationEvent>>(handler);
+        (handler).ShouldBeAssignableTo<INotificationHandler<TestIntegrationEvent>>();
     }
 
     [Fact]

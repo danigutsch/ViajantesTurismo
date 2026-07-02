@@ -133,7 +133,7 @@ public sealed class TourCapacityManagementSteps(
             RoomType.DoubleOccupancy,
             DiscountType.None));
 
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         result.Value.Confirm();
 
         bookingContext.BookingCreationResult = result;
@@ -164,116 +164,116 @@ public sealed class TourCapacityManagementSteps(
     [Then("the minimum capacity should be (.*)")]
     public void ThenTheMinimumCapacityShouldBe(int expected)
     {
-        TestAssert.Equal(expected, tourContext.Tour.Capacity.MinCustomers);
+        (tourContext.Tour.Capacity.MinCustomers).ShouldBe(expected);
     }
 
     [Then("the maximum capacity should be (.*)")]
     public void ThenTheMaximumCapacityShouldBe(int expected)
     {
-        TestAssert.Equal(expected, tourContext.Tour.Capacity.MaxCustomers);
+        (tourContext.Tour.Capacity.MaxCustomers).ShouldBe(expected);
     }
 
     [Then("the capacity update should succeed")]
     public void ThenTheCapacityUpdateShouldSucceed()
     {
-        TestAssert.NotNull(tourContext.CapacityUpdateResult);
-        TestAssert.True(tourContext.CapacityUpdateResult.Value.IsSuccess);
+        (tourContext.CapacityUpdateResult).ShouldNotBeNull();
+        (tourContext.CapacityUpdateResult.Value.IsSuccess).ShouldBeTrue();
     }
 
     [Then("the capacity update should fail")]
     public void ThenTheCapacityUpdateShouldFail()
     {
-        TestAssert.NotNull(tourContext.CapacityUpdateResult);
-        TestAssert.True(tourContext.CapacityUpdateResult.Value.IsFailure);
+        (tourContext.CapacityUpdateResult).ShouldNotBeNull();
+        (tourContext.CapacityUpdateResult.Value.IsFailure).ShouldBeTrue();
     }
 
     [Then("the error should indicate cannot reduce capacity below current bookings")]
     public void ThenTheErrorShouldIndicateCannotReduceCapacityBelowCurrentBookings()
     {
-        TestAssert.NotNull(tourContext.CapacityUpdateResult);
-        TestAssert.True(tourContext.CapacityUpdateResult.Value.IsFailure);
+        (tourContext.CapacityUpdateResult).ShouldNotBeNull();
+        (tourContext.CapacityUpdateResult.Value.IsFailure).ShouldBeTrue();
 
         var error = tourContext.CapacityUpdateResult.Value.ErrorDetails;
-        TestAssert.NotNull(error);
-        TestAssert.Contains("capacity", error.Detail, StringComparison.OrdinalIgnoreCase);
-        TestAssert.Contains("current", error.Detail, StringComparison.OrdinalIgnoreCase);
-        TestAssert.Contains("booking", error.Detail, StringComparison.OrdinalIgnoreCase);
+        (error).ShouldNotBeNull();
+        (error.Detail).ShouldContain("capacity", StringComparison.OrdinalIgnoreCase);
+        (error.Detail).ShouldContain("current", StringComparison.OrdinalIgnoreCase);
+        (error.Detail).ShouldContain("booking", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the tour creation should fail")]
     public void ThenTheTourCreationShouldFail()
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
     }
 
     [Then("the error should indicate max must be at least min")]
     public void ThenTheErrorShouldIndicateMaxMustBeAtLeastMin()
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        TestAssert.Contains("maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
-        TestAssert.Contains("minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
+        (combinedErrors).ShouldContain("maximum", StringComparison.OrdinalIgnoreCase);
+        (combinedErrors).ShouldContain("minimum", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the error should indicate minimum must be at least 1")]
     public void ThenTheErrorShouldIndicateMinimumMustBeAtLeast()
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        TestAssert.Contains("Minimum", combinedErrors, StringComparison.OrdinalIgnoreCase);
-        TestAssert.Contains("1", combinedErrors, StringComparison.Ordinal);
+        (combinedErrors).ShouldContain("Minimum", StringComparison.OrdinalIgnoreCase);
+        (combinedErrors).ShouldContain("1", StringComparison.Ordinal);
     }
 
     [Then("the error should indicate maximum cannot exceed 20")]
     public void ThenTheErrorShouldIndicateMaximumCannotExceed()
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
         var errors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? [];
         var combinedErrors = string.Join(" ", allErrors);
-        TestAssert.Contains("Maximum", combinedErrors, StringComparison.OrdinalIgnoreCase);
-        TestAssert.Contains("20", combinedErrors, StringComparison.Ordinal);
+        (combinedErrors).ShouldContain("Maximum", StringComparison.OrdinalIgnoreCase);
+        (combinedErrors).ShouldContain("20", StringComparison.Ordinal);
     }
 
     [Then("the error should indicate the tour is fully booked")]
     public void ThenTheErrorShouldIndicateTheTourIsFullyBooked()
     {
-        TestAssert.NotNull(bookingContext.BookingCreationResult);
-        TestAssert.True(bookingContext.BookingCreationResult.Value.IsFailure);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsFailure).ShouldBeTrue();
         var error = bookingContext.BookingCreationResult.Value.ErrorDetails;
-        TestAssert.NotNull(error);
-        TestAssert.Contains("fully booked", error.Detail, StringComparison.OrdinalIgnoreCase);
+        (error).ShouldNotBeNull();
+        (error.Detail).ShouldContain("fully booked", StringComparison.OrdinalIgnoreCase);
     }
 
     [Then("the current customer count should be (.*)")]
     public void ThenTheCurrentCustomerCountShouldBe(int expected)
     {
-        TestAssert.Equal(expected, tourContext.Tour.CurrentCustomerCount);
+        (tourContext.Tour.CurrentCustomerCount).ShouldBe(expected);
     }
 
     [Then("the available spots should be (.*)")]
     public void ThenTheAvailableSpotsShouldBe(int expected)
     {
-        TestAssert.Equal(expected, tourContext.Tour.AvailableSpots);
+        (tourContext.Tour.AvailableSpots).ShouldBe(expected);
     }
 
     [Then("the tour should not be at minimum capacity")]
     public void ThenTheTourShouldNotBeAtMinimumCapacity()
     {
-        TestAssert.False(tourContext.Tour.IsAtMinimumCapacity);
+        (tourContext.Tour.IsAtMinimumCapacity).ShouldBeFalse();
     }
 
     [Then("the tour should not be fully booked")]
     public void ThenTheTourShouldNotBeFullyBooked()
     {
-        TestAssert.False(tourContext.Tour.IsFullyBooked);
+        (tourContext.Tour.IsFullyBooked).ShouldBeFalse();
     }
 }

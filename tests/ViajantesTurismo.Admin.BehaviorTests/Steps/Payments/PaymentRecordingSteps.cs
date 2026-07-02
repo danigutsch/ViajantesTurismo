@@ -17,9 +17,9 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
-        TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
     }
 
     [When("I record a payment with the following details:")]
@@ -52,7 +52,7 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
         var method = Enum.Parse<PaymentMethod>(methodString);
 
         _paymentResult = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider);
-        TestAssert.True(_paymentResult.IsSuccess);
+        (_paymentResult.IsSuccess).ShouldBeTrue();
     }
 
     [When("I attempt to record a payment of (.*) on (.*) using (.*)")]
@@ -114,56 +114,56 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     [Then("the payment should be recorded successfully")]
     public void ThenThePaymentShouldBeRecordedSuccessfully()
     {
-        TestAssert.True(_paymentResult.IsSuccess);
+        (_paymentResult.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the payment should be rejected with error ""(.*)""")]
     public void ThenThePaymentShouldBeRejectedWithError(string expectedError)
     {
-        TestAssert.False(_paymentResult.IsSuccess);
-        var errorDetails = TestAssert.NotNull(_paymentResult.ErrorDetails);
-        TestAssert.Contains(expectedError, errorDetails.Detail, StringComparison.Ordinal);
+        (_paymentResult.IsSuccess).ShouldBeFalse();
+        var errorDetails = (_paymentResult.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain(expectedError, StringComparison.Ordinal);
     }
 
     [Then(@"the payment should be rejected with error containing ""(.*)""")]
     public void ThenThePaymentShouldBeRejectedWithErrorContaining(string expectedErrorFragment)
     {
-        TestAssert.False(_paymentResult.IsSuccess);
-        var errorDetails = TestAssert.NotNull(_paymentResult.ErrorDetails);
-        TestAssert.Contains(expectedErrorFragment, errorDetails.Detail, StringComparison.Ordinal);
+        (_paymentResult.IsSuccess).ShouldBeFalse();
+        var errorDetails = (_paymentResult.ErrorDetails).ShouldNotBeNull();
+        (errorDetails.Detail).ShouldContain(expectedErrorFragment, StringComparison.Ordinal);
     }
 
     [Then("the amount paid should be (.*)")]
     public void ThenTheAmountPaidShouldBe(decimal expectedAmount)
     {
-        TestAssert.Equal(expectedAmount, bookingContext.Booking.AmountPaid);
+        (bookingContext.Booking.AmountPaid).ShouldBe(expectedAmount);
     }
 
     [Then("the remaining balance should be (.*)")]
     public void ThenTheRemainingBalanceShouldBe(decimal expectedBalance)
     {
-        TestAssert.Equal(expectedBalance, bookingContext.Booking.RemainingBalance);
+        (bookingContext.Booking.RemainingBalance).ShouldBe(expectedBalance);
     }
 
     [Then("the payment reference number should be empty")]
     public void ThenThePaymentReferenceNumberShouldBeEmpty()
     {
-        TestAssert.True(_paymentResult.IsSuccess);
-        TestAssert.Null(_paymentResult.Value.ReferenceNumber);
+        (_paymentResult.IsSuccess).ShouldBeTrue();
+        (_paymentResult.Value.ReferenceNumber).ShouldBeNull();
     }
 
     [Then("the payment notes should be empty")]
     public void ThenThePaymentNotesShouldBeEmpty()
     {
-        TestAssert.True(_paymentResult.IsSuccess);
-        TestAssert.Null(_paymentResult.Value.Notes);
+        (_paymentResult.IsSuccess).ShouldBeTrue();
+        (_paymentResult.Value.Notes).ShouldBeNull();
     }
 
     [Then("all payments should be recorded successfully")]
     public void ThenAllPaymentsShouldBeRecordedSuccessfully()
     {
-        TestAssert.NotNull(bookingContext.AllPaymentsSuccessful);
-        TestAssert.True(bookingContext.AllPaymentsSuccessful.Value);
+        (bookingContext.AllPaymentsSuccessful).ShouldNotBeNull();
+        (bookingContext.AllPaymentsSuccessful.Value).ShouldBeTrue();
     }
 
     [Given("I record a payment of (.*) on (.*) using (.*)")]
@@ -176,6 +176,6 @@ public sealed class PaymentRecordingSteps(TourContext tourContext, BookingContex
     public void GivenTheBookingPaymentStatusIs(string expectedStatus)
     {
         var status = EntityBuilders.ParsePaymentStatus(expectedStatus);
-        TestAssert.Equal(status, bookingContext.Booking.PaymentStatus);
+        (bookingContext.Booking.PaymentStatus).ShouldBe(status);
     }
 }

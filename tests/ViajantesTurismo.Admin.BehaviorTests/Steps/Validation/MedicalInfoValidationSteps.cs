@@ -67,49 +67,49 @@ public sealed class MedicalInfoValidationSteps(CustomerContext context)
     [Then("the medical info should be successfully created")]
     public void ThenTheMedicalInfoShouldBeSuccessfullyCreated()
     {
-        TestAssert.NotNull(context.MedicalInfoResult);
-        TestAssert.True(context.MedicalInfoResult.Value.IsSuccess, context.MedicalInfoResult.Value.ErrorDetails?.Detail ?? "Creation failed");
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.IsSuccess).ShouldBeTrue(context.MedicalInfoResult.Value.ErrorDetails?.Detail ?? "Creation failed");
     }
 
     [Then("the allergies should be empty")]
     public void ThenTheAllergiesShouldBeEmpty()
     {
-        TestAssert.NotNull(context.MedicalInfoResult);
-        TestAssert.Null(context.MedicalInfoResult.Value.Value.Allergies);
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.Value.Allergies).ShouldBeNull();
     }
 
     [Then("the additional info should be empty")]
     public void ThenTheAdditionalInfoShouldBeEmpty()
     {
-        TestAssert.NotNull(context.MedicalInfoResult);
-        TestAssert.Null(context.MedicalInfoResult.Value.Value.AdditionalInfo);
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.Value.AdditionalInfo).ShouldBeNull();
     }
 
     [Then("I should be informed that allergies cannot exceed 500 characters")]
     public void ThenIShouldBeInformedThatAllergiesCannotExceed500Characters()
     {
-        TestAssert.NotNull(context.MedicalInfoResult);
-        TestAssert.True(context.MedicalInfoResult.Value.IsFailure, "Expected failure but got success");
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.MedicalInfoResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        TestAssert.Contains("Allergies cannot exceed 500 characters.", allErrors);
+        (allErrors).ShouldContain("Allergies cannot exceed 500 characters.");
     }
 
     [Then("I should be informed that additional information cannot exceed 500 characters")]
     public void ThenIShouldBeInformedThatAdditionalInformationCannotExceed500Characters()
     {
-        TestAssert.NotNull(context.MedicalInfoResult);
-        TestAssert.True(context.MedicalInfoResult.Value.IsFailure, "Expected failure but got success");
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.MedicalInfoResult.Value.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        TestAssert.Contains("Additional information cannot exceed 500 characters.", allErrors);
+        (allErrors).ShouldContain("Additional information cannot exceed 500 characters.");
     }
 
     [Then("all medical info fields should have normalized whitespace")]
     public void ThenAllMedicalInfoFieldsShouldHaveNormalizedWhitespace()
     {
-        TestAssert.NotNull(context.MedicalInfoResult);
-        TestAssert.Equal("Peanuts, Shellfish, Dairy", context.MedicalInfoResult.Value.Value.Allergies);
-        TestAssert.Equal("Requires medication daily", context.MedicalInfoResult.Value.Value.AdditionalInfo);
+        (context.MedicalInfoResult).ShouldNotBeNull();
+        (context.MedicalInfoResult.Value.Value.Allergies).ShouldBe("Peanuts, Shellfish, Dairy");
+        (context.MedicalInfoResult.Value.Value.AdditionalInfo).ShouldBe("Requires medication daily");
     }
 }

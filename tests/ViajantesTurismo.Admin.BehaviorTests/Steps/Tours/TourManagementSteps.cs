@@ -51,10 +51,10 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then("I should be informed that the tour identifier must be unique")]
     public void ThenIShouldBeInformedThatTheTourIdentifierMustBeUnique()
     {
-        TestAssert.NotNull(tourContext.CommandResult);
-        TestAssert.False(tourContext.CommandResult.Value.IsSuccess);
-        TestAssert.NotNull(tourContext.CommandResult.Value.ErrorDetails);
-        TestAssert.Contains("already exists", tourContext.CommandResult.Value.ErrorDetails.Detail, StringComparison.OrdinalIgnoreCase);
+        (tourContext.CommandResult).ShouldNotBeNull();
+        (tourContext.CommandResult.Value.IsSuccess).ShouldBeFalse();
+        (tourContext.CommandResult.Value.ErrorDetails).ShouldNotBeNull();
+        (tourContext.CommandResult.Value.ErrorDetails.Detail).ShouldContain("already exists", StringComparison.OrdinalIgnoreCase);
     }
 
     [Given(@"I have tour dates from ""(.*)"" to ""(.*)""")]
@@ -247,7 +247,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
     [Then("the tour should be created successfully")]
     public void ThenTheTourShouldBeCreatedSuccessfully()
     {
-        TestAssert.NotNull(tourContext.Tour);
+        (tourContext.Tour).ShouldNotBeNull();
     }
 
     [Then("I should not be able to create the tour")]
@@ -256,23 +256,23 @@ public sealed class TourManagementSteps(TourContext tourContext)
         // Check either CreationResult (domain call) or CommandResult (command handler call)
         if (tourContext.CreationResult.HasValue)
         {
-            TestAssert.True(tourContext.CreationResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
+            (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue("Expected the tour creation to fail, but it succeeded.");
         }
         else if (tourContext.CommandResult.HasValue)
         {
-            TestAssert.True(tourContext.CommandResult.Value.IsFailure, "Expected the tour creation to fail, but it succeeded.");
+            (tourContext.CommandResult.Value.IsFailure).ShouldBeTrue("Expected the tour creation to fail, but it succeeded.");
         }
         else
         {
-            TestAssert.Fail("No creation result found. Ensure the When step sets either CreationResult or CommandResult.");
+            false.ShouldBeTrue("No creation result found. Ensure the When step sets either CreationResult or CommandResult.");
         }
     }
 
     [Then(@"the tour creation should fail with argument exception ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithArgumentException(string expectedMessage)
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
 
         var errorDetails = tourContext.CreationResult.Value.ErrorDetails;
         var messageFound = errorDetails?.Detail.Contains(expectedMessage, StringComparison.Ordinal) ?? false;
@@ -284,26 +284,25 @@ public sealed class TourManagementSteps(TourContext tourContext)
                 .Any(error => error.Contains(expectedMessage, StringComparison.Ordinal));
         }
 
-        TestAssert.True(messageFound,
-            $"Expected message '{expectedMessage}' not found in error details or validation errors.");
+        (messageFound).ShouldBeTrue($"Expected message '{expectedMessage}' not found in error details or validation errors.");
     }
 
     [Then(@"the tour identifier should be ""(.*)""")]
     public void ThenTheTourIdentifierShouldBe(string expectedIdentifier)
     {
-        TestAssert.Equal(expectedIdentifier, tourContext.Tour.Identifier);
+        (tourContext.Tour.Identifier).ShouldBe(expectedIdentifier);
     }
 
     [Then(@"the tour name should be ""(.*)""")]
     public void ThenTheTourNameShouldBe(string expectedName)
     {
-        TestAssert.Equal(expectedName, tourContext.Tour.Name);
+        (tourContext.Tour.Name).ShouldBe(expectedName);
     }
 
     [Then("the tour base price should be (.*)")]
     public void ThenTheTourBasePriceShouldBe(decimal expectedPrice)
     {
-        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.BasePrice);
+        (tourContext.Tour.Pricing.BasePrice).ShouldBe(expectedPrice);
     }
 
     [Then(@"the tour should include services ""(.*)""")]
@@ -311,97 +310,96 @@ public sealed class TourManagementSteps(TourContext tourContext)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(servicesString);
         var expectedServices = servicesString.Split(", ");
-        TestAssert.Equal(expectedServices.Length, tourContext.Tour.IncludedServices.Count);
+        (tourContext.Tour.IncludedServices.Count).ShouldBe(expectedServices.Length);
 
         foreach (var service in expectedServices)
         {
-            TestAssert.Contains(service, tourContext.Tour.IncludedServices);
+            (tourContext.Tour.IncludedServices).ShouldContain(service);
         }
     }
 
     [Then(@"the tour creation should fail with validation error for ""(.*)""")]
     public void ThenTheTourCreationShouldFailWithValidationErrorFor(string fieldName)
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
 
         var validationErrors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
         var foundKeys = validationErrors?.Keys.ToArray() ?? [];
-        TestAssert.True(validationErrors?.ContainsKey(fieldName) ?? false,
-            $"Expected validation error for field '{fieldName}' but found: {string.Join(", ", foundKeys)}");
+        (validationErrors?.ContainsKey(fieldName) ?? false).ShouldBeTrue($"Expected validation error for field '{fieldName}' but found: {string.Join(", ", foundKeys)}");
     }
 
     [Then("the tour creation should fail with multiple validation errors")]
     public void ThenTheTourCreationShouldFailWithMultipleValidationErrors()
     {
-        TestAssert.NotNull(tourContext.CreationResult);
-        TestAssert.True(tourContext.CreationResult.Value.IsFailure);
+        (tourContext.CreationResult).ShouldNotBeNull();
+        (tourContext.CreationResult.Value.IsFailure).ShouldBeTrue();
 
         var validationErrors = tourContext.CreationResult.Value.ErrorDetails?.ValidationErrors;
-        TestAssert.NotNull(validationErrors);
+        (validationErrors).ShouldNotBeNull();
 
         var totalErrors = validationErrors.Values.SelectMany(e => e).Count();
-        TestAssert.True(totalErrors > 1, $"Expected multiple validation errors but found {totalErrors}");
+        (totalErrors > 1).ShouldBeTrue($"Expected multiple validation errors but found {totalErrors}");
     }
 
     [Then("the tour single room supplement should be (.*)")]
     public void ThenTheTourSingleRoomSupplementShouldBe(decimal expectedPrice)
     {
-        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.SingleRoomSupplementPrice);
+        (tourContext.Tour.Pricing.SingleRoomSupplementPrice).ShouldBe(expectedPrice);
     }
 
     [Then("the tour regular bike price should be (.*)")]
     public void ThenTheTourRegularBikePriceShouldBe(decimal expectedPrice)
     {
-        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.RegularBikePrice);
+        (tourContext.Tour.Pricing.RegularBikePrice).ShouldBe(expectedPrice);
     }
 
     [Then("the tour e-bike price should be (.*)")]
     public void ThenTheTourEBikePriceShouldBe(decimal expectedPrice)
     {
-        TestAssert.Equal(expectedPrice, tourContext.Tour.Pricing.EBikePrice);
+        (tourContext.Tour.Pricing.EBikePrice).ShouldBe(expectedPrice);
     }
 
     [Then("the tour should preserve UTC time zone")]
     public void ThenTheTourShouldPreserveUtcTimeZone()
     {
-        TestAssert.NotNull(tourContext.Tour);
-        TestAssert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.StartDate.Kind);
-        TestAssert.Equal(DateTimeKind.Utc, tourContext.Tour.Schedule.EndDate.Kind);
+        (tourContext.Tour).ShouldNotBeNull();
+        (tourContext.Tour.Schedule.StartDate.Kind).ShouldBe(DateTimeKind.Utc);
+        (tourContext.Tour.Schedule.EndDate.Kind).ShouldBe(DateTimeKind.Utc);
     }
 
     [Then("the tour duration should be greater than (.*) days")]
     public void ThenTheTourDurationShouldBeGreaterThanDays(int days)
     {
-        TestAssert.NotNull(tourContext.Tour);
+        (tourContext.Tour).ShouldNotBeNull();
         var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
-        TestAssert.True(duration > days, $"Expected duration greater than {days} days but got {duration:F1}");
+        (duration > days).ShouldBeTrue($"Expected duration greater than {days} days but got {duration:F1}");
     }
 
     [Then("the tour duration should be (.*) days")]
     public void ThenTheTourDurationShouldBeDays(int expectedDays)
     {
-        TestAssert.NotNull(tourContext.Tour);
+        (tourContext.Tour).ShouldNotBeNull();
         var duration = (tourContext.Tour.Schedule.EndDate - tourContext.Tour.Schedule.StartDate).TotalDays;
-        TestAssert.Equal(expectedDays, duration);
+        (duration).ShouldBe(expectedDays);
     }
 
     [Then(@"the tour StartDate should be ""(.*)""")]
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
-        TestAssert.NotNull(tourContext.Tour);
+        (tourContext.Tour).ShouldNotBeNull();
         var expectedDate =
             DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
+        (tourContext.Tour.Schedule.StartDate).ShouldBe(expectedDate);
     }
 
     [Then(@"the tour EndDate should be ""(.*)""")]
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
-        TestAssert.NotNull(tourContext.Tour);
+        (tourContext.Tour).ShouldNotBeNull();
         var expectedDate =
             DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
+        (tourContext.Tour.Schedule.EndDate).ShouldBe(expectedDate);
     }
 
     [Then("I should be informed that the end date must be after the start date")]

@@ -12,27 +12,27 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [Then("the booking should have (.*) payments")]
     public void ThenTheBookingShouldHavePayments(int expectedCount)
     {
-        TestAssert.Equal(expectedCount, bookingContext.Booking.Payments.Count);
+        (bookingContext.Booking.Payments.Count).ShouldBe(expectedCount);
     }
 
     [Then("the payment history should be empty")]
     public void ThenThePaymentHistoryShouldBeEmpty()
     {
-        TestAssert.Empty(bookingContext.Booking.Payments);
+        (bookingContext.Booking.Payments).ShouldBeEmpty();
     }
 
     [Then("the first payment amount should be (.*)")]
     public void ThenTheFirstPaymentAmountShouldBe(decimal expectedAmount)
     {
         var firstPayment = bookingContext.Booking.Payments.First();
-        TestAssert.Equal(expectedAmount, firstPayment.Amount);
+        (firstPayment.Amount).ShouldBe(expectedAmount);
     }
 
     [Then("the second payment amount should be (.*)")]
     public void ThenTheSecondPaymentAmountShouldBe(decimal expectedAmount)
     {
         var secondPayment = bookingContext.Booking.Payments.Skip(1).First();
-        TestAssert.Equal(expectedAmount, secondPayment.Amount);
+        (secondPayment.Amount).ShouldBe(expectedAmount);
     }
 
     [Then("the payment history should be ordered by payment date")]
@@ -43,7 +43,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
 
         for (var i = 0; i < payments.Count; i++)
         {
-            TestAssert.Equal(orderedPayments[i].Id, payments[i].Id);
+            (payments[i].Id).ShouldBe(orderedPayments[i].Id);
         }
     }
 
@@ -51,7 +51,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     public void ThenThePaymentShouldHaveARecordedTimestamp()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        TestAssert.NotEqual(default, payment.RecordedAt);
+        (payment.RecordedAt).ShouldNotBe(default);
     }
 
     [Then("the recorded timestamp should be recent")]
@@ -59,8 +59,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payment = bookingContext.Booking.Payments.Last();
         var timeDifference = DateTime.UtcNow - payment.RecordedAt;
-        TestAssert.True(timeDifference.TotalMinutes < 1,
-            $"Timestamp should be recent, but was {timeDifference.TotalMinutes} minutes ago");
+        (timeDifference.TotalMinutes < 1).ShouldBeTrue($"Timestamp should be recent, but was {timeDifference.TotalMinutes} minutes ago");
     }
 
     [When("I retrieve the payment by its ID")]
@@ -68,18 +67,18 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payment = bookingContext.Booking.Payments.Last();
         _retrievedPayment = bookingContext.Booking.Payments.FirstOrDefault(p => p.Id == payment.Id);
-        TestAssert.NotNull(_retrievedPayment);
+        (_retrievedPayment).ShouldNotBeNull();
     }
 
     [Then("the payment details should match the recorded payment")]
     public void ThenThePaymentDetailsShouldMatchTheRecordedPayment()
     {
         var originalPayment = bookingContext.Booking.Payments.Last();
-        TestAssert.NotNull(_retrievedPayment);
-        TestAssert.Equal(originalPayment.Id, _retrievedPayment.Id);
-        TestAssert.Equal(originalPayment.Amount, _retrievedPayment.Amount);
-        TestAssert.Equal(originalPayment.PaymentDate, _retrievedPayment.PaymentDate);
-        TestAssert.Equal(originalPayment.Method, _retrievedPayment.Method);
+        (_retrievedPayment).ShouldNotBeNull();
+        (_retrievedPayment.Id).ShouldBe(originalPayment.Id);
+        (_retrievedPayment.Amount).ShouldBe(originalPayment.Amount);
+        (_retrievedPayment.PaymentDate).ShouldBe(originalPayment.PaymentDate);
+        (_retrievedPayment.Method).ShouldBe(originalPayment.Method);
     }
 
     [Then("each payment should have its distinct method")]
@@ -87,7 +86,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payments = bookingContext.Booking.Payments.ToList();
         var distinctMethods = payments.Select(p => p.Method).Distinct().Count();
-        TestAssert.Equal(payments.Count, distinctMethods);
+        (distinctMethods).ShouldBe(payments.Count);
     }
 
     [Then("the payment amount should be sanitized to valid precision")]
@@ -96,16 +95,16 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var payment = bookingContext.Booking.Payments.Last();
         var amountString = payment.Amount.ToString("F2", CultureInfo.InvariantCulture);
         var roundedAmount = decimal.Parse(amountString, CultureInfo.InvariantCulture);
-        TestAssert.Equal(roundedAmount, payment.Amount);
+        (payment.Amount).ShouldBe(roundedAmount);
     }
 
     [Then("the payment notes should be sanitized")]
     public void ThenThePaymentNotesShouldBeSanitized()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        TestAssert.NotNull(payment.Notes);
-        TestAssert.DoesNotContain("😊", payment.Notes, StringComparison.Ordinal);
-        TestAssert.DoesNotContain("👍", payment.Notes, StringComparison.Ordinal);
+        (payment.Notes).ShouldNotBeNull();
+        (payment.Notes).ShouldNotContain("😊");
+        (payment.Notes).ShouldNotContain("👍");
     }
 
     [When("I record a payment with today's date")]
@@ -153,7 +152,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     [Given("the booking is pending")]
     public void GivenTheBookingIsPending()
     {
-        TestAssert.Equal(BookingStatus.Pending, bookingContext.Booking.Status);
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
     }
 
     [Then("the payments should maintain their recording order")]
@@ -161,14 +160,14 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payments = bookingContext.Booking.Payments.ToList();
 
-        TestAssert.Equal(100m, payments[0].Amount);
-        TestAssert.Equal(new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc), payments[0].PaymentDate);
+        (payments[0].Amount).ShouldBe(100m);
+        (payments[0].PaymentDate).ShouldBe(new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc));
 
-        TestAssert.Equal(200m, payments[1].Amount);
-        TestAssert.Equal(new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc), payments[1].PaymentDate);
+        (payments[1].Amount).ShouldBe(200m);
+        (payments[1].PaymentDate).ShouldBe(new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc));
 
-        TestAssert.Equal(150m, payments[2].Amount);
-        TestAssert.Equal(new DateTime(2025, 2, 15, 0, 0, 0, DateTimeKind.Utc), payments[2].PaymentDate);
+        (payments[2].Amount).ShouldBe(150m);
+        (payments[2].PaymentDate).ShouldBe(new DateTime(2025, 2, 15, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [Then("all payments should have the same payment date")]
@@ -176,9 +175,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var payments = bookingContext.Booking.Payments.ToList();
         var firstDate = payments[0].PaymentDate;
-        TestAssert.All(
-            payments,
-            p => TestAssert.Equal(firstDate, p.PaymentDate));
+        (payments).ShouldAllSatisfy(p => p.PaymentDate.ShouldBe(firstDate));
     }
 
     [Given(@"I record a payment of (.*) on (.*) using (.*) with reference ""(.*)""")]
@@ -189,7 +186,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
         var method = Enum.Parse<PaymentMethod>(methodString);
 
         var result = bookingContext.Booking.RecordPayment(amount, paymentDate, method, _timeProvider, reference);
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [Given("another tour exists with a pending booking for payment tests")]
@@ -201,7 +198,7 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -210,14 +207,14 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
     {
         var result = bookingContext.Booking.RecordPayment(100m, DateTime.UtcNow.AddDays(-1), PaymentMethod.CreditCard,
             _timeProvider, reference);
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [Then("both payments should have the same reference number")]
     public void ThenBothPaymentsShouldHaveTheSameReferenceNumber()
     {
         var payment = bookingContext.Booking.Payments.Last();
-        TestAssert.Equal("REF-123", payment.ReferenceNumber);
+        (payment.ReferenceNumber).ShouldBe("REF-123");
     }
 
     [Given("the booking has a (.*)% discount applied")]
@@ -231,13 +228,13 @@ public sealed class PaymentTrackingSteps(TourContext tourContext, BookingContext
             DiscountType.Percentage,
             discountAmount: discountPercentage,
             discountReason: "Test discount"));
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
     [Given("the booking total price is (.*)")]
     public void GivenTheBookingTotalPriceIs(decimal expectedTotal)
     {
-        TestAssert.Equal(expectedTotal, bookingContext.Booking.TotalPrice);
+        (bookingContext.Booking.TotalPrice).ShouldBe(expectedTotal);
     }
 }

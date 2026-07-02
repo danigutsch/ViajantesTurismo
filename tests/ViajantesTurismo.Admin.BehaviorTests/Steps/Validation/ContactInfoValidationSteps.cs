@@ -96,55 +96,55 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
     [Then("the contact info should be created successfully")]
     public void ThenTheContactInfoShouldBeCreatedSuccessfully()
     {
-        TestAssert.True(context.ContactInfoResult.IsSuccess, context.ContactInfoResult.ErrorDetails?.Detail ?? "Result failed");
-        TestAssert.NotNull(context.ContactInfoResult.Value);
+        (context.ContactInfoResult.IsSuccess).ShouldBeTrue(context.ContactInfoResult.ErrorDetails?.Detail ?? "Result failed");
+        (context.ContactInfoResult.Value).ShouldNotBeNull();
     }
 
     [Then("the contact info creation should fail")]
     public void ThenTheContactInfoCreationShouldFail()
     {
-        TestAssert.True(context.ContactInfoResult.IsFailure, "Expected failure but got success");
+        (context.ContactInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
     }
 
     [Then(@"the email should be ""(.*)""")]
     public void ThenTheEmailShouldBe(string expectedEmail)
     {
-        TestAssert.Equal(expectedEmail, context.ContactInfoResult.Value.Email);
+        (context.ContactInfoResult.Value.Email).ShouldBe(expectedEmail);
     }
 
     [Then(@"the mobile should be ""(.*)""")]
     public void ThenTheMobileShouldBe(string expectedMobile)
     {
-        TestAssert.Equal(expectedMobile, context.ContactInfoResult.Value.Mobile);
+        (context.ContactInfoResult.Value.Mobile).ShouldBe(expectedMobile);
     }
 
     [Then(@"the instagram should be ""(.*)""")]
     public void ThenTheInstagramShouldBe(string expectedInstagram)
     {
-        TestAssert.Equal(expectedInstagram, context.ContactInfoResult.Value.Instagram);
+        (context.ContactInfoResult.Value.Instagram).ShouldBe(expectedInstagram);
     }
 
     [Then("the instagram should be null")]
     public void ThenTheInstagramShouldBeNull()
     {
-        TestAssert.Null(context.ContactInfoResult.Value.Instagram);
+        (context.ContactInfoResult.Value.Instagram).ShouldBeNull();
     }
 
     [Then("the facebook should be null")]
     public void ThenTheFacebookShouldBeNull()
     {
-        TestAssert.Null(context.ContactInfoResult.Value.Facebook);
+        (context.ContactInfoResult.Value.Facebook).ShouldBeNull();
     }
 
     [Then(@"the error should be ""(.*)""")]
     public void ThenTheErrorShouldBe(string expectedError)
     {
-        TestAssert.True(context.ContactInfoResult.IsFailure, "Expected failure but got success");
+        (context.ContactInfoResult.IsFailure).ShouldBeTrue("Expected failure but got success");
 
         var errors = context.ContactInfoResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
 
-        TestAssert.Contains(expectedError, allErrors);
+        (allErrors).ShouldContain(expectedError);
     }
 
     [When("I attempt to create contact info with null email")]
@@ -204,37 +204,34 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
     [Then("I should not be able to create the contact info")]
     public void ThenIShouldNotBeAbleToCreateTheContactInfo()
     {
-        TestAssert.True(context.ContactInfoResult.IsFailure, "Expected contact info creation to fail, but it succeeded.");
+        (context.ContactInfoResult.IsFailure).ShouldBeTrue("Expected contact info creation to fail, but it succeeded.");
     }
 
     [Then("I should be informed that (.+) is required")]
     public void ThenIShouldBeInformedThatFieldIsRequired(string fieldName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
-        TestAssert.True(context.ContactInfoResult.IsFailure);
+        (context.ContactInfoResult.IsFailure).ShouldBeTrue();
         var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
-        TestAssert.True(context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
-                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
-            $"Expected validation error for {normalizedFieldName}");
+        (context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false).ShouldBeTrue($"Expected validation error for {normalizedFieldName}");
     }
 
     [Then(@"I should be informed that (.+) cannot exceed (\d+) characters")]
     public void ThenIShouldBeInformedThatFieldCannotExceedCharacters(string fieldName, int maxLength)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
-        TestAssert.True(context.ContactInfoResult.IsFailure);
+        (context.ContactInfoResult.IsFailure).ShouldBeTrue();
         var normalizedFieldName = fieldName.Replace(" ", "", StringComparison.Ordinal);
-        TestAssert.True(context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
-                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false,
-            $"Expected validation error for {normalizedFieldName}");
+        (context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false).ShouldBeTrue($"Expected validation error for {normalizedFieldName}");
     }
 
     [Then("I should be informed that email must be in a valid format")]
     public void ThenIShouldBeInformedThatEmailMustBeInAValidFormat()
     {
-        TestAssert.True(context.ContactInfoResult.IsFailure);
-        TestAssert.True(context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
-                kvp.Key.Equals("Email", StringComparison.OrdinalIgnoreCase)) ?? false,
-            "Expected validation error for Email");
+        (context.ContactInfoResult.IsFailure).ShouldBeTrue();
+        (context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
+                kvp.Key.Equals("Email", StringComparison.OrdinalIgnoreCase)) ?? false).ShouldBeTrue("Expected validation error for Email");
     }
 }

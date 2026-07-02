@@ -17,7 +17,7 @@ public sealed class TourDeletionSteps(TourContext tourContext)
     {
         tourContext.TourStore.AddExistingTour(tourContext.Tour);
         var result = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [Given("the tour has a confirmed booking")]
@@ -29,9 +29,9 @@ public sealed class TourDeletionSteps(TourContext tourContext)
         }
 
         var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-        TestAssert.True(addResult.IsSuccess);
+        (addResult.IsSuccess).ShouldBeTrue();
         var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
-        TestAssert.True(confirmResult.IsSuccess);
+        (confirmResult.IsSuccess).ShouldBeTrue();
     }
 
     [Given(@"the tour has (\d+) confirmed bookings")]
@@ -45,9 +45,9 @@ public sealed class TourDeletionSteps(TourContext tourContext)
         for (var i = 0; i < count; i++)
         {
             var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-            TestAssert.True(addResult.IsSuccess);
+            (addResult.IsSuccess).ShouldBeTrue();
             var confirmResult = tourContext.Tour.ConfirmBooking(addResult.Value.Id);
-            TestAssert.True(confirmResult.IsSuccess);
+            (confirmResult.IsSuccess).ShouldBeTrue();
         }
     }
 
@@ -60,9 +60,9 @@ public sealed class TourDeletionSteps(TourContext tourContext)
         }
 
         var addResult = BookingTestHelpers.AddSingleCustomerBooking(tourContext.Tour);
-        TestAssert.True(addResult.IsSuccess);
+        (addResult.IsSuccess).ShouldBeTrue();
         var cancelResult = tourContext.Tour.CancelBooking(addResult.Value.Id);
-        TestAssert.True(cancelResult.IsSuccess);
+        (cancelResult.IsSuccess).ShouldBeTrue();
     }
 
     [When("I delete the tour")]
@@ -82,12 +82,12 @@ public sealed class TourDeletionSteps(TourContext tourContext)
     [Then("the tour should be deleted successfully")]
     public void ThenTheTourShouldBeDeletedSuccessfully()
     {
-        TestAssert.True(tourContext.DeleteResult?.IsSuccess);
+        (tourContext.DeleteResult?.IsSuccess).ShouldBeTrue();
     }
 
     [Then("the deletion should fail")]
     public void ThenTheDeletionShouldFail()
     {
-        TestAssert.False(tourContext.DeleteResult?.IsSuccess);
+        (tourContext.DeleteResult?.IsSuccess).ShouldBeFalse();
     }
 }

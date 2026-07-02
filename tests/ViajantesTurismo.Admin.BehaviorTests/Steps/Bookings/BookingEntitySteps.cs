@@ -130,31 +130,31 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
     public void ThenTheBookingShouldHaveRoomType(string expectedRoomType)
     {
         var type = Enum.Parse<RoomType>(expectedRoomType);
-        TestAssert.Equal(type, bookingContext.Booking.RoomType);
+        (bookingContext.Booking.RoomType).ShouldBe(type);
     }
 
     [Then(@"the booking update should fail with validation error for ""(.*)""")]
     public void ThenTheBookingUpdateShouldFailWithValidationErrorFor(string fieldName)
     {
-        TestAssert.NotNull(bookingContext.BookingOperationResult);
-        TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
-        TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
-        var errorDetails = TestAssert.NotNull(bookingContext.BookingOperationResult.Value.ErrorDetails);
-        var validationErrors = TestAssert.NotNull(errorDetails.ValidationErrors);
-        TestAssert.Contains(fieldName, validationErrors.Keys);
+        (bookingContext.BookingOperationResult).ShouldNotBeNull();
+        (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeFalse();
+        (bookingContext.BookingOperationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
+        var errorDetails = (bookingContext.BookingOperationResult.Value.ErrorDetails).ShouldNotBeNull();
+        var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
+        (validationErrors.Keys).ShouldContain(fieldName);
     }
 
     [Then("the booking creation should fail")]
     public void ThenTheBookingCreationShouldFail()
     {
-        TestAssert.NotNull(bookingContext.BookingCreationResult);
-        TestAssert.False(bookingContext.BookingCreationResult.Value.IsSuccess);
+        (bookingContext.BookingCreationResult).ShouldNotBeNull();
+        (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeFalse();
     }
 
     [Then("the booking total price should be (.*)")]
     public void ThenTheBookingTotalPriceShouldBe(decimal expectedPrice)
     {
-        TestAssert.Equal(expectedPrice, bookingContext.Booking.TotalPrice);
+        (bookingContext.Booking.TotalPrice).ShouldBe(expectedPrice);
     }
 
     [Then(@"the error should be for field ""(.*)""")]
@@ -163,31 +163,31 @@ public sealed class BookingEntitySteps(BookingContext bookingContext)
         // Check BookingCreationResult first, then BookingOperationResult, then BookingCustomerResult
         if (bookingContext.BookingCreationResult.HasValue)
         {
-            TestAssert.False(bookingContext.BookingCreationResult.Value.IsSuccess);
-            TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingCreationResult.Value.Status);
-            var errorDetails = TestAssert.NotNull(bookingContext.BookingCreationResult.Value.ErrorDetails);
-            var validationErrors = TestAssert.NotNull(errorDetails.ValidationErrors);
-            TestAssert.Contains(fieldName, validationErrors.Keys);
+            (bookingContext.BookingCreationResult.Value.IsSuccess).ShouldBeFalse();
+            (bookingContext.BookingCreationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
+            var errorDetails = (bookingContext.BookingCreationResult.Value.ErrorDetails).ShouldNotBeNull();
+            var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
+            (validationErrors.Keys).ShouldContain(fieldName);
         }
         else if (bookingContext.BookingOperationResult.HasValue)
         {
-            TestAssert.False(bookingContext.BookingOperationResult.Value.IsSuccess);
-            TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingOperationResult.Value.Status);
-            var errorDetails = TestAssert.NotNull(bookingContext.BookingOperationResult.Value.ErrorDetails);
-            var validationErrors = TestAssert.NotNull(errorDetails.ValidationErrors);
-            TestAssert.Contains(fieldName, validationErrors.Keys);
+            (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeFalse();
+            (bookingContext.BookingOperationResult.Value.Status).ShouldBe(ResultStatus.Invalid);
+            var errorDetails = (bookingContext.BookingOperationResult.Value.ErrorDetails).ShouldNotBeNull();
+            var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
+            (validationErrors.Keys).ShouldContain(fieldName);
         }
         else if (bookingContext.BookingCustomerResult.HasValue)
         {
-            TestAssert.False(bookingContext.BookingCustomerResult.Value.IsSuccess);
-            TestAssert.Equal(ResultStatus.Invalid, bookingContext.BookingCustomerResult.Value.Status);
-            var errorDetails = TestAssert.NotNull(bookingContext.BookingCustomerResult.Value.ErrorDetails);
-            var validationErrors = TestAssert.NotNull(errorDetails.ValidationErrors);
-            TestAssert.Contains(fieldName, validationErrors.Keys);
+            (bookingContext.BookingCustomerResult.Value.IsSuccess).ShouldBeFalse();
+            (bookingContext.BookingCustomerResult.Value.Status).ShouldBe(ResultStatus.Invalid);
+            var errorDetails = (bookingContext.BookingCustomerResult.Value.ErrorDetails).ShouldNotBeNull();
+            var validationErrors = (errorDetails.ValidationErrors).ShouldNotBeNull();
+            (validationErrors.Keys).ShouldContain(fieldName);
         }
         else
         {
-            TestAssert.Fail("No booking result found.");
+            false.ShouldBeTrue("No booking result found.");
         }
     }
 }

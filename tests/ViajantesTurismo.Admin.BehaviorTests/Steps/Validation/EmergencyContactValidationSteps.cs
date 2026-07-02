@@ -61,50 +61,50 @@ public sealed class EmergencyContactValidationSteps(CustomerContext context)
     [Then("the emergency contact should be successfully created")]
     public void ThenTheEmergencyContactShouldBeSuccessfullyCreated()
     {
-        TestAssert.True(context.EmergencyContactResult.IsSuccess, context.EmergencyContactResult.ErrorDetails?.Detail ?? "Creation failed");
-        TestAssert.NotNull(context.EmergencyContactResult.Value);
+        (context.EmergencyContactResult.IsSuccess).ShouldBeTrue(context.EmergencyContactResult.ErrorDetails?.Detail ?? "Creation failed");
+        (context.EmergencyContactResult.Value).ShouldNotBeNull();
     }
 
     [Then("I should be informed that emergency contact name is required")]
     public void ThenIShouldBeInformedThatEmergencyContactNameIsRequired()
     {
-        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        TestAssert.Contains("Emergency contact name is required.", allErrors);
+        (allErrors).ShouldContain("Emergency contact name is required.");
     }
 
     [Then("I should be informed that emergency contact name cannot exceed 128 characters")]
     public void ThenIShouldBeInformedThatEmergencyContactNameCannotExceed128Characters()
     {
-        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        TestAssert.Contains("Emergency contact name cannot exceed 128 characters.", allErrors);
+        (allErrors).ShouldContain("Emergency contact name cannot exceed 128 characters.");
     }
 
     [Then("I should be informed that emergency contact mobile is required")]
     public void ThenIShouldBeInformedThatEmergencyContactMobileIsRequired()
     {
-        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        TestAssert.Contains("Emergency contact mobile is required.", allErrors);
+        (allErrors).ShouldContain("Emergency contact mobile is required.");
     }
 
     [Then("I should be informed that emergency contact mobile cannot exceed 64 characters")]
     public void ThenIShouldBeInformedThatEmergencyContactMobileCannotExceed64Characters()
     {
-        TestAssert.True(context.EmergencyContactResult.IsFailure, "Expected failure but got success");
+        (context.EmergencyContactResult.IsFailure).ShouldBeTrue("Expected failure but got success");
         var errors = context.EmergencyContactResult.ErrorDetails?.ValidationErrors;
         var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        TestAssert.Contains("Emergency contact mobile cannot exceed 64 characters.", allErrors);
+        (allErrors).ShouldContain("Emergency contact mobile cannot exceed 64 characters.");
     }
 
     [Then("all emergency contact fields should have normalized whitespace")]
     public void ThenAllEmergencyContactFieldsShouldHaveNormalizedWhitespace()
     {
-        TestAssert.Equal("Jane Doe", context.EmergencyContactResult.Value.Name);
-        TestAssert.Equal("+1234 567890", context.EmergencyContactResult.Value.Mobile);
+        (context.EmergencyContactResult.Value.Name).ShouldBe("Jane Doe");
+        (context.EmergencyContactResult.Value.Mobile).ShouldBe("+1234 567890");
     }
 }

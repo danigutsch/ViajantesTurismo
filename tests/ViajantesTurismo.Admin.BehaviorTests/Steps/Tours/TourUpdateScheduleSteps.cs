@@ -28,29 +28,28 @@ public sealed class TourUpdateScheduleSteps(TourContext tourContext)
     [Then("the tour schedule update should succeed")]
     public void ThenTheTourScheduleUpdateShouldSucceed()
     {
-        TestAssert.NotNull(tourContext.UpdateResult);
-        TestAssert.True(tourContext.UpdateResult.Value.IsSuccess,
-            $"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
+        (tourContext.UpdateResult).ShouldNotBeNull();
+        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeTrue($"Expected success but got error: {tourContext.UpdateResult.Value.ErrorDetails?.Detail}");
     }
 
     [Then("the tour schedule update should fail")]
     public void ThenTheTourScheduleUpdateShouldFail()
     {
-        TestAssert.NotNull(tourContext.UpdateResult);
-        TestAssert.False(tourContext.UpdateResult.Value.IsSuccess);
+        (tourContext.UpdateResult).ShouldNotBeNull();
+        (tourContext.UpdateResult.Value.IsSuccess).ShouldBeFalse();
     }
 
     [Then(@"the tour start date should be ""(.*)""")]
     public void ThenTheTourStartDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.StartDate);
+        (tourContext.Tour.Schedule.StartDate).ShouldBe(expectedDate);
     }
 
     [Then(@"the tour end date should be ""(.*)""")]
     public void ThenTheTourEndDateShouldBe(string expectedDateString)
     {
         var expectedDate = DateTime.Parse(expectedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
-        TestAssert.Equal(expectedDate, tourContext.Tour.Schedule.EndDate);
+        (tourContext.Tour.Schedule.EndDate).ShouldBe(expectedDate);
     }
 }

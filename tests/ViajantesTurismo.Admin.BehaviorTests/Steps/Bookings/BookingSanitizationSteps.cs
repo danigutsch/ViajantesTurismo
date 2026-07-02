@@ -14,7 +14,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             RoomType.DoubleOccupancy,
             DiscountType.None,
             notes: notes));
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -46,7 +46,7 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None));
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
         bookingContext.Booking = result.Value;
     }
 
@@ -54,15 +54,14 @@ public sealed class BookingSanitizationSteps(BookingContext bookingContext, Tour
     public void WhenIUpdateTheBookingNotesToNullThroughTheTour()
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
-        TestAssert.True(result.IsSuccess);
+        (result.IsSuccess).ShouldBeTrue();
     }
 
     [Then("the booking creation should fail with notes validation error")]
     public void ThenTheBookingCreationShouldFailWithNotesValidationError()
     {
-        TestAssert.NotNull(bookingContext.BookingOperationResult);
-        var result = bookingContext.BookingOperationResult.Value;
-        TestAssert.False(result.IsSuccess);
-        TestAssert.True(result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false);
+        var result = (bookingContext.BookingOperationResult).ShouldNotBeNull();
+        (result.IsSuccess).ShouldBeFalse();
+        (result.ErrorDetails?.ValidationErrors?.ContainsKey("notes") ?? false).ShouldBeTrue();
     }
 }

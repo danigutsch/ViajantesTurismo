@@ -18,8 +18,8 @@ public sealed class DomainEventDispatchTests
         await dispatcher.Dispatch(domainEvent, cancellationTokenSource.Token);
 
         // Assert
-        var notification = TestAssert.IsType<DomainEventNotification<TestDomainEvent>>(publisher.Notification);
-        TestAssert.Same(domainEvent, notification.DomainEvent);
+        var notification = (publisher.Notification).ShouldBeOfType<DomainEventNotification<TestDomainEvent>>();
+        (notification.DomainEvent).ShouldBeSameAs(domainEvent);
         publisher.CancellationToken.ShouldBe(cancellationTokenSource.Token);
     }
 
@@ -52,7 +52,7 @@ public sealed class DomainEventDispatchTests
     {
         var domainEvent = new TestDomainEvent("tour-created");
 
-        TestAssert.IsNotAssignableFrom<INotification>(domainEvent);
+        (domainEvent).ShouldNotBeAssignableTo<INotification>();
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class DomainEventDispatchTests
         await adapter.Handle(new DomainEventNotification<TestDomainEvent>(domainEvent), cancellationTokenSource.Token);
 
         // Assert
-        TestAssert.Same(domainEvent, handler.HandledEvent);
+        (handler.HandledEvent).ShouldBeSameAs(domainEvent);
         handler.CancellationToken.ShouldBe(cancellationTokenSource.Token);
     }
 

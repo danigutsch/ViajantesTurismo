@@ -41,21 +41,21 @@ public sealed class AccommodationPreferencesValidationSteps(CustomerContext cont
     [Then("the accommodation preferences should be created successfully")]
     public void ThenTheAccommodationPreferencesShouldBeCreatedSuccessfully()
     {
-        TestAssert.NotNull(context.AccommodationPreferencesResult);
-        TestAssert.True(context.AccommodationPreferencesResult.Value.IsSuccess);
+        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        (context.AccommodationPreferencesResult.Value.IsSuccess).ShouldBeTrue();
     }
 
     [Then(@"the companion ID should be (\d+)")]
     public void ThenTheCompanionIdShouldBe(int expectedCompanionId)
     {
-        TestAssert.NotNull(context.AccommodationPreferencesResult);
-        TestAssert.Equal(context.CompanionId, context.AccommodationPreferencesResult.Value.Value.CompanionId);
+        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        (context.AccommodationPreferencesResult.Value.Value.CompanionId).ShouldBe(context.CompanionId);
     }
 
     [Then("the companion ID should be null")]
     public void ThenTheCompanionIdShouldBeNull()
     {
-        TestAssert.NotNull(context.AccommodationPreferencesResult);
-        TestAssert.Null(context.AccommodationPreferencesResult.Value.Value.CompanionId);
+        (context.AccommodationPreferencesResult).ShouldNotBeNull();
+        (context.AccommodationPreferencesResult.Value.Value.CompanionId).ShouldBeNull();
     }
 }
