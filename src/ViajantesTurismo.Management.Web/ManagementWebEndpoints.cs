@@ -6,6 +6,8 @@ internal static class ManagementWebEndpoints
 {
     internal static IEndpointRouteBuilder MapManagementWebEndpoints(this IEndpointRouteBuilder app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         app.MapStaticAssets();
 
         app.MapRazorComponents<App>()

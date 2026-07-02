@@ -15,6 +15,8 @@ internal static class CatalogEndpoints
 {
     internal static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         app.MapGet("/catalog/tours", GetTours);
         app.MapGet("/catalog/tours/{id:guid}", GetTour);
         app.MapPut("/catalog/tours/{id:guid}/presentation", UpsertTourPresentation);
