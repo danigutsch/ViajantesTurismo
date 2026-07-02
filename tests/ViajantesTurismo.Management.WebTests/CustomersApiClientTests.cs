@@ -171,6 +171,8 @@ public sealed class CustomersApiClientTests
     }
 
     [Theory]
+    [InlineData(HttpStatusCode.OK, CustomerCreateOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NoContent, CustomerCreateOutcomeKind.UnexpectedStatus)]
     [InlineData(HttpStatusCode.NotFound, CustomerCreateOutcomeKind.NotFound)]
     [InlineData(HttpStatusCode.Unauthorized, CustomerCreateOutcomeKind.Unauthorized)]
     [InlineData(HttpStatusCode.Forbidden, CustomerCreateOutcomeKind.Forbidden)]

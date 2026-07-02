@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Contracts;
 /// <summary>
 /// Represents the contract-level outcome of a customer creation request.
 /// </summary>
-public sealed record CustomerCreateOutcome
+public sealed record CustomerCreateOutcomeDto
 {
     /// <summary>
     /// Gets the outcome kind.

@@ -43,7 +43,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcome
+        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcomeDto
         {
             Kind = CustomerCreateOutcomeKind.Conflict,
             StatusCode = System.Net.HttpStatusCode.Conflict,
@@ -175,7 +175,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcome
+        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcomeDto
         {
             Kind = CustomerCreateOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created

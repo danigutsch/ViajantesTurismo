@@ -27,7 +27,7 @@ public interface ICustomersApiClient
     /// <param name="dto">The customer data to create.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The creation outcome returned by the API.</returns>
-    Task<CustomerCreateOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct);
+    Task<CustomerCreateOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct);
 
     /// <summary>
     /// Updates an existing customer.

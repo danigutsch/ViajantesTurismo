@@ -47,15 +47,15 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
         return await response.Content.ReadFromJsonAsync<CustomerDetailsDto>(ct);
     }
 
-    public async Task<CustomerCreateOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
+    public async Task<CustomerCreateOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
         using var response = await httpClient.PostAsJsonAsync(new Uri("/customers", UriKind.Relative), dto, ct);
 
-        if (response.IsSuccessStatusCode)
+        if (response.StatusCode == HttpStatusCode.Created)
         {
-            return new CustomerCreateOutcome
+            return new CustomerCreateOutcomeDto
             {
                 Kind = CustomerCreateOutcomeKind.Succeeded,
                 StatusCode = response.StatusCode,
@@ -118,7 +118,7 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
                ?? throw new InvalidOperationException("The import response body was empty.");
     }
 
-    private static async Task<CustomerCreateOutcome> ReadValidationProblem(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<CustomerCreateOutcomeDto> ReadValidationProblem(HttpResponseMessage response, CancellationToken ct)
     {
         var content = await response.Content.ReadAsStringAsync(ct);
         if (string.IsNullOrWhiteSpace(content))
@@ -134,11 +134,11 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
                 return CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, "Validation problem response body did not contain errors.");
             }
 
-            return new CustomerCreateOutcome
+            return new CustomerCreateOutcomeDto
             {
                 Kind = CustomerCreateOutcomeKind.ValidationProblem,
                 StatusCode = response.StatusCode,
-                ValidationErrors = (IReadOnlyDictionary<string, string[]>)problem.Errors
+                ValidationErrors = new Dictionary<string, string[]>(problem.Errors, StringComparer.Ordinal)
             };
         }
         catch (JsonException exception)
@@ -147,9 +147,9 @@ internal sealed class CustomersApiClient(HttpClient httpClient) : ICustomersApiC
         }
     }
 
-    private static CustomerCreateOutcome CreateStatusOutcome(CustomerCreateOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
+    private static CustomerCreateOutcomeDto CreateStatusOutcome(CustomerCreateOutcomeKind kind, HttpStatusCode statusCode, string? message = null)
     {
-        return new CustomerCreateOutcome
+        return new CustomerCreateOutcomeDto
         {
             Kind = kind,
             StatusCode = statusCode,

@@ -8,7 +8,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private readonly List<GetCustomerDto> _customers = [];
     private ImportResultDto? _commitImportResult;
     private Exception? _createCustomerException;
-    private CustomerCreateOutcome? _createCustomerOutcome;
+    private CustomerCreateOutcomeDto? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
     private Exception? _importCustomersException;
     private ImportResultDto? _importResult;
@@ -33,7 +33,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(_customerDetails.FirstOrDefault(c => c.Id == id));
     }
 
-    public Task<CustomerCreateOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
+    public Task<CustomerCreateOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
     {
         if (_createCustomerException is not null)
         {
@@ -46,7 +46,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         }
 
         var customerId = Guid.NewGuid();
-        return Task.FromResult(new CustomerCreateOutcome
+        return Task.FromResult(new CustomerCreateOutcomeDto
         {
             Kind = CustomerCreateOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created,
@@ -101,7 +101,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public void SetCreateCustomerException(Exception exception) => _createCustomerException = exception;
 
-    public void SetCreateCustomerOutcome(CustomerCreateOutcome outcome) => _createCustomerOutcome = outcome;
+    public void SetCreateCustomerOutcome(CustomerCreateOutcomeDto outcome) => _createCustomerOutcome = outcome;
 
     public void SetUpdateCustomerException(Exception exception) => _updateCustomerException = exception;
 

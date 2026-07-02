@@ -40,7 +40,7 @@ Contract test projects also contain OpenAPI document clients that are test-local
 
 `CustomersApiClient.CreateCustomer` proves the first contract-owned outcome shape:
 
-- `CustomerCreateOutcome` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
+- `CustomerCreateOutcomeDto` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
   diagnostic `Message`.
 - `CustomerCreateOutcomeKind` models success, validation problem, not found, unauthorized, forbidden, conflict, empty
   body, malformed body, and unexpected status.

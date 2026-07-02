@@ -6,8 +6,8 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
 
     public Task<CustomerDetailsDto?> GetCustomerById(Guid id, CancellationToken ct) => throw new NotImplementedException();
 
-    public Task<CustomerCreateOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
-        Task.FromResult(new CustomerCreateOutcome
+    public Task<CustomerCreateOutcomeDto> CreateCustomer(CreateCustomerDto dto, CancellationToken ct) =>
+        Task.FromResult(new CustomerCreateOutcomeDto
         {
             Kind = CustomerCreateOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created,
