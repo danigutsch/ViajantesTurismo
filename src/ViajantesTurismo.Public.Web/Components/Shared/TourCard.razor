@@ -1,11 +1,11 @@
 @if (GetCoverImage() is { } coverImage)
 {
     <picture>
-        @if (coverImage.ResponsiveVariants.Count > 0)
+        @foreach (var source in SourceGroups(coverImage))
         {
-            <source srcset="@SrcSet(coverImage)" sizes="(min-width: 48rem) 33vw, 100vw" />
+            <source type="@source.ContentType" srcset="@source.SrcSet" sizes="(min-width: 48rem) 33vw, 100vw" />
         }
-        <img src="@coverImage.Uri" alt="@coverImage.AltText" loading="lazy" />
+        <img src="@ImageSource(coverImage)" alt="@coverImage.AltText" width="@ImageWidth(coverImage)" height="@ImageHeight(coverImage)" loading="lazy" />
     </picture>
 }
 
@@ -35,10 +35,35 @@ else
 
     private static string TourUrl(CatalogTourDto tour) => $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}";
 
-    private static string SrcSet(CatalogTourImageDto image)
+    private static IEnumerable<(string ContentType, string SrcSet)> SourceGroups(CatalogTourImageDto image)
     {
-        return string.Join(", ", image.ResponsiveVariants
-            .OrderBy(variant => variant.Width)
-            .Select(variant => $"{variant.Uri} {variant.Width}w"));
+        return image.ResponsiveVariants
+            .GroupBy(variant => variant.ContentType, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(group => ContentTypeSortOrder(group.Key))
+            .Select(group => (ContentType: group.Key, SrcSet: string.Join(", ", group
+                .OrderBy(variant => variant.Width)
+                .Select(variant => $"{variant.Uri} {variant.Width}w"))));
     }
+
+    private static string ImageSource(CatalogTourImageDto image) => SelectFallbackVariant(image)?.Uri.ToString() ?? image.Uri.ToString();
+
+    private static int? ImageWidth(CatalogTourImageDto image) => SelectFallbackVariant(image)?.Width;
+
+    private static int? ImageHeight(CatalogTourImageDto image) => SelectFallbackVariant(image)?.Height;
+
+    private static MediaImageResponsiveVariantDto? SelectFallbackVariant(CatalogTourImageDto image) => image.ResponsiveVariants
+        .Where(variant => string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(variant => variant.Width)
+        .FirstOrDefault()
+        ?? image.ResponsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault();
+
+    private static int ContentTypeSortOrder(string contentType) => contentType.ToLowerInvariant() switch
+    {
+        "image/avif" => 0,
+        "image/webp" => 1,
+        "image/jpeg" => 2,
+        "image/png" => 3,
+        _ => 4
+    };
 }

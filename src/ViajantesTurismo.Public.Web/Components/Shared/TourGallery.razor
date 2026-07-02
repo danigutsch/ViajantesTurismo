@@ -1,12 +1,15 @@
-@foreach (var image in Images)
+@for (var index = 0; index < Images.Count; index++)
 {
+    var image = Images[index];
+    var isPriority = PrioritizeFirstImage && index == 0;
+
     <figure>
         <picture>
-            @if (image.ResponsiveVariants.Count > 0)
+            @foreach (var source in SourceGroups(image))
             {
-                <source srcset="@SrcSet(image)" sizes="(min-width: 48rem) 50vw, 100vw" />
+                <source type="@source.ContentType" srcset="@source.SrcSet" sizes="(min-width: 48rem) 50vw, 100vw" />
             }
-            <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
+            <img src="@ImageSource(image)" alt="@image.AltText" width="@ImageWidth(image)" height="@ImageHeight(image)" loading="@LoadingMode(isPriority)" fetchpriority="@FetchPriority(isPriority)" />
         </picture>
         @if (!string.IsNullOrWhiteSpace(image.Caption))
         {
@@ -19,10 +22,42 @@
     [Parameter, EditorRequired]
     public IReadOnlyList<CatalogTourImageDto> Images { get; set; } = [];
 
-    private static string SrcSet(CatalogTourImageDto image)
+    [Parameter]
+    public bool PrioritizeFirstImage { get; set; }
+
+    private static IEnumerable<(string ContentType, string SrcSet)> SourceGroups(CatalogTourImageDto image)
     {
-        return string.Join(", ", image.ResponsiveVariants
-            .OrderBy(variant => variant.Width)
-            .Select(variant => $"{variant.Uri} {variant.Width}w"));
+        return image.ResponsiveVariants
+            .GroupBy(variant => variant.ContentType, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(group => ContentTypeSortOrder(group.Key))
+            .Select(group => (ContentType: group.Key, SrcSet: string.Join(", ", group
+                .OrderBy(variant => variant.Width)
+                .Select(variant => $"{variant.Uri} {variant.Width}w"))));
     }
+
+    private static string ImageSource(CatalogTourImageDto image) => SelectFallbackVariant(image)?.Uri.ToString() ?? image.Uri.ToString();
+
+    private static int? ImageWidth(CatalogTourImageDto image) => SelectFallbackVariant(image)?.Width;
+
+    private static int? ImageHeight(CatalogTourImageDto image) => SelectFallbackVariant(image)?.Height;
+
+    private static string LoadingMode(bool isPriority) => isPriority ? "eager" : "lazy";
+
+    private static string? FetchPriority(bool isPriority) => isPriority ? "high" : null;
+
+    private static MediaImageResponsiveVariantDto? SelectFallbackVariant(CatalogTourImageDto image) => image.ResponsiveVariants
+        .Where(variant => string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(variant => variant.Width)
+        .FirstOrDefault()
+        ?? image.ResponsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault();
+
+    private static int ContentTypeSortOrder(string contentType) => contentType.ToLowerInvariant() switch
+    {
+        "image/avif" => 0,
+        "image/webp" => 1,
+        "image/jpeg" => 2,
+        "image/png" => 3,
+        _ => 4
+    };
 }

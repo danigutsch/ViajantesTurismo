@@ -71,6 +71,8 @@ public sealed class PublicComponentTests : BunitContext
                     IsCover = true,
                     ResponsiveVariants =
                     [
+                        new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/cover-320.avif"), Width = 320, Height = 213, ContentType = "image/avif", FileSizeBytes = 256 },
+                        new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/cover-640.webp"), Width = 640, Height = 427, ContentType = "image/webp", FileSizeBytes = 512 },
                         new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/cover-320.jpg"), Width = 320, Height = 213, ContentType = "image/jpeg", FileSizeBytes = 512 },
                         new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/cover-640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
                     ]
@@ -83,10 +85,17 @@ public sealed class PublicComponentTests : BunitContext
         var cut = Render<TourCard>(parameters => parameters.Add(component => component.Tour, tour));
 
         // Assert
-        var source = cut.Find("source");
-        Assert.Equal("https://cdn.example/cover-320.jpg 320w, https://cdn.example/cover-640.jpg 640w", source.GetAttribute("srcset"));
-        Assert.Equal("https://cdn.example/cover.jpg", cut.Find("img").GetAttribute("src"));
+        var sources = cut.FindAll("source");
+        Assert.Equal("image/avif", sources[0].GetAttribute("type"));
+        Assert.Equal("https://cdn.example/cover-320.avif 320w", sources[0].GetAttribute("srcset"));
+        Assert.Equal("image/webp", sources[1].GetAttribute("type"));
+        Assert.Equal("https://cdn.example/cover-640.webp 640w", sources[1].GetAttribute("srcset"));
+        Assert.Equal("image/jpeg", sources[2].GetAttribute("type"));
+        Assert.Equal("https://cdn.example/cover-320.jpg 320w, https://cdn.example/cover-640.jpg 640w", sources[2].GetAttribute("srcset"));
+        Assert.Equal("https://cdn.example/cover-640.jpg", cut.Find("img").GetAttribute("src"));
         Assert.Equal("Cover image", cut.Find("img").GetAttribute("alt"));
+        Assert.Equal("640", cut.Find("img").GetAttribute("width"));
+        Assert.Equal("427", cut.Find("img").GetAttribute("height"));
     }
 
     [Fact]
@@ -142,8 +151,43 @@ public sealed class PublicComponentTests : BunitContext
 
         // Assert
         var source = cut.Find("source");
+        Assert.Equal("image/jpeg", source.GetAttribute("type"));
         Assert.Equal("https://cdn.example/one-320.jpg 320w, https://cdn.example/one-640.jpg 640w", source.GetAttribute("srcset"));
         Assert.Equal("(min-width: 48rem) 50vw, 100vw", source.GetAttribute("sizes"));
+        Assert.Equal("https://cdn.example/one-640.jpg", cut.Find("img").GetAttribute("src"));
+        Assert.Equal("640", cut.Find("img").GetAttribute("width"));
+        Assert.Equal("427", cut.Find("img").GetAttribute("height"));
+    }
+
+    [Fact]
+    public void TourGallery_can_prioritize_the_first_image()
+    {
+        // Arrange
+        var images = new[]
+        {
+            new CatalogTourImageDto
+            {
+                Uri = new Uri("https://cdn.example/one.jpg"),
+                AltText = "First image"
+            },
+            new CatalogTourImageDto
+            {
+                Uri = new Uri("https://cdn.example/two.jpg"),
+                AltText = "Second image"
+            }
+        };
+
+        // Act
+        var cut = Render<TourGallery>(parameters => parameters
+            .Add(component => component.Images, images)
+            .Add(component => component.PrioritizeFirstImage, true));
+
+        // Assert
+        var imageElements = cut.FindAll("img");
+        Assert.Equal("eager", imageElements[0].GetAttribute("loading"));
+        Assert.Equal("high", imageElements[0].GetAttribute("fetchpriority"));
+        Assert.Equal("lazy", imageElements[1].GetAttribute("loading"));
+        Assert.Null(imageElements[1].GetAttribute("fetchpriority"));
     }
 
 }
