@@ -195,8 +195,8 @@ Generated support should keep that boundary explicit:
    materialization.
 
 7. Remove duplicate base classes after consumers move.
-   - `legacy Common Entity<TId>` was removed after Admin consumers moved to
-     SharedKernel identity interfaces and generated identity support.
+   - The old `Entity<TId>` base class was removed after Admin consumers moved to SharedKernel identity
+     interfaces and generated identity support.
 
 ### Current inventory
 
@@ -213,10 +213,9 @@ Models migrated from base-class identity to generated identity support:
 
 Removed test-only consumers:
 
-- `tests/SharedKernel.Domain.Tests`: the legacy project was removed with the SharedKernel base-class
-  primitive/equality tests.
-- `tests/SharedKernel.BuildingBlocks.Tests`: common entity tests were removed with
-  `legacy Common Entity<TId>`.
+- `tests/SharedKernel.Domain.Tests`: removed with the SharedKernel base-class primitive/equality tests.
+- `tests/SharedKernel.BuildingBlocks.Tests`: entity base-class tests were removed with the old
+  `Entity<TId>` base class.
 - `tests/ViajantesTurismo.ArchitectureTests`: DDD convention helpers identify entity types through
   `IEntity<TId>` and allow both Admin and Catalog domain namespaces.
 
@@ -255,7 +254,7 @@ Docs and ADRs refreshed with the migration:
    - Keep domain-event behavior and EF `ValueGeneratedNever()` covered by Catalog tests.
 5. `PublicThemeSettings` last.
    - Preserve fixed singleton `ThemeId` and theme replacement behavior.
-6. `legacy Common Entity<TId>` is removed in this migration.
+6. The old `Entity<TId>` base class is removed in this migration.
 7. `SharedKernel.Domain.Entity<TId>` and `SharedKernel.Domain.AggregateRoot<TId>` are removed in this
    migration after concrete consumers move to interfaces and generated identity support.
 

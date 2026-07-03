@@ -16,7 +16,7 @@ The preserved branch history for this evaluation was:
 
 ## Current repository baseline
 
-The old branch worked in a previous `legacy Common dispatching` model built around:
+The old branch worked in a previous runtime dispatching model built around:
 
 - runtime `IRequestDispatcher` resolution
 - per-request `IRequestDispatchRoute<TResponse>` route discovery from DI
@@ -144,8 +144,7 @@ Status: useful intent already preserved by newer test infrastructure.
 
 These parts of the old experiment should stay retired:
 
-- `legacy Common dispatching` runtime route abstractions such as
-  `IRequestDispatchRoute<TResponse>`
+- runtime route abstractions such as `IRequestDispatchRoute<TResponse>`
 - `RequestDispatcher` as the main dispatch runtime
 - hybrid dispatching where generated support feeds a runtime route lookup layer
 - analyzer work aimed at protecting transitional mixed registration styles
