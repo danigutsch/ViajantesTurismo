@@ -64,9 +64,10 @@ of these issue categories:
 The script uses the pull request key and project key instead of scraping SonarCloud UI pages.
 GitHub summaries include `SONAR POLICY` lines so the failing issue category is visible in CI.
 CI uploads the raw `sonar-policy-responses` artifact when those Web API responses are available.
-The required `SonarCloud` check is the combined PR signal: hosted quality gate plus the
-repository-owned new issue policy. A green hosted quality gate is not enough when the new
-issue policy reports unresolved security or medium-or-higher pull request issues.
+Custom SonarCloud quality gates are not available to this project, so the required `SonarCloud`
+check keeps the repository-owned issue policy as the fallback merge gate. A green hosted quality
+gate is not enough when the fallback policy reports unresolved security or medium-or-higher pull
+request issues.
 
 ## Required repository settings
 

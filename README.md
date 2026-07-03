@@ -358,8 +358,8 @@ for the workflow details and merge-method constraints.
 
 The required checks on `main` are documented in [docs/ci/governance.md](docs/ci/governance.md).
 The main CI test slices preserve their required check names and use lightweight success paths when
-path detection shows an expensive slice is not required. The required `SonarCloud` check combines
-the hosted quality gate with the repository-owned new issue policy.
+path detection shows an expensive slice is not required. The required `SonarCloud` check includes
+the hosted quality gate plus the repository-owned new issue policy fallback.
 
 To reproduce the core checks locally, run:
 

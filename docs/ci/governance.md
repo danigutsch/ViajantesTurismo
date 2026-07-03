@@ -20,8 +20,8 @@ Branch protection for `main` is configured to require the following status check
 - `Lint` (from `.github/workflows/ci.yml`)
 - `Dependency Review` (from `.github/workflows/dependency-review.yml`)
 - `Secret Scan` (from `.github/workflows/secret-scan.yml`)
-- `SonarCloud` (from `.github/workflows/ci.yml`; combines hosted quality gate and the
-  repository-owned new issue policy)
+- `SonarCloud` (from `.github/workflows/ci.yml`; includes hosted quality gate and the
+  repository-owned new issue policy fallback)
 
 These names match the `name:` fields in the respective workflow files. Any rename of the
 jobs must be reflected in branch protection settings.
