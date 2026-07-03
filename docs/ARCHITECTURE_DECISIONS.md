@@ -64,6 +64,8 @@ Decisions about application architecture and layer responsibilities.
   Domain Materialization and SharedKernel Persistence Boundaries
 - **[ADR-027](adr/20260624-provider-specific-sharedkernel-infrastructure-modules.md)** —
   Provider-Specific SharedKernel Infrastructure Modules
+- **[ADR-031](adr/20260703-rich-domain-behavior-and-state-exposure.md)** — Rich Domain Behavior
+  and State Exposure
 
 ### Business Logic & Pricing
 
