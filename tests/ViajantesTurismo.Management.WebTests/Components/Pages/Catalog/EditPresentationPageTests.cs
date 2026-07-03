@@ -1,5 +1,5 @@
 using EditPresentation = ViajantesTurismo.Management.Web.Components.Pages.Catalog.EditPresentation;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 

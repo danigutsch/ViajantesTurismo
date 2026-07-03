@@ -2,8 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
-using ViajantesTurismo.Common.BuildingBlocks;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 

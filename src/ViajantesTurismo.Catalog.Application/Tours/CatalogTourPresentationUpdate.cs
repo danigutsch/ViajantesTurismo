@@ -1,6 +1,6 @@
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
 

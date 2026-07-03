@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.RecordPayment;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Tours;
 using SharedKernel.Results;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Bookings;
 

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.Tours;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 

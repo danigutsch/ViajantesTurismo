@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests;
 

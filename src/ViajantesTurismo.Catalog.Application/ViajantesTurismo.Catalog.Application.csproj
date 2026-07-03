@@ -26,6 +26,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
-    </ItemGroup>
+            <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
+</ItemGroup>
 
 </Project>

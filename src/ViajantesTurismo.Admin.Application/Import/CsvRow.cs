@@ -1,5 +1,4 @@
-using ViajantesTurismo.Common.BuildingBlocks;
-
+using SharedKernel.BuildingBlocks;
 namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>

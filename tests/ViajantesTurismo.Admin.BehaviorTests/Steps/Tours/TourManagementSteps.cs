@@ -1,6 +1,5 @@
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 

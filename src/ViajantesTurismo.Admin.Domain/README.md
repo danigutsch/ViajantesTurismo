@@ -60,7 +60,8 @@ Cancelled ←───┘
 ## Dependencies
 
 - **SharedKernel.Results** — Result pattern and option primitives
-- **ViajantesTurismo.Common** — Base types and shared domain utilities
+- **SharedKernel.BuildingBlocks** — Base value-object types and date ranges
+- **SharedKernel.InputNormalization** — Shared input normalization helpers
 - **ViajantesTurismo.Admin.Contracts** — Validation constants
 
 ## See Also

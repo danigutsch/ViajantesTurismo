@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Admin.Contracts;
 

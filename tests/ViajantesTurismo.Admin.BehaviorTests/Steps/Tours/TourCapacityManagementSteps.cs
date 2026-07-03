@@ -1,4 +1,3 @@
-using ViajantesTurismo.Common.Monies;
 
 using ViajantesTurismo.Admin.Domain.Shared;
 

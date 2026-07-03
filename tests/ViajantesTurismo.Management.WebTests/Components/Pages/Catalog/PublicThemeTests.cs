@@ -1,5 +1,5 @@
 using PublicTheme = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicTheme;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 

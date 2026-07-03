@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Testing.Behavior;
-using ViajantesTurismo.Common.Monies;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 

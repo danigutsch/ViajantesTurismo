@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid"/>
-    </ItemGroup>
+            <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
+</ItemGroup>
 
 </Project>

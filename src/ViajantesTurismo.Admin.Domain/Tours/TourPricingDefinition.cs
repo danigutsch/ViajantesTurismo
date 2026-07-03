@@ -1,4 +1,3 @@
-using ViajantesTurismo.Common.Monies;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

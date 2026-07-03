@@ -4,7 +4,7 @@
 
 ## Context
 
-`ViajantesTurismo.Common` originally contained reusable domain primitives such as `Entity<TId>`,
+`the legacy Common project` originally contained reusable domain primitives such as `Entity<TId>`,
 `ValueObject`, and `DateRange`. New Catalog, event sourcing, and event dispatch work needs these
 primitives without keeping a broad catch-all common project.
 
@@ -18,7 +18,7 @@ Create focused SharedKernel projects for DDD primitives and reusable value objec
 - `SharedKernel.Domain` owns identity interfaces, aggregate-root contracts, and `IDomainEvent`.
 - `SharedKernel.BuildingBlocks` owns reusable value objects such as `ValueObject` and `DateRange`.
 
-Migrate `ViajantesTurismo.Common` gradually into these projects. Decide separately whether `Currency`
+Migrate `the legacy Common project` gradually into these projects. Decide separately whether `Currency`
 and sanitizers belong in `SharedKernel.BuildingBlocks`, another focused SharedKernel project, or an
 owning bounded context.
 
@@ -29,7 +29,7 @@ owning bounded context.
 - Aggregate root and domain event recording can be standardized across bounded contexts.
 - Value objects that are truly reusable get a clear home.
 - Existing code must be migrated carefully to avoid large noisy changes.
-- `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` was removed after Admin moved to
+- `legacy Common Entity<TId>` was removed after Admin moved to
   SharedKernel identity interfaces and generated identity support.
 - SharedKernel base-class consumers moved toward `IIdentified<TId>`, `IEntity<TId>`,
   `IAggregateRoot<TId>`, and opt-in generated identity support before the base classes were removed.
@@ -38,7 +38,7 @@ owning bounded context.
 
 ## Alternatives Considered
 
-1. **Keep extending `ViajantesTurismo.Common`**
+1. **Keep extending `the legacy Common project`**
    Rejected because it would continue broad shared-project growth without clear ownership.
 
 2. **Put all primitives in one `SharedKernel.Domain` project**

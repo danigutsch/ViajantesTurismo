@@ -2,10 +2,9 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Domain;
-using ViajantesTurismo.Common.BuildingBlocks;
-using ViajantesTurismo.Common.Monies;
 using SharedKernel.Results;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

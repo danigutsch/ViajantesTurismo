@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.Forms;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.Web.Helpers;
 

@@ -3,7 +3,6 @@ using ArchUnitNET.Loader;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Contracts;
@@ -12,6 +11,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 using SharedKernel.Results;
 using AdminInfrastructure = ViajantesTurismo.Admin.Infrastructure;
 using Assembly = System.Reflection.Assembly;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.ArchitectureTests.Infrastructure;
 
@@ -50,8 +50,6 @@ internal static class ArchitectureProvider
         internal const string Infrastructure = "ViajantesTurismo.Admin.Infrastructure";
         internal const string Api = "ViajantesTurismo.Admin.ApiService";
         internal const string Contracts = "ViajantesTurismo.Admin.Contracts";
-        internal const string Common = "ViajantesTurismo.Common";
-
         internal const string CatalogDomain = "ViajantesTurismo.Catalog.Domain";
         internal const string CatalogApplication = "ViajantesTurismo.Catalog.Application";
         internal const string CatalogInfrastructure = "ViajantesTurismo.Catalog.Infrastructure";

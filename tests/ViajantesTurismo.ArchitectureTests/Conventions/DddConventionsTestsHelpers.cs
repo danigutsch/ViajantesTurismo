@@ -1,5 +1,5 @@
 using SharedKernel.Domain;
-using ViajantesTurismo.Common.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 

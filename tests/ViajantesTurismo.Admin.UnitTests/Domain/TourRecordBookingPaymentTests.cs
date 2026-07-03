@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Domain.Shared;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using SharedKernel.Results;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 

@@ -13,7 +13,6 @@
             ReferenceOutputAssembly="false"
             PrivateAssets="all"
             IsAspireProjectResource="false" />
-        <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
@@ -22,5 +21,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj"/>
     </ItemGroup>
 </Project>

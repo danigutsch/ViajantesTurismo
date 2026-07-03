@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Admin.Contracts;
 

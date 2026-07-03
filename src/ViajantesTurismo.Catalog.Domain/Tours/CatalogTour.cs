@@ -1,5 +1,5 @@
 using SharedKernel.EventSourcing;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Domain.Tours;
 

@@ -80,7 +80,7 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 1. Identity/equality boilerplate currently centralized by base classes:
    - `src/SharedKernel/SharedKernel.Domain/Entity.cs`
    - `src/SharedKernel/SharedKernel.Domain/AggregateRoot.cs`
-   - `src/ViajantesTurismo.Common/BuildingBlocks/Entity.cs`
+   - `src/SharedKernel/SharedKernel.Domain/Entity.cs`
    - `src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs`
    - `src/ViajantesTurismo.Admin.Domain/Tours/Tour.cs`
    - `src/ViajantesTurismo.Admin.Domain/Tours/Booking.cs`
@@ -195,7 +195,7 @@ Generated support should keep that boundary explicit:
    materialization.
 
 7. Remove duplicate base classes after consumers move.
-   - `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` was removed after Admin consumers moved to
+   - `legacy Common Entity<TId>` was removed after Admin consumers moved to
      SharedKernel identity interfaces and generated identity support.
 
 ### Current inventory
@@ -215,8 +215,8 @@ Removed test-only consumers:
 
 - `tests/SharedKernel.Domain.Tests`: the legacy project was removed with the SharedKernel base-class
   primitive/equality tests.
-- `tests/ViajantesTurismo.Common.UnitTests`: common entity tests were removed with
-  `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>`.
+- `tests/SharedKernel.BuildingBlocks.Tests`: common entity tests were removed with
+  `legacy Common Entity<TId>`.
 - `tests/ViajantesTurismo.ArchitectureTests`: DDD convention helpers identify entity types through
   `IEntity<TId>` and allow both Admin and Catalog domain namespaces.
 
@@ -227,7 +227,7 @@ Docs and ADRs refreshed with the migration:
 - `docs/domain/EVENTS_AND_MESSAGING.md` SharedKernel domain primitive list.
 - `docs/adr/20260621-split-sharedkernel-domain-and-building-blocks.md` SharedKernel ownership notes.
 - `docs/adr/20251108-payment-tracking-immutable-records.md` payment example.
-- `src/ViajantesTurismo.Common/README.md` base-type list now documents only remaining common base types.
+- `src/SharedKernel/SharedKernel.BuildingBlocks/README.md` base-type list now documents only remaining common base types.
 
 ### Inheritance and persistence assumptions
 
@@ -255,7 +255,7 @@ Docs and ADRs refreshed with the migration:
    - Keep domain-event behavior and EF `ValueGeneratedNever()` covered by Catalog tests.
 5. `PublicThemeSettings` last.
    - Preserve fixed singleton `ThemeId` and theme replacement behavior.
-6. `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` is removed in this migration.
+6. `legacy Common Entity<TId>` is removed in this migration.
 7. `SharedKernel.Domain.Entity<TId>` and `SharedKernel.Domain.AggregateRoot<TId>` are removed in this
    migration after concrete consumers move to interfaces and generated identity support.
 

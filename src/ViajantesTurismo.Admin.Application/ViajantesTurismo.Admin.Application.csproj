@@ -18,6 +18,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    </ItemGroup>
+            <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
+</ItemGroup>
 
 </Project>

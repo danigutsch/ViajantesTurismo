@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Shared;
 using SharedKernel.Results;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

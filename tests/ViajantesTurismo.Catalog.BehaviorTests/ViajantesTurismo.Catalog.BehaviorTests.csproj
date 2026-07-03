@@ -47,6 +47,7 @@
 
     <ItemGroup>
         <Content Include="**/*.feature" />
-    </ItemGroup>
+            <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
+</ItemGroup>
 
 </Project>

@@ -55,7 +55,7 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Management.Web/            # Blazor management web frontend
 │   ├── ViajantesTurismo.Public.Web/                # Blazor public website frontend
 │   ├── ViajantesTurismo.AppHost/                   # Aspire orchestration
-│   ├── ViajantesTurismo.Common/                    # Shared domain models and utilities
+│   ├── SharedKernel/                               # Shared kernel packages
 │   ├── ViajantesTurismo.MigrationService/          # Database migration worker
 │   ├── ViajantesTurismo.Resources/                 # Resource definitions
 │   └── ViajantesTurismo.ServiceDefaults/           # Service defaults and extensions
@@ -63,7 +63,9 @@ ViajantesTurismo/
 │   ├── ViajantesTurismo.Admin.UnitTests/           # Domain unit tests
 │   ├── ViajantesTurismo.Admin.BehaviorTests/       # BDD/Gherkin tests
 │   ├── ViajantesTurismo.Admin.IntegrationTests/    # API integration tests
-│   └── ViajantesTurismo.Common.UnitTests/          # Common utilities tests
+│   ├── SharedKernel.InputNormalization.Tests/      # Input normalization tests
+│   ├── SharedKernel.HttpClients.Tests/             # Shared HTTP client helper tests
+│   └── ViajantesTurismo.ServiceDefaults.Tests/     # Service defaults telemetry tests
 ├── benchmarks/
 │   └── SharedKernel.Mediator.Benchmarks/           # Source-generator benchmark harness
 └── samples/

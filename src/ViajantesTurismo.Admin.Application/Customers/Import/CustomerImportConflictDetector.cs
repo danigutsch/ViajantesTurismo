@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 

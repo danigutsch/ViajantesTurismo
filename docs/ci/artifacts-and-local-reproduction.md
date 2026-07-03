@@ -73,7 +73,10 @@ bash scripts/run-ci-test-slice.sh \
   tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj \
   tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj \
   tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj \
-  tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj \
+  tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj \
+  tests/SharedKernel.InputNormalization.Tests/SharedKernel.InputNormalization.Tests.csproj \
+  tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj \
+  tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj \
   tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
   tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj \
   tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj \

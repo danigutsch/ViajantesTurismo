@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 

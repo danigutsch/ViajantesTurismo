@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
-using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 

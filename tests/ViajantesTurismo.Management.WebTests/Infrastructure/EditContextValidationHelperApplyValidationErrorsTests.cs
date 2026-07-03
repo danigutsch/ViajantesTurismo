@@ -1,5 +1,5 @@
-using ViajantesTurismo.Common.Contracts;
 using ViajantesTurismo.Management.Web.Helpers;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 
