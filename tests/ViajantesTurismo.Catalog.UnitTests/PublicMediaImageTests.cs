@@ -11,17 +11,14 @@ public sealed class PublicMediaImageTests
         // Arrange
         var readyImage = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
         var pendingImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var readyImageWithoutVariants = PublicMediaImageTestFactory.CreateReadyImageWithoutVariants(Guid.CreateVersion7());
 
         // Act
         var readyResult = readyImage.HasPublicVariants;
         var pendingResult = pendingImage.HasPublicVariants;
-        var noVariantsResult = readyImageWithoutVariants.HasPublicVariants;
 
         // Assert
         readyResult.ShouldBe(true);
         pendingResult.ShouldBe(false);
-        noVariantsResult.ShouldBe(false);
     }
 
     [Fact]
@@ -125,6 +122,25 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
+    public void Tour_placement_returns_missing_outcome_for_unlinked_tour()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 2, false);
+        var missingTourId = Guid.CreateVersion7();
+
+        // Act
+        var found = image.TryGetTourLink(missingTourId, out var link);
+        var isCover = image.IsCoverForTour(missingTourId);
+        var displayOrder = image.GetDisplayOrderForTour(missingTourId);
+
+        // Assert
+        found.ShouldBe(false);
+        link.ShouldBeNull();
+        isCover.ShouldBe(false);
+        displayOrder.ShouldBe(int.MaxValue);
+    }
+
+    [Fact]
     public void Create_persists_sanitized_metadata_and_variant_text()
     {
         // Arrange
@@ -165,5 +181,51 @@ public sealed class PublicMediaImageTests
         image.Copyright.ShouldBe("Copyright text");
         image.ResponsiveVariants[0].ContentType.ShouldBe("image/jpeg");
         image.Tags.ShouldContain("mountain");
+    }
+
+    [Fact]
+    public void Create_rejects_ready_images_without_public_variants()
+    {
+        // Arrange
+        var metadata = new PublicMediaImageMetadata
+        {
+            Id = Guid.CreateVersion7(),
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensions(1200, 800),
+            ProcessingStatus = MediaImageProcessingStatus.Ready,
+            AltText = "Cyclists in the mountains",
+        };
+        var tourLinks = new[] { new MediaImageTourLink(Guid.CreateVersion7(), 0, true) };
+
+        // Act
+        var result = PublicMediaImage.Create(metadata, [], ["mountain"], tourLinks);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var errorDetails = result.ErrorDetails ?? throw new InvalidOperationException("Expected validation error details.");
+        var validationErrors = errorDetails.ValidationErrors ?? throw new InvalidOperationException("Expected validation errors.");
+        validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBe(true);
+    }
+
+    [Fact]
+    public void With_processing_result_rejects_ready_images_without_public_variants()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 2048);
+
+        // Act
+        var result = image.WithProcessingResult(
+            new MediaImageDimensions(1200, 800),
+            MediaImageProcessingStatus.Ready,
+            []);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var errorDetails = result.ErrorDetails ?? throw new InvalidOperationException("Expected validation error details.");
+        var validationErrors = errorDetails.ValidationErrors ?? throw new InvalidOperationException("Expected validation errors.");
+        validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBe(true);
     }
 }

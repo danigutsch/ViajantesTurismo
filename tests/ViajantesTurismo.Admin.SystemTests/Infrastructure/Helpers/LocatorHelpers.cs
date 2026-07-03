@@ -85,6 +85,7 @@ internal static class LocatorHelpers
         for (var attempt = 1; attempt <= 3; attempt++)
         {
             await locator.FillAsync(value);
+            await locator.BlurAsync();
 
             try
             {

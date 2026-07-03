@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
@@ -21,7 +22,7 @@ public sealed class PublicMediaImage
     /// <param name="responsiveVariants">The public responsive renditions.</param>
     /// <param name="tags">The editorial tags for discovery and grouping.</param>
     /// <param name="tourLinks">The tour gallery placements.</param>
-    public PublicMediaImage(
+    internal PublicMediaImage(
         PublicMediaImageMetadata metadata,
         IReadOnlyList<MediaImageResponsiveVariant> responsiveVariants,
         IReadOnlyList<string> tags,
@@ -240,7 +241,7 @@ public sealed class PublicMediaImage
     /// <returns><see langword="true" /> when the tour link marks this image as the cover.</returns>
     public bool IsCoverForTour(Guid catalogTourId)
     {
-        return GetTourLink(catalogTourId).IsCover;
+        return TryGetTourLink(catalogTourId, out var link) && link.IsCover;
     }
 
     /// <summary>
@@ -250,7 +251,20 @@ public sealed class PublicMediaImage
     /// <returns>The image display order for the tour gallery.</returns>
     public int GetDisplayOrderForTour(Guid catalogTourId)
     {
-        return GetTourLink(catalogTourId).DisplayOrder;
+        return TryGetTourLink(catalogTourId, out var link) ? link.DisplayOrder : int.MaxValue;
+    }
+
+    /// <summary>
+    /// Attempts to get this image's placement for a Catalog tour.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <param name="link">The tour placement when linked.</param>
+    /// <returns><see langword="true" /> when a placement exists for the requested tour.</returns>
+    public bool TryGetTourLink(Guid catalogTourId, [NotNullWhen(true)] out MediaImageTourLink? link)
+    {
+        link = _tourLinks.SingleOrDefault(link => link.CatalogTourId == catalogTourId);
+
+        return link is not null;
     }
 
     /// <summary>
@@ -287,8 +301,8 @@ public sealed class PublicMediaImage
     /// <param name="dimensions">The processed image dimensions.</param>
     /// <param name="status">The processing status.</param>
     /// <param name="variants">The processed public variants.</param>
-    /// <returns>The updated media image.</returns>
-    public PublicMediaImage WithProcessingResult(
+    /// <returns>A result containing the updated media image when valid.</returns>
+    public Result<PublicMediaImage> WithProcessingResult(
         MediaImageDimensions dimensions,
         MediaImageProcessingStatus status,
         IReadOnlyList<MediaImageResponsiveVariant> variants)
@@ -296,7 +310,7 @@ public sealed class PublicMediaImage
         ArgumentNullException.ThrowIfNull(dimensions);
         ArgumentNullException.ThrowIfNull(variants);
 
-        return new PublicMediaImage(
+        return Create(
             new PublicMediaImageMetadata
             {
                 Id = Id,
@@ -314,11 +328,6 @@ public sealed class PublicMediaImage
             variants,
             Tags,
             TourLinks);
-    }
-
-    private MediaImageTourLink GetTourLink(Guid catalogTourId)
-    {
-        return _tourLinks.Single(link => link.CatalogTourId == catalogTourId);
     }
 
     private static PublicMediaImageMetadata SanitizeMetadata(PublicMediaImageMetadata metadata)
