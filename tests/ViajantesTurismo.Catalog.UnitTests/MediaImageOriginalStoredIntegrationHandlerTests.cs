@@ -134,4 +134,33 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Failed);
         imageStore.Current.ResponsiveVariants.Count.ShouldBe(0);
     }
+
+    [Fact]
+    public async Task Handle_throws_with_media_image_id_when_processed_ready_image_has_no_public_variants()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var content = CatalogTestImages.CreateJpeg(100, 50);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest("uploads/tiny-original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
+            TestContext.Current.CancellationToken);
+        var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
+        var notification = new MediaImageOriginalStoredIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            mediaImageId,
+            "uploads/tiny-original.jpg",
+            1);
+
+        // Act
+        Func<Task> action = async () => await handler.Handle(notification, TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await action.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldContain(mediaImageId.ToString(), StringComparison.Ordinal);
+        exception.Message.ShouldContain("Processed media image", StringComparison.Ordinal);
+        imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Pending);
+    }
 }
