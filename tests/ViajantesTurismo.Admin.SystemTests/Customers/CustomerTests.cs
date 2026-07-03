@@ -124,6 +124,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var emergencyMobileNumber = "+5511988880001";
         await emergencyNameInput.FillAndExpectValue(emergencyContactName);
         await emergencyMobileInput.FillAndExpectValue(emergencyMobileNumber);
+        await emergencyNameInput.FillAndExpectValue(emergencyContactName);
         await Expect(emergencyNameInput).ToHaveValueAsync(emergencyContactName);
         await Expect(emergencyMobileInput).ToHaveValueAsync(emergencyMobileNumber);
 

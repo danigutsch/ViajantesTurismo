@@ -61,8 +61,8 @@ public sealed class ReviewPageTests : BunitContext
         await cut.WaitForAssertionAsync(() =>
         {
             var alert = cut.Find(".alert.alert-danger");
-            Assert.Contains("We couldn't create the customer right now. Please try again.", alert.TextContent, StringComparison.Ordinal);
-            Assert.DoesNotContain("Duplicate email", alert.TextContent, StringComparison.Ordinal);
+            alert.TextContent.ShouldContain("We couldn't create the customer right now. Please try again.", StringComparison.Ordinal);
+            alert.TextContent.ShouldNotContain("Duplicate email");
         });
     }
 
