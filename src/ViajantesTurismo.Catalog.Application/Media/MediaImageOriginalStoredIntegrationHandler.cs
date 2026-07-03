@@ -69,7 +69,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         }
         catch (ImageProcessingException)
         {
-            if (image.HasPublicVariants())
+            if (image.HasPublicVariants)
             {
                 return;
             }

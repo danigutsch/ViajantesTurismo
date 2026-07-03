@@ -125,13 +125,9 @@ public sealed class PublicMediaImage
     public string? Copyright { get; private set; }
 
     /// <summary>
-    /// Returns whether the image has public variants that can be shown in the catalog.
+    /// Gets a value indicating whether the image has public variants that can be shown in the catalog.
     /// </summary>
-    /// <returns><see langword="true" /> when the image is ready and has responsive variants.</returns>
-    public bool HasPublicVariants()
-    {
-        return ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
-    }
+    public bool HasPublicVariants => ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
 
     /// <summary>
     /// Returns whether the image already has public variants for a processing version.
@@ -142,7 +138,7 @@ public sealed class PublicMediaImage
     {
         var versionSegment = string.Create(CultureInfo.InvariantCulture, $"/v{processingVersion}/");
 
-        return HasPublicVariants()
+        return HasPublicVariants
             && _responsiveVariants.All(variant => variant.Uri.AbsolutePath.Contains(versionSegment, StringComparison.Ordinal));
     }
 }

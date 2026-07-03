@@ -13,9 +13,9 @@ public sealed class PublicMediaImageTests
         var readyImageWithoutVariants = PublicMediaImageTestFactory.CreateReadyImageWithoutVariants(Guid.CreateVersion7());
 
         // Act
-        var readyResult = readyImage.HasPublicVariants();
-        var pendingResult = pendingImage.HasPublicVariants();
-        var noVariantsResult = readyImageWithoutVariants.HasPublicVariants();
+        var readyResult = readyImage.HasPublicVariants;
+        var pendingResult = pendingImage.HasPublicVariants;
+        var noVariantsResult = readyImageWithoutVariants.HasPublicVariants;
 
         // Assert
         readyResult.ShouldBe(true);
