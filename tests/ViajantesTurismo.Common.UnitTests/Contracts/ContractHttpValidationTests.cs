@@ -82,6 +82,26 @@ public sealed class ContractHttpValidationTests
     }
 
     [Fact]
+    public async Task Ensure_success_preserves_not_supported_exception_for_non_json_validation_problem()
+    {
+        using var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new ContractHttpValidationNotSupportedContent()
+        };
+
+        var exception = await Assert.ThrowsAsync<ContractValidationException>(() =>
+            ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+                response,
+                ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+        Assert.IsType<NotSupportedException>(exception.InnerException);
+        Assert.Empty(exception.ValidationErrors);
+        Assert.Equal("Validation problem response body was not JSON.", exception.Message);
+    }
+
+    [Fact]
     public async Task Ensure_success_throws_validation_exception_when_validation_problem_has_no_errors()
     {
         using var response = new HttpResponseMessage(HttpStatusCode.BadRequest)

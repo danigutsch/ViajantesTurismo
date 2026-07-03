@@ -1,4 +1,5 @@
 using EditPresentation = ViajantesTurismo.Management.Web.Components.Pages.Catalog.EditPresentation;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -61,5 +62,23 @@ public sealed class EditPresentationPageTests : BunitContext
 
         // Assert
         Assert.Contains("Catalog tour presentation could not be loaded", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_fallback_error_when_validation_has_no_messages()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException("Validation problem response body was not JSON.");
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("Catalog tour presentation could not be saved", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        Assert.Contains("Catalog tour presentation could not be saved", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
     }
 }

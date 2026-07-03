@@ -132,7 +132,9 @@ else
         }
         catch (ContractValidationException exception)
         {
-            _errorMessage = exception.Message;
+            _errorMessage = exception.ValidationErrors.Count == 0
+                ? "Catalog tour presentation could not be saved. Try again later."
+                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
         }
         catch (HttpRequestException)
         {

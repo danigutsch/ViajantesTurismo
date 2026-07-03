@@ -45,6 +45,10 @@ public static class ContractHttpValidation
         {
             throw new ContractValidationException("Validation problem response body was malformed.", exception);
         }
+        catch (NotSupportedException exception)
+        {
+            throw new ContractValidationException("Validation problem response body was not JSON.", exception);
+        }
 
         if (problem?.Errors is null || problem.Errors.Count == 0)
         {
