@@ -4,9 +4,14 @@ using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
-internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
+internal sealed class TestCatalogTourReadModelStore(TimeProvider timeProvider) : ICatalogTourReadModelStore
 {
     private readonly ConcurrentDictionary<Guid, CatalogTourDraftReadModel> toursById = new();
+
+    public TestCatalogTourReadModelStore()
+        : this(TimeProvider.System)
+    {
+    }
 
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
@@ -42,7 +47,7 @@ internal sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
             Title = StringSanitizer.Sanitize(update.Title) ?? string.Empty,
             Slug = StringSanitizer.Sanitize(update.Slug) ?? string.Empty,
             IsPublished = update.IsPublished,
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = timeProvider.GetUtcNow()
         };
         toursById[catalogTourId] = updated;
 

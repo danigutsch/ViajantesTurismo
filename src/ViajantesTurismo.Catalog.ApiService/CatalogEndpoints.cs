@@ -7,7 +7,6 @@ using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicTheme;
-using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
@@ -161,7 +160,7 @@ internal static class CatalogEndpoints
         CancellationToken ct)
     {
         var tours = await store.ListTours(ct);
-        var publishedTours = tours.Where(IsPublished).ToArray();
+        var publishedTours = tours.Where(tour => tour.IsPubliclyVisible).ToArray();
         var imagesByTour = await imageStore.ListByTours([.. publishedTours.Select(tour => tour.CatalogTourId)], ct);
 
         return
@@ -207,13 +206,10 @@ internal static class CatalogEndpoints
             return ToValidationProblem(content.ErrorDetails);
         }
 
-        if (content.Value.Variants.All(variant => !variant.RequiresHumanReview))
+        var publish = content.Value.PublishIfReady();
+        if (publish.IsFailure)
         {
-            var publish = content.Value.Publish();
-            if (publish.IsFailure)
-            {
-                return ToValidationProblem(publish.ErrorDetails);
-            }
+            return ToValidationProblem(publish.ErrorDetails);
         }
 
         await store.SaveContent(content.Value, ct);
@@ -232,36 +228,15 @@ internal static class CatalogEndpoints
             return Results.BadRequest();
         }
 
-        var title = StringSanitizer.Sanitize(request.Title) ?? string.Empty;
-        var slug = StringSanitizer.Sanitize(request.Slug) ?? string.Empty;
-        var errors = new Dictionary<string, string[]>();
-
-        if (string.IsNullOrWhiteSpace(title))
+        var presentation = CatalogTourPresentationUpdate.Create(request.Title, request.Slug, request.IsPublished);
+        if (presentation.IsFailure)
         {
-            errors[nameof(request.Title)] = ["Title is required."];
-        }
-        else if (title.Length > ContractConstants.MaxNameLength)
-        {
-            errors[nameof(request.Title)] = [$"Title cannot exceed {ContractConstants.MaxNameLength} characters."];
-        }
-
-        if (string.IsNullOrWhiteSpace(slug))
-        {
-            errors[nameof(request.Slug)] = ["Slug is required."];
-        }
-        else if (slug.Length > ContractConstants.MaxSlugLength)
-        {
-            errors[nameof(request.Slug)] = [$"Slug cannot exceed {ContractConstants.MaxSlugLength} characters."];
-        }
-
-        if (errors.Count > 0)
-        {
-            return Results.ValidationProblem(errors);
+            return ToValidationProblem(presentation.ErrorDetails);
         }
 
         var updated = await store.UpdatePresentation(
             id,
-            new CatalogTourPresentationUpdate(title, slug, request.IsPublished),
+            presentation.Value,
             ct);
 
         if (updated is null)
@@ -312,7 +287,13 @@ internal static class CatalogEndpoints
             return Results.ValidationProblem(errors);
         }
 
-        foreach (var link in request.TourLinks)
+        var image = ToDomainMediaImage(request);
+        if (image.IsFailure)
+        {
+            return ToValidationProblem(image.ErrorDetails);
+        }
+
+        foreach (var link in image.Value.TourLinks)
         {
             var tour = await store.GetTour(link.CatalogTourId, ct);
             if (tour is null)
@@ -321,9 +302,8 @@ internal static class CatalogEndpoints
             }
         }
 
-        var image = ToDomainMediaImage(request);
-        await imageStore.Upsert(image, ct);
-        return Results.Ok(MapMediaImage(image));
+        await imageStore.Upsert(image.Value, ct);
+        return Results.Ok(MapMediaImage(image.Value));
     }
 
     private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images = null)
@@ -343,10 +323,8 @@ internal static class CatalogEndpoints
 
     private static CatalogTourImageDto[] MapImages(IReadOnlyList<PublicMediaImage> images)
     {
-        return images
-            .OrderByDescending(IsCover)
-            .ThenBy(GetDisplayOrder)
-            .ThenBy(image => image.Id)
+        return PublicMediaImage
+            .OrderForGallery(images)
             .Select(MapImage)
             .ToArray();
     }
@@ -360,8 +338,8 @@ internal static class CatalogEndpoints
     {
         return new CatalogTourImageDto
         {
-            SortOrder = GetDisplayOrder(image),
-            IsCover = IsCover(image),
+            SortOrder = image.DisplayOrder,
+            IsCover = image.IsCover,
             Uri = GetPublicImageUri(image),
             AltText = image.AltText,
             Caption = image.Caption,
@@ -376,134 +354,32 @@ internal static class CatalogEndpoints
     {
         var errors = new Dictionary<string, string[]>();
 
-        ValidateSourceUri(errors, image.SourceUri);
-        ValidateAltText(errors, image.AltText);
-        ValidateDimensions(errors, image.Dimensions);
-        ValidateRequiredLength(errors, nameof(PublicMediaImageDto.Checksum), image.Checksum, ContractConstants.MaxChecksumLength);
-        ValidateRequiredLength(errors, nameof(PublicMediaImageDto.ContentType), image.ContentType, ContractConstants.MaxContentTypeLength);
-        ValidatePositiveFileSize(errors, image.FileSizeBytes);
-        ValidateProcessingStatus(errors, image.ProcessingStatus);
-        ValidateTourLinks(errors, image.TourLinks);
-        ValidateResponsiveVariants(errors, image.ResponsiveVariants, image.ProcessingStatus);
-        ValidateTags(errors, image.Tags);
-        ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Caption), image.Caption, ContractConstants.MaxCaptionLength);
-        ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Attribution), image.Attribution, ContractConstants.MaxAttributionLength);
-        ValidateOptionalLength(errors, nameof(PublicMediaImageDto.Copyright), image.Copyright, ContractConstants.MaxCopyrightLength);
+        ValidateMediaShape(errors, image);
 
         return errors;
     }
 
-    private static void ValidateSourceUri(Dictionary<string, string[]> errors, Uri? sourceUri)
+    private static void ValidateMediaShape(Dictionary<string, string[]> errors, PublicMediaImageDto image)
     {
-        if (!IsHttpUri(sourceUri))
-        {
-            errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI."];
-        }
-    }
-
-    private static void ValidateAltText(Dictionary<string, string[]> errors, string? value)
-    {
-        var altText = StringSanitizer.Sanitize(value) ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(altText))
-        {
-            errors[nameof(PublicMediaImageDto.AltText)] = ["Alt text is required."];
-        }
-        else if (altText.Length > ContractConstants.MaxAltTextLength)
-        {
-            errors[nameof(PublicMediaImageDto.AltText)] = [$"Alt text cannot exceed {ContractConstants.MaxAltTextLength} characters."];
-        }
-    }
-
-    private static void ValidateDimensions(Dictionary<string, string[]> errors, MediaImageDimensionsDto? dimensions)
-    {
-        if (dimensions is null)
+        if (image.Dimensions is null)
         {
             errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions are required."];
         }
-        else if (dimensions.Width <= 0 || dimensions.Height <= 0)
-        {
-            errors[nameof(PublicMediaImageDto.Dimensions)] = ["Dimensions must be positive."];
-        }
-    }
 
-    private static void ValidatePositiveFileSize(Dictionary<string, string[]> errors, long fileSizeBytes)
-    {
-        if (fileSizeBytes <= 0)
+        if (image.TourLinks is null || image.TourLinks.Any(link => link is null))
         {
-            errors[nameof(PublicMediaImageDto.FileSizeBytes)] = ["File size must be positive."];
-        }
-    }
-
-    private static void ValidateProcessingStatus(Dictionary<string, string[]> errors, MediaImageProcessingStatusDto processingStatus)
-    {
-        if (processingStatus == MediaImageProcessingStatusDto.None || !Enum.IsDefined(processingStatus))
-        {
-            errors[nameof(PublicMediaImageDto.ProcessingStatus)] = ["Processing status is required."];
-        }
-    }
-
-    private static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLinkDto?>? tourLinks)
-    {
-        if (tourLinks is null || tourLinks.Count == 0)
-        {
-            errors[nameof(PublicMediaImageDto.TourLinks)] = ["At least one tour link is required."];
-        }
-        else if (tourLinks.Any(link => link is null || link.CatalogTourId == Guid.Empty || link.DisplayOrder < 0))
-        {
-            errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links require a tour id and non-negative display order."];
-        }
-        else if (tourLinks.OfType<MediaImageTourLinkDto>().Select(link => link.CatalogTourId).Distinct().Count() != tourLinks.Count)
-        {
-            errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links cannot contain duplicate tour ids."];
-        }
-    }
-
-    private static void ValidateResponsiveVariants(
-        Dictionary<string, string[]> errors,
-        IReadOnlyCollection<MediaImageResponsiveVariantDto?>? responsiveVariants,
-        MediaImageProcessingStatusDto processingStatus)
-    {
-        if (responsiveVariants is null || responsiveVariants.Any(IsInvalidResponsiveVariant))
-        {
-            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute URIs, positive dimensions, content type, and file size."];
-        }
-        else if (processingStatus == MediaImageProcessingStatusDto.Ready && responsiveVariants.Count == 0)
-        {
-            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Ready images require at least one processed public variant."];
-        }
-    }
-
-    private static void ValidateTags(Dictionary<string, string[]> errors, IReadOnlyCollection<string>? tags)
-    {
-        if (tags is null || tags.Any(tag => string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(tag))))
-        {
-            errors[nameof(PublicMediaImageDto.Tags)] = ["Tags cannot contain blank values."];
-        }
-    }
-
-    private static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariantDto? variant)
-    {
-        if (variant is null)
-        {
-            return true;
+            errors[nameof(PublicMediaImageDto.TourLinks)] = ["Tour links are required."];
         }
 
-        var contentType = StringSanitizer.Sanitize(variant.ContentType);
+        if (image.ResponsiveVariants is null || image.ResponsiveVariants.Any(variant => variant is null))
+        {
+            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants are required."];
+        }
 
-        return variant.Uri is null
-            || !IsHttpUri(variant.Uri)
-            || variant.Width <= 0
-            || variant.Height <= 0
-            || string.IsNullOrWhiteSpace(contentType)
-            || contentType.Length > ContractConstants.MaxContentTypeLength
-            || variant.FileSizeBytes <= 0;
-    }
-
-    private static bool IsHttpUri(Uri? uri)
-    {
-        return uri is not null
-            && uri.IsAbsoluteUri
-            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+        if (image.Tags is null)
+        {
+            errors[nameof(PublicMediaImageDto.Tags)] = ["Tags are required."];
+        }
     }
 
     private static IReadOnlyList<PublicMediaImage> GetImages(
@@ -513,47 +389,27 @@ internal static class CatalogEndpoints
         return imagesByTour.TryGetValue(tourId, out var images) ? images : [];
     }
 
-    private static void ValidateRequiredLength(Dictionary<string, string[]> errors, string field, string? value, int maxLength)
+    private static Result<PublicMediaImage> ToDomainMediaImage(PublicMediaImageDto image)
     {
-        var sanitized = StringSanitizer.Sanitize(value);
-        if (string.IsNullOrWhiteSpace(sanitized))
-        {
-            errors[field] = [$"{field} is required."];
-        }
-        else if (sanitized.Length > maxLength)
-        {
-            errors[field] = [$"{field} cannot exceed {maxLength} characters."];
-        }
-    }
-
-    private static void ValidateOptionalLength(Dictionary<string, string[]> errors, string field, string? value, int maxLength)
-    {
-        var sanitized = StringSanitizer.Sanitize(value);
-        if (sanitized?.Length > maxLength)
-        {
-            errors[field] = [$"{field} cannot exceed {maxLength} characters."];
-        }
-    }
-
-    private static PublicMediaImage ToDomainMediaImage(PublicMediaImageDto image)
-    {
-        return new PublicMediaImage(
+        return PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = image.Id,
-                SourceUri = image.SourceUri,
-                Checksum = StringSanitizer.Sanitize(image.Checksum) ?? string.Empty,
-                ContentType = StringSanitizer.Sanitize(image.ContentType) ?? string.Empty,
+                SourceUri = image.SourceUri ?? new Uri("about:blank"),
+                Checksum = image.Checksum ?? string.Empty,
+                ContentType = image.ContentType ?? string.Empty,
                 FileSizeBytes = image.FileSizeBytes,
-                Dimensions = new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
+                Dimensions = image.Dimensions is null
+                    ? new MediaImageDimensions(0, 0)
+                    : new MediaImageDimensions(image.Dimensions.Width, image.Dimensions.Height),
                 ProcessingStatus = (MediaImageProcessingStatus)(int)image.ProcessingStatus,
-                AltText = StringSanitizer.Sanitize(image.AltText) ?? string.Empty,
-                Caption = StringSanitizer.Sanitize(image.Caption),
-                Attribution = StringSanitizer.Sanitize(image.Attribution),
-                Copyright = StringSanitizer.Sanitize(image.Copyright)
+                AltText = image.AltText ?? string.Empty,
+                Caption = image.Caption,
+                Attribution = image.Attribution,
+                Copyright = image.Copyright
             },
             image.ResponsiveVariants.Select(ToDomainResponsiveVariant).ToArray(),
-            StringSanitizer.SanitizeCollection(image.Tags),
+            image.Tags,
             image.TourLinks.Select(link => new MediaImageTourLink(link.CatalogTourId, link.DisplayOrder, link.IsCover)).ToArray());
     }
 
@@ -563,7 +419,7 @@ internal static class CatalogEndpoints
             variant.Uri,
             variant.Width,
             variant.Height,
-            StringSanitizer.Sanitize(variant.ContentType) ?? string.Empty,
+            variant.ContentType ?? string.Empty,
             variant.FileSizeBytes);
     }
 
@@ -607,25 +463,7 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static Uri GetPublicImageUri(PublicMediaImage image)
-    {
-        return image.ResponsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault()?.Uri ?? image.SourceUri;
-    }
-
-    private static int GetDisplayOrder(PublicMediaImage image)
-    {
-        return image.TourLinks.Count == 0 ? 0 : image.TourLinks.Min(link => link.DisplayOrder);
-    }
-
-    private static bool IsCover(PublicMediaImage image)
-    {
-        return image.TourLinks.Any(link => link.IsCover);
-    }
-
-    private static bool IsPublished(CatalogTourDraftReadModel tour)
-    {
-        return tour.IsPublished;
-    }
+    private static Uri GetPublicImageUri(PublicMediaImage image) => image.PublicUri;
 
     private static PublicContentDto MapPublicContent(EditablePublicContent content)
     {

@@ -1,4 +1,7 @@
 using System.Globalization;
+using SharedKernel.Results;
+using ViajantesTurismo.Catalog.Contracts;
+using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;
 
@@ -125,9 +128,130 @@ public sealed class PublicMediaImage
     public string? Copyright { get; private set; }
 
     /// <summary>
+    /// Gets the image display order within its current tour gallery view.
+    /// </summary>
+    public int DisplayOrder => _tourLinks.Count == 0 ? 0 : _tourLinks.Min(link => link.DisplayOrder);
+
+    /// <summary>
+    /// Gets a value indicating whether the image is a cover image in its current tour gallery view.
+    /// </summary>
+    public bool IsCover => _tourLinks.Any(link => link.IsCover);
+
+    /// <summary>
+    /// Gets the public image URI selected for catalog display.
+    /// </summary>
+    public Uri PublicUri => _responsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault()?.Uri ?? SourceUri;
+
+    /// <summary>
     /// Gets a value indicating whether the image has public variants that can be shown in the catalog.
     /// </summary>
     public bool HasPublicVariants => ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
+
+    /// <summary>
+    /// Creates a public media image after validating catalog media rules.
+    /// </summary>
+    /// <param name="metadata">The scalar media image metadata.</param>
+    /// <param name="responsiveVariants">The public responsive renditions.</param>
+    /// <param name="tags">The editorial tags for discovery and grouping.</param>
+    /// <param name="tourLinks">The tour gallery placements.</param>
+    /// <returns>A result containing the media image when valid.</returns>
+    public static Result<PublicMediaImage> Create(
+        PublicMediaImageMetadata metadata,
+        IReadOnlyList<MediaImageResponsiveVariant> responsiveVariants,
+        IReadOnlyList<string> tags,
+        IReadOnlyList<MediaImageTourLink> tourLinks)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(responsiveVariants);
+        ArgumentNullException.ThrowIfNull(tags);
+        ArgumentNullException.ThrowIfNull(tourLinks);
+
+        var errors = new Dictionary<string, string[]>(StringComparer.Ordinal);
+
+        if (!IsHttpUri(metadata.SourceUri))
+        {
+            errors[nameof(PublicMediaImageMetadata.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI."];
+        }
+
+        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.AltText), metadata.AltText, ContractConstants.MaxAltTextLength, "Alt text is required.", "Alt text");
+        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.Checksum), metadata.Checksum, ContractConstants.MaxChecksumLength, "Checksum is required.", nameof(PublicMediaImageMetadata.Checksum));
+        ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.ContentType), metadata.ContentType, ContractConstants.MaxContentTypeLength, "ContentType is required.", nameof(PublicMediaImageMetadata.ContentType));
+        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Caption), metadata.Caption, ContractConstants.MaxCaptionLength, nameof(PublicMediaImageMetadata.Caption));
+        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Attribution), metadata.Attribution, ContractConstants.MaxAttributionLength, nameof(PublicMediaImageMetadata.Attribution));
+        ValidateOptionalText(errors, nameof(PublicMediaImageMetadata.Copyright), metadata.Copyright, ContractConstants.MaxCopyrightLength, nameof(PublicMediaImageMetadata.Copyright));
+
+        if (metadata.FileSizeBytes <= 0)
+        {
+            errors[nameof(PublicMediaImageMetadata.FileSizeBytes)] = ["File size must be positive."];
+        }
+
+        if (metadata.Dimensions.Width <= 0 || metadata.Dimensions.Height <= 0)
+        {
+            errors[nameof(PublicMediaImageMetadata.Dimensions)] = ["Dimensions must be positive."];
+        }
+
+        if (metadata.ProcessingStatus == MediaImageProcessingStatus.None || !Enum.IsDefined(metadata.ProcessingStatus))
+        {
+            errors[nameof(PublicMediaImageMetadata.ProcessingStatus)] = ["Processing status is required."];
+        }
+
+        ValidateTourLinks(errors, tourLinks);
+        ValidateResponsiveVariants(errors, responsiveVariants, metadata.ProcessingStatus);
+
+        if (tags.Any(tag => string.IsNullOrWhiteSpace(StringSanitizer.Sanitize(tag))))
+        {
+            errors[nameof(Tags)] = ["Tags cannot contain blank values."];
+        }
+
+        return errors.Count > 0
+            ? Result.Invalid<PublicMediaImage>("Public media image is invalid.", errors)
+            : Result.Ok(new PublicMediaImage(SanitizeMetadata(metadata), SanitizeResponsiveVariants(responsiveVariants), StringSanitizer.SanitizeCollection(tags), tourLinks));
+    }
+
+    /// <summary>
+    /// Orders images by catalog gallery placement.
+    /// </summary>
+    /// <param name="images">The images to order.</param>
+    /// <returns>The ordered images.</returns>
+    public static IOrderedEnumerable<PublicMediaImage> OrderForGallery(IEnumerable<PublicMediaImage> images)
+    {
+        ArgumentNullException.ThrowIfNull(images);
+
+        return images
+            .OrderByDescending(image => image.IsCover)
+            .ThenBy(image => image.DisplayOrder)
+            .ThenBy(image => image.Id);
+    }
+
+    /// <summary>
+    /// Returns whether this image belongs to a Catalog tour.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <returns><see langword="true" /> when this image is linked to the tour.</returns>
+    public bool BelongsToTour(Guid catalogTourId)
+    {
+        return _tourLinks.Any(link => link.CatalogTourId == catalogTourId);
+    }
+
+    /// <summary>
+    /// Returns whether this image is the cover image for a Catalog tour.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <returns><see langword="true" /> when the tour link marks this image as the cover.</returns>
+    public bool IsCoverForTour(Guid catalogTourId)
+    {
+        return GetTourLink(catalogTourId).IsCover;
+    }
+
+    /// <summary>
+    /// Returns the display order for a Catalog tour.
+    /// </summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <returns>The image display order for the tour gallery.</returns>
+    public int GetDisplayOrderForTour(Guid catalogTourId)
+    {
+        return GetTourLink(catalogTourId).DisplayOrder;
+    }
 
     /// <summary>
     /// Gets a value indicating whether existing public variants should remain visible after processing fails.
@@ -155,5 +279,151 @@ public sealed class PublicMediaImage
     public bool ShouldProcessOriginal(int processingVersion)
     {
         return !HasPublicVariantsForProcessingVersion(processingVersion);
+    }
+
+    /// <summary>
+    /// Creates a copy with updated processing output.
+    /// </summary>
+    /// <param name="dimensions">The processed image dimensions.</param>
+    /// <param name="status">The processing status.</param>
+    /// <param name="variants">The processed public variants.</param>
+    /// <returns>The updated media image.</returns>
+    public PublicMediaImage WithProcessingResult(
+        MediaImageDimensions dimensions,
+        MediaImageProcessingStatus status,
+        IReadOnlyList<MediaImageResponsiveVariant> variants)
+    {
+        ArgumentNullException.ThrowIfNull(dimensions);
+        ArgumentNullException.ThrowIfNull(variants);
+
+        return new PublicMediaImage(
+            new PublicMediaImageMetadata
+            {
+                Id = Id,
+                SourceUri = SourceUri,
+                Checksum = Checksum,
+                ContentType = ContentType,
+                FileSizeBytes = FileSizeBytes,
+                Dimensions = dimensions,
+                ProcessingStatus = status,
+                AltText = AltText,
+                Caption = Caption,
+                Attribution = Attribution,
+                Copyright = Copyright,
+            },
+            variants,
+            Tags,
+            TourLinks);
+    }
+
+    private MediaImageTourLink GetTourLink(Guid catalogTourId)
+    {
+        return _tourLinks.Single(link => link.CatalogTourId == catalogTourId);
+    }
+
+    private static PublicMediaImageMetadata SanitizeMetadata(PublicMediaImageMetadata metadata)
+    {
+        return new PublicMediaImageMetadata
+        {
+            Id = metadata.Id,
+            SourceUri = metadata.SourceUri,
+            Checksum = StringSanitizer.Sanitize(metadata.Checksum),
+            ContentType = StringSanitizer.Sanitize(metadata.ContentType),
+            FileSizeBytes = metadata.FileSizeBytes,
+            Dimensions = metadata.Dimensions,
+            ProcessingStatus = metadata.ProcessingStatus,
+            AltText = StringSanitizer.Sanitize(metadata.AltText),
+            Caption = StringSanitizer.Sanitize(metadata.Caption),
+            Attribution = StringSanitizer.Sanitize(metadata.Attribution),
+            Copyright = StringSanitizer.Sanitize(metadata.Copyright),
+        };
+    }
+
+    private static MediaImageResponsiveVariant[] SanitizeResponsiveVariants(IEnumerable<MediaImageResponsiveVariant> variants)
+    {
+        return [.. variants.Select(static variant => variant with { ContentType = StringSanitizer.Sanitize(variant.ContentType) })];
+    }
+
+    private static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLink> tourLinks)
+    {
+        if (tourLinks.Count == 0)
+        {
+            errors[nameof(TourLinks)] = ["At least one tour link is required."];
+        }
+        else if (tourLinks.Any(link => link.CatalogTourId == Guid.Empty || link.DisplayOrder < 0))
+        {
+            errors[nameof(TourLinks)] = ["Tour links require a tour id and non-negative display order."];
+        }
+        else if (tourLinks.Select(link => link.CatalogTourId).Distinct().Count() != tourLinks.Count)
+        {
+            errors[nameof(TourLinks)] = ["Tour links cannot contain duplicate tour ids."];
+        }
+    }
+
+    private static void ValidateResponsiveVariants(
+        Dictionary<string, string[]> errors,
+        IReadOnlyCollection<MediaImageResponsiveVariant> responsiveVariants,
+        MediaImageProcessingStatus processingStatus)
+    {
+        if (responsiveVariants.Any(IsInvalidResponsiveVariant))
+        {
+            errors[nameof(ResponsiveVariants)] = ["Responsive variants must include absolute URIs, positive dimensions, content type, and file size."];
+        }
+        else if (processingStatus == MediaImageProcessingStatus.Ready && responsiveVariants.Count == 0)
+        {
+            errors[nameof(ResponsiveVariants)] = ["Ready images require at least one processed public variant."];
+        }
+    }
+
+    private static bool IsInvalidResponsiveVariant(MediaImageResponsiveVariant variant)
+    {
+        var contentType = StringSanitizer.Sanitize(variant.ContentType);
+
+        return !IsHttpUri(variant.Uri)
+            || variant.Width <= 0
+            || variant.Height <= 0
+            || string.IsNullOrWhiteSpace(contentType)
+            || contentType.Length > ContractConstants.MaxContentTypeLength
+            || variant.FileSizeBytes <= 0;
+    }
+
+    private static bool IsHttpUri(Uri? uri)
+    {
+        return uri is not null
+            && uri.IsAbsoluteUri
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+    }
+
+    private static void ValidateRequiredText(
+        Dictionary<string, string[]> errors,
+        string field,
+        string value,
+        int maxLength,
+        string requiredMessage,
+        string displayName)
+    {
+        var sanitized = StringSanitizer.Sanitize(value);
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            errors[field] = [requiredMessage];
+        }
+        else if (sanitized.Length > maxLength)
+        {
+            errors[field] = [$"{displayName} cannot exceed {maxLength} characters."];
+        }
+    }
+
+    private static void ValidateOptionalText(
+        Dictionary<string, string[]> errors,
+        string field,
+        string? value,
+        int maxLength,
+        string displayName)
+    {
+        var sanitized = StringSanitizer.Sanitize(value);
+        if (sanitized?.Length > maxLength)
+        {
+            errors[field] = [$"{displayName} cannot exceed {maxLength} characters."];
+        }
     }
 }

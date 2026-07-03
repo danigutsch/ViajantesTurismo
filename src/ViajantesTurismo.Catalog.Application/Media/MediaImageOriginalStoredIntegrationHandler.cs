@@ -65,7 +65,12 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 }
             }
 
-            await imageStore.Upsert(CloneWithProcessingResult(image, result, MediaImageProcessingStatus.Ready, variants), ct).ConfigureAwait(false);
+            await imageStore.Upsert(
+                image.WithProcessingResult(
+                    new MediaImageDimensions(result.Width, result.Height),
+                    MediaImageProcessingStatus.Ready,
+                    variants),
+                ct).ConfigureAwait(false);
         }
         catch (ImageProcessingException)
         {
@@ -74,11 +79,9 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 return;
             }
 
-            await imageStore.Upsert(CloneWithProcessingResult(
-                image,
-                new ImageProcessingResult(image.Dimensions.Width, image.Dimensions.Height, []),
-                MediaImageProcessingStatus.Failed,
-                []), ct).ConfigureAwait(false);
+            await imageStore.Upsert(
+                image.WithProcessingResult(image.Dimensions, MediaImageProcessingStatus.Failed, []),
+                ct).ConfigureAwait(false);
         }
     }
 
@@ -104,32 +107,6 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
             new("1920-webp", ImageOutputFormat.WebP, 1920, 80),
             new("1920-jpeg", ImageOutputFormat.Jpeg, 1920, 82),
         ];
-    }
-
-    private static PublicMediaImage CloneWithProcessingResult(
-        PublicMediaImage image,
-        ImageProcessingResult result,
-        MediaImageProcessingStatus status,
-        IReadOnlyList<MediaImageResponsiveVariant> variants)
-    {
-        return new PublicMediaImage(
-            new PublicMediaImageMetadata
-            {
-                Id = image.Id,
-                SourceUri = image.SourceUri,
-                Checksum = image.Checksum,
-                ContentType = image.ContentType,
-                FileSizeBytes = image.FileSizeBytes,
-                Dimensions = new MediaImageDimensions(result.Width, result.Height),
-                ProcessingStatus = status,
-                AltText = image.AltText,
-                Caption = image.Caption,
-                Attribution = image.Attribution,
-                Copyright = image.Copyright,
-            },
-            variants,
-            image.Tags,
-            image.TourLinks);
     }
 
     private static string CreateVariantObjectKey(Guid mediaImageId, int processingVersion, ProcessedImageVariant variant)

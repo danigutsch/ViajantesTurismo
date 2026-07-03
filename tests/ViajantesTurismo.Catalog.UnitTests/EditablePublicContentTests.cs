@@ -165,6 +165,22 @@ public sealed class EditablePublicContentTests
     }
 
     [Fact]
+    public void CanPublish_is_true_only_when_all_variants_are_reviewed()
+    {
+        // Arrange
+        var reviewedContent = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+        var reviewRequiredContent = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
+
+        // Act
+        var reviewedResult = reviewedContent.CanPublish;
+        var reviewRequiredResult = reviewRequiredContent.CanPublish;
+
+        // Assert
+        reviewedResult.ShouldBe(true);
+        reviewRequiredResult.ShouldBe(false);
+    }
+
+    [Fact]
     public void IsPubliclyVisible_is_true_only_after_publication()
     {
         // Arrange

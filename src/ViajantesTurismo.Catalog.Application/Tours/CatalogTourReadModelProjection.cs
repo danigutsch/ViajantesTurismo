@@ -23,15 +23,7 @@ public sealed class CatalogTourReadModelProjection(
         }
 
         await readModelStore.UpsertDraft(
-            new CatalogTourDraftReadModel(
-                draftCreated.CatalogTourId,
-                draftCreated.AdminTourId,
-                draftCreated.Identifier,
-                draftCreated.Title,
-                draftCreated.Identifier.Trim(),
-                false,
-                envelope.Position,
-                envelope.RecordedAt),
+            CatalogTourDraftReadModel.FromDraftCreated(draftCreated, envelope.Position, envelope.RecordedAt),
             ct);
     }
 }

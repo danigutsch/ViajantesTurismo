@@ -77,6 +77,11 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     public bool IsPubliclyVisible => PublicationState == PublicContentPublicationState.Published;
 
     /// <summary>
+    /// Gets a value indicating whether all variants are approved for publication.
+    /// </summary>
+    public bool CanPublish => _variants.All(variant => !variant.RequiresHumanReview);
+
+    /// <summary>
     /// Creates editable public website content with supported language variants.
     /// </summary>
     /// <param name="key">The stable content key.</param>
@@ -122,13 +127,22 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// <returns>A result indicating whether publication was allowed.</returns>
     public Result Publish()
     {
-        if (_variants.Any(variant => variant.RequiresHumanReview))
+        if (!CanPublish)
         {
             return PublicContentErrors.ReviewRequiredBeforePublishing();
         }
 
         PublicationState = PublicContentPublicationState.Published;
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// Publishes content when all variants are approved, otherwise leaves it in review.
+    /// </summary>
+    /// <returns>A result indicating whether auto-publication was allowed or skipped.</returns>
+    public Result PublishIfReady()
+    {
+        return CanPublish ? Publish() : Result.Ok();
     }
 
     /// <summary>
@@ -160,6 +174,24 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
         PublicationState = GetInitialPublicationState(variantsArray);
 
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// Replaces this content with another version for the same key.
+    /// </summary>
+    /// <param name="replacement">The replacement content.</param>
+    /// <returns>A result indicating whether replacement was allowed.</returns>
+    public Result ReplaceWith(EditablePublicContent replacement)
+    {
+        ArgumentNullException.ThrowIfNull(replacement);
+
+        var replace = ReplaceVariants(replacement.SourceLanguage, replacement.Variants);
+        return replace.IsFailure switch
+        {
+            true => replace,
+            false when replacement.IsPubliclyVisible => Publish(),
+            _ => Result.Ok(),
+        };
     }
 
     /// <summary>

@@ -1,3 +1,5 @@
+using ViajantesTurismo.Catalog.Domain.Tours;
+
 namespace ViajantesTurismo.Catalog.Application.Tours;
 
 /// <summary>
@@ -19,4 +21,35 @@ public sealed record CatalogTourDraftReadModel(
     string Slug,
     bool IsPublished,
     long Position,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt)
+{
+    /// <summary>
+    /// Gets a value indicating whether this tour can be shown on public endpoints.
+    /// </summary>
+    public bool IsPubliclyVisible => IsPublished;
+
+    /// <summary>
+    /// Creates a draft read model from a Catalog tour creation event.
+    /// </summary>
+    /// <param name="draftCreated">The source event.</param>
+    /// <param name="position">The event-store position.</param>
+    /// <param name="recordedAt">The event-recorded timestamp.</param>
+    /// <returns>The initialized draft read model.</returns>
+    public static CatalogTourDraftReadModel FromDraftCreated(
+        CatalogTourDraftCreated draftCreated,
+        long position,
+        DateTimeOffset recordedAt)
+    {
+        ArgumentNullException.ThrowIfNull(draftCreated);
+
+        return new CatalogTourDraftReadModel(
+            draftCreated.CatalogTourId,
+            draftCreated.AdminTourId,
+            draftCreated.Identifier,
+            draftCreated.Title,
+            draftCreated.Identifier.Trim(),
+            IsPublished: false,
+            position,
+            recordedAt);
+    }
+}

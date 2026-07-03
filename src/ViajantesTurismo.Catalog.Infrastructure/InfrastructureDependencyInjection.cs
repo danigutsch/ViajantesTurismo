@@ -31,6 +31,7 @@ public static class InfrastructureDependencyInjection
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
 
         builder.Services.AddCatalogApplication();
+        builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddLocalMediaObjectStorage();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
         builder.Services.AddScoped<IPublicThemeSettingsStore, EfPublicThemeSettingsStore>();

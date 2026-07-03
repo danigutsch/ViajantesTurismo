@@ -639,6 +639,45 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageDto.ResponsiveVariants));
+    }
+
+    [Fact]
+    public async Task Catalog_media_image_endpoint_rejects_null_responsive_variant_uris()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var imageId = Guid.CreateVersion7();
+        using var content = new StringContent(
+            $$"""
+            {
+              "id": "{{imageId}}",
+              "sourceUri": "https://cdn.example/source.jpg",
+              "checksum": "sha256:abc",
+              "contentType": "image/jpeg",
+              "fileSizeBytes": 2048,
+              "dimensions": { "width": 1200, "height": 800 },
+              "processingStatus": 3,
+              "responsiveVariants": [{ "uri": null, "width": 640, "height": 427, "contentType": "image/jpeg", "fileSizeBytes": 1024 }],
+              "tags": ["camino"],
+              "tourLinks": [{ "catalogTourId": "{{Guid.CreateVersion7()}}", "displayOrder": 1, "isCover": true }],
+              "altText": "First image"
+            }
+            """,
+            Encoding.UTF8,
+            "application/json");
+
+        // Act
+        using var response = await client.PutAsync(
+            new Uri($"/catalog/media/images/{imageId}", UriKind.Relative),
+            content,
+            TestContext.Current.CancellationToken);
+
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
         Assert.NotNull(problem);
