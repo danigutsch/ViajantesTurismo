@@ -42,12 +42,12 @@ public sealed class CatalogApiClientIntegrationTests
         var published = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Equal("Contract Client Tour", saved.Title);
-        Assert.True(saved.IsPublished);
-        Assert.NotNull(published);
-        Assert.Equal(tourId, published.Id);
-        Assert.Equal("contract-client-tour", published.Slug);
+        saved.ShouldNotBeNull();
+        saved.Title.ShouldBe("Contract Client Tour");
+        saved.IsPublished.ShouldBeTrue();
+        published.ShouldNotBeNull();
+        published.Id.ShouldBe(tourId);
+        published.Slug.ShouldBe("contract-client-tour");
     }
 
     [Fact]
@@ -70,10 +70,10 @@ public sealed class CatalogApiClientIntegrationTests
         var read = await sut.GetContent("home.hero", cancellationToken);
 
         // Assert
-        Assert.Equal("HOME.HERO", saved.Key);
-        Assert.NotNull(read);
-        Assert.Equal("HOME.HERO", read.Key);
-        Assert.Contains(read.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Title == "Bem-vindo");
+        saved.Key.ShouldBe("HOME.HERO");
+        read.ShouldNotBeNull();
+        read.Key.ShouldBe("HOME.HERO");
+        read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Title == "Bem-vindo");
     }
 
     [Fact]
@@ -99,8 +99,8 @@ public sealed class CatalogApiClientIntegrationTests
         var read = await sut.GetTheme(cancellationToken);
 
         // Assert
-        Assert.Equal("#112233", saved.PrimaryColor);
-        Assert.Equal("#112233", read.PrimaryColor);
-        Assert.Equal("Inter", read.HeadingFontFamily);
+        saved.PrimaryColor.ShouldBe("#112233");
+        read.PrimaryColor.ShouldBe("#112233");
+        read.HeadingFontFamily.ShouldBe("Inter");
     }
 }

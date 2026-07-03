@@ -16,7 +16,7 @@ public sealed class ContractHttpValidationTests
             ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
             TestContext.Current.CancellationToken);
 
-        Assert.True(response.IsSuccessStatusCode);
+        response.IsSuccessStatusCode.ShouldBeTrue();
     }
 
     [Fact]
@@ -24,13 +24,21 @@ public sealed class ContractHttpValidationTests
     {
         using var response = new HttpResponseMessage(HttpStatusCode.NotFound);
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
-            ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+        HttpRequestException? exception = null;
+        try
+        {
+            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
                 response,
                 ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
-                TestContext.Current.CancellationToken));
+                TestContext.Current.CancellationToken);
+        }
+        catch (HttpRequestException caught)
+        {
+            exception = caught;
+        }
 
-        Assert.Equal(HttpStatusCode.NotFound, exception.StatusCode);
+        exception.ShouldNotBeNull();
+        exception.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -48,17 +56,25 @@ public sealed class ContractHttpValidationTests
                 """)
         };
 
-        var exception = await Assert.ThrowsAsync<ContractValidationException>(() =>
-            ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+        ContractValidationException? exception = null;
+        try
+        {
+            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
                 response,
                 ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
-                TestContext.Current.CancellationToken));
+                TestContext.Current.CancellationToken);
+        }
+        catch (ContractValidationException caught)
+        {
+            exception = caught;
+        }
 
-        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
-        Assert.Equal(["Name is required.", "Name is too short."], exception.ValidationErrors["Name"]);
-        Assert.Equal(["Email is invalid."], exception.ValidationErrors["Email"]);
-        Assert.Contains("Name is required.", exception.Message, StringComparison.Ordinal);
-        Assert.Contains("Email is invalid.", exception.Message, StringComparison.Ordinal);
+        exception.ShouldNotBeNull();
+        exception.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        exception.ValidationErrors["Name"].ShouldBe(["Name is required.", "Name is too short."]);
+        exception.ValidationErrors["Email"].ShouldBe(["Email is invalid."]);
+        exception.Message.ShouldContain("Name is required.", StringComparison.Ordinal);
+        exception.Message.ShouldContain("Email is invalid.", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -69,16 +85,24 @@ public sealed class ContractHttpValidationTests
             Content = new StringContent("{ not json")
         };
 
-        var exception = await Assert.ThrowsAsync<ContractValidationException>(() =>
-            ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+        ContractValidationException? exception = null;
+        try
+        {
+            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
                 response,
                 ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
-                TestContext.Current.CancellationToken));
+                TestContext.Current.CancellationToken);
+        }
+        catch (ContractValidationException caught)
+        {
+            exception = caught;
+        }
 
-        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
-        Assert.IsType<JsonException>(exception.InnerException);
-        Assert.Empty(exception.ValidationErrors);
-        Assert.Equal("Validation problem response body was malformed.", exception.Message);
+        exception.ShouldNotBeNull();
+        exception.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        exception.InnerException.ShouldBeOfType<JsonException>();
+        exception.ValidationErrors.ShouldBeEmpty();
+        exception.Message.ShouldBe("Validation problem response body was malformed.");
     }
 
     [Fact]
@@ -89,16 +113,24 @@ public sealed class ContractHttpValidationTests
             Content = new ContractHttpValidationNotSupportedContent()
         };
 
-        var exception = await Assert.ThrowsAsync<ContractValidationException>(() =>
-            ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+        ContractValidationException? exception = null;
+        try
+        {
+            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
                 response,
                 ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
-                TestContext.Current.CancellationToken));
+                TestContext.Current.CancellationToken);
+        }
+        catch (ContractValidationException caught)
+        {
+            exception = caught;
+        }
 
-        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
-        Assert.IsType<NotSupportedException>(exception.InnerException);
-        Assert.Empty(exception.ValidationErrors);
-        Assert.Equal("Validation problem response body was not JSON.", exception.Message);
+        exception.ShouldNotBeNull();
+        exception.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        exception.InnerException.ShouldBeOfType<NotSupportedException>();
+        exception.ValidationErrors.ShouldBeEmpty();
+        exception.Message.ShouldBe("Validation problem response body was not JSON.");
     }
 
     [Fact]
@@ -113,14 +145,22 @@ public sealed class ContractHttpValidationTests
                 """)
         };
 
-        var exception = await Assert.ThrowsAsync<ContractValidationException>(() =>
-            ContractHttpValidation.EnsureSuccessOrThrowValidationException(
+        ContractValidationException? exception = null;
+        try
+        {
+            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
                 response,
                 ContractHttpValidationTestsJsonContext.Default.ContractValidationProblemDto,
-                TestContext.Current.CancellationToken));
+                TestContext.Current.CancellationToken);
+        }
+        catch (ContractValidationException caught)
+        {
+            exception = caught;
+        }
 
-        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
-        Assert.Empty(exception.ValidationErrors);
-        Assert.Equal("Validation problem response body did not contain errors.", exception.Message);
+        exception.ShouldNotBeNull();
+        exception.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        exception.ValidationErrors.ShouldBeEmpty();
+        exception.Message.ShouldBe("Validation problem response body did not contain errors.");
     }
 }

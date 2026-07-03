@@ -26,8 +26,8 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => cut.Find("#content-key").GetAttribute("value") == "home.hero", TimeSpan.FromSeconds(2));
-        Assert.Contains("ReviewRequired", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("Review-required text", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("ReviewRequired", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Review-required text", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         var alert = cut.Find(".alert-danger");
-        Assert.Contains("We couldn't load public content", alert.TextContent, StringComparison.Ordinal);
+        alert.TextContent.ShouldContain("We couldn't load public content", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -58,10 +58,10 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("button.btn-outline-primary").Click();
 
         // Assert
-        Assert.Equal("Welcome", cut.Find("#pt-br-title").GetAttribute("value"));
-        Assert.Contains("Starter draft copied from source content", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("Review-required text", cut.Markup, StringComparison.Ordinal);
-        Assert.DoesNotContain("AI-assisted", cut.Markup, StringComparison.Ordinal);
+        cut.Find("#pt-br-title").GetAttribute("value").ShouldBe("Welcome");
+        cut.Markup.ShouldContain("Starter draft copied from source content", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Review-required text", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("AI-assisted");
     }
 
     [Fact]
@@ -78,9 +78,9 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("button.btn-outline-primary").Click();
 
         // Assert
-        Assert.Equal("Bem-vindo", cut.Find("#en-us-title").GetAttribute("value"));
-        Assert.Contains("Starter draft copied from source content", cut.Markup, StringComparison.Ordinal);
-        Assert.True(cut.Find("#en-us-review").HasAttribute("checked"));
+        cut.Find("#en-us-title").GetAttribute("value").ShouldBe("Bem-vindo");
+        cut.Markup.ShouldContain("Starter draft copied from source content", StringComparison.Ordinal);
+        cut.Find("#en-us-review").HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
@@ -98,8 +98,8 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("button.btn-outline-primary").Click();
 
         // Assert
-        Assert.Contains("Clear one target language title and body", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
-        Assert.Equal("Existing title", cut.Find("#pt-br-title").GetAttribute("value"));
+        cut.Find(".alert-danger").TextContent.ShouldContain("Clear one target language title and body", StringComparison.Ordinal);
+        cut.Find("#pt-br-title").GetAttribute("value").ShouldBe("Existing title");
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public sealed class PublicContentTests : BunitContext
 
         foreach (var inputId in inputIds)
         {
-            Assert.NotNull(cut.Find($"label[for='{inputId}']"));
+            cut.Find($"label[for='{inputId}']").ShouldNotBeNull();
         }
     }
 
@@ -151,11 +151,11 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
-        Assert.Equal("home.hero", publicContentApi.SavedKey);
-        Assert.NotNull(publicContentApi.SavedRequest);
-        Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.EnUs && variant.Title == "Welcome");
-        Assert.Contains(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Body == "Pedale conosco");
-        Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
+        publicContentApi.SavedKey.ShouldBe("home.hero");
+        publicContentApi.SavedRequest.ShouldNotBeNull();
+        publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.EnUs && variant.Title == "Welcome");
+        publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Body == "Pedale conosco");
+        cut.Markup.ShouldContain("Public content saved", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -173,11 +173,11 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
-        Assert.NotNull(publicContentApi.SavedRequest);
-        var portugueseVariant = Assert.Single(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr);
-        Assert.True(portugueseVariant.RequiresHumanReview);
-        Assert.Equal("Welcome", portugueseVariant.Title);
-        Assert.Contains("Public content saved", cut.Markup, StringComparison.Ordinal);
+        publicContentApi.SavedRequest.ShouldNotBeNull();
+        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
+        portugueseVariant.RequiresHumanReview.ShouldBeTrue();
+        portugueseVariant.Title.ShouldBe("Welcome");
+        cut.Markup.ShouldContain("Public content saved", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -192,8 +192,8 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("form").Submit();
 
         // Assert
-        Assert.Contains("Enter source title and body before generating a draft", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
-        Assert.Null(publicContentApi.SavedRequest);
+        cut.Find(".alert-danger").TextContent.ShouldContain("Enter source title and body before generating a draft", StringComparison.Ordinal);
+        publicContentApi.SavedRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -212,8 +212,8 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("form").Submit();
 
         // Assert
-        Assert.Contains("Confirm human review", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
-        Assert.Null(publicContentApi.SavedRequest);
+        cut.Find(".alert-danger").TextContent.ShouldContain("Confirm human review", StringComparison.Ordinal);
+        publicContentApi.SavedRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -232,10 +232,10 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
-        Assert.DoesNotContain("Confirm human review", cut.Markup, StringComparison.Ordinal);
-        Assert.NotNull(publicContentApi.SavedRequest);
-        var portugueseVariant = Assert.Single(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr);
-        Assert.False(portugueseVariant.RequiresHumanReview);
+        cut.Markup.ShouldNotContain("Confirm human review");
+        publicContentApi.SavedRequest.ShouldNotBeNull();
+        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
+        portugueseVariant.RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]
@@ -256,9 +256,9 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
-        Assert.NotNull(publicContentApi.SavedRequest);
-        var portugueseVariant = Assert.Single(publicContentApi.SavedRequest.Variants, variant => variant.Language == PublicContentLanguageDto.PtBr);
-        Assert.False(portugueseVariant.RequiresHumanReview);
+        publicContentApi.SavedRequest.ShouldNotBeNull();
+        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
+        portugueseVariant.RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]
@@ -281,7 +281,7 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => cut.Markup.Contains("Title is required", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
-        Assert.Contains("Title is required", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        cut.Find(".alert-danger").TextContent.ShouldContain("Title is required", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -302,7 +302,7 @@ public sealed class PublicContentTests : BunitContext
 
         // Assert
         cut.WaitForState(() => cut.Markup.Contains("couldn't save public content", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
-        Assert.Contains("couldn't save public content", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save public content", StringComparison.Ordinal);
     }
 
 }

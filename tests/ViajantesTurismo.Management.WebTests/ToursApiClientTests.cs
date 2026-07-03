@@ -17,9 +17,9 @@ public sealed class ToursApiClientTests
 
         var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal("/tours", requestPath);
-        var tour = Assert.Single(tours);
-        Assert.Equal("TOUR-1", tour.Identifier);
+        requestPath.ShouldBe("/tours");
+        var tour = tours.ShouldHaveSingleItem();
+        tour.Identifier.ShouldBe("TOUR-1");
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public sealed class ToursApiClientTests
 
         var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken, maxItems: 1);
 
-        Assert.Single(tours);
+        tours.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -48,9 +48,9 @@ public sealed class ToursApiClientTests
 
         var tour = await sut.GetTourById(tourId, Xunit.TestContext.Current.CancellationToken);
 
-        Assert.NotNull(tour);
-        Assert.Equal("/tours/11111111-1111-1111-1111-111111111111", requestPath);
-        Assert.Equal("First tour", tour.Name);
+        tour.ShouldNotBeNull();
+        requestPath.ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
+        tour.Name.ShouldBe("First tour");
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class ToursApiClientTests
 
         var tour = await sut.GetTourById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Null(tour);
+        tour.ShouldBeNull();
     }
 
     [Fact]
@@ -82,9 +82,9 @@ public sealed class ToursApiClientTests
 
         var location = await sut.CreateTour(AdminApiClientTestsHelpers.CreateTour(), Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpMethods.Post, requestMethod);
-        Assert.Equal("/tours", requestPath);
-        Assert.Equal("/tours/11111111-1111-1111-1111-111111111111", location.ToString());
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe("/tours");
+        location.ToString().ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class ToursApiClientTests
 
         await sut.UpdateTour(tourId, AdminApiClientTestsHelpers.UpdateTour(), Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpMethods.Put, requestMethod);
-        Assert.Equal("/tours/11111111-1111-1111-1111-111111111111", requestPath);
+        requestMethod.ShouldBe(HttpMethods.Put);
+        requestPath.ShouldBe("/tours/11111111-1111-1111-1111-111111111111");
     }
 }

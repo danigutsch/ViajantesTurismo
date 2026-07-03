@@ -10,6 +10,7 @@
         <Using Include="Bunit.TestDoubles"/>
         <Using Include="Microsoft.AspNetCore.Components.Forms"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
+        <Using Include="SharedKernel.Testing.Assertions"/>
         <Using Include="ViajantesTurismo.Admin.Contracts"/>
         <Using Include="ViajantesTurismo.Catalog.Contracts"/>
         <Using Include="ViajantesTurismo.Admin.Testing.Builders.DtoBuilders" Static="True"/>
@@ -30,6 +31,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
+        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 

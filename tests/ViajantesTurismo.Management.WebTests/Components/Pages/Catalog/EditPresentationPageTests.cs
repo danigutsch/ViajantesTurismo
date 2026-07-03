@@ -30,10 +30,10 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Catalog presentation updated", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        var updated = Assert.Single(catalogApi.Tours);
-        Assert.Equal("Published Tour", updated.Title);
-        Assert.Equal("published-tour", updated.Slug);
-        Assert.True(updated.IsPublished);
+        var updated = catalogApi.Tours.ShouldHaveSingleItem();
+        updated.Title.ShouldBe("Published Tour");
+        updated.Slug.ShouldBe("published-tour");
+        updated.IsPublished.ShouldBeTrue();
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Catalog tour not found", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Catalog tour not found", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Catalog tour not found", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("could not be loaded", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Catalog tour presentation could not be loaded", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Catalog tour presentation could not be loaded", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -79,6 +79,6 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Catalog tour presentation could not be saved", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Catalog tour presentation could not be saved", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour presentation could not be saved", StringComparison.Ordinal);
     }
 }

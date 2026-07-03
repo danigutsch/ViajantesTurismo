@@ -19,17 +19,17 @@ public sealed class AdminApiClientIntegrationTests(AspireSerialIntegrationTestFi
         var outcome = await sut.CreateCustomer(request, cancellationToken);
 
         // Assert
-        Assert.Equal(CustomerCreateOutcomeKind.Succeeded, outcome.Kind);
-        Assert.Equal(HttpStatusCode.Created, outcome.StatusCode);
-        Assert.NotNull(outcome.Location);
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
+        outcome.Location.ShouldNotBeNull();
 
         var customerIdText = outcome.Location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
-        Assert.True(Guid.TryParse(customerIdText, out var customerId));
+        Guid.TryParse(customerIdText, out var customerId).ShouldBeTrue();
 
         var customer = await sut.GetCustomerById(customerId, cancellationToken);
-        Assert.NotNull(customer);
-        Assert.Equal("Contract", customer.PersonalInfo.FirstName);
-        Assert.Equal("Client", customer.PersonalInfo.LastName);
+        customer.ShouldNotBeNull();
+        customer.PersonalInfo.FirstName.ShouldBe("Contract");
+        customer.PersonalInfo.LastName.ShouldBe("Client");
     }
 
     [Fact]
@@ -45,17 +45,17 @@ public sealed class AdminApiClientIntegrationTests(AspireSerialIntegrationTestFi
 
         // Assert
         var tourIdText = location.OriginalString.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1];
-        Assert.True(Guid.TryParse(tourIdText, out var tourId));
+        Guid.TryParse(tourIdText, out var tourId).ShouldBeTrue();
 
         var created = await sut.GetTourById(tourId, cancellationToken);
-        Assert.NotNull(created);
-        Assert.Equal("Contract Client Tour", created.Name);
+        created.ShouldNotBeNull();
+        created.Name.ShouldBe("Contract Client Tour");
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: created.Identifier, name: "Updated Contract Client Tour");
         await sut.UpdateTour(tourId, updateRequest, cancellationToken);
 
         var updated = await sut.GetTourById(tourId, cancellationToken);
-        Assert.NotNull(updated);
-        Assert.Equal("Updated Contract Client Tour", updated.Name);
+        updated.ShouldNotBeNull();
+        updated.Name.ShouldBe("Updated Contract Client Tour");
     }
 }

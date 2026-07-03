@@ -42,9 +42,9 @@ public sealed class CustomersApiClientTests
         var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 1);
 
         // Assert
-        Assert.Equal("/customers", requestPath);
-        var customer = Assert.Single(customers);
-        Assert.Equal("Alice", customer.FirstName);
+        requestPath.ShouldBe("/customers");
+        var customer = customers.ShouldHaveSingleItem();
+        customer.FirstName.ShouldBe("Alice");
     }
 
     [Fact]
@@ -64,8 +64,8 @@ public sealed class CustomersApiClientTests
         var customer = await sut.GetCustomerById(customerId, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal($"/customers/{customerId}", requestPath);
-        Assert.Null(customer);
+        requestPath.ShouldBe($"/customers/{customerId}");
+        customer.ShouldBeNull();
     }
 
     [Fact]
@@ -87,10 +87,10 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/customers", requestPath);
-        Assert.Equal(CustomerCreateOutcomeKind.Succeeded, outcome.Kind);
-        Assert.Equal(HttpStatusCode.Created, outcome.StatusCode);
-        Assert.Equal(new Uri("https://management.example/customers/created", UriKind.Absolute), outcome.Location);
+        requestPath.ShouldBe("/customers");
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
+        outcome.Location.ShouldBe(new Uri("https://management.example/customers/created", UriKind.Absolute));
     }
 
     [Fact]
@@ -104,9 +104,9 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(CustomerCreateOutcomeKind.Succeeded, outcome.Kind);
-        Assert.Equal(HttpStatusCode.Created, outcome.StatusCode);
-        Assert.Null(outcome.Location);
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
+        outcome.Location.ShouldBeNull();
     }
 
     [Fact]
@@ -130,11 +130,11 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(CustomerCreateOutcomeKind.ValidationProblem, outcome.Kind);
-        Assert.Equal(HttpStatusCode.BadRequest, outcome.StatusCode);
-        Assert.NotNull(outcome.ValidationErrors);
-        Assert.True(outcome.ValidationErrors.ContainsKey("Email"));
-        Assert.Contains("not a valid e-mail address", outcome.ValidationErrors["Email"][0], StringComparison.Ordinal);
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.ValidationProblem);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        outcome.ValidationErrors.ShouldNotBeNull();
+        outcome.ValidationErrors.ContainsKey("Email").ShouldBeTrue();
+        outcome.ValidationErrors["Email"][0].ShouldContain("not a valid e-mail address", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -148,8 +148,8 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(CustomerCreateOutcomeKind.EmptyBody, outcome.Kind);
-        Assert.Equal(HttpStatusCode.BadRequest, outcome.StatusCode);
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.EmptyBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Theory]
@@ -166,8 +166,8 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(CustomerCreateOutcomeKind.MalformedBody, outcome.Kind);
-        Assert.Equal(HttpStatusCode.BadRequest, outcome.StatusCode);
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Theory]
@@ -190,8 +190,8 @@ public sealed class CustomersApiClientTests
         var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(expectedKind, outcome.Kind);
-        Assert.Equal(statusCode, outcome.StatusCode);
+        outcome.Kind.ShouldBe(expectedKind);
+        outcome.StatusCode.ShouldBe(statusCode);
     }
 
     [Fact]
@@ -213,8 +213,8 @@ public sealed class CustomersApiClientTests
         await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal($"/customers/{customerId}", requestPath);
-        Assert.Equal(HttpMethods.Put, requestMethod);
+        requestPath.ShouldBe($"/customers/{customerId}");
+        requestMethod.ShouldBe(HttpMethods.Put);
     }
 
     [Fact]
@@ -235,8 +235,8 @@ public sealed class CustomersApiClientTests
         var result = await sut.ImportCustomers([1, 2, 3], "customers.csv", Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/customers/import", requestPath);
-        Assert.Equal(1, result.SuccessCount);
+        requestPath.ShouldBe("/customers/import");
+        result.SuccessCount.ShouldBe(1);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public sealed class CustomersApiClientTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/customers/import/commit", requestPath);
-        Assert.Equal(2, result.SuccessCount);
+        requestPath.ShouldBe("/customers/import/commit");
+        result.SuccessCount.ShouldBe(2);
     }
 }

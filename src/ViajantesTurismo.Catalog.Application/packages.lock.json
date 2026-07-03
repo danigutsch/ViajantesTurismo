@@ -115,12 +115,17 @@
       "viajantesturismo.admin.contracts": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
+          "ViajantesTurismo.Common": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.contracts": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "ViajantesTurismo.Common": "[1.0.0, )"
+        }
       },
       "viajantesturismo.catalog.domain": {
         "type": "Project",
@@ -152,6 +157,15 @@
         "contentHash": "Af7QdAb1AfLN09gpr4lzrTjioDez1hW1IQN3Tb0qJWi8NY3ywTJyteoH/8P/mripXq4D5Khz0uWBEX5O59i5Zw==",
         "dependencies": {
           "Magick.NET.Core": "14.14.0"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "9S/DFt4cohlMPpzIxjG6kk0L8MuN2vDm9pbMCulxtJzzk82oJHVLBd8vuQxaPskaYQwKqmFmbannf5eoChgjYg==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         }
       }
     }

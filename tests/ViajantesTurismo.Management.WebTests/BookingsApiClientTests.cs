@@ -17,9 +17,9 @@ public sealed class BookingsApiClientTests
 
         var bookings = await sut.GetAllBookings(Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal("/bookings", requestPath);
-        var booking = Assert.Single(bookings);
-        Assert.Equal("TOUR-1", booking.TourIdentifier);
+        requestPath.ShouldBe("/bookings");
+        var booking = bookings.ShouldHaveSingleItem();
+        booking.TourIdentifier.ShouldBe("TOUR-1");
     }
 
     [Fact]
@@ -36,9 +36,9 @@ public sealed class BookingsApiClientTests
 
         var booking = await sut.GetBookingById(bookingId, Xunit.TestContext.Current.CancellationToken);
 
-        Assert.NotNull(booking);
-        Assert.Equal("/bookings/11111111-1111-1111-1111-111111111111", requestPath);
-        Assert.Equal("Ada Lovelace", booking.CustomerName);
+        booking.ShouldNotBeNull();
+        requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
+        booking.CustomerName.ShouldBe("Ada Lovelace");
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class BookingsApiClientTests
 
         var booking = await sut.GetBookingById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Null(booking);
+        booking.ShouldBeNull();
     }
 
     [Theory]
@@ -70,8 +70,8 @@ public sealed class BookingsApiClientTests
             ? await sut.GetBookingsByTourId(ownerId, Xunit.TestContext.Current.CancellationToken)
             : await sut.GetBookingsByCustomerId(ownerId, Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal(expectedPath, requestPath);
-        Assert.Single(bookings);
+        requestPath.ShouldBe(expectedPath);
+        bookings.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -92,9 +92,9 @@ public sealed class BookingsApiClientTests
 
         var location = await sut.CreateBooking(AdminApiClientTestsHelpers.CreateBooking(), Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpMethods.Post, requestMethod);
-        Assert.Equal("/bookings", requestPath);
-        Assert.Equal("/bookings/11111111-1111-1111-1111-111111111111", location.ToString());
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe("/bookings");
+        location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
     }
 
     [Theory]
@@ -127,8 +127,8 @@ public sealed class BookingsApiClientTests
             await sut.UpdateBookingNotes(bookingId, new UpdateBookingNotesDto { Notes = "Needs window seat" }, Xunit.TestContext.Current.CancellationToken);
         }
 
-        Assert.Equal(expectedMethod, requestMethod);
-        Assert.Equal(expectedPath, requestPath);
+        requestMethod.ShouldBe(expectedMethod);
+        requestPath.ShouldBe(expectedPath);
     }
 
     [Theory]
@@ -161,8 +161,8 @@ public sealed class BookingsApiClientTests
             await sut.CompleteBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
         }
 
-        Assert.Equal(HttpMethods.Post, requestMethod);
-        Assert.Equal(expectedPath, requestPath);
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe(expectedPath);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public sealed class BookingsApiClientTests
 
         await sut.DeleteBooking(bookingId, Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpMethods.Delete, requestMethod);
-        Assert.Equal("/bookings/11111111-1111-1111-1111-111111111111", requestPath);
+        requestMethod.ShouldBe(HttpMethods.Delete);
+        requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111");
     }
 
     [Fact]
@@ -204,8 +204,8 @@ public sealed class BookingsApiClientTests
 
         var location = await sut.RecordPayment(bookingId, AdminApiClientTestsHelpers.CreatePayment(), Xunit.TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpMethods.Post, requestMethod);
-        Assert.Equal("/bookings/11111111-1111-1111-1111-111111111111/payments", requestPath);
-        Assert.Equal("/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", location.ToString());
+        requestMethod.ShouldBe(HttpMethods.Post);
+        requestPath.ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments");
+        location.ToString().ShouldBe("/bookings/11111111-1111-1111-1111-111111111111/payments/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     }
 }

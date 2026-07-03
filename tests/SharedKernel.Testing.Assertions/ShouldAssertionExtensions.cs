@@ -220,6 +220,16 @@ public static class ShouldAssertionExtensions
     public static T ShouldHaveSingleItem<T>(this IEnumerable<T> actual) => TestAssert.ExactlyOne(actual);
 
     /// <summary>
+    /// Verifies that a collection contains exactly one matching item.
+    /// </summary>
+    /// <typeparam name="T">The item type.</typeparam>
+    /// <param name="actual">The actual collection.</param>
+    /// <param name="predicate">The item predicate.</param>
+    /// <returns>The single matching item.</returns>
+    public static T ShouldHaveSingleItem<T>(this IEnumerable<T> actual, Predicate<T> predicate) =>
+        TestAssert.ExactlyOne(actual.Where(item => predicate(item)));
+
+    /// <summary>
     /// Verifies that a value is within a range.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
