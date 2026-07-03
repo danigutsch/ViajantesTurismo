@@ -1,4 +1,4 @@
-using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -7,6 +7,8 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     public CatalogTourDto[] Tours { get; set; } = [];
 
     public bool ThrowOnGetTours { get; set; }
+
+    public ContractValidationException? ValidationException { get; set; }
 
     public Task<CatalogTourDto[]> GetTours(CancellationToken ct)
     {
@@ -29,6 +31,11 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     public Task<CatalogTourDto?> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (ValidationException is not null)
+        {
+            throw ValidationException;
+        }
 
         var tour = Tours.SingleOrDefault(tour => tour.Id == id);
         if (tour is null)

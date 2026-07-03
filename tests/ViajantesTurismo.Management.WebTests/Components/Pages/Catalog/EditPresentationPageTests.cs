@@ -1,5 +1,5 @@
 using EditPresentation = ViajantesTurismo.Management.Web.Components.Pages.Catalog.EditPresentation;
-using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -30,10 +30,10 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Catalog presentation updated", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        var updated = Assert.Single(catalogApi.Tours);
-        Assert.Equal("Published Tour", updated.Title);
-        Assert.Equal("published-tour", updated.Slug);
-        Assert.True(updated.IsPublished);
+        var updated = catalogApi.Tours.ShouldHaveSingleItem();
+        updated.Title.ShouldBe("Published Tour");
+        updated.Slug.ShouldBe("published-tour");
+        updated.IsPublished.ShouldBeTrue();
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Catalog tour not found", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Catalog tour not found", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Catalog tour not found", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -61,6 +61,24 @@ public sealed class EditPresentationPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("could not be loaded", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("Catalog tour presentation could not be loaded", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Catalog tour presentation could not be loaded", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_fallback_error_when_validation_has_no_messages()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException("Validation problem response body was not JSON.");
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("Catalog tour presentation could not be saved", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour presentation could not be saved", StringComparison.Ordinal);
     }
 }

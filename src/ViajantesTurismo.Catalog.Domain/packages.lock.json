@@ -30,7 +30,10 @@
         "type": "Project"
       },
       "viajantesturismo.catalog.contracts": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "ViajantesTurismo.Common": "[1.0.0, )"
+        }
       },
       "viajantesturismo.common": {
         "type": "Project",

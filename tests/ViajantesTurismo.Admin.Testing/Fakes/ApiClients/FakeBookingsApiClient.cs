@@ -9,12 +9,12 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private Exception? _getBookingByIdException;
     private Exception? _updateBookingNotesException;
 
-    public Task<GetBookingDto[]> GetAllBookings(CancellationToken cancellationToken)
+    public Task<GetBookingDto[]> GetAllBookings(CancellationToken ct)
     {
         return Task.FromResult(_bookings.ToArray());
     }
 
-    public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken cancellationToken)
+    public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct)
     {
         if (_getBookingByIdException is not null)
         {
@@ -24,17 +24,17 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(_bookings.FirstOrDefault(b => b.Id == id));
     }
 
-    public Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken cancellationToken)
+    public Task<GetBookingDto[]> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
         return Task.FromResult(_bookings.Where(b => b.TourId == tourId).ToArray());
     }
 
-    public Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken cancellationToken)
+    public Task<GetBookingDto[]> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
         return Task.FromResult(_bookings.Where(b => b.CustomerId == customerId).ToArray());
     }
 
-    public Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken cancellationToken)
+    public Task<Uri> CreateBooking(CreateBookingDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -51,17 +51,17 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(new Uri($"/bookings/{newBooking.Id}", UriKind.Relative));
     }
 
-    public Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken cancellationToken)
+    public Task UpdateBookingDiscount(Guid id, UpdateBookingDiscountDto dto, CancellationToken ct)
     {
         return Task.CompletedTask;
     }
 
-    public Task UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken cancellationToken)
+    public Task UpdateBookingDetails(Guid id, UpdateBookingDetailsDto dto, CancellationToken ct)
     {
         return Task.CompletedTask;
     }
 
-    public Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken cancellationToken)
+    public Task UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
     {
         if (_updateBookingNotesException is not null)
         {
@@ -71,25 +71,25 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.CompletedTask;
     }
 
-    public Task CancelBooking(Guid id, CancellationToken cancellationToken)
+    public Task CancelBooking(Guid id, CancellationToken ct)
     {
         UpdateBookingStatus(id, BookingStatusDto.Cancelled);
         return Task.CompletedTask;
     }
 
-    public Task ConfirmBooking(Guid id, CancellationToken cancellationToken)
+    public Task ConfirmBooking(Guid id, CancellationToken ct)
     {
         UpdateBookingStatus(id, BookingStatusDto.Confirmed);
         return Task.CompletedTask;
     }
 
-    public Task CompleteBooking(Guid id, CancellationToken cancellationToken)
+    public Task CompleteBooking(Guid id, CancellationToken ct)
     {
         UpdateBookingStatus(id, BookingStatusDto.Completed);
         return Task.CompletedTask;
     }
 
-    public Task DeleteBooking(Guid id, CancellationToken cancellationToken)
+    public Task DeleteBooking(Guid id, CancellationToken ct)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == id);
         if (booking is not null)
@@ -100,7 +100,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.CompletedTask;
     }
 
-    public Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken cancellationToken)
+    public Task<Uri> RecordPayment(Guid bookingId, CreatePaymentDto dto, CancellationToken ct)
     {
         var paymentId = Guid.NewGuid();
         return Task.FromResult(new Uri($"/bookings/{bookingId}/payments/{paymentId}", UriKind.Relative));

@@ -214,7 +214,8 @@
         "type": "Project",
         "dependencies": {
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
+          "ViajantesTurismo.Common": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.application": {
@@ -233,7 +234,10 @@
         }
       },
       "viajantesturismo.catalog.contracts": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "ViajantesTurismo.Common": "[1.0.0, )"
+        }
       },
       "viajantesturismo.catalog.domain": {
         "type": "Project",

@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;

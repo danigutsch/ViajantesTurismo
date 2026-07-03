@@ -1,7 +1,7 @@
 @page "/catalog/theme"
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Catalog.Contracts
-@using ViajantesTurismo.Management.Web.Exceptions
+@using ViajantesTurismo.Common.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
 @rendermode InteractiveServer
 
@@ -121,9 +121,11 @@ else
             _model = PublicThemeFormModel.FromDto(saved);
             _successMessage = "Public theme saved.";
         }
-        catch (ApiValidationException ex)
+        catch (ContractValidationException ex)
         {
-            _errorMessage = string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
+            _errorMessage = ex.ValidationErrors.Count == 0
+                ? UserFacingErrorMessage.ForOperation("save public theme")
+                : string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
         }
         catch (HttpRequestException)
         {

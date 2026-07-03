@@ -90,7 +90,9 @@ internal sealed class ToursListPage(
 
             await Expect(nextButton).ToBeEnabledAsync();
             await nextButton.ClickAsync();
-            await Expect(firstTourLink).Not.ToHaveAttributeAsync("href", previousHref);
+            await page.WaitForFunctionAsync(
+                "([selector, href]) => { const element = document.querySelector(selector); return element && element.getAttribute('href') !== href; }",
+                new object[] { "table tbody tr a[href^='/tours/']", previousHref });
         }
     }
 }

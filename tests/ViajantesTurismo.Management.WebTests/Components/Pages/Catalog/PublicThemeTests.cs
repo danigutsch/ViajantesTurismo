@@ -1,5 +1,5 @@
 using PublicTheme = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicTheme;
-using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -32,8 +32,8 @@ public sealed class PublicThemeTests : BunitContext
         cut.WaitForState(() => cut.Find("#theme-primary-color").GetAttribute("value") == "#112233", TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Equal("#112233", cut.Find("#theme-primary-color").GetAttribute("value"));
-        Assert.Equal("Inter", cut.Find("#theme-heading-font").GetAttribute("value"));
+        cut.Find("#theme-primary-color").GetAttribute("value").ShouldBe("#112233");
+        cut.Find("#theme-heading-font").GetAttribute("value").ShouldBe("Inter");
     }
 
     [Fact]
@@ -54,10 +54,10 @@ public sealed class PublicThemeTests : BunitContext
 
         // Assert
         cut.WaitForState(() => publicThemeApi.SavedTheme is not null, TimeSpan.FromSeconds(2));
-        Assert.NotNull(publicThemeApi.SavedTheme);
-        Assert.Equal("#112233", publicThemeApi.SavedTheme.PrimaryColor);
-        Assert.Equal("Inter", publicThemeApi.SavedTheme.HeadingFontFamily);
-        Assert.Contains("Public theme saved", cut.Markup, StringComparison.Ordinal);
+        publicThemeApi.SavedTheme.ShouldNotBeNull();
+        publicThemeApi.SavedTheme.PrimaryColor.ShouldBe("#112233");
+        publicThemeApi.SavedTheme.HeadingFontFamily.ShouldBe("Inter");
+        cut.Markup.ShouldContain("Public theme saved", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class PublicThemeTests : BunitContext
 
         foreach (var inputId in inputIds)
         {
-            Assert.NotNull(cut.Find($"label[for='{inputId}']"));
+            cut.Find($"label[for='{inputId}']").ShouldNotBeNull();
         }
     }
 
@@ -95,7 +95,7 @@ public sealed class PublicThemeTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("couldn't load public theme", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("couldn't load public theme", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("couldn't load public theme", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -111,6 +111,22 @@ public sealed class PublicThemeTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("couldn't save public theme", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        Assert.Contains("couldn't save public theme", cut.Markup, StringComparison.Ordinal);
+        cut.Markup.ShouldContain("couldn't save public theme", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_fallback_error_when_theme_validation_has_no_messages()
+    {
+        // Arrange
+        publicThemeApi.ValidationException = new ContractValidationException("Validation problem response body was malformed.");
+        var cut = Render<PublicTheme>();
+        cut.WaitForState(() => cut.Find("#theme-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("couldn't save public theme", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save public theme", StringComparison.Ordinal);
     }
 }

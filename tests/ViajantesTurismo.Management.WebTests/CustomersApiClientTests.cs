@@ -42,9 +42,29 @@ public sealed class CustomersApiClientTests
         var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 1);
 
         // Assert
-        Assert.Equal("/customers", requestPath);
-        var customer = Assert.Single(customers);
-        Assert.Equal("Alice", customer.FirstName);
+        requestPath.ShouldBe("/customers");
+        var customer = customers.ShouldHaveSingleItem();
+        customer.FirstName.ShouldBe("Alice");
+    }
+
+    [Fact]
+    public async Task GetCustomers_returns_empty_without_request_when_max_items_is_zero()
+    {
+        // Arrange
+        var requestCount = 0;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+        {
+            requestCount++;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("[]");
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 0);
+
+        // Assert
+        customers.ShouldBeEmpty();
+        requestCount.ShouldBe(0);
     }
 
     [Fact]
@@ -64,8 +84,23 @@ public sealed class CustomersApiClientTests
         var customer = await sut.GetCustomerById(customerId, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal($"/customers/{customerId}", requestPath);
-        Assert.Null(customer);
+        requestPath.ShouldBe($"/customers/{customerId}");
+        customer.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetCustomerById_throws_when_admin_api_returns_success_with_null_body()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetCustomerById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The customer response body was empty.");
     }
 
     [Fact]
@@ -84,11 +119,114 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var location = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/customers", requestPath);
-        Assert.Equal(new Uri("https://management.example/customers/created", UriKind.Absolute), location);
+        requestPath.ShouldBe("/customers");
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
+        outcome.Location.ShouldBe(new Uri("https://management.example/customers/created", UriKind.Absolute));
+    }
+
+    [Fact]
+    public async Task CreateCustomer_returns_success_when_location_header_is_absent()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.Created));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.Succeeded);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.Created);
+        outcome.Location.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CreateCustomer_returns_validation_problem_for_validation_errors()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse(
+                """
+                {
+                  "type":"https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                  "title":"One or more validation errors occurred.",
+                  "status":400,
+                  "errors":{"Email":["The Email field is not a valid e-mail address."]}
+                }
+                """,
+                HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.ValidationProblem);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        outcome.ValidationErrors.ShouldNotBeNull();
+        outcome.ValidationErrors.ContainsKey("Email").ShouldBeTrue();
+        outcome.ValidationErrors["Email"][0].ShouldContain("not a valid e-mail address", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateCustomer_returns_empty_body_for_empty_validation_problem()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.EmptyBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("{ \"errors\": {} }")]
+    public async Task CreateCustomer_returns_malformed_body_for_invalid_validation_problem(string content)
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse(content, HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, CustomerCreateOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NoContent, CustomerCreateOutcomeKind.UnexpectedStatus)]
+    [InlineData(HttpStatusCode.NotFound, CustomerCreateOutcomeKind.NotFound)]
+    [InlineData(HttpStatusCode.Unauthorized, CustomerCreateOutcomeKind.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden, CustomerCreateOutcomeKind.Forbidden)]
+    [InlineData(HttpStatusCode.Conflict, CustomerCreateOutcomeKind.Conflict)]
+    [InlineData(HttpStatusCode.TooManyRequests, CustomerCreateOutcomeKind.UnexpectedStatus)]
+    public async Task CreateCustomer_returns_status_outcome_for_non_validation_failures(
+        HttpStatusCode statusCode,
+        CustomerCreateOutcomeKind expectedKind)
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(statusCode));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(expectedKind);
+        outcome.StatusCode.ShouldBe(statusCode);
     }
 
     [Fact]
@@ -110,8 +248,8 @@ public sealed class CustomersApiClientTests
         await sut.UpdateCustomer(customerId, BuildUpdateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal($"/customers/{customerId}", requestPath);
-        Assert.Equal(HttpMethods.Put, requestMethod);
+        requestPath.ShouldBe($"/customers/{customerId}");
+        requestMethod.ShouldBe(HttpMethods.Put);
     }
 
     [Fact]
@@ -132,8 +270,8 @@ public sealed class CustomersApiClientTests
         var result = await sut.ImportCustomers([1, 2, 3], "customers.csv", Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/customers/import", requestPath);
-        Assert.Equal(1, result.SuccessCount);
+        requestPath.ShouldBe("/customers/import");
+        result.SuccessCount.ShouldBe(1);
     }
 
     [Fact]
@@ -158,7 +296,7 @@ public sealed class CustomersApiClientTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/customers/import/commit", requestPath);
-        Assert.Equal(2, result.SuccessCount);
+        requestPath.ShouldBe("/customers/import/commit");
+        result.SuccessCount.ShouldBe(2);
     }
 }

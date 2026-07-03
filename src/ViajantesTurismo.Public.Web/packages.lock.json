@@ -121,8 +121,20 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
-      "viajantesturismo.catalog.contracts": {
+      "sharedkernel.results": {
         "type": "Project"
+      },
+      "viajantesturismo.catalog.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "ViajantesTurismo.Common": "[1.0.0, )"
+        }
+      },
+      "viajantesturismo.common": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
       },
       "viajantesturismo.resources": {
         "type": "Project"

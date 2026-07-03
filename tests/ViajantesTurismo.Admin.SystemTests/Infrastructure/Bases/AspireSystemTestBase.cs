@@ -3,6 +3,7 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
 [assembly: AssemblyFixture(typeof(AspireSystemTestFixture))]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 

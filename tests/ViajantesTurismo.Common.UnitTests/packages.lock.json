@@ -238,14 +238,6 @@
           "Microsoft.Extensions.Options": "10.0.9"
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions": {
-        "type": "Transitive",
-        "resolved": "10.0.9",
-        "contentHash": "9S/DFt4cohlMPpzIxjG6kk0L8MuN2vDm9pbMCulxtJzzk82oJHVLBd8vuQxaPskaYQwKqmFmbannf5eoChgjYg==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
-        }
-      },
       "Microsoft.Extensions.Logging.Configuration": {
         "type": "Transitive",
         "resolved": "10.0.9",
@@ -530,6 +522,12 @@
       "sharedkernel.results": {
         "type": "Project"
       },
+      "sharedkernel.testing.assertions": {
+        "type": "Project",
+        "dependencies": {
+          "xunit.v3.assert": "[3.2.2, )"
+        }
+      },
       "viajantesturismo.common": {
         "type": "Project",
         "dependencies": {
@@ -635,6 +633,15 @@
           "Microsoft.Extensions.Http.Diagnostics": "10.7.0",
           "Microsoft.Extensions.ObjectPool": "10.0.9",
           "Microsoft.Extensions.Resilience": "10.7.0"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "9S/DFt4cohlMPpzIxjG6kk0L8MuN2vDm9pbMCulxtJzzk82oJHVLBd8vuQxaPskaYQwKqmFmbannf5eoChgjYg==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         }
       },
       "Microsoft.Extensions.Options": {

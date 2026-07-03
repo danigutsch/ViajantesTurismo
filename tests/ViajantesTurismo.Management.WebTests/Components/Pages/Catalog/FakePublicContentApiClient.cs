@@ -1,5 +1,4 @@
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -9,7 +8,7 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
 
     public bool ThrowOnGetContent { get; set; }
 
-    public ApiValidationException? ValidationException { get; set; }
+    public ContractValidationException? ValidationException { get; set; }
 
     public string? SavedKey { get; private set; }
 

@@ -22,7 +22,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     public async Task NavigateToEdit(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}/edit");
-        Assert.Equal("Edit Booking", await page.TitleAsync());
+        await Expect(page).ToHaveTitleAsync("Edit Booking");
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         string customerSelectionLabel)
     {
         await navigateTo($"/tours/{tour.Id}");
-        Assert.Equal("Tour Details", await page.TitleAsync());
+        await Expect(page).ToHaveTitleAsync("Tour Details");
         await page.GetByText(tour.Name).First.WaitForAsync();
 
         var addBookingButton = page.GetButton("Add Booking");
@@ -88,7 +88,7 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     public async Task NavigateToDetails(Guid bookingId)
     {
         await navigateTo($"/bookings/{bookingId}");
-        Assert.Equal("Booking Details", await page.TitleAsync());
+        await Expect(page).ToHaveTitleAsync("Booking Details");
     }
 
     /// <summary>

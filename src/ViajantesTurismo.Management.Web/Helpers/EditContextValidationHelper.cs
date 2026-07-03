@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.Forms;
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.Web.Helpers;
 
@@ -9,20 +9,23 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 internal static class EditContextValidationHelper
 {
     /// <summary>
-    /// Applies validation errors from ApiValidationException to the EditContext.
+    /// Applies validation errors from ContractValidationException to the EditContext.
     /// </summary>
     /// <param name="editContext">The EditContext to add field errors to.</param>
-    /// <param name="exception">The ApiValidationException containing validation errors.</param>
-    public static void ApplyValidationErrors(EditContext editContext, ApiValidationException exception)
+    /// <param name="exception">The ContractValidationException containing validation errors.</param>
+    public static void ApplyValidationErrors(EditContext editContext, ContractValidationException exception)
+        => ApplyValidationErrors(editContext, exception.ValidationErrors);
+
+    private static void ApplyValidationErrors(EditContext editContext, IReadOnlyDictionary<string, string[]> validationErrors)
     {
-        if (exception.ValidationErrors.Count == 0)
+        if (validationErrors.Count == 0)
         {
             return;
         }
 
         var messages = new ValidationMessageStore(editContext);
 
-        foreach (var (fieldName, errors) in exception.ValidationErrors)
+        foreach (var (fieldName, errors) in validationErrors)
         {
             var field = editContext.Field(fieldName);
             foreach (var error in errors)

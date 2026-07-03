@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Contracts;
+using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Services;
 using ViajantesTurismo.Resources;

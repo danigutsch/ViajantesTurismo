@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -45,11 +44,10 @@ public sealed class CatalogToursApiClientTests
         var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/catalog/tours", requestPath);
-        Assert.Collection(
-            tours,
-            tour => Assert.Equal("first-tour", tour.Slug),
-            tour => Assert.Equal("second-tour", tour.Slug));
+        requestPath.ShouldBe("/catalog/tours");
+        tours.Length.ShouldBe(2);
+        tours[0].Slug.ShouldBe("first-tour");
+        tours[1].Slug.ShouldBe("second-tour");
     }
 
     [Fact]
@@ -63,7 +61,7 @@ public sealed class CatalogToursApiClientTests
         var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Empty(tours);
+        tours.ShouldBeEmpty();
     }
 
     [Fact]
@@ -104,10 +102,10 @@ public sealed class CatalogToursApiClientTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(updated);
-        Assert.Equal(HttpMethods.Put, requestMethod);
-        Assert.Equal("/catalog/tours/11111111-1111-1111-1111-111111111111/presentation", requestPath);
-        Assert.True(updated.IsPublished);
+        updated.ShouldNotBeNull();
+        requestMethod.ShouldBe(HttpMethods.Put);
+        requestPath.ShouldBe("/catalog/tours/11111111-1111-1111-1111-111111111111/presentation");
+        updated.IsPublished.ShouldBeTrue();
     }
 
     [Fact]
@@ -138,9 +136,9 @@ public sealed class CatalogToursApiClientTests
         var tour = await sut.GetTour(tourId, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(tour);
-        Assert.Equal("/catalog/tours/11111111-1111-1111-1111-111111111111", requestPath);
-        Assert.Equal("catalog-tour", tour.Slug);
+        tour.ShouldNotBeNull();
+        requestPath.ShouldBe("/catalog/tours/11111111-1111-1111-1111-111111111111");
+        tour.Slug.ShouldBe("catalog-tour");
     }
 
     [Fact]
@@ -154,7 +152,22 @@ public sealed class CatalogToursApiClientTests
         var tour = await sut.GetTour(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(tour);
+        tour.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetTour_throws_when_catalog_returns_success_with_null_body()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetTour(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The catalog tour response body was empty.");
     }
 
     [Fact]
@@ -176,7 +189,30 @@ public sealed class CatalogToursApiClientTests
             Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(updated);
+        updated.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task UpdatePresentation_throws_when_catalog_returns_success_with_null_body()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.UpdatePresentation(
+            Guid.CreateVersion7(),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Missing",
+                Slug = "missing",
+                IsPublished = true
+            },
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The catalog tour response body was empty.");
     }
 
 }

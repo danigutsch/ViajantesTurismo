@@ -175,6 +175,14 @@ public static class ShouldAssertionExtensions
     public static void ShouldContain<T>(this IEnumerable<T> actual, Predicate<T> predicate) => TestAssert.Contains(actual, predicate);
 
     /// <summary>
+    /// Verifies that a string ends with the expected suffix.
+    /// </summary>
+    /// <param name="actual">The actual value.</param>
+    /// <param name="expected">The expected suffix.</param>
+    /// <param name="comparisonType">The string comparison type.</param>
+    public static void ShouldEndWith(this string? actual, string expected, StringComparison comparisonType) => TestAssert.EndsWith(expected, actual, comparisonType);
+
+    /// <summary>
     /// Verifies that a collection does not contain the expected item.
     /// </summary>
     /// <typeparam name="T">The item type.</typeparam>
@@ -218,6 +226,16 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual collection.</param>
     /// <returns>The single item.</returns>
     public static T ShouldHaveSingleItem<T>(this IEnumerable<T> actual) => TestAssert.ExactlyOne(actual);
+
+    /// <summary>
+    /// Verifies that a collection contains exactly one matching item.
+    /// </summary>
+    /// <typeparam name="T">The item type.</typeparam>
+    /// <param name="actual">The actual collection.</param>
+    /// <param name="predicate">The item predicate.</param>
+    /// <returns>The single matching item.</returns>
+    public static T ShouldHaveSingleItem<T>(this IEnumerable<T> actual, Predicate<T> predicate) =>
+        TestAssert.ExactlyOne(actual.Where(item => predicate(item)));
 
     /// <summary>
     /// Verifies that a value is within a range.

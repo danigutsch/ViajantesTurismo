@@ -10,6 +10,7 @@
         <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
+        <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
         <Using Include="ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure" />
         <Using Include="Xunit" />
@@ -25,6 +26,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
+        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
     </ItemGroup>
 

@@ -1,5 +1,4 @@
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -13,7 +12,7 @@ internal sealed class FakePublicThemeApiClient : IPublicThemeApiClient
 
     public bool ReturnEmptySaveResponse { get; set; }
 
-    public ApiValidationException? ValidationException { get; set; }
+    public ContractValidationException? ValidationException { get; set; }
 
     public PublicThemeSettingsDto? SavedTheme { get; private set; }
 

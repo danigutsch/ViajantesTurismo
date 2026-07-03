@@ -1,5 +1,3 @@
-using ViajantesTurismo.Management.Web;
-
 namespace ViajantesTurismo.Management.WebTests;
 
 public sealed class PublicThemeApiClientTests

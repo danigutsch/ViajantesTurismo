@@ -1,6 +1,6 @@
 @page "/tours/{id:guid}"
 @using ViajantesTurismo.Admin.Contracts
-@using ViajantesTurismo.Management.Web.Exceptions
+@using ViajantesTurismo.Common.Contracts
 @using ViajantesTurismo.Management.Web.Helpers
 @rendermode InteractiveServer
 
@@ -267,7 +267,7 @@ else if (_tour != null)
             await LoadBookings();
             HideBookingForm();
         }
-        catch (ApiValidationException ex)
+        catch (ContractValidationException ex)
         {
             if (_bookingCreateFormRef?.EditContext is not null)
             {

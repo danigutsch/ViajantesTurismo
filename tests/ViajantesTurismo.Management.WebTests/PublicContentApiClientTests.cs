@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Exceptions;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -34,9 +33,9 @@ public sealed class PublicContentApiClientTests
         var content = await sut.GetContent(Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("/catalog/public-content", requestPath);
-        var entry = Assert.Single(content);
-        Assert.Equal("home.hero", entry.Key);
+        requestPath.ShouldBe("/catalog/public-content");
+        var entry = content.ShouldHaveSingleItem();
+        entry.Key.ShouldBe("home.hero");
     }
 
     [Fact]
@@ -50,7 +49,7 @@ public sealed class PublicContentApiClientTests
         var content = await sut.GetContent("home.hero", Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Null(content);
+        content.ShouldBeNull();
     }
 
     [Theory]
@@ -79,8 +78,8 @@ public sealed class PublicContentApiClientTests
         var content = await sut.GetContent(key, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(content);
-        Assert.Equal(expectedPath, requestPath);
+        content.ShouldNotBeNull();
+        requestPath.ShouldBe(expectedPath);
     }
 
     [Fact]
@@ -114,9 +113,9 @@ public sealed class PublicContentApiClientTests
         var saved = await sut.SaveContent("/home//hero/", request, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal("PUT", requestMethod);
-        Assert.Equal("/catalog/public-content/home/hero", requestPath);
-        Assert.Equal("ReviewRequired", saved.PublicationState);
+        requestMethod.ShouldBe("PUT");
+        requestPath.ShouldBe("/catalog/public-content/home/hero");
+        saved.PublicationState.ShouldBe("ReviewRequired");
     }
 
     [Fact]
@@ -144,11 +143,12 @@ public sealed class PublicContentApiClientTests
         request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
-        var exception = await Assert.ThrowsAsync<ApiValidationException>(() =>
-            sut.SaveContent("home.hero", request, Xunit.TestContext.Current.CancellationToken));
+        Func<Task> act = () => sut.SaveContent("home.hero", request, Xunit.TestContext.Current.CancellationToken);
+
+        var exception = await act.ShouldThrow<ContractValidationException>();
 
         // Assert
-        Assert.Contains(nameof(PublicContentVariantDto.Title), exception.ValidationErrors.Keys);
+        exception.ValidationErrors.Keys.ShouldContain(nameof(PublicContentVariantDto.Title));
     }
 
 }
