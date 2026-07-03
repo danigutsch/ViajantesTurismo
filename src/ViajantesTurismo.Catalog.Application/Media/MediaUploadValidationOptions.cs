@@ -16,6 +16,21 @@ public sealed class MediaUploadValidationOptions
     public const long DefaultMaxLengthBytes = 10 * 1024 * 1024;
 
     /// <summary>
+    /// Gets the default maximum decoded image width.
+    /// </summary>
+    public const int DefaultMaxDecodedWidth = 8_000;
+
+    /// <summary>
+    /// Gets the default maximum decoded image height.
+    /// </summary>
+    public const int DefaultMaxDecodedHeight = 8_000;
+
+    /// <summary>
+    /// Gets the default maximum decoded image pixel count.
+    /// </summary>
+    public const long DefaultMaxDecodedPixelCount = 40_000_000;
+
+    /// <summary>
     /// Gets or sets the maximum upload length in bytes.
     /// </summary>
     public long MaxLengthBytes { get; set; } = DefaultMaxLengthBytes;
@@ -23,17 +38,17 @@ public sealed class MediaUploadValidationOptions
     /// <summary>
     /// Gets or sets the maximum decoded image width in pixels.
     /// </summary>
-    public int MaxDecodedWidth { get; set; } = 8_000;
+    public int MaxDecodedWidth { get; set; } = DefaultMaxDecodedWidth;
 
     /// <summary>
     /// Gets or sets the maximum decoded image height in pixels.
     /// </summary>
-    public int MaxDecodedHeight { get; set; } = 8_000;
+    public int MaxDecodedHeight { get; set; } = DefaultMaxDecodedHeight;
 
     /// <summary>
     /// Gets or sets the maximum decoded image pixel count.
     /// </summary>
-    public long MaxDecodedPixelCount { get; set; } = 40_000_000;
+    public long MaxDecodedPixelCount { get; set; } = DefaultMaxDecodedPixelCount;
 
     /// <summary>
     /// Gets the allowed extensions keyed by content type.

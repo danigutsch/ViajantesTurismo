@@ -44,7 +44,7 @@ public sealed class MediaImageUploadIntake(
             request.FileName,
             request.ContentType,
             actualLength,
-            content.ToArray().AsMemory(0, (int)Math.Min(actualLength, 12))));
+            ReadHeaderBytes(content)));
 
         if (request.Length != actualLength)
         {
@@ -145,6 +145,31 @@ public sealed class MediaImageUploadIntake(
             content.Position = 0;
             return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
         }
+        catch (TimeoutException exception)
+        {
+            content.Position = 0;
+            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
+        }
+        catch (HttpRequestException exception)
+        {
+            content.Position = 0;
+            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
+        }
+        catch (IOException exception)
+        {
+            content.Position = 0;
+            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
+        }
+    }
+
+    private static ReadOnlyMemory<byte> ReadHeaderBytes(MemoryStream content)
+    {
+        content.Position = 0;
+        var header = new byte[Math.Min(content.Length, 12)];
+        _ = content.Read(header);
+        content.Position = 0;
+
+        return header;
     }
 
     private static string ComputeChecksum(Stream content)

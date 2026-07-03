@@ -39,6 +39,51 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     }
 
     [Fact]
+    public void Validate_fails_when_decoded_width_exceeds_the_web_limit()
+    {
+        // Arrange
+        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+            options.MaxDecodedWidth = MediaUploadValidationOptions.DefaultMaxDecodedWidth + 1);
+
+        // Act
+        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+
+        // Assert
+        var exception = action.ShouldThrow<OptionsValidationException>();
+        exception.Message.ShouldContain("Media upload maximum decoded width must not exceed", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_fails_when_decoded_height_exceeds_the_web_limit()
+    {
+        // Arrange
+        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+            options.MaxDecodedHeight = MediaUploadValidationOptions.DefaultMaxDecodedHeight + 1);
+
+        // Act
+        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+
+        // Assert
+        var exception = action.ShouldThrow<OptionsValidationException>();
+        exception.Message.ShouldContain("Media upload maximum decoded height must not exceed", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_fails_when_decoded_pixel_count_exceeds_the_web_limit()
+    {
+        // Arrange
+        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+            options.MaxDecodedPixelCount = MediaUploadValidationOptions.DefaultMaxDecodedPixelCount + 1);
+
+        // Act
+        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+
+        // Assert
+        var exception = action.ShouldThrow<OptionsValidationException>();
+        exception.Message.ShouldContain("Media upload maximum decoded pixel count must not exceed", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Validate_succeeds_when_options_are_valid()
     {
         // Arrange

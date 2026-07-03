@@ -138,6 +138,39 @@ public sealed class MediaImageUploadIntakeTests
     }
 
     [Fact]
+    public async Task Accept_fails_closed_when_scanner_throws()
+    {
+        // Arrange
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new InMemoryPublicMediaImageStore(originalImage);
+        var intake = new MediaImageUploadIntake(
+            new MediaUploadValidator(),
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed, new TimeoutException("scanner timeout")),
+            objectStore,
+            imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBe(true);
+        result.ErrorDetails.ShouldNotBeNull();
+        result.ErrorDetails.Detail.ShouldBe("scanner timeout");
+        imageStore.Current.Id.ShouldBe(originalImage.Id);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Accept_rejects_malformed_images_before_metadata_is_created()
     {
         // Arrange
