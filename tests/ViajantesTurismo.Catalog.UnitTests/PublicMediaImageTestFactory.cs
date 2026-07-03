@@ -37,4 +37,23 @@ internal static class PublicMediaImageTestFactory
             ["mountain"],
             [new MediaImageTourLink(tourId, displayOrder, isCover)]);
     }
+
+    public static PublicMediaImage CreatePendingImage(Guid imageId, long fileSizeBytes)
+    {
+        return new PublicMediaImage(
+            new PublicMediaImageMetadata
+            {
+                Id = imageId,
+                SourceUri = new Uri("https://cdn.example/original.png"),
+                Checksum = "sha256:abc",
+                ContentType = "image/png",
+                FileSizeBytes = fileSizeBytes,
+                Dimensions = new MediaImageDimensions(1, 1),
+                ProcessingStatus = MediaImageProcessingStatus.Pending,
+                AltText = "Test image"
+            },
+            [],
+            ["test"],
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+    }
 }

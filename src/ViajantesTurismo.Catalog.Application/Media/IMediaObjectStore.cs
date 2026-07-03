@@ -14,6 +14,14 @@ public interface IMediaObjectStore
     ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct);
 
     /// <summary>
+    /// Opens a stored media object for reading.
+    /// </summary>
+    /// <param name="objectKey">The application-owned object key.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The stored object content and metadata.</returns>
+    ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct);
+
+    /// <summary>
     /// Creates a time-limited upload ticket for direct uploads.
     /// </summary>
     /// <param name="request">The upload request.</param>

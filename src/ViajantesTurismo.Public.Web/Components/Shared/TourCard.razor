@@ -1,12 +1,6 @@
 @if (GetCoverImage() is { } coverImage)
 {
-    <picture>
-        @if (coverImage.ResponsiveVariants.Count > 0)
-        {
-            <source srcset="@SrcSet(coverImage)" sizes="(min-width: 48rem) 33vw, 100vw" />
-        }
-        <img src="@coverImage.Uri" alt="@coverImage.AltText" loading="lazy" />
-    </picture>
+    <ResponsiveTourImage Image="coverImage" Sizes="(min-width: 48rem) 33vw, 100vw" />
 }
 
 @if (HeadingLevel == 3)
@@ -34,11 +28,4 @@ else
         .FirstOrDefault();
 
     private static string TourUrl(CatalogTourDto tour) => $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}";
-
-    private static string SrcSet(CatalogTourImageDto image)
-    {
-        return string.Join(", ", image.ResponsiveVariants
-            .OrderBy(variant => variant.Width)
-            .Select(variant => $"{variant.Uri} {variant.Width}w"));
-    }
 }

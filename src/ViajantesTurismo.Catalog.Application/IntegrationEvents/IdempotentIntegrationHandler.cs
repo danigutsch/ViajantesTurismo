@@ -7,10 +7,10 @@ using SharedKernel.IntegrationEvents;
 namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 /// <summary>
-/// Applies inbox-style idempotency around Catalog integration event consumers.
+/// Applies inbox-style idempotency around Catalog integration event handlers.
 /// </summary>
 /// <typeparam name="TIntegrationEvent">The integration event type.</typeparam>
-public sealed class IdempotentIntegrationEventConsumer<TIntegrationEvent>(
+public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
     IIntegrationEventHandler<TIntegrationEvent> inner,
     IIdempotencyStore idempotencyStore,
     IOptions<IntegrationEventOptions> options) : IIntegrationEventHandler<TIntegrationEvent>

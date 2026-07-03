@@ -10,7 +10,7 @@ overridden per environment.
 
 | Key | Default | Unit/range | Safe to log | Consumed by | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | .NET `TimeSpan` round-trip `c` format; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event consumers | Controls how long an idempotency lock is held while processing one integration event. |
+| `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | .NET `TimeSpan` round-trip `c` format; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event handlers | Controls how long an idempotency lock is held while processing one integration event. |
 
 Environment variable form:
 

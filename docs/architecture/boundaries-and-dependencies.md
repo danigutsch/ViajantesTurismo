@@ -82,6 +82,7 @@ flowchart TB
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_EventSourcing[SharedKernel.EventSourcing]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_Idempotency[SharedKernel.Idempotency]
+    ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_ImageProcessing[SharedKernel.ImageProcessing]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_IntegrationEvents[SharedKernel.IntegrationEvents]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> SharedKernel_Results[SharedKernel.Results]

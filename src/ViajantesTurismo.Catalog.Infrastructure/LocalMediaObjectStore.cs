@@ -35,6 +35,23 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             request.Checksum);
     }
 
+    public ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var path = GetSafeObjectPath(objectKey);
+        var stream = new FileStream(path, new FileStreamOptions
+        {
+            Mode = FileMode.Open,
+            Access = FileAccess.Read,
+            Share = FileShare.Read,
+            BufferSize = 81920,
+            Options = FileOptions.Asynchronous
+        });
+
+        return ValueTask.FromResult(new MediaObjectReadResult(objectKey, stream, GetContentType(objectKey), stream.Length));
+    }
+
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -99,4 +116,15 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             ? new Uri(baseUri, escapedKey)
             : new Uri(baseUri.OriginalString + escapedKey, UriKind.Relative);
     }
+
+    private static string GetContentType(string objectKey) => Path.GetExtension(objectKey).ToUpperInvariant() switch
+    {
+        ".AVIF" => "image/avif",
+        ".GIF" => "image/gif",
+        ".ICO" => "image/x-icon",
+        ".JPG" or ".JPEG" => "image/jpeg",
+        ".PNG" => "image/png",
+        ".WEBP" => "image/webp",
+        _ => "application/octet-stream"
+    };
 }

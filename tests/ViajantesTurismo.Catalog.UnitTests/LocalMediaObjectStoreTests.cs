@@ -32,6 +32,28 @@ public sealed class LocalMediaObjectStoreTests
     }
 
     [Fact]
+    public async Task OpenRead_returns_stored_object_content()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        var objectPath = Path.Combine(directory.Path, "images", "tour", "photo.jpg");
+        Directory.CreateDirectory(Path.GetDirectoryName(objectPath) ?? directory.Path);
+        await File.WriteAllBytesAsync(objectPath, [1, 2, 3], TestContext.Current.CancellationToken);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        using var result = await store.OpenRead("images/tour/photo.jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ObjectKey.ShouldBe("images/tour/photo.jpg");
+        result.ContentType.ShouldBe("image/jpeg");
+        result.Length.ShouldBe(3);
+        using var content = new MemoryStream();
+        await result.Content.CopyToAsync(content, TestContext.Current.CancellationToken);
+        content.ToArray().ShouldBe([1, 2, 3]);
+    }
+
+    [Fact]
     public async Task Put_escapes_public_uri_segments()
     {
         // Arrange

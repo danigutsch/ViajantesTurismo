@@ -1,13 +1,10 @@
-@foreach (var image in Images)
+@for (var index = 0; index < Images.Count; index++)
 {
+    var image = Images[index];
+    var isPriority = PrioritizeFirstImage && index == 0;
+
     <figure>
-        <picture>
-            @if (image.ResponsiveVariants.Count > 0)
-            {
-                <source srcset="@SrcSet(image)" sizes="(min-width: 48rem) 50vw, 100vw" />
-            }
-            <img src="@image.Uri" alt="@image.AltText" loading="lazy" />
-        </picture>
+        <ResponsiveTourImage Image="image" Sizes="(min-width: 48rem) 50vw, 100vw" Loading="@LoadingMode(isPriority)" FetchPriority="@FetchPriority(isPriority)" />
         @if (!string.IsNullOrWhiteSpace(image.Caption))
         {
             <figcaption>@image.Caption</figcaption>
@@ -19,10 +16,10 @@
     [Parameter, EditorRequired]
     public IReadOnlyList<CatalogTourImageDto> Images { get; set; } = [];
 
-    private static string SrcSet(CatalogTourImageDto image)
-    {
-        return string.Join(", ", image.ResponsiveVariants
-            .OrderBy(variant => variant.Width)
-            .Select(variant => $"{variant.Uri} {variant.Width}w"));
-    }
+    [Parameter]
+    public bool PrioritizeFirstImage { get; set; }
+
+    private static string LoadingMode(bool isPriority) => isPriority ? "eager" : "lazy";
+
+    private static string? FetchPriority(bool isPriority) => isPriority ? "high" : null;
 }
