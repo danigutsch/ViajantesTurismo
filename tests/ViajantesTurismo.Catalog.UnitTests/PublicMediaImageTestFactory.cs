@@ -1,3 +1,4 @@
+using System.Globalization;
 using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -66,7 +67,9 @@ internal static class PublicMediaImageTestFactory
     {
         return CreateReadyImageWithVariantUri(
             imageId,
-            new Uri($"https://cdn.example/media/{imageId:N}/v{processingVersion}/640-jpeg.jpg"));
+            new Uri(string.Create(
+                CultureInfo.InvariantCulture,
+                $"https://cdn.example/media/{imageId:N}/v{processingVersion}/640-jpeg.jpg")));
     }
 
     public static PublicMediaImage CreateReadyImageWithVariantUri(Guid imageId, Uri variantUri)
