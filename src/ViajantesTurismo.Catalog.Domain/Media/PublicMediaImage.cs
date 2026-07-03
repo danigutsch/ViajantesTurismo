@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace ViajantesTurismo.Catalog.Domain.Media;
 
 /// <summary>
@@ -138,9 +140,9 @@ public sealed class PublicMediaImage
     /// <returns><see langword="true" /> when all public variants belong to the requested version.</returns>
     public bool HasPublicVariantsForProcessingVersion(int processingVersion)
     {
-        var versionSegment = $"/v{processingVersion}/";
+        var versionSegment = string.Create(CultureInfo.InvariantCulture, $"/v{processingVersion}/");
 
         return HasPublicVariants()
-            && _responsiveVariants.All(variant => variant.Uri.OriginalString.Contains(versionSegment, StringComparison.Ordinal));
+            && _responsiveVariants.All(variant => variant.Uri.AbsolutePath.Contains(versionSegment, StringComparison.Ordinal));
     }
 }

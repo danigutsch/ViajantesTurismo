@@ -64,17 +64,17 @@ internal static class PublicMediaImageTestFactory
 
     public static PublicMediaImage CreateReadyImageForProcessingVersion(Guid imageId, int processingVersion)
     {
+        return CreateReadyImageWithVariantUri(
+            imageId,
+            new Uri($"https://cdn.example/media/{imageId:N}/v{processingVersion}/640-jpeg.jpg"));
+    }
+
+    public static PublicMediaImage CreateReadyImageWithVariantUri(Guid imageId, Uri variantUri)
+    {
         return CreateImageWithVariants(
             imageId,
             MediaImageProcessingStatus.Ready,
-            [
-                new MediaImageResponsiveVariant(
-                    new Uri($"https://cdn.example/media/{imageId:N}/v{processingVersion}/640-jpeg.jpg"),
-                    640,
-                    427,
-                    "image/jpeg",
-                    1024)
-            ]);
+            [new MediaImageResponsiveVariant(variantUri, 640, 427, "image/jpeg", 1024)]);
     }
 
     private static PublicMediaImage CreateImageWithVariants(

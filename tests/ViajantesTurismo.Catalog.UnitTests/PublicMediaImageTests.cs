@@ -37,4 +37,20 @@ public sealed class PublicMediaImageTests
         matchingVersionResult.ShouldBe(true);
         differentVersionResult.ShouldBe(false);
     }
+
+    [Fact]
+    public void Has_public_variants_for_processing_version_ignores_query_and_fragment_matches()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        var image = PublicMediaImageTestFactory.CreateReadyImageWithVariantUri(
+            imageId,
+            new Uri($"https://cdn.example/media/{imageId:N}/v1/640-jpeg.jpg?next=/v2/#/v2/"));
+
+        // Act
+        var result = image.HasPublicVariantsForProcessingVersion(2);
+
+        // Assert
+        result.ShouldBe(false);
+    }
 }
