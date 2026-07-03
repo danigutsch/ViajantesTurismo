@@ -14,11 +14,6 @@ internal sealed class StubMediaUploadScanner(MediaUploadScanResult result, Excep
         LastRequest = request;
         ScanCount++;
 
-        if (exception is not null)
-        {
-            throw exception;
-        }
-
-        return ValueTask.FromResult(result);
+        return exception is null ? ValueTask.FromResult(result) : throw exception;
     }
 }

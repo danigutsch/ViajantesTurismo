@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
-using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -17,6 +17,8 @@ public sealed class MediaImageUploadIntake(
     IPublicMediaImageStore imageStore,
     MediaUploadValidationOptions? validationOptions = null)
 {
+    private const string InvalidUploadMessage = "Media upload is invalid.";
+
     private static readonly IReadOnlyList<ImageVariantRequest> ProbeVariants = [new("probe-webp", ImageOutputFormat.WebP, 1, 80, 1)];
 
     private readonly MediaUploadValidationOptions options = validationOptions ?? new MediaUploadValidationOptions();
@@ -35,14 +37,14 @@ public sealed class MediaImageUploadIntake(
 
         if (request.MediaImageId == Guid.Empty)
         {
-            return Result.Invalid<MediaImageUploadIntakeResult>("Media upload is invalid.", nameof(request.MediaImageId), "Media image id is required.");
+            return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, nameof(request.MediaImageId), "Media image id is required.");
         }
 
         using var content = new MemoryStream();
         if (!await CopyToMemory(request.Content, content, options.MaxLengthBytes, ct).ConfigureAwait(false))
         {
             return Result.Invalid<MediaImageUploadIntakeResult>(
-                "Media upload is invalid.",
+                InvalidUploadMessage,
                 nameof(request.Length),
                 $"Upload length must be between 1 and {options.MaxLengthBytes} bytes.");
         }
@@ -61,7 +63,7 @@ public sealed class MediaImageUploadIntake(
 
         if (validationErrors.Count > 0)
         {
-            return Result.Invalid<MediaImageUploadIntakeResult>("Media upload is invalid.", validationErrors);
+            return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, validationErrors);
         }
 
         content.Position = 0;
@@ -78,7 +80,7 @@ public sealed class MediaImageUploadIntake(
         catch (ImageProcessingException)
         {
             return Result.Invalid<MediaImageUploadIntakeResult>(
-                "Media upload is invalid.",
+                InvalidUploadMessage,
                 nameof(request.Content),
                 "Image content could not be decoded or exceeds the configured decoded image limits.");
         }
@@ -94,7 +96,7 @@ public sealed class MediaImageUploadIntake(
         if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
         {
             return Result.Invalid<MediaImageUploadIntakeResult>(
-                "Media upload is invalid.",
+                InvalidUploadMessage,
                 nameof(scanResult.Status),
                 scanResult.Message ?? "Media upload did not pass malware scanning.");
         }
