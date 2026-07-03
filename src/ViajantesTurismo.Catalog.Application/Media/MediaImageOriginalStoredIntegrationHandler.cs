@@ -35,6 +35,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 new ImageProcessingRequest(original.Content, CreateVariantRequests(), Limits),
                 ct);
             var variants = new List<MediaImageResponsiveVariant>(result.Variants.Count);
+            var storedVariantKeys = new List<string>(result.Variants.Count);
 
             foreach (var variant in result.Variants)
             {
@@ -53,6 +54,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                         GetContentType(variant.Format),
                         variant.Content.Length),
                     ct).ConfigureAwait(false);
+                storedVariantKeys.Add(objectKey);
                 if (isResponsive)
                 {
                     variants.Add(new MediaImageResponsiveVariant(
@@ -65,12 +67,22 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 }
             }
 
-            await imageStore.Upsert(
-                image.WithProcessingResult(
-                    new MediaImageDimensions(result.Width, result.Height),
-                    MediaImageProcessingStatus.Ready,
-                    variants),
-                ct).ConfigureAwait(false);
+            var updatedImage = image.WithProcessingResult(
+                new MediaImageDimensions(result.Width, result.Height),
+                MediaImageProcessingStatus.Ready,
+                variants);
+            if (updatedImage.IsFailure)
+            {
+                foreach (var storedVariantKey in storedVariantKeys)
+                {
+                    await objectStore.Delete(storedVariantKey, ct).ConfigureAwait(false);
+                }
+
+                throw new InvalidOperationException(
+                    $"Processed media image {notification.MediaImageId} is invalid: {updatedImage.ErrorDetails?.Detail ?? "unknown validation failure"}.");
+            }
+
+            await imageStore.Upsert(updatedImage.Value, ct).ConfigureAwait(false);
         }
         catch (ImageProcessingException)
         {
@@ -79,9 +91,14 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 return;
             }
 
-            await imageStore.Upsert(
-                image.WithProcessingResult(image.Dimensions, MediaImageProcessingStatus.Failed, []),
-                ct).ConfigureAwait(false);
+            var failedImage = image.WithProcessingResult(image.Dimensions, MediaImageProcessingStatus.Failed, []);
+            if (failedImage.IsFailure)
+            {
+                throw new InvalidOperationException(
+                    $"Failed media image {notification.MediaImageId} is invalid: {failedImage.ErrorDetails?.Detail ?? "unknown validation failure"}.");
+            }
+
+            await imageStore.Upsert(failedImage.Value, ct).ConfigureAwait(false);
         }
     }
 

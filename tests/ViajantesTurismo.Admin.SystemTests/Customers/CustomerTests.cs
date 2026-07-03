@@ -85,7 +85,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         await Page.GetButton("Next").ClickAsync();
 
+        await Expect(Page).ToHaveURLAsync(CustomerTestRegexes.PhysicalStep(), new() { Timeout = WizardStepTransitionTimeoutMilliseconds });
         await Expect(Page).ToHaveTitleAsync("Create Customer - Physical Information");
+        await Expect(Page.Locator("#weightKg")).ToBeEditableAsync();
         await Expect(Page.GetByText("Step 5 of 8")).ToBeVisibleAsync();
 
         var weightInput = Page.Locator("#weightKg");

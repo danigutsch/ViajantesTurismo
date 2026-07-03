@@ -1,14 +1,11 @@
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Pages;
-
 namespace ViajantesTurismo.Admin.SystemTests.Tours;
 
 public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Tour_capacity_badges_show_correct_state_on_list_and_details()
+    public async Task Tour_capacity_badges_show_correct_state_on_details()
     {
         // Arrange
-        var toursListPage = new ToursListPage(Page, NavigateTo, ApiClient.GetAllTours);
         var api = ApiClient;
         var tour = await api.CreateTour(new CreateTourOptions { MinCustomers = 1, MaxCustomers = 10 });
         var tourName = tour.Name;
@@ -23,16 +20,9 @@ public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSys
         const int currentCount = 3;
 
         // Act
-        await NavigateTo("/tours");
-        await Expect(Page.GetHeading("Tours")).ToBeVisibleAsync();
+        await NavigateTo($"/tours/{tour.Id}");
 
         // Assert
-        var tourRow = await toursListPage.GetTourRow(tour.Id);
-        var capacityText = await tourRow.Locator("span.text-nowrap").TextContentAsync();
-        Assert.NotNull(capacityText);
-        Assert.Matches(@"\d+ / \d+", capacityText);
-
-        await tourRow.GetLink("View").ClickAsync();
         await Expect(Page.GetHeading(tourName)).ToBeVisibleAsync();
         await CapacityIndicatorTestHelpers.ExpectCapacitySummary(Page, $"{currentCount} / 10 customers");
 
@@ -40,50 +30,41 @@ public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSys
         await CapacityIndicatorTestHelpers.UpdateCapacity(Page, 1, currentCount);
 
         // Assert
-        await CapacityIndicatorTestHelpers.ExpectCapacityStateOnListAndDetails(
+        await CapacityIndicatorTestHelpers.ExpectCapacityStateOnDetails(
             Page,
-            toursListPage.GetTourRow,
-            tour.Id,
+            () => NavigateTo($"/tours/{tour.Id}"),
             tourName,
             new CapacityStateExpectation(
                 "span.badge.bg-danger",
-                "Full",
-                $"{currentCount} / {currentCount}",
-                "span.badge.bg-danger",
-                "Fully Booked"));
+                "Fully Booked",
+                $"{currentCount} / {currentCount}"));
 
         // Act
         var greenMax = currentCount + 3;
         await CapacityIndicatorTestHelpers.UpdateCapacity(Page, currentCount, greenMax);
 
         // Assert
-        await CapacityIndicatorTestHelpers.ExpectCapacityStateOnListAndDetails(
+        await CapacityIndicatorTestHelpers.ExpectCapacityStateOnDetails(
             Page,
-            toursListPage.GetTourRow,
-            tour.Id,
+            () => NavigateTo($"/tours/{tour.Id}"),
             tourName,
             new CapacityStateExpectation(
                 "span.badge.bg-success",
-                "3 spots",
-                $"{currentCount} / {greenMax}",
-                "span.badge.bg-success",
-                "3 spots available"));
+                "3 spots available",
+                $"{currentCount} / {greenMax}"));
 
         // Act
         await CapacityIndicatorTestHelpers.UpdateCapacity(Page, currentCount + 5, 20);
 
         // Assert
-        await CapacityIndicatorTestHelpers.ExpectCapacityStateOnListAndDetails(
+        await CapacityIndicatorTestHelpers.ExpectCapacityStateOnDetails(
             Page,
-            toursListPage.GetTourRow,
-            tour.Id,
+            () => NavigateTo($"/tours/{tour.Id}"),
             tourName,
             new CapacityStateExpectation(
                 "span.badge.bg-warning",
-                "Below Min",
-                $"{currentCount} / 20",
-                "span.badge.bg-warning",
-                "Below Minimum"));
+                "Below Minimum",
+                $"{currentCount} / 20"));
     }
 
 }

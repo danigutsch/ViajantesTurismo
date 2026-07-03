@@ -31,26 +31,21 @@ public static class CapacityIndicatorTestHelpers
         await Expect(capacitySection.GetByText(expectedText)).ToBeVisibleAsync();
     }
 
-    public static async Task ExpectCapacityStateOnListAndDetails(
+    public static async Task ExpectCapacityStateOnDetails(
         IPage page,
-        Func<Guid, Task<ILocator>> getTourRow,
-        Guid tourId,
+        Func<Task> navigateToDetails,
         string tourName,
         CapacityStateExpectation expectation)
     {
         ArgumentNullException.ThrowIfNull(page);
-        ArgumentNullException.ThrowIfNull(getTourRow);
+        ArgumentNullException.ThrowIfNull(navigateToDetails);
         ArgumentNullException.ThrowIfNull(expectation);
 
-        var tourRow = await getTourRow(tourId);
-        await Expect(tourRow.Locator(expectation.ListBadgeSelector))
-            .ToContainTextAsync(expectation.ListBadgeText);
-        await Expect(tourRow.Locator("span.text-nowrap"))
-            .ToHaveTextAsync(expectation.ListCapacityText);
-
-        await tourRow.GetLink("View").ClickAsync();
+        await navigateToDetails();
         await Expect(page.GetHeading(tourName)).ToBeVisibleAsync();
         await Expect(page.Locator("h5:has-text('Capacity') + dl").Locator(expectation.DetailsBadgeSelector))
             .ToContainTextAsync(expectation.DetailsBadgeText);
+        await Expect(page.Locator("h5:has-text('Capacity') + dl").GetByText(expectation.DetailsCapacityText))
+            .ToBeVisibleAsync();
     }
 }

@@ -22,7 +22,7 @@ internal static class PublicMediaImageTestFactory
         bool isCover,
         string altText = "Cyclists in the mountains")
     {
-        return new PublicMediaImage(
+        var result = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = imageId,
@@ -37,11 +37,13 @@ internal static class PublicMediaImageTestFactory
             [new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024)],
             ["mountain"],
             [new MediaImageTourLink(tourId, displayOrder, isCover)]);
+
+        return result.Value;
     }
 
     public static PublicMediaImage CreatePendingImage(Guid imageId, long fileSizeBytes)
     {
-        return new PublicMediaImage(
+        var result = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = imageId,
@@ -56,11 +58,8 @@ internal static class PublicMediaImageTestFactory
             [],
             ["test"],
             [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
-    }
 
-    public static PublicMediaImage CreateReadyImageWithoutVariants(Guid imageId)
-    {
-        return CreateImageWithVariants(imageId, MediaImageProcessingStatus.Ready, []);
+        return result.Value;
     }
 
     public static PublicMediaImage CreateReadyImageForProcessingVersion(Guid imageId, int processingVersion)
@@ -75,17 +74,19 @@ internal static class PublicMediaImageTestFactory
     public static PublicMediaImage CreateReadyImageWithVariantUri(Guid imageId, Uri variantUri)
     {
         return CreateImageWithVariants(
+            Guid.CreateVersion7(),
             imageId,
             MediaImageProcessingStatus.Ready,
             [new MediaImageResponsiveVariant(variantUri, 640, 427, "image/jpeg", 1024)]);
     }
 
-    private static PublicMediaImage CreateImageWithVariants(
+    public static PublicMediaImage CreateImageWithVariants(
+        Guid tourId,
         Guid imageId,
         MediaImageProcessingStatus processingStatus,
         IReadOnlyList<MediaImageResponsiveVariant> variants)
     {
-        return new PublicMediaImage(
+        var result = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = imageId,
@@ -99,6 +100,8 @@ internal static class PublicMediaImageTestFactory
             },
             variants,
             ["mountain"],
-            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+            [new MediaImageTourLink(tourId, 0, true)]);
+
+        return result.Value;
     }
 }

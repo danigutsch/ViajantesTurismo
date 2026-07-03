@@ -73,6 +73,36 @@ public sealed class MediaImageUploadIntakeTests
     }
 
     [Fact]
+    public async Task Accept_deletes_stored_object_when_metadata_validation_fails()
+    {
+        // Arrange
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new InMemoryPublicMediaImageStore(originalImage);
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            objectStore,
+            imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            []);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBe(true);
+        imageStore.Current.Id.ShouldBe(originalImage.Id);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Accept_rejects_upload_when_scanner_rejects()
     {
         // Arrange

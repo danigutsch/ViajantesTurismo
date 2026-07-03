@@ -110,7 +110,7 @@ public sealed class MediaImageUploadIntake(
         var stored = await objectStore.Put(
             new MediaObjectWriteRequest(objectKey, content, request.ContentType.Trim(), actualLength, checksum),
             ct).ConfigureAwait(false);
-        var image = new PublicMediaImage(
+        var imageResult = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
                 Id = request.MediaImageId,
@@ -128,6 +128,14 @@ public sealed class MediaImageUploadIntake(
             [],
             request.Tags ?? [],
             request.TourLinks);
+        if (imageResult.IsFailure)
+        {
+            await objectStore.Delete(objectKey, ct).ConfigureAwait(false);
+
+            return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
+        }
+
+        var image = imageResult.Value;
 
         await imageStore.Upsert(image, ct).ConfigureAwait(false);
 

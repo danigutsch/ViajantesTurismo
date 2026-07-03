@@ -63,24 +63,14 @@ public sealed class EfPublicMediaImageStoreTests
         var store = new EfPublicMediaImageStore(dbContext);
         var tourId = Guid.CreateVersion7();
         var imageId = Guid.CreateVersion7();
-        var image = new PublicMediaImage(
-            new PublicMediaImageMetadata
-            {
-                Id = imageId,
-                SourceUri = new Uri("https://cdn.example/source.jpg"),
-                Checksum = "sha256:abc",
-                ContentType = "image/jpeg",
-                FileSizeBytes = 4096,
-                Dimensions = new MediaImageDimensions(1200, 800),
-                ProcessingStatus = MediaImageProcessingStatus.Ready,
-                AltText = "Cyclists in the mountains"
-            },
+        var image = PublicMediaImageTestFactory.CreateImageWithVariants(
+            tourId,
+            imageId,
+            MediaImageProcessingStatus.Ready,
             [
-                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-320.jpg"), 320, 213, "image/jpeg", 512),
-                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024)
-            ],
-            ["mountain"],
-            [new MediaImageTourLink(tourId, 1, true)]);
+                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-320.jpg"), 320, 213, "image/jpeg", 512, 0),
+                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024, 1)
+            ]);
 
         // Act
         await store.Upsert(image, TestContext.Current.CancellationToken);
