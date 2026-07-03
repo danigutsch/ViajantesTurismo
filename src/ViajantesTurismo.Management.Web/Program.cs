@@ -1,3 +1,4 @@
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Management.Web;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 builder.AddRedisOutputCache(ResourceNames.Cache);
+builder.Services.AddHttpClientDefaults();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

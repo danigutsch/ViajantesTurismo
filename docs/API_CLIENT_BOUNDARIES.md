@@ -34,6 +34,8 @@ Contract test projects also contain OpenAPI document clients that are test-local
 - Keep outcome shapes endpoint- or client-specific until at least two real clients share the same shape.
 - Add logging or activity tags in contract clients when outcomes expose non-success branches that callers need to
   diagnose.
+- Never log response bodies, request bodies, headers, customer fields, validation error text, file names, or other PII from
+  contract clients. Log bounded route-independent fields only.
 
 ## App-local rules
 
@@ -53,3 +55,54 @@ Contract test projects also contain OpenAPI document clients that are test-local
 - `CustomerCreateOutcomeKind` models success, validation problem, not found, unauthorized, forbidden, conflict, empty
   body, malformed body, and unexpected status.
 - The Web app maps non-success outcomes to user-focused UI errors and keeps navigation fallback local to the component.
+
+## Result-based client design note
+
+Official .NET guidance supports typed clients registered through `IHttpClientFactory` as a DI-friendly place to configure
+and interact with a backend. It also recommends either short-lived factory-created clients or long-lived clients with
+`PooledConnectionLifetime` to avoid socket exhaustion and stale DNS. Contract clients should stay typed-client based and
+let apps configure base addresses and resilience.
+
+For AOT-safe JSON, use `System.Net.Http.Json` overloads that accept `JsonTypeInfo<T>` or `JsonSerializerContext`. The
+reflection-based overloads carry trimming/dynamic-code warnings and do not belong in contract projects.
+
+Recommended outcome shape:
+
+- Return endpoint-specific outcome DTOs when callers must branch on expected HTTP responses, empty bodies, malformed JSON,
+  validation problems, or fallback paths.
+- Keep cancellation and programmer errors as exceptions.
+- Keep transport exceptions as exceptions until a real caller needs an explicit transport outcome.
+- Put reusable outbound HTTP defaults in `SharedKernel.HttpClients`, starting with service-discovery and resilience defaults.
+- Apps/projects that perform outbound HTTP calls reference `SharedKernel.HttpClients` directly and call `AddHttpClientDefaults()`.
+- `ViajantesTurismo.ServiceDefaults` keeps host-wide service discovery and telemetry, but does not configure outbound
+  HTTP clients for projects that do not make HTTP calls.
+- Add shared result/outcome adapters in `SharedKernel.HttpClients` or a focused `SharedKernel.Results.Http` package when the
+  migration needs reusable parsing behavior across contract clients.
+
+Diagnostics split:
+
+- Contract clients log safe, structured fields for non-success outcome branches: API area, operation, status code, and
+  outcome kind.
+- Callers log user-flow context only when they add useful non-PII context.
+- Contract clients do not log payloads, validation messages, or customer identifiers.
+
+References:
+
+- [Use the IHttpClientFactory - .NET](https://learn.microsoft.com/dotnet/core/extensions/httpclient-factory)
+- [HttpClient guidelines for .NET](https://learn.microsoft.com/dotnet/fundamentals/networking/http/httpclient-guidelines)
+- [HttpContentJsonExtensions.ReadFromJsonAsync](https://learn.microsoft.com/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync)
+- [Compile-time logging source generation - .NET](https://learn.microsoft.com/dotnet/core/extensions/logging/source-generation)
+
+## Contract client diagnostics fields
+
+`CustomersApiClient.CreateCustomer` emits one safe diagnostics slice for non-success create outcomes:
+
+- activity source: `ViajantesTurismo.Admin.Contracts.Clients`
+- activity name: `customers.create`
+- activity kind: `Client`
+- tags: `viajantes.api_area`, `viajantes.operation`, `http.response.status_code`,
+  `viajantes.customer_create.outcome`
+- warning log fields: `StatusCode`, `OutcomeKind`
+
+The log and tags intentionally omit response bodies, request bodies, headers, validation error text, customer fields, file
+names, and route parameters.
