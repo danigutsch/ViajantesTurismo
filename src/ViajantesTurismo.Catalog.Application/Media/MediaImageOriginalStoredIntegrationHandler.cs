@@ -23,7 +23,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         var image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
 
-        if (image.HasPublicVariantsForProcessingVersion(notification.ProcessingVersion))
+        if (!image.ShouldProcessOriginal(notification.ProcessingVersion))
         {
             return;
         }
@@ -69,7 +69,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         }
         catch (ImageProcessingException)
         {
-            if (image.HasPublicVariants)
+            if (image.CanRetainPublicVariantsAfterProcessingFailure)
             {
                 return;
             }

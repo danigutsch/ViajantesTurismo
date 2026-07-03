@@ -164,6 +164,67 @@ public sealed class EditablePublicContentTests
     }
 
     [Fact]
+    public void IsPubliclyVisible_is_true_only_after_publication()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var draftResult = content.IsPubliclyVisible;
+        var publish = content.Publish();
+        var publishedResult = content.IsPubliclyVisible;
+
+        // Assert
+        Assert.False(draftResult);
+        Assert.True(publish.IsSuccess);
+        Assert.True(publishedResult);
+    }
+
+    [Fact]
+    public void FindPublicVariant_returns_requested_approved_language()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+
+        // Assert
+        Assert.NotNull(variant);
+        Assert.Equal(PublicContentLanguage.PtBr, variant.Language);
+    }
+
+    [Fact]
+    public void FindPublicVariant_falls_back_to_approved_english_when_requested_language_needs_review()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
+
+        // Act
+        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+
+        // Assert
+        Assert.NotNull(variant);
+        Assert.Equal(PublicContentLanguage.EnUs, variant.Language);
+    }
+
+    [Fact]
+    public void FindPublicVariant_returns_null_when_requested_english_needs_review()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.PtBr, [enUs, ptBr]);
+        Assert.True(result.IsSuccess);
+
+        // Act
+        var variant = result.Value.FindPublicVariant(PublicContentLanguage.EnUs);
+
+        // Assert
+        Assert.Null(variant);
+    }
+
+    [Fact]
     public void Variant_rejects_required_text_that_exceeds_limits()
     {
         // Arrange
