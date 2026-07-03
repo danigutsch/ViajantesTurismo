@@ -178,6 +178,13 @@
         "resolved": "10.0.8",
         "contentHash": "+dJsbPJ3FyUbTZNplFj0RCKePFizmv6ewDV46JE9q/IVH4c3xTCftHfHelLsAKf0jryIPqgMb5GpS0x7TAY3mg=="
       },
+      "sharedkernel.http": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Http.Resilience": "[10.7.0, )",
+          "Microsoft.Extensions.ServiceDiscovery": "[10.7.0, )"
+        }
+      },
       "sharedkernel.httpclients": {
         "type": "Project"
       },
@@ -219,8 +226,6 @@
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
-          "Microsoft.Extensions.Http.Resilience": "[10.7.0, )",
-          "Microsoft.Extensions.ServiceDiscovery": "[10.7.0, )",
           "OpenTelemetry.Exporter.OpenTelemetryProtocol": "[1.16.0, )",
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.AspNetCore": "[1.16.0, )",
@@ -228,6 +233,7 @@
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.16.0-beta.1, )",
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
+          "SharedKernel.Http": "[1.0.0, )",
           "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
           "SharedKernel.Observability": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )"

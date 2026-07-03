@@ -48,6 +48,7 @@
         <Project Path="src/SharedKernel/SharedKernel.Observability/SharedKernel.Observability.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.InputNormalization/SharedKernel.InputNormalization.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.HttpClients/SharedKernel.HttpClients.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Http/SharedKernel.Http.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />
@@ -93,6 +94,7 @@
         <Project Path="tests/SharedKernel.InputNormalization.Tests/SharedKernel.InputNormalization.Tests.csproj" />
         <Project Path="tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Http.Tests/SharedKernel.Http.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj" />

@@ -67,6 +67,9 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         using var activity = AdminContractsClientTelemetry.ActivitySource.StartActivity(
             AdminContractsClientTelemetry.CreateCustomerActivity,
             ActivityKind.Client);
+        activity?.SetTag(AdminContractsClientTelemetry.ApiAreaTag, AdminContractsClientTelemetry.AdminApiArea);
+        activity?.SetTag(AdminContractsClientTelemetry.OperationTag, AdminContractsClientTelemetry.CreateCustomerActivity);
+
         using var response = await httpClient.PostAsJsonAsync(
             new Uri("/customers", UriKind.Relative),
             dto,

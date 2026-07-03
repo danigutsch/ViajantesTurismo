@@ -1,5 +1,7 @@
 using System.Net;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -203,6 +205,61 @@ public sealed class CustomersApiClientTests
         // Assert
         outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
         outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateCustomer_logs_malformed_validation_problem_without_response_body()
+    {
+        // Arrange
+        var logger = new CollectingLogger<CustomersApiClient>();
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("not json alice@example.test", HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient, logger);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.LogLevel.ShouldBe(LogLevel.Warning);
+        entry.EventId.Id.ShouldBe(1);
+        entry.Message.ShouldBe("Customer create returned BadRequest with outcome MalformedBody.");
+        entry.Message.Contains("alice@example.test", StringComparison.Ordinal).ShouldBeFalse();
+        entry.State.Values.Any(value => value.Contains("alice@example.test", StringComparison.Ordinal)).ShouldBeFalse();
+        entry.State["StatusCode"].ShouldBe("BadRequest");
+        entry.State["OutcomeKind"].ShouldBe("MalformedBody");
+    }
+
+    [Fact]
+    public async Task CreateCustomer_tags_failure_activity_without_response_body()
+    {
+        // Arrange
+        List<Activity> stoppedActivities = [];
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "ViajantesTurismo.Admin.Contracts.Clients",
+            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = stoppedActivities.Add
+        };
+        ActivitySource.AddActivityListener(listener);
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+            CatalogToursApiClientTestsHelpers.JsonResponse("not json alice@example.test", HttpStatusCode.BadRequest));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.CreateCustomer(BuildCreateCustomerDto(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(CustomerCreateOutcomeKind.MalformedBody);
+        var activity = stoppedActivities.ShouldHaveSingleItem();
+        activity.DisplayName.ShouldBe("customers.create");
+        activity.Kind.ShouldBe(ActivityKind.Client);
+        activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.api_area", "admin"));
+        activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.operation", "customers.create"));
+        activity.TagObjects.ShouldContain(new KeyValuePair<string, object?>("http.response.status_code", 400));
+        activity.Tags.ShouldContain(new KeyValuePair<string, string?>("viajantes.customer_create.outcome", "MalformedBody"));
+        activity.Tags.ShouldNotContain(new KeyValuePair<string, string?>("response.body", "not json alice@example.test"));
     }
 
     [Theory]

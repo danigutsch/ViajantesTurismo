@@ -117,6 +117,7 @@ flowchart TB
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_Http[SharedKernel.Http]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> SharedKernel_Observability[SharedKernel.Observability]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
