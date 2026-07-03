@@ -14,6 +14,11 @@ public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
     /// <inheritdoc />
     public async Task<GetTourDto[]> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
     {
+        if (maxItems <= 0)
+        {
+            return [];
+        }
+
         List<GetTourDto>? tours = null;
 
         await foreach (var tour in httpClient.GetFromJsonAsAsyncEnumerable("/tours", Json.GetTourDto, cancellationToken).ConfigureAwait(false))

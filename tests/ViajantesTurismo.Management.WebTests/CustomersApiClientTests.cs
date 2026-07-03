@@ -48,6 +48,26 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
+    public async Task GetCustomers_returns_empty_without_request_when_max_items_is_zero()
+    {
+        // Arrange
+        var requestCount = 0;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+        {
+            requestCount++;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("[]");
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var customers = await sut.GetCustomers(Xunit.TestContext.Current.CancellationToken, maxItems: 0);
+
+        // Assert
+        customers.ShouldBeEmpty();
+        requestCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task GetCustomerById_returns_null_when_not_found()
     {
         // Arrange

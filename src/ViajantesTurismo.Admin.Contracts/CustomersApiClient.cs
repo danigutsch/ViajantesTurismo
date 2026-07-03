@@ -18,6 +18,11 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     /// <inheritdoc />
     public async Task<IReadOnlyList<GetCustomerDto>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {
+        if (maxItems <= 0)
+        {
+            return [];
+        }
+
         List<GetCustomerDto>? customers = null;
 
         await foreach (var customer in httpClient.GetFromJsonAsAsyncEnumerable("/customers", Json.GetCustomerDto, ct).ConfigureAwait(false))

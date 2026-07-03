@@ -35,6 +35,23 @@ public sealed class ToursApiClientTests
     }
 
     [Fact]
+    public async Task GetTours_returns_empty_without_request_when_max_items_is_zero()
+    {
+        var requestCount = 0;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
+        {
+            requestCount++;
+            return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}]");
+        });
+        var sut = new ToursApiClient(httpClient);
+
+        var tours = await sut.GetTours(Xunit.TestContext.Current.CancellationToken, maxItems: 0);
+
+        tours.ShouldBeEmpty();
+        requestCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task GetTourById_returns_tour_when_admin_api_returns_success()
     {
         var requestPath = string.Empty;
