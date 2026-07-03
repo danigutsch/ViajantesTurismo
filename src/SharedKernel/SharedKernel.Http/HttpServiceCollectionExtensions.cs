@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace SharedKernel.Http;
 
@@ -8,7 +10,7 @@ namespace SharedKernel.Http;
 public static class HttpServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds standard resilience and service discovery to all configured <see cref="HttpClient" /> instances.
+    /// Adds standard resilience, service discovery, and HTTP client telemetry to all configured <see cref="HttpClient" /> instances.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
     /// <returns>The same service collection.</returns>
@@ -21,6 +23,10 @@ public static class HttpServiceCollectionExtensions
             http.AddStandardResilienceHandler();
             http.AddServiceDiscovery();
         });
+
+        services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics.AddHttpClientInstrumentation())
+            .WithTracing(tracing => tracing.AddHttpClientInstrumentation());
 
         return services;
     }

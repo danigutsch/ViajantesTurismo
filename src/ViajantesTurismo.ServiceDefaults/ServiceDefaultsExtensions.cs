@@ -13,7 +13,7 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.ServiceDefaults;
 
 /// <summary>
-/// Provides extension methods for configuring common service defaults, including service discovery, resilience,
+/// Provides extension methods for configuring common service defaults, including service discovery,
 /// health checks, and OpenTelemetry instrumentation for .NET applications.
 /// </summary>
 [PublicAPI]
@@ -44,10 +44,9 @@ public static class ServiceDefaultsExtensions
     }
 
     /// <summary>
-    /// Configures OpenTelemetry logging, metrics, and tracing for the application builder, enabling instrumentation for
-    /// ASP.NET Core, HTTP clients, and runtime metrics.
+    /// Configures OpenTelemetry logging, metrics, and tracing for the application builder.
     /// </summary>
-    /// <remarks>This method adds OpenTelemetry instrumentation for ASP.NET Core requests, HTTP client calls,
+    /// <remarks>This method adds OpenTelemetry instrumentation for ASP.NET Core requests,
     /// runtime metrics, gRPC client calls, and Entity Framework Core operations. It also configures logging to include
     /// formatted messages and scopes. Health check and aliveness endpoints are excluded from tracing by default.</remarks>
     /// <typeparam name="TBuilder">The type of the application builder to configure. Must implement <see cref="IHostApplicationBuilder"/>.</typeparam>
@@ -63,7 +62,6 @@ public static class ServiceDefaultsExtensions
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddCatalogMetrics()
                     .AddSharedKernelMediatorMetrics()
@@ -81,7 +79,6 @@ public static class ServiceDefaultsExtensions
                             && !context.Request.Path.StartsWithSegments(EndpointPaths.Aliveness, StringComparison.OrdinalIgnoreCase)
                     )
                     .AddGrpcClientInstrumentation()
-                    .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation();
             });
 
