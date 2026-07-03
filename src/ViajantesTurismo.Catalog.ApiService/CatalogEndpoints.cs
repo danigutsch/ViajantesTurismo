@@ -207,7 +207,7 @@ internal static class CatalogEndpoints
             return ToValidationProblem(content.ErrorDetails);
         }
 
-        if (content.Value.Variants.All(variant => !variant.RequiresHumanReview))
+        if (content.Value.CanPublish)
         {
             var publish = content.Value.Publish();
             if (publish.IsFailure)

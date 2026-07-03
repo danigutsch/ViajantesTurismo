@@ -77,6 +77,11 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     public bool IsPubliclyVisible => PublicationState == PublicContentPublicationState.Published;
 
     /// <summary>
+    /// Gets a value indicating whether all variants are approved for publication.
+    /// </summary>
+    public bool CanPublish => _variants.All(variant => !variant.RequiresHumanReview);
+
+    /// <summary>
     /// Creates editable public website content with supported language variants.
     /// </summary>
     /// <param name="key">The stable content key.</param>
@@ -122,7 +127,7 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// <returns>A result indicating whether publication was allowed.</returns>
     public Result Publish()
     {
-        if (_variants.Any(variant => variant.RequiresHumanReview))
+        if (!CanPublish)
         {
             return PublicContentErrors.ReviewRequiredBeforePublishing();
         }
