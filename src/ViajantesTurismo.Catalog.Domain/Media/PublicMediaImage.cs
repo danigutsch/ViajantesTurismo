@@ -205,7 +205,7 @@ public sealed class PublicMediaImage
 
         return errors.Count > 0
             ? Result.Invalid<PublicMediaImage>("Public media image is invalid.", errors)
-            : Result.Ok(new PublicMediaImage(metadata, responsiveVariants, StringSanitizer.SanitizeCollection(tags), tourLinks));
+            : Result.Ok(new PublicMediaImage(SanitizeMetadata(metadata), SanitizeResponsiveVariants(responsiveVariants), StringSanitizer.SanitizeCollection(tags), tourLinks));
     }
 
     /// <summary>
@@ -319,6 +319,29 @@ public sealed class PublicMediaImage
     private MediaImageTourLink GetTourLink(Guid catalogTourId)
     {
         return _tourLinks.Single(link => link.CatalogTourId == catalogTourId);
+    }
+
+    private static PublicMediaImageMetadata SanitizeMetadata(PublicMediaImageMetadata metadata)
+    {
+        return new PublicMediaImageMetadata
+        {
+            Id = metadata.Id,
+            SourceUri = metadata.SourceUri,
+            Checksum = StringSanitizer.Sanitize(metadata.Checksum),
+            ContentType = StringSanitizer.Sanitize(metadata.ContentType),
+            FileSizeBytes = metadata.FileSizeBytes,
+            Dimensions = metadata.Dimensions,
+            ProcessingStatus = metadata.ProcessingStatus,
+            AltText = StringSanitizer.Sanitize(metadata.AltText),
+            Caption = StringSanitizer.Sanitize(metadata.Caption),
+            Attribution = StringSanitizer.Sanitize(metadata.Attribution),
+            Copyright = StringSanitizer.Sanitize(metadata.Copyright),
+        };
+    }
+
+    private static MediaImageResponsiveVariant[] SanitizeResponsiveVariants(IEnumerable<MediaImageResponsiveVariant> variants)
+    {
+        return [.. variants.Select(static variant => variant with { ContentType = StringSanitizer.Sanitize(variant.ContentType) })];
     }
 
     private static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLink> tourLinks)

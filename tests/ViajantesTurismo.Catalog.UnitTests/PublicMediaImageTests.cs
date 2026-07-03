@@ -1,4 +1,5 @@
 using SharedKernel.Testing.Assertions;
+using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -121,5 +122,48 @@ public sealed class PublicMediaImageTests
         missingTour.ShouldBe(false);
         isCover.ShouldBe(false);
         displayOrder.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Create_persists_sanitized_metadata_and_variant_text()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var imageId = Guid.CreateVersion7();
+        var metadata = new PublicMediaImageMetadata
+        {
+            Id = imageId,
+            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            Checksum = "  sha256:\u0001abc  ",
+            ContentType = "  image/jpeg  ",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensions(1200, 800),
+            ProcessingStatus = MediaImageProcessingStatus.Ready,
+            AltText = "  Cyclists\u0002 in   mountains  ",
+            Caption = "  Caption\u0003 text  ",
+            Attribution = "  Attribution\u0004 text  ",
+            Copyright = "  Copyright\u0005 text  ",
+        };
+        var variants = new[]
+        {
+            new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "  image/jpeg  ", 1024),
+        };
+        var tags = new[] { "  mountain  " };
+        var tourLinks = new[] { new MediaImageTourLink(tourId, 0, true) };
+
+        // Act
+        var result = PublicMediaImage.Create(metadata, variants, tags, tourLinks);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var image = result.Value;
+        image.Checksum.ShouldBe("sha256:abc");
+        image.ContentType.ShouldBe("image/jpeg");
+        image.AltText.ShouldBe("Cyclists in mountains");
+        image.Caption.ShouldBe("Caption text");
+        image.Attribution.ShouldBe("Attribution text");
+        image.Copyright.ShouldBe("Copyright text");
+        image.ResponsiveVariants[0].ContentType.ShouldBe("image/jpeg");
+        image.Tags.ShouldContain("mountain");
     }
 }
