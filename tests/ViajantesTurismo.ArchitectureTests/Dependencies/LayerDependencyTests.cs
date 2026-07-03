@@ -84,7 +84,7 @@ public sealed class LayerDependencyTests
             .ToArray();
 
         // Assert
-        Assert.Empty(unexpectedReferences);
+        unexpectedReferences.ShouldBeEmpty();
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class LayerDependencyTests
             .ToArray();
 
         // Assert
-        Assert.Empty(unexpectedReferences);
+        unexpectedReferences.ShouldBeEmpty();
     }
 
     [Fact]
@@ -157,7 +157,46 @@ public sealed class LayerDependencyTests
         var unexpectedReferences = FindSharedKernelProductReferences(repositoryRoot);
 
         // Assert
-        Assert.Empty(unexpectedReferences);
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Domain_application_and_contract_projects_should_not_reference_adapter_packages()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindLayerAdapterPackageReferences(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Provider_neutral_sharedkernel_projects_should_not_reference_adapter_packages()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindProviderNeutralSharedKernelAdapterPackageReferences(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void SharedKernel_entityframeworkcore_adapter_projects_should_name_entityframeworkcore()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+
+        // Act
+        var unexpectedReferences = FindSharedKernelEntityFrameworkCoreAdapterNamingViolations(repositoryRoot);
+
+        // Assert
+        unexpectedReferences.ShouldBeEmpty();
     }
 
 }

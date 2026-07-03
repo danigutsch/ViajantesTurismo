@@ -20,6 +20,8 @@ Use this naming pattern:
 - `SharedKernel.<Capability>.<Provider>` for reusable provider implementations.
 - `SharedKernel.<Capability>.<Adapter>` for reusable non-provider adapters when the adapter standard is
   the meaningful boundary, such as `CloudEvents`.
+- `SharedKernel.<Capability>.EntityFrameworkCore.<Provider>` for reusable EF Core adapters, when the
+  EF Core dependency is the boundary.
 - `<BoundedContext>.Infrastructure` for bounded-context composition, schema ownership, migrations,
   and read models.
 
@@ -27,7 +29,7 @@ Current examples:
 
 - `SharedKernel.EventSourcing` owns `IEventStore`, `IProjectionCheckpointStore`, stream identifiers,
   expected revisions, and event envelopes.
-- `SharedKernel.EventSourcing.PostgreSQL` owns reusable PostgreSQL event-store and projection
+- `SharedKernel.EventSourcing.Npgsql` owns reusable PostgreSQL event-store and projection
   checkpoint implementations plus provider telemetry names.
 - `SharedKernel.IntegrationEvents` owns typed integration-event contracts.
 - `SharedKernel.IntegrationEvents.CloudEvents` owns CloudEvents mapping as an adapter.
@@ -57,7 +59,9 @@ Examples:
 
 - EF Core owned by one bounded context stays in `<BoundedContext>.Infrastructure` because the DbContext,
   migrations, and schema policy are context-specific.
-- Reusable raw PostgreSQL event-store code belongs in `SharedKernel.EventSourcing.PostgreSQL` because it
+- Reusable EF Core provider code must include `EntityFrameworkCore` in the package name, for example
+  `SharedKernel.<Capability>.EntityFrameworkCore.PostgreSQL`.
+- Reusable raw PostgreSQL event-store code belongs in `SharedKernel.EventSourcing.Npgsql` because it
   implements storage-neutral event-sourcing contracts without owning a bounded-context schema.
 - Optional Dapper implementations should use `SharedKernel.<Capability>.Dapper` only when the query or
   store contract is reusable outside one context.
@@ -108,12 +112,23 @@ dependency.
 
 | Capability | Neutral Module | Provider Module | Status |
 | --- | --- | --- | --- |
-| Event sourcing | `SharedKernel.EventSourcing` | `SharedKernel.EventSourcing.PostgreSQL` | Implemented |
+| Event sourcing | `SharedKernel.EventSourcing` | `SharedKernel.EventSourcing.Npgsql` | Implemented |
 | Integration-event envelope mapping | `SharedKernel.IntegrationEvents` | `SharedKernel.IntegrationEvents.CloudEvents` | Implemented |
 | Idempotency | `SharedKernel.Idempotency` | `SharedKernel.Idempotency.PostgreSQL` or `SharedKernel.Idempotency.Redis` | Candidate |
 | Inbox/outbox | Future `SharedKernel.Messaging` or focused contracts | PostgreSQL-backed stores | Candidate |
 | Caching | Future cache contracts only if reused | Redis-backed cache adapters | Candidate |
 | Telemetry export | `SharedKernel.Observability` only for neutral contracts | Exporter-specific adapter only after reuse is proven | Candidate |
+
+Current dependency audit:
+
+| Area | Current dependency | Boundary decision |
+| --- | --- | --- |
+| Admin persistence | `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL` | Keep in `ViajantesTurismo.Admin.Infrastructure`; DbContexts and migrations are context-owned. |
+| Catalog persistence | `Aspire.Npgsql.EntityFrameworkCore.PostgreSQL` | Keep in `ViajantesTurismo.Catalog.Infrastructure`; DbContexts and migrations are context-owned. |
+| Event sourcing | `Npgsql` | Keep in `SharedKernel.EventSourcing.Npgsql`; this is a reusable raw Npgsql adapter. |
+| Public web output caching | `Aspire.StackExchange.Redis.OutputCaching` | Keep in `ViajantesTurismo.Management.Web`; no shared cache contract exists. |
+| Service telemetry | OpenTelemetry exporter/instrumentation packages | Keep in `ViajantesTurismo.ServiceDefaults`; these are startup/runtime composition dependencies. |
+| Grafana hosting | Aspire hosting packages | Keep in `SharedKernel.Aspire.Hosting.Grafana`; the hosting integration is explicit. |
 
 Follow-up split and audit work must reference these rules:
 

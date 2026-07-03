@@ -170,8 +170,8 @@ flowchart TB
     SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Domain[SharedKernel.Domain]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
-    SharedKernel_EventSourcing_PostgreSQL[SharedKernel.EventSourcing.PostgreSQL] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
-    SharedKernel_EventSourcing_PostgreSQL[SharedKernel.EventSourcing.PostgreSQL] --> SharedKernel_EventSourcing[SharedKernel.EventSourcing]
+    SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
+    SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql] --> SharedKernel_EventSourcing[SharedKernel.EventSourcing]
     SharedKernel_IntegrationEvents[SharedKernel.IntegrationEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     SharedKernel_IntegrationEvents_CloudEvents[SharedKernel.IntegrationEvents.CloudEvents] --> SharedKernel_IntegrationEvents[SharedKernel.IntegrationEvents]
     SharedKernel_Mediator[SharedKernel.Mediator] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
@@ -186,7 +186,7 @@ Module rules:
 - Put reusable domain primitives in `SharedKernel.Domain` or `SharedKernel.BuildingBlocks`.
 - Put reusable contracts for dispatching in mediator or integration-event modules.
 - Put provider-specific persistence in provider modules such as
-  `SharedKernel.EventSourcing.PostgreSQL`.
+  `SharedKernel.EventSourcing.Npgsql`.
 - Keep analyzers, source generators, and code fixes in their current tool-specific modules.
 
 Related decisions:

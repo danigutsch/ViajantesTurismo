@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -19,6 +20,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Mediator\SharedKernel.Mediator.csproj" />
+        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
     </ItemGroup>
 
 </Project>

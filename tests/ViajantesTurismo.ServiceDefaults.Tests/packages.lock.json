@@ -399,6 +399,12 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "sharedkernel.testing.assertions": {
+        "type": "Project",
+        "dependencies": {
+          "xunit.v3.assert": "[3.2.2, )"
+        }
+      },
       "viajantesturismo.resources": {
         "type": "Project"
       },

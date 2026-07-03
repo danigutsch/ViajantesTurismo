@@ -1,4 +1,4 @@
-namespace SharedKernel.EventSourcing.PostgreSQL;
+namespace SharedKernel.EventSourcing.Npgsql;
 
 /// <summary>
 /// Configures PostgreSQL event-sourcing storage.

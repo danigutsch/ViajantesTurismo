@@ -2,12 +2,12 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>SharedKernel.EventSourcing.PostgreSQL.Tests</RootNamespace>
+        <RootNamespace>SharedKernel.EventSourcing.Npgsql.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
         <Using Include="SharedKernel.EventSourcing" />
-        <Using Include="SharedKernel.EventSourcing.PostgreSQL" />
+        <Using Include="SharedKernel.EventSourcing.Npgsql" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -23,7 +23,7 @@
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel.IntegrationTesting\SharedKernel.IntegrationTesting.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" IsAspireProjectResource="false" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing.PostgreSQL\SharedKernel.EventSourcing.PostgreSQL.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing.Npgsql\SharedKernel.EventSourcing.Npgsql.csproj" IsAspireProjectResource="false" />
     </ItemGroup>
 
 </Project>

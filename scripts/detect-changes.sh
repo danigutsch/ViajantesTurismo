@@ -171,7 +171,7 @@ fast_validation_patterns=(
 )
 
 admin_integration_patterns=(
-    "src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/**"
+    "src/SharedKernel/SharedKernel.EventSourcing.Npgsql/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
     "src/ViajantesTurismo.Admin.Contracts/**"
@@ -179,7 +179,7 @@ admin_integration_patterns=(
     "src/ViajantesTurismo.Admin.Infrastructure/**"
     "src/ViajantesTurismo.Resources/**"
     "src/ViajantesTurismo.ServiceDefaults/**"
-    "tests/SharedKernel.EventSourcing.PostgreSQL.Tests/**"
+    "tests/SharedKernel.EventSourcing.Npgsql.Tests/**"
     "tests/ViajantesTurismo.Admin.IntegrationTests/**"
     "tests/ViajantesTurismo.Admin.Testing/**"
 )
