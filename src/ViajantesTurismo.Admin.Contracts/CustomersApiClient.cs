@@ -159,17 +159,14 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         try
         {
             var errors = JsonSerializer.Deserialize(content, Json.ContractValidationProblemDto)?.Errors;
-            if (errors is null || errors.Count == 0)
-            {
-                return CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, "Validation problem response body did not contain errors.");
-            }
-
-            return new CustomerCreateOutcomeDto
-            {
-                Kind = CustomerCreateOutcomeKind.ValidationProblem,
-                StatusCode = response.StatusCode,
-                ValidationErrors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal)
-            };
+            return errors is null || errors.Count == 0
+                ? CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, "Validation problem response body did not contain errors.")
+                : new CustomerCreateOutcomeDto
+                {
+                    Kind = CustomerCreateOutcomeKind.ValidationProblem,
+                    StatusCode = response.StatusCode,
+                    ValidationErrors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal)
+                };
         }
         catch (JsonException exception)
         {
