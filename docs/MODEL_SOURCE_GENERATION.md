@@ -78,7 +78,6 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 ### High payoff, low risk
 
 1. Identity/equality boilerplate currently centralized by base classes:
-   - `src/SharedKernel/SharedKernel.Domain/Entity.cs`
    - `src/SharedKernel/SharedKernel.Domain/AggregateRoot.cs`
    - `src/SharedKernel/SharedKernel.Domain/Entity.cs`
    - `src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs`

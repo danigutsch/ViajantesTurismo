@@ -6,7 +6,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain.SourceGenerator\SharedKernel.Domain.SourceGenerator.csproj"
             OutputItemType="Analyzer"
@@ -21,7 +23,5 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
-        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj"/>
     </ItemGroup>
 </Project>
