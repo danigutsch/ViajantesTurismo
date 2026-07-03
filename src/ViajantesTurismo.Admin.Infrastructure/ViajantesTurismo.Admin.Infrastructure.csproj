@@ -11,6 +11,8 @@
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.EntityFrameworkCore\SharedKernel.Mediator.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
     </ItemGroup>
 

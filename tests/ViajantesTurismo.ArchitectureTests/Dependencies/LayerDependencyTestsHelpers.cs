@@ -57,9 +57,17 @@ internal static partial class LayerDependencyTestsHelpers
 
         return Directory.EnumerateFiles(sharedKernelRoot, "*.csproj", SearchOption.AllDirectories)
             .Where(ReferencesEntityFrameworkCorePackage)
-            .Where(filePath => !Path.GetFileNameWithoutExtension(filePath).Contains(".EntityFrameworkCore.", StringComparison.Ordinal))
+            .Where(filePath => !NamesEntityFrameworkCoreAdapter(filePath))
             .Select(filePath => Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/'))
             .ToArray();
+    }
+
+    private static bool NamesEntityFrameworkCoreAdapter(string filePath)
+    {
+        var projectName = Path.GetFileNameWithoutExtension(filePath);
+
+        return projectName.EndsWith(".EntityFrameworkCore", StringComparison.Ordinal)
+            || projectName.Contains(".EntityFrameworkCore.", StringComparison.Ordinal);
     }
 
     private static IEnumerable<string> SharedKernelSourceFiles(string repositoryRoot)
