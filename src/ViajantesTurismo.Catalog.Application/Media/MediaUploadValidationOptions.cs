@@ -21,6 +21,21 @@ public sealed class MediaUploadValidationOptions
     public long MaxLengthBytes { get; set; } = DefaultMaxLengthBytes;
 
     /// <summary>
+    /// Gets or sets the maximum decoded image width in pixels.
+    /// </summary>
+    public int MaxDecodedWidth { get; set; } = 8_000;
+
+    /// <summary>
+    /// Gets or sets the maximum decoded image height in pixels.
+    /// </summary>
+    public int MaxDecodedHeight { get; set; } = 8_000;
+
+    /// <summary>
+    /// Gets or sets the maximum decoded image pixel count.
+    /// </summary>
+    public long MaxDecodedPixelCount { get; set; } = 40_000_000;
+
+    /// <summary>
     /// Gets the allowed extensions keyed by content type.
     /// </summary>
     public IReadOnlyDictionary<string, string[]> AllowedExtensionsByContentType { get; set; } = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
