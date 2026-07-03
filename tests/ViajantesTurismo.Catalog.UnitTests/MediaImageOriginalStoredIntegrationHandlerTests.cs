@@ -11,7 +11,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
     {
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
-        var content = CatalogTestImages.CreateJpeg(64, 32);
+        var content = CatalogTestImages.CreateJpeg(640, 320);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
             new MediaObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
@@ -31,12 +31,51 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
 
         // Assert
         imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
-        imageStore.Current.ResponsiveVariants.Count.ShouldBe(15);
-        objectStore.ObjectKeys.Count.ShouldBe(18);
+        imageStore.Current.ResponsiveVariants.Count.ShouldBe(6);
+        objectStore.ObjectKeys.Count.ShouldBe(9);
         objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/320-avif.avif");
-        objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/1920-jpeg.jpg");
+        objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/640-jpeg.jpg");
+        objectStore.ObjectKeys.ShouldNotContain($"media/{mediaImageId:N}/v1/960-jpeg.jpg");
         objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/thumb-webp.webp");
         objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/icon-ico.ico");
+    }
+
+    [Fact]
+    public async Task Handle_reprocesses_ready_image_when_processing_version_changes()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var content = CatalogTestImages.CreateJpeg(640, 320);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
+            TestContext.Current.CancellationToken);
+        var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
+
+        // Act
+        await handler.Handle(
+            new MediaImageOriginalStoredIntegrationEvent(
+                Guid.CreateVersion7(),
+                DateTimeOffset.UtcNow,
+                mediaImageId,
+                "uploads/original.jpg",
+                1),
+            TestContext.Current.CancellationToken);
+        await handler.Handle(
+            new MediaImageOriginalStoredIntegrationEvent(
+                Guid.CreateVersion7(),
+                DateTimeOffset.UtcNow,
+                mediaImageId,
+                "uploads/original.jpg",
+                2),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/640-jpeg.jpg");
+        objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v2/640-jpeg.jpg");
+        imageStore.Current.ResponsiveVariants.ShouldAllSatisfy(
+            variant => variant.Uri.OriginalString.Contains("/v2/", StringComparison.Ordinal).ShouldBe(true));
     }
 
     [Fact]

@@ -23,7 +23,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         var image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
 
-        if (image.ProcessingStatus == MediaImageProcessingStatus.Ready && image.ResponsiveVariants.Count > 0)
+        if (HasResponsiveVariantsForProcessingVersion(image, notification.ProcessingVersion))
         {
             return;
         }
@@ -38,6 +38,12 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
 
             foreach (var variant in result.Variants)
             {
+                var isResponsive = IsResponsiveVariant(variant);
+                if (isResponsive && !IsWithinSourceWidth(variant, result.Width))
+                {
+                    continue;
+                }
+
                 using var content = new MemoryStream(variant.Content.ToArray());
                 var objectKey = CreateVariantObjectKey(notification.MediaImageId, notification.ProcessingVersion, variant);
                 var stored = await objectStore.Put(
@@ -47,7 +53,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                         GetContentType(variant.Format),
                         variant.Content.Length),
                     ct).ConfigureAwait(false);
-                if (IsResponsiveVariant(variant))
+                if (isResponsive)
                 {
                     variants.Add(new MediaImageResponsiveVariant(
                         stored.PublicUri,
@@ -139,6 +145,19 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         => variant.Format is ImageOutputFormat.Avif or ImageOutputFormat.WebP or ImageOutputFormat.Jpeg
             && !variant.Name.StartsWith("thumb-", StringComparison.Ordinal)
             && !variant.Name.StartsWith("icon-", StringComparison.Ordinal);
+
+    private static bool IsWithinSourceWidth(ProcessedImageVariant variant, int sourceWidth)
+        => int.TryParse(variant.Name.Split('-', 2)[0], CultureInfo.InvariantCulture, out var requestedWidth)
+            && requestedWidth <= sourceWidth;
+
+    private static bool HasResponsiveVariantsForProcessingVersion(PublicMediaImage image, int processingVersion)
+    {
+        var versionSegment = string.Create(CultureInfo.InvariantCulture, $"/v{processingVersion}/");
+
+        return image.ProcessingStatus == MediaImageProcessingStatus.Ready
+            && image.ResponsiveVariants.Count > 0
+            && image.ResponsiveVariants.All(variant => variant.Uri.OriginalString.Contains(versionSegment, StringComparison.Ordinal));
+    }
 
     private static string GetFileExtension(ImageOutputFormat format) => format switch
     {

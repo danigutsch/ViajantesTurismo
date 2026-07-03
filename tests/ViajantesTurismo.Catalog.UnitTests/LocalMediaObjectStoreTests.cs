@@ -46,6 +46,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Assert
         result.ObjectKey.ShouldBe("images/tour/photo.jpg");
+        result.ContentType.ShouldBe("image/jpeg");
         result.Length.ShouldBe(3);
         using var content = new MemoryStream();
         await result.Content.CopyToAsync(content, TestContext.Current.CancellationToken);

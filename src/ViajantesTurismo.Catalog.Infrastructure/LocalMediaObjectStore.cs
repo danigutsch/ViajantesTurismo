@@ -49,7 +49,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             Options = FileOptions.Asynchronous
         });
 
-        return ValueTask.FromResult(new MediaObjectReadResult(objectKey, stream, "application/octet-stream", stream.Length));
+        return ValueTask.FromResult(new MediaObjectReadResult(objectKey, stream, GetContentType(objectKey), stream.Length));
     }
 
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
@@ -116,4 +116,15 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             ? new Uri(baseUri, escapedKey)
             : new Uri(baseUri.OriginalString + escapedKey, UriKind.Relative);
     }
+
+    private static string GetContentType(string objectKey) => Path.GetExtension(objectKey).ToUpperInvariant() switch
+    {
+        ".AVIF" => "image/avif",
+        ".GIF" => "image/gif",
+        ".ICO" => "image/x-icon",
+        ".JPG" or ".JPEG" => "image/jpeg",
+        ".PNG" => "image/png",
+        ".WEBP" => "image/webp",
+        _ => "application/octet-stream"
+    };
 }
