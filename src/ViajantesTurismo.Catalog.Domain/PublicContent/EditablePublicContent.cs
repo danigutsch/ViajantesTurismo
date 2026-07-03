@@ -186,12 +186,12 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
         ArgumentNullException.ThrowIfNull(replacement);
 
         var replace = ReplaceVariants(replacement.SourceLanguage, replacement.Variants);
-        if (replace.IsFailure)
+        return replace.IsFailure switch
         {
-            return replace;
-        }
-
-        return replacement.IsPubliclyVisible ? Publish() : Result.Ok();
+            true => replace,
+            false when replacement.IsPubliclyVisible => Publish(),
+            _ => Result.Ok(),
+        };
     }
 
     /// <summary>

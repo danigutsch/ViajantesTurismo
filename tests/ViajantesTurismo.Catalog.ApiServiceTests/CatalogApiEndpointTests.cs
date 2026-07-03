@@ -639,10 +639,10 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
-        Assert.NotNull(problem);
-        Assert.Contains(nameof(PublicMediaImageDto.ResponsiveVariants), problem.Errors.Keys);
+        problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(PublicMediaImageDto.ResponsiveVariants));
     }
 
     [Fact]
