@@ -41,7 +41,7 @@ run_project_tests() {
     for project_path in "$@"; do
         (
             echo "==> Testing ${project_path}"
-            dotnet test --project "${project_path}" --no-build -- "${coverage_args[@]}"
+            dotnet test --project "${project_path}" --no-restore --no-build -- "${coverage_args[@]}"
         ) &
 
         active=$((active + 1))
@@ -79,7 +79,7 @@ main() {
     shift
 
     if [[ $# -eq 0 ]]; then
-        dotnet test --solution ViajantesTurismo.slnx --no-build -- "${coverage_args[@]}"
+        dotnet test --solution ViajantesTurismo.slnx --no-restore --no-build -- "${coverage_args[@]}"
     else
         run_project_tests "$@"
     fi
