@@ -162,5 +162,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         exception.Message.ShouldContain(mediaImageId.ToString(), StringComparison.Ordinal);
         exception.Message.ShouldContain("Processed media image", StringComparison.Ordinal);
         imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Pending);
+        var remainingObjectKey = objectStore.ObjectKeys.ShouldHaveSingleItem();
+        remainingObjectKey.ShouldBe("uploads/tiny-original.jpg");
     }
 }

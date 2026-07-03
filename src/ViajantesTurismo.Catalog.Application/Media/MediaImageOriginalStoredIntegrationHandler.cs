@@ -35,6 +35,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 new ImageProcessingRequest(original.Content, CreateVariantRequests(), Limits),
                 ct);
             var variants = new List<MediaImageResponsiveVariant>(result.Variants.Count);
+            var storedVariantKeys = new List<string>(result.Variants.Count);
 
             foreach (var variant in result.Variants)
             {
@@ -53,6 +54,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                         GetContentType(variant.Format),
                         variant.Content.Length),
                     ct).ConfigureAwait(false);
+                storedVariantKeys.Add(objectKey);
                 if (isResponsive)
                 {
                     variants.Add(new MediaImageResponsiveVariant(
@@ -71,6 +73,11 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 variants);
             if (updatedImage.IsFailure)
             {
+                foreach (var storedVariantKey in storedVariantKeys)
+                {
+                    await objectStore.Delete(storedVariantKey, ct).ConfigureAwait(false);
+                }
+
                 throw new InvalidOperationException(
                     $"Processed media image {notification.MediaImageId} is invalid: {updatedImage.ErrorDetails?.Detail ?? "unknown validation failure"}.");
             }
