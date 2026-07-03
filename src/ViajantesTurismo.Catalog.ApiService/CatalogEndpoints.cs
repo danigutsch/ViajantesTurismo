@@ -93,12 +93,12 @@ internal static class CatalogEndpoints
         }
 
         var content = await store.GetContent(key, ct);
-        if (content is null || content.PublicationState != PublicContentPublicationState.Published)
+        if (content is null || !content.IsPubliclyVisible)
         {
             return Results.NotFound();
         }
 
-        var variant = GetApprovedVariant(content, requestedLanguage);
+        var variant = content.FindPublicVariant(requestedLanguage);
         return variant is null ? Results.NotFound() : Results.Ok(MapVariant(variant));
     }
 
@@ -625,14 +625,6 @@ internal static class CatalogEndpoints
     private static bool IsPublished(CatalogTourDraftReadModel tour)
     {
         return tour.IsPublished;
-    }
-
-    private static PublicContentVariant? GetApprovedVariant(EditablePublicContent content, PublicContentLanguage requestedLanguage)
-    {
-        var variant = content.Variants.FirstOrDefault(variant => variant.Language == requestedLanguage && !variant.RequiresHumanReview);
-        return variant is not null || requestedLanguage == PublicContentLanguage.EnUs
-            ? variant
-            : content.Variants.FirstOrDefault(variant => variant.Language == PublicContentLanguage.EnUs && !variant.RequiresHumanReview);
     }
 
     private static PublicContentDto MapPublicContent(EditablePublicContent content)

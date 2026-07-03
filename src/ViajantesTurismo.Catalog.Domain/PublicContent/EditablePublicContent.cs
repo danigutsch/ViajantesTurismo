@@ -72,6 +72,11 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     public PublicContentPublicationState PublicationState { get; private set; }
 
     /// <summary>
+    /// Gets a value indicating whether this content can be served on public endpoints.
+    /// </summary>
+    public bool IsPubliclyVisible => PublicationState == PublicContentPublicationState.Published;
+
+    /// <summary>
     /// Creates editable public website content with supported language variants.
     /// </summary>
     /// <param name="key">The stable content key.</param>
@@ -155,6 +160,19 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
         PublicationState = GetInitialPublicationState(variantsArray);
 
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// Finds the approved public variant for the requested language, falling back to English when needed.
+    /// </summary>
+    /// <param name="requestedLanguage">The requested public content language.</param>
+    /// <returns>The approved public variant, or <see langword="null" /> when none is available.</returns>
+    public PublicContentVariant? FindPublicVariant(PublicContentLanguage requestedLanguage)
+    {
+        var variant = _variants.FirstOrDefault(variant => variant.Language == requestedLanguage && !variant.RequiresHumanReview);
+        return variant is not null || requestedLanguage == PublicContentLanguage.EnUs
+            ? variant
+            : _variants.FirstOrDefault(variant => variant.Language == PublicContentLanguage.EnUs && !variant.RequiresHumanReview);
     }
 
     private static PublicContentPublicationState GetInitialPublicationState(IEnumerable<PublicContentVariant> variants)

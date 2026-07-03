@@ -1,3 +1,4 @@
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
@@ -161,6 +162,65 @@ public sealed class EditablePublicContentTests
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(PublicContentPublicationState.ReviewRequired, content.PublicationState);
+    }
+
+    [Fact]
+    public void IsPubliclyVisible_is_true_only_after_publication()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var draftResult = content.IsPubliclyVisible;
+        var publish = content.Publish();
+        var publishedResult = content.IsPubliclyVisible;
+
+        // Assert
+        draftResult.ShouldBe(false);
+        publish.IsSuccess.ShouldBe(true);
+        publishedResult.ShouldBe(true);
+    }
+
+    [Fact]
+    public void FindPublicVariant_returns_requested_approved_language()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+
+        // Assert
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentLanguage.PtBr);
+    }
+
+    [Fact]
+    public void FindPublicVariant_falls_back_to_approved_english_when_requested_language_needs_review()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
+
+        // Act
+        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+
+        // Assert
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentLanguage.EnUs);
+    }
+
+    [Fact]
+    public void FindPublicVariant_returns_null_when_requested_english_needs_review()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.PtBr, [enUs, ptBr]);
+        result.IsSuccess.ShouldBe(true);
+
+        // Act
+        var variant = result.Value.FindPublicVariant(PublicContentLanguage.EnUs);
+
+        // Assert
+        variant.ShouldBeNull();
     }
 
     [Fact]

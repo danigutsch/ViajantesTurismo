@@ -130,6 +130,11 @@ public sealed class PublicMediaImage
     public bool HasPublicVariants => ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
 
     /// <summary>
+    /// Gets a value indicating whether existing public variants should remain visible after processing fails.
+    /// </summary>
+    public bool CanRetainPublicVariantsAfterProcessingFailure => HasPublicVariants;
+
+    /// <summary>
     /// Returns whether the image already has public variants for a processing version.
     /// </summary>
     /// <param name="processingVersion">The deterministic processing output version.</param>
@@ -140,5 +145,15 @@ public sealed class PublicMediaImage
 
         return HasPublicVariants
             && _responsiveVariants.All(variant => variant.Uri.AbsolutePath.Contains(versionSegment, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Returns whether the original image should be processed for the requested deterministic output version.
+    /// </summary>
+    /// <param name="processingVersion">The deterministic processing output version.</param>
+    /// <returns><see langword="true" /> when processing is needed for the requested version.</returns>
+    public bool ShouldProcessOriginal(int processingVersion)
+    {
+        return !HasPublicVariantsForProcessingVersion(processingVersion);
     }
 }

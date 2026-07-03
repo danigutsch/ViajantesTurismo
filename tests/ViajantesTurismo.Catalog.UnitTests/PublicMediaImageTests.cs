@@ -53,4 +53,38 @@ public sealed class PublicMediaImageTests
         // Assert
         result.ShouldBe(false);
     }
+
+    [Fact]
+    public void Should_process_original_requires_missing_or_outdated_public_variants()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateReadyImageForProcessingVersion(Guid.CreateVersion7(), 2);
+        var pendingImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
+
+        // Act
+        var currentVersionResult = image.ShouldProcessOriginal(2);
+        var outdatedVersionResult = image.ShouldProcessOriginal(3);
+        var pendingResult = pendingImage.ShouldProcessOriginal(2);
+
+        // Assert
+        currentVersionResult.ShouldBe(false);
+        outdatedVersionResult.ShouldBe(true);
+        pendingResult.ShouldBe(true);
+    }
+
+    [Fact]
+    public void Can_retain_public_variants_after_processing_failure_requires_existing_public_variants()
+    {
+        // Arrange
+        var readyImage = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
+        var pendingImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
+
+        // Act
+        var readyResult = readyImage.CanRetainPublicVariantsAfterProcessingFailure;
+        var pendingResult = pendingImage.CanRetainPublicVariantsAfterProcessingFailure;
+
+        // Assert
+        readyResult.ShouldBe(true);
+        pendingResult.ShouldBe(false);
+    }
 }
