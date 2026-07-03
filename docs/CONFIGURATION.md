@@ -26,6 +26,78 @@ Production configuration rules:
 - keep secrets out of source-controlled settings files
 - validate unsafe values at startup with `ValidateOnStart`
 
+## Feature flag governance
+
+Feature flags are production runtime configuration only when a current feature needs controlled
+rollout, a short-lived operational kill switch, a measured experiment, or a permission/entitlement
+switch. Do not add speculative flags, shared flag abstractions, or flag packages before a real toggle
+point exists.
+
+Current status: this repository has no active feature flags. Add the first flag only with the feature
+that consumes it, not as standalone infrastructure.
+
+Allowed flags:
+
+| Flag kind | Allowed when | Expected lifetime |
+| --- | --- | --- |
+| Release flag | Code is deployed before broad user release to reduce rollout risk. | Remove in the first cleanup PR after full rollout. |
+| Ops flag | Operators need to disable optional high-risk behavior without redeploying. | Keep only while the operational risk remains. |
+| Experiment flag | Product needs a measured A/B or cohort test. | Remove after the decision is made. |
+| Permission flag | Access is tied to entitlement, internal preview, or beta participation. | Prefer authorization or entitlement modeling when it becomes permanent. |
+
+Prohibited flags:
+
+- domain invariants, validation rules, state transitions, or legal/compliance requirements
+- authentication or authorization bypasses
+- security, privacy, audit, or data-retention controls that must never be optional
+- long-lived product variants without a cleanup owner and removal criteria
+- build-time constants, route templates, telemetry names, resource names, and protocol values
+- flags in `src/ViajantesTurismo.Admin.Domain`; Domain behavior must stay deterministic
+
+Naming, defaults, ownership, and expiry:
+
+- Use section `FeatureFlags` with PascalCase flag keys, for example
+  `FeatureFlags:EnableNewBookingReview`.
+- Use environment variables with `__`, for example `FeatureFlags__EnableNewBookingReview`.
+- Default release, experiment, and permission flags to `false` unless the safe legacy behavior is
+  the enabled path and the PR explains why.
+- Default ops kill switches to the safest user-facing behavior, documented in the production table.
+- Document every production flag in the production runtime configuration table with owner,
+  expiry/removal criteria, consuming service, safe-to-log status, and expected default.
+- Name flags for the business behavior being exposed, not the implementation detail being replaced.
+
+Testing requirements:
+
+- Test both disabled and enabled paths for every release, ops, and experiment flag before merge.
+- Keep disabled-path tests until the flag is removed so the fallback remains valid.
+- Add integration or system coverage when the flag changes routing, persistence, messaging, public
+  API shape, authorization, or user-visible workflow.
+- Avoid exhaustive cross-product testing for unrelated flags; test interactions only when two flags
+  touch the same behavior.
+- Update contract or snapshot tests for both states when a flagged endpoint changes public output.
+
+Cleanup rules:
+
+- The PR that adds a flag must state the cleanup trigger: release complete, experiment decision,
+  incident closed, or entitlement modeled permanently.
+- Remove stale flags by deleting both code paths, configuration rows, test overrides, and deployment
+  variables in one focused cleanup PR.
+- Prefer deleting the flag over keeping a permanently enabled branch. Permanent behavior belongs in
+  normal code or authorization policy, not a release toggle.
+- Keep the old safe path only while rollback remains realistic and tested.
+
+Implementation rules:
+
+- Prefer native .NET configuration and options for the first simple flag.
+- Read flags at application/API/web edges. Pass ordinary values into deeper services when needed.
+- Do not add a shared flag service, registry, factory, cache, or wrapper for a single caller.
+- Do not use `Microsoft.FeatureManagement` unless the PR needs its built-in gates, filters,
+  per-request snapshots, or Azure App Configuration integration now.
+- Do not use an external flag service until multiple deployed services need coordinated dynamic
+  changes, auditing, or non-developer operations.
+- If a library or service is justified, document why native configuration is insufficient and add
+  tests proving enabled and disabled behavior through normal configuration providers.
+
 ## Aspire deployment and publish mapping
 
 Aspire deployment/publish output should preserve the same boundaries as this document: production
@@ -149,14 +221,17 @@ Test/tooling rules:
 This policy follows official Microsoft and Aspire guidance:
 
 - <https://learn.microsoft.com/aspnet/core/fundamentals/configuration/>
+- <https://learn.microsoft.com/azure/azure-app-configuration/concept-feature-management>
 - <https://learn.microsoft.com/dotnet/core/extensions/configuration>
 - <https://learn.microsoft.com/dotnet/core/extensions/configuration-providers>
 - <https://learn.microsoft.com/dotnet/core/extensions/options>
 - <https://learn.microsoft.com/dotnet/core/extensions/options-library-authors>
 - <https://learn.microsoft.com/dotnet/core/extensions/options-validation-generator>
+- <https://learn.microsoft.com/dotnet/architecture/cloud-native/feature-flags>
 - <https://learn.microsoft.com/dotnet/aspire/fundamentals/app-host-overview>
 - <https://learn.microsoft.com/dotnet/aspire/app-host/configuration>
 - <https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment>
+- <https://martinfowler.com/articles/feature-toggles.html>
 
 Documentation structure follows these practices:
 
@@ -246,3 +321,4 @@ Analyzer coverage should be conservative:
 | `AllowedHosts` | Hosting configuration | Review separately before changing production defaults. |
 | CDN asset URLs | External asset policy | Decide asset strategy before configuring broadly. |
 | Endpoint paths, route templates, and contract limits | Constant or domain/API invariant | Keep centralized constants and validation rules unless the public contract changes. |
+| Feature flags | No active production flags | Add only with a current feature that needs controlled rollout, then document owner and expiry. |

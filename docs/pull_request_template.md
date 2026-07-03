@@ -17,5 +17,6 @@
 
 - [ ] Commit messages follow Conventional Commits
 - [ ] Documentation updated where behaviour or workflow changed
+- [ ] Feature flags include owner, default, tests for both states, and cleanup trigger, if applicable
 - [ ] Screenshots or recordings attached for UI changes, if applicable
 - [ ] Related issue, backlog item, or ADR linked, if applicable
