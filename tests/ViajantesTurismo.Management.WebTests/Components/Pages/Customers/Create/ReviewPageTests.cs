@@ -167,7 +167,7 @@ public sealed class ReviewPageTests : BunitContext
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers/absolute-id?source=review", navigationManager.Uri, StringComparison.Ordinal));
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/absolute-id?source=review", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public sealed class ReviewPageTests : BunitContext
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
-        await cut.WaitForAssertionAsync(() => Assert.EndsWith("/customers", navigationManager.Uri, StringComparison.Ordinal));
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers", StringComparison.Ordinal));
     }
 
     [Fact]

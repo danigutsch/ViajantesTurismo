@@ -175,6 +175,14 @@ public static class ShouldAssertionExtensions
     public static void ShouldContain<T>(this IEnumerable<T> actual, Predicate<T> predicate) => TestAssert.Contains(actual, predicate);
 
     /// <summary>
+    /// Verifies that a string ends with the expected suffix.
+    /// </summary>
+    /// <param name="actual">The actual value.</param>
+    /// <param name="expected">The expected suffix.</param>
+    /// <param name="comparisonType">The string comparison type.</param>
+    public static void ShouldEndWith(this string? actual, string expected, StringComparison comparisonType) => TestAssert.EndsWith(expected, actual, comparisonType);
+
+    /// <summary>
     /// Verifies that a collection does not contain the expected item.
     /// </summary>
     /// <typeparam name="T">The item type.</typeparam>

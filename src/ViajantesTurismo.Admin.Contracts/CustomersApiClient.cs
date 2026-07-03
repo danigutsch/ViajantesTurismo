@@ -68,7 +68,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             ct).ConfigureAwait(false);
 
         CustomerCreateOutcomeDto outcome;
-        if (response.StatusCode == HttpStatusCode.Created)
+        if (response.StatusCode is HttpStatusCode.Created)
         {
             outcome = new CustomerCreateOutcomeDto
             {
@@ -77,7 +77,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
                 Location = response.Headers.Location
             };
         }
-        else if (response.StatusCode == HttpStatusCode.BadRequest)
+        else if (response.StatusCode is HttpStatusCode.BadRequest)
         {
             outcome = await ReadValidationProblem(response, ct).ConfigureAwait(false);
         }
@@ -161,7 +161,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
         try
         {
             var problem = JsonSerializer.Deserialize(content, Json.ContractValidationProblemDto);
-            if (problem?.Errors is null || problem.Errors.Count == 0)
+            if (problem?.Errors is not { Count: > 0 })
             {
                 return CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, "Validation problem response body did not contain errors.");
             }
