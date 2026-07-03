@@ -35,6 +35,23 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             request.Checksum);
     }
 
+    public ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var path = GetSafeObjectPath(objectKey);
+        var stream = new FileStream(path, new FileStreamOptions
+        {
+            Mode = FileMode.Open,
+            Access = FileAccess.Read,
+            Share = FileShare.Read,
+            BufferSize = 81920,
+            Options = FileOptions.Asynchronous
+        });
+
+        return ValueTask.FromResult(new MediaObjectReadResult(objectKey, stream, "application/octet-stream", stream.Length));
+    }
+
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);

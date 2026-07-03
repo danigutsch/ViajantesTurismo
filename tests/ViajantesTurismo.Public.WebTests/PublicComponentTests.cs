@@ -140,6 +140,8 @@ public sealed class PublicComponentTests : BunitContext
                 AltText = "First image",
                 ResponsiveVariants =
                 [
+                    new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-320.avif"), Width = 320, Height = 213, ContentType = "image/avif", FileSizeBytes = 256 },
+                    new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.webp"), Width = 640, Height = 427, ContentType = "image/webp", FileSizeBytes = 512 },
                     new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-320.jpg"), Width = 320, Height = 213, ContentType = "image/jpeg", FileSizeBytes = 512 },
                     new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.jpg"), Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
                 ]
@@ -150,13 +152,44 @@ public sealed class PublicComponentTests : BunitContext
         var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
 
         // Assert
-        var source = cut.Find("source");
-        Assert.Equal("image/jpeg", source.GetAttribute("type"));
-        Assert.Equal("https://cdn.example/one-320.jpg 320w, https://cdn.example/one-640.jpg 640w", source.GetAttribute("srcset"));
-        Assert.Equal("(min-width: 48rem) 50vw, 100vw", source.GetAttribute("sizes"));
+        var sources = cut.FindAll("source");
+        Assert.Equal("image/avif", sources[0].GetAttribute("type"));
+        Assert.Equal("https://cdn.example/one-320.avif 320w", sources[0].GetAttribute("srcset"));
+        Assert.Equal("image/webp", sources[1].GetAttribute("type"));
+        Assert.Equal("https://cdn.example/one-640.webp 640w", sources[1].GetAttribute("srcset"));
+        Assert.Equal("image/jpeg", sources[2].GetAttribute("type"));
+        Assert.Equal("https://cdn.example/one-320.jpg 320w, https://cdn.example/one-640.jpg 640w", sources[2].GetAttribute("srcset"));
+        Assert.Equal("(min-width: 48rem) 50vw, 100vw", sources[2].GetAttribute("sizes"));
         Assert.Equal("https://cdn.example/one-640.jpg", cut.Find("img").GetAttribute("src"));
         Assert.Equal("640", cut.Find("img").GetAttribute("width"));
         Assert.Equal("427", cut.Find("img").GetAttribute("height"));
+    }
+
+    [Fact]
+    public void TourGallery_keeps_original_image_as_fallback_when_no_jpeg_or_png_variant_exists()
+    {
+        // Arrange
+        var images = new[]
+        {
+            new CatalogTourImageDto
+            {
+                Uri = new Uri("https://cdn.example/original.jpg"),
+                AltText = "First image",
+                ResponsiveVariants =
+                [
+                    new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-320.avif"), Width = 320, Height = 213, ContentType = "image/avif", FileSizeBytes = 256 },
+                    new MediaImageResponsiveVariantDto { Uri = new Uri("https://cdn.example/one-640.webp"), Width = 640, Height = 427, ContentType = "image/webp", FileSizeBytes = 512 }
+                ]
+            }
+        };
+
+        // Act
+        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+
+        // Assert
+        Assert.Equal("https://cdn.example/original.jpg", cut.Find("img").GetAttribute("src"));
+        Assert.Null(cut.Find("img").GetAttribute("width"));
+        Assert.Null(cut.Find("img").GetAttribute("height"));
     }
 
     [Fact]

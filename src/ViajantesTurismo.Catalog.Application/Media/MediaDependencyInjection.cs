@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using SharedKernel.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -26,6 +27,9 @@ public static class MediaDependencyInjection
                 IValidateOptions<MediaUploadValidationOptions>,
                 MediaUploadValidationOptionsValidator>());
         services.TryAddSingleton<IMediaUploadValidator>(sp => new MediaUploadValidator(sp.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value));
+        services.TryAddScoped<MediaImageProcessingRequestedIntegrationEventConsumer>();
+        services.TryAddScoped<IIntegrationEventHandler<MediaImageProcessingRequestedIntegrationEvent>>(
+            sp => sp.GetRequiredService<MediaImageProcessingRequestedIntegrationEventConsumer>());
 
         return services;
     }

@@ -31,6 +31,11 @@
         "resolved": "10.27.0.140913",
         "contentHash": "cxk12QjN9io1SjN36B1QO+9dRf+ek2CGfQGsOWtHBojE35cKchKJod48raxZwe47jHhzmAUO4AJSh7+hF0GS4g=="
       },
+      "Magick.NET.Core": {
+        "type": "Transitive",
+        "resolved": "14.14.0",
+        "contentHash": "pACR3w4QmjBkebtYvZwNk0oow8YwEAF4CLfzSrGmPcWsObL8wvt/lOXsrzK9M0cVwYES7jp+bdnHQBTeQgfoIg=="
+      },
       "Microsoft.EntityFrameworkCore": {
         "type": "Transitive",
         "resolved": "10.0.9",
@@ -236,6 +241,12 @@
       "sharedkernel.idempotency": {
         "type": "Project"
       },
+      "sharedkernel.imageprocessing": {
+        "type": "Project",
+        "dependencies": {
+          "Magick.NET-Q8-AnyCPU": "[14.14.0, )"
+        }
+      },
       "sharedkernel.integrationevents": {
         "type": "Project",
         "dependencies": {
@@ -264,6 +275,7 @@
           "SharedKernel.BuildingBlocks": "[1.0.0, )",
           "SharedKernel.EventSourcing": "[1.0.0, )",
           "SharedKernel.Idempotency": "[1.0.0, )",
+          "SharedKernel.ImageProcessing": "[1.0.0, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
           "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
@@ -300,6 +312,15 @@
         "requested": "[2026.2.0, )",
         "resolved": "2026.2.0",
         "contentHash": "drvAEaI7Xf4wU6dx4UTB9MoZWXZlraaQ0qoeThPQ411FxNhId7QdUTukIC9I8aUHP0ycAaGwZNKqSvfOZQvUlg=="
+      },
+      "Magick.NET-Q8-AnyCPU": {
+        "type": "CentralTransitive",
+        "requested": "[14.14.0, )",
+        "resolved": "14.14.0",
+        "contentHash": "Af7QdAb1AfLN09gpr4lzrTjioDez1hW1IQN3Tb0qJWi8NY3ywTJyteoH/8P/mripXq4D5Khz0uWBEX5O59i5Zw==",
+        "dependencies": {
+          "Magick.NET.Core": "14.14.0"
+        }
       },
       "Microsoft.EntityFrameworkCore.Relational": {
         "type": "CentralTransitive",

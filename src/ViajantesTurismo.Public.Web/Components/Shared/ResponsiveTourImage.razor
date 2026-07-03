@@ -1,0 +1,59 @@
+<picture>
+    @foreach (var source in SourceGroups())
+    {
+        <source type="@source.ContentType" srcset="@source.SrcSet" sizes="@Sizes" />
+    }
+    <img src="@ImageSource()" alt="@Image.AltText" width="@ImageWidth()" height="@ImageHeight()" loading="@Loading" fetchpriority="@FetchPriority" />
+</picture>
+
+@code {
+    [Parameter, EditorRequired]
+    public required CatalogTourImageDto Image { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Sizes { get; set; }
+
+    [Parameter]
+    public string Loading { get; set; } = "lazy";
+
+    [Parameter]
+    public string? FetchPriority { get; set; }
+
+    private IEnumerable<(string ContentType, string SrcSet)> SourceGroups()
+    {
+        return Image.ResponsiveVariants
+            .Where(variant => IsPictureSourceContentType(variant.ContentType))
+            .GroupBy(variant => variant.ContentType, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(group => ContentTypeSortOrder(group.Key))
+            .Select(group => (ContentType: group.Key, SrcSet: string.Join(", ", group
+                .OrderBy(variant => variant.Width)
+                .Select(variant => $"{variant.Uri} {variant.Width}w"))));
+    }
+
+    private string ImageSource() => SelectFallbackVariant()?.Uri.ToString() ?? Image.Uri.ToString();
+
+    private int? ImageWidth() => SelectFallbackVariant()?.Width;
+
+    private int? ImageHeight() => SelectFallbackVariant()?.Height;
+
+    private MediaImageResponsiveVariantDto? SelectFallbackVariant() => Image.ResponsiveVariants
+        .Where(variant => string.Equals(variant.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(variant.ContentType, "image/png", StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(variant => variant.Width)
+        .FirstOrDefault();
+
+    private static int ContentTypeSortOrder(string contentType) => contentType.ToLowerInvariant() switch
+    {
+        "image/avif" => 0,
+        "image/webp" => 1,
+        "image/jpeg" => 2,
+        "image/png" => 3,
+        _ => 4
+    };
+
+    private static bool IsPictureSourceContentType(string contentType) => contentType.ToLowerInvariant() switch
+    {
+        "image/avif" or "image/webp" or "image/jpeg" or "image/png" => true,
+        _ => false
+    };
+}
