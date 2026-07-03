@@ -1,4 +1,5 @@
 using PublicTheme = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicTheme;
+using ViajantesTurismo.Common.Contracts;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -111,5 +112,21 @@ public sealed class PublicThemeTests : BunitContext
 
         // Assert
         Assert.Contains("couldn't save public theme", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_fallback_error_when_theme_validation_has_no_messages()
+    {
+        // Arrange
+        publicThemeApi.ValidationException = new ContractValidationException("Validation problem response body was malformed.");
+        var cut = Render<PublicTheme>();
+        cut.WaitForState(() => cut.Find("#theme-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("couldn't save public theme", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        Assert.Contains("couldn't save public theme", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
     }
 }

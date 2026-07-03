@@ -269,7 +269,9 @@
         }
         catch (ContractValidationException ex)
         {
-            _errorMessage = string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
+            _errorMessage = ex.ValidationErrors.Count == 0
+                ? UserFacingErrorMessage.ForOperation("save public content")
+                : string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
         }
         catch (HttpRequestException)
         {

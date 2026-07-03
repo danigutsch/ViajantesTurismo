@@ -284,4 +284,25 @@ public sealed class PublicContentTests : BunitContext
         Assert.Contains("Title is required", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Shows_fallback_error_when_content_validation_has_no_messages()
+    {
+        // Arrange
+        publicContentApi.ValidationException = new ContractValidationException("Validation problem response body was malformed.");
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.Markup.Contains("couldn't save public content", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        Assert.Contains("couldn't save public content", cut.Find(".alert-danger").TextContent, StringComparison.Ordinal);
+    }
+
 }
