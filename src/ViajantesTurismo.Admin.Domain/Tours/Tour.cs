@@ -604,12 +604,9 @@ public sealed partial class Tour : IEntity<Guid>
     public Result UpdateBookingNotes(Guid bookingId, string? notes)
     {
         var bookingResult = FindBooking(bookingId);
-        if (bookingResult.IsFailure)
-        {
-            return bookingResult.ConvertError();
-        }
-
-        return bookingResult.Value.UpdateNotes(notes);
+        return bookingResult.IsFailure
+            ? bookingResult.ConvertError()
+            : bookingResult.Value.UpdateNotes(notes);
     }
 
     /// <summary>
