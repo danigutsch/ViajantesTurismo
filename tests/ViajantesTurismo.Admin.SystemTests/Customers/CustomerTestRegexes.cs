@@ -6,4 +6,7 @@ public static partial class CustomerTestRegexes
 {
     [GeneratedRegex("/customers/create/contact$")]
     public static partial Regex ContactStep();
+
+    [GeneratedRegex("/customers/create/physical$")]
+    public static partial Regex PhysicalStep();
 }

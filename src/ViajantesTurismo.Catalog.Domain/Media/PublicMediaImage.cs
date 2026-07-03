@@ -262,7 +262,7 @@ public sealed class PublicMediaImage
     /// <returns><see langword="true" /> when a placement exists for the requested tour.</returns>
     public bool TryGetTourLink(Guid catalogTourId, [NotNullWhen(true)] out MediaImageTourLink? link)
     {
-        link = _tourLinks.SingleOrDefault(link => link.CatalogTourId == catalogTourId);
+        link = _tourLinks.FirstOrDefault(tourLink => tourLink.CatalogTourId == catalogTourId);
 
         return link is not null;
     }

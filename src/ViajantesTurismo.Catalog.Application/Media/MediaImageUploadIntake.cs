@@ -130,6 +130,8 @@ public sealed class MediaImageUploadIntake(
             request.TourLinks);
         if (imageResult.IsFailure)
         {
+            await objectStore.Delete(objectKey, ct).ConfigureAwait(false);
+
             return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
         }
 

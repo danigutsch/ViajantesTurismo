@@ -84,6 +84,7 @@ internal static class LocatorHelpers
     {
         for (var attempt = 1; attempt <= 3; attempt++)
         {
+            await Assertions.Expect(locator).ToBeEditableAsync();
             await locator.FillAsync(value);
             await locator.BlurAsync();
 
