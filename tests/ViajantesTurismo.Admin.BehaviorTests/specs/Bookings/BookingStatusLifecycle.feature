@@ -63,3 +63,17 @@ So that bookings follow valid business rules
         Given a cancelled booking exists
         When the operator tries to complete the booking
         Then the result should fail with message "Cannot transition from Cancelled to Completed."
+
+    Scenario: Single-traveler bookings count one traveler
+        Given a pending booking exists
+        Then the booking should count as 1 participant
+
+    Scenario: Confirmed companion bookings count both travelers
+        Given a confirmed booking with a companion exists
+        Then the booking should count as 2 participants
+
+    Scenario: Cancelled bookings cannot have booked services changed
+        Given a cancelled booking exists
+        When the operator tries to change the booked services
+        Then the operation should fail
+        And the error message should contain "cannot be modified"

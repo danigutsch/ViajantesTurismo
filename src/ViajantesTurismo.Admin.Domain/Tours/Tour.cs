@@ -87,8 +87,8 @@ public sealed partial class Tour : IEntity<Guid>
     /// </summary>
     public int CurrentCustomerCount =>
         _bookings
-            .Where(b => b.Status == BookingStatus.Confirmed)
-            .Sum(b => b.CompanionCustomer is null ? 1 : 2);
+            .Where(booking => booking.IsConfirmed)
+            .Sum(booking => booking.ParticipantCount);
 
     /// <summary>
     /// Gets the number of available spots remaining.
@@ -525,13 +525,13 @@ public sealed partial class Tour : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result CancelBooking(Guid bookingId)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
 
-        return booking.Cancel();
+        return bookingResult.Value.Cancel();
     }
 
     /// <summary>
@@ -541,13 +541,13 @@ public sealed partial class Tour : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result ConfirmBooking(Guid bookingId)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
 
-        return booking.Confirm();
+        return bookingResult.Value.Confirm();
     }
 
     /// <summary>
@@ -557,13 +557,13 @@ public sealed partial class Tour : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result CompleteBooking(Guid bookingId)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
 
-        return booking.Complete();
+        return bookingResult.Value.Complete();
     }
 
     /// <summary>
@@ -586,13 +586,13 @@ public sealed partial class Tour : IEntity<Guid>
         string? referenceNumber = null,
         string? notes = null)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId).ConvertError<Payment>();
+            return bookingResult.ConvertError<Booking, Payment>();
         }
 
-        return booking.RecordPayment(amount, paymentDate, method, timeProvider, referenceNumber, notes);
+        return bookingResult.Value.RecordPayment(amount, paymentDate, method, timeProvider, referenceNumber, notes);
     }
 
     /// <summary>
@@ -603,13 +603,13 @@ public sealed partial class Tour : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateBookingNotes(Guid bookingId, string? notes)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
 
-        return booking.UpdateNotes(notes);
+        return bookingResult.Value.UpdateNotes(notes);
     }
 
     /// <summary>
@@ -626,10 +626,10 @@ public sealed partial class Tour : IEntity<Guid>
         decimal discountAmount,
         string? discountReason)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
 
         var discountResult = Discount.Create(discountType, discountAmount, discountReason);
@@ -638,7 +638,7 @@ public sealed partial class Tour : IEntity<Guid>
             return discountResult.ConvertError();
         }
 
-        return booking.UpdateDiscount(discountResult.Value);
+        return bookingResult.Value.UpdateDiscount(discountResult.Value);
     }
 
     /// <summary>
@@ -657,11 +657,13 @@ public sealed partial class Tour : IEntity<Guid>
         Guid? companionCustomerId,
         BikeType? companionBikeType)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
+
+        var booking = bookingResult.Value;
 
         if (!Enum.IsDefined(roomType))
         {
@@ -757,13 +759,15 @@ public sealed partial class Tour : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result RemoveBooking(Guid bookingId)
     {
-        var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
-        if (booking is null)
+        var bookingResult = FindBooking(bookingId);
+        if (bookingResult.IsFailure)
         {
-            return TourErrors.BookingNotFound(bookingId);
+            return bookingResult.ConvertError();
         }
 
-        if (booking.Status != BookingStatus.Pending)
+        var booking = bookingResult.Value;
+
+        if (!booking.IsPending)
         {
             return TourErrors.CannotRemoveNonPendingBooking(bookingId, booking.Status);
         }
@@ -779,13 +783,24 @@ public sealed partial class Tour : IEntity<Guid>
     /// <returns>A result indicating whether the tour can be deleted.</returns>
     private Result CanBeDeleted()
     {
-        var confirmedBookings = _bookings.Count(b => b.Status == BookingStatus.Confirmed);
+        var confirmedBookings = _bookings.Count(booking => booking.IsConfirmed);
         if (confirmedBookings > 0)
         {
             return TourErrors.CannotDeleteTourWithConfirmedBookings(confirmedBookings);
         }
 
         return Result.Ok();
+    }
+
+    private Result<Booking> FindBooking(Guid bookingId)
+    {
+        var booking = _bookings.FirstOrDefault(booking => booking.Id == bookingId);
+        if (booking is null)
+        {
+            return TourErrors.BookingNotFound(bookingId).ConvertError<Booking>();
+        }
+
+        return Result.Ok(booking);
     }
 
     /// <summary>
