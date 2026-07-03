@@ -99,7 +99,7 @@ remain storage-neutral.
 ### Provider Modules
 
 Provider-specific reusable infrastructure belongs in `SharedKernel.<Capability>.<Provider>` modules.
-For example, `SharedKernel.EventSourcing.PostgreSQL` contains PostgreSQL event-store and projection
+For example, `SharedKernel.EventSourcing.Npgsql` contains PostgreSQL event-store and projection
 checkpoint persistence, while `SharedKernel.EventSourcing` remains storage-neutral.
 
 Bounded-context infrastructure owns composition, schema naming, migrations, read models, and

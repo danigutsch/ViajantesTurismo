@@ -9,7 +9,7 @@ contract details live in [OpenTelemetry custom telemetry](../OPEN_TELEMETRY.md).
 flowchart LR
     mediator[SharedKernel.Mediator]
     catalog[ViajantesTurismo.Catalog]
-    postgres[SharedKernel.EventSourcing.PostgreSQL]
+    postgres[SharedKernel.EventSourcing.Npgsql]
     migration[MigrationService seeding]
 
     defaults[ViajantesTurismo.ServiceDefaults]

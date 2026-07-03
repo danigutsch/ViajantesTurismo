@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace SharedKernel.EventSourcing.PostgreSQL.Tests;
+namespace SharedKernel.EventSourcing.Npgsql.Tests;
 
 internal sealed class TestEventSerializer : IEventSerializer
 {

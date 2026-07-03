@@ -12,7 +12,7 @@ namespace ViajantesTurismo.ServiceDefaults.Tests;
 
 public sealed class ServiceDefaultsTelemetryTests
 {
-    private const string PostgreSqlEventSourcingTelemetryName = "SharedKernel.EventSourcing.PostgreSQL";
+    private const string NpgsqlEventSourcingTelemetryName = "SharedKernel.EventSourcing.Npgsql";
     private const string PostgreSqlEventSourcingActivityAppend = "eventsourcing.postgresql.append";
     private const string PostgreSqlEventSourcingMetricEventsAppended = "eventsourcing.postgresql.event.appended";
     private const string CatalogTelemetryName = "ViajantesTurismo.Catalog";
@@ -57,10 +57,10 @@ public sealed class ServiceDefaultsTelemetryTests
         meterProvider.ForceFlush();
 
         // Assert
-        var catalogActivity = Assert.Single(exportedActivities, activity =>
+        var catalogActivity = exportedActivities.ShouldHaveSingleItem(activity =>
             string.Equals(activity.Source.Name, CatalogTelemetryName, StringComparison.Ordinal));
-        Assert.Equal(CatalogActivityIntegrationEventHandle, catalogActivity.OperationName);
-        Assert.Contains(CatalogMetricIntegrationEvent, exportedMetricNames, StringComparer.Ordinal);
+        catalogActivity.OperationName.ShouldBe(CatalogActivityIntegrationEventHandle);
+        exportedMetricNames.ShouldContain(CatalogMetricIntegrationEvent, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -107,10 +107,10 @@ public sealed class ServiceDefaultsTelemetryTests
         meterProvider.ForceFlush();
 
         // Assert
-        var mediatorActivity = Assert.Single(exportedActivities, activity =>
+        var mediatorActivity = exportedActivities.ShouldHaveSingleItem(activity =>
             string.Equals(activity.Source.Name, SharedKernelMediatorActivitySource.ActivitySourceName, StringComparison.Ordinal));
-        Assert.Equal("test.dispatch", mediatorActivity.OperationName);
-        Assert.Contains("mediator.requests", exportedMetricNames, StringComparer.Ordinal);
+        mediatorActivity.OperationName.ShouldBe("test.dispatch");
+        exportedMetricNames.ShouldContain("mediator.requests", StringComparer.Ordinal);
     }
 
     [Fact]
@@ -119,8 +119,8 @@ public sealed class ServiceDefaultsTelemetryTests
         // Arrange
         var exportedActivities = new ConcurrentQueue<Activity>();
         var exportedMetricNames = new ConcurrentQueue<string>();
-        using var activitySource = new ActivitySource(PostgreSqlEventSourcingTelemetryName);
-        using var meter = new Meter(PostgreSqlEventSourcingTelemetryName);
+        using var activitySource = new ActivitySource(NpgsqlEventSourcingTelemetryName);
+        using var meter = new Meter(NpgsqlEventSourcingTelemetryName);
         var counter = meter.CreateCounter<long>(PostgreSqlEventSourcingMetricEventsAppended);
         var builder = Host.CreateApplicationBuilder();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
@@ -151,10 +151,10 @@ public sealed class ServiceDefaultsTelemetryTests
         meterProvider.ForceFlush();
 
         // Assert
-        var providerActivity = Assert.Single(exportedActivities, activity =>
-            string.Equals(activity.Source.Name, PostgreSqlEventSourcingTelemetryName, StringComparison.Ordinal));
-        Assert.Equal(PostgreSqlEventSourcingActivityAppend, providerActivity.OperationName);
-        Assert.Contains(PostgreSqlEventSourcingMetricEventsAppended, exportedMetricNames, StringComparer.Ordinal);
+        var providerActivity = exportedActivities.ShouldHaveSingleItem(activity =>
+            string.Equals(activity.Source.Name, NpgsqlEventSourcingTelemetryName, StringComparison.Ordinal));
+        providerActivity.OperationName.ShouldBe(PostgreSqlEventSourcingActivityAppend);
+        exportedMetricNames.ShouldContain(PostgreSqlEventSourcingMetricEventsAppended, StringComparer.Ordinal);
     }
 
 }

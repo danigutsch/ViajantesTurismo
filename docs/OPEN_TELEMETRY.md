@@ -11,8 +11,8 @@ each surface is registered, and how to verify the emitted signals locally.
 | Meter | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Emits mediator request/notification/stream metrics. |
 | ActivitySource | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, stream update, and projection spans. |
 | Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
-| ActivitySource | `SharedKernel.EventSourcing.PostgreSQL` | `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
-| Meter | `SharedKernel.EventSourcing.PostgreSQL` | `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
+| ActivitySource | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
+| Meter | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
 | ActivitySource | `ViajantesTurismo.MigrationService.SeederWorker` | `src/ViajantesTurismo.MigrationService/SeederWorker.cs` | Emits database seeding span (`DatabaseSeeding`). |
 
 ## Telemetry contract documentation rules
@@ -103,7 +103,7 @@ Grafana, Loki, Tempo, and Prometheus resources. Reusable resource wiring lives i
 local-development infrastructure and stays out of `SharedKernel.*` runtime packages.
 
 Telemetry instrumentation should stay with the component being instrumented: `SharedKernel.Mediator`
-owns mediator sources/meters, `SharedKernel.EventSourcing.PostgreSQL` owns provider telemetry,
+owns mediator sources/meters, `SharedKernel.EventSourcing.Npgsql` owns provider telemetry,
 Catalog owns Catalog telemetry, and AppHost/shared Aspire hosting code owns local collector/backend
 wiring. This matches the .NET instrumentation model where libraries emit through `ActivitySource`,
 `Meter`, and `ILogger`, while applications choose the OpenTelemetry SDK, exporters, collectors, and
@@ -134,12 +134,12 @@ when a log is written inside an `Activity`.
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
     - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
     - `AddCatalogMetrics()` -> `metrics.AddMeter(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
-    - `AddSharedKernelProviderMetrics()` -> `metrics.AddMeter("SharedKernel.EventSourcing.PostgreSQL")`
+    - `AddSharedKernelProviderMetrics()` -> `metrics.AddMeter("SharedKernel.EventSourcing.Npgsql")`
 - Tracing registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
     - `AddSharedKernelMediatorTracing()` -> `tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name)`
     - `AddCatalogTracing()` -> `tracing.AddSource(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
-    - `AddSharedKernelProviderTracing()` -> `tracing.AddSource("SharedKernel.EventSourcing.PostgreSQL")`
+    - `AddSharedKernelProviderTracing()` -> `tracing.AddSource("SharedKernel.EventSourcing.Npgsql")`
 - Applied in pipeline:
     - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
     - `ConfigureOpenTelemetry()` calls the custom registration helpers.
@@ -196,7 +196,7 @@ surface-owned tag contract.
     - `operation.type=database_seeding`
     - `worker.type=migration`
 - `ViajantesTurismo.Catalog` spans and metrics use Catalog-owned operation and outcome tags.
-- `SharedKernel.EventSourcing.PostgreSQL` spans and metrics use provider-owned operation, stream,
+- `SharedKernel.EventSourcing.Npgsql` spans and metrics use provider-owned operation, stream,
   checkpoint, and outcome tags.
 
 Surfaces that do not define a stable repository tag contract should still follow the
@@ -316,7 +316,7 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `mediator.streams`
     - Additional custom meters:
         - `ViajantesTurismo.Catalog`
-        - `SharedKernel.EventSourcing.PostgreSQL`
+        - `SharedKernel.EventSourcing.Npgsql`
 
 6. Optional OTLP path check:
     - Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector endpoint before startup.
@@ -331,7 +331,7 @@ least two production surfaces need the same lifecycle API and tag contract.
 - Shared OTel logging setup: `src/SharedKernel/SharedKernel.Observability/ObservabilityBuilderExtensions.cs`
 - Catalog telemetry names and instrumentation helpers: `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs`
 - PostgreSQL event-sourcing telemetry names and instrumentation helpers:
-  `src/SharedKernel/SharedKernel.EventSourcing.PostgreSQL/PostgreSqlEventSourcingTelemetry.cs`
+  `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs`
 - Migration custom source + span emission: `src/ViajantesTurismo.MigrationService/SeederWorker.cs`
 - Migration custom source registration: `src/ViajantesTurismo.MigrationService/Program.cs`
 - Architecture consumption flow: `docs/architecture/observability-consumption-flows.md`

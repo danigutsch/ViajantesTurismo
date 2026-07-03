@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using SharedKernel.Testing;
 
-namespace SharedKernel.EventSourcing.PostgreSQL.Tests;
+namespace SharedKernel.EventSourcing.Npgsql.Tests;
 
 public sealed class PostgreSqlEventStoreTests : IAsyncLifetime
 {

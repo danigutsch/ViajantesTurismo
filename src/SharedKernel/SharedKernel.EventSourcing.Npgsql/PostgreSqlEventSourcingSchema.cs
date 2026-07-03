@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace SharedKernel.EventSourcing.PostgreSQL;
+namespace SharedKernel.EventSourcing.Npgsql;
 
 /// <summary>
 /// Creates PostgreSQL tables required by the event-sourcing provider.

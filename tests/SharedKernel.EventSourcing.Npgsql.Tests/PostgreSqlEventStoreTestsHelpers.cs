@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace SharedKernel.EventSourcing.PostgreSQL.Tests;
+namespace SharedKernel.EventSourcing.Npgsql.Tests;
 
 internal static class PostgreSqlEventStoreTestsHelpers
 {

@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Npgsql;
 using SharedKernel.BuildingBlocks;
 
-namespace SharedKernel.EventSourcing.PostgreSQL;
+namespace SharedKernel.EventSourcing.Npgsql;
 
 /// <summary>
 /// Persists projection checkpoints in PostgreSQL.

@@ -6,7 +6,7 @@ using Npgsql;
 using NpgsqlTypes;
 using SharedKernel.BuildingBlocks;
 
-namespace SharedKernel.EventSourcing.PostgreSQL;
+namespace SharedKernel.EventSourcing.Npgsql;
 
 /// <summary>
 /// Persists event streams in PostgreSQL.
@@ -503,7 +503,7 @@ public sealed class PostgreSqlEventStore : IEventStore, IAsyncDisposable
 
     private static long GetAppendLockKey(string schemaName)
     {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"SharedKernel.EventSourcing.PostgreSQL:{schemaName}"));
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"SharedKernel.EventSourcing.Npgsql:{schemaName}"));
         return BinaryPrimitives.ReadInt64LittleEndian(hash);
     }
 

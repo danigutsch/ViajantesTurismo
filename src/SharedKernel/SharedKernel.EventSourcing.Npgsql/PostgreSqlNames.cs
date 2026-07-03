@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace SharedKernel.EventSourcing.PostgreSQL;
+namespace SharedKernel.EventSourcing.Npgsql;
 
 internal static class PostgreSqlNames
 {

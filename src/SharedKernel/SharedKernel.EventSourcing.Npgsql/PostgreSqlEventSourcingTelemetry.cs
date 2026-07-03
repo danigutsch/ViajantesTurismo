@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace SharedKernel.EventSourcing.PostgreSQL;
+namespace SharedKernel.EventSourcing.Npgsql;
 
 /// <summary>
 /// Defines stable telemetry names emitted by the PostgreSQL event-sourcing provider.
@@ -11,7 +11,7 @@ public static class PostgreSqlEventSourcingTelemetry
     /// <summary>
     /// Gets the shared activity source and meter name for PostgreSQL event-sourcing operations.
     /// </summary>
-    public static string Name => "SharedKernel.EventSourcing.PostgreSQL";
+    public static string Name => "SharedKernel.EventSourcing.Npgsql";
 
     /// <summary>
     /// Gets the activity name for stream append operations.
