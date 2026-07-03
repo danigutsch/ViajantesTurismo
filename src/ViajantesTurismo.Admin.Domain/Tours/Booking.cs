@@ -107,6 +107,21 @@ public sealed partial class Booking : IEntity<Guid>
     public BookingStatus Status { get; private set; } = BookingStatus.Pending;
 
     /// <summary>
+    /// Gets whether the booking is pending and can still be removed from the tour.
+    /// </summary>
+    public bool IsPending => Status == BookingStatus.Pending;
+
+    /// <summary>
+    /// Gets whether the booking is confirmed and should count toward tour capacity.
+    /// </summary>
+    public bool IsConfirmed => Status == BookingStatus.Confirmed;
+
+    /// <summary>
+    /// Gets the number of customers represented by this booking.
+    /// </summary>
+    public int ParticipantCount => CompanionCustomer is null ? 1 : 2;
+
+    /// <summary>
     /// The payment status of the booking (calculated from payments).
     /// </summary>
     public PaymentStatus PaymentStatus
@@ -154,6 +169,8 @@ public sealed partial class Booking : IEntity<Guid>
     /// The remaining balance to be paid.
     /// </summary>
     public decimal RemainingBalance => TotalPrice - AmountPaid;
+
+    private bool CanModifyBookedServices => Status is not (BookingStatus.Cancelled or BookingStatus.Completed);
 
     private static decimal CalculateSubtotal(
         decimal basePrice,
@@ -352,7 +369,7 @@ public sealed partial class Booking : IEntity<Guid>
     {
         ArgumentNullException.ThrowIfNull(discount);
 
-        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        if (!CanModifyBookedServices)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
         }
@@ -381,7 +398,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateRoom(RoomType roomType, decimal roomAdditionalCost, BookingCustomer? companionCustomer)
     {
-        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        if (!CanModifyBookedServices)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
         }
@@ -428,7 +445,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdateCompanion(BookingCustomer? companionCustomer)
     {
-        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        if (!CanModifyBookedServices)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
         }
@@ -462,7 +479,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result UpdatePrincipalBike(BikeType principalBikeType, decimal principalBikePrice)
     {
-        if (Status is BookingStatus.Cancelled or BookingStatus.Completed)
+        if (!CanModifyBookedServices)
         {
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
         }

@@ -38,6 +38,8 @@ Use nested `AGENTS.md` files for scoped rules.
     - Infrastructure: `src/ViajantesTurismo.Admin.Infrastructure`
     - API: `src/ViajantesTurismo.Admin.ApiService`
 - Keep business rules in the Domain layer; do not move them into API or infrastructure code.
+- Add domain behavior when it names a real business rule for the current use case, even if only one
+    caller needs it today; avoid speculative helper abstractions without a current use case.
 
 ## Build and validation
 

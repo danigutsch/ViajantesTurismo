@@ -40,6 +40,26 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         (bookingContext.Booking.Status).ShouldBe(BookingStatus.Confirmed);
     }
 
+    [Given("a confirmed booking with a companion exists")]
+    public void GivenAConfirmedBookingWithACompanionExists()
+    {
+        tourContext.Tour = EntityBuilders.BuildTour();
+        var principalCustomerId = Guid.CreateVersion7();
+        var companionCustomerId = Guid.CreateVersion7();
+        var result = tourContext.Tour.AddBooking(new TourBookingRequest(
+            principalCustomerId,
+            BikeType.Regular,
+            RoomType.DoubleOccupancy,
+            DiscountType.None,
+            companionCustomerId,
+            BikeType.EBike));
+        (result.IsSuccess).ShouldBeTrue();
+        bookingContext.Booking = result.Value;
+        var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
+        (confirmResult.IsSuccess).ShouldBeTrue();
+        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Confirmed);
+    }
+
     [Given("a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
@@ -170,6 +190,18 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
         bookingContext.BookingOperationResult = result;
     }
 
+    [When("the operator tries to change the booked services")]
+    public void WhenTheOperatorTriesToChangeTheBookedServices()
+    {
+        var result = tourContext.Tour.UpdateBookingDetails(
+            bookingContext.Booking.Id,
+            bookingContext.Booking.RoomType,
+            bookingContext.Booking.PrincipalCustomer.BikeType,
+            bookingContext.Booking.CompanionCustomer?.CustomerId,
+            bookingContext.Booking.CompanionCustomer?.BikeType);
+        bookingContext.BookingOperationResult = result;
+    }
+
     [When("the operator removes the booking")]
     public void WhenTheOperatorRemovesTheBooking()
     {
@@ -196,5 +228,12 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     {
         (bookingContext.BookingOperationResult).ShouldNotBeNull();
         (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeTrue();
+    }
+
+    [Then("the booking should count as {int} participant")]
+    [Then("the booking should count as {int} participants")]
+    public void ThenTheBookingShouldCountAsParticipants(int participantCount)
+    {
+        (bookingContext.Booking.ParticipantCount).ShouldBe(participantCount);
     }
 }
