@@ -20,10 +20,22 @@
         "resolved": "10.27.0.140913",
         "contentHash": "cxk12QjN9io1SjN36B1QO+9dRf+ek2CGfQGsOWtHBojE35cKchKJod48raxZwe47jHhzmAUO4AJSh7+hF0GS4g=="
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "sharedkernel.domain": {
         "type": "Project"
       },
       "sharedkernel.eventsourcing": {
+        "type": "Project"
+      },
+      "sharedkernel.httpclients": {
+        "type": "Project"
+      },
+      "sharedkernel.inputnormalization": {
         "type": "Project"
       },
       "sharedkernel.results": {
@@ -32,13 +44,7 @@
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "ViajantesTurismo.Common": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.common": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[1.0.0, )"
         }
       }
     }

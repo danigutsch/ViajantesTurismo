@@ -1,8 +1,8 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Tours;
-using ViajantesTurismo.Admin.Domain.Tours;
 using SharedKernel.IntegrationEvents;
 using SharedKernel.Results;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 

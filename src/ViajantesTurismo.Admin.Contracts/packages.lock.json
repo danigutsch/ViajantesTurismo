@@ -23,6 +23,9 @@
         "resolved": "10.27.0.140913",
         "contentHash": "cxk12QjN9io1SjN36B1QO+9dRf+ek2CGfQGsOWtHBojE35cKchKJod48raxZwe47jHhzmAUO4AJSh7+hF0GS4g=="
       },
+      "sharedkernel.httpclients": {
+        "type": "Project"
+      },
       "sharedkernel.integrationevents": {
         "type": "Project",
         "dependencies": {
@@ -31,15 +34,6 @@
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
-      },
-      "sharedkernel.results": {
-        "type": "Project"
-      },
-      "viajantesturismo.common": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
-        }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",

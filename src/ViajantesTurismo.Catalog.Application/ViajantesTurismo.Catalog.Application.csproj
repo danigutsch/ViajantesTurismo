@@ -20,6 +20,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.ImageProcessing\SharedKernel.ImageProcessing.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents\SharedKernel.IntegrationEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj" />

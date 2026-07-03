@@ -1,7 +1,7 @@
 # Configurable Model Source Generation
 
-This design note defines the option shape for configurable model generation, records the first
-repository audit, and gives a migration plan away from shared entity base classes.
+This design note defines the option shape for configurable model generation and records the first
+repository audit.
 
 ## Goals
 
@@ -78,9 +78,8 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 ### High payoff, low risk
 
 1. Identity/equality boilerplate currently centralized by base classes:
-   - `src/SharedKernel/SharedKernel.Domain/Entity.cs`
    - `src/SharedKernel/SharedKernel.Domain/AggregateRoot.cs`
-   - `src/ViajantesTurismo.Common/BuildingBlocks/Entity.cs`
+   - `src/SharedKernel/SharedKernel.Domain/Entity.cs`
    - `src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs`
    - `src/ViajantesTurismo.Admin.Domain/Tours/Tour.cs`
    - `src/ViajantesTurismo.Admin.Domain/Tours/Booking.cs`
@@ -194,13 +193,11 @@ Generated support should keep that boundary explicit:
 6. Migrate Catalog aggregate/read models only after Catalog persistence tests cover identity and EF
    materialization.
 
-7. Remove duplicate base classes after consumers move.
-   - `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` was removed after Admin consumers moved to
-     SharedKernel identity interfaces and generated identity support.
+7. Keep model identity on SharedKernel interfaces and generated identity support.
 
 ### Current inventory
 
-Models migrated from base-class identity to generated identity support:
+Models using generated identity support:
 
 | Model | Project | Current identity shape | Notes |
 | --- | --- | --- | --- |
@@ -211,28 +208,11 @@ Models migrated from base-class identity to generated identity support:
 | `EditablePublicContent` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Aggregate root with EF materialization constructor and explicit key generation. |
 | `PublicThemeSettings` | `src/ViajantesTurismo.Catalog.Domain` | `IAggregateRoot<Guid>` plus generated identity support | Singleton aggregate root with fixed `ThemeId`; EF key configured with `ValueGeneratedNever()`. |
 
-Removed test-only consumers:
-
-- `tests/SharedKernel.Domain.Tests`: the legacy project was removed with the SharedKernel base-class
-  primitive/equality tests.
-- `tests/ViajantesTurismo.Common.UnitTests`: common entity tests were removed with
-  `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>`.
 - `tests/ViajantesTurismo.ArchitectureTests`: DDD convention helpers identify entity types through
   `IEntity<TId>` and allow both Admin and Catalog domain namespaces.
 
-Docs and ADRs refreshed with the migration:
+### Persistence assumptions
 
-- `docs/CODING_GUIDELINES.md` examples.
-- `docs/DOMAIN_VALIDATION.md` factory-method examples.
-- `docs/domain/EVENTS_AND_MESSAGING.md` SharedKernel domain primitive list.
-- `docs/adr/20260621-split-sharedkernel-domain-and-building-blocks.md` SharedKernel ownership notes.
-- `docs/adr/20251108-payment-tracking-immutable-records.md` payment example.
-- `src/ViajantesTurismo.Common/README.md` base-type list now documents only remaining common base types.
-
-### Inheritance and persistence assumptions
-
-- Equality remains same runtime type, non-default identity, then identity comparer equality. Generated
-  identity support preserves that shape after models drop the base class.
 - EF mappings own keys explicitly through `HasKey(...Id)` and `ValueGeneratedNever()` for persisted
   Admin and Catalog models. Migration PRs must not change key generation or migrations unless that PR
   is explicitly about persistence.
@@ -245,7 +225,7 @@ Docs and ADRs refreshed with the migration:
 
 1. `Customer` first.
    - Lowest aggregate-boundary risk among Admin entities.
-   - Add/keep Admin unit tests for identity equality and EF materialization before removing the base.
+   - Add/keep Admin unit tests for identity equality and EF materialization.
 2. `Tour` aggregate root next.
    - Add behavior tests for booking collection invariants and identity equality before migration.
 3. `Booking`, then `Payment`.
@@ -255,9 +235,6 @@ Docs and ADRs refreshed with the migration:
    - Keep domain-event behavior and EF `ValueGeneratedNever()` covered by Catalog tests.
 5. `PublicThemeSettings` last.
    - Preserve fixed singleton `ThemeId` and theme replacement behavior.
-6. `ViajantesTurismo.Common.BuildingBlocks.Entity<TId>` is removed in this migration.
-7. `SharedKernel.Domain.Entity<TId>` and `SharedKernel.Domain.AggregateRoot<TId>` are removed in this
-   migration after concrete consumers move to interfaces and generated identity support.
 
 ### Guardrails
 

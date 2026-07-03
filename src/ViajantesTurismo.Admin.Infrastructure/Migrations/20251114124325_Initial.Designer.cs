@@ -526,7 +526,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                                 .HasForeignKey("TourId");
                         });
 
-                    b.OwnsOne("ViajantesTurismo.Common.BuildingBlocks.DateRange", "Schedule", b1 =>
+                    b.OwnsOne("SharedKernel.BuildingBlocks.DateRange", "Schedule", b1 =>
                         {
                             b1.Property<Guid>("TourId")
                                 .HasColumnType("uuid");

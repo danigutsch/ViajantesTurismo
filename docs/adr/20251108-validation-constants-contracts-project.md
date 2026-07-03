@@ -44,7 +44,7 @@ Domain, API, and test projects reference these constants for validation and anno
 ## Alternatives considered
 
 - Constants in domain with duplicates in contracts — rejected due to duplication and drift risk.
-- Constants in shared Common project — rejected because constraints are API-contract-specific.
+- Constants in a shared catch-all project — rejected because constraints are API-contract-specific.
 
 ## Links
 

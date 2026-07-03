@@ -5,12 +5,13 @@ tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.cspr
 tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj
 tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj
 tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj
-tests/ViajantesTurismo.Common.UnitTests/ViajantesTurismo.Common.UnitTests.csproj
 tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj
 tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj
 tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj
 tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj
 tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj
+tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj
+tests/SharedKernel.InputNormalization.Tests/SharedKernel.InputNormalization.Tests.csproj
 tests/SharedKernel.Domain.GeneratorTests/SharedKernel.Domain.GeneratorTests.csproj
 tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj
 tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj
@@ -30,3 +31,4 @@ tests/SharedKernel.Style.Analyzers.Tests/SharedKernel.Style.Analyzers.Tests.cspr
 tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj
 tests/SharedKernel.Testing.CodeFixRunner.Tests/SharedKernel.Testing.CodeFixRunner.Tests.csproj
 tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj
+tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj

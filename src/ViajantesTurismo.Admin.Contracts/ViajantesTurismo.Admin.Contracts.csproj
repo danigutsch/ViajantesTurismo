@@ -11,9 +11,9 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-        <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents\SharedKernel.IntegrationEvents.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
     </ItemGroup>
 
 </Project>

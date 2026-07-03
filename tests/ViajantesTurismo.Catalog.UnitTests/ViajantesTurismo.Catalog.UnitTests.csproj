@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />

@@ -273,8 +273,9 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
 
 ### Current Projects
 
-- **`ViajantesTurismo.Common.UnitTests`** — Shared utilities: building blocks, `SharedKernel.Results` result/option primitives, sanitisers, extensions.
-  Fast, no dependencies.
+- **`SharedKernel.BuildingBlocks.Tests`**, **`SharedKernel.InputNormalization.Tests`**, and
+  **`SharedKernel.HttpClients.Tests`** — shared kernel building blocks, input normalization, and HTTP client helpers. Fast,
+  no external dependencies.
 - **`ViajantesTurismo.Admin.UnitTests`** — Domain logic: entities, aggregates, mappers, business rules. Fast, in-memory
   only.
 - **`ViajantesTurismo.Management.WebTests`** — Blazor Web components: Razor component rendering, UI state, user interactions.

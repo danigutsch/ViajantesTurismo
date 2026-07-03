@@ -674,6 +674,9 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.httpclients": {
+        "type": "Project"
+      },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
@@ -685,9 +688,6 @@
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
-      },
-      "sharedkernel.results": {
-        "type": "Project"
       },
       "sharedkernel.testing": {
         "type": "Project"
@@ -701,13 +701,7 @@
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "ViajantesTurismo.Common": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.common": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[1.0.0, )"
         }
       },
       "viajantesturismo.public.web": {

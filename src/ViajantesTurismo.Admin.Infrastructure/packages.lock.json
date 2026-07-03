@@ -213,7 +213,19 @@
           "OpenTelemetry.Api": "1.16.0"
         }
       },
+      "sharedkernel.buildingblocks": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Results": "[1.0.0, )"
+        }
+      },
       "sharedkernel.domain": {
+        "type": "Project"
+      },
+      "sharedkernel.httpclients": {
+        "type": "Project"
+      },
+      "sharedkernel.inputnormalization": {
         "type": "Project"
       },
       "sharedkernel.integrationevents": {
@@ -232,6 +244,8 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.9, )",
+          "SharedKernel.BuildingBlocks": "[1.0.0, )",
+          "SharedKernel.InputNormalization": "[1.0.0, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
           "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
@@ -242,25 +256,20 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
+          "SharedKernel.HttpClients": "[1.0.0, )",
           "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
-          "ViajantesTurismo.Common": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
       "viajantesturismo.admin.domain": {
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
+          "SharedKernel.BuildingBlocks": "[1.0.0, )",
           "SharedKernel.Domain": "[1.0.0, )",
+          "SharedKernel.InputNormalization": "[1.0.0, )",
           "SharedKernel.Results": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
-          "ViajantesTurismo.Common": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.common": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
+          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )"
         }
       },
       "viajantesturismo.resources": {

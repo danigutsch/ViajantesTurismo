@@ -13,12 +13,10 @@ if [[ ! -x "${stryker}" ]]; then
 fi
 
 configs=(
-    "tests/ViajantesTurismo.Common.UnitTests/stryker-config.json"
     "tests/ViajantesTurismo.Catalog.UnitTests/stryker-domain-config.json"
     "tests/ViajantesTurismo.Catalog.UnitTests/stryker-application-config.json"
     "tests/ViajantesTurismo.Admin.UnitTests/stryker-application-config.json"
     "tests/SharedKernel.BuildingBlocks.Tests/stryker-config.json"
-    "tests/SharedKernel.Domain.Tests/stryker-config.json"
     "tests/SharedKernel.DomainEvents.Tests/stryker-config.json"
     "tests/SharedKernel.EventSourcing.Tests/stryker-config.json"
     "tests/SharedKernel.Functional.Tests/stryker-config.json"

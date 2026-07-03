@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using SharedKernel.BuildingBlocks;
 using SharedKernel.EventSourcing;
 using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
 

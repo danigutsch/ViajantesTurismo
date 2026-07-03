@@ -1,8 +1,8 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Contracts;
 using SharedKernel.Results;
-using ViajantesTurismo.Common.Sanitizers;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

@@ -454,7 +454,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 | Component                              | AOT Status        | Notes                                                    |
 | -------------------------------------- | ----------------- | -------------------------------------------------------- |
-| Common, Contracts, Domain, Application | ✅ Compatible     | `IsAotCompatible=true` enabled                           |
+| Contracts, Domain, Application         | ✅ Compatible     | `IsAotCompatible=true` enabled                           |
 | ApiService                             | ✅ Compatible     | Uses `CreateSlimBuilder`, JSON source generators         |
 | Infrastructure (EF Core)               | ⚠️ Partial        | Compiled models generated, but DbContext blocks full AOT |
 | Web (Blazor Server)                    | ❌ Not Compatible | Blazor Server not supported for Native AOT               |

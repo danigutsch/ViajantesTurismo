@@ -9,6 +9,8 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents\SharedKernel.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
@@ -17,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-using ViajantesTurismo.Common.Monies;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Testing.Behavior;
 

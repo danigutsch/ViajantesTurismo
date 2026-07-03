@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Customers;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 

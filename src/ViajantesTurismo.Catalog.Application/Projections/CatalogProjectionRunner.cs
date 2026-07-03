@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using SharedKernel.BuildingBlocks;
 using SharedKernel.EventSourcing;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Projections;
 

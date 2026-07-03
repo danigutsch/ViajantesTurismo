@@ -25,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />

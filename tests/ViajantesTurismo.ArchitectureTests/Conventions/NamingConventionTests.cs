@@ -12,8 +12,7 @@ public sealed partial class NamingConventionTests
         ArchitectureProvider.Namespaces.Application,
         ArchitectureProvider.Namespaces.Infrastructure,
         ArchitectureProvider.Namespaces.Api,
-        ArchitectureProvider.Namespaces.Contracts,
-        ArchitectureProvider.Namespaces.Common
+        ArchitectureProvider.Namespaces.Contracts
     ];
 
     [Fact]

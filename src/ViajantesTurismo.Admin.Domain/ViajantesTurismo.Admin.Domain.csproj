@@ -6,14 +6,15 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain\SharedKernel.Domain.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Domain.SourceGenerator\SharedKernel.Domain.SourceGenerator.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
             PrivateAssets="all"
             IsAspireProjectResource="false" />
-        <ProjectReference Include="..\ViajantesTurismo.Common\ViajantesTurismo.Common.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results.SourceGenerator\SharedKernel.Results.SourceGenerator.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"

@@ -1,7 +1,7 @@
 using System.Globalization;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Contracts;
-using ViajantesTurismo.Common.Sanitizers;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;
 

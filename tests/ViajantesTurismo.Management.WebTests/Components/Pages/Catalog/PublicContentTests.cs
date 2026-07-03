@@ -1,5 +1,5 @@
 using PublicContent = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicContent;
-using ViajantesTurismo.Common.Contracts;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
