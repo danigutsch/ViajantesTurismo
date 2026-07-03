@@ -364,9 +364,10 @@ public sealed class PublicMediaImage
             || variant.FileSizeBytes <= 0;
     }
 
-    private static bool IsHttpUri(Uri uri)
+    private static bool IsHttpUri(Uri? uri)
     {
-        return uri.IsAbsoluteUri
+        return uri is not null
+            && uri.IsAbsoluteUri
             && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
