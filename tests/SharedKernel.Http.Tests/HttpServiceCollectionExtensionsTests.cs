@@ -6,10 +6,10 @@ public sealed class HttpServiceCollectionExtensionsTests
     public void AddHttpClientDefaults_registers_http_client_factory_defaults()
     {
         // Act
-        using var client = HttpClientDefaultsTestServices.CreateClient("shared-kernel-http-tests");
+        var clientWasCreated = HttpClientDefaultsTestServices.CanCreateClient("shared-kernel-http-tests");
 
         // Assert
-        client.ShouldNotBeNull();
+        clientWasCreated.ShouldBeTrue();
     }
 
     [Fact]
