@@ -68,8 +68,8 @@ public sealed class EfPublicMediaImageStoreTests
             imageId,
             MediaImageProcessingStatus.Ready,
             [
-                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-320.jpg"), 320, 213, "image/jpeg", 512),
-                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024)
+                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-320.jpg"), 320, 213, "image/jpeg", 512, 0),
+                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024, 1)
             ]);
 
         // Act
