@@ -51,7 +51,9 @@ This file overrides root guidance where test-specific behavior is needed.
 - Do not use the null-forgiving operator (`!`) in tests to dereference values or feed assertions;
   assert non-null explicitly before dereferencing. A narrow exception is allowed when intentionally
   passing `null` into a null-guard test, where `null!` keeps the guard behavior visible without
-  weakening nullable flow elsewhere.
+  weakening nullable flow elsewhere. The operator is also acceptable inside generated-code/source-
+  template strings and for test-framework or fixture-injected fields that are initialized outside
+  the constructor; prefer constructor initialization whenever practical.
 
 ## Test independence
 
