@@ -33,12 +33,47 @@ main() {
             warning_count=$(grep -Ec 'WARN:|WARNING:' "${sonar_log_file}" || true)
 
             local -a policy_lines=()
-            mapfile -t policy_lines < <(grep -E 'SONAR POLICY (CHECK|STATUS|FAILURE):' "${sonar_log_file}" || true)
+            mapfile -t policy_lines < <(
+                grep -E 'SONAR POLICY (CHECK|STATUS|FAILURE):' "${sonar_log_file}" || true
+            )
+
+            local policy_status_line
+            policy_status_line=$(
+                grep -E 'SONAR POLICY STATUS:' "${sonar_log_file}" | tail -n 1 || true
+            )
+
+            local security_policy_line
+            security_policy_line=$(
+                grep -E 'SONAR POLICY CHECK: new security issues=' "${sonar_log_file}" \
+                    | tail -n 1 \
+                    || true
+            )
+
+            local severity_policy_line
+            severity_policy_line=$(
+                grep -E 'SONAR POLICY CHECK: new medium-or-higher issues=' "${sonar_log_file}" \
+                    | tail -n 1 \
+                    || true
+            )
 
             if [[ -n "${quality_gate_line}" ]]; then
-                echo "- ${quality_gate_line#*QUALITY GATE STATUS: }"
+                echo "- Quality gate status: ${quality_gate_line#*QUALITY GATE STATUS: }"
             else
                 echo "- Quality gate status: not found in Sonar log"
+            fi
+
+            if [[ -n "${policy_status_line}" ]]; then
+                echo "- New issue policy status: ${policy_status_line#*SONAR POLICY STATUS: }"
+            else
+                echo "- New issue policy status: not found in Sonar log"
+            fi
+
+            if [[ -n "${security_policy_line}" ]]; then
+                echo "- ${security_policy_line#*SONAR POLICY CHECK: }"
+            fi
+
+            if [[ -n "${severity_policy_line}" ]]; then
+                echo "- ${severity_policy_line#*SONAR POLICY CHECK: }"
             fi
 
             if [[ -n "${details_url}" ]]; then
@@ -113,7 +148,8 @@ main() {
             echo "### Next place to look"
             echo
             echo "Open the \`sonar-analysis-log\` artifact or the step log for the full scanner output."
-            echo "If the quality gate failed, the SonarCloud details link above is the fastest route to the reported issues."
+            echo "If the quality gate or new issue policy failed, the SonarCloud details link above"
+            echo "is the fastest route to the reported issues."
         fi
     } >> "${summary_target}"
 
