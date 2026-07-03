@@ -29,10 +29,8 @@ bounded context.
 - Aggregate root and domain event recording can be standardized across bounded contexts.
 - Value objects that are truly reusable get a clear home.
 - Existing code must be migrated carefully to avoid large noisy changes.
-- The old `Entity<TId>` base class was removed after Admin moved to SharedKernel identity interfaces
-  and generated identity support.
-- SharedKernel base-class consumers moved toward `IIdentified<TId>`, `IEntity<TId>`,
-  `IAggregateRoot<TId>`, and opt-in generated identity support before the base classes were removed.
+- Domain models use `IIdentified<TId>`, `IEntity<TId>`, `IAggregateRoot<TId>`, and opt-in generated
+  identity support where identity behavior is mechanical.
 - Future Vogen-like source generation can be added around `SharedKernel.BuildingBlocks` without
   blocking current Catalog work.
 
