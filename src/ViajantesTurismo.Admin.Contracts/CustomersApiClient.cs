@@ -72,24 +72,17 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             Json.CreateCustomerDto,
             ct).ConfigureAwait(false);
 
-        CustomerCreateOutcomeDto outcome;
-        if (response.StatusCode is HttpStatusCode.Created)
+        var outcome = response.StatusCode switch
         {
-            outcome = new CustomerCreateOutcomeDto
+            HttpStatusCode.Created => new CustomerCreateOutcomeDto
             {
                 Kind = CustomerCreateOutcomeKind.Succeeded,
                 StatusCode = response.StatusCode,
                 Location = response.Headers.Location
-            };
-        }
-        else if (response.StatusCode is HttpStatusCode.BadRequest)
-        {
-            outcome = await ReadValidationProblem(response, ct).ConfigureAwait(false);
-        }
-        else
-        {
-            outcome = CreateStatusOutcome(MapStatusCode(response.StatusCode), response.StatusCode);
-        }
+            },
+            HttpStatusCode.BadRequest => await ReadValidationProblem(response, ct).ConfigureAwait(false),
+            _ => CreateStatusOutcome(MapStatusCode(response.StatusCode), response.StatusCode)
+        };
 
         activity?.SetTag(AdminContractsClientTelemetry.StatusCodeTag, (int)outcome.StatusCode);
         activity?.SetTag(AdminContractsClientTelemetry.OutcomeKindTag, outcome.Kind.ToString());
@@ -165,8 +158,8 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
 
         try
         {
-            var problem = JsonSerializer.Deserialize(content, Json.ContractValidationProblemDto);
-            if (problem?.Errors is not { Count: > 0 })
+            var errors = JsonSerializer.Deserialize(content, Json.ContractValidationProblemDto)?.Errors;
+            if (errors is null || errors.Count == 0)
             {
                 return CreateStatusOutcome(CustomerCreateOutcomeKind.MalformedBody, response.StatusCode, "Validation problem response body did not contain errors.");
             }
@@ -175,7 +168,7 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             {
                 Kind = CustomerCreateOutcomeKind.ValidationProblem,
                 StatusCode = response.StatusCode,
-                ValidationErrors = new Dictionary<string, string[]>(problem.Errors, StringComparer.Ordinal)
+                ValidationErrors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal)
             };
         }
         catch (JsonException exception)
