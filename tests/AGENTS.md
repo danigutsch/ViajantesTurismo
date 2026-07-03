@@ -48,7 +48,10 @@ This file overrides root guidance where test-specific behavior is needed.
   generated/sample/non-maintained test assets, or a documented temporary migration exception only.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.
-- Do not use the null-forgiving operator (`!`) in tests; assert non-null explicitly before dereferencing.
+- Do not use the null-forgiving operator (`!`) in tests to dereference values or feed assertions;
+  assert non-null explicitly before dereferencing. A narrow exception is allowed when intentionally
+  passing `null` into a null-guard test, where `null!` keeps the guard behavior visible without
+  weakening nullable flow elsewhere.
 
 ## Test independence
 
