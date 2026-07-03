@@ -754,17 +754,15 @@
       "sharedkernel.domain": {
         "type": "Project"
       },
-      "sharedkernel.http": {
+      "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
           "Microsoft.Extensions.Http.Resilience": "[10.7.0, )",
           "Microsoft.Extensions.ServiceDiscovery": "[10.7.0, )",
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
-      },
-      "sharedkernel.httpclients": {
-        "type": "Project"
       },
       "sharedkernel.inputnormalization": {
         "type": "Project"
@@ -847,7 +845,6 @@
         "dependencies": {
           "Aspire.StackExchange.Redis.OutputCaching": "[13.4.6, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.9, )",
-          "SharedKernel.Http": "[1.0.0, )",
           "SharedKernel.HttpClients": "[1.0.0, )",
           "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",

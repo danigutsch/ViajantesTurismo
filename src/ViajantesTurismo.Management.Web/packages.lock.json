@@ -178,7 +178,7 @@
         "resolved": "10.0.8",
         "contentHash": "+dJsbPJ3FyUbTZNplFj0RCKePFizmv6ewDV46JE9q/IVH4c3xTCftHfHelLsAKf0jryIPqgMb5GpS0x7TAY3mg=="
       },
-      "sharedkernel.http": {
+      "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Http.Resilience": "[10.7.0, )",
@@ -186,9 +186,6 @@
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
-      },
-      "sharedkernel.httpclients": {
-        "type": "Project"
       },
       "sharedkernel.integrationevents": {
         "type": "Project",

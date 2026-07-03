@@ -1,4 +1,4 @@
-namespace SharedKernel.Http.Tests;
+namespace SharedKernel.HttpClients.Tests;
 
 internal static class HttpClientDefaultsTestServices
 {

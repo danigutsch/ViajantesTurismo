@@ -1,4 +1,4 @@
-namespace SharedKernel.Http.Tests;
+namespace SharedKernel.HttpClients.Tests;
 
 public sealed class HttpServiceCollectionExtensionsTests
 {
@@ -15,13 +15,8 @@ public sealed class HttpServiceCollectionExtensionsTests
     [Fact]
     public void AddHttpClientDefaults_throws_when_services_is_null()
     {
-        // Arrange
-#nullable disable
-        ServiceCollection services = null;
-
         // Act
-        Action act = () => HttpServiceCollectionExtensions.AddHttpClientDefaults(services);
-#nullable restore
+        Action act = () => HttpServiceCollectionExtensions.AddHttpClientDefaults(null!);
 
         // Assert
         act.ShouldThrow<ArgumentNullException>();

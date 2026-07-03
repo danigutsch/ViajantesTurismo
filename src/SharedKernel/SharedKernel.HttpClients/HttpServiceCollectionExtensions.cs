@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
-namespace SharedKernel.Http;
+namespace SharedKernel.HttpClients;
 
 /// <summary>
 /// Registers shared HTTP client defaults for service-discovered outbound clients.

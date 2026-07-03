@@ -110,7 +110,7 @@
           "Polly.Core": "8.4.2"
         }
       },
-      "sharedkernel.http": {
+      "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Http.Resilience": "[10.7.0, )",
@@ -118,9 +118,6 @@
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
-      },
-      "sharedkernel.httpclients": {
-        "type": "Project"
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"

@@ -1,4 +1,4 @@
-using SharedKernel.Http;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Management.Web;
