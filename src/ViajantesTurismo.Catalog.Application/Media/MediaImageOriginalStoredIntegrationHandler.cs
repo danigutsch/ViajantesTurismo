@@ -23,7 +23,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         var image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
 
-        if (HasResponsiveVariantsForProcessingVersion(image, notification.ProcessingVersion))
+        if (image.HasPublicVariantsForProcessingVersion(notification.ProcessingVersion))
         {
             return;
         }
@@ -69,7 +69,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         }
         catch (ImageProcessingException)
         {
-            if (image.ProcessingStatus == MediaImageProcessingStatus.Ready && image.ResponsiveVariants.Count > 0)
+            if (image.HasPublicVariants())
             {
                 return;
             }
@@ -154,15 +154,6 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
     private static bool IsWithinSourceWidth(ProcessedImageVariant variant, int sourceWidth)
         => int.TryParse(variant.Name.Split('-', 2)[0], CultureInfo.InvariantCulture, out var requestedWidth)
             && requestedWidth <= sourceWidth;
-
-    private static bool HasResponsiveVariantsForProcessingVersion(PublicMediaImage image, int processingVersion)
-    {
-        var versionSegment = string.Create(CultureInfo.InvariantCulture, $"/v{processingVersion}/");
-
-        return image.ProcessingStatus == MediaImageProcessingStatus.Ready
-            && image.ResponsiveVariants.Count > 0
-            && image.ResponsiveVariants.All(variant => variant.Uri.OriginalString.Contains(versionSegment, StringComparison.Ordinal));
-    }
 
     private static string GetFileExtension(ImageOutputFormat format) => format switch
     {

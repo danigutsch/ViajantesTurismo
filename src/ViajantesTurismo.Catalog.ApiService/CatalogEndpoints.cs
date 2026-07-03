@@ -353,7 +353,7 @@ internal static class CatalogEndpoints
 
     private static IReadOnlyList<PublicMediaImage> GetReadyImages(IReadOnlyList<PublicMediaImage> images)
     {
-        return [.. images.Where(image => image.ProcessingStatus == MediaImageProcessingStatus.Ready && image.ResponsiveVariants.Count > 0)];
+        return [.. images.Where(image => image.HasPublicVariants())];
     }
 
     private static CatalogTourImageDto MapImage(PublicMediaImage image)

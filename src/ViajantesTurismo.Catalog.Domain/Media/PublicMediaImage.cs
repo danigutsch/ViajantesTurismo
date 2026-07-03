@@ -121,4 +121,26 @@ public sealed class PublicMediaImage
     /// Gets the optional copyright notice.
     /// </summary>
     public string? Copyright { get; private set; }
+
+    /// <summary>
+    /// Returns whether the image has public variants that can be shown in the catalog.
+    /// </summary>
+    /// <returns><see langword="true" /> when the image is ready and has responsive variants.</returns>
+    public bool HasPublicVariants()
+    {
+        return ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
+    }
+
+    /// <summary>
+    /// Returns whether the image already has public variants for a processing version.
+    /// </summary>
+    /// <param name="processingVersion">The deterministic processing output version.</param>
+    /// <returns><see langword="true" /> when all public variants belong to the requested version.</returns>
+    public bool HasPublicVariantsForProcessingVersion(int processingVersion)
+    {
+        var versionSegment = $"/v{processingVersion}/";
+
+        return HasPublicVariants()
+            && _responsiveVariants.All(variant => variant.Uri.OriginalString.Contains(versionSegment, StringComparison.Ordinal));
+    }
 }

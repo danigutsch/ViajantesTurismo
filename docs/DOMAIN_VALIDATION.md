@@ -23,6 +23,19 @@ For each Aggregate, document:
 **Reference:** See [ADR-001: Domain Validation with Factory Methods](adr/20251108-domain-validation-factory-methods.md)
 and aggregate documentation.
 
+## Domain Behavior & State Exposure
+
+Expose domain state for display, mapping, persistence, serialization, or simple filtering only.
+Business decisions such as readiness, lifecycle transitions, version compatibility, publishability,
+and replacement safety belong behind intent-revealing domain methods or calculated domain facts.
+
+Use enums for stable finite labels with little behavior. Use value objects for enum-plus-data or
+enum-plus-rules. Use explicit transition methods or state objects only when states have different
+allowed commands, transition rules, side effects, or errors.
+
+**Reference:** See
+[ADR-031: Rich Domain Behavior and State Exposure](adr/20260703-rich-domain-behavior-and-state-exposure.md).
+
 ## Application vs Domain Validation
 
 Not all business rules belong inside aggregates. Use the right layer for the right rule:

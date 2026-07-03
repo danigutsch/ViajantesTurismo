@@ -56,4 +56,46 @@ internal static class PublicMediaImageTestFactory
             ["test"],
             [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
     }
+
+    public static PublicMediaImage CreateReadyImageWithoutVariants(Guid imageId)
+    {
+        return CreateImageWithVariants(imageId, MediaImageProcessingStatus.Ready, []);
+    }
+
+    public static PublicMediaImage CreateReadyImageForProcessingVersion(Guid imageId, int processingVersion)
+    {
+        return CreateImageWithVariants(
+            imageId,
+            MediaImageProcessingStatus.Ready,
+            [
+                new MediaImageResponsiveVariant(
+                    new Uri($"https://cdn.example/media/{imageId:N}/v{processingVersion}/640-jpeg.jpg"),
+                    640,
+                    427,
+                    "image/jpeg",
+                    1024)
+            ]);
+    }
+
+    private static PublicMediaImage CreateImageWithVariants(
+        Guid imageId,
+        MediaImageProcessingStatus processingStatus,
+        IReadOnlyList<MediaImageResponsiveVariant> variants)
+    {
+        return new PublicMediaImage(
+            new PublicMediaImageMetadata
+            {
+                Id = imageId,
+                SourceUri = new Uri("https://cdn.example/source.jpg"),
+                Checksum = "sha256:abc",
+                ContentType = "image/jpeg",
+                FileSizeBytes = 2048,
+                Dimensions = new MediaImageDimensions(1200, 800),
+                ProcessingStatus = processingStatus,
+                AltText = "Cyclists in the mountains"
+            },
+            variants,
+            ["mountain"],
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+    }
 }
