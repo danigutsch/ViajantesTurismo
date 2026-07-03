@@ -1,3 +1,4 @@
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Contracts;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
@@ -175,9 +176,9 @@ public sealed class EditablePublicContentTests
         var publishedResult = content.IsPubliclyVisible;
 
         // Assert
-        Assert.False(draftResult);
-        Assert.True(publish.IsSuccess);
-        Assert.True(publishedResult);
+        draftResult.ShouldBe(false);
+        publish.IsSuccess.ShouldBe(true);
+        publishedResult.ShouldBe(true);
     }
 
     [Fact]
@@ -190,8 +191,7 @@ public sealed class EditablePublicContentTests
         var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
 
         // Assert
-        Assert.NotNull(variant);
-        Assert.Equal(PublicContentLanguage.PtBr, variant.Language);
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentLanguage.PtBr);
     }
 
     [Fact]
@@ -204,8 +204,7 @@ public sealed class EditablePublicContentTests
         var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
 
         // Assert
-        Assert.NotNull(variant);
-        Assert.Equal(PublicContentLanguage.EnUs, variant.Language);
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentLanguage.EnUs);
     }
 
     [Fact]
@@ -215,13 +214,13 @@ public sealed class EditablePublicContentTests
         var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
         var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
         var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.PtBr, [enUs, ptBr]);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.ShouldBe(true);
 
         // Act
         var variant = result.Value.FindPublicVariant(PublicContentLanguage.EnUs);
 
         // Assert
-        Assert.Null(variant);
+        variant.ShouldBeNull();
     }
 
     [Fact]
