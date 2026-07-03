@@ -45,9 +45,3 @@ internal sealed class CollectingLogger<T> : ILogger<T>
         return result;
     }
 }
-
-internal sealed record CollectedLogEntry(
-    LogLevel LogLevel,
-    EventId EventId,
-    string Message,
-    IReadOnlyDictionary<string, string> State);
