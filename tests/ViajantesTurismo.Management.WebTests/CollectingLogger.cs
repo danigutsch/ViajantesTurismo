@@ -33,7 +33,7 @@ internal sealed class CollectingLogger<T> : ILogger<T>
     {
         if (state is not IEnumerable<KeyValuePair<string, object?>> values)
         {
-            return new(StringComparer.Ordinal);
+            return [];
         }
 
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
