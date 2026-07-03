@@ -69,6 +69,11 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         }
         catch (ImageProcessingException)
         {
+            if (image.ProcessingStatus == MediaImageProcessingStatus.Ready && image.ResponsiveVariants.Count > 0)
+            {
+                return;
+            }
+
             await imageStore.Upsert(CloneWithProcessingResult(
                 image,
                 new ImageProcessingResult(image.Dimensions.Width, image.Dimensions.Height, []),

@@ -79,6 +79,36 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
     }
 
     [Fact]
+    public async Task Handle_keeps_ready_variants_when_reprocessing_fails()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest("uploads/not-image.bin", new MemoryStream([0x01, 0x02, 0x03]), "application/octet-stream", 3),
+            TestContext.Current.CancellationToken);
+        var existingImage = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), mediaImageId, 0, true);
+        var existingVariant = existingImage.ResponsiveVariants.ShouldHaveSingleItem();
+        var imageStore = new InMemoryPublicMediaImageStore(existingImage);
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
+
+        // Act
+        await handler.Handle(
+            new MediaImageOriginalStoredIntegrationEvent(
+                Guid.CreateVersion7(),
+                DateTimeOffset.UtcNow,
+                mediaImageId,
+                "uploads/not-image.bin",
+                2),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
+        var currentVariant = imageStore.Current.ResponsiveVariants.ShouldHaveSingleItem();
+        currentVariant.Uri.ShouldBe(existingVariant.Uri);
+    }
+
+    [Fact]
     public async Task Handle_marks_image_failed_when_the_original_cannot_be_decoded()
     {
         // Arrange
