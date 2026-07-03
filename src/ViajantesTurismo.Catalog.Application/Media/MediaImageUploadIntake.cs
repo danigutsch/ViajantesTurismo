@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -38,7 +39,14 @@ public sealed class MediaImageUploadIntake(
         }
 
         using var content = new MemoryStream();
-        await request.Content.CopyToAsync(content, ct).ConfigureAwait(false);
+        if (!await CopyToMemory(request.Content, content, options.MaxLengthBytes, ct).ConfigureAwait(false))
+        {
+            return Result.Invalid<MediaImageUploadIntakeResult>(
+                "Media upload is invalid.",
+                nameof(request.Length),
+                $"Upload length must be between 1 and {options.MaxLengthBytes} bytes.");
+        }
+
         var actualLength = content.Length;
         var validationErrors = validator.Validate(new MediaUploadValidationRequest(
             request.FileName,
@@ -160,12 +168,41 @@ public sealed class MediaImageUploadIntake(
             content.Position = 0;
             return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
         }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
+        {
+            content.Position = 0;
+            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
+        }
+    }
+
+    private static async ValueTask<bool> CopyToMemory(Stream source, MemoryStream destination, long maxLengthBytes, CancellationToken ct)
+    {
+        var buffer = new byte[81920];
+
+        while (true)
+        {
+            var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
+            if (bytesRead == 0)
+            {
+                destination.Position = 0;
+                return true;
+            }
+
+            if (destination.Length + bytesRead > maxLengthBytes)
+            {
+                destination.Position = 0;
+                return false;
+            }
+
+            await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
+        }
     }
 
     private static ReadOnlyMemory<byte> ReadHeaderBytes(MemoryStream content)
     {
         content.Position = 0;
-        var header = new byte[Math.Min(content.Length, 12)];
+        var headerLength = (int)Math.Min(content.Length, 12);
+        var header = new byte[headerLength];
         _ = content.Read(header);
         content.Position = 0;
 
