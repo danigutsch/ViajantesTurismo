@@ -52,6 +52,18 @@ public sealed class BookingsApiClientTests
         booking.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task GetBookingById_throws_when_admin_api_returns_success_with_null_body()
+    {
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new BookingsApiClient(httpClient);
+
+        Func<Task> act = async () => await sut.GetBookingById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The booking response body was empty.");
+    }
+
     [Theory]
     [InlineData("tour", "/bookings/tour/22222222-2222-2222-2222-222222222222")]
     [InlineData("customer", "/bookings/customer/22222222-2222-2222-2222-222222222222")]

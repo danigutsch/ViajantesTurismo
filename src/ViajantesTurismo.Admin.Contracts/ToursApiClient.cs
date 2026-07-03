@@ -50,7 +50,8 @@ public sealed class ToursApiClient(HttpClient httpClient) : IToursApiClient
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.GetTourDto, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.GetTourDto, cancellationToken).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The tour response body was empty.");
     }
 
     /// <inheritdoc />

@@ -82,6 +82,18 @@ public sealed class ToursApiClientTests
     }
 
     [Fact]
+    public async Task GetTourById_throws_when_admin_api_returns_success_with_null_body()
+    {
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new ToursApiClient(httpClient);
+
+        Func<Task> act = async () => await sut.GetTourById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The tour response body was empty.");
+    }
+
+    [Fact]
     public async Task CreateTour_posts_tour_and_returns_location()
     {
         var requestPath = string.Empty;

@@ -156,6 +156,21 @@ public sealed class CatalogToursApiClientTests
     }
 
     [Fact]
+    public async Task GetTour_throws_when_catalog_returns_success_with_null_body()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetTour(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The catalog tour response body was empty.");
+    }
+
+    [Fact]
     public async Task UpdatePresentation_returns_null_when_catalog_returns_notfound()
     {
         // Arrange
@@ -175,6 +190,29 @@ public sealed class CatalogToursApiClientTests
 
         // Assert
         updated.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task UpdatePresentation_throws_when_catalog_returns_success_with_null_body()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = new CatalogToursApiClient(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.UpdatePresentation(
+            Guid.CreateVersion7(),
+            new UpsertCatalogTourPresentationRequest
+            {
+                Title = "Missing",
+                Slug = "missing",
+                IsPublished = true
+            },
+            Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The catalog tour response body was empty.");
     }
 
 }

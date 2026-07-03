@@ -43,7 +43,8 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
 
         await ContractHttpValidation.EnsureSuccessOrThrowValidationException(response, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The catalog tour response body was empty.");
     }
 
     /// <inheritdoc />
@@ -57,6 +58,7 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.CatalogTourDto, ct).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The catalog tour response body was empty.");
     }
 }

@@ -25,7 +25,8 @@ public sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiClien
         }
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync(Json.GetBookingDto, ct).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync(Json.GetBookingDto, ct).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("The booking response body was empty.");
     }
 
     /// <inheritdoc />

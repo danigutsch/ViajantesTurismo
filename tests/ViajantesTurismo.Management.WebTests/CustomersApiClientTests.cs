@@ -89,6 +89,21 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
+    public async Task GetCustomerById_throws_when_admin_api_returns_success_with_null_body()
+    {
+        // Arrange
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("null"));
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        Func<Task> act = async () => await sut.GetCustomerById(Guid.CreateVersion7(), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var exception = await act.ShouldThrow<InvalidOperationException>();
+        exception.Message.ShouldBe("The customer response body was empty.");
+    }
+
+    [Fact]
     public async Task CreateCustomer_returns_location_header()
     {
         // Arrange
