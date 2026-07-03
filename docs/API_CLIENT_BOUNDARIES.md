@@ -73,6 +73,9 @@ Recommended outcome shape:
 - Keep cancellation and programmer errors as exceptions.
 - Keep transport exceptions as exceptions until a real caller needs an explicit transport outcome.
 - Put reusable outbound HTTP defaults in `SharedKernel.Http`, starting with service-discovery and resilience defaults.
+- Apps/projects that perform outbound HTTP calls reference `SharedKernel.Http` directly and call `AddHttpClientDefaults()`.
+- `ViajantesTurismo.ServiceDefaults` keeps host-wide service discovery and telemetry, but does not configure outbound
+  HTTP clients for projects that do not make HTTP calls.
 - Add shared result/outcome adapters in `SharedKernel.Http` or a focused `SharedKernel.Results.Http` package when the
   migration needs reusable parsing behavior across contract clients.
 

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using SharedKernel.Http;
 using SharedKernel.Observability;
 using ViajantesTurismo.Resources;
 
@@ -40,8 +39,6 @@ public static class ServiceDefaultsExtensions
         builder.AddDefaultHealthChecks();
 
         builder.Services.AddServiceDiscovery();
-
-        builder.Services.AddHttpClientDefaults();
 
         return builder;
     }

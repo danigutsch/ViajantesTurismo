@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Http\SharedKernel.Http.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>

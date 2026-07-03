@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Http\SharedKernel.Http.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj"/>
