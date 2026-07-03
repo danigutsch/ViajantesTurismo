@@ -1,4 +1,5 @@
 using Bunit;
+using SharedKernel.Testing.Assertions;
 using TourCard = ViajantesTurismo.Public.Web.Components.Shared.TourCard;
 using TourGallery = ViajantesTurismo.Public.Web.Components.Shared.TourGallery;
 
@@ -18,11 +19,11 @@ public sealed class PublicComponentTests : BunitContext
 
         // Assert
         var heading = cut.Find("h2 a");
-        Assert.Equal("Camino Norte", heading.TextContent);
-        Assert.Equal("/group-bike-tours/camino%20norte", heading.GetAttribute("href"));
-        Assert.Equal("TOUR-2026", cut.Find("p").TextContent);
-        Assert.Equal("https://cdn.example/camino.jpg", cut.Find("img").GetAttribute("src"));
-        Assert.Equal("Cyclists on the Camino", cut.Find("img").GetAttribute("alt"));
+        heading.TextContent.ShouldBe("Camino Norte");
+        heading.GetAttribute("href").ShouldBe("/group-bike-tours/camino%20norte");
+        cut.Find("p").TextContent.ShouldBe("TOUR-2026");
+        cut.Find("img").GetAttribute("src").ShouldBe("https://cdn.example/camino.jpg");
+        cut.Find("img").GetAttribute("alt").ShouldBe("Cyclists on the Camino");
     }
 
     [Fact]
@@ -37,9 +38,9 @@ public sealed class PublicComponentTests : BunitContext
             .Add(component => component.HeadingLevel, 3));
 
         // Assert
-        Assert.Equal("Andes Ride", cut.Find("h3 a").TextContent);
-        Assert.Equal("/group-bike-tours/andes%2Fride", cut.Find("h3 a").GetAttribute("href"));
-        Assert.Empty(cut.FindAll("img"));
+        cut.Find("h3 a").TextContent.ShouldBe("Andes Ride");
+        cut.Find("h3 a").GetAttribute("href").ShouldBe("/group-bike-tours/andes%2Fride");
+        cut.FindAll("img").ShouldBeEmpty();
     }
 
     [Fact]
@@ -86,16 +87,16 @@ public sealed class PublicComponentTests : BunitContext
 
         // Assert
         var sources = cut.FindAll("source");
-        Assert.Equal("image/avif", sources[0].GetAttribute("type"));
-        Assert.Equal("https://cdn.example/cover-320.avif 320w", sources[0].GetAttribute("srcset"));
-        Assert.Equal("image/webp", sources[1].GetAttribute("type"));
-        Assert.Equal("https://cdn.example/cover-640.webp 640w", sources[1].GetAttribute("srcset"));
-        Assert.Equal("image/jpeg", sources[2].GetAttribute("type"));
-        Assert.Equal("https://cdn.example/cover-320.jpg 320w, https://cdn.example/cover-640.jpg 640w", sources[2].GetAttribute("srcset"));
-        Assert.Equal("https://cdn.example/cover-640.jpg", cut.Find("img").GetAttribute("src"));
-        Assert.Equal("Cover image", cut.Find("img").GetAttribute("alt"));
-        Assert.Equal("640", cut.Find("img").GetAttribute("width"));
-        Assert.Equal("427", cut.Find("img").GetAttribute("height"));
+        sources[0].GetAttribute("type").ShouldBe("image/avif");
+        sources[0].GetAttribute("srcset").ShouldBe("https://cdn.example/cover-320.avif 320w");
+        sources[1].GetAttribute("type").ShouldBe("image/webp");
+        sources[1].GetAttribute("srcset").ShouldBe("https://cdn.example/cover-640.webp 640w");
+        sources[2].GetAttribute("type").ShouldBe("image/jpeg");
+        sources[2].GetAttribute("srcset").ShouldBe("https://cdn.example/cover-320.jpg 320w, https://cdn.example/cover-640.jpg 640w");
+        cut.Find("img").GetAttribute("src").ShouldBe("https://cdn.example/cover-640.jpg");
+        cut.Find("img").GetAttribute("alt").ShouldBe("Cover image");
+        cut.Find("img").GetAttribute("width").ShouldBe("640");
+        cut.Find("img").GetAttribute("height").ShouldBe("427");
     }
 
     [Fact]
@@ -122,10 +123,10 @@ public sealed class PublicComponentTests : BunitContext
         var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
 
         // Assert
-        Assert.Equal(2, cut.FindAll("figure").Count);
-        Assert.Equal(2, cut.FindAll("img[loading='lazy']").Count);
-        var caption = Assert.Single(cut.FindAll("figcaption"));
-        Assert.Equal("Mountain pass", caption.TextContent);
+        cut.FindAll("figure").Count.ShouldBe(2);
+        cut.FindAll("img[loading='lazy']").Count.ShouldBe(2);
+        var caption = cut.FindAll("figcaption").ShouldHaveSingleItem();
+        caption.TextContent.ShouldBe("Mountain pass");
     }
 
     [Fact]
@@ -153,16 +154,16 @@ public sealed class PublicComponentTests : BunitContext
 
         // Assert
         var sources = cut.FindAll("source");
-        Assert.Equal("image/avif", sources[0].GetAttribute("type"));
-        Assert.Equal("https://cdn.example/one-320.avif 320w", sources[0].GetAttribute("srcset"));
-        Assert.Equal("image/webp", sources[1].GetAttribute("type"));
-        Assert.Equal("https://cdn.example/one-640.webp 640w", sources[1].GetAttribute("srcset"));
-        Assert.Equal("image/jpeg", sources[2].GetAttribute("type"));
-        Assert.Equal("https://cdn.example/one-320.jpg 320w, https://cdn.example/one-640.jpg 640w", sources[2].GetAttribute("srcset"));
-        Assert.Equal("(min-width: 48rem) 50vw, 100vw", sources[2].GetAttribute("sizes"));
-        Assert.Equal("https://cdn.example/one-640.jpg", cut.Find("img").GetAttribute("src"));
-        Assert.Equal("640", cut.Find("img").GetAttribute("width"));
-        Assert.Equal("427", cut.Find("img").GetAttribute("height"));
+        sources[0].GetAttribute("type").ShouldBe("image/avif");
+        sources[0].GetAttribute("srcset").ShouldBe("https://cdn.example/one-320.avif 320w");
+        sources[1].GetAttribute("type").ShouldBe("image/webp");
+        sources[1].GetAttribute("srcset").ShouldBe("https://cdn.example/one-640.webp 640w");
+        sources[2].GetAttribute("type").ShouldBe("image/jpeg");
+        sources[2].GetAttribute("srcset").ShouldBe("https://cdn.example/one-320.jpg 320w, https://cdn.example/one-640.jpg 640w");
+        sources[2].GetAttribute("sizes").ShouldBe("(min-width: 48rem) 50vw, 100vw");
+        cut.Find("img").GetAttribute("src").ShouldBe("https://cdn.example/one-640.jpg");
+        cut.Find("img").GetAttribute("width").ShouldBe("640");
+        cut.Find("img").GetAttribute("height").ShouldBe("427");
     }
 
     [Fact]
@@ -187,9 +188,9 @@ public sealed class PublicComponentTests : BunitContext
         var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
 
         // Assert
-        Assert.Equal("https://cdn.example/original.jpg", cut.Find("img").GetAttribute("src"));
-        Assert.Null(cut.Find("img").GetAttribute("width"));
-        Assert.Null(cut.Find("img").GetAttribute("height"));
+        cut.Find("img").GetAttribute("src").ShouldBe("https://cdn.example/original.jpg");
+        cut.Find("img").GetAttribute("width").ShouldBeNull();
+        cut.Find("img").GetAttribute("height").ShouldBeNull();
     }
 
     [Fact]
@@ -217,10 +218,10 @@ public sealed class PublicComponentTests : BunitContext
 
         // Assert
         var imageElements = cut.FindAll("img");
-        Assert.Equal("eager", imageElements[0].GetAttribute("loading"));
-        Assert.Equal("high", imageElements[0].GetAttribute("fetchpriority"));
-        Assert.Equal("lazy", imageElements[1].GetAttribute("loading"));
-        Assert.Null(imageElements[1].GetAttribute("fetchpriority"));
+        imageElements[0].GetAttribute("loading").ShouldBe("eager");
+        imageElements[0].GetAttribute("fetchpriority").ShouldBe("high");
+        imageElements[1].GetAttribute("loading").ShouldBe("lazy");
+        imageElements[1].GetAttribute("fetchpriority").ShouldBeNull();
     }
 
 }
