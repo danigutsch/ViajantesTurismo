@@ -22,10 +22,12 @@ public sealed class HttpServiceCollectionExtensionsTests
     public void AddHttpClientDefaults_throws_when_services_is_null()
     {
         // Arrange
-        ServiceCollection? services = null;
+#nullable disable
+        ServiceCollection services = null;
 
         // Act
-        Action act = () => HttpServiceCollectionExtensions.AddHttpClientDefaults(services!);
+        Action act = () => HttpServiceCollectionExtensions.AddHttpClientDefaults(services);
+#nullable restore
 
         // Assert
         act.ShouldThrow<ArgumentNullException>();
