@@ -2,7 +2,7 @@ using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-internal sealed class ConfigurableMediaUploadScanner(MediaUploadScanResult result) : IMediaUploadScanner
+internal sealed class StubMediaUploadScanner(MediaUploadScanResult result) : IMediaUploadScanner
 {
     public MediaUploadScanRequest? LastRequest { get; private set; }
 
