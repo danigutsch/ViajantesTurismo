@@ -34,19 +34,10 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
 
         if (existing is not null)
         {
-            var result = existing.ReplaceVariants(content.SourceLanguage, content.Variants);
+            var result = existing.ReplaceWith(content);
             if (result.IsFailure)
             {
                 throw new InvalidOperationException("Stored public content replacement must be valid.");
-            }
-
-            if (content.PublicationState == PublicContentPublicationState.Published)
-            {
-                var publish = existing.Publish();
-                if (publish.IsFailure)
-                {
-                    throw new InvalidOperationException("Stored public content publication must be valid.");
-                }
             }
 
             await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);

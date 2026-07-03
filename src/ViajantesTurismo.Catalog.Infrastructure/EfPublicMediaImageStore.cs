@@ -75,8 +75,8 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         return
         [
             .. images
-                .OrderByDescending(image => image.TourLinks.Single(link => link.CatalogTourId == catalogTourId).IsCover)
-                .ThenBy(image => image.TourLinks.Single(link => link.CatalogTourId == catalogTourId).DisplayOrder)
+                .OrderByDescending(image => image.IsCoverForTour(catalogTourId))
+                .ThenBy(image => image.GetDisplayOrderForTour(catalogTourId))
                 .ThenBy(image => image.Id)
                 .Select(image => ForTour(image, catalogTourId))
         ];
@@ -105,9 +105,9 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             tourId => (IReadOnlyList<PublicMediaImage>)
             [
                 .. images
-                    .Where(image => image.TourLinks.Any(link => link.CatalogTourId == tourId))
-                    .OrderByDescending(image => image.TourLinks.Single(link => link.CatalogTourId == tourId).IsCover)
-                    .ThenBy(image => image.TourLinks.Single(link => link.CatalogTourId == tourId).DisplayOrder)
+                    .Where(image => image.BelongsToTour(tourId))
+                    .OrderByDescending(image => image.IsCoverForTour(tourId))
+                    .ThenBy(image => image.GetDisplayOrderForTour(tourId))
                     .ThenBy(image => image.Id)
                     .Select(image => ForTour(image, tourId))
             ]);

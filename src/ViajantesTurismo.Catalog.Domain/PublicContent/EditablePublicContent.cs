@@ -137,6 +137,15 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Publishes content when all variants are approved, otherwise leaves it in review.
+    /// </summary>
+    /// <returns>A result indicating whether auto-publication was allowed or skipped.</returns>
+    public Result PublishIfReady()
+    {
+        return CanPublish ? Publish() : Result.Ok();
+    }
+
+    /// <summary>
     /// Replaces the editable language variants for the same content key.
     /// </summary>
     /// <param name="sourceLanguage">The source language entered by the editor.</param>
@@ -165,6 +174,24 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
         PublicationState = GetInitialPublicationState(variantsArray);
 
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// Replaces this content with another version for the same key.
+    /// </summary>
+    /// <param name="replacement">The replacement content.</param>
+    /// <returns>A result indicating whether replacement was allowed.</returns>
+    public Result ReplaceWith(EditablePublicContent replacement)
+    {
+        ArgumentNullException.ThrowIfNull(replacement);
+
+        var replace = ReplaceVariants(replacement.SourceLanguage, replacement.Variants);
+        if (replace.IsFailure)
+        {
+            return replace;
+        }
+
+        return replacement.IsPubliclyVisible ? Publish() : Result.Ok();
     }
 
     /// <summary>

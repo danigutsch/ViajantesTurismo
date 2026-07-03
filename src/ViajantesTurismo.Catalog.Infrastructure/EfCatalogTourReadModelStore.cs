@@ -4,7 +4,9 @@ using ViajantesTurismo.Common.Sanitizers;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
-internal sealed class EfCatalogTourReadModelStore(CatalogDbContext dbContext) : ICatalogTourReadModelStore
+internal sealed class EfCatalogTourReadModelStore(
+    CatalogDbContext dbContext,
+    TimeProvider timeProvider) : ICatalogTourReadModelStore
 {
     public async ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
@@ -48,7 +50,7 @@ internal sealed class EfCatalogTourReadModelStore(CatalogDbContext dbContext) : 
         existing.Title = StringSanitizer.Sanitize(update.Title) ?? string.Empty;
         existing.Slug = StringSanitizer.Sanitize(update.Slug) ?? string.Empty;
         existing.IsPublished = update.IsPublished;
-        existing.UpdatedAt = DateTimeOffset.UtcNow;
+        existing.UpdatedAt = timeProvider.GetUtcNow();
 
         await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
         return ToReadModel(existing);

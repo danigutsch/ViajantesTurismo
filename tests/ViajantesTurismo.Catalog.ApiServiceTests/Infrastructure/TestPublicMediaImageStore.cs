@@ -50,9 +50,9 @@ internal sealed class TestPublicMediaImageStore : IPublicMediaImageStore
         return
         [
             .. imagesById.Values
-                .Where(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId))
-                .OrderByDescending(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId && link.IsCover))
-                .ThenBy(image => image.TourLinks.Where(link => link.CatalogTourId == catalogTourId).Min(link => link.DisplayOrder))
+                .Where(image => image.BelongsToTour(catalogTourId))
+                .OrderByDescending(image => image.IsCoverForTour(catalogTourId))
+                .ThenBy(image => image.GetDisplayOrderForTour(catalogTourId))
                 .ThenBy(image => image.Id)
         ];
     }

@@ -10,7 +10,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Zulu"), TestContext.Current.CancellationToken);
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Bravo"), TestContext.Current.CancellationToken);
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Alpha"), TestContext.Current.CancellationToken);
@@ -31,7 +31,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         var tourId = Guid.CreateVersion7();
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Draft"), TestContext.Current.CancellationToken);
 
@@ -49,7 +49,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
 
         // Act
         var tour = await sut.GetTour(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
@@ -63,7 +63,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         var tourId = Guid.CreateVersion7();
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Draft"), TestContext.Current.CancellationToken);
 
@@ -88,7 +88,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         var tourId = Guid.CreateVersion7();
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Draft"), TestContext.Current.CancellationToken);
 
@@ -109,7 +109,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
 
         // Act
         var updated = await sut.UpdatePresentation(
@@ -126,7 +126,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         var tourId = Guid.CreateVersion7();
 
         // Act
@@ -145,7 +145,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         var tourId = Guid.CreateVersion7();
         await sut.UpsertDraft(
             EfCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Draft", "mixed-slug", isPublished: true),
@@ -164,7 +164,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         await sut.UpsertDraft(
             EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Draft", "Mixed-Slug", isPublished: true),
             TestContext.Current.CancellationToken);
@@ -181,7 +181,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         await sut.UpsertDraft(
             EfCatalogTourReadModelStoreTestsHelpers.CreateTour(Guid.CreateVersion7(), "Draft", "DRAFT", isPublished: false),
             TestContext.Current.CancellationToken);
@@ -198,7 +198,7 @@ public sealed class EfCatalogTourReadModelStoreTests
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
-        var sut = new EfCatalogTourReadModelStore(dbContext);
+        var sut = new EfCatalogTourReadModelStore(dbContext, TimeProvider.System);
         var tourId = Guid.CreateVersion7();
         await sut.UpsertDraft(EfCatalogTourReadModelStoreTestsHelpers.CreateTour(tourId, "Draft"), TestContext.Current.CancellationToken);
         await sut.UpdatePresentation(

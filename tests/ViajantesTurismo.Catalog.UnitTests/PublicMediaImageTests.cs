@@ -87,4 +87,39 @@ public sealed class PublicMediaImageTests
         readyResult.ShouldBe(true);
         pendingResult.ShouldBe(false);
     }
+
+    [Fact]
+    public void Gallery_placement_exposes_cover_and_display_order_for_current_view()
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 3, true);
+
+        // Act
+        var isCover = image.IsCover;
+        var displayOrder = image.DisplayOrder;
+
+        // Assert
+        isCover.ShouldBe(true);
+        displayOrder.ShouldBe(3);
+    }
+
+    [Fact]
+    public void Tour_placement_finds_cover_and_display_order_for_requested_tour()
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var image = PublicMediaImageTestFactory.CreateImage(tourId, 2, false);
+
+        // Act
+        var belongsToTour = image.BelongsToTour(tourId);
+        var missingTour = image.BelongsToTour(Guid.CreateVersion7());
+        var isCover = image.IsCoverForTour(tourId);
+        var displayOrder = image.GetDisplayOrderForTour(tourId);
+
+        // Assert
+        belongsToTour.ShouldBe(true);
+        missingTour.ShouldBe(false);
+        isCover.ShouldBe(false);
+        displayOrder.ShouldBe(2);
+    }
 }
