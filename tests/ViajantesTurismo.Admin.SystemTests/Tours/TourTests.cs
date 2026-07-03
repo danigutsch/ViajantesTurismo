@@ -21,22 +21,22 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
         var validationSummary = Page.Locator(".validation-errors, .validation-message");
         await Expect(validationSummary.First).ToBeVisibleAsync();
 
-        await Page.FillAsync("#identifier", identifier);
-        await Page.FillAsync("#name", initialName);
+        await Page.Locator("#identifier").FillAndExpectValue(identifier);
+        await Page.Locator("#name").FillAndExpectValue(initialName);
 
         var startDate = DateTime.UtcNow.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var endDate = DateTime.UtcNow.AddDays(37).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        await Page.FillAsync("#startDate", startDate);
-        await Page.FillAsync("#endDate", endDate);
+        await Page.Locator("#startDate").FillAndExpectValue(startDate);
+        await Page.Locator("#endDate").FillAndExpectValue(endDate);
 
         await Page.SelectOptionAsync("#currency", "Euro");
-        await Page.FillAsync("#price", "1200");
-        await Page.FillAsync("#singleRoom", "250");
-        await Page.FillAsync("#regularBike", "80");
-        await Page.FillAsync("#eBike", "150");
-        await Page.FillAsync("#services", "Hotel\nBreakfast\nGuided Tour");
-        await Page.FillAsync("#minCustomers", "3");
-        await Page.FillAsync("#maxCustomers", "12");
+        await Page.Locator("#price").FillAndExpectValue("1200");
+        await Page.Locator("#singleRoom").FillAndExpectValue("250");
+        await Page.Locator("#regularBike").FillAndExpectValue("80");
+        await Page.Locator("#eBike").FillAndExpectValue("150");
+        await Page.Locator("#services").FillAndExpectValue("Hotel\nBreakfast\nGuided Tour");
+        await Page.Locator("#minCustomers").FillAndExpectValue("3");
+        await Page.Locator("#maxCustomers").FillAndExpectValue("12");
 
         await Page.GetButton("Create Tour").ClickAsync();
 
@@ -72,10 +72,10 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
         await NavigateTo($"/edittour/{tourId}");
         await Expect(Page).ToHaveTitleAsync("Edit Tour");
 
-        await Page.FillAsync("#name", "");
-        await Page.FillAsync("#name", updatedName);
+        await Page.Locator("#name").FillAndExpectValue("");
+        await Page.Locator("#name").FillAndExpectValue(updatedName);
 
-        await Page.FillAsync("#services", "Hotel\nBreakfast\nGuided Tour\nBike Rental");
+        await Page.Locator("#services").FillAndExpectValue("Hotel\nBreakfast\nGuided Tour\nBike Rental");
 
         await Page.GetButton("Update Tour").ClickAsync();
 

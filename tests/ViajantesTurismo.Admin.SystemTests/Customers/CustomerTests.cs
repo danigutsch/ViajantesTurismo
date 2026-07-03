@@ -22,9 +22,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page).ToHaveTitleAsync("Create Customer - Personal Information");
         await Expect(Page.GetByText("Step 1 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#firstName", firstName);
-        await Page.FillAsync("#lastName", lastName);
-        await Page.FillAsync("#birthDate", "1990-06-15");
+        await Page.Locator("#firstName").FillAndExpectValue(firstName);
+        await Page.Locator("#lastName").FillAndExpectValue(lastName);
+        await Page.Locator("#birthDate").FillAndExpectValue("1990-06-15");
         var genderInput = Page.Locator("#gender");
         await genderInput.SelectOptionAsync("Female");
         await Expect(genderInput).ToHaveValueAsync("Female");
@@ -34,7 +34,7 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.Locator(".country-dropdown-menu input").FillAsync("Brazil");
         await Page.Locator(".country-dropdown-item", new PageLocatorOptions { HasText = "Brazil" }).First.ClickAsync();
 
-        await Page.FillAsync("#occupation", "QA Engineer");
+        await Page.Locator("#occupation").FillAndExpectValue("QA Engineer");
 
         await Page.GetButton("Next").ClickAsync();
 
@@ -42,16 +42,14 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
         var nationalIdInput = Page.Locator("#nationalId");
-        await nationalIdInput.FillAsync(nationalId);
+        await nationalIdInput.FillAndExpectValue(nationalId);
         await Expect(nationalIdInput).ToHaveValueAsync(nationalId);
 
-        // CountrySelector for ID Nationality has no explicit id; locate by label context
-        var idNatField = Page.Locator(".mb-3").Filter(new LocatorFilterOptions { HasText = "ID Nationality" });
-        await idNatField.Locator("button.form-select").ClickAsync();
+        await Page.Locator("#idNationality").ClickAsync();
         await Page.Locator(".country-dropdown-menu input").FillAsync("Brazil");
         await Page.Locator(".country-dropdown-item", new PageLocatorOptions { HasText = "Brazil" }).First.ClickAsync();
 
-        await nationalIdInput.FillAsync(nationalId);
+        await nationalIdInput.FillAndExpectValue(nationalId);
         await Expect(nationalIdInput).ToHaveValueAsync(nationalId);
 
         await Page.GetButton("Next").ClickAsync();
@@ -61,8 +59,8 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page.GetByText("Step 3 of 8")).ToBeVisibleAsync();
         await Expect(Page).ToHaveTitleAsync("Create Customer - Contact Information");
 
-        await Page.FillAsync("#email", email);
-        await Page.FillAsync("#mobile", mobile);
+        await Page.Locator("#email").FillAndExpectValue(email);
+        await Page.Locator("#mobile").FillAndExpectValue(mobile);
         await Expect(Page.Locator("#email")).ToHaveValueAsync(email);
         await Expect(Page.Locator("#mobile")).ToHaveValueAsync(mobile);
 
@@ -71,12 +69,12 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Expect(Page).ToHaveTitleAsync("Create Customer - Address");
         await Expect(Page.GetByText("Step 4 of 8")).ToBeVisibleAsync();
 
-        await Page.FillAsync("#street", street);
-        await Page.FillAsync("#neighborhood", "TestVille");
-        await Page.FillAsync("#postalCode", "54321-000");
-        await Page.FillAsync("#city", "E2ECity");
-        await Page.FillAsync("#state", "TS");
-        await Page.FillAsync("#country", "Brazil");
+        await Page.Locator("#street").FillAndExpectValue(street);
+        await Page.Locator("#neighborhood").FillAndExpectValue("TestVille");
+        await Page.Locator("#postalCode").FillAndExpectValue("54321-000");
+        await Page.Locator("#city").FillAndExpectValue("E2ECity");
+        await Page.Locator("#state").FillAndExpectValue("TS");
+        await Page.Locator("#country").FillAndExpectValue("Brazil");
         await Page.Locator("#country").BlurAsync();
         await Expect(Page.Locator("#street")).ToHaveValueAsync(street);
         await Expect(Page.Locator("#neighborhood")).ToHaveValueAsync("TestVille");
@@ -92,8 +90,8 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
 
         var weightInput = Page.Locator("#weightKg");
         var heightInput = Page.Locator("#heightCm");
-        await weightInput.FillAsync("65");
-        await heightInput.FillAsync("170");
+        await weightInput.FillAndExpectValue("65");
+        await heightInput.FillAndExpectValue("170");
         await heightInput.BlurAsync();
         var bikeTypeInput = Page.Locator("#bikeType");
         await bikeTypeInput.SelectOptionAsync("Regular");
@@ -124,8 +122,8 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var emergencyNameInput = emergencyStep.Locator("#name");
         var emergencyMobileInput = emergencyStep.Locator("#mobile");
         var emergencyMobileNumber = "+5511988880001";
-        await emergencyNameInput.FillAsync(emergencyContactName);
-        await emergencyMobileInput.FillAsync(emergencyMobileNumber);
+        await emergencyNameInput.FillAndExpectValue(emergencyContactName);
+        await emergencyMobileInput.FillAndExpectValue(emergencyMobileNumber);
         await Expect(emergencyNameInput).ToHaveValueAsync(emergencyContactName);
         await Expect(emergencyMobileInput).ToHaveValueAsync(emergencyMobileNumber);
 
@@ -137,9 +135,9 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         var allergiesInput = Page.Locator("#allergies");
         var additionalInfoInput = Page.Locator("#additionalInfo");
 
-        await allergiesInput.FillAsync("None known");
+        await allergiesInput.FillAndExpectValue("None known");
         await allergiesInput.BlurAsync();
-        await additionalInfoInput.FillAsync("E2E test medical info");
+        await additionalInfoInput.FillAndExpectValue("E2E test medical info");
         await additionalInfoInput.BlurAsync();
         await Expect(allergiesInput).ToHaveValueAsync("None known");
         await Expect(additionalInfoInput).ToHaveValueAsync("E2E test medical info");
@@ -176,10 +174,10 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await NavigateTo($"/customers/{customerId}/edit");
         await Expect(Page).ToHaveTitleAsync("Edit Customer");
 
-        await Page.FillAsync("#occupation", "");
-        await Page.FillAsync("#occupation", "Senior QA Engineer");
-        await Page.FillAsync("#mobile", "");
-        await Page.FillAsync("#mobile", "+5511999990099");
+        await Page.Locator("#occupation").FillAndExpectValue("");
+        await Page.Locator("#occupation").FillAndExpectValue("Senior QA Engineer");
+        await Page.Locator("#mobile").FillAndExpectValue("");
+        await Page.Locator("#mobile").FillAndExpectValue("+5511999990099");
         await Page.Locator("#mobile").BlurAsync();
         await Expect(Page.Locator("#occupation")).ToHaveValueAsync("Senior QA Engineer");
         await Expect(Page.Locator("#mobile")).ToHaveValueAsync("+5511999990099");

@@ -5,6 +5,8 @@
 /// </summary>
 internal static class LocatorHelpers
 {
+    private const float FastValueAssertionTimeoutMilliseconds = 750;
+
     /// <summary>
     /// Provides extension methods for IPage to locate common elements like headings, links, buttons, and details badges.
     /// </summary>
@@ -71,6 +73,33 @@ internal static class LocatorHelpers
     {
         var term = page.Locator($"dt:text-is('{label}')");
         return term.Locator("xpath=following-sibling::dd[1]").Locator(".badge");
+    }
+
+    /// <summary>
+    /// Fills an input and retries if an early interactive render resets the value.
+    /// </summary>
+    /// <param name="locator">The input locator.</param>
+    /// <param name="value">The expected value.</param>
+    public static async Task FillAndExpectValue(this ILocator locator, string value)
+    {
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            await locator.FillAsync(value);
+
+            try
+            {
+                await Assertions.Expect(locator).ToHaveValueAsync(
+                    value,
+                    new LocatorAssertionsToHaveValueOptions { Timeout = FastValueAssertionTimeoutMilliseconds });
+                return;
+            }
+            catch (PlaywrightException) when (attempt < 3)
+            {
+                // Blazor interactive startup can rerender immediately after static content accepts input.
+            }
+        }
+
+        await Assertions.Expect(locator).ToHaveValueAsync(value);
     }
 
     /// <summary>
