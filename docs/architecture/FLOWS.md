@@ -95,8 +95,8 @@ presentation and public published tour reads.
 ```mermaid
 sequenceDiagram
     participant Event as AdminTourCreatedIntegrationEvent
-    participant Idem as IdempotentIntegrationEventConsumer
-    participant Consumer as AdminTourCreatedIntegrationEventConsumer
+    participant Idem as IdempotentIntegrationHandler
+    participant Handler as AdminTourCreatedIntegrationHandler
     participant Aggregate as CatalogTour.CreateDraft
     participant Store as IEventStore
     participant Runner as CatalogProjectionRunner
@@ -104,10 +104,10 @@ sequenceDiagram
     participant ReadModel as ICatalogTourReadModelStore
 
     Event->>Idem: Handle(event)
-    Idem->>Consumer: Handle(event) when idempotency starts
-    Consumer->>Aggregate: Create draft
-    Aggregate-->>Consumer: CatalogTourDraftCreated
-    Consumer->>Store: Append(stream, NoStream, events)
+    Idem->>Handler: Handle(event) when idempotency starts
+    Handler->>Aggregate: Create draft
+    Aggregate-->>Handler: CatalogTourDraftCreated
+    Handler->>Store: Append(stream, NoStream, events)
     Runner->>Store: LoadAfter(checkpoint, 100)
     Runner->>Projection: Apply(envelope)
     Projection->>ReadModel: UpsertDraft(...)
@@ -282,7 +282,7 @@ flowchart TB
     upload -. planned .-> asset
     upload -. records .-> domainEvent
     domainEvent -. dispatch .-> domainDispatch
-    domainDispatch -. save processing-requested integration event .-> outbox
+    domainDispatch -. save original-stored integration event .-> outbox
     outbox -. publish .-> inbox
     inbox -. first source+id wins .-> processor
     asset -. original image .-> processor

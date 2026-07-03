@@ -8,18 +8,18 @@ This page documents the Catalog media processing flow.
 sequenceDiagram
     participant Upload as Upload intake
     participant Store as IMediaObjectStore
-    participant Event as MediaImageProcessingRequestedIntegrationEvent
-    participant Consumer as MediaImageProcessingRequestedIntegrationEventConsumer
+    participant Event as MediaImageOriginalStoredIntegrationEvent
+    participant Handler as MediaImageOriginalStoredIntegrationHandler
     participant Images as IPublicMediaImageStore
 
     Upload->>Store: Put original object
     Upload->>Images: Save metadata as Pending
-    Upload->>Event: Publish typed processing request
-    Event->>Consumer: Handle at least once
-    Consumer->>Store: OpenRead original object
-    Consumer->>Consumer: Normalize and create variants
-    Consumer->>Store: Put deterministic variant keys
-    Consumer->>Images: Upsert Ready metadata with variants
+    Upload->>Event: Publish typed original-stored event
+    Event->>Handler: Handle at least once
+    Handler->>Store: OpenRead original object
+    Handler->>Handler: Normalize and create variants
+    Handler->>Store: Put deterministic variant keys
+    Handler->>Images: Upsert Ready metadata with variants
 ```
 
 ## Retry and idempotency model

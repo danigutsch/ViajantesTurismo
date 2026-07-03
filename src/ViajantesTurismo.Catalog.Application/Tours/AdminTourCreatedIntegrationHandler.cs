@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Catalog.Application.Tours;
 /// <summary>
 /// Creates a draft Catalog tour stream from an Admin tour-created integration event.
 /// </summary>
-public sealed class AdminTourCreatedIntegrationEventConsumer(
+public sealed class AdminTourCreatedIntegrationHandler(
     IEventStore eventStore) : IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>
 {
     /// <inheritdoc />

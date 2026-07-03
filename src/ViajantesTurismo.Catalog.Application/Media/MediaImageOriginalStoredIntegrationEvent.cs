@@ -3,14 +3,14 @@ using SharedKernel.IntegrationEvents;
 namespace ViajantesTurismo.Catalog.Application.Media;
 
 /// <summary>
-/// Requests asynchronous processing for a stored Catalog media image.
+/// Records that an original Catalog media image object was stored.
 /// </summary>
 /// <param name="EventId">The stable event identifier used for idempotent consumption.</param>
-/// <param name="OccurredAt">The time the processing request was created.</param>
+/// <param name="OccurredAt">The time the original media image was stored.</param>
 /// <param name="MediaImageId">The public media image identifier.</param>
 /// <param name="SourceObjectKey">The stored original object key.</param>
 /// <param name="ProcessingVersion">The deterministic output version.</param>
-public sealed record MediaImageProcessingRequestedIntegrationEvent(
+public sealed record MediaImageOriginalStoredIntegrationEvent(
     Guid EventId,
     DateTimeOffset OccurredAt,
     Guid MediaImageId,
@@ -20,7 +20,7 @@ public sealed record MediaImageProcessingRequestedIntegrationEvent(
     /// <summary>
     /// Gets the stable event type.
     /// </summary>
-    public static string EventType => "catalog.media-image.processing-requested";
+    public static string EventType => "catalog.media-image.original-stored";
 
     /// <summary>
     /// Gets the event contract version.

@@ -23,8 +23,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -55,8 +55,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
             new CapturingIdempotencyStore(started: false),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -122,8 +122,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new ThrowingEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new ThrowingEventStore()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -157,8 +157,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new UnexpectedCancelledEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -195,8 +195,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
             new UnexpectedCancelledIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -229,7 +229,7 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new AdminTourCreatedIntegrationEventConsumer(new UnexpectedCancelledEventStore());
+        var handler = new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore());
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
@@ -351,8 +351,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new CancelledEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CancelledEventStore()),
             new CapturingIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -388,8 +388,8 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new IdempotentIntegrationEventConsumer<AdminTourCreatedIntegrationEvent>(
-            new AdminTourCreatedIntegrationEventConsumer(new CapturingEventStore()),
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore()),
             new CancelledIdempotencyStore(),
             Options.Create(new IntegrationEventOptions()));
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
@@ -423,7 +423,7 @@ public sealed class CatalogTelemetryTests
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
         using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
         using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
-        var handler = new AdminTourCreatedIntegrationEventConsumer(new CancelledEventStore());
+        var handler = new AdminTourCreatedIntegrationHandler(new CancelledEventStore());
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,

@@ -8,14 +8,14 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// <summary>
 /// Processes stored original media images into deterministic public variants.
 /// </summary>
-public sealed class MediaImageProcessingRequestedIntegrationEventConsumer(
+public sealed class MediaImageOriginalStoredIntegrationHandler(
     IMediaObjectStore objectStore,
-    IPublicMediaImageStore imageStore) : IIntegrationEventHandler<MediaImageProcessingRequestedIntegrationEvent>
+    IPublicMediaImageStore imageStore) : IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>
 {
     private static readonly ImageProcessingLimits Limits = ImageProcessingLimits.WebDefault;
 
     /// <inheritdoc />
-    public async ValueTask Handle(MediaImageProcessingRequestedIntegrationEvent notification, CancellationToken ct)
+    public async ValueTask Handle(MediaImageOriginalStoredIntegrationEvent notification, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(notification);
         ArgumentException.ThrowIfNullOrWhiteSpace(notification.SourceObjectKey);

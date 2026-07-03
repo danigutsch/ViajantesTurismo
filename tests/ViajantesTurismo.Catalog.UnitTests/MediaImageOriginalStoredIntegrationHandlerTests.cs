@@ -4,7 +4,7 @@ using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-public sealed class MediaImageProcessingRequestedIntegrationEventConsumerTests
+public sealed class MediaImageOriginalStoredIntegrationHandlerTests
 {
     [Fact]
     public async Task Handle_processes_original_into_deterministic_public_variants()
@@ -17,8 +17,8 @@ public sealed class MediaImageProcessingRequestedIntegrationEventConsumerTests
             new MediaObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
             TestContext.Current.CancellationToken);
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
-        var consumer = new MediaImageProcessingRequestedIntegrationEventConsumer(objectStore, imageStore);
-        var notification = new MediaImageProcessingRequestedIntegrationEvent(
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
+        var notification = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
             DateTimeOffset.UtcNow,
             mediaImageId,
@@ -26,8 +26,8 @@ public sealed class MediaImageProcessingRequestedIntegrationEventConsumerTests
             1);
 
         // Act
-        await consumer.Handle(notification, TestContext.Current.CancellationToken);
-        await consumer.Handle(notification, TestContext.Current.CancellationToken);
+        await handler.Handle(notification, TestContext.Current.CancellationToken);
+        await handler.Handle(notification, TestContext.Current.CancellationToken);
 
         // Assert
         imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
@@ -49,11 +49,11 @@ public sealed class MediaImageProcessingRequestedIntegrationEventConsumerTests
             new MediaObjectWriteRequest("uploads/not-image.bin", new MemoryStream([0x01, 0x02, 0x03]), "application/octet-stream", 3),
             TestContext.Current.CancellationToken);
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 3));
-        var consumer = new MediaImageProcessingRequestedIntegrationEventConsumer(objectStore, imageStore);
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
 
         // Act
-        await consumer.Handle(
-            new MediaImageProcessingRequestedIntegrationEvent(
+        await handler.Handle(
+            new MediaImageOriginalStoredIntegrationEvent(
                 Guid.CreateVersion7(),
                 DateTimeOffset.UtcNow,
                 mediaImageId,
