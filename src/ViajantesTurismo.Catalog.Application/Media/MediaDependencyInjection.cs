@@ -27,12 +27,7 @@ public static class MediaDependencyInjection
                 IValidateOptions<MediaUploadValidationOptions>,
                 MediaUploadValidationOptionsValidator>());
         services.TryAddSingleton<IMediaUploadValidator>(sp => new MediaUploadValidator(sp.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value));
-        services.TryAddScoped(sp => new MediaImageUploadIntake(
-            sp.GetRequiredService<IMediaUploadValidator>(),
-            sp.GetRequiredService<IMediaUploadScanner>(),
-            sp.GetRequiredService<IMediaObjectStore>(),
-            sp.GetRequiredService<IPublicMediaImageStore>(),
-            sp.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value));
+        services.TryAddScoped<MediaImageUploadIntake>();
         services.TryAddScoped<MediaImageOriginalStoredIntegrationHandler>();
         services.TryAddScoped<IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>>(
             sp => sp.GetRequiredService<MediaImageOriginalStoredIntegrationHandler>());

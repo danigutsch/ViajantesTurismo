@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Results;
@@ -15,13 +16,15 @@ public sealed class MediaImageUploadIntake(
     IMediaUploadScanner scanner,
     IMediaObjectStore objectStore,
     IPublicMediaImageStore imageStore,
-    MediaUploadValidationOptions? validationOptions = null)
+    IOptions<MediaUploadValidationOptions> validationOptions)
 {
     private const string InvalidUploadMessage = "Media upload is invalid.";
 
+    private const string ScannerUnavailableMessage = "Media upload scanner is unavailable.";
+
     private static readonly IReadOnlyList<ImageVariantRequest> ProbeVariants = [new("probe-webp", ImageOutputFormat.WebP, 1, 80, 1)];
 
-    private readonly MediaUploadValidationOptions options = validationOptions ?? new MediaUploadValidationOptions();
+    private readonly MediaUploadValidationOptions options = validationOptions.Value;
 
     /// <summary>
     /// Accepts an uploaded original image when validation and scanning allow it.
@@ -90,7 +93,7 @@ public sealed class MediaImageUploadIntake(
         var scanResult = await Scan(objectKey, content, request.ContentType, actualLength, ct).ConfigureAwait(false);
         if (scanResult.Status is MediaUploadScanStatus.Failed)
         {
-            return Result.Unavailable<MediaImageUploadIntakeResult>(scanResult.Message ?? "Media upload scanner is unavailable.");
+            return Result.Unavailable<MediaImageUploadIntakeResult>(scanResult.Message ?? ScannerUnavailableMessage);
         }
 
         if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
@@ -150,30 +153,10 @@ public sealed class MediaImageUploadIntake(
         {
             throw;
         }
-        catch (InvalidOperationException exception)
-        {
-            content.Position = 0;
-            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
-        }
-        catch (TimeoutException exception)
-        {
-            content.Position = 0;
-            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
-        }
-        catch (HttpRequestException exception)
-        {
-            content.Position = 0;
-            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
-        }
-        catch (IOException exception)
-        {
-            content.Position = 0;
-            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
-        }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             content.Position = 0;
-            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, exception.Message);
+            return new MediaUploadScanResult(MediaUploadScanStatus.Failed, ScannerUnavailableMessage);
         }
     }
 

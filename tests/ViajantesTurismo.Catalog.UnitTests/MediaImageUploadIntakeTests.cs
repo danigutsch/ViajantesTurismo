@@ -15,7 +15,7 @@ public sealed class MediaImageUploadIntakeTests
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = new MediaImageUploadIntake(new MediaUploadValidator(), scanner, objectStore, imageStore);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore);
         var tourLink = new MediaImageTourLink(Guid.CreateVersion7(), 0, true);
         var request = new MediaImageUploadIntakeRequest(
             mediaImageId,
@@ -50,8 +50,7 @@ public sealed class MediaImageUploadIntakeTests
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Disabled)),
             new InMemoryMediaObjectStore(),
             imageStore);
@@ -81,8 +80,7 @@ public sealed class MediaImageUploadIntakeTests
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Rejected, "malware detected")),
             objectStore,
             imageStore);
@@ -112,8 +110,7 @@ public sealed class MediaImageUploadIntakeTests
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Failed, "scanner unavailable")),
             objectStore,
             imageStore);
@@ -145,8 +142,7 @@ public sealed class MediaImageUploadIntakeTests
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(MediaUploadScanResult.Passed, new TimeoutException("scanner timeout")),
             objectStore,
             imageStore);
@@ -165,7 +161,7 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsFailure.ShouldBe(true);
         result.ErrorDetails.ShouldNotBeNull();
-        result.ErrorDetails.Detail.ShouldBe("scanner timeout");
+        result.ErrorDetails.Detail.ShouldBe("Media upload scanner is unavailable.");
         imageStore.Current.Id.ShouldBe(originalImage.Id);
         objectStore.ObjectKeys.ShouldBeEmpty();
     }
@@ -178,8 +174,7 @@ public sealed class MediaImageUploadIntakeTests
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(MediaUploadScanResult.Passed, new FormatException("scanner crashed")),
             objectStore,
             imageStore);
@@ -198,7 +193,7 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsFailure.ShouldBe(true);
         result.ErrorDetails.ShouldNotBeNull();
-        result.ErrorDetails.Detail.ShouldBe("scanner crashed");
+        result.ErrorDetails.Detail.ShouldBe("Media upload scanner is unavailable.");
         imageStore.Current.Id.ShouldBe(originalImage.Id);
         objectStore.ObjectKeys.ShouldBeEmpty();
     }
@@ -212,8 +207,7 @@ public sealed class MediaImageUploadIntakeTests
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(new MediaUploadValidationOptions { MaxLengthBytes = 3 }),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             scanner,
             objectStore,
             imageStore,
@@ -246,7 +240,7 @@ public sealed class MediaImageUploadIntakeTests
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = new MediaImageUploadIntake(new MediaUploadValidator(), scanner, objectStore, imageStore);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore);
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),
             new MemoryStream(content),
@@ -275,7 +269,7 @@ public sealed class MediaImageUploadIntakeTests
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = new MediaImageUploadIntake(new MediaUploadValidator(), scanner, objectStore, imageStore);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore);
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),
             new MemoryStream(content),
@@ -303,8 +297,7 @@ public sealed class MediaImageUploadIntakeTests
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Pending, "scan pending")),
             objectStore,
             imageStore);
@@ -333,7 +326,7 @@ public sealed class MediaImageUploadIntakeTests
         var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = new MediaImageUploadIntake(new MediaUploadValidator(), scanner, new InMemoryMediaObjectStore(), imageStore);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, new InMemoryMediaObjectStore(), imageStore);
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),
             new MemoryStream([0xFF, 0xD8, 0xFF, 0x00]),
@@ -360,8 +353,7 @@ public sealed class MediaImageUploadIntakeTests
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var intake = new MediaImageUploadIntake(
-            new MediaUploadValidator(),
+        var intake = MediaImageUploadIntakeTestFactory.Create(
             scanner,
             new InMemoryMediaObjectStore(),
             imageStore,
