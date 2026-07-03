@@ -2,6 +2,70 @@
 
 set -euo pipefail
 
+coverage_args=(
+    --coverage
+    --coverage-output-format cobertura
+    --coverage-output coverage.cobertura.xml
+    --coverage-settings coverage.settings.xml
+)
+
+get_test_project_parallelism() {
+    if [[ -n "${CI_TEST_PROJECT_PARALLELISM:-}" ]]; then
+        if [[ "${CI_TEST_PROJECT_PARALLELISM}" =~ ^[1-9][0-9]*$ ]]; then
+            printf '%s\n' "${CI_TEST_PROJECT_PARALLELISM}"
+            return 0
+        fi
+
+        echo "CI_TEST_PROJECT_PARALLELISM must be a positive integer." >&2
+        return 1
+    fi
+
+    if command -v nproc > /dev/null 2>&1; then
+        nproc
+        return 0
+    fi
+
+    getconf _NPROCESSORS_ONLN 2> /dev/null || printf '2\n'
+}
+
+run_project_tests() {
+    local max_parallel
+    max_parallel="$(get_test_project_parallelism)"
+
+    local active=0
+    local failed=0
+    local project_path
+
+    echo "Running $# test projects with up to ${max_parallel} project(s) in parallel."
+
+    for project_path in "$@"; do
+        (
+            echo "==> Testing ${project_path}"
+            dotnet test --project "${project_path}" --no-build -- "${coverage_args[@]}"
+        ) &
+
+        active=$((active + 1))
+
+        if [[ ${active} -ge ${max_parallel} ]]; then
+            if ! wait -n; then
+                failed=1
+            fi
+
+            active=$((active - 1))
+        fi
+    done
+
+    while [[ ${active} -gt 0 ]]; do
+        if ! wait -n; then
+            failed=1
+        fi
+
+        active=$((active - 1))
+    done
+
+    return "${failed}"
+}
+
 main() {
     local coverage_reports_file="${1:-}"
 
@@ -15,20 +79,9 @@ main() {
     shift
 
     if [[ $# -eq 0 ]]; then
-        dotnet test --solution ViajantesTurismo.slnx --no-build -- \
-            --coverage \
-            --coverage-output-format cobertura \
-            --coverage-output coverage.cobertura.xml \
-            --coverage-settings coverage.settings.xml
+        dotnet test --solution ViajantesTurismo.slnx --no-build -- "${coverage_args[@]}"
     else
-        local project_path
-        for project_path in "$@"; do
-            dotnet test --project "${project_path}" --no-build -- \
-                --coverage \
-                --coverage-output-format cobertura \
-                --coverage-output coverage.cobertura.xml \
-                --coverage-settings coverage.settings.xml
-        done
+        run_project_tests "$@"
     fi
 
     shopt -s globstar nullglob

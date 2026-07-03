@@ -43,8 +43,8 @@ Set that variable to the current repository CI baseline runner.
    required.
 7. Run `dotnet tool restore` when validation work is required.
 8. Run `bash scripts/run-ci-test-slice.sh --slice-name "Fast Validation" ...` to execute
-   the fast project set with project-scoped build, normalized per-slice timing output,
-   machine-readable manifest output, and coverage collection.
+   the fast project set with project-scoped build, project-level parallel test execution,
+   normalized per-slice timing output, machine-readable manifest output, and coverage collection.
 9. When validation work fails, create a focused diagnostic summary under
    `TestResults/ci-diagnostics/`.
 10. Upload the slice-local test results artifact and upload the focused diagnostics
@@ -125,6 +125,10 @@ Test-slice project membership is now centralized under `scripts/ci-test-slices/*
 restore, build, test, and Sonar coverage inputs for each slice stay aligned instead of
 duplicating project lists in multiple workflow locations.
 
+When a slice contains more than one project, `scripts/collect-test-coverage.sh` runs those
+test projects in parallel up to the runner CPU count. Set `CI_TEST_PROJECT_PARALLELISM` only
+when diagnosing local resource pressure or a runner-specific bottleneck.
+
 Lane placement follows [ADR-030: CI Test Lane Selection](../adr/20260629-ci-test-lane-selection.md).
 Benchmark locally with `scripts/benchmark-local-validation.sh` before changing CI slice membership.
 
@@ -165,9 +169,9 @@ command for that maintenance step.
 7. Run `bash scripts/run-sonar-analysis.sh` in reuse mode so SonarScanner performs a fresh
    build and end step but does not rerun tests.
 8. Publish a GitHub summary from `TestResults/sonar-analysis.log` that includes the
-   quality gate status, SonarCloud link, warning count, and captured phase timings, then
-   upload the coverage report, `sonar-coverage`, `sonar-analysis-log`, and
-   `sonar-analysis-manifest` artifacts.
+   hosted quality gate status, repository-owned new issue policy status, SonarCloud link,
+   warning count, and captured phase timings, then upload the coverage report,
+   `sonar-coverage`, `sonar-analysis-log`, and `sonar-analysis-manifest` artifacts.
 
 This job remains the dedicated required `SonarCloud` check, but it now aggregates coverage
 from the parallel test slices before performing hosted analysis.
