@@ -276,9 +276,18 @@
     {
         ArgumentNullException.ThrowIfNull(location);
 
-        return location.IsAbsoluteUri
+        var localPath = location.IsAbsoluteUri
             ? location.PathAndQuery
             : location.OriginalString;
+
+        if (localPath.StartsWith("//", StringComparison.Ordinal))
+        {
+            return "/customers";
+        }
+
+        return localPath.StartsWith("/", StringComparison.Ordinal)
+            ? localPath
+            : $"/{localPath}";
     }
 
 }

@@ -170,6 +170,33 @@ public sealed class ReviewPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/absolute-id?source=review", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("customers/relative-id", "/customers/relative-id")]
+    [InlineData("//evil.example/customers/relative-id", "/customers")]
+    public async Task SubmitCustomer_when_create_succeeds_with_relative_location_navigates_to_app_local_path(
+        string location,
+        string expectedPath)
+    {
+        // Arrange
+        CustomerCreationStateTestHelper.SeedCompletedState(_state);
+        _fakeCustomersApi.SetCreateCustomerOutcome(new CustomerCreateOutcomeDto
+        {
+            Kind = CustomerCreateOutcomeKind.Succeeded,
+            StatusCode = System.Net.HttpStatusCode.Created,
+            Location = new Uri(location, UriKind.Relative)
+        });
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var cut = Render<Review>();
+
+        // Act
+        var submitButton = cut.FindAll("button")
+            .First(button => button.TextContent.Contains("Create Customer", StringComparison.Ordinal));
+        await cut.InvokeAsync(() => submitButton.Click());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith(expectedPath, StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task SubmitCustomer_when_create_succeeds_without_location_navigates_to_customers_fallback()
     {
