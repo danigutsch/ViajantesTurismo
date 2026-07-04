@@ -12,6 +12,9 @@ internal static class AdminWriteDbContextTestFactory
             .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
             .Options;
 
-        return new AdminWriteDbContext(options, [new TestInterceptorDbContextModule(interceptors)]);
+        return new AdminWriteDbContext(options, [
+            new TestInterceptorDbContextModule(interceptors),
+            new IntegrationEventOutboxDbContextModule(),
+        ]);
     }
 }

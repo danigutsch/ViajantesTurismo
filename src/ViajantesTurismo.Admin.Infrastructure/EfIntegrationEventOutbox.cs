@@ -11,7 +11,7 @@ internal sealed class EfIntegrationEventOutbox(AdminWriteDbContext dbContext, Ti
         ArgumentNullException.ThrowIfNull(integrationEvent);
         ct.ThrowIfCancellationRequested();
 
-        dbContext.IntegrationEventOutbox.Add(new IntegrationEventOutboxMessage
+        dbContext.Set<IntegrationEventOutboxMessage>().Add(new IntegrationEventOutboxMessage
         {
             Id = Guid.CreateVersion7(),
             EventType = TIntegrationEvent.EventType,

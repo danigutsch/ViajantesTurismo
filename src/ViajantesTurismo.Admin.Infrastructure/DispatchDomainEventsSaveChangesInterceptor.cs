@@ -1,13 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Domain;
 using SharedKernel.DomainEvents;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
 internal sealed class DispatchDomainEventsSaveChangesInterceptor(
-    IDomainEventDispatcher domainEventDispatcher) : SaveChangesInterceptor
+    IServiceProvider serviceProvider) : SaveChangesInterceptor
 {
     private readonly List<IAggregateRoot> _dispatchedAggregates = [];
 
@@ -22,7 +23,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
 
     public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
-        ClearDispatchedDomainEvents();
+        ClearSavedDomainEvents();
 
         return result;
     }
@@ -32,7 +33,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
         int result,
         CancellationToken cancellationToken = default)
     {
-        ClearDispatchedDomainEvents();
+        ClearSavedDomainEvents();
 
         return ValueTask.FromResult(result);
     }
@@ -81,13 +82,15 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
             .SelectMany(aggregate => aggregate.GetDomainEvents())
             .ToArray();
 
+        var domainEventDispatcher = serviceProvider.GetRequiredService<IDomainEventDispatcher>();
+
         foreach (var domainEvent in domainEvents)
         {
             await Dispatch(domainEventDispatcher, domainEvent, ct).ConfigureAwait(false);
         }
     }
 
-    private void ClearDispatchedDomainEvents()
+    private void ClearSavedDomainEvents()
     {
         foreach (var aggregate in _dispatchedAggregates)
         {

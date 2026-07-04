@@ -43,6 +43,21 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
+    public void Admin_write_context_resolves_with_composed_modules()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.AddApplication();
+        builder.Services.AddDbContext<AdminWriteDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString("N")));
+        builder.Services.AddDomainEventDispatchModule();
+        builder.Services.AddIntegrationEventOutboxModule();
+        using var serviceProvider = builder.Services.BuildServiceProvider();
+
+        var dbContext = serviceProvider.GetRequiredService<AdminWriteDbContext>();
+
+        dbContext.ShouldNotBeNull();
+    }
+
+    [Fact]
     public void AddIntegrationEventOutboxModule_preserves_existing_outbox_registration()
     {
         var services = new ServiceCollection();

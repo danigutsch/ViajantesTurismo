@@ -14,8 +14,6 @@ internal sealed class AdminWriteDbContext(
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<Customer> Customers => Set<Customer>();
 
-    internal DbSet<IntegrationEventOutboxMessage> IntegrationEventOutbox => Set<IntegrationEventOutboxMessage>();
-
     public async Task SaveEntities(CancellationToken ct)
     {
         _ = await SaveChangesAsync(ct);
