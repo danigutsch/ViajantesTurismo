@@ -26,7 +26,7 @@ internal static class PublicMediaImageTestFactory
             new PublicMediaImageMetadata
             {
                 Id = imageId,
-                SourceUri = new Uri("https://cdn.example/source.jpg"),
+                SourceObjectKey = "media/source.jpg",
                 Checksum = "sha256:abc",
                 ContentType = "image/jpeg",
                 FileSizeBytes = 2048,
@@ -34,7 +34,7 @@ internal static class PublicMediaImageTestFactory
                 ProcessingStatus = MediaImageProcessingStatus.Ready,
                 AltText = altText
             },
-            [new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024)],
+            [new MediaImageResponsiveVariant("media/one-640.jpg", 640, 427, "image/jpeg", 1024)],
             ["mountain"],
             [new MediaImageTourLink(tourId, displayOrder, isCover)]);
 
@@ -47,7 +47,7 @@ internal static class PublicMediaImageTestFactory
             new PublicMediaImageMetadata
             {
                 Id = imageId,
-                SourceUri = new Uri("https://cdn.example/original.png"),
+                SourceObjectKey = "media/original.png",
                 Checksum = "sha256:abc",
                 ContentType = "image/png",
                 FileSizeBytes = fileSizeBytes,
@@ -77,7 +77,7 @@ internal static class PublicMediaImageTestFactory
             Guid.CreateVersion7(),
             imageId,
             MediaImageProcessingStatus.Ready,
-            [new MediaImageResponsiveVariant(variantUri, 640, 427, "image/jpeg", 1024)]);
+            [new MediaImageResponsiveVariant(variantUri.AbsolutePath.TrimStart('/'), 640, 427, "image/jpeg", 1024)]);
     }
 
     public static PublicMediaImage CreateImageWithVariants(
@@ -90,7 +90,7 @@ internal static class PublicMediaImageTestFactory
             new PublicMediaImageMetadata
             {
                 Id = imageId,
-                SourceUri = new Uri("https://cdn.example/source.jpg"),
+                SourceObjectKey = "media/source.jpg",
                 Checksum = "sha256:abc",
                 ContentType = "image/jpeg",
                 FileSizeBytes = 2048,

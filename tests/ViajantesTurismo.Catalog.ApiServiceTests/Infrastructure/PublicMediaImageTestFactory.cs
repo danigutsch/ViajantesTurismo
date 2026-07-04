@@ -17,7 +17,7 @@ internal static class PublicMediaImageTestFactory
             new PublicMediaImageMetadata
             {
                 Id = Guid.CreateVersion7(),
-                SourceUri = new Uri($"https://private.example/{sourceName}"),
+                SourceObjectKey = sourceName,
                 Checksum = checksum,
                 ContentType = "image/jpeg",
                 FileSizeBytes = 2048,
@@ -25,7 +25,7 @@ internal static class PublicMediaImageTestFactory
                 ProcessingStatus = MediaImageProcessingStatus.Ready,
                 AltText = altText,
             },
-            [new MediaImageResponsiveVariant(new Uri($"https://cdn.example/{variantName}"), 640, 427, "image/jpeg", 1024)],
+            [new MediaImageResponsiveVariant(variantName, 640, 427, "image/jpeg", 1024)],
             ["catalog"],
             [new MediaImageTourLink(tourId, displayOrder, isCover)]);
 
@@ -38,7 +38,7 @@ internal static class PublicMediaImageTestFactory
             new PublicMediaImageMetadata
             {
                 Id = Guid.CreateVersion7(),
-                SourceUri = new Uri("https://private.example/failed-source.jpg"),
+                SourceObjectKey = "failed-source.jpg",
                 Checksum = "sha256:ghi",
                 ContentType = "image/jpeg",
                 FileSizeBytes = 2048,
@@ -46,7 +46,7 @@ internal static class PublicMediaImageTestFactory
                 ProcessingStatus = MediaImageProcessingStatus.Failed,
                 AltText = "Failed image",
             },
-            [new MediaImageResponsiveVariant(new Uri("https://cdn.example/failed-640.jpg"), 640, 427, "image/jpeg", 1024)],
+            [new MediaImageResponsiveVariant("failed-640.jpg", 640, 427, "image/jpeg", 1024)],
             ["failed"],
             [new MediaImageTourLink(tourId, 2, false)]);
 

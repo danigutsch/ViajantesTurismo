@@ -23,6 +23,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"/>
+        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 

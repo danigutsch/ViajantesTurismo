@@ -663,7 +663,7 @@
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Results": "[0.1.0-alpha.0, )"
+          "SharedKernel.Results": "[1.0.0, )"
         }
       },
       "sharedkernel.domain": {
@@ -697,7 +697,7 @@
       "sharedkernel.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
       "sharedkernel.mediator.abstractions": {
@@ -719,18 +719,18 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
-          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.HttpClients": "[1.0.0, )",
+          "SharedKernel.IntegrationEvents": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.apiservice": {
         "type": "Project",
         "dependencies": {
-          "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Infrastructure": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
+          "ViajantesTurismo.Catalog.Application": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Infrastructure": "[1.0.0, )",
+          "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.application": {
@@ -739,45 +739,46 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
           "Microsoft.Extensions.Options": "[10.0.9, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.9, )",
-          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
-          "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )",
-          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
-          "SharedKernel.ImageProcessing": "[0.1.0-alpha.0, )",
-          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
-          "SharedKernel.Results": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )"
+          "SharedKernel.BuildingBlocks": "[1.0.0, )",
+          "SharedKernel.EventSourcing": "[1.0.0, )",
+          "SharedKernel.Idempotency": "[1.0.0, )",
+          "SharedKernel.ImageProcessing": "[1.0.0, )",
+          "SharedKernel.InputNormalization": "[1.0.0, )",
+          "SharedKernel.IntegrationEvents": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
+          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Domain": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )"
+          "SharedKernel.HttpClients": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.domain": {
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
-          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )",
-          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.Results": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )"
+          "SharedKernel.BuildingBlocks": "[1.0.0, )",
+          "SharedKernel.Domain": "[1.0.0, )",
+          "SharedKernel.EventSourcing": "[1.0.0, )",
+          "SharedKernel.InputNormalization": "[1.0.0, )",
+          "SharedKernel.Results": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )"
         }
       },
       "viajantesturismo.catalog.infrastructure": {
         "type": "Project",
         "dependencies": {
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
-          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+          "SharedKernel.Idempotency": "[1.0.0, )",
+          "SharedKernel.InputNormalization": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Application": "[1.0.0, )",
+          "ViajantesTurismo.Catalog.Domain": "[1.0.0, )",
+          "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
       "viajantesturismo.resources": {
@@ -794,9 +795,9 @@
           "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.16.0-beta.1, )",
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.16.0-beta.1, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
-          "SharedKernel.Observability": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
+          "SharedKernel.Observability": "[1.0.0, )",
+          "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {

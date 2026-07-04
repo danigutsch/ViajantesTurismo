@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />

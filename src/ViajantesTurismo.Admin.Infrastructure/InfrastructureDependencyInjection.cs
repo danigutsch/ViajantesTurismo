@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.EntityFrameworkCore;
@@ -32,20 +33,13 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
-
-        builder.AddNpgsqlDbContext<AdminReadDbContext>(
-            ResourceNames.Database,
-            configureDbContextOptions: options =>
-            {
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-
-                builder.Services.ApplyDbContextOptionsConfigurations<AdminReadDbContext>(options);
-            });
+        builder.AddAdminReadDbContext();
 
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
+        builder.Services.AddIntegrationEventOutbox();
 
         return builder;
     }
@@ -87,9 +81,30 @@ public static class InfrastructureDependencyInjection
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        builder.Services.AddScoped<DispatchDomainEventsSaveChangesInterceptor>();
+        builder.Services.AddScoped<ISaveChangesInterceptor>(sp =>
+            sp.GetRequiredService<DispatchDomainEventsSaveChangesInterceptor>());
+
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
+    }
+
+    private static void AddAdminReadDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddNpgsqlDbContext<AdminReadDbContext>(
+            ResourceNames.Database,
+            configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));
+    }
+
+    private static void ConfigureReadDatabaseOptions<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        DbContextOptionsBuilder options)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        builder.Services.ApplyDbContextOptionsConfigurations<AdminReadDbContext>(options);
     }
 
     private static void ConfigureAdminWriteDbContext<TApplicationBuilder>(
@@ -98,5 +113,10 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.Services.ApplyDbContextOptionsConfigurations<AdminWriteDbContext>(options);
+    }
+
+    private static void AddIntegrationEventOutbox(this IServiceCollection services)
+    {
+        services.AddScoped<IIntegrationEventOutbox, EfIntegrationEventOutbox>();
     }
 }

@@ -19,6 +19,7 @@
         <ProjectReference Include="..\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.EntityFrameworkCore\SharedKernel.Mediator.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
     </ItemGroup>
 
 </Project>

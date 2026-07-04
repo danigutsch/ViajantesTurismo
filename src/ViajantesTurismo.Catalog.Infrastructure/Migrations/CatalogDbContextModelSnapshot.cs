@@ -62,9 +62,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SourceUri")
+                    b.Property<string>("SourceObjectKey")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.PrimitiveCollection<List<string>>("_tags")
                         .IsRequired()
@@ -228,9 +229,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                             b1.Property<int>("Height")
                                 .HasColumnType("integer");
 
-                            b1.Property<string>("Uri")
+                            b1.Property<string>("ObjectKey")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(1024)
+                                .HasColumnType("character varying(1024)");
 
                             b1.Property<int>("Width")
                                 .HasColumnType("integer");

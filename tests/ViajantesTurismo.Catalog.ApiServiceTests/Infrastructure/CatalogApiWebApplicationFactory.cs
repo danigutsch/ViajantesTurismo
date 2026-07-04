@@ -27,7 +27,25 @@ internal sealed class CatalogApiWebApplicationFactory(
             services.Replace(ServiceDescriptor.Singleton<IPublicThemeSettingsStore>(publicThemeStore ?? new TestPublicThemeSettingsStore()));
             services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(tourStore ?? new TestCatalogTourReadModelStore()));
             services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
+            services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(new TestMediaObjectStore()));
             services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
         });
     }
+}
+
+internal sealed class TestMediaObjectStore : IMediaObjectStore
+{
+    public ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct) => throw new NotSupportedException();
+
+    public ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct) => throw new NotSupportedException();
+
+    public ValueTask<bool> Exists(string objectKey, CancellationToken ct) => ValueTask.FromResult(false);
+
+    public ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct) => ValueTask.FromResult<IReadOnlyList<string>>([]);
+
+    public Uri GetPublicUri(string objectKey) => new($"https://cdn.example/{objectKey}");
+
+    public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct) => throw new NotSupportedException();
+
+    public ValueTask Delete(string objectKey, CancellationToken ct) => ValueTask.CompletedTask;
 }

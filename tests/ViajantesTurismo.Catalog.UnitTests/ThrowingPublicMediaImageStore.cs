@@ -36,4 +36,11 @@ internal sealed class ThrowingPublicMediaImageStore(PublicMediaImage image, Exce
 
         return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(new Dictionary<Guid, IReadOnlyList<PublicMediaImage>>());
     }
+
+    public ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult<IReadOnlyList<string>>([]);
+    }
 }

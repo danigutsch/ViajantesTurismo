@@ -34,7 +34,7 @@ public sealed class PublicMediaImage
         ArgumentNullException.ThrowIfNull(tourLinks);
 
         Id = metadata.Id;
-        SourceUri = metadata.SourceUri;
+        SourceObjectKey = metadata.SourceObjectKey;
         Checksum = metadata.Checksum;
         ContentType = metadata.ContentType;
         FileSizeBytes = metadata.FileSizeBytes;
@@ -51,7 +51,7 @@ public sealed class PublicMediaImage
 
     private PublicMediaImage()
     {
-        SourceUri = null!;
+        SourceObjectKey = string.Empty;
         Checksum = string.Empty;
         ContentType = string.Empty;
         Dimensions = null!;
@@ -64,9 +64,9 @@ public sealed class PublicMediaImage
     public Guid Id { get; private set; }
 
     /// <summary>
-    /// Gets the original source URI.
+    /// Gets the original source object key.
     /// </summary>
-    public Uri SourceUri { get; private set; }
+    public string SourceObjectKey { get; private set; }
 
     /// <summary>
     /// Gets the content checksum supplied by the media source.
@@ -139,11 +139,6 @@ public sealed class PublicMediaImage
     public bool IsCover => _tourLinks.Any(link => link.IsCover);
 
     /// <summary>
-    /// Gets the public image URI selected for catalog display.
-    /// </summary>
-    public Uri PublicUri => _responsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault()?.Uri ?? SourceUri;
-
-    /// <summary>
     /// Gets a value indicating whether the image has public variants that can be shown in the catalog.
     /// </summary>
     public bool HasPublicVariants => ProcessingStatus == MediaImageProcessingStatus.Ready && _responsiveVariants.Count > 0;
@@ -169,9 +164,9 @@ public sealed class PublicMediaImage
 
         var errors = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
-        if (!IsHttpUri(metadata.SourceUri))
+        if (string.IsNullOrWhiteSpace(metadata.SourceObjectKey))
         {
-            errors[nameof(PublicMediaImageMetadata.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI."];
+            errors[nameof(PublicMediaImageMetadata.SourceObjectKey)] = ["Source object key is required."];
         }
 
         ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.AltText), metadata.AltText, ContractConstants.MaxAltTextLength, "Alt text is required.", "Alt text");
@@ -282,7 +277,7 @@ public sealed class PublicMediaImage
         var versionSegment = string.Create(CultureInfo.InvariantCulture, $"/v{processingVersion}/");
 
         return HasPublicVariants
-            && _responsiveVariants.All(variant => variant.Uri.AbsolutePath.Contains(versionSegment, StringComparison.Ordinal));
+            && _responsiveVariants.All(variant => variant.ObjectKey.Contains(versionSegment, StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -314,7 +309,7 @@ public sealed class PublicMediaImage
             new PublicMediaImageMetadata
             {
                 Id = Id,
-                SourceUri = SourceUri,
+                SourceObjectKey = SourceObjectKey,
                 Checksum = Checksum,
                 ContentType = ContentType,
                 FileSizeBytes = FileSizeBytes,
@@ -335,7 +330,7 @@ public sealed class PublicMediaImage
         return new PublicMediaImageMetadata
         {
             Id = metadata.Id,
-            SourceUri = metadata.SourceUri,
+            SourceObjectKey = StringSanitizer.Sanitize(metadata.SourceObjectKey) ?? string.Empty,
             Checksum = StringSanitizer.Sanitize(metadata.Checksum),
             ContentType = StringSanitizer.Sanitize(metadata.ContentType),
             FileSizeBytes = metadata.FileSizeBytes,
@@ -350,7 +345,11 @@ public sealed class PublicMediaImage
 
     private static MediaImageResponsiveVariant[] SanitizeResponsiveVariants(IEnumerable<MediaImageResponsiveVariant> variants)
     {
-        return [.. variants.Select(static variant => variant with { ContentType = StringSanitizer.Sanitize(variant.ContentType) })];
+        return [.. variants.Select(static variant => variant with
+        {
+            ObjectKey = StringSanitizer.Sanitize(variant.ObjectKey) ?? string.Empty,
+            ContentType = StringSanitizer.Sanitize(variant.ContentType)
+        })];
     }
 
     private static void ValidateTourLinks(Dictionary<string, string[]> errors, IReadOnlyCollection<MediaImageTourLink> tourLinks)
@@ -388,19 +387,12 @@ public sealed class PublicMediaImage
     {
         var contentType = StringSanitizer.Sanitize(variant.ContentType);
 
-        return !IsHttpUri(variant.Uri)
+        return string.IsNullOrWhiteSpace(variant.ObjectKey)
             || variant.Width <= 0
             || variant.Height <= 0
             || string.IsNullOrWhiteSpace(contentType)
             || contentType.Length > ContractConstants.MaxContentTypeLength
             || variant.FileSizeBytes <= 0;
-    }
-
-    private static bool IsHttpUri(Uri? uri)
-    {
-        return uri is not null
-            && uri.IsAbsoluteUri
-            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
     private static void ValidateRequiredText(

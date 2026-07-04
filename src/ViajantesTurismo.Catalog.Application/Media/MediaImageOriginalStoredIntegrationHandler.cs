@@ -103,7 +103,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
             if (isResponsive)
             {
                 variants.Add(new MediaImageResponsiveVariant(
-                    stored.PublicUri,
+                    stored.ObjectKey,
                     variant.Width,
                     variant.Height,
                     stored.ContentType,

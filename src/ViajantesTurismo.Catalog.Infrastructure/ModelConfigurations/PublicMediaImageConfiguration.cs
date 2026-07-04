@@ -13,7 +13,7 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
         entity.HasKey(image => image.Id);
         entity.Property(image => image.Id).ValueGeneratedNever();
 
-        entity.Property(image => image.SourceUri).HasConversion<string>().IsRequired();
+        entity.Property(image => image.SourceObjectKey).HasMaxLength(1024).IsRequired();
         entity.Property(image => image.Checksum).HasMaxLength(ContractConstants.MaxChecksumLength).IsRequired();
         entity.Property(image => image.ContentType).HasMaxLength(ContractConstants.MaxContentTypeLength).IsRequired();
         entity.Property(image => image.ProcessingStatus).HasConversion<string>().IsRequired();
@@ -35,7 +35,7 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
             variant.WithOwner().HasForeignKey("PublicMediaImageId");
             variant.HasKey("PublicMediaImageId", nameof(MediaImageResponsiveVariant.SortOrder));
             variant.Property(item => item.SortOrder).ValueGeneratedNever();
-            variant.Property(item => item.Uri).HasConversion<string>().IsRequired();
+            variant.Property(item => item.ObjectKey).HasMaxLength(1024).IsRequired();
             variant.Property(item => item.Width).IsRequired();
             variant.Property(item => item.Height).IsRequired();
             variant.Property(item => item.ContentType).HasMaxLength(ContractConstants.MaxContentTypeLength).IsRequired();

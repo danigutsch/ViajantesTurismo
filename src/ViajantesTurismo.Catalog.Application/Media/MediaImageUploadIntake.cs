@@ -114,7 +114,7 @@ public sealed class MediaImageUploadIntake(
             new PublicMediaImageMetadata
             {
                 Id = request.MediaImageId,
-                SourceUri = stored.PublicUri,
+                SourceObjectKey = stored.ObjectKey,
                 Checksum = checksum,
                 ContentType = stored.ContentType,
                 FileSizeBytes = stored.Length,

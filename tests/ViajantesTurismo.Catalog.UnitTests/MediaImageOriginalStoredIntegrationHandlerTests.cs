@@ -75,7 +75,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v1/640-jpeg.jpg");
         objectStore.ObjectKeys.ShouldContain($"media/{mediaImageId:N}/v2/640-jpeg.jpg");
         imageStore.Current.ResponsiveVariants.ShouldAllSatisfy(
-            variant => variant.Uri.OriginalString.Contains("/v2/", StringComparison.Ordinal).ShouldBe(true));
+            variant => variant.ObjectKey.Contains("/v2/", StringComparison.Ordinal).ShouldBe(true));
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         // Assert
         imageStore.Current.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
         var currentVariant = imageStore.Current.ResponsiveVariants.ShouldHaveSingleItem();
-        currentVariant.Uri.ShouldBe(existingVariant.Uri);
+        currentVariant.ObjectKey.ShouldBe(existingVariant.ObjectKey);
     }
 
     [Fact]

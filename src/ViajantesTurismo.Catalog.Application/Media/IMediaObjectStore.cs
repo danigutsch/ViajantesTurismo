@@ -22,6 +22,29 @@ public interface IMediaObjectStore
     ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct);
 
     /// <summary>
+    /// Returns whether a media object exists.
+    /// </summary>
+    /// <param name="objectKey">The application-owned object key.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns><see langword="true" /> when the object exists.</returns>
+    ValueTask<bool> Exists(string objectKey, CancellationToken ct);
+
+    /// <summary>
+    /// Lists stored object keys below a prefix.
+    /// </summary>
+    /// <param name="prefix">The application-owned key prefix.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The matching object keys.</returns>
+    ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct);
+
+    /// <summary>
+    /// Derives the public URI for an object key without requiring it to be stored in metadata.
+    /// </summary>
+    /// <param name="objectKey">The application-owned object key.</param>
+    /// <returns>The public URI.</returns>
+    Uri GetPublicUri(string objectKey);
+
+    /// <summary>
     /// Creates a time-limited upload ticket for direct uploads.
     /// </summary>
     /// <param name="request">The upload request.</param>

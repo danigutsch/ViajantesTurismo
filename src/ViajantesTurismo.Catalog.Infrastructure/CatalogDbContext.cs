@@ -25,6 +25,8 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
     internal DbSet<PublicMediaImage> PublicMediaImages => Set<PublicMediaImage>();
 
+    internal DbSet<IdempotencyEntryEntity> IdempotencyInbox => Set<IdempotencyEntryEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,5 +38,6 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         modelBuilder.ApplyConfiguration(new PublicThemeSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
         modelBuilder.ApplyConfiguration(new PublicMediaImageConfiguration());
+        modelBuilder.ApplyConfiguration(new IdempotencyEntryEntityConfiguration());
     }
 }

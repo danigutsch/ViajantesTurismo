@@ -45,6 +45,20 @@ internal sealed class TestPublicMediaImageStore : IPublicMediaImageStore
         return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(result);
     }
 
+    public ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var keys = imagesById.Values
+            .SelectMany(image => image.ResponsiveVariants
+                .Select(variant => variant.ObjectKey)
+                .Prepend(image.SourceObjectKey))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        return ValueTask.FromResult<IReadOnlyList<string>>(keys);
+    }
+
     private IReadOnlyList<PublicMediaImage> ListByTour(Guid catalogTourId)
     {
         return

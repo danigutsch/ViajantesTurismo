@@ -113,13 +113,33 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             ]);
     }
 
+    public async ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct)
+    {
+        var images = await dbContext.PublicMediaImages
+            .Include(image => image.ResponsiveVariants)
+            .AsSplitQuery()
+            .ToArrayAsync(ct)
+            .ConfigureAwait(false);
+
+        return
+        [
+            .. images
+                .SelectMany(image => image.ResponsiveVariants
+                    .Select(variant => variant.ObjectKey)
+                    .Prepend(image.SourceObjectKey))
+                .Where(static key => !string.IsNullOrWhiteSpace(key))
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+        ];
+    }
+
     private static PublicMediaImage Sanitize(PublicMediaImage image)
     {
         return new PublicMediaImage(
             new PublicMediaImageMetadata
             {
                 Id = image.Id,
-                SourceUri = image.SourceUri,
+                SourceObjectKey = image.SourceObjectKey,
                 Checksum = image.Checksum,
                 ContentType = image.ContentType,
                 FileSizeBytes = image.FileSizeBytes,
@@ -148,7 +168,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             new PublicMediaImageMetadata
             {
                 Id = sanitizedImage.Id,
-                SourceUri = sanitizedImage.SourceUri,
+                SourceObjectKey = sanitizedImage.SourceObjectKey,
                 Checksum = sanitizedImage.Checksum,
                 ContentType = sanitizedImage.ContentType,
                 FileSizeBytes = sanitizedImage.FileSizeBytes,

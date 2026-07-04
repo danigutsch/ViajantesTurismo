@@ -149,7 +149,7 @@ public sealed class PublicMediaImageTests
         var metadata = new PublicMediaImageMetadata
         {
             Id = imageId,
-            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            SourceObjectKey = "media/source.jpg",
             Checksum = "  sha256:\u0001abc  ",
             ContentType = "  image/jpeg  ",
             FileSizeBytes = 2048,
@@ -162,7 +162,7 @@ public sealed class PublicMediaImageTests
         };
         var variants = new[]
         {
-            new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "  image/jpeg  ", 1024),
+            new MediaImageResponsiveVariant("  media/one-640.jpg  ", 640, 427, "  image/jpeg  ", 1024),
         };
         var tags = new[] { "  mountain  " };
         var tourLinks = new[] { new MediaImageTourLink(tourId, 0, true) };
@@ -190,7 +190,7 @@ public sealed class PublicMediaImageTests
         var metadata = new PublicMediaImageMetadata
         {
             Id = Guid.CreateVersion7(),
-            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            SourceObjectKey = "media/source.jpg",
             Checksum = "sha256:abc",
             ContentType = "image/jpeg",
             FileSizeBytes = 2048,
