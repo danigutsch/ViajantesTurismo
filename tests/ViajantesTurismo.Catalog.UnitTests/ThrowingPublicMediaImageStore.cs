@@ -22,10 +22,18 @@ internal sealed class ThrowingPublicMediaImageStore(PublicMediaImage image, Exce
     }
 
     public ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
-        => ValueTask.FromResult<IReadOnlyList<PublicMediaImage>>([]);
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult<IReadOnlyList<PublicMediaImage>>([]);
+    }
 
     public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct)
-        => ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(new Dictionary<Guid, IReadOnlyList<PublicMediaImage>>());
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(new Dictionary<Guid, IReadOnlyList<PublicMediaImage>>());
+    }
 }

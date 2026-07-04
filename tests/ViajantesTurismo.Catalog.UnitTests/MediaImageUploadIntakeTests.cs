@@ -107,7 +107,7 @@ public sealed class MediaImageUploadIntakeTests
     {
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
-        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1);
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new ThrowingPublicMediaImageStore(originalImage, new InvalidOperationException("database unavailable"));
