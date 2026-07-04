@@ -76,7 +76,8 @@ public sealed class MediaImageUploadIntakeTests
     public async Task Accept_deletes_stored_object_when_metadata_validation_fails()
     {
         // Arrange
-        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var mediaImageId = Guid.CreateVersion7();
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1);
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
@@ -85,7 +86,7 @@ public sealed class MediaImageUploadIntakeTests
             objectStore,
             imageStore);
         var request = new MediaImageUploadIntakeRequest(
-            Guid.CreateVersion7(),
+            mediaImageId,
             new MemoryStream(content),
             "photo.jpg",
             "image/jpeg",

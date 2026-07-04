@@ -137,10 +137,7 @@ public sealed class MediaImageUploadIntake(
 
         var image = imageResult.Value;
 
-        await Compensation.CompleteOrCompensate(
-            cancellationToken => imageStore.Upsert(image, cancellationToken),
-            cancellationToken => objectStore.Delete(objectKey, cancellationToken),
-            ct).ConfigureAwait(false);
+        await StoreImageAndCompensateObject(image, objectKey, ct).ConfigureAwait(false);
 
         var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),
@@ -170,6 +167,12 @@ public sealed class MediaImageUploadIntake(
             return new MediaUploadScanResult(MediaUploadScanStatus.Failed, ScannerUnavailableMessage);
         }
     }
+
+    private ValueTask StoreImageAndCompensateObject(PublicMediaImage image, string objectKey, CancellationToken ct) =>
+        Compensation.CompleteOrCompensate(
+            ct => imageStore.Upsert(image, ct),
+            ct => objectStore.Delete(objectKey, ct),
+            ct);
 
     private static async ValueTask<bool> CopyToMemory(Stream source, MemoryStream destination, long maxLengthBytes, CancellationToken ct)
     {
