@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+    <PropertyGroup>
+        <!-- Blazor Server is not Native AOT-compatible. -->
+        <IsAotCompatible>false</IsAotCompatible>
+    </PropertyGroup>
+
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Management.WebTests"/>
     </ItemGroup>

@@ -256,7 +256,7 @@
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.domain": {
@@ -284,7 +284,7 @@
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection": {

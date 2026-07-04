@@ -11,8 +11,10 @@ Shared package metadata is centralized in `Directory.Build.props`:
 - repository URL
 - repository URL publishing
 
-Source projects under `src/` default to AOT-compatible and must opt out explicitly when a dependency
-or project type cannot support that promise.
+Source projects under `src/` default to AOT-compatible and must opt out explicitly when a dependency,
+target framework, or project type cannot support that promise. Roslyn analyzer, code-fix, and
+source-generator packages that target `netstandard2.0` opt out because the .NET SDK does not support
+`IsAotCompatible` for that target framework.
 
 Each packable project still owns its package-specific identity:
 

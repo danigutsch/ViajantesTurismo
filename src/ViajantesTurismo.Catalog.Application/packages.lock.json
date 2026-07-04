@@ -284,7 +284,7 @@
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
+          "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.domain": {
@@ -318,7 +318,7 @@
       "sharedkernel.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.mediator.abstractions": {
@@ -331,27 +331,27 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
-          "SharedKernel.HttpClients": "[1.0.0, )",
-          "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.domain": {
         "type": "Project",
         "dependencies": {
           "JetBrains.Annotations": "[2026.2.0, )",
-          "SharedKernel.BuildingBlocks": "[1.0.0, )",
-          "SharedKernel.Domain": "[1.0.0, )",
-          "SharedKernel.EventSourcing": "[1.0.0, )",
-          "SharedKernel.InputNormalization": "[1.0.0, )",
-          "SharedKernel.Results": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )"
+          "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
+          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
+          "SharedKernel.EventSourcing": "[0.1.0-alpha.0, )",
+          "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Results": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )"
         }
       },
       "JetBrains.Annotations": {

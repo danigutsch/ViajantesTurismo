@@ -1,6 +1,11 @@
 <Project Sdk="Aspire.AppHost.Sdk">
 
     <PropertyGroup>
+        <!-- Aspire AppHost orchestration is not a Native AOT publish target. -->
+        <IsAotCompatible>false</IsAotCompatible>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <OutputType>Exe</OutputType>
         <UserSecretsId>542db91b-8b09-47f2-8b7f-84c6eaf48fd4</UserSecretsId>
     </PropertyGroup>

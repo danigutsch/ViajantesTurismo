@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
+        <!-- EF Core migration execution is not Native AOT-compatible. -->
+        <IsAotCompatible>false</IsAotCompatible>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <UserSecretsId>dotnet-ViajantesTurismo.MigrationService-2cc73ee4-3ba6-46d3-93d8-84c73c33efa5</UserSecretsId>
     </PropertyGroup>
 
