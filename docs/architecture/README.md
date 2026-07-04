@@ -114,6 +114,7 @@ consumer/projection components, but the durable outbox/transport/inbox path is s
 ## Flow references
 
 - [Architecture boundaries and dependency flow](boundaries-and-dependencies.md)
+- [Multi-store consistency audit](multi-store-consistency-audit.md)
 - [Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md)
 - [CI and local validation flow](ci-validation-flows.md)
 - [Observability signal and dashboard consumption flows](observability-consumption-flows.md)

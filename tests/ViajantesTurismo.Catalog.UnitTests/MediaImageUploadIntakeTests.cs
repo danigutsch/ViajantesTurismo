@@ -76,7 +76,8 @@ public sealed class MediaImageUploadIntakeTests
     public async Task Accept_deletes_stored_object_when_metadata_validation_fails()
     {
         // Arrange
-        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var mediaImageId = Guid.CreateVersion7();
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1);
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var objectStore = new InMemoryMediaObjectStore();
         var imageStore = new InMemoryPublicMediaImageStore(originalImage);
@@ -85,7 +86,7 @@ public sealed class MediaImageUploadIntakeTests
             objectStore,
             imageStore);
         var request = new MediaImageUploadIntakeRequest(
-            Guid.CreateVersion7(),
+            mediaImageId,
             new MemoryStream(content),
             "photo.jpg",
             "image/jpeg",
@@ -99,6 +100,36 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsFailure.ShouldBe(true);
         imageStore.Current.Id.ShouldBe(originalImage.Id);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Accept_deletes_stored_object_when_metadata_persistence_fails()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new ThrowingPublicMediaImageStore(originalImage, new InvalidOperationException("database unavailable"));
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            objectStore,
+            imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            mediaImageId,
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        Func<Task> action = async () => await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await action.ShouldThrow<InvalidOperationException>();
         objectStore.ObjectKeys.ShouldBeEmpty();
     }
 

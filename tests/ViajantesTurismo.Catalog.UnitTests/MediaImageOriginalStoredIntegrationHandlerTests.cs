@@ -165,4 +165,34 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         var remainingObjectKey = objectStore.ObjectKeys.ShouldHaveSingleItem();
         remainingObjectKey.ShouldBe("uploads/tiny-original.jpg");
     }
+
+    [Fact]
+    public async Task Handle_deletes_stored_variants_when_metadata_persistence_fails()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var content = CatalogTestImages.CreateJpeg(640, 320);
+        var objectStore = new InMemoryMediaObjectStore();
+        await objectStore.Put(
+            new MediaObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
+            TestContext.Current.CancellationToken);
+        var imageStore = new ThrowingPublicMediaImageStore(
+            PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length),
+            new InvalidOperationException("database unavailable"));
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore);
+        var notification = new MediaImageOriginalStoredIntegrationEvent(
+            Guid.CreateVersion7(),
+            DateTimeOffset.UtcNow,
+            mediaImageId,
+            "uploads/original.jpg",
+            1);
+
+        // Act
+        Func<Task> action = async () => await handler.Handle(notification, TestContext.Current.CancellationToken);
+
+        // Assert
+        await action.ShouldThrow<InvalidOperationException>();
+        var remainingObjectKey = objectStore.ObjectKeys.ShouldHaveSingleItem();
+        remainingObjectKey.ShouldBe("uploads/original.jpg");
+    }
 }

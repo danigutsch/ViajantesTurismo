@@ -1,4 +1,5 @@
 using System.Globalization;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
 using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Catalog.Domain.Media;
@@ -34,55 +35,25 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
             var result = MagickImageProcessor.Process(
                 new ImageProcessingRequest(original.Content, CreateVariantRequests(), Limits),
                 ct);
-            var variants = new List<MediaImageResponsiveVariant>(result.Variants.Count);
-            var storedVariantKeys = new List<string>(result.Variants.Count);
-
-            foreach (var variant in result.Variants)
-            {
-                var isResponsive = IsResponsiveVariant(variant);
-                if (isResponsive && !IsWithinSourceWidth(variant, result.Width))
-                {
-                    continue;
-                }
-
-                using var content = new MemoryStream(variant.Content.ToArray());
-                var objectKey = CreateVariantObjectKey(notification.MediaImageId, notification.ProcessingVersion, variant);
-                var stored = await objectStore.Put(
-                    new MediaObjectWriteRequest(
-                        objectKey,
-                        content,
-                        GetContentType(variant.Format),
-                        variant.Content.Length),
-                    ct).ConfigureAwait(false);
-                storedVariantKeys.Add(objectKey);
-                if (isResponsive)
-                {
-                    variants.Add(new MediaImageResponsiveVariant(
-                        stored.PublicUri,
-                        variant.Width,
-                        variant.Height,
-                        stored.ContentType,
-                        stored.Length,
-                        variants.Count));
-                }
-            }
+            var storedVariants = await StoreVariants(
+                notification.MediaImageId,
+                notification.ProcessingVersion,
+                result,
+                ct).ConfigureAwait(false);
 
             var updatedImage = image.WithProcessingResult(
                 new MediaImageDimensions(result.Width, result.Height),
                 MediaImageProcessingStatus.Ready,
-                variants);
+                storedVariants.ResponsiveVariants);
             if (updatedImage.IsFailure)
             {
-                foreach (var storedVariantKey in storedVariantKeys)
-                {
-                    await objectStore.Delete(storedVariantKey, ct).ConfigureAwait(false);
-                }
+                await DeleteStoredVariants(storedVariants.ObjectKeys, ct).ConfigureAwait(false);
 
                 throw new InvalidOperationException(
                     $"Processed media image {notification.MediaImageId} is invalid: {updatedImage.ErrorDetails?.Detail ?? "unknown validation failure"}.");
             }
 
-            await imageStore.Upsert(updatedImage.Value, ct).ConfigureAwait(false);
+            await StoreImageAndCompensateVariants(updatedImage.Value, storedVariants.ObjectKeys, ct).ConfigureAwait(false);
         }
         catch (ImageProcessingException)
         {
@@ -101,6 +72,69 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
             await imageStore.Upsert(failedImage.Value, ct).ConfigureAwait(false);
         }
     }
+
+    private async ValueTask<StoredMediaImageVariants> StoreVariants(
+        Guid mediaImageId,
+        int processingVersion,
+        ImageProcessingResult result,
+        CancellationToken ct)
+    {
+        var variants = new List<MediaImageResponsiveVariant>(result.Variants.Count);
+        var storedVariantKeys = new List<string>(result.Variants.Count);
+
+        foreach (var variant in result.Variants)
+        {
+            var isResponsive = IsResponsiveVariant(variant);
+            if (isResponsive && !IsWithinSourceWidth(variant, result.Width))
+            {
+                continue;
+            }
+
+            using var content = new MemoryStream(variant.Content.ToArray());
+            var objectKey = CreateVariantObjectKey(mediaImageId, processingVersion, variant);
+            var stored = await objectStore.Put(
+                new MediaObjectWriteRequest(
+                    objectKey,
+                    content,
+                    GetContentType(variant.Format),
+                    variant.Content.Length),
+                ct).ConfigureAwait(false);
+            storedVariantKeys.Add(objectKey);
+            if (isResponsive)
+            {
+                variants.Add(new MediaImageResponsiveVariant(
+                    stored.PublicUri,
+                    variant.Width,
+                    variant.Height,
+                    stored.ContentType,
+                    stored.Length,
+                    variants.Count));
+            }
+        }
+
+        return new StoredMediaImageVariants(variants, storedVariantKeys);
+    }
+
+    private ValueTask StoreImageAndCompensateVariants(
+        PublicMediaImage image,
+        IReadOnlyCollection<string> storedVariantKeys,
+        CancellationToken ct) =>
+        Compensation.CompleteOrCompensate(
+            ct => imageStore.Upsert(image, ct),
+            ct => DeleteStoredVariants(storedVariantKeys, ct),
+            ct);
+
+    private async ValueTask DeleteStoredVariants(IReadOnlyCollection<string> storedVariantKeys, CancellationToken ct)
+    {
+        foreach (var storedVariantKey in storedVariantKeys)
+        {
+            await objectStore.Delete(storedVariantKey, ct).ConfigureAwait(false);
+        }
+    }
+
+    private sealed record StoredMediaImageVariants(
+        IReadOnlyList<MediaImageResponsiveVariant> ResponsiveVariants,
+        IReadOnlyList<string> ObjectKeys);
 
     private static IReadOnlyList<ImageVariantRequest> CreateVariantRequests()
     {
