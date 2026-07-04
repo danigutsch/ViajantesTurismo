@@ -453,16 +453,17 @@ var builder = WebApplication.CreateBuilder(args);
 `CreateSlimBuilder` excludes features incompatible with AOT
 (hosting startup assemblies, IIS integration, EventLog logging, etc.).
 
-### Known Limitations
+### Known limitations
 
-| Component                                       | AOT Status        | Notes                                                       |
-| ----------------------------------------------- | ----------------- | ----------------------------------------------------------  |
-| Contracts, Domain, Application                  | ✅ Compatible      | Inherits the `src/` AOT default                             |
-| ApiService                                      | ✅ Compatible      | Inherits the `src/` AOT default and uses source generators  |
-| Infrastructure (EF Core)                        | ❌ Not Compatible  | EF Core DbContext and migrations block the AOT promise      |
-| Web (Blazor Server or Razor Components)         | ❌ Not Compatible  | Blazor Server and Razor Components are not Native AOT-ready |
-| Aspire AppHost and migration orchestration      | ❌ Not Compatible  | Orchestration and migration execution are not AOT targets   |
-| Roslyn analyzers, code fixes, source generators | ❌ Not Compatible  | `netstandard2.0` does not support `IsAotCompatible`         |
+- Contracts, Domain, Application: compatible; inherit the `src/` AOT default.
+- ApiService: compatible; inherits the `src/` AOT default and uses source generators.
+- Infrastructure (EF Core): not compatible; EF Core DbContext and migrations block the AOT promise.
+- Web (Blazor Server or Razor Components): not compatible; these project types are not Native
+  AOT-ready.
+- Aspire AppHost and migration orchestration: not compatible; orchestration and migration execution
+  are not AOT targets.
+- Roslyn analyzers, code fixes, and source generators: not compatible; `netstandard2.0` does not
+  support `IsAotCompatible`.
 
 ## Performance
 
