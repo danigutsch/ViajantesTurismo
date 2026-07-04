@@ -190,7 +190,7 @@
       "sharedkernel.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.mediator.abstractions": {
@@ -207,15 +207,15 @@
       "viajantesturismo.admin.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[1.0.0, )",
-          "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[1.0.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {
@@ -232,9 +232,9 @@
           "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.16.0-beta.1, )",
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.16.0-beta.1, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
-          "SharedKernel.Observability": "[1.0.0, )",
-          "ViajantesTurismo.Resources": "[1.0.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Observability": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
       "JetBrains.Annotations": {

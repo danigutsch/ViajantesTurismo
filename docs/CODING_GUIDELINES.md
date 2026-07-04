@@ -342,13 +342,17 @@ See [TEST_GUIDELINES.md](TEST_GUIDELINES.md).
 
 ## Native AOT Compatibility
 
-### Project Configuration
+### Project configuration
 
-Library projects should enable AOT analysis to catch compatibility issues at compile time:
+Projects under `src/` inherit AOT analysis by default from `src/Directory.Build.targets`.
+Do not repeat the inherited setting in individual project files.
+
+Projects that cannot support the promise must opt out explicitly and state why:
 
 ```xml
 <PropertyGroup>
-  <IsAotCompatible>true</IsAotCompatible>
+  <!-- EF Core DbContext and migrations are not Native AOT-compatible. -->
+  <IsAotCompatible>false</IsAotCompatible>
 </PropertyGroup>
 ```
 
@@ -356,7 +360,6 @@ API projects should additionally enable the Request Delegate Generator:
 
 ```xml
 <PropertyGroup>
-  <IsAotCompatible>true</IsAotCompatible>
   <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
 </PropertyGroup>
 ```
@@ -450,14 +453,17 @@ var builder = WebApplication.CreateBuilder(args);
 `CreateSlimBuilder` excludes features incompatible with AOT
 (hosting startup assemblies, IIS integration, EventLog logging, etc.).
 
-### Known Limitations
+### Known limitations
 
-| Component                              | AOT Status        | Notes                                                    |
-| -------------------------------------- | ----------------- | -------------------------------------------------------- |
-| Contracts, Domain, Application         | ✅ Compatible     | `IsAotCompatible=true` enabled                           |
-| ApiService                             | ✅ Compatible     | Uses `CreateSlimBuilder`, JSON source generators         |
-| Infrastructure (EF Core)               | ⚠️ Partial        | Compiled models generated, but DbContext blocks full AOT |
-| Web (Blazor Server)                    | ❌ Not Compatible | Blazor Server not supported for Native AOT               |
+- Contracts, Domain, Application: compatible; inherit the `src/` AOT default.
+- ApiService: compatible; inherits the `src/` AOT default and uses source generators.
+- Infrastructure (EF Core): not compatible; EF Core DbContext and migrations block the AOT promise.
+- Web (Blazor Server or Razor Components): not compatible; these project types are not Native
+  AOT-ready.
+- Aspire AppHost and migration orchestration: not compatible; orchestration and migration execution
+  are not AOT targets.
+- Roslyn analyzers, code fixes, and source generators: not compatible; `netstandard2.0` does not
+  support `IsAotCompatible`.
 
 ## Performance
 

@@ -4,7 +4,6 @@
         <PackageId>SharedKernel.IntegrationEvents</PackageId>
         <Description>Typed integration event dispatch abstractions for cross-boundary workflows.</Description>
         <RootNamespace>SharedKernel.IntegrationEvents</RootNamespace>
-        <IsAotCompatible>true</IsAotCompatible>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/danigutsch/ViajantesTurismo</RepositoryUrl>

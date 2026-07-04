@@ -1,9 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <IsAotCompatible>true</IsAotCompatible>
-    </PropertyGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\SharedKernel\SharedKernel.HttpClients\SharedKernel.HttpClients.csproj" />
     </ItemGroup>

@@ -4,7 +4,6 @@
         <PackageId>SharedKernel.IntegrationEvents.CloudEvents</PackageId>
         <Description>CloudEvents metadata adapter for typed SharedKernel integration events.</Description>
         <RootNamespace>SharedKernel.IntegrationEvents.CloudEvents</RootNamespace>
-        <IsAotCompatible>true</IsAotCompatible>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/danigutsch/ViajantesTurismo</RepositoryUrl>

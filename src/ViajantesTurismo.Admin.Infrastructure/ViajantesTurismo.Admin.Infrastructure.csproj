@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <!-- EF Core DbContext and migrations are not Native AOT-compatible. -->
+        <IsAotCompatible>false</IsAotCompatible>
+    </PropertyGroup>
+
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
     </ItemGroup>
