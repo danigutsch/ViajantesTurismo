@@ -120,6 +120,13 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
                 {
                     global::System.ArgumentNullException.ThrowIfNull(domainEvent);
 
+                    return Dispatch((global::SharedKernel.Domain.IDomainEvent)domainEvent, ct);
+                }
+
+                public global::System.Threading.Tasks.ValueTask Dispatch(global::SharedKernel.Domain.IDomainEvent domainEvent, global::System.Threading.CancellationToken ct)
+                {
+                    global::System.ArgumentNullException.ThrowIfNull(domainEvent);
+
                     return domainEvent switch
                     {
 

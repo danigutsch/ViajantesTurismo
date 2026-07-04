@@ -11,7 +11,6 @@ internal static class IntegrationEventOutboxModule
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped<IIntegrationEventOutbox, EfIntegrationEventOutbox>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<IAdminWriteDbContextModule, IntegrationEventOutboxDbContextModule>());
 
         return services;
     }

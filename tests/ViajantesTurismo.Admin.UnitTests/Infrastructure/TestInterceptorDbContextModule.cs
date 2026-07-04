@@ -13,8 +13,4 @@ internal sealed class TestInterceptorDbContextModule(IInterceptor[] interceptors
         optionsBuilder.AddInterceptors(interceptors);
     }
 
-    public void Configure(ModelBuilder modelBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(modelBuilder);
-    }
 }

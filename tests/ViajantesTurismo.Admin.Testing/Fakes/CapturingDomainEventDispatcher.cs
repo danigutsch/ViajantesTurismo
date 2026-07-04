@@ -12,6 +12,17 @@ public class CapturingDomainEventDispatcher : IDomainEventDispatcher
     public virtual ValueTask Dispatch<TDomainEvent>(TDomainEvent domainEvent, CancellationToken ct)
         where TDomainEvent : IDomainEvent
     {
+        return Record(domainEvent, ct);
+    }
+
+    public virtual ValueTask Dispatch(IDomainEvent domainEvent, CancellationToken ct)
+    {
+        return Record(domainEvent, ct);
+    }
+
+    private ValueTask Record(IDomainEvent domainEvent, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
         ct.ThrowIfCancellationRequested();
         _dispatchedEvents.Add(domainEvent);
 

@@ -40,12 +40,6 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
-        if (modules is not null)
-        {
-            foreach (var module in modules)
-            {
-                module.Configure(modelBuilder);
-            }
-        }
+        modelBuilder.ApplyConfiguration(new IntegrationEventOutboxMessageConfiguration());
     }
 }

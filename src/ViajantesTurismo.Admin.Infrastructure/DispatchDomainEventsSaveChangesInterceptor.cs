@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 internal sealed class DispatchDomainEventsSaveChangesInterceptor(
     IServiceProvider serviceProvider) : SaveChangesInterceptor
 {
-    private readonly List<IAggregateRoot> _dispatchedAggregates = [];
+    private readonly List<IAggregateRoot> _aggregatesToClear = [];
 
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
@@ -23,7 +23,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
 
     public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
-        ClearSavedDomainEvents();
+        ClearDomainEvents();
 
         return result;
     }
@@ -33,21 +33,21 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
         int result,
         CancellationToken cancellationToken = default)
     {
-        ClearSavedDomainEvents();
+        ClearDomainEvents();
 
         return ValueTask.FromResult(result);
     }
 
     public override void SaveChangesFailed(DbContextErrorEventData eventData)
     {
-        _dispatchedAggregates.Clear();
+        ForgetTrackedAggregates();
     }
 
     public override Task SaveChangesFailedAsync(
         DbContextErrorEventData eventData,
         CancellationToken cancellationToken = default)
     {
-        _dispatchedAggregates.Clear();
+        ForgetTrackedAggregates();
 
         return Task.CompletedTask;
     }
@@ -75,8 +75,8 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
             .Where(aggregate => aggregate.GetDomainEvents().Count > 0)
             .ToArray();
 
-        _dispatchedAggregates.Clear();
-        _dispatchedAggregates.AddRange(aggregates);
+        _aggregatesToClear.Clear();
+        _aggregatesToClear.AddRange(aggregates);
 
         var domainEvents = aggregates
             .SelectMany(aggregate => aggregate.GetDomainEvents())
@@ -86,18 +86,23 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
 
         foreach (var domainEvent in domainEvents)
         {
-            await Dispatch(domainEventDispatcher, domainEvent, ct).ConfigureAwait(false);
+            await domainEventDispatcher.Dispatch(domainEvent, ct).ConfigureAwait(false);
         }
     }
 
-    private void ClearSavedDomainEvents()
+    private void ClearDomainEvents()
     {
-        foreach (var aggregate in _dispatchedAggregates)
+        foreach (var aggregate in _aggregatesToClear)
         {
             aggregate.ClearDomainEvents();
         }
 
-        _dispatchedAggregates.Clear();
+        _aggregatesToClear.Clear();
+    }
+
+    private void ForgetTrackedAggregates()
+    {
+        _aggregatesToClear.Clear();
     }
 
     private static EntityEntry<IAggregateRoot>[] GetAggregateEntries(DbContext dbContext) =>
@@ -105,9 +110,4 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
             .Entries<IAggregateRoot>()
             .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
             .ToArray();
-
-    private static ValueTask Dispatch(
-        IDomainEventDispatcher domainEventDispatcher,
-        IDomainEvent domainEvent,
-        CancellationToken ct) => domainEventDispatcher.Dispatch((dynamic)domainEvent, ct);
 }

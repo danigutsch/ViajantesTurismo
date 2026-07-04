@@ -12,6 +12,11 @@ internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProv
 
     public override async ValueTask Dispatch<TDomainEvent>(TDomainEvent domainEvent, CancellationToken ct)
     {
+        await Dispatch((SharedKernel.Domain.IDomainEvent)domainEvent, ct);
+    }
+
+    public override async ValueTask Dispatch(SharedKernel.Domain.IDomainEvent domainEvent, CancellationToken ct)
+    {
         await base.Dispatch(domainEvent, ct);
 
         if (domainEvent is not TourCreatedDomainEvent tourCreated)

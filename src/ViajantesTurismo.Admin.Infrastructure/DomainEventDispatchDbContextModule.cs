@@ -12,8 +12,4 @@ internal sealed class DomainEventDispatchDbContextModule(
         optionsBuilder.AddInterceptors(interceptor);
     }
 
-    public void Configure(ModelBuilder modelBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(modelBuilder);
-    }
 }

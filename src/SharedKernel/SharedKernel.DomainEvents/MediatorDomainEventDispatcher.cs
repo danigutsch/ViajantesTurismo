@@ -29,4 +29,12 @@ public sealed class MediatorDomainEventDispatcher : IDomainEventDispatcher
 
         return publisher.Publish(new DomainEventNotification<TDomainEvent>(domainEvent), ct);
     }
+
+    /// <inheritdoc />
+    public ValueTask Dispatch(IDomainEvent domainEvent, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
+
+        return publisher.Publish(new DomainEventNotification<IDomainEvent>(domainEvent), ct);
+    }
 }
