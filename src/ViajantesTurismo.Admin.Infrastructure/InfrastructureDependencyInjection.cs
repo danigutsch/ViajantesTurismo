@@ -81,7 +81,7 @@ public static class InfrastructureDependencyInjection
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddDomainEventDispatchModule();
+        builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
@@ -102,7 +102,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-        builder.Services.ApplyDbContextOptionsConfigurations<AdminReadDbContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options);
     }
 
     private static void ConfigureAdminWriteDbContext<TApplicationBuilder>(
@@ -110,7 +110,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.ApplyDbContextOptionsConfigurations<AdminWriteDbContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
     }
 
 }

@@ -3,10 +3,11 @@ using Microsoft.EntityFrameworkCore;
 namespace SharedKernel.EntityFrameworkCore;
 
 /// <summary>
-/// Enables EF Core diagnostics intended for local development only.
+/// Adds domain-event dispatch interception to a DbContext.
 /// </summary>
-/// <typeparam name="TContext">The DbContext type being configured.</typeparam>
-public sealed class DevelopmentDiagnosticsOptionsConfiguration<TContext> : IDbContextConfiguration<TContext>
+/// <typeparam name="TContext">The DbContext type.</typeparam>
+public sealed class DomainEventDispatchDbContextConfiguration<TContext>(
+    DispatchDomainEventsSaveChangesInterceptor interceptor) : IDbContextConfiguration<TContext>
     where TContext : DbContext
 {
     /// <inheritdoc />
@@ -20,8 +21,7 @@ public sealed class DevelopmentDiagnosticsOptionsConfiguration<TContext> : IDbCo
     {
         ArgumentNullException.ThrowIfNull(optionsBuilder);
 
-        optionsBuilder.EnableDetailedErrors();
-        optionsBuilder.EnableSensitiveDataLogging();
+        optionsBuilder.AddInterceptors(interceptor);
     }
 
     /// <inheritdoc />

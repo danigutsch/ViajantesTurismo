@@ -5,58 +5,79 @@ using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Domain;
 using SharedKernel.DomainEvents;
 
-namespace ViajantesTurismo.Admin.Infrastructure;
+namespace SharedKernel.EntityFrameworkCore;
 
-internal sealed class DispatchDomainEventsSaveChangesInterceptor(
+/// <summary>
+/// Dispatches aggregate domain events before EF Core saves changes and clears them after a successful save.
+/// </summary>
+public sealed class DispatchDomainEventsSaveChangesInterceptor(
     IServiceProvider serviceProvider) : SaveChangesInterceptor
 {
-    private readonly List<IAggregateRoot> _aggregatesToClear = [];
+    private readonly List<IAggregateRoot> aggregatesToClear = [];
 
+    /// <inheritdoc />
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
         InterceptionResult<int> result)
     {
+        ArgumentNullException.ThrowIfNull(eventData);
+
         DispatchDomainEvents(eventData.Context, CancellationToken.None).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
 
         return result;
     }
 
+    /// <inheritdoc />
     public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
+        ArgumentNullException.ThrowIfNull(eventData);
+
         ClearDomainEvents();
 
         return result;
     }
 
+    /// <inheritdoc />
     public override ValueTask<int> SavedChangesAsync(
         SaveChangesCompletedEventData eventData,
         int result,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(eventData);
+
         ClearDomainEvents();
 
         return ValueTask.FromResult(result);
     }
 
+    /// <inheritdoc />
     public override void SaveChangesFailed(DbContextErrorEventData eventData)
     {
+        ArgumentNullException.ThrowIfNull(eventData);
+
         ForgetTrackedAggregates();
     }
 
+    /// <inheritdoc />
     public override Task SaveChangesFailedAsync(
         DbContextErrorEventData eventData,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(eventData);
+
         ForgetTrackedAggregates();
 
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(eventData);
+
         await DispatchDomainEvents(eventData.Context, cancellationToken).ConfigureAwait(false);
 
         return result;
@@ -69,17 +90,16 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
             return;
         }
 
-        var aggregateEntries = GetAggregateEntries(dbContext);
-        var aggregates = aggregateEntries
-            .Select(entry => entry.Entity)
-            .Where(aggregate => aggregate.GetDomainEvents().Count > 0)
+        var aggregates = GetAggregateEntries(dbContext)
+            .Select(static entry => entry.Entity)
+            .Where(static aggregate => aggregate.GetDomainEvents().Count > 0)
             .ToArray();
 
-        _aggregatesToClear.Clear();
-        _aggregatesToClear.AddRange(aggregates);
+        aggregatesToClear.Clear();
+        aggregatesToClear.AddRange(aggregates);
 
         var domainEvents = aggregates
-            .SelectMany(aggregate => aggregate.GetDomainEvents())
+            .SelectMany(static aggregate => aggregate.GetDomainEvents())
             .ToArray();
 
         var domainEventDispatcher = serviceProvider.GetRequiredService<IDomainEventDispatcher>();
@@ -92,22 +112,22 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
 
     private void ClearDomainEvents()
     {
-        foreach (var aggregate in _aggregatesToClear)
+        foreach (var aggregate in aggregatesToClear)
         {
             aggregate.ClearDomainEvents();
         }
 
-        _aggregatesToClear.Clear();
+        aggregatesToClear.Clear();
     }
 
     private void ForgetTrackedAggregates()
     {
-        _aggregatesToClear.Clear();
+        aggregatesToClear.Clear();
     }
 
     private static EntityEntry<IAggregateRoot>[] GetAggregateEntries(DbContext dbContext) =>
         dbContext.ChangeTracker
             .Entries<IAggregateRoot>()
-            .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Where(static entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
             .ToArray();
 }

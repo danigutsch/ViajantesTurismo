@@ -177,6 +177,8 @@ flowchart TB
     SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Domain[SharedKernel.Domain]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
+    SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore] --> SharedKernel_Domain[SharedKernel.Domain]
+    SharedKernel_EntityFrameworkCore[SharedKernel.EntityFrameworkCore] --> SharedKernel_DomainEvents[SharedKernel.DomainEvents]
     SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql] --> SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks]
     SharedKernel_EventSourcing_Npgsql[SharedKernel.EventSourcing.Npgsql] --> SharedKernel_EventSourcing[SharedKernel.EventSourcing]
     SharedKernel_IntegrationEvents[SharedKernel.IntegrationEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]

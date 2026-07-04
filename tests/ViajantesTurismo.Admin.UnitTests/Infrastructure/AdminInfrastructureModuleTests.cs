@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.IntegrationEvents;
 using SharedKernel.Testing;
 using SharedKernel.Testing.Assertions;
@@ -48,7 +49,7 @@ public sealed class AdminInfrastructureModuleTests
         var builder = Host.CreateApplicationBuilder();
         builder.AddApplication();
         builder.Services.AddDbContext<AdminWriteDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString("N")));
-        builder.Services.AddDomainEventDispatchModule();
+        builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
         builder.Services.AddIntegrationEventOutboxModule();
         using var serviceProvider = builder.Services.BuildServiceProvider();
 

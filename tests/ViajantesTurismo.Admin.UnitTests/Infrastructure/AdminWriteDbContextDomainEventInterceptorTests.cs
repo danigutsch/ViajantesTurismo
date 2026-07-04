@@ -1,3 +1,4 @@
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
