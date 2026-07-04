@@ -8,11 +8,22 @@ import re
 import sys
 
 
-IGNORED_PARTS = {"node_modules", "bin", "obj", "TestResults", ".sonarqube", ".vs", ".vscode"}
+IGNORED_PARTS = {
+    "node_modules",
+    "bin",
+    "obj",
+    "TestResults",
+    ".sonarqube",
+    ".vs",
+    ".vscode",
+    "artifacts",
+}
 
 
 def is_included_json_path(path: pathlib.Path) -> bool:
-    return path.suffix == ".json" and not any(part in IGNORED_PARTS for part in path.parts)
+    return path.suffix == ".json" and not any(
+        part in IGNORED_PARTS for part in path.parts
+    )
 
 
 def append_escaped_character(content: str, index: int, result: list[str]) -> int:
@@ -46,7 +57,9 @@ def consume_line_comment(content: str, index: int) -> int:
 
 def consume_block_comment(content: str, index: int) -> int:
     index += 2
-    while index + 1 < len(content) and not (content[index] == "*" and content[index + 1] == "/"):
+    while index + 1 < len(content) and not (
+        content[index] == "*" and content[index + 1] == "/"
+    ):
         index += 1
     return index + 2
 
@@ -66,9 +79,17 @@ def try_consume_comment(content: str, index: int) -> int | None:
 
 def iter_target_files(args: list[str]) -> list[pathlib.Path]:
     if args:
-        return [pathlib.Path(arg) for arg in args if arg != "--" and is_included_json_path(pathlib.Path(arg))]
+        return [
+            pathlib.Path(arg)
+            for arg in args
+            if arg != "--" and is_included_json_path(pathlib.Path(arg))
+        ]
 
-    return [path for path in pathlib.Path(".").rglob("*.json") if is_included_json_path(path)]
+    return [
+        path
+        for path in pathlib.Path(".").rglob("*.json")
+        if is_included_json_path(path)
+    ]
 
 
 def strip_jsonc(content: str) -> str:
@@ -81,7 +102,9 @@ def strip_jsonc(content: str) -> str:
         current = content[index]
 
         if in_string:
-            index, string_closed = try_consume_string_character(content, index, result, string_quote)
+            index, string_closed = try_consume_string_character(
+                content, index, result, string_quote
+            )
             if string_closed:
                 in_string = False
             continue

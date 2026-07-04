@@ -51,18 +51,44 @@ artifacts/packages/local/<version>/
 Use a unique prerelease version for local validation so NuGet cache reuse cannot hide package content
 changes.
 
-## Pack command
+## Local feed workflow
 
-Pack all current source `SharedKernel.*` projects into a local artifact folder:
+Pack all current source `SharedKernel.*` projects into a local artifact folder and verify that a
+scratch project can restore them from that local feed:
 
 ```bash
-for project in src/SharedKernel/*/*.csproj; do
-    dotnet pack "$project" \
-        -c Release \
-        -p:ComputedSemVer=0.1.0-alpha.local \
-        -o artifacts/packages/local/0.1.0-alpha.local
-done
+bash scripts/pack-sharedkernel-local.sh --version 0.1.0-alpha.local.20260704000000
 ```
 
-Use this only for local validation and CI dry runs. Stable publishing needs release workflow gates,
-release notes, provenance, and support-policy decisions.
+If `--version` is omitted, the script creates a timestamped local prerelease version. Reusing an
+existing package version fails before packing when any `.nupkg`, `.snupkg`, or `.symbols.nupkg`
+artifact already exists for that version. This keeps local and release dry runs from accidentally
+hiding package-content changes behind NuGet cache reuse.
+
+The restore check creates a scratch project under the artifact folder, references every generated
+`SharedKernel.*` package, restores with the local feed plus `nuget.org`, and verifies each generated
+package exists in the scratch package cache. The scratch restore uses a generated `NuGet.config` with
+`<clear />`, exact package source mapping for the generated package IDs, a wildcard `nuget.org` mapping
+for external dependencies, and a scratch package cache. This avoids inherited machine sources and keeps
+local `SharedKernel.*` package resolution deterministic even if a colliding package ID exists on
+`nuget.org`. Use `--skip-restore-check` only when diagnosing pack failures before restore validation is
+relevant.
+
+The restore verifier requires local `python3` because it also invokes the local `dotnet restore` used
+for the scratch project. Repository Docker fallbacks remain appropriate for pure Python lint wrappers,
+but this workflow intentionally validates the local .NET SDK/package environment that produced the
+packages.
+
+Use this workflow only for local validation and CI dry runs. Stable publishing needs release workflow
+gates, release notes, provenance, and support-policy decisions.
+
+## Internal SharedKernel dependency versions
+
+Packable `SharedKernel.*` projects should keep internal dependencies as project references in source.
+During `dotnet pack`, those project references become package dependencies that use the same
+`ComputedSemVer` as the package set being packed. The local feed verifier rejects generated packages
+when an internal `SharedKernel.*` dependency does not match the pack version.
+
+Do not widen internal dependency ranges in individual project files without a compatibility policy for
+that package family. Broader ranges belong in a release-governed change because they let consumers mix
+different SharedKernel package versions.
