@@ -49,6 +49,39 @@ jobs:
           GITHUB_AFTER_SHA: ${{ github.event.after }}
         run: bash scripts/detect-changes.sh
 
+  calculate-version:
+    name: Calculate Version
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    permissions:
+      contents: read
+    outputs:
+      base_version: ${{ steps.version.outputs.base_version }}
+      source_tag: ${{ steps.version.outputs.source_tag }}
+      version_json: ${{ steps.version.outputs.version_json }}
+      sem_ver: ${{ steps.version.outputs.sem_ver }}
+      release_impact: ${{ steps.version.outputs.release_impact }}
+      package_version: ${{ steps.version.outputs.package_version }}
+      assembly_version: ${{ steps.version.outputs.assembly_version }}
+      file_version: ${{ steps.version.outputs.file_version }}
+      informational_version: ${{ steps.version.outputs.informational_version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj
+          trust-dev-certificate: "false"
+
+      - name: Calculate release version
+        id: version
+        shell: bash
+        run: bash scripts/calculate-release-version.sh
+
   fast-validation:
     name: Fast Validation
     needs:
