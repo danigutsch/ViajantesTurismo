@@ -55,6 +55,7 @@ flowchart TB
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_DomainEvents[SharedKernel.DomainEvents]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_InputNormalization[SharedKernel.InputNormalization]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_IntegrationEvents[SharedKernel.IntegrationEvents]
+    ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_IntegrationEvents_SourceGenerator[SharedKernel.IntegrationEvents.SourceGenerator]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Results[SharedKernel.Results]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> SharedKernel_Results_SourceGenerator[SharedKernel.Results.SourceGenerator]

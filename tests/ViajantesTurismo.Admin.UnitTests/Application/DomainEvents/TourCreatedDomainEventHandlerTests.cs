@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.DomainEvents;
 
-public sealed class TourCreatedDomainEventHandlerTests
+public sealed class GeneratedIntegrationEventMappingTests
 {
     [Fact]
     public async Task Dispatcher_maps_tour_created_domain_event_to_admin_tour_created_integration_event()

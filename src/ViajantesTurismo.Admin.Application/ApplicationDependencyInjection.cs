@@ -1,10 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
 using SharedKernel.IntegrationEvents;
-using ViajantesTurismo.Admin.Application.Tours;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
@@ -71,9 +68,9 @@ public static class ApplicationDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton(TimeProvider.System);
         services.AddScoped<IDomainEventDispatcher, ServiceProviderDomainEventDispatcher>();
-        services.AddScoped<IDomainEventHandler<TourCreatedDomainEvent>, TourCreatedDomainEventHandler>();
+        services.AddGeneratedIntegrationEventMappings();
 
         return services;
     }

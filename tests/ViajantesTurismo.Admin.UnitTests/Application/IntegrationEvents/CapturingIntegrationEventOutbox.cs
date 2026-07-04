@@ -1,5 +1,4 @@
 using SharedKernel.IntegrationEvents;
-using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;

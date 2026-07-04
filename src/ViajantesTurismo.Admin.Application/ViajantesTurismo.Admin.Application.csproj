@@ -12,6 +12,11 @@
             ReferenceOutputAssembly="false"
             PrivateAssets="all"
             IsAspireProjectResource="false" />
+        <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents.SourceGenerator\SharedKernel.IntegrationEvents.SourceGenerator.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+            PrivateAssets="all"
+            IsAspireProjectResource="false" />
     </ItemGroup>
 
     <ItemGroup>
