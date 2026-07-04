@@ -18,9 +18,3 @@ internal sealed class ApplicationVersionLoggingService(
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
-
-internal static partial class ApplicationVersionLogger
-{
-    [LoggerMessage(1, LogLevel.Information, "Application {ApplicationName} version {ApplicationVersion}")]
-    public static partial void ApplicationVersion(this ILogger logger, string applicationName, string applicationVersion);
-}

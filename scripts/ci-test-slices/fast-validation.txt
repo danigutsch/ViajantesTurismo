@@ -23,6 +23,7 @@ tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.cs
 tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
 tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj
 tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj
+tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj
 tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj
 tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj
 tests/SharedKernel.Aspire.Analyzers.Tests/SharedKernel.Aspire.Analyzers.Tests.csproj
