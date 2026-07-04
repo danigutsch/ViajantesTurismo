@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
 using SharedKernel.IntegrationEvents;
@@ -55,10 +56,25 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();
-        builder.Services.AddScoped<IDomainEventDispatcher, ServiceProviderDomainEventDispatcher>();
-        builder.Services.AddScoped<IDomainEventHandler<TourCreatedDomainEvent>, TourCreatedDomainEventHandler>();
+        builder.Services.AddDomainEventProcessing();
         builder.Services.AddScoped<IIntegrationEventDispatcher, ServiceProviderIntegrationEventDispatcher>();
 
         return builder;
+    }
+
+    /// <summary>
+    /// Adds domain event dispatching services used by write-side persistence.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddDomainEventProcessing(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IDomainEventDispatcher, ServiceProviderDomainEventDispatcher>();
+        services.AddScoped<IDomainEventHandler<TourCreatedDomainEvent>, TourCreatedDomainEventHandler>();
+
+        return services;
     }
 }

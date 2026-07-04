@@ -116,6 +116,7 @@ flowchart TB
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]

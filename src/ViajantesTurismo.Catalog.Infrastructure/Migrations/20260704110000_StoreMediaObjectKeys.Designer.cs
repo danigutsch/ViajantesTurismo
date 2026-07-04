@@ -14,7 +14,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
+            CatalogDbContextModelSnapshot.BuildCatalogModel(modelBuilder);
 #pragma warning restore 612, 618
         }
     }

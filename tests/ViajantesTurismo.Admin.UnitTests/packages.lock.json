@@ -821,6 +821,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "[10.0.9, )",
+          "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Infrastructure": "[1.0.0, )",
           "ViajantesTurismo.Catalog.Infrastructure": "[1.0.0, )",
           "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"

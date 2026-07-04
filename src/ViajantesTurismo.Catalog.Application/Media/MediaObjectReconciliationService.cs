@@ -24,14 +24,10 @@ public sealed class MediaObjectReconciliationService(
         var storedKeySet = (await objectStore.ListKeys(DefaultPrefix, ct).ConfigureAwait(false))
             .ToHashSet(StringComparer.Ordinal);
 
-        var missing = new List<string>();
-        foreach (var referencedKey in referencedKeySet.Order(StringComparer.Ordinal))
-        {
-            if (!await objectStore.Exists(referencedKey, ct).ConfigureAwait(false))
-            {
-                missing.Add(referencedKey);
-            }
-        }
+        var missing = referencedKeySet
+            .Where(referencedKey => !storedKeySet.Contains(referencedKey))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
 
         var orphans = storedKeySet.Except(referencedKeySet).Order(StringComparer.Ordinal).ToArray();
         var deleted = new List<string>();

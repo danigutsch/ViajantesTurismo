@@ -15,7 +15,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
         DbContextEventData eventData,
         InterceptionResult<int> result)
     {
-        DispatchDomainEvents(eventData.Context, CancellationToken.None).AsTask().GetAwaiter().GetResult();
+        DispatchDomainEvents(eventData.Context, CancellationToken.None).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
 
         return result;
     }
@@ -56,7 +56,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
         InterceptionResult<int> result,
         CancellationToken cancellationToken = default)
     {
-        await DispatchDomainEvents(eventData.Context, cancellationToken);
+        await DispatchDomainEvents(eventData.Context, cancellationToken).ConfigureAwait(false);
 
         return result;
     }
@@ -83,7 +83,7 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor(
 
         foreach (var domainEvent in domainEvents)
         {
-            await Dispatch(domainEventDispatcher, domainEvent, ct);
+            await Dispatch(domainEventDispatcher, domainEvent, ct).ConfigureAwait(false);
         }
     }
 

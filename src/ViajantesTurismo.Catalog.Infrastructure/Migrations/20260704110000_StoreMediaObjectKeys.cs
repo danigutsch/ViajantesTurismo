@@ -26,6 +26,26 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 nullable: false,
                 defaultValue: string.Empty);
 
+            migrationBuilder.Sql("""
+                UPDATE "PublicMediaImages"
+                SET "SourceObjectKey" = CASE
+                    WHEN POSITION('media/' IN "SourceUri") > 0
+                        THEN SUBSTRING("SourceUri" FROM POSITION('media/' IN "SourceUri"))
+                    ELSE "SourceUri"
+                END
+                WHERE "SourceUri" <> '';
+                """);
+
+            migrationBuilder.Sql("""
+                UPDATE "PublicMediaImageResponsiveVariants"
+                SET "ObjectKey" = CASE
+                    WHEN POSITION('media/' IN "Uri") > 0
+                        THEN SUBSTRING("Uri" FROM POSITION('media/' IN "Uri"))
+                    ELSE "Uri"
+                END
+                WHERE "Uri" <> '';
+                """);
+
             migrationBuilder.DropColumn(
                 name: "SourceUri",
                 table: "PublicMediaImages");
@@ -51,6 +71,18 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 type: "text",
                 nullable: false,
                 defaultValue: string.Empty);
+
+            migrationBuilder.Sql("""
+                UPDATE "PublicMediaImages"
+                SET "SourceUri" = "SourceObjectKey"
+                WHERE "SourceObjectKey" <> '';
+                """);
+
+            migrationBuilder.Sql("""
+                UPDATE "PublicMediaImageResponsiveVariants"
+                SET "Uri" = "ObjectKey"
+                WHERE "ObjectKey" <> '';
+                """);
 
             migrationBuilder.DropColumn(
                 name: "SourceObjectKey",

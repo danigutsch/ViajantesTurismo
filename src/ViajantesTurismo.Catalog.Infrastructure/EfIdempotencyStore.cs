@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SharedKernel.Idempotency;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
@@ -13,14 +14,29 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
         var existing = await Find(operation, ct).ConfigureAwait(false);
         if (existing is null)
         {
-            dbContext.IdempotencyInbox.Add(new IdempotencyEntryEntity
+            var entry = new IdempotencyEntryEntity
             {
                 Scope = operation.Scope.Value,
                 Key = operation.Key.Value,
                 State = IdempotencyEntryState.Started,
                 StartedAt = startedAt,
-            });
-            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            };
+
+            dbContext.IdempotencyInbox.Add(entry);
+            try
+            {
+                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            }
+            catch (DbUpdateException)
+            {
+                var concurrentEntry = await FindStartedByConcurrentCaller(operation, entry, ct).ConfigureAwait(false);
+                if (concurrentEntry is null)
+                {
+                    throw;
+                }
+
+                return IdempotencyStartResult.AlreadyStarted(ToEntry(concurrentEntry));
+            }
 
             return IdempotencyStartResult.StartedNew();
         }
@@ -63,6 +79,15 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
 
     private ValueTask<IdempotencyEntryEntity?> Find(IdempotencyOperation operation, CancellationToken ct) =>
         dbContext.IdempotencyInbox.FindAsync([operation.Scope.Value, operation.Key.Value], ct);
+
+    private async ValueTask<IdempotencyEntryEntity?> FindStartedByConcurrentCaller(
+        IdempotencyOperation operation,
+        IdempotencyEntryEntity entry,
+        CancellationToken ct)
+    {
+        dbContext.Entry(entry).State = EntityState.Detached;
+        return await Find(operation, ct).ConfigureAwait(false);
+    }
 
     private static bool IsExpired(
         IdempotencyEntryEntity existing,

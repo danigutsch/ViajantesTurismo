@@ -14,7 +14,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
     [DbContext(typeof(CatalogDbContext))]
     partial class CatalogDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder) => BuildCatalogModel(modelBuilder);
+
+        internal static void BuildCatalogModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

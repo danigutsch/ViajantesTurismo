@@ -61,6 +61,7 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
+        builder.Services.AddIntegrationEventOutbox();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
