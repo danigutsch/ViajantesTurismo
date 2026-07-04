@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Resources;
@@ -24,9 +25,13 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.AddNpgsqlDbContext<AdminWriteDbContext>(
-            ResourceNames.Database,
-            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
+        }
+
+        builder.AddAdminWriteDbContext();
 
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
             ResourceNames.Database,
@@ -34,7 +39,7 @@ public static class InfrastructureDependencyInjection
             {
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-                ConfigureDevelopmentDatabaseOptions(builder, options);
+                builder.Services.ApplyDbContextOptionsConfigurations<AdminReadDbContext>(options);
             });
 
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
@@ -56,9 +61,12 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.AddNpgsqlDbContext<AdminWriteDbContext>(
-            ResourceNames.Database,
-            configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
+        }
+
+        builder.AddAdminWriteDbContext();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
@@ -76,17 +84,19 @@ public static class InfrastructureDependencyInjection
         return services.AddScoped<ISeeder, Seeder>();
     }
 
-    private static void ConfigureDevelopmentDatabaseOptions<TApplicationBuilder>(
+    private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddNpgsqlDbContext<AdminWriteDbContext>(
+            ResourceNames.Database,
+            configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
+    }
+
+    private static void ConfigureAdminWriteDbContext<TApplicationBuilder>(
         TApplicationBuilder builder,
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        if (!builder.Environment.IsDevelopment())
-        {
-            return;
-        }
-
-        options.EnableDetailedErrors();
-        options.EnableSensitiveDataLogging();
+        builder.Services.ApplyDbContextOptionsConfigurations<AdminWriteDbContext>(options);
     }
 }

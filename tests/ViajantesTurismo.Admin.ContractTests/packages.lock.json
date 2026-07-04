@@ -301,6 +301,12 @@
       "sharedkernel.domain": {
         "type": "Project"
       },
+      "sharedkernel.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )"
+        }
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -321,6 +327,14 @@
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
+      },
+      "sharedkernel.mediator.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "SharedKernel.EntityFrameworkCore": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
       },
       "sharedkernel.observability": {
         "type": "Project",
@@ -403,6 +417,8 @@
         "type": "Project",
         "dependencies": {
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
+          "SharedKernel.EntityFrameworkCore": "[1.0.0, )",
+          "SharedKernel.Mediator.EntityFrameworkCore": "[1.0.0, )",
           "ViajantesTurismo.Admin.Application": "[1.0.0, )",
           "ViajantesTurismo.Admin.Domain": "[1.0.0, )",
           "ViajantesTurismo.Resources": "[1.0.0, )"

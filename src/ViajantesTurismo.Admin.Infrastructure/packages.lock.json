@@ -368,6 +368,13 @@
       "sharedkernel.domain": {
         "type": "Project"
       },
+      "sharedkernel.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )"
+        }
+      },
       "sharedkernel.httpclients": {
         "type": "Project",
         "dependencies": {
@@ -389,6 +396,14 @@
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
+      },
+      "sharedkernel.mediator.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "SharedKernel.EntityFrameworkCore": "[1.0.0, )",
+          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
+        }
       },
       "sharedkernel.results": {
         "type": "Project"

@@ -2,14 +2,166 @@
   "version": 2,
   "dependencies": {
     "net10.0": {
-      "Microsoft.CodeAnalysis.CSharp": {
+      "Aspire.Dashboard.Sdk.linux-x64": {
         "type": "Direct",
-        "requested": "[5.3.0, )",
-        "resolved": "5.3.0",
-        "contentHash": "SQFNGQF4f7UfDXKxMzzGNMr3fjrPDIjLfmRvvVgDCw+dyvEHDaRfHuKA5q0Pr0/JW0Gcw89TxrxrS/MjwBvluQ==",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "D1wLblOuViLyFXn4cVf/Y+ww2g8s0GnuRmsJCEXCxSFBhao59+6FgUMa8YSZ/Qd4Byj+ZQS+7/6ndbhgJpu8kQ=="
+      },
+      "Aspire.Hosting.AppHost": {
+        "type": "Direct",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "+4BxGpb2JQDk3+uOmk5eDpK0Brg2d3hwqrK/7d/aDBAUoHYbjfwbItIfdYJjKjbxUkBiaotokcWdVbLNsMo9Nw==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Analyzers": "5.3.0-2.25625.1",
-          "Microsoft.CodeAnalysis.Common": "[5.3.0]"
+          "AspNetCore.HealthChecks.Uris": "9.0.0",
+          "Aspire.Hosting": "13.4.6",
+          "Google.Protobuf": "3.34.1",
+          "Grpc.AspNetCore": "2.80.0",
+          "Grpc.Net.ClientFactory": "2.80.0",
+          "Grpc.Tools": "2.80.0",
+          "Humanizer.Core": "3.0.10",
+          "JsonPatch.Net": "3.3.0",
+          "KubernetesClient": "19.0.2",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.8",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
+          "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
+          "Microsoft.Extensions.Hosting": "10.0.8",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Http": "10.0.8",
+          "Microsoft.Extensions.Logging": "10.0.8",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Options": "10.0.8",
+          "Microsoft.Extensions.Primitives": "10.0.8",
+          "ModelContextProtocol": "1.3.0",
+          "Newtonsoft.Json": "13.0.4",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.3",
+          "OpenTelemetry.Extensions.Hosting": "1.15.3",
+          "Polly.Core": "8.6.6",
+          "Semver": "3.0.0",
+          "StreamJsonRpc": "2.25.29",
+          "System.IO.Hashing": "10.0.8"
+        }
+      },
+      "Aspire.Hosting.Orchestration.linux-x64": {
+        "type": "Direct",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "zPPL4sZwp8WS8SvncVQfAXVFIIX/00jGe5v220pKjzZgLrBloQUmesHegESkqxTtSA5VBUhlalJgBWKeInEICA=="
+      },
+      "Aspire.Hosting.PostgreSQL": {
+        "type": "Direct",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "NyL7O7e7DcpZSF0sAz332GIJ3S7X/66NoqhPqzVMPbNYfF97bTrk7C7Yq1tuilffHfq2SV2xi6aHbhGOmSoGqw==",
+        "dependencies": {
+          "AspNetCore.HealthChecks.NpgSql": "9.0.0",
+          "AspNetCore.HealthChecks.Uris": "9.0.0",
+          "Aspire.Hosting": "13.4.6",
+          "Google.Protobuf": "3.34.1",
+          "Grpc.AspNetCore": "2.80.0",
+          "Grpc.Net.ClientFactory": "2.80.0",
+          "Grpc.Tools": "2.80.0",
+          "Humanizer.Core": "3.0.10",
+          "JsonPatch.Net": "3.3.0",
+          "KubernetesClient": "19.0.2",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.8",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "8.0.27",
+          "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
+          "Microsoft.Extensions.Hosting": "10.0.8",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Http": "10.0.8",
+          "Microsoft.Extensions.Logging": "10.0.8",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Options": "10.0.8",
+          "Microsoft.Extensions.Primitives": "10.0.8",
+          "ModelContextProtocol": "1.3.0",
+          "Newtonsoft.Json": "13.0.4",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.3",
+          "OpenTelemetry.Extensions.Hosting": "1.15.3",
+          "Polly.Core": "8.6.6",
+          "Semver": "3.0.0",
+          "StreamJsonRpc": "2.25.29",
+          "System.IO.Hashing": "10.0.8"
+        }
+      },
+      "Aspire.Hosting.Testing": {
+        "type": "Direct",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "ETvzLx362Ntj4vHhnlgFK1h3coW7Cs37O8rkIv/ma12MZQEwNvNqpEd2AKMGEdcxDn8FTGQMHHXPTyKvIRdlFA==",
+        "dependencies": {
+          "AspNetCore.HealthChecks.Uris": "9.0.0",
+          "Aspire.Hosting": "13.4.6",
+          "Aspire.Hosting.AppHost": "13.4.6",
+          "Google.Protobuf": "3.34.1",
+          "Grpc.AspNetCore": "2.80.0",
+          "Grpc.Net.ClientFactory": "2.80.0",
+          "Grpc.Tools": "2.80.0",
+          "Humanizer.Core": "3.0.10",
+          "JsonPatch.Net": "3.3.0",
+          "KubernetesClient": "19.0.2",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.8",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.6.0",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
+          "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
+          "Microsoft.Extensions.Hosting": "10.0.8",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Http": "10.0.8",
+          "Microsoft.Extensions.Http.Resilience": "10.6.0",
+          "Microsoft.Extensions.Logging": "10.0.8",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Options": "10.0.8",
+          "Microsoft.Extensions.Primitives": "10.0.8",
+          "ModelContextProtocol": "1.3.0",
+          "Newtonsoft.Json": "13.0.4",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.3",
+          "OpenTelemetry.Extensions.Hosting": "1.15.3",
+          "Polly.Core": "8.6.6",
+          "Polly.Extensions": "8.6.6",
+          "Semver": "3.0.0",
+          "StreamJsonRpc": "2.25.29",
+          "System.IO.Hashing": "10.0.8"
+        }
+      },
+      "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
+        "type": "Direct",
+        "requested": "[13.4.6, )",
+        "resolved": "13.4.6",
+        "contentHash": "Lt92FuyX4JkKwrAgrOsVARpmk3U9vBGBq784ZEO3hR2vC74o8VS/VWBJHYrRBYTXapuj+mwwPzvcUICmbB43Zg==",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Memory": "10.0.8",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.8",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "10.0.8",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Logging": "10.0.8",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Options": "10.0.8",
+          "Microsoft.Extensions.Primitives": "10.0.8",
+          "Npgsql.DependencyInjection": "10.0.2",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.0",
+          "Npgsql.OpenTelemetry": "10.0.2",
+          "OpenTelemetry.Extensions.Hosting": "1.15.3"
+        }
+      },
+      "Microsoft.EntityFrameworkCore.InMemory": {
+        "type": "Direct",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "lvlLJ7kgGivXApixK4FN7pB/aZZJ+bqdNRv2jLR0K0t2ZFIUwNylF1Mo6tMQAN8/2FsNKbv7U4S4FgSdfFtPIQ==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.9",
+          "Microsoft.Extensions.Caching.Memory": "10.0.9",
+          "Microsoft.Extensions.Logging": "10.0.9"
         }
       },
       "Microsoft.Testing.Extensions.CodeCoverage": {
@@ -29,16 +181,6 @@
         "resolved": "10.27.0.140913",
         "contentHash": "cxk12QjN9io1SjN36B1QO+9dRf+ek2CGfQGsOWtHBojE35cKchKJod48raxZwe47jHhzmAUO4AJSh7+hF0GS4g=="
       },
-      "TngTech.ArchUnitNET.xUnitV3": {
-        "type": "Direct",
-        "requested": "[0.13.3, )",
-        "resolved": "0.13.3",
-        "contentHash": "jQEyP4uwT9vGhEHQ2IHegyiQ0M+Umlmwe6aLTZP8xVuYfAdd4gpNnwx3wloZIB5060ZuZPBJN6hj6b2QoBWswA==",
-        "dependencies": {
-          "TngTech.ArchUnitNET": "0.13.3",
-          "xunit.v3.assert": "1.1.0"
-        }
-      },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
         "requested": "[3.2.2, )",
@@ -50,6 +192,15 @@
           "xunit.v3.core.mtp-v2": "[3.2.2]"
         }
       },
+      "AspNetCore.HealthChecks.NpgSql": {
+        "type": "Transitive",
+        "resolved": "9.0.0",
+        "contentHash": "npc58/AD5zuVxERdhCl2Kb7WnL37mwX42SJcXIwvmEig0/dugOLg3SIwtfvvh3TnvTwR/sk5LYNkkPaBdks61A==",
+        "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "8.0.11",
+          "Npgsql": "8.0.3"
+        }
+      },
       "AspNetCore.HealthChecks.Uris": {
         "type": "Transitive",
         "resolved": "9.0.0",
@@ -58,11 +209,6 @@
           "Microsoft.Extensions.Diagnostics.HealthChecks": "8.0.11",
           "Microsoft.Extensions.Http": "8.0.0"
         }
-      },
-      "CycleDetection": {
-        "type": "Transitive",
-        "resolved": "2.0.0",
-        "contentHash": "iQb2Nm9WqPseGCxPcdeU5qMbWkxtSr1bmnliC7slitx7GOG8cKO2pKZUQ2Yl+DQQZQ7c8qIXe3k+zYE0f96dIA=="
       },
       "Fractions": {
         "type": "Transitive",
@@ -173,11 +319,6 @@
           "YamlDotNet": "16.3.0"
         }
       },
-      "Magick.NET.Core": {
-        "type": "Transitive",
-        "resolved": "14.14.0",
-        "contentHash": "pACR3w4QmjBkebtYvZwNk0oow8YwEAF4CLfzSrGmPcWsObL8wvt/lOXsrzK9M0cVwYES7jp+bdnHQBTeQgfoIg=="
-      },
       "MessagePack": {
         "type": "Transitive",
         "resolved": "2.5.302",
@@ -201,14 +342,6 @@
         "type": "Transitive",
         "resolved": "6.0.0",
         "contentHash": "UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg=="
-      },
-      "Microsoft.CodeAnalysis.Common": {
-        "type": "Transitive",
-        "resolved": "5.3.0",
-        "contentHash": "uC0qk3jzTQY7i90ehfnCqaOZpBUGJyPMiHJ3c0jOb8yaPBjWzIhVdNxPbeVzI74DB0C+YgBKPLqUkgFZzua5Mg==",
-        "dependencies": {
-          "Microsoft.CodeAnalysis.Analyzers": "5.3.0-2.25625.1"
-        }
       },
       "Microsoft.DiaSymReader": {
         "type": "Transitive",
@@ -414,11 +547,6 @@
           "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "10.0.8"
         }
       },
-      "Microsoft.Extensions.Features": {
-        "type": "Transitive",
-        "resolved": "10.0.9",
-        "contentHash": "ohU5761fyZq7eSg0nLQMzHvCrGGGmyzgRzAGebHZlQ4D7/9v9uzPYJ/AUYcD5kNSiOWR34Ma4qGgKs0PUPrYZw=="
-      },
       "Microsoft.Extensions.FileProviders.Abstractions": {
         "type": "Transitive",
         "resolved": "10.0.9",
@@ -558,20 +686,6 @@
           "Polly.RateLimiting": "8.4.2"
         }
       },
-      "Microsoft.Extensions.ServiceDiscovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "10.7.0",
-        "contentHash": "1a/tCYg7+5HdJRQ0BQDDGzANBaw/1fony7eNsMwQ5n9FZmO3K5JCls02o8fwQc296l0szNBwroLRtXf94OZw9A==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
-          "Microsoft.Extensions.Configuration.Binder": "10.0.9",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
-          "Microsoft.Extensions.Features": "10.0.9",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.9",
-          "Microsoft.Extensions.Options": "10.0.9",
-          "Microsoft.Extensions.Primitives": "10.0.9"
-        }
-      },
       "Microsoft.Extensions.Telemetry": {
         "type": "Transitive",
         "resolved": "10.7.0",
@@ -667,11 +781,6 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.7"
         }
       },
-      "Mono.Cecil": {
-        "type": "Transitive",
-        "resolved": "0.11.6",
-        "contentHash": "f33RkDtZO8VlGXCtmQIviOtxgnUdym9xx/b1p9h91CRGOsJFxCFOFK1FDbVt1OCf1aWwYejUFa2MOQyFWTFjbA=="
-      },
       "Nerdbank.MessagePack": {
         "type": "Transitive",
         "resolved": "1.2.4",
@@ -745,12 +854,12 @@
       },
       "Polly.Extensions": {
         "type": "Transitive",
-        "resolved": "8.4.2",
-        "contentHash": "GZ9vRVmR0jV2JtZavt+pGUsQ1O1cuRKG7R7VOZI6ZDy9y6RNPvRvXK1tuS4ffUrv8L0FTea59oEuQzgS0R7zSA==",
+        "resolved": "8.6.6",
+        "contentHash": "hUhiTVtJud5PhVmt6bnns164wn5BPLzdzXIu09aZOHf/1NiHYgL+wzpQpvj00Fhcp0OYnFaVMcolMYQjxtVKrg==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
           "Microsoft.Extensions.Options": "8.0.0",
-          "Polly.Core": "8.4.2"
+          "Polly.Core": "8.6.6"
         }
       },
       "Polly.RateLimiting": {
@@ -802,23 +911,6 @@
         "type": "Transitive",
         "resolved": "8.0.0",
         "contentHash": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q=="
-      },
-      "System.ValueTuple": {
-        "type": "Transitive",
-        "resolved": "4.6.1",
-        "contentHash": "+RJT4qaekpZ7DDLhf+LTjq+E48jieKiY9ulJ+BoxKmZblIJfIJT8Ufcaa/clQqnYvWs8jugfGSMu8ylS0caG0w=="
-      },
-      "TngTech.ArchUnitNET": {
-        "type": "Transitive",
-        "resolved": "0.13.3",
-        "contentHash": "4+V+rJ1DC6f2mbwpVnSKwUnN8OhbZ+YC2HoFXYj4Skb+pbabaweu5cnscyXBiMlU97b5GvoOKzpUCn0RCTmWeg==",
-        "dependencies": {
-          "CycleDetection": "2.0.0",
-          "JetBrains.Annotations": "2025.2.2",
-          "Mono.Cecil": "0.11.6",
-          "Newtonsoft.Json": "13.0.4",
-          "System.ValueTuple": "4.6.1"
-        }
       },
       "xunit.analyzers": {
         "type": "Transitive",
@@ -882,22 +974,6 @@
         "resolved": "16.3.0",
         "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
       },
-      "sharedkernel.aspire.hosting.grafana": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Hosting": "[13.4.6, )",
-          "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "[13.4.0, )"
-        }
-      },
-      "sharedkernel.buildingblocks": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
-        }
-      },
-      "sharedkernel.domain": {
-        "type": "Project"
-      },
       "sharedkernel.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
@@ -905,72 +981,10 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )"
         }
       },
-      "sharedkernel.eventsourcing": {
-        "type": "Project"
-      },
-      "sharedkernel.httpclients": {
+      "sharedkernel.integrationtesting": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
-          "Microsoft.Extensions.Http.Resilience": "[10.7.0, )",
-          "Microsoft.Extensions.ServiceDiscovery": "[10.7.0, )",
-          "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
-          "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
-        }
-      },
-      "sharedkernel.idempotency": {
-        "type": "Project"
-      },
-      "sharedkernel.imageprocessing": {
-        "type": "Project",
-        "dependencies": {
-          "Magick.NET-Q8-AnyCPU": "[14.14.0, )"
-        }
-      },
-      "sharedkernel.inputnormalization": {
-        "type": "Project"
-      },
-      "sharedkernel.integrationevents": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
-        }
-      },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
-      },
-      "sharedkernel.mediator.entityframeworkcore": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
-          "SharedKernel.EntityFrameworkCore": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
-        }
-      },
-      "sharedkernel.observability": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting": "[10.0.9, )",
-          "OpenTelemetry": "[1.16.0, )",
-          "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
-          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
-        }
-      },
-      "sharedkernel.openapi": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
-          "Microsoft.OpenApi": "[2.9.0, )"
-        }
-      },
-      "sharedkernel.results": {
-        "type": "Project"
-      },
-      "sharedkernel.results.aspnet": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Results": "[1.0.0, )"
+          "Aspire.Hosting.Testing": "[13.4.6, )"
         }
       },
       "sharedkernel.testing": {
@@ -980,147 +994,6 @@
         "type": "Project",
         "dependencies": {
           "xunit.v3.assert": "[3.2.2, )"
-        }
-      },
-      "viajantesturismo.admin.apiservice": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
-          "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
-          "SharedKernel.OpenApi": "[1.0.0, )",
-          "SharedKernel.Results": "[1.0.0, )",
-          "SharedKernel.Results.AspNet": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Application": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Infrastructure": "[1.0.0, )",
-          "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.admin.application": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting.Abstractions": "[10.0.9, )",
-          "SharedKernel.BuildingBlocks": "[1.0.0, )",
-          "SharedKernel.InputNormalization": "[1.0.0, )",
-          "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
-          "SharedKernel.Results": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Domain": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.admin.contracts": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
-          "SharedKernel.HttpClients": "[1.0.0, )",
-          "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.admin.domain": {
-        "type": "Project",
-        "dependencies": {
-          "JetBrains.Annotations": "[2026.2.0, )",
-          "SharedKernel.BuildingBlocks": "[1.0.0, )",
-          "SharedKernel.Domain": "[1.0.0, )",
-          "SharedKernel.InputNormalization": "[1.0.0, )",
-          "SharedKernel.Results": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.admin.infrastructure": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
-          "SharedKernel.EntityFrameworkCore": "[1.0.0, )",
-          "SharedKernel.Mediator.EntityFrameworkCore": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Application": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Domain": "[1.0.0, )",
-          "ViajantesTurismo.Resources": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.catalog.apiservice": {
-        "type": "Project",
-        "dependencies": {
-          "ViajantesTurismo.Catalog.Application": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Infrastructure": "[1.0.0, )",
-          "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.catalog.application": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
-          "Microsoft.Extensions.Options": "[10.0.9, )",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.9, )",
-          "SharedKernel.BuildingBlocks": "[1.0.0, )",
-          "SharedKernel.EventSourcing": "[1.0.0, )",
-          "SharedKernel.Idempotency": "[1.0.0, )",
-          "SharedKernel.ImageProcessing": "[1.0.0, )",
-          "SharedKernel.InputNormalization": "[1.0.0, )",
-          "SharedKernel.IntegrationEvents": "[1.0.0, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
-          "SharedKernel.Results": "[1.0.0, )",
-          "ViajantesTurismo.Admin.Contracts": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Domain": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.catalog.contracts": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.HttpClients": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.catalog.domain": {
-        "type": "Project",
-        "dependencies": {
-          "JetBrains.Annotations": "[2026.2.0, )",
-          "SharedKernel.BuildingBlocks": "[1.0.0, )",
-          "SharedKernel.Domain": "[1.0.0, )",
-          "SharedKernel.EventSourcing": "[1.0.0, )",
-          "SharedKernel.InputNormalization": "[1.0.0, )",
-          "SharedKernel.Results": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.catalog.infrastructure": {
-        "type": "Project",
-        "dependencies": {
-          "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
-          "SharedKernel.InputNormalization": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Application": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Domain": "[1.0.0, )",
-          "ViajantesTurismo.Resources": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.public.web": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.HttpClients": "[1.0.0, )",
-          "ViajantesTurismo.Catalog.Contracts": "[1.0.0, )",
-          "ViajantesTurismo.Resources": "[1.0.0, )",
-          "ViajantesTurismo.ServiceDefaults": "[1.0.0, )"
-        }
-      },
-      "viajantesturismo.resources": {
-        "type": "Project"
-      },
-      "viajantesturismo.servicedefaults": {
-        "type": "Project",
-        "dependencies": {
-          "JetBrains.Annotations": "[2026.2.0, )",
-          "Microsoft.Extensions.ServiceDiscovery": "[10.7.0, )",
-          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "[1.16.0, )",
-          "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
-          "OpenTelemetry.Instrumentation.AspNetCore": "[1.16.0, )",
-          "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.16.0-beta.1, )",
-          "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.16.0-beta.1, )",
-          "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )",
-          "SharedKernel.Mediator.Abstractions": "[1.0.0, )",
-          "SharedKernel.Observability": "[1.0.0, )",
-          "ViajantesTurismo.Resources": "[1.0.0, )"
         }
       },
       "Aspire.Hosting": {
@@ -1158,68 +1031,6 @@
           "System.IO.Hashing": "10.0.8"
         }
       },
-      "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {
-        "type": "CentralTransitive",
-        "requested": "[13.4.6, )",
-        "resolved": "13.4.6",
-        "contentHash": "Lt92FuyX4JkKwrAgrOsVARpmk3U9vBGBq784ZEO3hR2vC74o8VS/VWBJHYrRBYTXapuj+mwwPzvcUICmbB43Zg==",
-        "dependencies": {
-          "Microsoft.Extensions.Caching.Memory": "10.0.8",
-          "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
-          "Microsoft.Extensions.Configuration.Binder": "10.0.8",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
-          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
-          "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "10.0.8",
-          "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
-          "Microsoft.Extensions.Logging": "10.0.8",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
-          "Microsoft.Extensions.Options": "10.0.8",
-          "Microsoft.Extensions.Primitives": "10.0.8",
-          "Npgsql.DependencyInjection": "10.0.2",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.0",
-          "Npgsql.OpenTelemetry": "10.0.2",
-          "OpenTelemetry.Extensions.Hosting": "1.15.3"
-        }
-      },
-      "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": {
-        "type": "CentralTransitive",
-        "requested": "[13.4.0, )",
-        "resolved": "13.4.0",
-        "contentHash": "4675hN78TeQxM4/UdlJ4jzZ5Zn15LKfzifiXNGEjvDIuMt+sC/DAicna+QLj2mXiVlYeVNdhw0KhMLPVFby+aQ==",
-        "dependencies": {
-          "Aspire.Hosting": "13.4.0"
-        }
-      },
-      "JetBrains.Annotations": {
-        "type": "CentralTransitive",
-        "requested": "[2026.2.0, )",
-        "resolved": "2026.2.0",
-        "contentHash": "drvAEaI7Xf4wU6dx4UTB9MoZWXZlraaQ0qoeThPQ411FxNhId7QdUTukIC9I8aUHP0ycAaGwZNKqSvfOZQvUlg=="
-      },
-      "Magick.NET-Q8-AnyCPU": {
-        "type": "CentralTransitive",
-        "requested": "[14.14.0, )",
-        "resolved": "14.14.0",
-        "contentHash": "Af7QdAb1AfLN09gpr4lzrTjioDez1hW1IQN3Tb0qJWi8NY3ywTJyteoH/8P/mripXq4D5Khz0uWBEX5O59i5Zw==",
-        "dependencies": {
-          "Magick.NET.Core": "14.14.0"
-        }
-      },
-      "Microsoft.AspNetCore.OpenApi": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.9, )",
-        "resolved": "10.0.9",
-        "contentHash": "1ihb8FO9cGgEK1/m3CTtT/SfnynwmiZib0W2pcDVj3KSWk/Sca4VOXEtaptKQc582zpFrzTFiwkGRCglt6H+WQ==",
-        "dependencies": {
-          "Microsoft.OpenApi": "2.0.0"
-        }
-      },
-      "Microsoft.CodeAnalysis.Analyzers": {
-        "type": "CentralTransitive",
-        "requested": "[5.3.0, )",
-        "resolved": "5.3.0",
-        "contentHash": "KuLhbZwB0L8JikL86AE5VWEp3RLNjIcp+j8yz9EJ/UBgRz4+qDEjHg/tluRFbpYpD/e37BqaaNFbQ0vqawBwWQ=="
-      },
       "Microsoft.EntityFrameworkCore.Relational": {
         "type": "CentralTransitive",
         "requested": "[10.0.9, )",
@@ -1231,12 +1042,6 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
           "Microsoft.Extensions.Logging": "10.0.9"
         }
-      },
-      "Microsoft.Extensions.ApiDescription.Server": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.9, )",
-        "resolved": "10.0.9",
-        "contentHash": "n1m7EAbCbHMGiTy++F+mLSan4MrZe0t00XEpJrkai6BFpB6lwEcirflI9FiMm4G4u55h/2RnWToYBDwS+MnN6g=="
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "CentralTransitive",
@@ -1350,22 +1155,6 @@
           "Microsoft.Extensions.Primitives": "10.0.9"
         }
       },
-      "Microsoft.Extensions.ServiceDiscovery": {
-        "type": "CentralTransitive",
-        "requested": "[10.7.0, )",
-        "resolved": "10.7.0",
-        "contentHash": "UgBfP98NmKDjx/2jbLGkckSlc8XG4ubkjPrqACE2i9LPmrgoYGWTh9snybRUGBm0sTchsq3on81XRxfvX+XC5g==",
-        "dependencies": {
-          "Microsoft.Extensions.Http": "10.0.9",
-          "Microsoft.Extensions.ServiceDiscovery.Abstractions": "10.7.0"
-        }
-      },
-      "Microsoft.OpenApi": {
-        "type": "CentralTransitive",
-        "requested": "[2.9.0, )",
-        "resolved": "2.9.0",
-        "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
-      },
       "Npgsql": {
         "type": "CentralTransitive",
         "requested": "[10.0.3, )",
@@ -1403,55 +1192,6 @@
         "dependencies": {
           "Microsoft.Extensions.Hosting.Abstractions": "10.0.0",
           "OpenTelemetry": "1.16.0"
-        }
-      },
-      "OpenTelemetry.Instrumentation.AspNetCore": {
-        "type": "CentralTransitive",
-        "requested": "[1.16.0, )",
-        "resolved": "1.16.0",
-        "contentHash": "vSC5EsmBVNcqXMh9BGkkq8zkoUjrg8ghBDb9zbKR8Bqjd05utjVgVft+fqsqQVsvlV5olGj1pBliHBngcIGSIg==",
-        "dependencies": {
-          "OpenTelemetry.Api.ProviderBuilderExtensions": "[1.16.0, 2.0.0)"
-        }
-      },
-      "OpenTelemetry.Instrumentation.EntityFrameworkCore": {
-        "type": "CentralTransitive",
-        "requested": "[1.16.0-beta.1, )",
-        "resolved": "1.16.0-beta.1",
-        "contentHash": "W8rVFb3/MD7EPf4xzFFGJV8ZP1SfI3FduPGyC8gtOJr9hHWGaxmGgqGjjepEk91rX4ZwqGwRB0fabbpVRNEtQg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "10.0.0",
-          "Microsoft.Extensions.Options": "10.0.0",
-          "OpenTelemetry.Api.ProviderBuilderExtensions": "[1.16.0, 2.0.0)"
-        }
-      },
-      "OpenTelemetry.Instrumentation.GrpcNetClient": {
-        "type": "CentralTransitive",
-        "requested": "[1.16.0-beta.1, )",
-        "resolved": "1.16.0-beta.1",
-        "contentHash": "gwyEXRWLXNRyZrbOXrZfFIsMExvztDXUT1qy3JUp21xldo5LzwM0tnKrTxswHP4yFr6FOVryZa2UWPDvjQaF1Q==",
-        "dependencies": {
-          "OpenTelemetry": "[1.16.0, 2.0.0)"
-        }
-      },
-      "OpenTelemetry.Instrumentation.Http": {
-        "type": "CentralTransitive",
-        "requested": "[1.16.0, )",
-        "resolved": "1.16.0",
-        "contentHash": "+Sz3lfvMXwWE8s/sMruHCDlO/+cArFVc6oBg1tCb70BKlL9FCC7uK4Ar2/VP9Hhwvs+UwaW1vGzE/uiByVHXiA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "10.0.0",
-          "Microsoft.Extensions.Options": "10.0.0",
-          "OpenTelemetry.Api.ProviderBuilderExtensions": "[1.16.0, 2.0.0)"
-        }
-      },
-      "OpenTelemetry.Instrumentation.Runtime": {
-        "type": "CentralTransitive",
-        "requested": "[1.15.1, )",
-        "resolved": "1.15.1",
-        "contentHash": "cpPwlUT5HXcLGPaIgsbSy0W9eFYAPGVbTP1p8/uyQ4Osvf5BJuPpEXE7crL09SmEd44r0DGNKDtsqxaAz0HxQw==",
-        "dependencies": {
-          "OpenTelemetry.Api": "[1.15.3, 2.0.0)"
         }
       }
     }
