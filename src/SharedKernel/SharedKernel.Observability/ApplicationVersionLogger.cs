@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace ViajantesTurismo.ServiceDefaults;
+namespace SharedKernel.Observability;
 
 internal static partial class ApplicationVersionLogger
 {

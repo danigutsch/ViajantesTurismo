@@ -35,7 +35,7 @@ public static class ServiceDefaultsExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.ConfigureOpenTelemetry();
-        builder.Services.AddHostedService<ApplicationVersionLoggingService>();
+        builder.AddApplicationVersionLogging();
 
         builder.AddDefaultHealthChecks();
 

@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ServiceDefaults.Tests;
 public static class ServiceDefaultsVersionTests
 {
     [Fact]
-    public static void Add_service_defaults_registers_application_version_logging()
+    public static void Add_service_defaults_wires_shared_application_version_logging()
     {
         // Arrange
         var builder = Host.CreateApplicationBuilder();
@@ -20,6 +20,10 @@ public static class ServiceDefaultsVersionTests
         hostedServices.ShouldContain(service => string.Equals(
             service.GetType().Name,
             "ApplicationVersionLoggingService",
+            StringComparison.Ordinal));
+        hostedServices.ShouldContain(service => string.Equals(
+            service.GetType().Namespace,
+            "SharedKernel.Observability",
             StringComparison.Ordinal));
     }
 }

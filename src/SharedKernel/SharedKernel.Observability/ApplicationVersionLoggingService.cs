@@ -1,17 +1,16 @@
-using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ViajantesTurismo.ServiceDefaults;
+namespace SharedKernel.Observability;
 
 internal sealed class ApplicationVersionLoggingService(
-    IHostEnvironment environment,
+    string applicationName,
+    string? applicationVersion,
     ILogger<ApplicationVersionLoggingService> logger) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        logger.ApplicationVersion(environment.ApplicationName, string.IsNullOrWhiteSpace(version) ? "unknown" : version);
+        logger.ApplicationVersion(applicationName, string.IsNullOrWhiteSpace(applicationVersion) ? "unknown" : applicationVersion);
 
         return Task.CompletedTask;
     }
