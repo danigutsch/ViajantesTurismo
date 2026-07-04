@@ -97,6 +97,7 @@ if [[ "${skip_markdown}" != true ]]; then
     markdownlint_args=(
         --config /workspace/.markdownlint-cli2.jsonc
         --globs "**/*.md"
+        --globs "!artifacts/**"
     )
 
     if [[ "${fix_mode}" == true ]]; then
