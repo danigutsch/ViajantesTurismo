@@ -187,10 +187,16 @@ flowchart TB
 
 Module rules:
 
+- Treat `src/SharedKernel` as the seed of a future standalone reusable-library repository. SharedKernel
+  modules should remain movable without bounded-context code, app configuration, or host assumptions.
 - Put reusable domain primitives in `SharedKernel.Domain` or `SharedKernel.BuildingBlocks`.
 - Put reusable contracts for dispatching in mediator or integration-event modules.
 - Put provider-specific persistence in provider modules such as
   `SharedKernel.EventSourcing.Npgsql`.
+- A new SharedKernel implementation does not need two in-repo callers when it provides a current,
+  stable, host-agnostic reusable-library capability.
+- Do not put bounded-context business rules, resource names, endpoint routes, or operational policy in
+  SharedKernel modules.
 - Keep analyzers, source generators, and code fixes in their current tool-specific modules.
 
 Related decisions:
@@ -204,6 +210,7 @@ Related decisions:
 ## Planned improvements
 
 - Add automated dependency-direction checks only after the stable rules above are accepted.
-- Split new SharedKernel provider packages only when at least two real callers need the capability.
+- Keep SharedKernel provider packages small and library-shaped so they can move to the future standalone
+  SharedKernel repository without application-specific dependencies.
 - Generate diagrams from project, AppHost, or workflow sources when practical. Keep hand-authored
   diagrams only for conceptual rules that do not have a single source file.

@@ -137,7 +137,10 @@ public sealed class MediaImageUploadIntake(
 
         var image = imageResult.Value;
 
-        await imageStore.Upsert(image, ct).ConfigureAwait(false);
+        await Compensation.CompleteOrCompensate(
+            cancellationToken => imageStore.Upsert(image, cancellationToken),
+            cancellationToken => objectStore.Delete(objectKey, cancellationToken),
+            ct).ConfigureAwait(false);
 
         var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
             Guid.CreateVersion7(),

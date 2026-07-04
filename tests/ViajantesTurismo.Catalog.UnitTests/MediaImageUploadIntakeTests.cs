@@ -103,6 +103,36 @@ public sealed class MediaImageUploadIntakeTests
     }
 
     [Fact]
+    public async Task Accept_deletes_stored_object_when_metadata_persistence_fails()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new ThrowingPublicMediaImageStore(originalImage, new InvalidOperationException("database unavailable"));
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            objectStore,
+            imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            mediaImageId,
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        Func<Task> action = async () => await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await action.ShouldThrow<InvalidOperationException>();
+        objectStore.ObjectKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Accept_rejects_upload_when_scanner_rejects()
     {
         // Arrange

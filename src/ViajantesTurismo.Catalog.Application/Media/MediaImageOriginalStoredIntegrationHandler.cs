@@ -1,4 +1,5 @@
 using System.Globalization;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
 using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Catalog.Domain.Media;
@@ -82,7 +83,16 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                     $"Processed media image {notification.MediaImageId} is invalid: {updatedImage.ErrorDetails?.Detail ?? "unknown validation failure"}.");
             }
 
-            await imageStore.Upsert(updatedImage.Value, ct).ConfigureAwait(false);
+            await Compensation.CompleteOrCompensate(
+                cancellationToken => imageStore.Upsert(updatedImage.Value, cancellationToken),
+                async cancellationToken =>
+                {
+                    foreach (var storedVariantKey in storedVariantKeys)
+                    {
+                        await objectStore.Delete(storedVariantKey, cancellationToken).ConfigureAwait(false);
+                    }
+                },
+                ct).ConfigureAwait(false);
         }
         catch (ImageProcessingException)
         {
