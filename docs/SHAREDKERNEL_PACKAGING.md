@@ -11,6 +11,9 @@ Shared package metadata is centralized in `Directory.Build.props`:
 - repository URL
 - repository URL publishing
 
+Source projects under `src/` default to AOT-compatible and must opt out explicitly when a dependency
+or project type cannot support that promise.
+
 Each packable project still owns its package-specific identity:
 
 - `PackageId`

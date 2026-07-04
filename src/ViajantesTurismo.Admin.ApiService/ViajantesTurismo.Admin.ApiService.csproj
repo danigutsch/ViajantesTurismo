@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <IsAotCompatible>true</IsAotCompatible>
         <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
         <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
         <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts/OpenApi/.generated</OpenApiDocumentsDirectory>
