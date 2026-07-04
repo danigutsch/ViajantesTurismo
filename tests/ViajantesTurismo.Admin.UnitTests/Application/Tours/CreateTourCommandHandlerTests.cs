@@ -2,7 +2,6 @@ using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Tours;
 
@@ -36,16 +35,5 @@ public sealed class CreateTourCommandHandlerTests
         storedTour.Id.ShouldBe(result.Value);
         storedTour.Identifier.ShouldBe(command.Identifier);
         storedTour.Name.ShouldBe(command.Name);
-    }
-
-    [Fact]
-    public async Task AddApplication_dispatcher_invokes_registered_integration_event_handlers()
-    {
-        using var dispatchScope = TestIntegrationEventDispatchScope.Create();
-        var integrationEvent = new TestIntegrationEvent(Guid.CreateVersion7(), DateTimeOffset.UtcNow);
-
-        await dispatchScope.Dispatcher.Dispatch(integrationEvent, CancellationToken.None);
-
-        dispatchScope.Handler.IntegrationEvent.ShouldBeSameAs(integrationEvent);
     }
 }

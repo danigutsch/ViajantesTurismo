@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.DomainEvents;
-using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
@@ -54,7 +53,6 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();
         builder.Services.AddDomainEventProcessing();
-        builder.Services.AddScoped<IIntegrationEventDispatcher, ServiceProviderIntegrationEventDispatcher>();
 
         return builder;
     }
