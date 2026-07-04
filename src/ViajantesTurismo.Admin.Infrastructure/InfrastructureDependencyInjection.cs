@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.EntityFrameworkCore;
-using SharedKernel.Mediator.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Resources;
@@ -47,7 +46,6 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
-        builder.Services.AddEfCoreCommandTransactions<AdminWriteDbContext>();
 
         return builder;
     }
