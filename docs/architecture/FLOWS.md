@@ -42,14 +42,14 @@ Implemented workflow groups:
 Tour creation currently dispatches `AdminTourCreatedIntegrationEvent` after `SaveEntities(ct)` through
 the in-process `ServiceProviderIntegrationEventDispatcher`.
 
-Admin mediator commands that opt into `SharedKernel.Mediator` run through the shared EF Core command
-transaction behavior, bound here to `AdminWriteDbContext`. The behavior wraps commands only, leaves
-queries on the normal read path, and opens the transaction inside the DbContext execution strategy so
-explicit transactions remain compatible with EF Core retry strategies. Existing direct command
-handlers keep their current `SaveEntities(ct)` pattern until they are intentionally migrated to
-mediator dispatch. Stores may still use a local transaction when a use case is not dispatched through
-the command pipeline or when a store must make multiple `SaveChanges` calls atomic inside one
-persistence operation.
+When Admin intentionally migrates a workflow to `SharedKernel.Mediator`, mediator commands can opt into
+the shared EF Core command transaction behavior bound to `AdminWriteDbContext`. The behavior wraps
+commands only, leaves queries on the normal read path, and opens the transaction inside the DbContext
+execution strategy so explicit transactions remain compatible with EF Core retry strategies. Existing
+direct command handlers keep their current `SaveEntities(ct)` pattern until they are intentionally
+migrated to mediator dispatch. Stores may still use a local transaction when a use case is not
+dispatched through the command pipeline or when a store must make multiple `SaveChanges` calls atomic
+inside one persistence operation.
 
 Each module owns one DbContext registration method that applies all module options inside the actual
 provider registration callback. EF Core `ConfigureDbContext<TContext>()` can compose options for
