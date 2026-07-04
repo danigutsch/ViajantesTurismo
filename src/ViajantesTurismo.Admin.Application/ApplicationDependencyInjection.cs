@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.DomainEvents;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
@@ -66,8 +65,6 @@ public static class ApplicationDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton(TimeProvider.System);
-        services.AddScoped<IDomainEventDispatcher, ServiceProviderDomainEventDispatcher>();
         services.AddGeneratedIntegrationEventMappings();
 
         return services;

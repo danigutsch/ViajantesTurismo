@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace SharedKernel.IntegrationEvents.SourceGenerator;
 
 /// <summary>
-/// Generates domain event handlers for attributed integration event mapping methods.
+/// Generates domain event dispatching for attributed integration event mapping methods.
 /// </summary>
 [Generator]
 public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
@@ -34,7 +34,8 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
             .Select(static (mappings, _) => mappings
                 .Where(static mapping => mapping is not null)
                 .Select(static mapping => mapping!)
-                .OrderBy(static mapping => mapping.HandlerTypeName, StringComparer.Ordinal)
+                .OrderBy(static mapping => mapping.DomainEventType, StringComparer.Ordinal)
+                .ThenBy(static mapping => mapping.IntegrationEventType, StringComparer.Ordinal)
                 .ToImmutableArray())
             .WithTrackingName("IntegrationEventMappings");
 
@@ -79,14 +80,14 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
         var containingType = method.ContainingType.ToDisplayString(FullyQualifiedFormat);
         var domainEventType = domainEvent.ToDisplayString(FullyQualifiedFormat);
         var integrationEventType = integrationEvent.ToDisplayString(FullyQualifiedFormat);
-        var handlerTypeName = $"Generated{Sanitize(domainEvent.ToDisplayString())}To{Sanitize(integrationEvent.ToDisplayString())}Handler";
+        var dispatchMethodName = $"Dispatch{Sanitize(domainEvent.ToDisplayString())}";
 
         return new IntegrationEventMappingModel(
             containingType,
             method.Name,
             domainEventType,
             integrationEventType,
-            handlerTypeName);
+            dispatchMethodName);
     }
 
     private static bool Implements(ITypeSymbol type, string interfaceName)
@@ -108,29 +109,54 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
 
             """);
 
-        foreach (var mapping in mappings)
-        {
-            builder.AppendLine($$"""
-                internal sealed class {{mapping.HandlerTypeName}}(
-                    global::SharedKernel.IntegrationEvents.IIntegrationEventOutbox outbox,
-                    global::System.TimeProvider timeProvider)
-                    : global::SharedKernel.DomainEvents.IDomainEventHandler<{{mapping.DomainEventType}}>
+        builder.AppendLine($$"""
+            internal sealed class GeneratedIntegrationEventDomainEventDispatcher(
+                global::SharedKernel.IntegrationEvents.IIntegrationEventOutbox outbox,
+                global::System.TimeProvider timeProvider)
+                : global::SharedKernel.DomainEvents.IDomainEventDispatcher
+            {
+                public global::System.Threading.Tasks.ValueTask Dispatch<TDomainEvent>(TDomainEvent domainEvent, global::System.Threading.CancellationToken ct)
+                    where TDomainEvent : global::SharedKernel.Domain.IDomainEvent
                 {
-                    public global::System.Threading.Tasks.ValueTask Handle({{mapping.DomainEventType}} domainEvent, global::System.Threading.CancellationToken ct)
+                    global::System.ArgumentNullException.ThrowIfNull(domainEvent);
+
+                    return domainEvent switch
                     {
-                        global::System.ArgumentNullException.ThrowIfNull(domainEvent);
 
-                        return outbox.Enqueue(
-                            {{mapping.ContainingType}}.{{mapping.MethodName}}(
-                                domainEvent,
-                                global::System.Guid.CreateVersion7(),
-                                timeProvider.GetUtcNow()),
-                            ct);
-                    }
-                }
+            """);
 
-                """);
+        foreach (var domainEventType in mappings.Select(static mapping => mapping.DomainEventType).Distinct(StringComparer.Ordinal))
+        {
+            var dispatchMethodName = mappings.First(mapping => string.Equals(mapping.DomainEventType, domainEventType, StringComparison.Ordinal)).DispatchMethodName;
+            builder.AppendLine($"            {domainEventType} typedDomainEvent => {dispatchMethodName}(typedDomainEvent, ct),");
         }
+
+        builder.AppendLine("            _ => global::System.Threading.Tasks.ValueTask.CompletedTask,");
+        builder.AppendLine("        };");
+        builder.AppendLine("    }");
+        builder.AppendLine();
+
+        foreach (var group in mappings.GroupBy(static mapping => mapping.DomainEventType).OrderBy(static group => group.Key, StringComparer.Ordinal))
+        {
+            var firstMapping = group.First();
+            builder.AppendLine($"    private async global::System.Threading.Tasks.ValueTask {firstMapping.DispatchMethodName}({group.Key} domainEvent, global::System.Threading.CancellationToken ct)");
+            builder.AppendLine("    {");
+
+            foreach (var mapping in group.OrderBy(static mapping => mapping.IntegrationEventType, StringComparer.Ordinal))
+            {
+                builder.AppendLine("        await outbox.Enqueue(");
+                builder.AppendLine($"            {mapping.ContainingType}.{mapping.MethodName}(");
+                builder.AppendLine("                domainEvent,");
+                builder.AppendLine("                global::System.Guid.CreateVersion7(),");
+                builder.AppendLine("                timeProvider.GetUtcNow()),");
+                builder.AppendLine("            ct).ConfigureAwait(false);");
+            }
+
+            builder.AppendLine("    }");
+            builder.AppendLine();
+        }
+
+        builder.AppendLine("}");
 
         builder.AppendLine("}");
         builder.AppendLine();
@@ -143,11 +169,7 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
         builder.AppendLine("    {");
         builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(services);");
         builder.AppendLine("        services.AddSingleton(global::System.TimeProvider.System);");
-
-        foreach (var mapping in mappings)
-        {
-            builder.AppendLine($"        services.AddScoped<global::SharedKernel.DomainEvents.IDomainEventHandler<{mapping.DomainEventType}>, global::SharedKernel.IntegrationEvents.Generated.{mapping.HandlerTypeName}>();");
-        }
+        builder.AppendLine("        services.AddScoped<global::SharedKernel.DomainEvents.IDomainEventDispatcher, global::SharedKernel.IntegrationEvents.Generated.GeneratedIntegrationEventDomainEventDispatcher>();");
 
         builder.AppendLine("        return services;");
         builder.AppendLine("    }");
@@ -174,7 +196,7 @@ internal sealed class IntegrationEventMappingModel(
     string methodName,
     string domainEventType,
     string integrationEventType,
-    string handlerTypeName)
+    string dispatchMethodName)
 {
     public string ContainingType { get; } = containingType;
 
@@ -184,5 +206,5 @@ internal sealed class IntegrationEventMappingModel(
 
     public string IntegrationEventType { get; } = integrationEventType;
 
-    public string HandlerTypeName { get; } = handlerTypeName;
+    public string DispatchMethodName { get; } = dispatchMethodName;
 }
