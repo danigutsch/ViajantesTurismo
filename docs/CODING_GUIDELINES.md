@@ -344,7 +344,7 @@ See [TEST_GUIDELINES.md](TEST_GUIDELINES.md).
 
 ### Project configuration
 
-Projects under `src/` inherit AOT analysis by default from `src/Directory.Build.props`.
+Projects under `src/` inherit AOT analysis by default from `src/Directory.Build.targets`.
 Do not repeat the inherited setting in individual project files.
 
 Projects that cannot support the promise must opt out explicitly and state why:
