@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.EntityFrameworkCore;
-using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Resources;
@@ -40,7 +38,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
-        builder.Services.AddIntegrationEventOutbox();
+        builder.Services.AddIntegrationEventOutboxModule();
 
         return builder;
     }
@@ -62,7 +60,7 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
-        builder.Services.AddIntegrationEventOutbox();
+        builder.Services.AddIntegrationEventOutboxModule();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
@@ -83,9 +81,7 @@ public static class InfrastructureDependencyInjection
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddScoped<DispatchDomainEventsSaveChangesInterceptor>();
-        builder.Services.AddScoped<ISaveChangesInterceptor>(sp =>
-            sp.GetRequiredService<DispatchDomainEventsSaveChangesInterceptor>());
+        builder.Services.AddDomainEventDispatchModule();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
@@ -117,8 +113,4 @@ public static class InfrastructureDependencyInjection
         builder.Services.ApplyDbContextOptionsConfigurations<AdminWriteDbContext>(options);
     }
 
-    private static void AddIntegrationEventOutbox(this IServiceCollection services)
-    {
-        services.AddScoped<IIntegrationEventOutbox, EfIntegrationEventOutbox>();
-    }
 }

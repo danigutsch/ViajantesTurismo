@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
@@ -9,7 +8,7 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 
 internal sealed class AdminWriteDbContext(
     DbContextOptions<AdminWriteDbContext> options,
-    IEnumerable<ISaveChangesInterceptor>? saveChangesInterceptors = null)
+    IEnumerable<IAdminWriteDbContextModule>? modules = null)
     : DbContext(options), IUnitOfWork
 {
     public DbSet<Tour> Tours => Set<Tour>();
@@ -26,9 +25,12 @@ internal sealed class AdminWriteDbContext(
     {
         base.OnConfiguring(optionsBuilder);
 
-        if (saveChangesInterceptors is not null)
+        if (modules is not null)
         {
-            optionsBuilder.AddInterceptors(saveChangesInterceptors);
+            foreach (var module in modules)
+            {
+                module.Configure(optionsBuilder);
+            }
         }
     }
 
@@ -40,6 +42,12 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
-        modelBuilder.ApplyConfiguration(new IntegrationEventOutboxMessageConfiguration());
+        if (modules is not null)
+        {
+            foreach (var module in modules)
+            {
+                module.Configure(modelBuilder);
+            }
+        }
     }
 }

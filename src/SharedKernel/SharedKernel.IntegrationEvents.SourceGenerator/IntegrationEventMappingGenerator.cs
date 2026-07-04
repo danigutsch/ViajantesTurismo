@@ -168,8 +168,8 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
         builder.AppendLine("    public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddGeneratedIntegrationEventMappings(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)");
         builder.AppendLine("    {");
         builder.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(services);");
-        builder.AppendLine("        services.AddSingleton(global::System.TimeProvider.System);");
-        builder.AppendLine("        services.AddScoped<global::SharedKernel.DomainEvents.IDomainEventDispatcher, global::SharedKernel.IntegrationEvents.Generated.GeneratedIntegrationEventDomainEventDispatcher>();");
+        builder.AppendLine("        global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton(services, global::System.TimeProvider.System);");
+        builder.AppendLine("        global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddScoped<global::SharedKernel.DomainEvents.IDomainEventDispatcher, global::SharedKernel.IntegrationEvents.Generated.GeneratedIntegrationEventDomainEventDispatcher>(services);");
 
         builder.AppendLine("        return services;");
         builder.AppendLine("    }");
