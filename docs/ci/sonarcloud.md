@@ -135,7 +135,7 @@ Troubleshooting notes:
 - coverage generation issues: inspect `TestResults/sonar-coverage-collection.log` and
   `TestResults/sonar-reportgenerator.log`
 - issue-policy failures: inspect the `SONAR POLICY FAILURE` lines and the SonarCloud pull request
-  details for the matching security or medium-or-higher issues
+  details for the matching security or high-or-higher issues
 
 ## Analysis exclusions
 

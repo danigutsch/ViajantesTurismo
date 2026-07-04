@@ -51,7 +51,7 @@ main() {
 
             local severity_policy_line
             severity_policy_line=$(
-                grep -E 'SONAR POLICY CHECK: new medium-or-higher issues=' "${sonar_log_file}" \
+                grep -E 'SONAR POLICY CHECK: new high-or-higher issues=' "${sonar_log_file}" \
                     | tail -n 1 \
                     || true
             )
