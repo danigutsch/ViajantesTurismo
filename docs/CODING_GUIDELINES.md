@@ -455,14 +455,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 ### Known Limitations
 
-| Component                                       | AOT Status        | Notes                                                      |
-| ----------------------------------------------- | ----------------- | ---------------------------------------------------------- |
-| Contracts, Domain, Application                  | ✅ Compatible     | Inherits the `src/` AOT default                            |
-| ApiService                                      | ✅ Compatible     | Inherits the `src/` AOT default and uses source generators  |
-| Infrastructure (EF Core)                        | ❌ Not Compatible | EF Core DbContext and migrations block the AOT promise      |
-| Web (Blazor Server or Razor Components)         | ❌ Not Compatible | Blazor Server and Razor Components are not Native AOT-ready |
-| Aspire AppHost and migration orchestration      | ❌ Not Compatible | Orchestration and migration execution are not AOT targets   |
-| Roslyn analyzers, code fixes, source generators | ❌ Not Compatible | `netstandard2.0` does not support `IsAotCompatible`         |
+| Component                                       | AOT Status        | Notes                                                       |
+| ----------------------------------------------- | ----------------- | ----------------------------------------------------------  |
+| Contracts, Domain, Application                  | ✅ Compatible      | Inherits the `src/` AOT default                             |
+| ApiService                                      | ✅ Compatible      | Inherits the `src/` AOT default and uses source generators  |
+| Infrastructure (EF Core)                        | ❌ Not Compatible  | EF Core DbContext and migrations block the AOT promise      |
+| Web (Blazor Server or Razor Components)         | ❌ Not Compatible  | Blazor Server and Razor Components are not Native AOT-ready |
+| Aspire AppHost and migration orchestration      | ❌ Not Compatible  | Orchestration and migration execution are not AOT targets   |
+| Roslyn analyzers, code fixes, source generators | ❌ Not Compatible  | `netstandard2.0` does not support `IsAotCompatible`         |
 
 ## Performance
 
