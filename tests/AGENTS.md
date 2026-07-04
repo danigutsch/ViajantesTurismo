@@ -40,12 +40,20 @@ This file overrides root guidance where test-specific behavior is needed.
 - Feature files should follow `<aggregate>-<capability>.feature`.
 - Step definition methods should use descriptive Given/When/Then-style names with underscores.
 - Prefer precise assertions on business-visible outcomes over incidental implementation details.
-- Use repository-owned extension assertions from `SharedKernel.Testing.Assertions` across tests,
-  for example `actual.ShouldBe(expected)`, `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
-  and `action.ShouldThrow<InvalidOperationException>()`.
-- Use `TestAssert` only when no extension wrapper exists yet and there is a specific reason not to add one;
-  direct `Xunit.Assert` is allowed inside `src/SharedKernel/SharedKernel.Testing.Assertions` wrapper implementation,
-  generated/sample/non-maintained test assets, or a documented temporary migration exception only.
+- New or touched maintained tests must use the repository assertion package:
+  `tests/SharedKernel.Testing.Assertions` / `SharedKernel.Testing.Assertions`.
+  If a test project does not already reference it, add the project reference and a global
+  `<Using Include="SharedKernel.Testing.Assertions" />` (or a file `using`) instead of using
+  `Xunit.Assert` directly.
+- Prefer extension assertions from `SharedKernel.Testing.Assertions`, for example
+  `actual.ShouldBe(expected)`, `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
+  `text.ShouldContain(expected, StringComparison.Ordinal)`, and
+  `action.ShouldThrow<InvalidOperationException>()`.
+- Use `TestAssert` only as the low-level repository assertion surface when no extension wrapper exists
+  yet and there is a specific reason not to add one.
+- Direct `Xunit.Assert` is allowed only inside `tests/SharedKernel.Testing.Assertions` wrapper
+  implementation, generated/sample/non-maintained test assets, or a documented temporary migration
+  exception. Do not add new direct `Assert.*` calls to maintained tests.
 - Prefer assigning computed values to locals before asserting on them; avoid embedding method calls
   directly inside assertion arguments when that makes debugging harder.
 - Do not use the null-forgiving operator (`!`) in tests to dereference values or feed assertions;
