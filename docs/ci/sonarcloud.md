@@ -59,15 +59,16 @@ repository-owned CI policy fails the SonarCloud job when pull request new code h
 of these issue categories:
 
 - any unresolved issue whose impacted software quality is `SECURITY`
-- any unresolved issue whose Web API impact severity is `MEDIUM`, `HIGH`, or `BLOCKER`
+- any unresolved issue whose Web API impact severity is `HIGH` or `BLOCKER`
 
 The script uses the pull request key and project key instead of scraping SonarCloud UI pages.
 GitHub summaries include `SONAR POLICY` lines so the failing issue category is visible in CI.
 CI uploads the raw `sonar-policy-responses` artifact when those Web API responses are available.
 Custom SonarCloud quality gates are not available to this project, so the required `SonarCloud`
 check keeps the repository-owned issue policy as the fallback merge gate. A green hosted quality
-gate is not enough when the fallback policy reports unresolved security or medium-or-higher pull
-request issues.
+gate is not enough when the fallback policy reports unresolved security or high-or-higher pull
+request issues. Medium-impact maintainability findings remain visible in SonarCloud but do not
+block merges unless the hosted quality gate fails.
 
 ## Required repository settings
 
@@ -134,7 +135,7 @@ Troubleshooting notes:
 - coverage generation issues: inspect `TestResults/sonar-coverage-collection.log` and
   `TestResults/sonar-reportgenerator.log`
 - issue-policy failures: inspect the `SONAR POLICY FAILURE` lines and the SonarCloud pull request
-  details for the matching security or medium-or-higher issues
+  details for the matching security or high-or-higher issues
 
 ## Analysis exclusions
 

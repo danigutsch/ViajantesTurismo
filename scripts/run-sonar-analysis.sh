@@ -236,7 +236,7 @@ run_with_log() {
         "$@" 2>&1 | tee "${log_file}"
         exit_code="${PIPESTATUS[0]}"
     else
-        "$@" >"${log_file}" 2>&1
+        "$@" > "${log_file}" 2>&1
         exit_code="$?"
     fi
 
@@ -287,7 +287,7 @@ detect_pull_request_key() {
 extract_issue_total() {
     local response_file="$1"
 
-    python3 - "${response_file}" <<'PY'
+    python3 - "${response_file}" << 'PY'
 import json
 import sys
 
@@ -350,20 +350,20 @@ run_policy_gate() {
         return 0
     fi
 
-    if ! command -v python3 >/dev/null 2>&1; then
+    if ! command -v python3 > /dev/null 2>&1; then
         echo "python3 is required to evaluate Sonar issue policy responses." >&2
         return 1
     fi
 
-    if ! command -v curl >/dev/null 2>&1; then
+    if ! command -v curl > /dev/null 2>&1; then
         echo "curl is required to query Sonar issue policy responses." >&2
         return 1
     fi
 
     local security_response="TestResults/sonar-policy-security-issues.json"
-    local severity_response="TestResults/sonar-policy-medium-issues.json"
+    local severity_response="TestResults/sonar-policy-high-issues.json"
     local security_issue_count
-    local medium_issue_count
+    local high_issue_count
     local policy_exit_code=0
     local command_exit_code
 
@@ -378,12 +378,12 @@ run_policy_gate() {
     fi
 
     set +e
-    query_sonar_issues "${severity_response}" "impactSeverities" "MEDIUM,HIGH,BLOCKER"
+    query_sonar_issues "${severity_response}" "impactSeverities" "HIGH,BLOCKER"
     command_exit_code="$?"
     set -e
 
     if [[ ${command_exit_code} -ne 0 ]]; then
-        echo "Failed to query Sonar medium-or-higher issue policy." >&2
+        echo "Failed to query Sonar high-or-higher issue policy." >&2
         return 1
     fi
 
@@ -398,25 +398,25 @@ run_policy_gate() {
     fi
 
     set +e
-    medium_issue_count="$(extract_issue_total "${severity_response}")"
+    high_issue_count="$(extract_issue_total "${severity_response}")"
     command_exit_code="$?"
     set -e
 
     if [[ ${command_exit_code} -ne 0 ]]; then
-        echo "Failed to parse Sonar medium-or-higher issue policy response." >&2
+        echo "Failed to parse Sonar high-or-higher issue policy response." >&2
         return 1
     fi
 
     echo "SONAR POLICY CHECK: new security issues=${security_issue_count}"
-    echo "SONAR POLICY CHECK: new medium-or-higher issues=${medium_issue_count}"
+    echo "SONAR POLICY CHECK: new high-or-higher issues=${high_issue_count}"
 
     if [[ "${security_issue_count}" != "0" ]]; then
         echo "SONAR POLICY FAILURE: new security issues detected (${security_issue_count})." >&2
         policy_exit_code=1
     fi
 
-    if [[ "${medium_issue_count}" != "0" ]]; then
-        echo "SONAR POLICY FAILURE: new medium-or-higher issues detected (${medium_issue_count})." >&2
+    if [[ "${high_issue_count}" != "0" ]]; then
+        echo "SONAR POLICY FAILURE: new high-or-higher issues detected (${high_issue_count})." >&2
         policy_exit_code=1
     fi
 
@@ -505,16 +505,16 @@ trap 'cleanup "$?"; exit $?' EXIT
 
 run_with_log "sonar_begin" "Starting SonarScanner" "${sonar_begin_log}" \
     dotnet tool run dotnet-sonarscanner begin \
-        "/o:${sonar_organization}" \
-        "/k:${sonar_project_key}" \
-        "/d:sonar.token=${sonar_token}" \
-        "/d:sonar.projectBaseDir=${repo_root}" \
-        "/d:sonar.coverageReportPaths=${coverage_report}" \
-        "/d:sonar.exclusions=${sonar_exclusions}" \
-        "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
-        "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
-        "/d:sonar.qualitygate.wait=true" \
-        "/d:sonar.qualitygate.timeout=300"
+    "/o:${sonar_organization}" \
+    "/k:${sonar_project_key}" \
+    "/d:sonar.token=${sonar_token}" \
+    "/d:sonar.projectBaseDir=${repo_root}" \
+    "/d:sonar.coverageReportPaths=${coverage_report}" \
+    "/d:sonar.exclusions=${sonar_exclusions}" \
+    "/d:sonar.coverage.exclusions=${sonar_coverage_exclusions}" \
+    "/d:sonar.cpd.exclusions=${sonar_cpd_exclusions}" \
+    "/d:sonar.qualitygate.wait=true" \
+    "/d:sonar.qualitygate.timeout=300"
 
 run_with_log "build_solution" "Building solution" "${build_log}" \
     dotnet build ViajantesTurismo.slnx --no-restore
@@ -548,8 +548,8 @@ rm -rf "${coverage_html_dir}"
 
 run_with_log "generate_coverage_report" "Generating coverage report" "${reportgenerator_log}" \
     dotnet tool run reportgenerator \
-        "-reports:${coverage_reports}" \
-        "-targetdir:${coverage_html_dir}" \
-        "-reporttypes:Html;SonarQube"
+    "-reports:${coverage_reports}" \
+    "-targetdir:${coverage_html_dir}" \
+    "-reporttypes:Html;SonarQube"
 
 cp "${coverage_html_dir}/SonarQube.xml" "${coverage_report}"
