@@ -67,6 +67,13 @@ Decisions about application architecture and layer responsibilities.
 - **[ADR-031](adr/20260703-rich-domain-behavior-and-state-exposure.md)** — Rich Domain Behavior
   and State Exposure
 
+### Versioning & Release
+
+Decisions about package versions, release channels, and compatibility signals.
+
+- **[ADR-032](adr/20260704-versioning-and-release-governance.md)** — Versioning and Release
+  Governance
+
 ### Business Logic & Pricing
 
 Decisions about business rules, pricing calculations, and payment handling.
