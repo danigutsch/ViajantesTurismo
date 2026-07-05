@@ -105,6 +105,7 @@ jobs:
           dotnet run \
             --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
             --configuration Release \
+            --no-restore \
             --no-build \
             -- \
             pack-sharedkernel \
@@ -125,6 +126,7 @@ jobs:
           git log --no-merges --format='- %s (%h)' "${commit_range}" | dotnet run \
             --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
             --configuration Release \
+            --no-restore \
             --no-build \
             -- \
             prepare-release \
