@@ -159,12 +159,13 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 
 1. Checkout full history so the existing version calculation can inspect tags and commits.
 2. Run `SharedKernel.Versioning.Tool calculate-release` from the CI versioning flow.
-3. Build the solution in Release mode with the computed version properties.
-4. Test the Release build with `--no-build` so build and test never run in parallel.
-5. Run `SharedKernel.Versioning.Tool pack-sharedkernel` with the computed package version.
-6. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
+3. Run `SharedKernel.Versioning.Tool pack-sharedkernel` with the computed package version.
+4. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
    and `release-manifest.json`.
-7. Upload package and release-prep artifacts for review.
+5. Upload package and release-prep artifacts for review.
+
+The existing CI workflow remains the build/test gate for pull requests. Release Prep intentionally
+stays focused on release artifact generation so it does not duplicate full-solution validation.
 
 The stable path is manual-only. It requires the `release` environment approval and the
 `promote_stable` dispatch input before it can create a `vX.Y.Z` tag. GitHub release creation and

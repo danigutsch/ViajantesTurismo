@@ -9,6 +9,7 @@ name: Release Prep
       - tests/SharedKernel.Versioning.Tests/**
       - Directory.Build.props
       - Directory.Packages.props
+      - ViajantesTurismo.slnx
       - global.json
       - NuGet.Config
   workflow_dispatch:
