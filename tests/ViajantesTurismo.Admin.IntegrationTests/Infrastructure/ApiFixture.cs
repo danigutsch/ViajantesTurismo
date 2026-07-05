@@ -1,10 +1,10 @@
 using Projects;
-using SharedKernel.Testing;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
-public sealed class ApiFixture : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
+public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
     private AspireTestApplication? _app;
     private HttpClient? _client;
