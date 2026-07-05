@@ -56,6 +56,7 @@
         <Project Path="src/SharedKernel/SharedKernel.EntityFrameworkCore/SharedKernel.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator.EntityFrameworkCore/SharedKernel.Mediator.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Versioning/SharedKernel.Versioning.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.ApiVersioning/SharedKernel.ApiVersioning.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />
