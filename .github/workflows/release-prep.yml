@@ -249,6 +249,10 @@ jobs:
           fi
 
           for package in "${packages[@]}"; do
+            if [[ "${package}" == *.symbols.nupkg ]]; then
+              continue
+            fi
+
             dotnet nuget push "${package}" \
               --api-key "${NUGET_API_KEY}" \
               --source https://api.nuget.org/v3/index.json \

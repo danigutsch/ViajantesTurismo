@@ -254,8 +254,7 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The exclusive lower bound.</param>
     public static void ShouldBeGreaterThan<T>(this T actual, T expected)
-        where T : IComparable<T> => Xunit.Assert.True(
-            actual.CompareTo(expected) > 0,
+        where T : IComparable<T> => (actual.CompareTo(expected) > 0).ShouldBeTrue(
             $"Expected value greater than {expected}, but found {actual}.");
 
     /// <summary>
@@ -265,8 +264,7 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The inclusive lower bound.</param>
     public static void ShouldBeGreaterThanOrEqualTo<T>(this T actual, T expected)
-        where T : IComparable<T> => Xunit.Assert.True(
-            actual.CompareTo(expected) >= 0,
+        where T : IComparable<T> => (actual.CompareTo(expected) >= 0).ShouldBeTrue(
             $"Expected value greater than or equal to {expected}, but found {actual}.");
 
     /// <summary>
@@ -276,8 +274,7 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The exclusive upper bound.</param>
     public static void ShouldBeLessThan<T>(this T actual, T expected)
-        where T : IComparable<T> => Xunit.Assert.True(
-            actual.CompareTo(expected) < 0,
+        where T : IComparable<T> => (actual.CompareTo(expected) < 0).ShouldBeTrue(
             $"Expected value less than {expected}, but found {actual}.");
 
     /// <summary>
@@ -287,8 +284,7 @@ public static class ShouldAssertionExtensions
     /// <param name="actual">The actual value.</param>
     /// <param name="expected">The inclusive upper bound.</param>
     public static void ShouldBeLessThanOrEqualTo<T>(this T actual, T expected)
-        where T : IComparable<T> => Xunit.Assert.True(
-            actual.CompareTo(expected) <= 0,
+        where T : IComparable<T> => (actual.CompareTo(expected) <= 0).ShouldBeTrue(
             $"Expected value less than or equal to {expected}, but found {actual}.");
 
     /// <summary>
