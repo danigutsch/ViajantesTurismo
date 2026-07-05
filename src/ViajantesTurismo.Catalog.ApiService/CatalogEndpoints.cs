@@ -386,14 +386,14 @@ internal static class CatalogEndpoints
             errors[nameof(PublicMediaImageDto.Tags)] = ["Tags are required."];
         }
 
-        if (!IsHttpUri(image.SourceUri))
+        if (string.IsNullOrWhiteSpace(image.SourceObjectKey) && !IsHttpUri(image.SourceUri))
         {
-            errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI."];
+            errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI when SourceObjectKey is not provided."];
         }
 
-        if (image.ResponsiveVariants is not null && image.ResponsiveVariants.Any(variant => variant is not null && !IsHttpUri(variant.Uri)))
+        if (image.ResponsiveVariants is not null && image.ResponsiveVariants.Any(static variant => variant is not null && string.IsNullOrWhiteSpace(variant.ObjectKey) && !IsHttpUri(variant.Uri)))
         {
-            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs."];
+            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
         }
     }
 

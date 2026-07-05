@@ -3,9 +3,9 @@ using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using SharedKernel.InputNormalization;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-internal sealed class TestPublicContentStore : IPublicContentStore
+public sealed class TestPublicContentStore : IPublicContentStore
 {
     private readonly ConcurrentDictionary<string, EditablePublicContent> contentByKey = new(StringComparer.OrdinalIgnoreCase);
 

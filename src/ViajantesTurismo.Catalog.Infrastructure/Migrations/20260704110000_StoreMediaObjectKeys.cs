@@ -31,7 +31,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 SET "SourceObjectKey" = CASE
                     WHEN POSITION('media/' IN "SourceUri") > 0
                         THEN SUBSTRING("SourceUri" FROM POSITION('media/' IN "SourceUri"))
-                    ELSE "SourceUri"
+                    WHEN "SourceUri" LIKE 'http://%' OR "SourceUri" LIKE 'https://%'
+                        THEN LTRIM(REGEXP_REPLACE(SPLIT_PART(SPLIT_PART("SourceUri", '?', 1), '#', 1), '^[a-zA-Z][a-zA-Z0-9+.-]*://[^/]*', ''), '/')
+                    ELSE LTRIM("SourceUri", '/')
                 END
                 WHERE "SourceUri" <> '';
                 """);
@@ -41,7 +43,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 SET "ObjectKey" = CASE
                     WHEN POSITION('media/' IN "Uri") > 0
                         THEN SUBSTRING("Uri" FROM POSITION('media/' IN "Uri"))
-                    ELSE "Uri"
+                    WHEN "Uri" LIKE 'http://%' OR "Uri" LIKE 'https://%'
+                        THEN LTRIM(REGEXP_REPLACE(SPLIT_PART(SPLIT_PART("Uri", '?', 1), '#', 1), '^[a-zA-Z][a-zA-Z0-9+.-]*://[^/]*', ''), '/')
+                    ELSE LTRIM("Uri", '/')
                 END
                 WHERE "Uri" <> '';
                 """);

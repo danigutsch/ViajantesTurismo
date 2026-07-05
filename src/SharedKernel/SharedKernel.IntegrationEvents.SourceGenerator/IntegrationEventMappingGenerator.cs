@@ -59,7 +59,7 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
         cancellationToken.ThrowIfCancellationRequested();
 
         var method = (IMethodSymbol)context.TargetSymbol;
-        if (method.IsGenericMethod || !method.IsStatic || method.Parameters.Length != 3)
+        if (method.IsGenericMethod || !method.IsStatic || !IsAccessibleToGeneratedCode(method) || method.Parameters.Length != 3)
         {
             return null;
         }
@@ -96,6 +96,9 @@ public sealed class IntegrationEventMappingGenerator : IIncrementalGenerator
             type.AllInterfaces.Any(interfaceType =>
             string.Equals(interfaceType.OriginalDefinition.ToDisplayString(), interfaceName, StringComparison.Ordinal));
     }
+
+    private static bool IsAccessibleToGeneratedCode(IMethodSymbol method) =>
+        method.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
 
     private static string Emit(ImmutableArray<IntegrationEventMappingModel> mappings)
     {

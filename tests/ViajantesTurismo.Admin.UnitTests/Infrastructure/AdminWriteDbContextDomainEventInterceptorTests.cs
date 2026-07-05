@@ -1,4 +1,3 @@
-using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -15,9 +14,8 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
     {
         var dispatcher = new OutboxEnqueuingDomainEventDispatcher(new FakeTimeProvider(
             new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
-        using var dispatcherServices = DomainEventDispatcherServiceProvider.Create(dispatcher);
-        var interceptor = new DispatchDomainEventsSaveChangesInterceptor(dispatcherServices.ServiceProvider);
-        await using var dbContext = AdminWriteDbContextTestFactory.Create(interceptor);
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
+        var dbContext = scope.DbContext;
         dispatcher.DbContext = dbContext;
         var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-2026", Name: "Andes 2026"));
         dbContext.Tours.Add(tour);
@@ -38,14 +36,13 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
     public async Task SaveEntities_does_not_clear_domain_events_when_save_fails_after_dispatch()
     {
         var dispatcher = new CapturingDomainEventDispatcher();
-        using var dispatcherServices = DomainEventDispatcherServiceProvider.Create(dispatcher);
-        var dispatchInterceptor = new DispatchDomainEventsSaveChangesInterceptor(dispatcherServices.ServiceProvider);
         var failingInterceptor = new FailingSaveChangesInterceptor();
-        await using var dbContext = AdminWriteDbContextTestFactory.Create(dispatchInterceptor, failingInterceptor);
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher, failingInterceptor);
+        var dbContext = scope.DbContext;
         var tour = EntityBuilders.BuildTour();
         dbContext.Tours.Add(tour);
 
-        var action = () => dbContext.SaveEntities(CancellationToken.None);
+        Func<Task> action = () => dbContext.SaveEntities(CancellationToken.None);
 
         await action.ShouldThrow<InvalidOperationException>();
         dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
@@ -56,9 +53,8 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
     public async Task SaveEntities_skips_dispatch_when_tracked_aggregates_have_no_domain_events()
     {
         var dispatcher = new CapturingDomainEventDispatcher();
-        using var dispatcherServices = DomainEventDispatcherServiceProvider.Create(dispatcher);
-        var interceptor = new DispatchDomainEventsSaveChangesInterceptor(dispatcherServices.ServiceProvider);
-        await using var dbContext = AdminWriteDbContextTestFactory.Create(interceptor);
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
+        var dbContext = scope.DbContext;
         var tour = EntityBuilders.BuildTour();
         tour.ClearDomainEvents();
         dbContext.Tours.Add(tour);

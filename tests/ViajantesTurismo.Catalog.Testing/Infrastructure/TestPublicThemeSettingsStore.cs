@@ -1,9 +1,9 @@
 using ViajantesTurismo.Catalog.Application.PublicTheme;
 using ViajantesTurismo.Catalog.Domain.PublicTheme;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-internal sealed class TestPublicThemeSettingsStore : IPublicThemeSettingsStore
+public sealed class TestPublicThemeSettingsStore : IPublicThemeSettingsStore
 {
     private PublicThemeSettings? theme;
 

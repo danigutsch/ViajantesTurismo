@@ -164,9 +164,9 @@ public sealed class PublicMediaImage
 
         var errors = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
-        if (string.IsNullOrWhiteSpace(metadata.SourceObjectKey))
+        if (IsInvalidObjectKey(metadata.SourceObjectKey))
         {
-            errors[nameof(PublicMediaImageMetadata.SourceObjectKey)] = ["Source object key is required."];
+            errors[nameof(PublicMediaImageMetadata.SourceObjectKey)] = ["Source object key must be a relative path without empty or dot segments."];
         }
 
         ValidateRequiredText(errors, nameof(PublicMediaImageMetadata.AltText), metadata.AltText, ContractConstants.MaxAltTextLength, "Alt text is required.", "Alt text");
@@ -375,7 +375,7 @@ public sealed class PublicMediaImage
     {
         if (responsiveVariants.Any(IsInvalidResponsiveVariant))
         {
-            errors[nameof(ResponsiveVariants)] = ["Responsive variants must include absolute URIs, positive dimensions, content type, and file size."];
+            errors[nameof(ResponsiveVariants)] = ["Responsive variants must include valid relative object keys, positive dimensions, content type, and file size."];
         }
         else if (processingStatus == MediaImageProcessingStatus.Ready && responsiveVariants.Count == 0)
         {
@@ -387,13 +387,33 @@ public sealed class PublicMediaImage
     {
         var contentType = StringSanitizer.Sanitize(variant.ContentType);
 
-        return string.IsNullOrWhiteSpace(variant.ObjectKey)
+        return IsInvalidObjectKey(variant.ObjectKey)
             || variant.Width <= 0
             || variant.Height <= 0
             || string.IsNullOrWhiteSpace(contentType)
             || contentType.Length > ContractConstants.MaxContentTypeLength
             || variant.FileSizeBytes <= 0;
     }
+
+    private static bool IsInvalidObjectKey(string? objectKey)
+    {
+        var sanitized = StringSanitizer.Sanitize(objectKey);
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            return true;
+        }
+
+        if (sanitized.StartsWith('/') || sanitized.StartsWith('\\') || IsWindowsRootedPath(sanitized))
+        {
+            return true;
+        }
+
+        return sanitized.Replace('\\', '/').Split('/').Any(static segment =>
+            segment.Length == 0 || segment is "." or "..");
+    }
+
+    private static bool IsWindowsRootedPath(string objectKey) =>
+        objectKey.Length >= 2 && char.IsAsciiLetter(objectKey[0]) && objectKey[1] == ':';
 
     private static void ValidateRequiredText(
         Dictionary<string, string[]> errors,

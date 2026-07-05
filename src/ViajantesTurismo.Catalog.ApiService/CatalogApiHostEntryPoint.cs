@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Catalog.ApiService;
 /// <summary>
 /// Provides an assembly marker used by ASP.NET Core test hosts.
 /// </summary>
-internal sealed class CatalogApiEntryPoint
+internal sealed class CatalogApiHostEntryPoint
 {
     /// <summary>
     /// Gets the API service assembly.

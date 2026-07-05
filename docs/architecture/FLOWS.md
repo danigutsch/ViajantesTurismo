@@ -99,6 +99,37 @@ flowchart LR
     inbox -. planned .-> catalogConsumer
 ```
 
+Admin write-side domain-event dispatch uses SaveChanges interception to write outbox rows in the same
+transaction as aggregate changes. Domain events remain on aggregates when SaveChanges fails and are
+cleared only after EF reports a successful save.
+
+```mermaid
+sequenceDiagram
+    participant Handler as Admin command handler
+    participant Aggregate as Aggregate
+    participant Context as AdminWriteDbContext
+    participant Interceptor as SaveChanges interceptor
+    participant Dispatcher as Domain event dispatcher
+    participant Outbox as Admin outbox
+    participant Db as Admin PostgreSQL
+
+    Handler->>Aggregate: mutate; record domain event
+    Handler->>Context: SaveEntities(ct)
+    Context->>Interceptor: SavingChanges
+    Interceptor->>Dispatcher: Dispatch(domain events)
+    Dispatcher->>Outbox: Enqueue integration events
+    Context->>Db: save aggregate rows + outbox rows
+    alt save succeeds
+        Db-->>Context: commit ok
+        Context->>Interceptor: SavedChanges
+        Interceptor->>Aggregate: ClearDomainEvents()
+    else save fails
+        Db-->>Context: rollback / savepoint rollback
+        Context->>Interceptor: SaveChangesFailed
+        Interceptor-->>Aggregate: leave domain events intact
+    end
+```
+
 ## Catalog event sourcing and projection flows
 
 ### Current implementation

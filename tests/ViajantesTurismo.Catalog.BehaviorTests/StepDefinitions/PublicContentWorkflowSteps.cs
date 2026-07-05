@@ -10,7 +10,7 @@ public sealed class PublicContentWorkflowSteps
 {
     private readonly TestCatalogTourReadModelStore tourStore = new();
     private readonly TestPublicContentStore publicContentStore = new();
-    private WebApplicationFactory<CatalogApiEntryPoint>? factory;
+    private WebApplicationFactory<CatalogApiHostEntryPoint>? factory;
     private HttpClient? client;
     private string contentKey = string.Empty;
     private UpsertPublicContentRequest? request;

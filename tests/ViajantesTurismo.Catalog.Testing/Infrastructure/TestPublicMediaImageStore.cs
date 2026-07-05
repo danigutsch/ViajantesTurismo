@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-internal sealed class TestPublicMediaImageStore : IPublicMediaImageStore
+public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
 {
     private readonly ConcurrentDictionary<Guid, PublicMediaImage> imagesById = new();
 

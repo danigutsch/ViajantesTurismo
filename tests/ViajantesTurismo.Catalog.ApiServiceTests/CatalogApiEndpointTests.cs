@@ -17,10 +17,10 @@ public sealed class CatalogApiEndpointTests
     public void Catalog_api_marker_exposes_entry_assembly()
     {
         // Arrange
-        var marker = new CatalogApiEntryPoint();
+        var marker = new CatalogApiHostEntryPoint();
 
         // Act
-        var entryPointAssembly = typeof(CatalogApiEntryPoint).Assembly;
+        var entryPointAssembly = typeof(CatalogApiHostEntryPoint).Assembly;
         var markerAssembly = marker.Assembly;
 
         // Assert

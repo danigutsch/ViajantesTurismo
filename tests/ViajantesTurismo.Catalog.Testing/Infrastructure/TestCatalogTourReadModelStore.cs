@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using SharedKernel.InputNormalization;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-internal sealed class TestCatalogTourReadModelStore(TimeProvider timeProvider) : ICatalogTourReadModelStore
+public sealed class TestCatalogTourReadModelStore(TimeProvider timeProvider) : ICatalogTourReadModelStore
 {
     private readonly ConcurrentDictionary<Guid, CatalogTourDraftReadModel> toursById = new();
 

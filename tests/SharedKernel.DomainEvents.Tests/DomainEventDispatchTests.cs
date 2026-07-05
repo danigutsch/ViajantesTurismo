@@ -39,7 +39,9 @@ public sealed class DomainEventDispatchTests
     {
         // Arrange
         var dispatcher = new MediatorDomainEventDispatcher(new CapturingPublisher());
-        var method = typeof(MediatorDomainEventDispatcher).GetMethod(nameof(MediatorDomainEventDispatcher.Dispatch)).ShouldNotBeNull();
+        var method = typeof(MediatorDomainEventDispatcher)
+            .GetMethods()
+            .Single(static method => method.Name == nameof(MediatorDomainEventDispatcher.Dispatch) && method.IsGenericMethodDefinition);
         var genericMethod = method.MakeGenericMethod(typeof(TestDomainEvent));
 
         // Act

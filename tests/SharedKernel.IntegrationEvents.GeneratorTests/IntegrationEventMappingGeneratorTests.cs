@@ -67,4 +67,33 @@ public sealed class IntegrationEventMappingGeneratorTests
 
         runResult.Results.Single().GeneratedSources.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void Ignores_private_mapping_methods()
+    {
+        const string source = """
+            namespace Demo;
+
+            public sealed record TourCreatedDomainEvent(Guid TourId) : IDomainEvent;
+
+            public sealed record TourCreatedIntegrationEvent(Guid EventId, DateTimeOffset OccurredAt, Guid TourId) : IIntegrationEvent
+            {
+                public static string EventType => "tour.created";
+
+                public static int EventVersion => 1;
+            }
+
+            public static class TourMappings
+            {
+                [IntegrationEventMapping]
+                private static TourCreatedIntegrationEvent Map(TourCreatedDomainEvent domainEvent, Guid eventId, DateTimeOffset occurredAt) =>
+                    new(eventId, occurredAt, domainEvent.TourId);
+            }
+            """;
+        var compilation = GeneratorTestHarness.CreateCompilation(source);
+
+        var runResult = GeneratorTestHarness.RunGeneratorDriver(compilation);
+
+        runResult.Results.Single().GeneratedSources.ShouldBeEmpty();
+    }
 }

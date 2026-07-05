@@ -117,6 +117,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     {
         var images = await dbContext.PublicMediaImages
             .Include(image => image.ResponsiveVariants)
+            .AsNoTracking()
             .AsSplitQuery()
             .ToArrayAsync(ct)
             .ConfigureAwait(false);

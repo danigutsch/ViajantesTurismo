@@ -1,8 +1,8 @@
 using ViajantesTurismo.Catalog.Domain.Media;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-internal static class PublicMediaImageTestFactory
+public static class PublicMediaImageTestFactory
 {
     public static PublicMediaImage CreateReadyImage(
         Guid tourId,

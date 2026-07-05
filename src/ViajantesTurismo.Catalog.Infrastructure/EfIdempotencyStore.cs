@@ -50,7 +50,18 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
         existing.StartedAt = startedAt;
         existing.CompletedAt = null;
         existing.ResultFingerprint = null;
-        await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            var concurrentEntry = await Find(operation, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("Idempotency operation could not be restarted because it no longer exists.");
+
+            return IdempotencyStartResult.AlreadyStarted(ToEntry(concurrentEntry));
+        }
 
         return IdempotencyStartResult.StartedNew();
     }

@@ -56,6 +56,29 @@ events, call external side effects, or run asynchronous processing.
 - Recommendation: transactional outbox in Admin for integration events before adding a real broker or
   cross-service dispatch. Do not replace this with exception swallowing; that hides event loss.
 
+#### SaveChanges failure semantics
+
+EF Core applies all changes in one `SaveChanges` call in a transaction when the provider supports
+transactions. If any change fails, the transaction rolls back and the database is left unmodified. If a
+transaction is already active, EF Core creates a savepoint before saving and rolls back to it on failure.
+
+The Admin write path therefore uses this rule:
+
+- Dispatch domain events before the database write only to enqueue local outbox rows into the same
+  `DbContext` transaction.
+- Persist aggregate changes and outbox rows in the same `SaveChanges` call.
+- Clear aggregate domain events only after `SavedChanges` confirms success.
+- Do not clear domain events in `SaveChangesFailed`; the caller may fix the unit of work and retry, or
+  discard the DbContext and rebuild state from the database.
+- Do not publish integration events directly from `SavingChanges`; external publication happens later
+  from durable outbox rows.
+
+Sources: EF Core default transaction behavior, savepoints, `ISaveChangesInterceptor.SaveChangesFailed`,
+and connection-resiliency guidance on transaction commit ambiguity:
+<https://learn.microsoft.com/ef/core/saving/transactions>,
+<https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.diagnostics.isavechangesinterceptor.savechangesfailed>,
+<https://learn.microsoft.com/ef/core/miscellaneous/connection-resiliency#transaction-commit-failure-and-the-idempotency-issue>.
+
 ### Catalog Admin tour-created integration handler
 
 - Trigger: `AdminTourCreatedIntegrationHandler.Handle`.
