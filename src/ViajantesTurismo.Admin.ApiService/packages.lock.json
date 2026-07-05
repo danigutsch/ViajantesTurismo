@@ -179,6 +179,9 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.apiversioning": {
+        "type": "Project"
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -282,7 +285,8 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
-          "Microsoft.OpenApi": "[2.9.0, )"
+          "Microsoft.OpenApi": "[2.9.0, )",
+          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.results": {

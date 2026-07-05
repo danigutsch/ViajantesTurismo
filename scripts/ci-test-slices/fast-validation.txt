@@ -20,6 +20,8 @@ tests/SharedKernel.Messaging.IntegrationEvents.Tests/SharedKernel.Messaging.Inte
 tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests.csproj
 tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj
 tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj
+tests/SharedKernel.ApiVersioning.Tests/SharedKernel.ApiVersioning.Tests.csproj
+tests/SharedKernel.ApiVersioning.AspNetCore.Tests/SharedKernel.ApiVersioning.AspNetCore.Tests.csproj
 tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj
 tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj
 tests/SharedKernel.Observability.Tests/SharedKernel.Observability.Tests.csproj

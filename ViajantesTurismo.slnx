@@ -56,6 +56,8 @@
         <Project Path="src/SharedKernel/SharedKernel.EntityFrameworkCore/SharedKernel.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Mediator.EntityFrameworkCore/SharedKernel.Mediator.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Versioning/SharedKernel.Versioning.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.ApiVersioning/SharedKernel.ApiVersioning.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.ApiVersioning.AspNetCore/SharedKernel.ApiVersioning.AspNetCore.csproj" />
     </Folder>
     <Folder Name="/src/Admin/">
         <Project Path="src/ViajantesTurismo.Admin.Contracts/ViajantesTurismo.Admin.Contracts.csproj" />
@@ -103,6 +105,8 @@
         <Project Path="tests/SharedKernel.InputNormalization.Tests/SharedKernel.InputNormalization.Tests.csproj" />
         <Project Path="tests/SharedKernel.HttpClients.Tests/SharedKernel.HttpClients.Tests.csproj" />
         <Project Path="tests/SharedKernel.Versioning.Tests/SharedKernel.Versioning.Tests.csproj" />
+        <Project Path="tests/SharedKernel.ApiVersioning.Tests/SharedKernel.ApiVersioning.Tests.csproj" />
+        <Project Path="tests/SharedKernel.ApiVersioning.AspNetCore.Tests/SharedKernel.ApiVersioning.AspNetCore.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />

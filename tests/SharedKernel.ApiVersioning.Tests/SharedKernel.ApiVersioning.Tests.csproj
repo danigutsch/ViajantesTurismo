@@ -2,16 +2,16 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>SharedKernel.OpenApi.Tests</RootNamespace>
-        <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+        <RootNamespace>SharedKernel.ApiVersioning.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <Using Include="SharedKernel.ApiVersioning" />
+        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -19,12 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="SharedKernel.Testing.Assertions" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.ApiVersioning\SharedKernel.ApiVersioning.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.OpenApi\SharedKernel.OpenApi.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
     </ItemGroup>
 
