@@ -20,6 +20,7 @@ flowchart TB
     mediator_heavy_tests[Mediator Heavy Tests]
     admin_system_tests[Admin System Tests]
     build_and_test[Build and Test]
+    api_compatibility[API Compatibility]
     sonarcloud[SonarCloud]
     lint[Lint]
     trigger --> detect_changes
@@ -33,6 +34,7 @@ flowchart TB
     admin_integration_tests --> build_and_test
     mediator_heavy_tests --> build_and_test
     admin_system_tests --> build_and_test
+    trigger --> api_compatibility
     detect_changes --> sonarcloud
     fast_validation --> sonarcloud
     admin_integration_tests --> sonarcloud

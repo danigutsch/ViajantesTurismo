@@ -473,6 +473,75 @@ jobs:
           echo "Build and Test completed successfully across the validation slices."
           exit 0
 
+  api-compatibility:
+    name: API Compatibility
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          restore-targets: tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj
+          trust-dev-certificate: "false"
+
+      - name: Check PublicAPI baselines
+        shell: bash
+        run: |
+          dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --no-restore \
+            -- \
+            check-public-api-baselines
+
+      - name: Detect breaking-change marker
+        id: breaking-marker
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          if dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --no-restore \
+            -- \
+            has-breaking-change-marker "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"; then
+            echo "present=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "present=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Run API compatibility report
+        shell: bash
+        env:
+          BREAKING_MARKER: ${{ steps.breaking-marker.outputs.present || 'false' }}
+        run: |
+          args=(
+            api-compatibility
+            --release-phase alpha
+            --version "0.1.0-alpha.ci.${{ github.run_number }}"
+          )
+          if [[ "${BREAKING_MARKER}" == "true" ]]; then
+            args+=(--breaking-marker)
+          fi
+          dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --no-restore \
+            -- "${args[@]}"
+
+      - name: Upload API compatibility report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() }}
+        with:
+          if-no-files-found: ignore
+          name: api-compatibility-report
+          path: artifacts/api-compat/**
+          retention-days: 14
+
   sonarcloud:
     name: SonarCloud
     needs:
