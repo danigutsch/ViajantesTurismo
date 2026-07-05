@@ -29,7 +29,7 @@ Set that variable to the current repository CI baseline runner.
 | Runner | Repository CI baseline |
 
 This job checks out full history, restores only `SharedKernel.Versioning.Tool`, and runs
-`scripts/calculate-release-version.sh`. The script finds the latest `v*` SemVer tag when one exists;
+`SharedKernel.Versioning.Tool calculate-release`. The tool finds the latest `v*` SemVer tag when one exists;
 otherwise it uses `0.1.0` as the base while the repository has no versioned release tags. It feeds
 commit messages into `sharedkernel-version compute` and exposes the calculated SemVer, release impact,
 package version, assembly version, file version, informational version, base version, source tag, and

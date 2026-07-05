@@ -140,3 +140,39 @@ the complete in-container test suite still works without paying that cost every 
 The current optimization stance is intentionally conservative: the workflow keeps a pinned
 Dev Container CLI path, but broader startup work stays deferred unless devcontainer latency
 becomes a demonstrated contributor pain point.
+
+## Release prep workflow
+
+A separate workflow (`.github/workflows/release-prep.yml`) prepares release artifacts without
+publishing by default. It runs on relevant pull-request changes and manual dispatch.
+
+### Release Prep
+
+| Attribute | Value |
+| --- | --- |
+| Workflow file | `.github/workflows/release-prep.yml` |
+| Primary job name | `Release Dry Run` |
+| Runner | Repository CI baseline |
+| Merge gate | Not required |
+
+**Dry-run steps:**
+
+1. Checkout full history so the existing version calculation can inspect tags and commits.
+2. Run `SharedKernel.Versioning.Tool calculate-release` from the CI versioning flow.
+3. Run `SharedKernel.Versioning.Tool pack-sharedkernel` with the computed package version.
+4. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
+   and `release-manifest.json`.
+5. Upload package and release-prep artifacts for review.
+
+The existing CI workflow remains the build/test gate for pull requests. Release Prep intentionally
+stays focused on release artifact generation so it does not duplicate full-solution validation.
+
+The stable path is manual-only. It requires the `release` environment approval and the
+`promote_stable` dispatch input before it can create a `vX.Y.Z` tag. GitHub release creation and
+NuGet publishing remain separate explicit dispatch inputs. NuGet publishing also requires the
+`NUGET_API_KEY` secret scoped to the approved environment.
+
+The current release-prep manifest records package file names, SHA-256 hashes, sizes, source SHA,
+and version metadata. A formal SBOM is not generated yet because the repository does not currently
+have an SBOM generator wired into local or CI tooling. Add SBOM generation as a dedicated follow-up
+when a pinned repository-approved tool is selected.

@@ -78,7 +78,6 @@ shared_validation_patterns=(
     "coverage.settings.xml"
     "scripts/collect-ci-build-test-diagnostics.sh"
     "scripts/collect-test-coverage.sh"
-    "scripts/calculate-release-version.sh"
     "scripts/detect-changes.sh"
     "scripts/generate-sonar-coverage-report.sh"
     "scripts/install-playwright.sh"

@@ -80,7 +80,16 @@ jobs:
       - name: Calculate release version
         id: version
         shell: bash
-        run: bash scripts/calculate-release-version.sh
+        run: |
+          dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --no-restore \
+            -- \
+            calculate-release \
+            --run-number "${{ github.run_number }}" \
+            --sha "${{ github.sha }}" \
+            --github-output "${GITHUB_OUTPUT}" \
+            --github-summary "${GITHUB_STEP_SUMMARY}"
 
   fast-validation:
     name: Fast Validation

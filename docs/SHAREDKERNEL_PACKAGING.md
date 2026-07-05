@@ -57,10 +57,11 @@ Pack all current source `SharedKernel.*` projects into a local artifact folder a
 scratch project can restore them from that local feed:
 
 ```bash
-bash scripts/pack-sharedkernel-local.sh --version 0.1.0-alpha.local.20260704000000
+dotnet run --project tools/SharedKernel.Versioning.Tool -- \
+  pack-sharedkernel --version 0.1.0-alpha.local.20260704000000
 ```
 
-If `--version` is omitted, the script creates a timestamped local prerelease version. Reusing an
+If `--version` is omitted, the tool creates a timestamped local prerelease version. Reusing an
 existing package version fails before packing when any `.nupkg`, `.snupkg`, or `.symbols.nupkg`
 artifact already exists for that version. This keeps local and release dry runs from accidentally
 hiding package-content changes behind NuGet cache reuse.
@@ -74,13 +75,25 @@ local `SharedKernel.*` package resolution deterministic even if a colliding pack
 `nuget.org`. Use `--skip-restore-check` only when diagnosing pack failures before restore validation is
 relevant.
 
-The restore verifier requires local `python3` because it also invokes the local `dotnet restore` used
-for the scratch project. Repository Docker fallbacks remain appropriate for pure Python lint wrappers,
-but this workflow intentionally validates the local .NET SDK/package environment that produced the
-packages.
+The restore verifier runs inside the .NET tool and invokes the local `dotnet restore` used for the
+scratch project. This workflow intentionally validates the local .NET SDK/package environment that
+produced the packages.
 
 Use this workflow only for local validation and CI dry runs. Stable publishing needs release workflow
 gates, release notes, provenance, and support-policy decisions.
+
+## Release prep workflow
+
+The `Release Prep` GitHub Actions workflow uses `SharedKernel.Versioning.Tool` to calculate the
+release version, pack the current `SharedKernel.*` projects, generate release notes, write a
+changelog, and create a minimal provenance manifest with package SHA-256 hashes.
+
+Stable release behavior is disabled by default. Creating a `vX.Y.Z` tag, creating a GitHub release,
+or publishing to NuGet requires manual workflow dispatch and the `release` environment approval.
+NuGet publishing also requires `NUGET_API_KEY` to be configured for that approved environment.
+
+Formal SBOM output remains a follow-up because no repository-approved SBOM generator is currently
+wired into local tooling or CI.
 
 ## Internal SharedKernel dependency versions
 
