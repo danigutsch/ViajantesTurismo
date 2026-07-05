@@ -25,6 +25,11 @@ Each packable project still owns its package-specific identity:
 - `PackageTags`
 - `PackageReadmeFile` when the package includes a README
 
+Reusable testing helper packages live under `src/SharedKernel` and are included in the same local
+pack/restore validation as runtime packages. They opt out of source-wide AOT compatibility because
+test frameworks, Roslyn test infrastructure, and Aspire test hosts are not production runtime
+surfaces.
+
 ## Naming
 
 Use `SharedKernel.<Capability>` for provider-neutral packages.
@@ -36,6 +41,9 @@ Use analyzer, code-fix, and source-generator suffixes only for Roslyn packages:
 - `SharedKernel.<Capability>.Analyzers`
 - `SharedKernel.<Capability>.CodeFixes`
 - `SharedKernel.<Capability>.SourceGenerator`
+
+Use `SharedKernel.Testing.<Capability>` for reusable test helpers. Keep repository-only test support
+under `tests/` when it only encodes this repository's test taxonomy or fixtures.
 
 Keep package IDs aligned with the root namespace unless a package has a documented compatibility reason
 to differ.

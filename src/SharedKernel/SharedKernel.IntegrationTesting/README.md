@@ -1,7 +1,7 @@
-# SharedKernel integration testing helpers
+# SharedKernel.IntegrationTesting
 
-Shared source helpers for integration tests that need real hosted resources. These helpers are part of
-the SharedKernel seed and should stay reusable outside this repository.
+Shared helpers for integration tests that need real hosted resources. These helpers are part of the
+SharedKernel seed and should stay reusable outside this repository.
 
 ## Scope
 
@@ -23,7 +23,8 @@ the SharedKernel seed and should stay reusable outside this repository.
 
 ## Usage
 
-- Link the needed source files into a test project with `Compile Include`.
+- Add a package reference to `SharedKernel.IntegrationTesting`.
 - Start hosted apps through `AspireTestApplication.Start<TAppHost>(...)`.
 - Dispose the returned application in the fixture `DisposeAsync` path.
-- Reset PostgreSQL with `PostgreSqlPublicSchemaReset.Reset(connection, ct)` before serial tests that need a known database baseline.
+- Reset PostgreSQL with `PostgreSqlPublicSchemaReset.Reset(connection, ct)` before serial tests that need
+  a known database baseline.

@@ -44,22 +44,22 @@ public sealed class AspireTestApplication : IAsyncDisposable
 
         try
         {
-            appBuilder = await DistributedApplicationTestingBuilder.CreateAsync<TAppHost>(ct);
-            app = await appBuilder.BuildAsync(ct);
-            await app.StartAsync(ct);
+            appBuilder = await DistributedApplicationTestingBuilder.CreateAsync<TAppHost>(ct).ConfigureAwait(false);
+            app = await appBuilder.BuildAsync(ct).ConfigureAwait(false);
+            await app.StartAsync(ct).ConfigureAwait(false);
 
             using var timeoutCts = new CancellationTokenSource(resourceStartupTimeout ?? DefaultResourceStartupTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
             foreach (var resourceName in healthyResourceNames)
             {
-                await app.ResourceNotifications.WaitForResourceHealthyAsync(resourceName, linkedCts.Token);
+                await app.ResourceNotifications.WaitForResourceHealthyAsync(resourceName, linkedCts.Token).ConfigureAwait(false);
             }
 
             return new AspireTestApplication(appBuilder, app);
         }
         catch
         {
-            await DisposeAfterFailedStart(app, appBuilder);
+            await DisposeAfterFailedStart(app, appBuilder).ConfigureAwait(false);
             throw;
         }
     }
@@ -86,20 +86,20 @@ public sealed class AspireTestApplication : IAsyncDisposable
         try
         {
             app = builder.Build();
-            await app.StartAsync(ct);
+            await app.StartAsync(ct).ConfigureAwait(false);
 
             using var timeoutCts = new CancellationTokenSource(resourceStartupTimeout ?? DefaultResourceStartupTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
             foreach (var resourceName in healthyResourceNames)
             {
-                await app.ResourceNotifications.WaitForResourceHealthyAsync(resourceName, linkedCts.Token);
+                await app.ResourceNotifications.WaitForResourceHealthyAsync(resourceName, linkedCts.Token).ConfigureAwait(false);
             }
 
             return new AspireTestApplication(null, app);
         }
         catch
         {
-            await DisposeAfterFailedStart(app, null);
+            await DisposeAfterFailedStart(app, null).ConfigureAwait(false);
             throw;
         }
     }
@@ -133,8 +133,8 @@ public sealed class AspireTestApplication : IAsyncDisposable
     /// <returns>The configured connection string.</returns>
     public async Task<string> GetConnectionString(string resourceName, CancellationToken ct)
     {
-        return await App.GetConnectionStringAsync(resourceName, ct)
-            ?? throw new InvalidOperationException($"{resourceName} connection string is not configured.");
+        var connectionString = await App.GetConnectionStringAsync(resourceName, ct).ConfigureAwait(false);
+        return connectionString ?? throw new InvalidOperationException($"{resourceName} connection string is not configured.");
     }
 
     /// <inheritdoc />
@@ -149,15 +149,15 @@ public sealed class AspireTestApplication : IAsyncDisposable
         {
             if (app is not null)
             {
-                await app.StopAsync();
-                await app.DisposeAsync();
+                await app.StopAsync().ConfigureAwait(false);
+                await app.DisposeAsync().ConfigureAwait(false);
             }
         }
         finally
         {
             if (appBuilder is not null)
             {
-                await appBuilder.DisposeAsync();
+                await appBuilder.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
@@ -174,8 +174,8 @@ public sealed class AspireTestApplication : IAsyncDisposable
         {
             if (app is not null)
             {
-                await app.StopAsync(CancellationToken.None);
-                await app.DisposeAsync();
+                await app.StopAsync(CancellationToken.None).ConfigureAwait(false);
+                await app.DisposeAsync().ConfigureAwait(false);
             }
         }
         catch
@@ -187,7 +187,7 @@ public sealed class AspireTestApplication : IAsyncDisposable
         {
             if (appBuilder is not null)
             {
-                await appBuilder.DisposeAsync();
+                await appBuilder.DisposeAsync().ConfigureAwait(false);
             }
         }
         catch

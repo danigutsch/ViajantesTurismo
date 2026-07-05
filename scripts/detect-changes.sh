@@ -127,6 +127,13 @@ fast_validation_patterns=(
     "src/SharedKernel/SharedKernel.Style.Analyzers/**"
     "src/SharedKernel/SharedKernel.Style.CodeFixes/**"
     "src/SharedKernel/SharedKernel.Testing.Analyzers/**"
+    "src/SharedKernel/SharedKernel.Testing/**"
+    "src/SharedKernel/SharedKernel.Testing.Assertions/**"
+    "src/SharedKernel/SharedKernel.Testing.Data/**"
+    "src/SharedKernel/SharedKernel.Testing.Http/**"
+    "src/SharedKernel/SharedKernel.Testing.Roslyn/**"
+    "src/SharedKernel/SharedKernel.Testing.Snapshots/**"
+    "src/SharedKernel/SharedKernel.Testing.Web/**"
     "src/SharedKernel/SharedKernel.Testing.CodeFixes/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
@@ -172,6 +179,7 @@ fast_validation_patterns=(
 
 admin_integration_patterns=(
     "src/SharedKernel/SharedKernel.EventSourcing.Npgsql/**"
+    "src/SharedKernel/SharedKernel.IntegrationTesting/**"
     "src/ViajantesTurismo.Admin.ApiService/**"
     "src/ViajantesTurismo.Admin.Application/**"
     "src/ViajantesTurismo.Admin.Contracts/**"

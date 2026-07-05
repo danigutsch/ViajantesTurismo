@@ -35,12 +35,12 @@ public static class PostgreSqlPublicSchemaReset
 
         if (connection.State != System.Data.ConnectionState.Open)
         {
-            await connection.OpenAsync(ct);
+            await connection.OpenAsync(ct).ConfigureAwait(false);
         }
 
-        await using var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = ResetPublicTablesSql;
 
-        await command.ExecuteNonQueryAsync(ct);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 }

@@ -51,7 +51,7 @@ public sealed partial class AdminTestArchitectureGuardTests
             "_client = _app.CreateHttpClient(ResourceNames.Api);");
 
         AssertFileContains(
-            Path.Combine(GetRepositoryRoot(), "tests", "SharedKernel.IntegrationTesting", "PostgreSqlPublicSchemaReset.cs"),
+            Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.IntegrationTesting", "PostgreSqlPublicSchemaReset.cs"),
             "public static async Task Reset(DbConnection connection, CancellationToken ct)");
 
         AssertFileContains(
@@ -230,7 +230,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void SharedKernel_testing_should_not_own_product_or_area_specific_trait_values()
     {
-        var sharedKernelTestingRoot = Path.Combine(GetRepositoryRoot(), "tests", "SharedKernel.Testing");
+        var sharedKernelTestingRoot = Path.Combine(GetRepositoryRoot(), "src", "SharedKernel", "SharedKernel.Testing");
         var offendingLines = Directory.GetFiles(sharedKernelTestingRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(FindProductSpecificSharedKernelTestingCoupling)
