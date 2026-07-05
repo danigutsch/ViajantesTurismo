@@ -158,11 +158,11 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 **Dry-run steps:**
 
 1. Checkout full history so the existing version calculation can inspect tags and commits.
-2. Run `scripts/calculate-release-version.sh` from the CI versioning flow.
+2. Run `SharedKernel.Versioning.Tool calculate-release` from the CI versioning flow.
 3. Build the solution in Release mode with the computed version properties.
 4. Test the Release build with `--no-build` so build and test never run in parallel.
-5. Pack `SharedKernel.*` packages with the computed package version.
-6. Run the existing `SharedKernel.Versioning.Tool` to generate `release-notes.md`, `CHANGELOG.md`,
+5. Run `SharedKernel.Versioning.Tool pack-sharedkernel` with the computed package version.
+6. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
    and `release-manifest.json`.
 7. Upload package and release-prep artifacts for review.
 

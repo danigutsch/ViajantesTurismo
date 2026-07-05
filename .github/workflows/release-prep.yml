@@ -4,8 +4,6 @@ name: Release Prep
   pull_request:
     paths:
       - .github/workflows/release-prep.yml
-      - scripts/calculate-release-version.sh
-      - scripts/pack-sharedkernel-local.sh
       - src/SharedKernel/**
       - tools/SharedKernel.Versioning.Tool/**
       - tests/SharedKernel.Versioning.Tests/**
@@ -69,7 +67,18 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.promote_stable && 'stable' || 'prerelease' }}
-        run: bash scripts/calculate-release-version.sh
+        run: |
+          dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --configuration Release \
+            --no-restore \
+            -- \
+            calculate-release \
+            --version-kind "${RELEASE_VERSION_KIND}" \
+            --run-number "${{ github.run_number }}" \
+            --sha "${{ github.sha }}" \
+            --github-output "${GITHUB_OUTPUT}" \
+            --github-summary "${GITHUB_STEP_SUMMARY}"
 
       - name: Build with computed version
         shell: bash
@@ -92,7 +101,12 @@ jobs:
       - name: Pack SharedKernel packages
         shell: bash
         run: |
-          bash scripts/pack-sharedkernel-local.sh \
+          dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --configuration Release \
+            --no-build \
+            -- \
+            pack-sharedkernel \
             --version "${{ steps.version.outputs.package_version }}" \
             --output-root artifacts/packages/release-prep
 
