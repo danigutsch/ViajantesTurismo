@@ -13,6 +13,25 @@ This document defines the durable event and messaging direction for ViajantesTur
 - Inbox, outbox, idempotency, and projections are infrastructure/runtime concerns, not aggregate
   responsibilities.
 
+## Ubiquitous Language
+
+Use event language for facts and contracts. Use messaging language for delivery, runtime state, and
+transport boundaries.
+
+| Term | Meaning |
+| --- | --- |
+| `DomainEvent` | Business fact raised by an aggregate inside one bounded context. |
+| `IntegrationEvent` | Explicit, versioned, cross-boundary event contract. |
+| `EventEnvelope` | Serialized event identity, type, time, source, content type, payload, and metadata. |
+| `Message` | Delivery or processing unit carrying an envelope through a runtime boundary. |
+| `OutboxMessage` | Durable outbound message with an envelope and publish state. |
+| `InboxMessage` | Durable inbound message with an envelope and processing or de-duplication state. |
+| `IdempotencyEntry` | Generic operation ledger keyed by scope and key. |
+| `CloudEvent` | Standards-based event envelope used at interoperability boundaries. |
+
+An integration event is the typed contract. A CloudEvent is an envelope. An outbox row is a durable
+message record. These concepts should not be represented by one catch-all type.
+
 ## SharedKernel Modules
 
 ### `SharedKernel.Domain`
@@ -45,7 +64,7 @@ Owns typed domain event dispatch:
 Domain event dispatch stays local to the bounded context. It does not use CloudEvents, inbox, or
 outbox persistence by default.
 
-### `SharedKernel.IntegrationEvents`
+### `SharedKernel.Messaging.IntegrationEvents`
 
 Owns typed integration event dispatch:
 
@@ -57,15 +76,33 @@ Owns typed integration event dispatch:
 Integration events can be persisted and transported through adapters, but the core abstraction
 project remains dependency-free.
 
-### `SharedKernel.IntegrationEvents.CloudEvents`
+### `SharedKernel.Messaging.IntegrationEvents.CloudEvents`
 
-Owns CloudEvents mapping:
+Owns the current CloudEvents mapping adapter:
 
 - Typed integration event to CloudEvents mapping.
 - CloudEvents to typed integration event mapping.
 - CloudEvents source, subject, type, and content-type conventions.
 
 Bounded-context domain and application projects should not depend directly on this adapter.
+
+Use `SharedKernel.Messaging.CloudEvents` only if a future storage-neutral `EventEnvelope` adapter is
+needed. Keep `SharedKernel.Messaging.IntegrationEvents` focused on typed integration-event contracts and
+dispatch.
+
+### `SharedKernel.Messaging`
+
+Storage-neutral messaging abstractions that are not specific to domain events,
+integration events, or event sourcing:
+
+- `EventEnvelope` concepts.
+- Message identity and metadata conventions.
+- Shared envelope validation.
+- Runtime-neutral outbox and inbox contracts, if needed.
+
+Provider-specific persistence remains outside this module. EF Core messaging providers live in
+`SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`,
+`SharedKernel.Idempotency.EntityFrameworkCore`, and `SharedKernel.DomainEvents.EntityFrameworkCore`.
 
 ### `SharedKernel.Idempotency`
 
@@ -160,6 +197,11 @@ publish or persist integration events directly.
 This keeps outbound contracts tied to committed domain facts while avoiding accidental external messages
 for domain events that are purely local.
 
+When integration events are persisted through an EF Core outbox, aggregate rows and outbox rows must be
+saved in the same `SaveChanges` transaction. Domain events should be cleared only after save success;
+after a failed save, discard the DbContext and retry with a fresh unit of work rather than retrying the
+same tracked entities and already-added outbox rows.
+
 ```mermaid
 flowchart LR
     aggregate[Aggregate records domain event]
@@ -227,12 +269,19 @@ Purpose:
 - Dispatch later through a background dispatcher.
 - Avoid event loss after database commit and before transport publish.
 
-Ownership:
+Runtime shape:
 
 - Core contracts live in SharedKernel abstractions.
-- Physical tables live in bounded-context infrastructure.
-- Admin owns its integration outbox.
-- Catalog owns its integration outbox only if it publishes integration events.
+- Storage-neutral integration-event contracts live in `SharedKernel.Messaging.IntegrationEvents`.
+- EF Core outbox provider code lives in `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`.
+- EF Core idempotency provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
+- EF outbox messages are stored in `messaging.outbox_messages`.
+- `AddIntegrationEventOutbox<TContext>()` registers the EF outbox, the shared idempotency store,
+  and the model configuration for both messaging tables.
+- `AddIntegrationEventInbox<TContext>()` registers only the shared idempotency store and inbox table
+  model configuration for contexts that consume but do not publish integration events.
+- Admin registers an AOT-safe `IIntegrationEventSerializer` for Admin integration events before
+  registering its outbox.
 
 Recommended columns:
 
@@ -252,6 +301,10 @@ Recommended columns:
 - `failed_at_utc`.
 - `last_error`.
 
+Current EF provider columns are intentionally smaller until a transport publisher is wired: `id`,
+`event_type`, `event_version`, `event_id`, `occurred_at`, `payload_json`, `enqueued_at`, and
+`published_at`.
+
 ### Inbox
 
 Use an inbox when a bounded context consumes integration events from outside its transaction
@@ -269,11 +322,17 @@ database unique constraints, and upsert-or-skip behavior for externally visible 
 message handling, but the handler still owns safe replay behavior if work partially completed before a
 retry.
 
-Ownership:
+Runtime shape:
 
 - Core idempotency contracts live in `SharedKernel.Idempotency`.
-- Physical inbox tables live in consuming bounded-context infrastructure.
-- Catalog owns its inbox for Admin-to-Catalog events.
+- EF Core provider code lives in `SharedKernel.EntityFrameworkCore`.
+- Durable idempotency entries are stored in `messaging.idempotency_keys`.
+- `AddIntegrationEventInbox<TContext>()` is the app-facing startup call for consumers that need inbox
+  idempotency without an outbound outbox.
+- Catalog consumes Admin tour-created events through `IdempotentIntegrationHandler<TIntegrationEvent>`
+  when the handler is resolved from DI.
+- The idempotency row moves from `Started` to `Completed` after the inner handler succeeds. If the
+  process fails before completion, a later delivery can restart after the configured lock duration.
 
 Recommended columns:
 

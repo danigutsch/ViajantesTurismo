@@ -23,6 +23,13 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"/>
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.DomainEvents.EntityFrameworkCore\SharedKernel.DomainEvents.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents.CloudEvents\SharedKernel.Messaging.IntegrationEvents.CloudEvents.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore\SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>
 

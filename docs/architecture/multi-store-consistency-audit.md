@@ -6,9 +6,9 @@ events, call external side effects, or run asynchronous processing.
 ## Summary
 
 - Media upload and processing currently touch database rows and media object storage.
-- Admin tour creation writes the Admin database, then dispatches an integration event in-process.
-- Catalog integration handling writes the Catalog event store and has idempotency primitives, but the
-  durable inbox wrapper is not wired to a real message bus in the current runtime.
+- Admin tour creation writes the Admin database and EF outbox rows in the same `SaveChanges` unit.
+- Catalog integration handling writes the Catalog event store behind a durable idempotency wrapper, but
+  broker transport is not wired in the current runtime.
 - Catalog projection processing reads the event store, writes read models, then writes a checkpoint.
 - Public content, public theme, Catalog media metadata API, Admin booking/customer/tour mutations,
   and HTTP API clients are single-store or caller-side flows in the current implementation.
@@ -46,15 +46,38 @@ events, call external side effects, or run asynchronous processing.
 
 - Trigger: `CreateTourCommandHandler.Handle`.
 - Code: `src/ViajantesTurismo.Admin.Application/Tours/CreateTour/CreateTourCommandHandler.cs`.
-- Systems touched: Admin write database, in-process integration event dispatcher, Catalog event
-  stream handler when registered in the same service provider.
-- Failure window: Admin transaction commits, then integration dispatch or downstream handler fails.
-- Existing mitigation: dispatch happens after `IUnitOfWork.SaveEntities`, so Catalog never observes
-  an Admin tour that later rolls back.
-- Remaining risk: no durable outbox, so a post-commit dispatcher failure can lose the Catalog update
-  unless the caller retries the entire create request safely.
-- Recommendation: transactional outbox in Admin for integration events before adding a real broker or
-  cross-service dispatch. Do not replace this with exception swallowing; that hides event loss.
+- Systems touched: Admin write database and `messaging.outbox_messages`.
+- Failure window: transport publication is not wired yet; committed outbox rows can accumulate until a
+  publisher exists.
+- Existing mitigation: Admin aggregate rows and outbox rows are persisted in the same `SaveChanges`
+  transaction through the shared EF Core outbox provider.
+- Remaining risk: outbox rows are durable but not yet published to Catalog.ApiService.
+- Recommendation: add a background publisher/transport consumer; do not publish directly from
+  `SavingChanges`.
+
+#### SaveChanges failure semantics
+
+EF Core applies all changes in one `SaveChanges` call in a transaction when the provider supports
+transactions. If any change fails, the transaction rolls back and the database is left unmodified. If a
+transaction is already active, EF Core creates a savepoint before saving and rolls back to it on failure.
+
+The Admin write path therefore uses this rule:
+
+- Dispatch domain events before the database write only to enqueue local outbox rows into the same
+  `DbContext` transaction.
+- Persist aggregate changes and outbox rows in the same `SaveChanges` call.
+- Clear aggregate domain events only after `SavedChanges` confirms success.
+- Do not clear domain events in `SaveChangesFailed`; discard the DbContext and rebuild state from the
+  database before retrying. Retrying the same tracked unit of work can re-dispatch events while
+  previously-added outbox entities are still tracked.
+- Do not publish integration events directly from `SavingChanges`; external publication happens later
+  from durable outbox rows.
+
+Sources: EF Core default transaction behavior, savepoints, `ISaveChangesInterceptor.SaveChangesFailed`,
+and connection-resiliency guidance on transaction commit ambiguity:
+<https://learn.microsoft.com/ef/core/saving/transactions>,
+<https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.diagnostics.isavechangesinterceptor.savechangesfailed>,
+<https://learn.microsoft.com/ef/core/miscellaneous/connection-resiliency#transaction-commit-failure-and-the-idempotency-issue>.
 
 ### Catalog Admin tour-created integration handler
 
@@ -66,8 +89,8 @@ events, call external side effects, or run asynchronous processing.
   same Admin tour id.
 - Remaining risk: duplicate delivery is modeled as a stream revision conflict, not as an explicit
   idempotent success. This is acceptable only while dispatch is in-process/test-like.
-- Recommendation: inbox/idempotency around broker-delivered events. Use the existing
-  `IdempotentIntegrationHandler<TIntegrationEvent>` only after wiring a durable `IIdempotencyStore`.
+- Recommendation: route broker-delivered events through `IdempotentIntegrationHandler<TIntegrationEvent>`
+  and the EF Core idempotency store.
 
 ### Catalog integration idempotency wrapper
 
@@ -77,11 +100,10 @@ events, call external side effects, or run asynchronous processing.
 - Failure window: inner handler succeeds, then `Complete` fails; retry can re-run side effects after
   the lock expires.
 - Existing mitigation: lock duration and completion fingerprint.
-- Current runtime status: no source-controlled `IIdempotencyStore` implementation is registered for
-  Catalog, and no broker wiring consumes through this wrapper.
-- Recommendation: inbox/idempotency when real message ingress exists. Prefer a transactional inbox
-  table colocated with the Catalog side effect store, or make the side effect idempotent by stable
-  keys plus safe conflict handling.
+- Current runtime status: `SharedKernel.EntityFrameworkCore` provides `EfIdempotencyStore<TContext>` and
+  maps entries to `messaging.idempotency_keys`; no broker wiring consumes through this wrapper yet.
+- Recommendation: keep handler side effects idempotent by stable keys plus safe conflict handling, then
+  use the durable idempotency row as the delivery guard when real message ingress exists.
 
 ### Catalog event-store projection runner
 
@@ -140,14 +162,15 @@ events, call external side effects, or run asynchronous processing.
 
 - Reusable compensation helper: added as `SharedKernel.BuildingBlocks.Compensation` because request-path
   compensation is a common host-agnostic workflow primitive and now has two media cleanup callers.
-- Outbox/inbox primitives: future SharedKernel candidates. They can be added for one current in-repo
-  caller if they are small, documented, provider-shaped, and free of application business rules.
-- Idempotency abstractions already exist in `SharedKernel.Idempotency`; the missing piece is a
-  provider/runtime integration, not a new application-specific abstraction.
+- Outbox/inbox primitives: implemented as small EF Core provider code in
+  `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` and
+  `SharedKernel.Idempotency.EntityFrameworkCore`; storage-neutral contracts live in
+  `SharedKernel.Messaging.IntegrationEvents` and `SharedKernel.Idempotency`.
+- Shared EF messaging tables use the `messaging` schema to group asynchronous delivery and idempotency
+  infrastructure separately from domain tables.
 
 ## Follow-up implementation candidates
 
-1. Add an Admin transactional outbox before durable cross-service event delivery.
-2. Add a Catalog inbox/idempotency provider when real message ingress is introduced.
-3. Add a media reconciliation job after object storage becomes remote or delete failures need durable
+1. Add an outbox publisher and Catalog transport consumer for durable cross-service event delivery.
+2. Add a media reconciliation job after object storage becomes remote or delete failures need durable
    repair outside the request path.

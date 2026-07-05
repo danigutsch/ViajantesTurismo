@@ -1,6 +1,4 @@
 using ViajantesTurismo.Admin.Application.Mappings;
-using ViajantesTurismo.Admin.Contracts.Tours;
-using SharedKernel.IntegrationEvents;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -11,9 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 /// </summary>
 public sealed class CreateTourCommandHandler(
     ITourStore tourStore,
-    IUnitOfWork unitOfWork,
-    IIntegrationEventDispatcher integrationEventDispatcher,
-    TimeProvider timeProvider)
+    IUnitOfWork unitOfWork)
 {
     /// <summary>
     /// Handles the CreateTourCommand and returns the ID of the created tour.
@@ -52,14 +48,6 @@ public sealed class CreateTourCommandHandler(
 
         tourStore.Add(tourResult.Value);
         await unitOfWork.SaveEntities(ct);
-        await integrationEventDispatcher.Dispatch(
-            new AdminTourCreatedIntegrationEvent(
-                Guid.CreateVersion7(),
-                timeProvider.GetUtcNow(),
-                tourResult.Value.Id,
-                tourResult.Value.Identifier,
-                tourResult.Value.Name),
-            ct);
 
         return Result.Ok(tourResult.Value.Id);
     }

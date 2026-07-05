@@ -149,7 +149,7 @@ public sealed class PublicMediaImageTests
         var metadata = new PublicMediaImageMetadata
         {
             Id = imageId,
-            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            SourceObjectKey = "media/source.jpg",
             Checksum = "  sha256:\u0001abc  ",
             ContentType = "  image/jpeg  ",
             FileSizeBytes = 2048,
@@ -162,7 +162,7 @@ public sealed class PublicMediaImageTests
         };
         var variants = new[]
         {
-            new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "  image/jpeg  ", 1024),
+            new MediaImageResponsiveVariant("  media/one-640.jpg  ", 640, 427, "  image/jpeg  ", 1024),
         };
         var tags = new[] { "  mountain  " };
         var tourLinks = new[] { new MediaImageTourLink(tourId, 0, true) };
@@ -190,7 +190,7 @@ public sealed class PublicMediaImageTests
         var metadata = new PublicMediaImageMetadata
         {
             Id = Guid.CreateVersion7(),
-            SourceUri = new Uri("https://cdn.example/source.jpg"),
+            SourceObjectKey = "media/source.jpg",
             Checksum = "sha256:abc",
             ContentType = "image/jpeg",
             FileSizeBytes = 2048,
@@ -208,6 +208,69 @@ public sealed class PublicMediaImageTests
         var errorDetails = result.ErrorDetails ?? throw new InvalidOperationException("Expected validation error details.");
         var validationErrors = errorDetails.ValidationErrors ?? throw new InvalidOperationException("Expected validation errors.");
         validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBe(true);
+    }
+
+    [Theory]
+    [InlineData("/media/source.jpg")]
+    [InlineData("media//source.jpg")]
+    [InlineData("media/./source.jpg")]
+    [InlineData("media/../source.jpg")]
+    [InlineData("C:/media/source.jpg")]
+    public void Create_rejects_invalid_source_object_keys(string sourceObjectKey)
+    {
+        // Arrange
+        var metadata = new PublicMediaImageMetadata
+        {
+            Id = Guid.CreateVersion7(),
+            SourceObjectKey = sourceObjectKey,
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensions(1200, 800),
+            ProcessingStatus = MediaImageProcessingStatus.Pending,
+            AltText = "Cyclists in the mountains",
+        };
+        var tourLinks = new[] { new MediaImageTourLink(Guid.CreateVersion7(), 0, true) };
+
+        // Act
+        var result = PublicMediaImage.Create(metadata, [], ["mountain"], tourLinks);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors.ContainsKey(nameof(PublicMediaImageMetadata.SourceObjectKey)).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("/media/source.jpg")]
+    [InlineData("media//source.jpg")]
+    [InlineData("media/./source.jpg")]
+    [InlineData("media/../source.jpg")]
+    [InlineData("C:/media/source.jpg")]
+    public void Create_rejects_invalid_responsive_variant_object_keys(string objectKey)
+    {
+        // Arrange
+        var metadata = new PublicMediaImageMetadata
+        {
+            Id = Guid.CreateVersion7(),
+            SourceObjectKey = "media/source.jpg",
+            Checksum = "sha256:abc",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 2048,
+            Dimensions = new MediaImageDimensions(1200, 800),
+            ProcessingStatus = MediaImageProcessingStatus.Ready,
+            AltText = "Cyclists in the mountains",
+        };
+        var variants = new[] { new MediaImageResponsiveVariant(objectKey, 640, 427, "image/jpeg", 1024) };
+        var tourLinks = new[] { new MediaImageTourLink(Guid.CreateVersion7(), 0, true) };
+
+        // Act
+        var result = PublicMediaImage.Create(metadata, variants, ["mountain"], tourLinks);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors.ContainsKey(nameof(PublicMediaImage.ResponsiveVariants)).ShouldBeTrue();
     }
 
     [Fact]

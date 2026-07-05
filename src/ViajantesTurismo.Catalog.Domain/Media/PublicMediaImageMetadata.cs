@@ -11,9 +11,9 @@ public sealed class PublicMediaImageMetadata
     public required Guid Id { get; init; }
 
     /// <summary>
-    /// Gets or initializes the original source URI.
+    /// Gets or initializes the original object key.
     /// </summary>
-    public required Uri SourceUri { get; init; }
+    public required string SourceObjectKey { get; init; }
 
     /// <summary>
     /// Gets or initializes the content checksum supplied by the media source.

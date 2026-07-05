@@ -66,6 +66,8 @@ Decisions about application architecture and layer responsibilities.
   Provider-Specific SharedKernel Infrastructure Modules
 - **[ADR-031](adr/20260703-rich-domain-behavior-and-state-exposure.md)** — Rich Domain Behavior
   and State Exposure
+- **[ADR-033](adr/20260705-messaging-event-abstractions.md)** — Messaging Event Abstractions
+  and CloudEvents Boundary
 
 ### Versioning & Release
 

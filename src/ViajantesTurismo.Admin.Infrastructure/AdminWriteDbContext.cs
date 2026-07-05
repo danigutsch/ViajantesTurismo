@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
@@ -6,7 +7,9 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-internal sealed class AdminWriteDbContext(DbContextOptions<AdminWriteDbContext> options)
+internal sealed class AdminWriteDbContext(
+    DbContextOptions<AdminWriteDbContext> options,
+    IEnumerable<IDbContextConfiguration<AdminWriteDbContext>>? configurations = null)
     : DbContext(options), IUnitOfWork
 {
     public DbSet<Tour> Tours => Set<Tour>();
@@ -17,6 +20,19 @@ internal sealed class AdminWriteDbContext(DbContextOptions<AdminWriteDbContext> 
         _ = await SaveChangesAsync(ct);
     }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        if (configurations is not null)
+        {
+            foreach (var configuration in configurations)
+            {
+                configuration.ConfigureConventions(configurationBuilder);
+            }
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -25,5 +41,12 @@ internal sealed class AdminWriteDbContext(DbContextOptions<AdminWriteDbContext> 
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
+        if (configurations is not null)
+        {
+            foreach (var configuration in configurations)
+            {
+                configuration.ConfigureModel(modelBuilder);
+            }
+        }
     }
 }

@@ -14,7 +14,12 @@ public sealed record PublicMediaImageDto
     public required Guid Id { get; init; }
 
     /// <summary>
-    /// Gets the original source URI.
+    /// Gets the original source object key.
+    /// </summary>
+    public string? SourceObjectKey { get; init; }
+
+    /// <summary>
+    /// Gets the derived original source URI.
     /// </summary>
     [Required]
     public required Uri SourceUri { get; init; }

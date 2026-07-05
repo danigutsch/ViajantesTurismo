@@ -11,7 +11,7 @@ public sealed class CatalogTourWorkflowSteps
 {
     private readonly TestCatalogTourReadModelStore tourStore = new();
     private readonly TestPublicContentStore publicContentStore = new();
-    private WebApplicationFactory<CatalogApiEntryPoint>? factory;
+    private WebApplicationFactory<CatalogApiHostEntryPoint>? factory;
     private HttpClient? client;
     private Guid catalogTourId;
     private HttpResponseMessage? response;

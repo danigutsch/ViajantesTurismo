@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.MigrationService;
@@ -10,6 +11,7 @@ builder.Services.AddOpenTelemetry()
 
 builder.AddServiceDefaults();
 
+builder.Services.AddDomainEventProcessing();
 builder.AddSeeding();
 builder.AddCatalogInfrastructure();
 

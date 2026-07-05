@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
@@ -52,8 +51,22 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();
-        builder.Services.AddScoped<IIntegrationEventDispatcher, ServiceProviderIntegrationEventDispatcher>();
+        builder.Services.AddDomainEventProcessing();
 
         return builder;
+    }
+
+    /// <summary>
+    /// Adds domain event dispatching services used by write-side persistence.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddDomainEventProcessing(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddGeneratedIntegrationEventMappings();
+
+        return services;
     }
 }

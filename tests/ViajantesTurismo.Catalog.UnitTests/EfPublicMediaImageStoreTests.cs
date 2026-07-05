@@ -1,3 +1,4 @@
+using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 
@@ -21,14 +22,10 @@ public sealed class EfPublicMediaImageStoreTests
         var images = await store.ListByTour(tourId, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Collection(
-            images,
-            image =>
-            {
-                Assert.Equal(cover.Id, image.Id);
-                Assert.Single(image.TourLinks);
-            },
-            image => Assert.Equal(regular.Id, image.Id));
+        images.Count.ShouldBe(2);
+        images[0].Id.ShouldBe(cover.Id);
+        images[0].TourLinks.Count.ShouldBe(1);
+        images[1].Id.ShouldBe(regular.Id);
     }
 
     [Fact]
@@ -48,11 +45,11 @@ public sealed class EfPublicMediaImageStoreTests
         var saved = await store.GetImage(imageId, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Equal("Updated image", saved.AltText);
-        var link = Assert.Single(saved.TourLinks);
-        Assert.True(link.IsCover);
-        Assert.Equal(0, link.DisplayOrder);
+        saved.ShouldNotBeNull();
+        saved.AltText.ShouldBe("Updated image");
+        var link = saved.TourLinks.ShouldHaveSingleItem();
+        link.IsCover.ShouldBeTrue();
+        link.DisplayOrder.ShouldBe(0);
     }
 
     [Fact]
@@ -68,8 +65,8 @@ public sealed class EfPublicMediaImageStoreTests
             imageId,
             MediaImageProcessingStatus.Ready,
             [
-                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-320.jpg"), 320, 213, "image/jpeg", 512, 0),
-                new MediaImageResponsiveVariant(new Uri("https://cdn.example/one-640.jpg"), 640, 427, "image/jpeg", 1024, 1)
+                new MediaImageResponsiveVariant("media/one-320.jpg", 320, 213, "image/jpeg", 512, 0),
+                new MediaImageResponsiveVariant("media/one-640.jpg", 640, 427, "image/jpeg", 1024, 1)
             ]);
 
         // Act
@@ -77,10 +74,36 @@ public sealed class EfPublicMediaImageStoreTests
         var saved = await store.GetImage(imageId, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.NotNull(saved);
-        Assert.Collection(
-            saved.ResponsiveVariants,
-            variant => Assert.Equal(320, variant.Width),
-            variant => Assert.Equal(640, variant.Width));
+        saved.ShouldNotBeNull();
+        saved.ResponsiveVariants.Count.ShouldBe(2);
+        saved.ResponsiveVariants[0].Width.ShouldBe(320);
+        saved.ResponsiveVariants[1].Width.ShouldBe(640);
+    }
+
+    [Fact]
+    public async Task Store_lists_distinct_referenced_object_keys()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicMediaImageStore(dbContext);
+        var image = PublicMediaImageTestFactory.CreateImageWithVariants(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            MediaImageProcessingStatus.Ready,
+            [
+                new MediaImageResponsiveVariant("media/one-320.jpg", 320, 213, "image/jpeg", 512, 0),
+                new MediaImageResponsiveVariant("media/one-640.jpg", 640, 427, "image/jpeg", 1024, 1)
+            ]);
+
+        // Act
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        var keys = await store.ListReferencedObjectKeys(TestContext.Current.CancellationToken);
+
+        // Assert
+        keys.ShouldBe([
+            "media/one-320.jpg",
+            "media/one-640.jpg",
+            "media/source.jpg"
+        ]);
     }
 }

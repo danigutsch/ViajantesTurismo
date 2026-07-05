@@ -187,14 +187,14 @@
           "OpenTelemetry.Instrumentation.Http": "[1.16.0, )"
         }
       },
-      "sharedkernel.integrationevents": {
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging.integrationevents": {
         "type": "Project",
         "dependencies": {
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
-      },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
       },
       "sharedkernel.observability": {
         "type": "Project",
@@ -208,8 +208,8 @@
         "type": "Project",
         "dependencies": {
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.contracts": {

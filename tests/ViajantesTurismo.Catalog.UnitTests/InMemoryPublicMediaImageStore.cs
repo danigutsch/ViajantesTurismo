@@ -24,6 +24,8 @@ internal sealed class InMemoryPublicMediaImageStore(PublicMediaImage image) : IP
 
     public ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+
         return ValueTask.FromResult<IReadOnlyList<PublicMediaImage>>([]);
     }
 
@@ -31,6 +33,16 @@ internal sealed class InMemoryPublicMediaImageStore(PublicMediaImage image) : IP
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+
         return ValueTask.FromResult<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>>(new Dictionary<Guid, IReadOnlyList<PublicMediaImage>>());
+    }
+
+    public ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult<IReadOnlyList<string>>(
+            [Current.SourceObjectKey, .. Current.ResponsiveVariants.Select(variant => variant.ObjectKey)]);
     }
 }

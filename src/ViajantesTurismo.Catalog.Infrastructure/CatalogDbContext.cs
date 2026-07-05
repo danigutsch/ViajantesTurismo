@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicTheme;
@@ -9,7 +10,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// <summary>
 /// EF Core context for Catalog persisted models.
 /// </summary>
-public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options) : DbContext(options)
+public sealed class CatalogDbContext(
+    DbContextOptions<CatalogDbContext> options,
+    IEnumerable<IDbContextConfiguration<CatalogDbContext>>? configurations = null) : DbContext(options)
 {
     /// <summary>
     /// Gets editable public content entries.
@@ -26,6 +29,20 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     internal DbSet<PublicMediaImage> PublicMediaImages => Set<PublicMediaImage>();
 
     /// <inheritdoc />
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        if (configurations is not null)
+        {
+            foreach (var configuration in configurations)
+            {
+                configuration.ConfigureConventions(configurationBuilder);
+            }
+        }
+    }
+
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -36,5 +53,12 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         modelBuilder.ApplyConfiguration(new PublicThemeSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
         modelBuilder.ApplyConfiguration(new PublicMediaImageConfiguration());
+        if (configurations is not null)
+        {
+            foreach (var configuration in configurations)
+            {
+                configuration.ConfigureModel(modelBuilder);
+            }
+        }
     }
 }

@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Idempotency;
+using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -28,9 +30,13 @@ public static class MediaDependencyInjection
                 MediaUploadValidationOptionsValidator>());
         services.TryAddSingleton<IMediaUploadValidator>(sp => new MediaUploadValidator(sp.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value));
         services.TryAddScoped<MediaImageUploadIntake>();
+        services.TryAddScoped<MediaObjectReconciliationService>();
         services.TryAddScoped<MediaImageOriginalStoredIntegrationHandler>();
-        services.TryAddScoped<IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>>(
-            sp => sp.GetRequiredService<MediaImageOriginalStoredIntegrationHandler>());
+        services.TryAddScoped<IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>>(sp =>
+            new IdempotentIntegrationHandler<MediaImageOriginalStoredIntegrationEvent>(
+                sp.GetRequiredService<MediaImageOriginalStoredIntegrationHandler>(),
+                sp.GetRequiredService<IIdempotencyStore>(),
+                sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
 
         return services;
     }

@@ -18,7 +18,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
         return new MediaObjectWriteResult(
             request.ObjectKey,
             new Uri($"file:///media/{request.ObjectKey}"),
-            new Uri($"https://cdn.example/{request.ObjectKey}"),
+            GetPublicUri(request.ObjectKey),
             request.ContentType,
             content.Length,
             request.Checksum);
@@ -41,10 +41,27 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
             request.Checksum);
     }
 
+    public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult(objects.ContainsKey(objectKey));
+    }
+
+    public ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult<IReadOnlyList<string>>(
+            [.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal)]);
+    }
+
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
     {
         throw new NotSupportedException();
     }
+
+    public Uri GetPublicUri(string objectKey) => new($"https://cdn.example/{objectKey}");
 
     public ValueTask Delete(string objectKey, CancellationToken ct)
     {

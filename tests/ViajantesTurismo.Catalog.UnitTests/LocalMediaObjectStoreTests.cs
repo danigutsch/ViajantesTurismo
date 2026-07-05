@@ -127,6 +127,46 @@ public sealed class LocalMediaObjectStoreTests
     }
 
     [Fact]
+    public async Task Exists_returns_whether_object_is_stored()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        var objectPath = Path.Combine(directory.Path, "media", "photo.jpg");
+        Directory.CreateDirectory(Path.GetDirectoryName(objectPath) ?? directory.Path);
+        await File.WriteAllBytesAsync(objectPath, [1], TestContext.Current.CancellationToken);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        var existing = await store.Exists("media/photo.jpg", TestContext.Current.CancellationToken);
+        var missing = await store.Exists("media/missing.jpg", TestContext.Current.CancellationToken);
+
+        // Assert
+        existing.ShouldBeTrue();
+        missing.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ListKeys_returns_keys_under_prefix()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        var mediaPath = Path.Combine(directory.Path, "media", "photo.jpg");
+        var otherPath = Path.Combine(directory.Path, "other", "photo.jpg");
+        Directory.CreateDirectory(Path.GetDirectoryName(mediaPath) ?? directory.Path);
+        Directory.CreateDirectory(Path.GetDirectoryName(otherPath) ?? directory.Path);
+        await File.WriteAllBytesAsync(mediaPath, [1], TestContext.Current.CancellationToken);
+        await File.WriteAllBytesAsync(otherPath, [2], TestContext.Current.CancellationToken);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        var keys = await store.ListKeys("media/", TestContext.Current.CancellationToken);
+
+        // Assert
+        keys.ShouldContain("media/photo.jpg");
+        keys.ShouldNotContain("other/photo.jpg");
+    }
+
+    [Fact]
     public async Task Delete_rejects_empty_object_key()
     {
         // Arrange

@@ -17,9 +17,10 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// <para>Tour enforces business rules and invariants for all bookings within its aggregate boundary.</para>
 /// </remarks>
 [GenerateModelSupport(Identity = true)]
-public sealed partial class Tour : IEntity<Guid>
+public sealed partial class Tour : IAggregateRoot<Guid>
 {
     private readonly List<Booking> _bookings = [];
+    private readonly List<IDomainEvent> _domainEvents = [];
     private string[] _includedServices = [];
 
     private Tour(
@@ -37,6 +38,8 @@ public sealed partial class Tour : IEntity<Guid>
         Pricing = pricing;
         Capacity = capacity;
         _includedServices = [.. includedServices];
+
+        _domainEvents.Add(new TourCreatedDomainEvent(Id, Identifier, Name));
     }
 
     /// <summary>
@@ -109,6 +112,12 @@ public sealed partial class Tour : IEntity<Guid>
     /// Gets the bookings for this tour.
     /// </summary>
     public IReadOnlyList<Booking> Bookings => _bookings.AsReadOnly();
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
+
+    /// <inheritdoc />
+    public void ClearDomainEvents() => _domainEvents.Clear();
 
     /// <summary>
     /// Creates a new instance of the <see cref="Tour"/> class with validation.
