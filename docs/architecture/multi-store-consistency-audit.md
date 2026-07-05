@@ -67,8 +67,9 @@ The Admin write path therefore uses this rule:
   `DbContext` transaction.
 - Persist aggregate changes and outbox rows in the same `SaveChanges` call.
 - Clear aggregate domain events only after `SavedChanges` confirms success.
-- Do not clear domain events in `SaveChangesFailed`; the caller may fix the unit of work and retry, or
-  discard the DbContext and rebuild state from the database.
+- Do not clear domain events in `SaveChangesFailed`; discard the DbContext and rebuild state from the
+  database before retrying. Retrying the same tracked unit of work can re-dispatch events while
+  previously-added outbox entities are still tracked.
 - Do not publish integration events directly from `SavingChanges`; external publication happens later
   from durable outbox rows.
 

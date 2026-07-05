@@ -162,7 +162,8 @@ for domain events that are purely local.
 
 When integration events are persisted through an EF Core outbox, aggregate rows and outbox rows must be
 saved in the same `SaveChanges` transaction. Domain events should be cleared only after save success;
-failed saves must keep them available for a retry or be abandoned with the DbContext.
+after a failed save, discard the DbContext and retry with a fresh unit of work rather than retrying the
+same tracked entities and already-added outbox rows.
 
 ```mermaid
 flowchart LR
