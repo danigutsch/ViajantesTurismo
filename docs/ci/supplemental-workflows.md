@@ -162,7 +162,8 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 3. Build the solution in Release mode with the computed version properties.
 4. Test the Release build with `--no-build` so build and test never run in parallel.
 5. Pack `SharedKernel.*` packages with the computed package version.
-6. Generate `release-notes.md`, `CHANGELOG.md`, and `release-manifest.json`.
+6. Run the existing `SharedKernel.Versioning.Tool` to generate `release-notes.md`, `CHANGELOG.md`,
+   and `release-manifest.json`.
 7. Upload package and release-prep artifacts for review.
 
 The stable path is manual-only. It requires the `release` environment approval and the

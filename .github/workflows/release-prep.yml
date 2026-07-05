@@ -6,7 +6,6 @@ name: Release Prep
       - .github/workflows/release-prep.yml
       - scripts/calculate-release-version.sh
       - scripts/pack-sharedkernel-local.sh
-      - scripts/prepare-release-artifacts.sh
       - src/SharedKernel/**
       - tools/SharedKernel.Versioning.Tool/**
       - tests/SharedKernel.Versioning.Tests/**
@@ -100,7 +99,17 @@ jobs:
       - name: Generate release notes and manifest
         shell: bash
         run: |
-          bash scripts/prepare-release-artifacts.sh \
+          commit_range="HEAD"
+          if [[ -n "${{ steps.version.outputs.source_tag }}" ]]; then
+            commit_range="${{ steps.version.outputs.source_tag }}..HEAD"
+          fi
+
+          git log --format='- %s (%h)' "${commit_range}" | dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --configuration Release \
+            --no-build \
+            -- \
+            prepare-release \
             --version "${{ steps.version.outputs.package_version }}" \
             --package-dir "artifacts/packages/release-prep/${{ steps.version.outputs.package_version }}" \
             --source-tag "${{ steps.version.outputs.source_tag }}" \

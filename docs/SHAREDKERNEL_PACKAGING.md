@@ -85,9 +85,9 @@ gates, release notes, provenance, and support-policy decisions.
 ## Release prep workflow
 
 The `Release Prep` GitHub Actions workflow reuses `scripts/calculate-release-version.sh`, builds and
-tests with the computed version values, packs the current `SharedKernel.*` projects, and uploads a
-review artifact. The artifact includes packages plus generated release notes, a changelog, and a
-minimal provenance manifest with package SHA-256 hashes.
+tests with the computed version values, packs the current `SharedKernel.*` projects, and runs the
+existing `SharedKernel.Versioning.Tool` to generate release notes, a changelog, and a minimal
+provenance manifest with package SHA-256 hashes.
 
 Stable release behavior is disabled by default. Creating a `vX.Y.Z` tag, creating a GitHub release,
 or publishing to NuGet requires manual workflow dispatch and the `release` environment approval.
