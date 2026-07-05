@@ -164,6 +164,7 @@ fast_validation_patterns=(
     "tests/SharedKernel.Style.Analyzers.Tests/**"
     "tests/SharedKernel.Style.CodeFixes.Tests/**"
     "tests/SharedKernel.Testing.Analyzers.Tests/**"
+    "tests/SharedKernel.Testing.Tests/**"
     "tests/ViajantesTurismo.Admin.BehaviorTests/**"
     "tests/ViajantesTurismo.Admin.ContractTests/**"
     "tests/ViajantesTurismo.Admin.UiIntegrationTests/**"
