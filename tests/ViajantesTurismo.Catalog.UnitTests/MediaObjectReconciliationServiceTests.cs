@@ -71,5 +71,6 @@ public sealed class MediaObjectReconciliationServiceTests
         report.OrphanObjectKeys.ShouldContain("media/orphan.jpg");
         report.DeletedOrphanObjectKeys.ShouldContain("media/orphan.jpg");
         objectStore.ObjectKeys.ShouldNotContain("media/orphan.jpg");
+        objectStore.ExistsCallCount.ShouldBe(0);
     }
 }

@@ -35,11 +35,8 @@ public sealed class MediaObjectReconciliationService(
         {
             foreach (var orphan in orphans)
             {
-                if (await objectStore.Exists(orphan, ct).ConfigureAwait(false))
-                {
-                    await objectStore.Delete(orphan, ct).ConfigureAwait(false);
-                    deleted.Add(orphan);
-                }
+                await objectStore.Delete(orphan, ct).ConfigureAwait(false);
+                deleted.Add(orphan);
             }
         }
 
