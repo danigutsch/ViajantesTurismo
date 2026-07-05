@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
@@ -30,6 +31,27 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         outboxMessage.Envelope.EventId.ShouldNotBe(Guid.Empty);
         outboxMessage.Envelope.OccurredAt.ShouldBe(new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero));
         outboxMessage.Envelope.PayloadJson.ShouldContain("andes-2026", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SaveChanges_dispatches_domain_events_and_clears_them_after_success()
+    {
+        var dispatcher = new OutboxEnqueuingDomainEventDispatcher(new FakeTimeProvider(
+            new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
+        var dbContext = scope.DbContext;
+        dispatcher.DbContext = dbContext;
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-sync-2026", Name: "Andes Sync 2026"));
+        dbContext.Tours.Add(tour);
+
+        var saveChanges = typeof(DbContext).GetMethod(nameof(DbContext.SaveChanges), Type.EmptyTypes).ShouldNotBeNull();
+        _ = saveChanges.Invoke(dbContext, null);
+
+        dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
+        tour.GetDomainEvents().ShouldBeEmpty();
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessageEntity>().ShouldHaveSingleItem();
+        outboxMessage.Envelope.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Envelope.PayloadJson.ShouldContain("andes-sync-2026", StringComparison.Ordinal);
     }
 
     [Fact]
