@@ -16,11 +16,13 @@ envelope SDK types just to define typed integration event contracts.
 Use CloudEvents as an adapter for integration-event transport metadata, not as the core integration
 event abstraction.
 
-- `SharedKernel.IntegrationEvents` remains dependency-free and owns typed integration event
+- `SharedKernel.Messaging.IntegrationEvents` remains dependency-free and owns typed integration event
   contracts and dispatch abstractions.
-- `SharedKernel.IntegrationEvents.CloudEvents` references the CloudEvents SDK and maps typed
+- `SharedKernel.Messaging.IntegrationEvents.CloudEvents` references the CloudEvents SDK and maps typed
   integration events to and from CloudEvents.
 - Domain events never use CloudEvents.
+
+Use `SharedKernel.Messaging.CloudEvents` only for a future neutral envelope adapter.
 
 ## Consequences
 

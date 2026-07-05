@@ -18,7 +18,7 @@ Create separate typed dispatch modules for domain events and integration events.
 
 - `SharedKernel.DomainEvents` owns `IDomainEventDispatcher` and
   `IDomainEventHandler<TDomainEvent>`.
-- `SharedKernel.IntegrationEvents` owns `IIntegrationEventDispatcher` and
+- `SharedKernel.Messaging.IntegrationEvents` owns `IIntegrationEventDispatcher` and
   `IIntegrationEventHandler<TIntegrationEvent>`.
 
 Both modules may adapt to `SharedKernel.Mediator` internally, but their public abstractions stay

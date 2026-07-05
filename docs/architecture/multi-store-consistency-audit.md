@@ -163,8 +163,9 @@ and connection-resiliency guidance on transaction commit ambiguity:
 - Reusable compensation helper: added as `SharedKernel.BuildingBlocks.Compensation` because request-path
   compensation is a common host-agnostic workflow primitive and now has two media cleanup callers.
 - Outbox/inbox primitives: implemented as small EF Core provider code in
-  `SharedKernel.EntityFrameworkCore`; storage-neutral contracts remain in `SharedKernel.IntegrationEvents`
-  and `SharedKernel.Idempotency`.
+  `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` and
+  `SharedKernel.Idempotency.EntityFrameworkCore`; storage-neutral contracts live in
+  `SharedKernel.Messaging.IntegrationEvents` and `SharedKernel.Idempotency`.
 - Shared EF messaging tables use the `messaging` schema to group asynchronous delivery and idempotency
   infrastructure separately from domain tables.
 

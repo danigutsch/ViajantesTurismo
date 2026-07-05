@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;

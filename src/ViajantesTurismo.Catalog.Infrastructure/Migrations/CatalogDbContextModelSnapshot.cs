@@ -25,7 +25,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SharedKernel.EntityFrameworkCore.IdempotencyEntryEntity", b =>
+            modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
                 {
                     b.Property<string>("Scope")
                         .HasMaxLength(200)

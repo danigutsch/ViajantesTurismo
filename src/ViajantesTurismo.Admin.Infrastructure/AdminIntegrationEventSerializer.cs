@@ -1,5 +1,5 @@
 using System.Text.Json;
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;

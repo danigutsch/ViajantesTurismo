@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.DomainEvents;
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Testing;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Infrastructure;

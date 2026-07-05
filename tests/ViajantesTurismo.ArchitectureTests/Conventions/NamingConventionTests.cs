@@ -1,4 +1,4 @@
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using static ViajantesTurismo.ArchitectureTests.Conventions.NamingConventionTestsHelpers;
 

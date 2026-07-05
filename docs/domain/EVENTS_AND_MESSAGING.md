@@ -13,6 +13,25 @@ This document defines the durable event and messaging direction for ViajantesTur
 - Inbox, outbox, idempotency, and projections are infrastructure/runtime concerns, not aggregate
   responsibilities.
 
+## Ubiquitous Language
+
+Use event language for facts and contracts. Use messaging language for delivery, runtime state, and
+transport boundaries.
+
+| Term | Meaning |
+| --- | --- |
+| `DomainEvent` | Business fact raised by an aggregate inside one bounded context. |
+| `IntegrationEvent` | Explicit, versioned, cross-boundary event contract. |
+| `EventEnvelope` | Serialized event identity, type, time, source, content type, payload, and metadata. |
+| `Message` | Delivery or processing unit carrying an envelope through a runtime boundary. |
+| `OutboxMessage` | Durable outbound message with an envelope and publish state. |
+| `InboxMessage` | Durable inbound message with an envelope and processing or de-duplication state. |
+| `IdempotencyEntry` | Generic operation ledger keyed by scope and key. |
+| `CloudEvent` | Standards-based event envelope used at interoperability boundaries. |
+
+An integration event is the typed contract. A CloudEvent is an envelope. An outbox row is a durable
+message record. These concepts should not be represented by one catch-all type.
+
 ## SharedKernel Modules
 
 ### `SharedKernel.Domain`
@@ -45,7 +64,7 @@ Owns typed domain event dispatch:
 Domain event dispatch stays local to the bounded context. It does not use CloudEvents, inbox, or
 outbox persistence by default.
 
-### `SharedKernel.IntegrationEvents`
+### `SharedKernel.Messaging.IntegrationEvents`
 
 Owns typed integration event dispatch:
 
@@ -57,15 +76,33 @@ Owns typed integration event dispatch:
 Integration events can be persisted and transported through adapters, but the core abstraction
 project remains dependency-free.
 
-### `SharedKernel.IntegrationEvents.CloudEvents`
+### `SharedKernel.Messaging.IntegrationEvents.CloudEvents`
 
-Owns CloudEvents mapping:
+Owns the current CloudEvents mapping adapter:
 
 - Typed integration event to CloudEvents mapping.
 - CloudEvents to typed integration event mapping.
 - CloudEvents source, subject, type, and content-type conventions.
 
 Bounded-context domain and application projects should not depend directly on this adapter.
+
+Use `SharedKernel.Messaging.CloudEvents` only if a future storage-neutral `EventEnvelope` adapter is
+needed. Keep `SharedKernel.Messaging.IntegrationEvents` focused on typed integration-event contracts and
+dispatch.
+
+### `SharedKernel.Messaging`
+
+Storage-neutral messaging abstractions that are not specific to domain events,
+integration events, or event sourcing:
+
+- `EventEnvelope` concepts.
+- Message identity and metadata conventions.
+- Shared envelope validation.
+- Runtime-neutral outbox and inbox contracts, if needed.
+
+Provider-specific persistence remains outside this module. EF Core messaging providers live in
+`SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`,
+`SharedKernel.Idempotency.EntityFrameworkCore`, and `SharedKernel.DomainEvents.EntityFrameworkCore`.
 
 ### `SharedKernel.Idempotency`
 
@@ -235,8 +272,9 @@ Purpose:
 Runtime shape:
 
 - Core contracts live in SharedKernel abstractions.
-- Storage-neutral event contracts live in `SharedKernel.IntegrationEvents`.
-- EF Core provider code lives in `SharedKernel.EntityFrameworkCore`.
+- Storage-neutral integration-event contracts live in `SharedKernel.Messaging.IntegrationEvents`.
+- EF Core outbox provider code lives in `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore`.
+- EF Core idempotency provider code lives in `SharedKernel.Idempotency.EntityFrameworkCore`.
 - EF outbox messages are stored in `messaging.outbox_messages`.
 - `AddIntegrationEventOutbox<TContext>()` registers the EF outbox, the shared idempotency store,
   and the model configuration for both messaging tables.

@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.EntityFrameworkCore;
-using SharedKernel.IntegrationEvents;
+using SharedKernel.DomainEvents.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 

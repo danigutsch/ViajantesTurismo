@@ -25,7 +25,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SharedKernel.EntityFrameworkCore.IdempotencyEntryEntity", b =>
+            modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
                 {
                     b.Property<string>("Scope")
                         .HasMaxLength(200)
@@ -57,7 +57,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("idempotency_keys", "messaging");
                 });
 
-            modelBuilder.Entity("SharedKernel.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
+            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessageEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");

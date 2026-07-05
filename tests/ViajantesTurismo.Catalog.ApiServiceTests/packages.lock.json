@@ -619,22 +619,11 @@
       "sharedkernel.domain": {
         "type": "Project"
       },
-      "sharedkernel.domainevents": {
-        "type": "Project",
-        "dependencies": {
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
-        }
-      },
       "sharedkernel.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
-          "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )"
         }
       },
       "sharedkernel.eventsourcing": {
@@ -653,6 +642,15 @@
       "sharedkernel.idempotency": {
         "type": "Project"
       },
+      "sharedkernel.idempotency.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.imageprocessing": {
         "type": "Project",
         "dependencies": {
@@ -662,14 +660,28 @@
       "sharedkernel.inputnormalization": {
         "type": "Project"
       },
-      "sharedkernel.integrationevents": {
+      "sharedkernel.mediator.abstractions": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging.integrationevents": {
         "type": "Project",
         "dependencies": {
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
-      "sharedkernel.mediator.abstractions": {
-        "type": "Project"
+      "sharedkernel.messaging.integrationevents.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
       },
       "sharedkernel.observability": {
         "type": "Project",
@@ -697,8 +709,8 @@
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.apiservice": {
@@ -721,8 +733,8 @@
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.ImageProcessing": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
@@ -754,6 +766,7 @@
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"

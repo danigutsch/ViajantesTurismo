@@ -375,15 +375,21 @@
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
-      "sharedkernel.entityframeworkcore": {
+      "sharedkernel.domainevents.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
           "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )"
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )"
+        }
+      },
+      "sharedkernel.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )"
         }
       },
       "sharedkernel.httpclients": {
@@ -399,14 +405,17 @@
       "sharedkernel.idempotency": {
         "type": "Project"
       },
-      "sharedkernel.inputnormalization": {
-        "type": "Project"
-      },
-      "sharedkernel.integrationevents": {
+      "sharedkernel.idempotency.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )"
         }
+      },
+      "sharedkernel.inputnormalization": {
+        "type": "Project"
       },
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
@@ -419,6 +428,26 @@
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.messaging": {
+        "type": "Project"
+      },
+      "sharedkernel.messaging.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+        }
+      },
+      "sharedkernel.messaging.integrationevents.entityframeworkcore": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.results": {
         "type": "Project"
       },
@@ -429,8 +458,8 @@
           "SharedKernel.BuildingBlocks": "[0.1.0-alpha.0, )",
           "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
@@ -440,8 +469,8 @@
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.9, )",
           "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
-          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.admin.domain": {

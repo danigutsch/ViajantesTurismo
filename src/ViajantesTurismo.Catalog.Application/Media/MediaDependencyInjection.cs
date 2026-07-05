@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using SharedKernel.Idempotency;
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.Media;

@@ -3,7 +3,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Mediator.Abstractions\SharedKernel.Mediator.Abstractions.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.DomainEvents\SharedKernel.DomainEvents.csproj" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents\SharedKernel.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents\SharedKernel.Messaging.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.Results\SharedKernel.Results.csproj"/>
         <ProjectReference Include="..\SharedKernel\SharedKernel.BuildingBlocks\SharedKernel.BuildingBlocks.csproj" />
         <ProjectReference Include="..\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
@@ -12,7 +12,7 @@
             ReferenceOutputAssembly="false"
             PrivateAssets="all"
             IsAspireProjectResource="false" />
-        <ProjectReference Include="..\SharedKernel\SharedKernel.IntegrationEvents.SourceGenerator\SharedKernel.IntegrationEvents.SourceGenerator.csproj"
+        <ProjectReference Include="..\SharedKernel\SharedKernel.Messaging.IntegrationEvents.SourceGenerator\SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
             PrivateAssets="all"

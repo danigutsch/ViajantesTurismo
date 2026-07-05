@@ -31,8 +31,8 @@ Current examples:
   expected revisions, and event envelopes.
 - `SharedKernel.EventSourcing.Npgsql` owns reusable PostgreSQL event-store and projection
   checkpoint implementations plus provider telemetry names.
-- `SharedKernel.IntegrationEvents` owns typed integration-event contracts.
-- `SharedKernel.IntegrationEvents.CloudEvents` owns CloudEvents mapping as an adapter.
+- `SharedKernel.Messaging.IntegrationEvents` owns typed integration-event contracts.
+- `SharedKernel.Messaging.IntegrationEvents.CloudEvents` owns CloudEvents mapping as an adapter.
 - `SharedKernel.Idempotency` owns idempotency contracts and value types.
 
 Adapter modules may reference the external packages needed for their implementation, such as
@@ -113,9 +113,9 @@ dependency.
 | Capability | Neutral Module | Provider Module | Status |
 | --- | --- | --- | --- |
 | Event sourcing | `SharedKernel.EventSourcing` | `SharedKernel.EventSourcing.Npgsql` | Implemented |
-| Integration-event envelope mapping | `SharedKernel.IntegrationEvents` | `SharedKernel.IntegrationEvents.CloudEvents` | Implemented |
-| Idempotency | `SharedKernel.Idempotency` | `SharedKernel.Idempotency.PostgreSQL` or `SharedKernel.Idempotency.Redis` | Candidate |
-| Inbox/outbox | Future `SharedKernel.Messaging` or focused contracts | PostgreSQL-backed stores | Candidate |
+| Integration-event envelope mapping | `SharedKernel.Messaging.IntegrationEvents` | `SharedKernel.Messaging.IntegrationEvents.CloudEvents` | Implemented |
+| Idempotency | `SharedKernel.Idempotency` | `SharedKernel.Idempotency.EntityFrameworkCore` | Implemented |
+| Inbox/outbox | `SharedKernel.Messaging.IntegrationEvents` | `SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore` | Implemented |
 | Caching | Future cache contracts only if reused | Redis-backed cache adapters | Candidate |
 | Telemetry export | `SharedKernel.Observability` only for neutral contracts | Exporter-specific adapter only after reuse is proven | Candidate |
 

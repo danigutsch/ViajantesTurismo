@@ -1,7 +1,7 @@
 using System.Globalization;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.ImageProcessing;
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
