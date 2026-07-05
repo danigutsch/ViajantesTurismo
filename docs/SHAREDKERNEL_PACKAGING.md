@@ -51,6 +51,55 @@ artifacts/packages/local/<version>/
 Use a unique prerelease version for local validation so NuGet cache reuse cannot hide package content
 changes.
 
+## Repo-owned tool package workflow
+
+Repo-owned command-line automation is packaged as .NET tools when the executable is useful outside a
+single `dotnet run --project` call. Current repo-owned tool package IDs and commands:
+
+| Package ID | Command |
+| --- | --- |
+| `SharedKernel.Versioning.Tool` | `sharedkernel-version` |
+| `SharedKernel.Testing.CodeFixRunner` | `sharedkernel-codefix` |
+
+Pack tools into an ignored local feed with a unique prerelease version:
+
+```bash
+dotnet pack tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+  --configuration Release \
+  --output /tmp/opencode/sharedkernel-tools \
+  -p:ComputedSemVer=0.1.0-alpha.local.20260705000000
+
+dotnet pack tools/SharedKernel.Testing.CodeFixRunner/SharedKernel.Testing.CodeFixRunner.csproj \
+  --configuration Release \
+  --output /tmp/opencode/sharedkernel-tools \
+  -p:ComputedSemVer=0.1.0-alpha.local.20260705000000
+```
+
+Install or update from that local feed only after trusting the package contents. Set `package_id` to
+one of the repo-owned tool package IDs above:
+
+```bash
+package_id=SharedKernel.Versioning.Tool
+
+dotnet tool install "${package_id}" \
+  --tool-path /tmp/opencode/sharedkernel-tool-bin \
+  --add-source /tmp/opencode/sharedkernel-tools \
+  --version 0.1.0-alpha.local.20260705000000
+
+dotnet tool update "${package_id}" \
+  --tool-path /tmp/opencode/sharedkernel-tool-bin \
+  --add-source /tmp/opencode/sharedkernel-tools \
+  --version 0.1.0-alpha.local.20260705000000
+```
+
+When running from this repository, package source mapping in `NuGet.Config` intentionally blocks ad hoc
+`--add-source` restores for unmapped package IDs. For install smoke checks, run from a scratch directory
+with an explicit temporary NuGet config that maps the local feed to the repo-owned tool package IDs and
+maps `nuget.org` to external dependencies.
+
+Do not add repo-owned tools to `.config/dotnet-tools.json` until a stable trusted feed is available for
+ordinary `dotnet tool restore` users.
+
 ## Local feed workflow
 
 Pack all current source `SharedKernel.*` projects into a local artifact folder and verify that a
