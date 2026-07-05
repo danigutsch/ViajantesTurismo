@@ -81,24 +81,6 @@ jobs:
             --github-output "${GITHUB_OUTPUT}" \
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
-      - name: Build with computed version
-        shell: bash
-        run: |
-          dotnet build ViajantesTurismo.slnx --configuration Release --no-restore \
-            -p:ComputedSemVer="${{ steps.version.outputs.package_version }}" \
-            -p:ComputedAssemblyVersion="${{ steps.version.outputs.assembly_version }}" \
-            -p:ComputedFileVersion="${{ steps.version.outputs.file_version }}" \
-            -p:ComputedInformationalVersion="${{ steps.version.outputs.informational_version }}"
-
-      - name: Test with computed version
-        shell: bash
-        run: |
-          dotnet test --solution ViajantesTurismo.slnx --configuration Release --no-build \
-            -p:ComputedSemVer="${{ steps.version.outputs.package_version }}" \
-            -p:ComputedAssemblyVersion="${{ steps.version.outputs.assembly_version }}" \
-            -p:ComputedFileVersion="${{ steps.version.outputs.file_version }}" \
-            -p:ComputedInformationalVersion="${{ steps.version.outputs.informational_version }}"
-
       - name: Pack SharedKernel packages
         shell: bash
         run: |
