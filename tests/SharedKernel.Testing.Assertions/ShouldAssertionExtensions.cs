@@ -248,6 +248,50 @@ public static class ShouldAssertionExtensions
         where T : IComparable => TestAssert.InRange(actual, low, high);
 
     /// <summary>
+    /// Verifies that a value is greater than the expected value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="actual">The actual value.</param>
+    /// <param name="expected">The exclusive lower bound.</param>
+    public static void ShouldBeGreaterThan<T>(this T actual, T expected)
+        where T : IComparable<T> => Xunit.Assert.True(
+            actual.CompareTo(expected) > 0,
+            $"Expected value greater than {expected}, but found {actual}.");
+
+    /// <summary>
+    /// Verifies that a value is greater than or equal to the expected value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="actual">The actual value.</param>
+    /// <param name="expected">The inclusive lower bound.</param>
+    public static void ShouldBeGreaterThanOrEqualTo<T>(this T actual, T expected)
+        where T : IComparable<T> => Xunit.Assert.True(
+            actual.CompareTo(expected) >= 0,
+            $"Expected value greater than or equal to {expected}, but found {actual}.");
+
+    /// <summary>
+    /// Verifies that a value is less than the expected value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="actual">The actual value.</param>
+    /// <param name="expected">The exclusive upper bound.</param>
+    public static void ShouldBeLessThan<T>(this T actual, T expected)
+        where T : IComparable<T> => Xunit.Assert.True(
+            actual.CompareTo(expected) < 0,
+            $"Expected value less than {expected}, but found {actual}.");
+
+    /// <summary>
+    /// Verifies that a value is less than or equal to the expected value.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="actual">The actual value.</param>
+    /// <param name="expected">The inclusive upper bound.</param>
+    public static void ShouldBeLessThanOrEqualTo<T>(this T actual, T expected)
+        where T : IComparable<T> => Xunit.Assert.True(
+            actual.CompareTo(expected) <= 0,
+            $"Expected value less than or equal to {expected}, but found {actual}.");
+
+    /// <summary>
     /// Verifies that a string starts with the expected value.
     /// </summary>
     /// <param name="actual">The actual value.</param>
