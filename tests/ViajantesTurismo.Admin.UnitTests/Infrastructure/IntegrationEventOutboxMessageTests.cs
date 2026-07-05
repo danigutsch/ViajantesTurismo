@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
@@ -10,6 +11,8 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 public sealed class IntegrationEventOutboxMessageTests
 {
+    private const string JsonContentType = "application/json";
+
     [Fact]
     public void Creates_message_with_envelope_fields_and_enqueue_time()
     {
@@ -21,15 +24,15 @@ public sealed class IntegrationEventOutboxMessageTests
 
         var message = new IntegrationEventOutboxMessage(
             id,
-            EventEnvelope.CloudEventsSpec,
-            EventEnvelope.CloudEventsSpecVersion,
+            CloudEventConstants.Spec,
+            CloudEventConstants.SpecVersion,
             eventId.ToString("D"),
             source,
             AdminTourCreatedIntegrationEvent.EventType,
             AdminTourCreatedIntegrationEvent.EventVersion,
             occurredAt,
             "tour-1",
-            "application/json",
+            JsonContentType,
             new Uri("https://schemas.example/admin-tour-created.json"),
             "{}",
             EventPayloadEncoding.Json,
@@ -37,15 +40,15 @@ public sealed class IntegrationEventOutboxMessageTests
             enqueuedAt);
 
         message.Id.ShouldBe(id);
-        message.EnvelopeSpec.ShouldBe(EventEnvelope.CloudEventsSpec);
-        message.EnvelopeSpecVersion.ShouldBe(EventEnvelope.CloudEventsSpecVersion);
+        message.EnvelopeSpec.ShouldBe(CloudEventConstants.Spec);
+        message.EnvelopeSpecVersion.ShouldBe(CloudEventConstants.SpecVersion);
         message.EventId.ShouldBe(eventId.ToString("D"));
         message.Source.ShouldBe(source);
         message.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
         message.EventVersion.ShouldBe(AdminTourCreatedIntegrationEvent.EventVersion);
         message.Time.ShouldBe(occurredAt);
         message.Subject.ShouldBe("tour-1");
-        message.DataContentType.ShouldBe("application/json");
+        message.DataContentType.ShouldBe(JsonContentType);
         message.DataSchema.ShouldBe(new Uri("https://schemas.example/admin-tour-created.json"));
         message.Payload.ShouldBe("{}");
         message.PayloadEncoding.ShouldBe(EventPayloadEncoding.Json);
@@ -61,15 +64,15 @@ public sealed class IntegrationEventOutboxMessageTests
         {
             _ = new IntegrationEventOutboxMessage(
                 Guid.Empty,
-                EventEnvelope.CloudEventsSpec,
-                EventEnvelope.CloudEventsSpecVersion,
+                CloudEventConstants.Spec,
+                CloudEventConstants.SpecVersion,
                 Guid.CreateVersion7().ToString("D"),
                 new Uri("urn:viajantes:admin"),
                 AdminTourCreatedIntegrationEvent.EventType,
                 AdminTourCreatedIntegrationEvent.EventVersion,
                 DateTimeOffset.UtcNow,
                 null,
-                "application/json",
+                JsonContentType,
                 null,
                 "{}",
                 EventPayloadEncoding.Json,
@@ -89,15 +92,15 @@ public sealed class IntegrationEventOutboxMessageTests
         var publishedAt = occurredAt.AddMinutes(1);
         var message = new IntegrationEventOutboxMessage(
             Guid.CreateVersion7(),
-            EventEnvelope.CloudEventsSpec,
-            EventEnvelope.CloudEventsSpecVersion,
+            CloudEventConstants.Spec,
+            CloudEventConstants.SpecVersion,
             Guid.CreateVersion7().ToString("D"),
             new Uri("urn:viajantes:admin"),
             AdminTourCreatedIntegrationEvent.EventType,
             AdminTourCreatedIntegrationEvent.EventVersion,
             occurredAt,
             null,
-            "application/json",
+            JsonContentType,
             null,
             "{}",
             EventPayloadEncoding.Json,

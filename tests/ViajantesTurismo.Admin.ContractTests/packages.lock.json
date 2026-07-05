@@ -366,6 +366,12 @@
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.messaging.integrationevents.cloudevents": {
+        "type": "Project",
+        "dependencies": {
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.messaging.integrationevents.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
@@ -373,7 +379,8 @@
           "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
-          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents.CloudEvents": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.observability": {

@@ -71,8 +71,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP TABLE IF EXISTS messaging.idempotency_keys;");
-
             migrationBuilder.DropTable(
                 name: "outbox_messages",
                 schema: "messaging");

@@ -49,6 +49,7 @@ public sealed class AdminIntegrationEventSerializerTests
         var exception = serialize.ShouldThrow<NotSupportedException>();
 
         // Assert
-        exception.Message.ShouldContain(typeof(UnknownAdminIntegrationEvent).FullName!, StringComparison.Ordinal);
+        var eventTypeName = typeof(UnknownAdminIntegrationEvent).FullName.ShouldNotBeNull();
+        exception.Message.ShouldContain(eventTypeName, StringComparison.Ordinal);
     }
 }

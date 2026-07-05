@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -13,6 +14,8 @@ namespace SharedKernel.DomainEvents.EntityFrameworkCore;
 /// </summary>
 internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesInterceptor
 {
+    private static readonly ConditionalWeakTable<DbContext, HashSet<IDomainEvent>> DispatchedEvents = new();
+
     /// <inheritdoc />
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
@@ -94,8 +97,26 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesIn
 
         foreach (var domainEvent in domainEvents)
         {
+            if (HasDispatched(dbContext, domainEvent))
+            {
+                continue;
+            }
+
             await domainEventDispatcher.Dispatch(domainEvent, ct).ConfigureAwait(false);
+            MarkDispatched(dbContext, domainEvent);
         }
+    }
+
+    private static bool HasDispatched(DbContext dbContext, IDomainEvent domainEvent) =>
+        DispatchedEvents.TryGetValue(dbContext, out var dispatchedEvents) && dispatchedEvents.Contains(domainEvent);
+
+    private static void MarkDispatched(DbContext dbContext, IDomainEvent domainEvent)
+    {
+        var dispatchedEvents = DispatchedEvents.GetValue(
+            dbContext,
+            static _ => new HashSet<IDomainEvent>(ReferenceEqualityComparer.Instance));
+
+        _ = dispatchedEvents.Add(domainEvent);
     }
 
     private static void ClearDomainEvents(DbContext? dbContext)
@@ -109,6 +130,8 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesIn
         {
             aggregate.ClearDomainEvents();
         }
+
+        DispatchedEvents.Remove(dbContext);
     }
 
     private static EntityEntry<IAggregateRoot>[] GetAggregateEntries(DbContext dbContext) =>

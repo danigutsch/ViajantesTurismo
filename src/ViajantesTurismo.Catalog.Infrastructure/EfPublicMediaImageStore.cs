@@ -115,19 +115,22 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
 
     public async ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct)
     {
-        var images = await dbContext.PublicMediaImages
-            .Include(image => image.ResponsiveVariants)
+        var sourceKeys = await dbContext.PublicMediaImages
             .AsNoTracking()
-            .AsSplitQuery()
+            .Select(image => image.SourceObjectKey)
+            .ToArrayAsync(ct)
+            .ConfigureAwait(false);
+
+        var variantKeys = await dbContext.PublicMediaImages
+            .AsNoTracking()
+            .SelectMany(image => image.ResponsiveVariants.Select(variant => variant.ObjectKey))
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
 
         return
         [
-            .. images
-                .SelectMany(image => image.ResponsiveVariants
-                    .Select(variant => variant.ObjectKey)
-                    .Prepend(image.SourceObjectKey))
+            .. sourceKeys
+                .Concat(variantKeys)
                 .Where(static key => !string.IsNullOrWhiteSpace(key))
                 .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal)
