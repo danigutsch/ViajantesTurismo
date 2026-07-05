@@ -16,7 +16,7 @@ internal sealed class AdminIntegrationEventSerializer : IIntegrationEventSeriali
             AdminTourCreatedIntegrationEvent tourCreated => JsonSerializer.Serialize(
                 tourCreated,
                 AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent),
-            _ => throw new NotSupportedException($"Integration event type '{typeof(TIntegrationEvent).FullName}' is not configured for durable serialization."),
+            _ => throw new NotSupportedException($"Integration event type '{integrationEvent.GetType().FullName}' is not configured for durable serialization."),
         };
     }
 }

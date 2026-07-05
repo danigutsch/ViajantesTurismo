@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.EntityFrameworkCore;
 
 namespace SharedKernel.DomainEvents.EntityFrameworkCore;
@@ -21,8 +20,12 @@ public static class DomainEventDispatchServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<DispatchDomainEventsSaveChangesInterceptor>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDbContextConfiguration<TContext>, DomainEventDispatchDbContextConfiguration<TContext>>());
+        if (!services.Any(static descriptor =>
+                descriptor.ServiceType == typeof(IDbContextConfiguration<TContext>)
+                && descriptor.ImplementationInstance is DomainEventDispatchDbContextConfiguration<TContext>))
+        {
+            services.AddDbContextConfiguration(new DomainEventDispatchDbContextConfiguration<TContext>());
+        }
 
         return services;
     }

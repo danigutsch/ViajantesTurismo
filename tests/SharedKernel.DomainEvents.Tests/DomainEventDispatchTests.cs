@@ -1,3 +1,4 @@
+using SharedKernel.Domain;
 using SharedKernel.Mediator;
 using SharedKernel.Testing.Assertions;
 
@@ -10,8 +11,26 @@ public sealed class DomainEventDispatchTests
     {
         // Arrange
         var publisher = new CapturingPublisher();
-        var dispatcher = new MediatorDomainEventDispatcher(publisher);
+        var dispatcher = new MediatorDomainEventDispatcher(publisher, new TestDomainEventNotificationFactory());
         var domainEvent = new TestDomainEvent("tour-created");
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        // Act
+        await dispatcher.Dispatch(domainEvent, cancellationTokenSource.Token);
+
+        // Assert
+        var notification = (publisher.Notification).ShouldBeOfType<DomainEventNotification<TestDomainEvent>>();
+        (notification.DomainEvent).ShouldBeSameAs(domainEvent);
+        publisher.CancellationToken.ShouldBe(cancellationTokenSource.Token);
+    }
+
+    [Fact]
+    public async Task Dispatch_forwards_untyped_domain_events_as_concrete_notifications()
+    {
+        // Arrange
+        var publisher = new CapturingPublisher();
+        var dispatcher = new MediatorDomainEventDispatcher(publisher, new TestDomainEventNotificationFactory());
+        IDomainEvent domainEvent = new TestDomainEvent("tour-created");
         using var cancellationTokenSource = new CancellationTokenSource();
 
         // Act
@@ -35,10 +54,21 @@ public sealed class DomainEventDispatchTests
     }
 
     [Fact]
+    public void Dispatcher_constructor_rejects_null_notification_factory()
+    {
+        // Arrange
+        var constructor = typeof(MediatorDomainEventDispatcher).GetConstructor([typeof(IPublisher), typeof(IDomainEventNotificationFactory)]).ShouldNotBeNull();
+
+        // Act
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => constructor.Invoke([new CapturingPublisher(), null]));
+        argumentException.ParamName.ShouldBe("notificationFactory");
+    }
+
+    [Fact]
     public void Dispatch_rejects_null_domain_events()
     {
         // Arrange
-        var dispatcher = new MediatorDomainEventDispatcher(new CapturingPublisher());
+        var dispatcher = new MediatorDomainEventDispatcher(new CapturingPublisher(), new TestDomainEventNotificationFactory());
         var method = typeof(MediatorDomainEventDispatcher)
             .GetMethods()
             .Single(static method => method.Name == nameof(MediatorDomainEventDispatcher.Dispatch) && method.IsGenericMethodDefinition);
@@ -46,6 +76,20 @@ public sealed class DomainEventDispatchTests
 
         // Act
         var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => genericMethod.Invoke(dispatcher, [null, CancellationToken.None]));
+        argumentException.ParamName.ShouldBe("domainEvent");
+    }
+
+    [Fact]
+    public void Dispatch_rejects_null_untyped_domain_events()
+    {
+        // Arrange
+        var dispatcher = new MediatorDomainEventDispatcher(new CapturingPublisher());
+        var method = typeof(MediatorDomainEventDispatcher)
+            .GetMethods()
+            .Single(static method => method.Name == nameof(MediatorDomainEventDispatcher.Dispatch) && !method.IsGenericMethodDefinition);
+
+        // Act
+        var argumentException = ExceptionAssertions.ThrowsInner<ArgumentNullException>(() => method.Invoke(dispatcher, [null, CancellationToken.None]));
         argumentException.ParamName.ShouldBe("domainEvent");
     }
 

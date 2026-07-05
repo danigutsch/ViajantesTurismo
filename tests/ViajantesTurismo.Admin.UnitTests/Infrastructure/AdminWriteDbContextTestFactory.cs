@@ -19,12 +19,12 @@ internal static class AdminWriteDbContextTestFactory
 
         var services = new ServiceCollection();
         services.AddSingleton(dispatcher);
-        services.AddSingleton<IDbContextConfiguration<AdminWriteDbContext>, IntegrationEventOutboxDbContextConfiguration<AdminWriteDbContext>>();
-        services.AddSingleton<DispatchDomainEventsSaveChangesInterceptor>();
+        services.AddDomainEventDispatch<AdminWriteDbContext>();
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddDbContext<AdminWriteDbContext>((provider, options) =>
         {
             options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
-            options.AddInterceptors(provider.GetRequiredService<DispatchDomainEventsSaveChangesInterceptor>());
+            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
             options.AddInterceptors(additionalInterceptors);
         });
 
