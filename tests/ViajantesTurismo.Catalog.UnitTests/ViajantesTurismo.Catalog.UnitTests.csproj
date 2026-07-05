@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="..\SharedKernel.AspNetCoreTesting\WebApplicationTestHost.cs" Link="Infrastructure\WebApplicationTestHost.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -27,7 +23,10 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency.EntityFrameworkCore\SharedKernel.Idempotency.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\SharedKernel.AspNetCoreTesting\SharedKernel.AspNetCoreTesting.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />

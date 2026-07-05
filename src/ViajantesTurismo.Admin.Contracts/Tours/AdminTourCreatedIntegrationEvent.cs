@@ -1,4 +1,4 @@
-using SharedKernel.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Admin.Contracts.Tours;
 

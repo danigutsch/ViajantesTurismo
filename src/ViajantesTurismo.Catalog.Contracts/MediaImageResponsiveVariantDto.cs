@@ -8,7 +8,12 @@ namespace ViajantesTurismo.Catalog.Contracts;
 public sealed record MediaImageResponsiveVariantDto
 {
     /// <summary>
-    /// Gets the public rendition URI.
+    /// Gets the stored rendition object key.
+    /// </summary>
+    public string? ObjectKey { get; init; }
+
+    /// <summary>
+    /// Gets the derived public rendition URI.
     /// </summary>
     [Required]
     public required Uri Uri { get; init; }

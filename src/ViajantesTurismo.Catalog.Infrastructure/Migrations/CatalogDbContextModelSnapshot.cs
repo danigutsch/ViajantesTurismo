@@ -14,7 +14,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
     [DbContext(typeof(CatalogDbContext))]
     partial class CatalogDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder) => BuildCatalogModel(modelBuilder);
+
+        internal static void BuildCatalogModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,6 +24,38 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
+                {
+                    b.Property<string>("Scope")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Key")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ResultFingerprint")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("State")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Scope", "Key");
+
+                    b.ToTable("idempotency_keys", "messaging");
+                });
 
             modelBuilder.Entity("ViajantesTurismo.Catalog.Domain.Media.PublicMediaImage", b =>
                 {
@@ -62,9 +96,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SourceUri")
+                    b.Property<string>("SourceObjectKey")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.PrimitiveCollection<List<string>>("_tags")
                         .IsRequired()
@@ -228,9 +263,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                             b1.Property<int>("Height")
                                 .HasColumnType("integer");
 
-                            b1.Property<string>("Uri")
+                            b1.Property<string>("ObjectKey")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(1024)
+                                .HasColumnType("character varying(1024)");
 
                             b1.Property<int>("Width")
                                 .HasColumnType("integer");

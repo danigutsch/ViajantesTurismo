@@ -1,8 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using SharedKernel.EventSourcing;
+using SharedKernel.Idempotency;
+using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Application;
 
@@ -27,6 +32,11 @@ public static class ApplicationDependencyInjection
             ServiceDescriptor.Singleton<
                 IValidateOptions<IntegrationEventOptions>,
                 IntegrationEventOptionsValidator>());
+        services.TryAddScoped<IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>>(sp =>
+            new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+                new AdminTourCreatedIntegrationHandler(sp.GetRequiredService<IEventStore>()),
+                sp.GetRequiredService<IIdempotencyStore>(),
+                sp.GetRequiredService<IOptions<IntegrationEventOptions>>()));
         services.AddCatalogMediaApplication();
 
         return services;

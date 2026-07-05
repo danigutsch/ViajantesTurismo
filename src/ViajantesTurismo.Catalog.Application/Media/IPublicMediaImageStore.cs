@@ -39,4 +39,11 @@ public interface IPublicMediaImageStore
     ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct);
+
+    /// <summary>
+    /// Lists object keys referenced by public media metadata.
+    /// </summary>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The referenced original and responsive variant object keys.</returns>
+    ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct);
 }

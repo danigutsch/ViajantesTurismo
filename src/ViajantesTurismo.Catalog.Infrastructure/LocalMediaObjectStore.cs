@@ -29,7 +29,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return new MediaObjectWriteResult(
             request.ObjectKey,
             new Uri(path),
-            CreatePublicUri(request.ObjectKey),
+            GetPublicUri(request.ObjectKey),
             request.ContentType,
             request.Length,
             request.Checksum);
@@ -52,12 +52,56 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult(new MediaObjectReadResult(objectKey, stream, GetContentType(objectKey), stream.Length));
     }
 
+    public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return ValueTask.FromResult(File.Exists(GetSafeObjectPath(objectKey)));
+    }
+
+    public ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(options.RootPath));
+        if (!Directory.Exists(root))
+        {
+            return ValueTask.FromResult<IReadOnlyList<string>>([]);
+        }
+
+        var normalizedPrefix = NormalizePrefix(prefix);
+        var keys = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
+            .Where(key => key.StartsWith(normalizedPrefix, StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        return ValueTask.FromResult<IReadOnlyList<string>>(keys);
+    }
+
     public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
         throw new NotSupportedException("Local media storage does not support direct upload tickets.");
+    }
+
+    public Uri GetPublicUri(string objectKey)
+    {
+        _ = GetSafeObjectPath(objectKey);
+
+        var baseUriKind = options.PublicBaseUri.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative;
+        var baseUri = options.PublicBaseUri.OriginalString.EndsWith(UriPathSeparator, StringComparison.Ordinal)
+            ? options.PublicBaseUri
+            : new Uri(options.PublicBaseUri.OriginalString + UriPathSeparator, baseUriKind);
+        var escapedKey = string.Join(
+            UriPathSeparator,
+            objectKey.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
+
+        return baseUri.IsAbsoluteUri
+            ? new Uri(baseUri, escapedKey)
+            : new Uri(baseUri.OriginalString + escapedKey, UriKind.Relative);
     }
 
     public ValueTask Delete(string objectKey, CancellationToken ct)
@@ -102,19 +146,21 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             : path;
     }
 
-    private Uri CreatePublicUri(string objectKey)
+    private static string NormalizePrefix(string prefix)
     {
-        var baseUriKind = options.PublicBaseUri.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative;
-        var baseUri = options.PublicBaseUri.OriginalString.EndsWith(UriPathSeparator, StringComparison.Ordinal)
-            ? options.PublicBaseUri
-            : new Uri(options.PublicBaseUri.OriginalString + UriPathSeparator, baseUriKind);
-        var escapedKey = string.Join(
-            UriPathSeparator,
-            objectKey.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            return string.Empty;
+        }
 
-        return baseUri.IsAbsoluteUri
-            ? new Uri(baseUri, escapedKey)
-            : new Uri(baseUri.OriginalString + escapedKey, UriKind.Relative);
+        var normalizedPrefix = prefix.Replace('\\', '/');
+        if (normalizedPrefix.StartsWith('/')
+            || normalizedPrefix.Split('/').Any(static segment => segment is "." or ".."))
+        {
+            throw new ArgumentException("Media object prefix must be relative and must not include dot path segments.", nameof(prefix));
+        }
+
+        return normalizedPrefix;
     }
 
     private static string GetContentType(string objectKey) => Path.GetExtension(objectKey).ToUpperInvariant() switch

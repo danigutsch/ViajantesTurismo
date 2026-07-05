@@ -33,17 +33,22 @@
         <Project Path="src/SharedKernel/SharedKernel.Aspire.Hosting.Grafana/SharedKernel.Aspire.Hosting.Grafana.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.BuildingBlocks/SharedKernel.BuildingBlocks.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.DomainEvents/SharedKernel.DomainEvents.csproj" />
-        <Project Path="src/SharedKernel/SharedKernel.IntegrationEvents/SharedKernel.IntegrationEvents.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.DomainEvents.EntityFrameworkCore/SharedKernel.DomainEvents.EntityFrameworkCore.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Messaging/SharedKernel.Messaging.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents/SharedKernel.Messaging.IntegrationEvents.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore/SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.ImageProcessing/SharedKernel.ImageProcessing.csproj" />
-        <Project Path="src/SharedKernel/SharedKernel.IntegrationEvents.CloudEvents/SharedKernel.IntegrationEvents.CloudEvents.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.CloudEvents/SharedKernel.Messaging.IntegrationEvents.CloudEvents.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing/SharedKernel.EventSourcing.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.EventSourcing.Npgsql/SharedKernel.EventSourcing.Npgsql.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Functional/SharedKernel.Functional.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Domain.SourceGenerator/SharedKernel.Domain.SourceGenerator.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Messaging.IntegrationEvents.SourceGenerator/SharedKernel.Messaging.IntegrationEvents.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.SourceGenerator/SharedKernel.Results.SourceGenerator.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results/SharedKernel.Results.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Results.AspNet/SharedKernel.Results.AspNet.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Idempotency/SharedKernel.Idempotency.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Idempotency.EntityFrameworkCore/SharedKernel.Idempotency.EntityFrameworkCore.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.OpenApi/SharedKernel.OpenApi.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Observability/SharedKernel.Observability.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.InputNormalization/SharedKernel.InputNormalization.csproj" />
@@ -84,9 +89,10 @@
         <Project Path="src/SharedKernel/SharedKernel.Testing.Web/SharedKernel.Testing.Web.csproj" />
         <Project Path="tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj" />
         <Project Path="tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj" />
-        <Project Path="tests/SharedKernel.IntegrationEvents.Tests/SharedKernel.IntegrationEvents.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Messaging.Tests/SharedKernel.Messaging.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.Tests/SharedKernel.Messaging.IntegrationEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.ImageProcessing.Tests/SharedKernel.ImageProcessing.Tests.csproj" />
-        <Project Path="tests/SharedKernel.IntegrationEvents.CloudEvents.Tests/SharedKernel.IntegrationEvents.CloudEvents.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests/SharedKernel.Messaging.IntegrationEvents.CloudEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Npgsql.Tests/SharedKernel.EventSourcing.Npgsql.Tests.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.IntegrationTesting/SharedKernel.IntegrationTesting.csproj" />
@@ -109,6 +115,7 @@
         <Project Path="tests/SharedKernel.Mediator.Analyzers.Tests/SharedKernel.Mediator.Analyzers.Tests.csproj" />
         <Project Path="tests/SharedKernel.Domain.GeneratorTests/SharedKernel.Domain.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Results.GeneratorTests/SharedKernel.Results.GeneratorTests.csproj" />
+        <Project Path="tests/SharedKernel.Messaging.IntegrationEvents.GeneratorTests/SharedKernel.Messaging.IntegrationEvents.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Results.AspNet.Tests/SharedKernel.Results.AspNet.Tests.csproj" />
         <Project Path="tests/SharedKernel.Aspire.Analyzers.Tests/SharedKernel.Aspire.Analyzers.Tests.csproj" />
         <Project Path="tests/SharedKernel.Aspire.CodeFixes.Tests/SharedKernel.Aspire.CodeFixes.Tests.csproj" />
@@ -121,6 +128,8 @@
         <Project Path="tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Testing.ReferenceDispatcher/SharedKernel.Mediator.Testing.ReferenceDispatcher.csproj" />
         <Project Path="src/SharedKernel/SharedKernel.Testing.Roslyn/SharedKernel.Testing.Roslyn.csproj" />
+        <Project Path="tests/SharedKernel.AspNetCoreTesting/SharedKernel.AspNetCoreTesting.csproj" />
+        <Project Path="tests/SharedKernel.CodeFixes.Testing/SharedKernel.CodeFixes.Testing.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.EntityFrameworkCore.Tests/SharedKernel.Mediator.EntityFrameworkCore.Tests.csproj" />
         <Project Path="tests/SharedKernel.EntityFrameworkCore.Tests/SharedKernel.EntityFrameworkCore.Tests.csproj" />
@@ -128,6 +137,7 @@
         <Project Path="tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
     </Folder>

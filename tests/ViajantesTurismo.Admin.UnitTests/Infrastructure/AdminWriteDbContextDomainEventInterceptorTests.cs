@@ -1,0 +1,133 @@
+using Microsoft.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Testing.Assertions;
+using ViajantesTurismo.Admin.Contracts.Tours;
+using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Testing.Behavior;
+using ViajantesTurismo.Admin.Testing.Fakes;
+
+namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
+
+public sealed class AdminWriteDbContextDomainEventInterceptorTests
+{
+    [Fact]
+    public async Task SaveEntities_dispatches_domain_events_and_persists_outbox_messages_in_the_same_save()
+    {
+        var dispatcher = new OutboxEnqueuingDomainEventDispatcher(new FakeTimeProvider(
+            new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
+        var dbContext = scope.DbContext;
+        dispatcher.DbContext = dbContext;
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-2026", Name: "Andes 2026"));
+        dbContext.Tours.Add(tour);
+
+        await dbContext.SaveEntities(CancellationToken.None);
+
+        dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
+        tour.GetDomainEvents().ShouldBeEmpty();
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EnvelopeSpec.ShouldBe(CloudEventConstants.Spec);
+        outboxMessage.EnvelopeSpecVersion.ShouldBe(CloudEventConstants.SpecVersion);
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.EventVersion.ShouldBe(AdminTourCreatedIntegrationEvent.EventVersion);
+        outboxMessage.EventId.ShouldNotBeEmpty();
+        outboxMessage.Time.ShouldBe(new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero));
+        outboxMessage.Payload.ShouldContain("andes-2026", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SaveChanges_dispatches_domain_events_and_clears_them_after_success()
+    {
+        var dispatcher = new OutboxEnqueuingDomainEventDispatcher(new FakeTimeProvider(
+            new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
+        var dbContext = scope.DbContext;
+        dispatcher.DbContext = dbContext;
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-sync-2026", Name: "Andes Sync 2026"));
+        dbContext.Tours.Add(tour);
+
+        var saveChanges = typeof(DbContext).GetMethod(nameof(DbContext.SaveChanges), Type.EmptyTypes).ShouldNotBeNull();
+        _ = saveChanges.Invoke(dbContext, null);
+
+        dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
+        tour.GetDomainEvents().ShouldBeEmpty();
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Payload.ShouldContain("andes-sync-2026", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SaveEntities_dispatches_generated_integration_events_with_scope_validation_enabled()
+    {
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithGeneratedIntegrationEventDispatcher();
+        var dbContext = scope.DbContext;
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-generated-2026", Name: "Andes Generated 2026"));
+        dbContext.Tours.Add(tour);
+
+        await dbContext.SaveEntities(CancellationToken.None);
+
+        tour.GetDomainEvents().ShouldBeEmpty();
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Payload.ShouldContain("andes-generated-2026", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SaveEntities_does_not_clear_domain_events_when_save_fails_after_dispatch()
+    {
+        var dispatcher = new CapturingDomainEventDispatcher();
+        var failingInterceptor = new FailingSaveChangesInterceptor();
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher, failingInterceptor);
+        var dbContext = scope.DbContext;
+        var tour = EntityBuilders.BuildTour();
+        dbContext.Tours.Add(tour);
+
+        Func<Task> action = () => dbContext.SaveEntities(CancellationToken.None);
+
+        await action.ShouldThrow<InvalidOperationException>();
+        dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
+        tour.GetDomainEvents().ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public async Task SaveEntities_retry_after_save_failure_does_not_dispatch_domain_events_twice()
+    {
+        var dispatcher = new OutboxEnqueuingDomainEventDispatcher(new FakeTimeProvider(
+            new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero)));
+        var failingInterceptor = new FailingSaveChangesInterceptor();
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher, failingInterceptor);
+        var dbContext = scope.DbContext;
+        dispatcher.DbContext = dbContext;
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-retry-2026", Name: "Andes Retry 2026"));
+        dbContext.Tours.Add(tour);
+
+        Func<Task> firstSave = () => dbContext.SaveEntities(CancellationToken.None);
+
+        await firstSave.ShouldThrow<InvalidOperationException>();
+        await dbContext.SaveEntities(CancellationToken.None);
+
+        dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
+        tour.GetDomainEvents().ShouldBeEmpty();
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Payload.ShouldContain("andes-retry-2026", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SaveEntities_skips_dispatch_when_tracked_aggregates_have_no_domain_events()
+    {
+        var dispatcher = new CapturingDomainEventDispatcher();
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(dispatcher);
+        var dbContext = scope.DbContext;
+        var tour = EntityBuilders.BuildTour();
+        tour.ClearDomainEvents();
+        dbContext.Tours.Add(tour);
+
+        await dbContext.SaveEntities(CancellationToken.None);
+
+        dispatcher.DispatchedEvents.ShouldBeEmpty();
+        tour.GetDomainEvents().ShouldBeEmpty();
+    }
+
+}

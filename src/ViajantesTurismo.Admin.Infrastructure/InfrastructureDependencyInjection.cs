@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using SharedKernel.DomainEvents.EntityFrameworkCore;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Resources;
@@ -32,20 +36,14 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
-
-        builder.AddNpgsqlDbContext<AdminReadDbContext>(
-            ResourceNames.Database,
-            configureDbContextOptions: options =>
-            {
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-
-                builder.Services.ApplyDbContextOptionsConfigurations<AdminReadDbContext>(options);
-            });
+        builder.AddAdminReadDbContext();
 
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
+        builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return builder;
     }
@@ -67,6 +65,8 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
+        builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
@@ -87,9 +87,28 @@ public static class InfrastructureDependencyInjection
     private static void AddAdminWriteDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
+
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.Database,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
+    }
+
+    private static void AddAdminReadDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        builder.AddNpgsqlDbContext<AdminReadDbContext>(
+            ResourceNames.Database,
+            configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));
+    }
+
+    private static void ConfigureReadDatabaseOptions<TApplicationBuilder>(
+        TApplicationBuilder builder,
+        DbContextOptionsBuilder options)
+        where TApplicationBuilder : IHostApplicationBuilder
+    {
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options);
     }
 
     private static void ConfigureAdminWriteDbContext<TApplicationBuilder>(
@@ -97,6 +116,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        builder.Services.ApplyDbContextOptionsConfigurations<AdminWriteDbContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
     }
+
 }

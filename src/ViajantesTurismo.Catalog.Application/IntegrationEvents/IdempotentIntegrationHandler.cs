@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using SharedKernel.Idempotency;
-using SharedKernel.IntegrationEvents;
 using SharedKernel.BuildingBlocks;
+using SharedKernel.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 

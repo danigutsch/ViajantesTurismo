@@ -40,7 +40,7 @@ internal static class CatalogEndpoints
         return app;
     }
 
-    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct)
+    private static async Task<IResult> GetTour(Guid id, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, CancellationToken ct)
     {
         if (id == Guid.Empty)
         {
@@ -54,10 +54,10 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(MapTour(tour, images));
+        return Results.Ok(MapTour(tour, images, objectStore));
     }
 
-    private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, CancellationToken ct)
+    private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, IMediaObjectStore objectStore, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(slug))
         {
@@ -71,7 +71,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        return Results.Ok(MapTour(tour, GetReadyImages(images)));
+        return Results.Ok(MapTour(tour, GetReadyImages(images), objectStore));
     }
 
     private static async Task<IResult> GetPublicContent(
@@ -143,6 +143,7 @@ internal static class CatalogEndpoints
     private static async Task<IReadOnlyList<CatalogTourDto>> GetTours(
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
         CancellationToken ct)
     {
         var tours = await store.ListTours(ct);
@@ -150,13 +151,14 @@ internal static class CatalogEndpoints
 
         return
         [
-            .. tours.Select(tour => MapTour(tour, GetImages(imagesByTour, tour.CatalogTourId)))
+            .. tours.Select(tour => MapTour(tour, GetImages(imagesByTour, tour.CatalogTourId), objectStore))
         ];
     }
 
     private static async Task<IReadOnlyList<CatalogTourDto>> GetPublishedTours(
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
         CancellationToken ct)
     {
         var tours = await store.ListTours(ct);
@@ -165,7 +167,7 @@ internal static class CatalogEndpoints
 
         return
         [
-            .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId))))
+            .. publishedTours.Select(tour => MapTour(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId)), objectStore))
         ];
     }
 
@@ -221,6 +223,7 @@ internal static class CatalogEndpoints
         UpsertCatalogTourPresentationRequest request,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
         CancellationToken ct)
     {
         if (id == Guid.Empty)
@@ -245,13 +248,14 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images));
+        return Results.Ok(MapTour(updated, (IReadOnlyList<PublicMediaImage>?)images, objectStore));
     }
 
     private static async Task<IResult> ListTourImages(
         Guid id,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
         CancellationToken ct)
     {
         if (id == Guid.Empty)
@@ -266,7 +270,7 @@ internal static class CatalogEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(MapImages(images));
+        return Results.Ok(MapImages(images, objectStore));
     }
 
     private static async Task<IResult> UpsertMediaImage(
@@ -274,6 +278,7 @@ internal static class CatalogEndpoints
         PublicMediaImageDto request,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
+        IMediaObjectStore objectStore,
         CancellationToken ct)
     {
         if (id == Guid.Empty || id != request.Id)
@@ -303,10 +308,10 @@ internal static class CatalogEndpoints
         }
 
         await imageStore.Upsert(image.Value, ct);
-        return Results.Ok(MapMediaImage(image.Value));
+        return Results.Ok(MapMediaImage(image.Value, objectStore));
     }
 
-    private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images = null)
+    private static CatalogTourDto MapTour(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage>? images, IMediaObjectStore objectStore)
     {
         return new CatalogTourDto
         {
@@ -316,16 +321,16 @@ internal static class CatalogEndpoints
             Title = tour.Title,
             Slug = tour.Slug,
             IsPublished = tour.IsPublished,
-            Images = MapImages(images ?? []),
+            Images = MapImages(images ?? [], objectStore),
             UpdatedAt = tour.UpdatedAt
         };
     }
 
-    private static CatalogTourImageDto[] MapImages(IReadOnlyList<PublicMediaImage> images)
+    private static CatalogTourImageDto[] MapImages(IReadOnlyList<PublicMediaImage> images, IMediaObjectStore objectStore)
     {
         return PublicMediaImage
             .OrderForGallery(images)
-            .Select(MapImage)
+            .Select(image => MapImage(image, objectStore))
             .ToArray();
     }
 
@@ -334,18 +339,18 @@ internal static class CatalogEndpoints
         return [.. images.Where(image => image.HasPublicVariants)];
     }
 
-    private static CatalogTourImageDto MapImage(PublicMediaImage image)
+    private static CatalogTourImageDto MapImage(PublicMediaImage image, IMediaObjectStore objectStore)
     {
         return new CatalogTourImageDto
         {
             SortOrder = image.DisplayOrder,
             IsCover = image.IsCover,
-            Uri = GetPublicImageUri(image),
+            Uri = GetPublicImageUri(image, objectStore),
             AltText = image.AltText,
             Caption = image.Caption,
             ResponsiveVariants = image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
-                .Select(MapResponsiveVariant)
+                .Select(variant => MapResponsiveVariant(variant, objectStore))
                 .ToArray()
         };
     }
@@ -380,6 +385,23 @@ internal static class CatalogEndpoints
         {
             errors[nameof(PublicMediaImageDto.Tags)] = ["Tags are required."];
         }
+
+        if (string.IsNullOrWhiteSpace(image.SourceObjectKey) && !IsHttpUri(image.SourceUri))
+        {
+            errors[nameof(PublicMediaImageDto.SourceUri)] = ["Source URI must be an absolute HTTP or HTTPS URI when SourceObjectKey is not provided."];
+        }
+
+        if (image.ResponsiveVariants is not null && image.ResponsiveVariants.Any(static variant => variant is not null && string.IsNullOrWhiteSpace(variant.ObjectKey) && !IsHttpUri(variant.Uri)))
+        {
+            errors[nameof(PublicMediaImageDto.ResponsiveVariants)] = ["Responsive variants must include absolute HTTP or HTTPS URIs when ObjectKey is not provided."];
+        }
+    }
+
+    private static bool IsHttpUri(Uri? uri)
+    {
+        return uri is not null
+            && uri.IsAbsoluteUri
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
     private static IReadOnlyList<PublicMediaImage> GetImages(
@@ -395,7 +417,7 @@ internal static class CatalogEndpoints
             new PublicMediaImageMetadata
             {
                 Id = image.Id,
-                SourceUri = image.SourceUri ?? new Uri("about:blank"),
+                SourceObjectKey = GetSourceObjectKey(image),
                 Checksum = image.Checksum ?? string.Empty,
                 ContentType = image.ContentType ?? string.Empty,
                 FileSizeBytes = image.FileSizeBytes,
@@ -416,25 +438,26 @@ internal static class CatalogEndpoints
     private static MediaImageResponsiveVariant ToDomainResponsiveVariant(MediaImageResponsiveVariantDto variant)
     {
         return new MediaImageResponsiveVariant(
-            variant.Uri,
+            GetVariantObjectKey(variant),
             variant.Width,
             variant.Height,
             variant.ContentType ?? string.Empty,
             variant.FileSizeBytes);
     }
 
-    private static PublicMediaImageDto MapMediaImage(PublicMediaImage image)
+    private static PublicMediaImageDto MapMediaImage(PublicMediaImage image, IMediaObjectStore objectStore)
     {
         return new PublicMediaImageDto
         {
             Id = image.Id,
-            SourceUri = image.SourceUri,
+            SourceObjectKey = image.SourceObjectKey,
+            SourceUri = objectStore.GetPublicUri(image.SourceObjectKey),
             Checksum = image.Checksum,
             ContentType = image.ContentType,
             FileSizeBytes = image.FileSizeBytes,
             Dimensions = new MediaImageDimensionsDto { Width = image.Dimensions.Width, Height = image.Dimensions.Height },
             ProcessingStatus = (MediaImageProcessingStatusDto)(int)image.ProcessingStatus,
-            ResponsiveVariants = image.ResponsiveVariants.Select(MapResponsiveVariant).ToArray(),
+            ResponsiveVariants = image.ResponsiveVariants.Select(variant => MapResponsiveVariant(variant, objectStore)).ToArray(),
             Tags = image.Tags,
             TourLinks = image.TourLinks
                 .Select(link => new MediaImageTourLinkDto
@@ -451,11 +474,12 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static MediaImageResponsiveVariantDto MapResponsiveVariant(MediaImageResponsiveVariant variant)
+    private static MediaImageResponsiveVariantDto MapResponsiveVariant(MediaImageResponsiveVariant variant, IMediaObjectStore objectStore)
     {
         return new MediaImageResponsiveVariantDto
         {
-            Uri = variant.Uri,
+            ObjectKey = variant.ObjectKey,
+            Uri = objectStore.GetPublicUri(variant.ObjectKey),
             Width = variant.Width,
             Height = variant.Height,
             ContentType = variant.ContentType,
@@ -463,7 +487,32 @@ internal static class CatalogEndpoints
         };
     }
 
-    private static Uri GetPublicImageUri(PublicMediaImage image) => image.PublicUri;
+    private static Uri GetPublicImageUri(PublicMediaImage image, IMediaObjectStore objectStore)
+    {
+        var largestVariant = image.ResponsiveVariants.OrderByDescending(variant => variant.Width).FirstOrDefault();
+
+        return objectStore.GetPublicUri(largestVariant?.ObjectKey ?? image.SourceObjectKey);
+    }
+
+    private static string GetSourceObjectKey(PublicMediaImageDto image)
+    {
+        if (!string.IsNullOrWhiteSpace(image.SourceObjectKey))
+        {
+            return image.SourceObjectKey;
+        }
+
+        return image.SourceUri?.AbsolutePath.TrimStart('/') ?? string.Empty;
+    }
+
+    private static string GetVariantObjectKey(MediaImageResponsiveVariantDto variant)
+    {
+        if (!string.IsNullOrWhiteSpace(variant.ObjectKey))
+        {
+            return variant.ObjectKey;
+        }
+
+        return variant.Uri?.AbsolutePath.TrimStart('/') ?? string.Empty;
+    }
 
     private static PublicContentDto MapPublicContent(EditablePublicContent content)
     {
