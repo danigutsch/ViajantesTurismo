@@ -14,6 +14,7 @@ This diagram is generated from `.github/workflows/ci.yml` job names and `needs` 
 flowchart TB
     trigger[Pull request, push to main, merge queue, or manual run]
     detect_changes[Detect Changes]
+    calculate_version[Calculate Version]
     fast_validation[Fast Validation]
     admin_integration_tests[Admin Integration Tests]
     mediator_heavy_tests[Mediator Heavy Tests]
@@ -22,6 +23,7 @@ flowchart TB
     sonarcloud[SonarCloud]
     lint[Lint]
     trigger --> detect_changes
+    trigger --> calculate_version
     detect_changes --> fast_validation
     detect_changes --> admin_integration_tests
     detect_changes --> mediator_heavy_tests
@@ -58,6 +60,7 @@ Source docs: [CI overview](../ci/overview.md), [main workflow](../ci/main-workfl
 
 | Lane | Current purpose | Cost posture |
 | --- | --- | --- |
+| `Calculate Version` | Run the versioning tool and expose release-version outputs. | Fast; runs independently. |
 | `Fast Validation` | Build and test the fast project set. | Default application feedback path. |
 | `Lint` | Markdown, scripts, specs, and repository quality checks. | Fast; runs independently. |
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |

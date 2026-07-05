@@ -7,8 +7,8 @@ Operational details for the primary GitHub Actions workflow in
 
 The CI workflow runs on pull request activity (`opened`, `edited`, `synchronize`,
 `reopened`, and `ready_for_review`), every push to `main`, on merge queue checks
-(`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a SonarCloud
-aggregation job, a lint job, and the shared change-detection gate.
+(`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a version
+calculation job, a SonarCloud aggregation job, a lint job, and the shared change-detection gate.
 
 The workflow-level concurrency policy cancels stale runs for non-`main` refs but preserves
 in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
@@ -19,6 +19,21 @@ Set that variable to the current repository CI baseline runner.
 
 > **Note:** When `CI_UBUNTU_RUNNER` points to a preview hosted runner image, queue time
 > and image behavior may be less stable than GA runner images.
+
+### Calculate Version
+
+| Attribute | Value |
+| --- | --- |
+| Job key | `calculate-version` |
+| Job name | `Calculate Version` |
+| Runner | Repository CI baseline |
+
+This job checks out full history, restores only `SharedKernel.Versioning.Tool`, and runs
+`scripts/calculate-release-version.sh`. The script finds the latest `v*` SemVer tag when one exists;
+otherwise it uses `0.1.0` as the base while the repository has no versioned release tags. It feeds
+commit messages into `sharedkernel-version compute` and exposes the calculated SemVer, release impact,
+package version, assembly version, file version, informational version, base version, source tag, and
+raw JSON as job outputs for later release workflow steps.
 
 ### Fast Validation
 
