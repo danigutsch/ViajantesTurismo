@@ -6,7 +6,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [
         "samples/Mediator/Mediator.Sample/GlobalSuppressions.cs",
         "src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs",
-        "tests/SharedKernel.IntegrationTesting/AspireTestApplication.cs"
+        "src/SharedKernel/SharedKernel.IntegrationTesting/AspireTestApplication.cs"
     ];
 
     [Fact]

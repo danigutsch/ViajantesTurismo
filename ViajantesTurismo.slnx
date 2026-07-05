@@ -71,17 +71,17 @@
         <Project Path="src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj" />
     </Folder>
     <Folder Name="/tests/">
-        <Project Path="tests/SharedKernel.Testing/SharedKernel.Testing.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Assertions/SharedKernel.Testing.Assertions.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing/SharedKernel.Testing.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Assertions/SharedKernel.Testing.Assertions.csproj" />
         <Project Path="tests/SharedKernel.Testing.Contracts/SharedKernel.Testing.Contracts.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Data/SharedKernel.Testing.Data.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Http/SharedKernel.Testing.Http.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Data/SharedKernel.Testing.Data.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Http/SharedKernel.Testing.Http.csproj" />
         <Project Path="tests/SharedKernel.Testing.Integration/SharedKernel.Testing.Integration.csproj" />
         <Project Path="tests/SharedKernel.Testing.Packaging/SharedKernel.Testing.Packaging.csproj" />
         <Project Path="tests/SharedKernel.Testing.Scenarios/SharedKernel.Testing.Scenarios.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Snapshots/SharedKernel.Testing.Snapshots.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Snapshots/SharedKernel.Testing.Snapshots.csproj" />
         <Project Path="tests/SharedKernel.Testing.System/SharedKernel.Testing.System.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Web/SharedKernel.Testing.Web.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Web/SharedKernel.Testing.Web.csproj" />
         <Project Path="tests/SharedKernel.BuildingBlocks.Tests/SharedKernel.BuildingBlocks.Tests.csproj" />
         <Project Path="tests/SharedKernel.DomainEvents.Tests/SharedKernel.DomainEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.IntegrationEvents.Tests/SharedKernel.IntegrationEvents.Tests.csproj" />
@@ -89,7 +89,7 @@
         <Project Path="tests/SharedKernel.IntegrationEvents.CloudEvents.Tests/SharedKernel.IntegrationEvents.CloudEvents.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Tests/SharedKernel.EventSourcing.Tests.csproj" />
         <Project Path="tests/SharedKernel.EventSourcing.Npgsql.Tests/SharedKernel.EventSourcing.Npgsql.Tests.csproj" />
-        <Project Path="tests/SharedKernel.IntegrationTesting/SharedKernel.IntegrationTesting.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.IntegrationTesting/SharedKernel.IntegrationTesting.csproj" />
         <Project Path="tests/SharedKernel.Functional.Tests/SharedKernel.Functional.Tests.csproj" />
         <Project Path="tests/SharedKernel.Idempotency.Tests/SharedKernel.Idempotency.Tests.csproj" />
         <Project Path="tests/SharedKernel.OpenApi.Tests/SharedKernel.OpenApi.Tests.csproj" />
@@ -116,10 +116,11 @@
         <Project Path="tests/SharedKernel.Style.CodeFixes.Tests/SharedKernel.Style.CodeFixes.Tests.csproj" />
         <Project Path="tests/SharedKernel.Testing.Analyzers.Tests/SharedKernel.Testing.Analyzers.Tests.csproj" />
         <Project Path="tests/SharedKernel.Testing.CodeFixRunner.Tests/SharedKernel.Testing.CodeFixRunner.Tests.csproj" />
+        <Project Path="tests/SharedKernel.Testing.Tests/SharedKernel.Testing.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Testing.ReferenceDispatcher/SharedKernel.Mediator.Testing.ReferenceDispatcher.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Roslyn/SharedKernel.Testing.Roslyn.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Roslyn/SharedKernel.Testing.Roslyn.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.EntityFrameworkCore.Tests/SharedKernel.Mediator.EntityFrameworkCore.Tests.csproj" />
         <Project Path="tests/SharedKernel.EntityFrameworkCore.Tests/SharedKernel.EntityFrameworkCore.Tests.csproj" />

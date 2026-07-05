@@ -26,8 +26,8 @@
     <ItemGroup>
         <Compile Include="..\SharedKernel.AspNetCoreTesting\WebApplicationTestHost.cs" Link="Infrastructure\WebApplicationTestHost.cs" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj" />
-        <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
-        <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
     </ItemGroup>
 
 </Project>

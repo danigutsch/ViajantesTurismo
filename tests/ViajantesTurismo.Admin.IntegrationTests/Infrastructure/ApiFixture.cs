@@ -1,5 +1,5 @@
 using Projects;
-using SharedKernel.Testing;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;

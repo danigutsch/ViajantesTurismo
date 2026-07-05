@@ -1,6 +1,6 @@
 using Npgsql;
 using Projects;
-using SharedKernel.Testing;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;

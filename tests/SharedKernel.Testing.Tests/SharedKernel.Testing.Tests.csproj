@@ -2,15 +2,15 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>SharedKernel.Style.Analyzers.Tests</RootNamespace>
+        <RootNamespace>SharedKernel.Testing.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -18,9 +18,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Style.Analyzers\SharedKernel.Style.Analyzers.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Data\SharedKernel.Testing.Data.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Http\SharedKernel.Testing.Http.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Roslyn\SharedKernel.Testing.Roslyn.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Snapshots\SharedKernel.Testing.Snapshots.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Web\SharedKernel.Testing.Web.csproj" />
     </ItemGroup>
 
 </Project>
