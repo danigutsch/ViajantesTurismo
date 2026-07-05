@@ -127,7 +127,7 @@
         <Project Path="tests/SharedKernel.Mediator.GeneratorTests/SharedKernel.Mediator.GeneratorTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.PackageConsumptionTests/SharedKernel.Mediator.PackageConsumptionTests.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Testing.ReferenceDispatcher/SharedKernel.Mediator.Testing.ReferenceDispatcher.csproj" />
-        <Project Path="tests/SharedKernel.Testing.Roslyn/SharedKernel.Testing.Roslyn.csproj" />
+        <Project Path="src/SharedKernel/SharedKernel.Testing.Roslyn/SharedKernel.Testing.Roslyn.csproj" />
         <Project Path="tests/SharedKernel.AspNetCoreTesting/SharedKernel.AspNetCoreTesting.csproj" />
         <Project Path="tests/SharedKernel.CodeFixes.Testing/SharedKernel.CodeFixes.Testing.csproj" />
         <Project Path="tests/SharedKernel.Mediator.Tests/SharedKernel.Mediator.Tests.csproj" />
