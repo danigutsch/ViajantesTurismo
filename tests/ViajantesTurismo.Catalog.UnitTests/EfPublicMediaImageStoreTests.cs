@@ -79,4 +79,31 @@ public sealed class EfPublicMediaImageStoreTests
         saved.ResponsiveVariants[0].Width.ShouldBe(320);
         saved.ResponsiveVariants[1].Width.ShouldBe(640);
     }
+
+    [Fact]
+    public async Task Store_lists_distinct_referenced_object_keys()
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicMediaImageStore(dbContext);
+        var image = PublicMediaImageTestFactory.CreateImageWithVariants(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            MediaImageProcessingStatus.Ready,
+            [
+                new MediaImageResponsiveVariant("media/one-320.jpg", 320, 213, "image/jpeg", 512, 0),
+                new MediaImageResponsiveVariant("media/one-640.jpg", 640, 427, "image/jpeg", 1024, 1)
+            ]);
+
+        // Act
+        await store.Upsert(image, TestContext.Current.CancellationToken);
+        var keys = await store.ListReferencedObjectKeys(TestContext.Current.CancellationToken);
+
+        // Assert
+        keys.ShouldBe([
+            "media/one-320.jpg",
+            "media/one-640.jpg",
+            "media/source.jpg"
+        ]);
+    }
 }
