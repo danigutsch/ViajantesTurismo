@@ -179,6 +179,7 @@ This diagram is generated from SharedKernel project references.
 
 ```mermaid
 flowchart TB
+    SharedKernel_ApiVersioning_AspNetCore[SharedKernel.ApiVersioning.AspNetCore] --> SharedKernel_ApiVersioning[SharedKernel.ApiVersioning]
     SharedKernel_BuildingBlocks[SharedKernel.BuildingBlocks] --> SharedKernel_Results[SharedKernel.Results]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Domain[SharedKernel.Domain]
     SharedKernel_DomainEvents[SharedKernel.DomainEvents] --> SharedKernel_Mediator_Abstractions[SharedKernel.Mediator.Abstractions]
