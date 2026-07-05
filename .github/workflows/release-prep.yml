@@ -55,6 +55,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Set up CI prerequisites
@@ -190,6 +191,15 @@ jobs:
         shell: bash
         run: |
           tag="v${{ needs.dry-run.outputs.package_version }}"
+          if git rev-parse "${tag}" >/dev/null 2>&1; then
+            if [[ "$(git rev-list -n 1 "${tag}")" != "${GITHUB_SHA}" ]]; then
+              echo "Tag ${tag} already points to a different commit." >&2
+              exit 1
+            fi
+
+            exit 0
+          fi
+
           git tag --annotate "${tag}" --message "Release ${tag}"
           git push origin "${tag}"
 
@@ -199,11 +209,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v${{ needs.dry-run.outputs.package_version }}" \
-            --title "v${{ needs.dry-run.outputs.package_version }}" \
-            --notes-file artifacts/release-prep/release-notes.md \
-            artifacts/packages/release-prep/${{ needs.dry-run.outputs.package_version }}/*.nupkg \
+          tag="v${{ needs.dry-run.outputs.package_version }}"
+          assets=(
+            artifacts/packages/release-prep/${{ needs.dry-run.outputs.package_version }}/*.nupkg
             artifacts/release-prep/*
+          )
+
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release edit "${tag}" --title "${tag}" --notes-file artifacts/release-prep/release-notes.md
+            gh release upload "${tag}" --clobber "${assets[@]}"
+          else
+            gh release create "${tag}" \
+              --title "${tag}" \
+              --notes-file artifacts/release-prep/release-notes.md \
+              "${assets[@]}"
+          fi
 
       - name: Publish packages to NuGet
         if: ${{ inputs.publish_nuget }}
