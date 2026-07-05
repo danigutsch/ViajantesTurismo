@@ -77,23 +77,24 @@ sequenceDiagram
     Handler-->>API: Result<Guid>
 ```
 
-### Planned/evolving
+### Current durable boundary
 
-Durable Admin-to-Catalog publication is planned, not fully wired in the current runtime. The event and
-messaging docs describe outbox/inbox direction; current Admin production code does not persist an
-Admin outbox row or transport the event to Catalog.ApiService.
+Admin tour creation persists integration events through the EF Core outbox provider. The reusable
+provider maps Admin outbox rows to `messaging.outbox_messages`; Catalog maps inbox idempotency rows to
+`messaging.idempotency_keys`. Transport publication from the outbox to Catalog.ApiService remains a
+follow-up.
 
 ```mermaid
 flowchart LR
     adminHandler[Admin handler]
     adminDb[(Admin tables)]
-    outbox[(Admin outbox planned)]
+    outbox[(messaging.outbox_messages)]
     transport[Transport adapter planned]
-    inbox[(Catalog inbox planned)]
+    inbox[(Catalog messaging.idempotency_keys)]
     catalogConsumer[Catalog consumer]
 
     adminHandler --> adminDb
-    adminHandler -. planned .-> outbox
+    adminHandler --> outbox
     outbox -. planned .-> transport
     transport -. planned .-> inbox
     inbox -. planned .-> catalogConsumer
@@ -110,14 +111,14 @@ sequenceDiagram
     participant Context as AdminWriteDbContext
     participant Interceptor as SaveChanges interceptor
     participant Dispatcher as Domain event dispatcher
-    participant Outbox as Admin outbox
+    participant Outbox as messaging.outbox_messages
     participant Db as Admin PostgreSQL
 
     Handler->>Aggregate: mutate; record domain event
     Handler->>Context: SaveEntities(ct)
     Context->>Interceptor: SavingChanges
     Interceptor->>Dispatcher: Dispatch(domain events)
-    Dispatcher->>Outbox: Enqueue integration events
+    Dispatcher->>Outbox: Enqueue serialized integration events
     Context->>Db: save aggregate rows + outbox rows
     alt save succeeds
         Db-->>Context: commit ok
@@ -143,6 +144,7 @@ presentation and public published tour reads.
 sequenceDiagram
     participant Event as AdminTourCreatedIntegrationEvent
     participant Idem as IdempotentIntegrationHandler
+    participant Keys as messaging.idempotency_keys
     participant Handler as AdminTourCreatedIntegrationHandler
     participant Aggregate as CatalogTour.CreateDraft
     participant Store as IEventStore
@@ -151,6 +153,7 @@ sequenceDiagram
     participant ReadModel as ICatalogTourReadModelStore
 
     Event->>Idem: Handle(event)
+    Idem->>Keys: TryStart(source + event id)
     Idem->>Handler: Handle(event) when idempotency starts
     Handler->>Aggregate: Create draft
     Aggregate-->>Handler: CatalogTourDraftCreated
@@ -158,6 +161,7 @@ sequenceDiagram
     Runner->>Store: LoadAfter(checkpoint, 100)
     Runner->>Projection: Apply(envelope)
     Projection->>ReadModel: UpsertDraft(...)
+    Idem->>Keys: Complete(source + event id)
     Runner->>Runner: Save projection checkpoint
 ```
 
@@ -168,7 +172,7 @@ Current runtime limits:
   Catalog tour presentation event yet.
 - Public endpoints read only rows marked `IsPublished` from the read model.
 - Projection runner and integration consumer are application components with unit coverage; production
-  DI wiring for event store, idempotency store, and background projection execution is still evolving.
+  transport and background projection execution are still evolving.
 - `CatalogTelemetry` emits OpenTelemetry activities and counters around integration event handling,
   idempotency decisions, tour stream updates, and projection batches.
 

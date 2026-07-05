@@ -1,7 +1,7 @@
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 

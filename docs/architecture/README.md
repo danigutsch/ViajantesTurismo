@@ -98,8 +98,9 @@ sequenceDiagram
     Public->>Projection: Read published tour presentation
 ```
 
-The diagram above is the intended durable flow. Current production runtime has typed event and Catalog
-consumer/projection components, but the durable outbox/transport/inbox path is still evolving. See
+The diagram above is the intended durable flow. Current production runtime has typed events, Admin
+outbox persistence, Catalog idempotency persistence, and Catalog consumer/projection components. The
+transport publisher/consumer path is still evolving. See
 [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and Catalog ADRs in
 [Architecture decisions](../ARCHITECTURE_DECISIONS.md#architecture--layers).
 

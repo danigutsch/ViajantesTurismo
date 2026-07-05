@@ -23,6 +23,7 @@
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.InputNormalization\SharedKernel.InputNormalization.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EventSourcing\SharedKernel.EventSourcing.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Idempotency\SharedKernel.Idempotency.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.EntityFrameworkCore\SharedKernel.EntityFrameworkCore.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing\SharedKernel.Testing.csproj" />
         <ProjectReference Include="..\SharedKernel.AspNetCoreTesting\SharedKernel.AspNetCoreTesting.csproj" />
         <ProjectReference Include="..\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />

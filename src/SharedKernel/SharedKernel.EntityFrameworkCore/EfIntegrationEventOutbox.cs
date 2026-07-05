@@ -1,10 +1,19 @@
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using SharedKernel.IntegrationEvents;
 
-namespace ViajantesTurismo.Admin.Infrastructure;
+namespace SharedKernel.EntityFrameworkCore;
 
-internal sealed class EfIntegrationEventOutbox(AdminWriteDbContext dbContext, TimeProvider timeProvider) : IIntegrationEventOutbox
+/// <summary>
+/// Stores integration events in the current EF Core unit of work.
+/// </summary>
+/// <typeparam name="TContext">The DbContext type that owns the outbox table.</typeparam>
+public sealed class EfIntegrationEventOutbox<TContext>(
+    TContext dbContext,
+    TimeProvider timeProvider,
+    IIntegrationEventSerializer serializer) : IIntegrationEventOutbox
+    where TContext : DbContext
 {
+    /// <inheritdoc />
     public ValueTask Enqueue<TIntegrationEvent>(TIntegrationEvent integrationEvent, CancellationToken ct)
         where TIntegrationEvent : IIntegrationEvent
     {
@@ -18,7 +27,7 @@ internal sealed class EfIntegrationEventOutbox(AdminWriteDbContext dbContext, Ti
             EventVersion = TIntegrationEvent.EventVersion,
             EventId = integrationEvent.EventId,
             OccurredAt = integrationEvent.OccurredAt,
-            PayloadJson = JsonSerializer.Serialize(integrationEvent),
+            PayloadJson = serializer.Serialize(integrationEvent),
             EnqueuedAt = timeProvider.GetUtcNow(),
         });
 

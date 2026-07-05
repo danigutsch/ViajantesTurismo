@@ -1,15 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
+namespace SharedKernel.EntityFrameworkCore;
 
-internal sealed class IdempotencyEntryEntityConfiguration : IEntityTypeConfiguration<IdempotencyEntryEntity>
+/// <summary>
+/// Configures persisted idempotency entries.
+/// </summary>
+public sealed class IdempotencyEntryEntityConfiguration : IEntityTypeConfiguration<IdempotencyEntryEntity>
 {
+    private const string Schema = "messaging";
+
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<IdempotencyEntryEntity> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.ToTable("CatalogIdempotencyInbox");
+        builder.ToTable("idempotency_keys", Schema);
         builder.HasKey(entry => new { entry.Scope, entry.Key });
         builder.Property(entry => entry.Scope).HasMaxLength(200).IsRequired();
         builder.Property(entry => entry.Key).HasMaxLength(255).IsRequired();

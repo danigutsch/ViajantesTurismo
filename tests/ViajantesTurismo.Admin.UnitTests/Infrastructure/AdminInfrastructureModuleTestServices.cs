@@ -21,7 +21,8 @@ internal static class AdminInfrastructureModuleTestServices
     public static ServiceProvider CreateWithOutboxModule()
     {
         var builder = CreateApplicationBuilderWithWriteContext();
-        builder.Services.AddIntegrationEventOutboxModule();
+        builder.Services.AddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return builder.Services.BuildServiceProvider();
     }
@@ -30,7 +31,8 @@ internal static class AdminInfrastructureModuleTestServices
     {
         var builder = CreateApplicationBuilderWithWriteContext();
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
-        builder.Services.AddIntegrationEventOutboxModule();
+        builder.Services.AddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return builder.Services.BuildServiceProvider();
     }
@@ -39,7 +41,7 @@ internal static class AdminInfrastructureModuleTestServices
     {
         var services = new ServiceCollection();
         services.AddSingleton(outbox);
-        services.AddIntegrationEventOutboxModule();
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return services.BuildServiceProvider();
     }

@@ -1,10 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Idempotency;
 
-namespace ViajantesTurismo.Catalog.Infrastructure;
+namespace SharedKernel.EntityFrameworkCore;
 
-internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempotencyStore
+/// <summary>
+/// Stores idempotency entries in EF Core.
+/// </summary>
+/// <typeparam name="TContext">The DbContext type that owns the idempotency table.</typeparam>
+public sealed class EfIdempotencyStore<TContext>(TContext dbContext) : IIdempotencyStore
+    where TContext : DbContext
 {
+    /// <inheritdoc />
     public async ValueTask<IdempotencyStartResult> TryStart(
         IdempotencyOperation operation,
         DateTimeOffset startedAt,
@@ -22,7 +28,7 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
                 StartedAt = startedAt,
             };
 
-            dbContext.IdempotencyInbox.Add(entry);
+            dbContext.Set<IdempotencyEntryEntity>().Add(entry);
             try
             {
                 await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -66,6 +72,7 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
         return IdempotencyStartResult.StartedNew();
     }
 
+    /// <inheritdoc />
     public async ValueTask Complete(
         IdempotencyOperation operation,
         DateTimeOffset completedAt,
@@ -81,6 +88,7 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
         await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async ValueTask<IdempotencyEntry?> Get(IdempotencyOperation operation, CancellationToken ct)
     {
         var existing = await Find(operation, ct).ConfigureAwait(false);
@@ -89,7 +97,7 @@ internal sealed class EfIdempotencyStore(CatalogDbContext dbContext) : IIdempote
     }
 
     private ValueTask<IdempotencyEntryEntity?> Find(IdempotencyOperation operation, CancellationToken ct) =>
-        dbContext.IdempotencyInbox.FindAsync([operation.Scope.Value, operation.Key.Value], ct);
+        dbContext.Set<IdempotencyEntryEntity>().FindAsync([operation.Scope.Value, operation.Key.Value], ct);
 
     private async ValueTask<IdempotencyEntryEntity?> FindStartedByConcurrentCaller(
         IdempotencyOperation operation,

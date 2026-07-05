@@ -631,7 +631,9 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
           "SharedKernel.Domain": "[0.1.0-alpha.0, )",
-          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )"
+          "SharedKernel.DomainEvents": "[0.1.0-alpha.0, )",
+          "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
+          "SharedKernel.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.eventsourcing": {
@@ -774,6 +776,7 @@
         "type": "Project",
         "dependencies": {
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.6, )",
+          "SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.0, )",
           "SharedKernel.Idempotency": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",

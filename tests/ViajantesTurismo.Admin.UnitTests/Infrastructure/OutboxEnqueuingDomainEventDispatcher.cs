@@ -1,3 +1,4 @@
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -25,7 +26,10 @@ internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProv
         }
 
         var dbContext = DbContext.ShouldNotBeNull();
-        var outbox = new EfIntegrationEventOutbox(dbContext, timeProvider);
+        var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
+            dbContext,
+            timeProvider,
+            new AdminIntegrationEventSerializer());
         await outbox.Enqueue(
             new AdminTourCreatedIntegrationEvent(
                 Guid.CreateVersion7(),

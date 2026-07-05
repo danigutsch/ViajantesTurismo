@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -11,6 +12,6 @@ internal static class CatalogDbContextTestFactory
             .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
             .Options;
 
-        return new CatalogDbContext(options);
+        return new CatalogDbContext(options, [new IdempotencyDbContextConfiguration<CatalogDbContext>()]);
     }
 }

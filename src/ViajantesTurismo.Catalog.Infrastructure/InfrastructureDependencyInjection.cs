@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.Idempotency;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -39,7 +39,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
-        builder.Services.AddScoped<IIdempotencyStore, EfIdempotencyStore>();
+        builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
 
         return builder;
     }
@@ -51,10 +51,12 @@ public static class InfrastructureDependencyInjection
     {
         if (!builder.Environment.IsDevelopment())
         {
+            builder.Services.ApplyDbContextOptionConfigurations<CatalogDbContext>(options);
             return;
         }
 
         options.EnableDetailedErrors();
         options.EnableSensitiveDataLogging();
+        builder.Services.ApplyDbContextOptionConfigurations<CatalogDbContext>(options);
     }
 }

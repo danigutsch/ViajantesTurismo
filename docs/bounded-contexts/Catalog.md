@@ -243,8 +243,9 @@ Planned/evolving Admin event contracts:
 - `AdminTourScheduleChangedIntegrationEvent`.
 - `AdminTourArchivedIntegrationEvent`.
 
-Catalog consumers must be idempotent. The current consumer wrapper uses `IIdempotencyStore`; durable
-Catalog inbox persistence is still part of the planned/evolving runtime path.
+Catalog consumers must be idempotent. The consumer wrapper uses `IIdempotencyStore`; EF Core durable
+idempotency entries are mapped to `messaging.idempotency_keys`. Broker ingress is still part of the
+planned/evolving runtime path.
 
 ## Persistence
 
@@ -256,8 +257,8 @@ Expected tables:
 - `catalog.event_streams`.
 - `catalog.events`.
 - `catalog.projection_checkpoints`.
-- `catalog.integration_inbox`.
-- `catalog.integration_outbox` if Catalog publishes integration events later.
+- `messaging.idempotency_keys` for integration-event delivery guards.
+- Catalog `messaging.outbox_messages` only if Catalog publishes integration events later.
 - Catalog read-model tables for management and public projections.
 
 ## API Surface

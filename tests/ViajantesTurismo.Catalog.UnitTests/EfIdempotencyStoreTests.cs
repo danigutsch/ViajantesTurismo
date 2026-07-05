@@ -1,3 +1,4 @@
+using SharedKernel.EntityFrameworkCore;
 using SharedKernel.Idempotency;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -10,7 +11,7 @@ public sealed class EfIdempotencyStoreTests
     public async Task TryStart_creates_durable_started_entry()
     {
         await using var dbContext = CatalogDbContextTestFactory.Create();
-        var store = new EfIdempotencyStore(dbContext);
+        var store = new EfIdempotencyStore<CatalogDbContext>(dbContext);
         var operation = IdempotencyOperationTestFactory.Create();
         var startedAt = new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero);
 
@@ -26,7 +27,7 @@ public sealed class EfIdempotencyStoreTests
     public async Task TryStart_treats_completed_entry_as_safe_duplicate()
     {
         await using var dbContext = CatalogDbContextTestFactory.Create();
-        var store = new EfIdempotencyStore(dbContext);
+        var store = new EfIdempotencyStore<CatalogDbContext>(dbContext);
         var operation = IdempotencyOperationTestFactory.Create();
         var startedAt = new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero);
         await store.TryStart(operation, startedAt, TimeSpan.FromMinutes(5), CancellationToken.None);
@@ -46,7 +47,7 @@ public sealed class EfIdempotencyStoreTests
     public async Task TryStart_restarts_expired_started_entry()
     {
         await using var dbContext = CatalogDbContextTestFactory.Create();
-        var store = new EfIdempotencyStore(dbContext);
+        var store = new EfIdempotencyStore<CatalogDbContext>(dbContext);
         var operation = IdempotencyOperationTestFactory.Create();
         var startedAt = new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero);
         var restartedAt = startedAt.AddMinutes(6);

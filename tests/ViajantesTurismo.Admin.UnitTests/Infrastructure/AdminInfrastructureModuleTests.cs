@@ -24,7 +24,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void AddIntegrationEventOutboxModule_composes_generated_domain_dispatching_dependencies()
+    public void AddIntegrationEventOutbox_composes_generated_domain_dispatching_dependencies()
     {
         using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOutboxModule();
 
@@ -44,7 +44,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void AddIntegrationEventOutboxModule_preserves_existing_outbox_registration()
+    public void AddIntegrationEventOutbox_preserves_existing_outbox_registration()
     {
         var outbox = new CapturingIntegrationEventOutbox(new FakeUnitOfWork());
         using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithOutbox(outbox);

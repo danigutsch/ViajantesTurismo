@@ -9,15 +9,6 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 internal static class AdminWriteDbContextTestFactory
 {
-    public static AdminWriteDbContext Create(params IInterceptor[] interceptors)
-    {
-        var options = new DbContextOptionsBuilder<AdminWriteDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
-            .Options;
-
-        return new AdminWriteDbContext(options, [new TestInterceptorDbContextConfiguration(interceptors)]);
-    }
-
     public static AdminWriteDbContextTestScope CreateWithDomainEventDispatcher(
         IDomainEventDispatcher dispatcher,
         params IInterceptor[] additionalInterceptors)
@@ -26,6 +17,7 @@ internal static class AdminWriteDbContextTestFactory
 
         var services = new ServiceCollection();
         services.AddSingleton(dispatcher);
+        services.AddSingleton<IDbContextConfiguration<AdminWriteDbContext>, IntegrationEventOutboxDbContextConfiguration<AdminWriteDbContext>>();
         services.AddSingleton<DispatchDomainEventsSaveChangesInterceptor>();
         services.AddDbContext<AdminWriteDbContext>((provider, options) =>
         {

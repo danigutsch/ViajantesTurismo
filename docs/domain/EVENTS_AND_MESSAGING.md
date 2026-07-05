@@ -231,12 +231,18 @@ Purpose:
 - Dispatch later through a background dispatcher.
 - Avoid event loss after database commit and before transport publish.
 
-Ownership:
+Runtime shape:
 
 - Core contracts live in SharedKernel abstractions.
-- Physical tables live in bounded-context infrastructure.
-- Admin owns its integration outbox.
-- Catalog owns its integration outbox only if it publishes integration events.
+- Storage-neutral event contracts live in `SharedKernel.IntegrationEvents`.
+- EF Core provider code lives in `SharedKernel.EntityFrameworkCore`.
+- EF outbox messages are stored in `messaging.outbox_messages`.
+- `AddIntegrationEventOutbox<TContext>()` registers the EF outbox, the shared idempotency store,
+  and the model configuration for both messaging tables.
+- `AddIntegrationEventInbox<TContext>()` registers only the shared idempotency store and inbox table
+  model configuration for contexts that consume but do not publish integration events.
+- Admin registers an AOT-safe `IIntegrationEventSerializer` for Admin integration events before
+  registering its outbox.
 
 Recommended columns:
 
@@ -256,6 +262,10 @@ Recommended columns:
 - `failed_at_utc`.
 - `last_error`.
 
+Current EF provider columns are intentionally smaller until a transport publisher is wired: `id`,
+`event_type`, `event_version`, `event_id`, `occurred_at`, `payload_json`, `enqueued_at`, and
+`published_at`.
+
 ### Inbox
 
 Use an inbox when a bounded context consumes integration events from outside its transaction
@@ -273,11 +283,17 @@ database unique constraints, and upsert-or-skip behavior for externally visible 
 message handling, but the handler still owns safe replay behavior if work partially completed before a
 retry.
 
-Ownership:
+Runtime shape:
 
 - Core idempotency contracts live in `SharedKernel.Idempotency`.
-- Physical inbox tables live in consuming bounded-context infrastructure.
-- Catalog owns its inbox for Admin-to-Catalog events.
+- EF Core provider code lives in `SharedKernel.EntityFrameworkCore`.
+- Durable idempotency entries are stored in `messaging.idempotency_keys`.
+- `AddIntegrationEventInbox<TContext>()` is the app-facing startup call for consumers that need inbox
+  idempotency without an outbound outbox.
+- Catalog consumes Admin tour-created events through `IdempotentIntegrationHandler<TIntegrationEvent>`
+  when the handler is resolved from DI.
+- The idempotency row moves from `Started` to `Completed` after the inner handler succeeds. If the
+  process fails before completion, a later delivery can restart after the configured lock duration.
 
 Recommended columns:
 

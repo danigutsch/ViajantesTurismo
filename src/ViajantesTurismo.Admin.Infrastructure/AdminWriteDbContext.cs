@@ -33,19 +33,6 @@ internal sealed class AdminWriteDbContext(
         }
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-
-        if (configurations is not null)
-        {
-            foreach (var configuration in configurations)
-            {
-                configuration.ConfigureOptions(optionsBuilder);
-            }
-        }
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -54,7 +41,6 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
-        modelBuilder.ApplyConfiguration(new IntegrationEventOutboxMessageConfiguration());
         if (configurations is not null)
         {
             foreach (var configuration in configurations)

@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Resources;
@@ -38,7 +40,8 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
-        builder.Services.AddIntegrationEventOutboxModule();
+        builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return builder;
     }
@@ -60,7 +63,8 @@ public static class InfrastructureDependencyInjection
         }
 
         builder.AddAdminWriteDbContext();
-        builder.Services.AddIntegrationEventOutboxModule();
+        builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;

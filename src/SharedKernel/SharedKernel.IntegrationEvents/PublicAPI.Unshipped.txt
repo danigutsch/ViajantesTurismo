@@ -9,6 +9,8 @@ SharedKernel.IntegrationEvents.IIntegrationEvent.OccurredAt.get -> System.DateTi
 SharedKernel.IntegrationEvents.IIntegrationEventDispatcher
 SharedKernel.IntegrationEvents.IIntegrationEventDispatcher.Dispatch<TIntegrationEvent>(TIntegrationEvent integrationEvent, System.Threading.CancellationToken ct) -> System.Threading.Tasks.ValueTask
 SharedKernel.IntegrationEvents.IIntegrationEventHandler<TIntegrationEvent>
+SharedKernel.IntegrationEvents.IIntegrationEventSerializer
+SharedKernel.IntegrationEvents.IIntegrationEventSerializer.Serialize<TIntegrationEvent>(TIntegrationEvent integrationEvent) -> string!
 SharedKernel.IntegrationEvents.IntegrationEventMappingAttribute
 SharedKernel.IntegrationEvents.IntegrationEventMappingAttribute.IntegrationEventMappingAttribute() -> void
 SharedKernel.IntegrationEvents.MediatorIntegrationEventDispatcher
