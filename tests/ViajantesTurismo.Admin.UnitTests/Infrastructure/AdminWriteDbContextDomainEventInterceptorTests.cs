@@ -55,6 +55,22 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
     }
 
     [Fact]
+    public async Task SaveEntities_dispatches_generated_integration_events_with_scope_validation_enabled()
+    {
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithGeneratedIntegrationEventDispatcher();
+        var dbContext = scope.DbContext;
+        var tour = EntityBuilders.BuildTour(new TourOptions(Identifier: "andes-generated-2026", Name: "Andes Generated 2026"));
+        dbContext.Tours.Add(tour);
+
+        await dbContext.SaveEntities(CancellationToken.None);
+
+        tour.GetDomainEvents().ShouldBeEmpty();
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessageEntity>().ShouldHaveSingleItem();
+        outboxMessage.Envelope.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Envelope.PayloadJson.ShouldContain("andes-generated-2026", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task SaveEntities_does_not_clear_domain_events_when_save_fails_after_dispatch()
     {
         var dispatcher = new CapturingDomainEventDispatcher();

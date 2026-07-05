@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Domain;
+using SharedKernel.EntityFrameworkCore;
 
 namespace SharedKernel.DomainEvents.EntityFrameworkCore;
 
@@ -88,6 +89,8 @@ internal sealed class DispatchDomainEventsSaveChangesInterceptor : SaveChangesIn
             .ToArray();
 
         var domainEventDispatcher = dbContext.GetService<IDomainEventDispatcher>();
+
+        using var currentDbContext = CurrentSaveChangesDbContext.Enter(dbContext);
 
         foreach (var domainEvent in domainEvents)
         {
