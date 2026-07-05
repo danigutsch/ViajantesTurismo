@@ -8,6 +8,8 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
 
     public IReadOnlyCollection<string> ObjectKeys => objects.Keys;
 
+    public int ExistsCallCount { get; private set; }
+
     public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -44,6 +46,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ExistsCallCount++;
 
         return ValueTask.FromResult(objects.ContainsKey(objectKey));
     }
