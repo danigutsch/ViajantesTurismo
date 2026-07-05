@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.Messaging;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
@@ -25,12 +26,14 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
 
         dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
         tour.GetDomainEvents().ShouldBeEmpty();
-        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessageEntity>().ShouldHaveSingleItem();
-        outboxMessage.Envelope.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
-        outboxMessage.Envelope.EventVersion.ShouldBe(AdminTourCreatedIntegrationEvent.EventVersion);
-        outboxMessage.Envelope.EventId.ShouldNotBe(Guid.Empty);
-        outboxMessage.Envelope.OccurredAt.ShouldBe(new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero));
-        outboxMessage.Envelope.PayloadJson.ShouldContain("andes-2026", StringComparison.Ordinal);
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EnvelopeSpec.ShouldBe(EventEnvelope.CloudEventsSpec);
+        outboxMessage.EnvelopeSpecVersion.ShouldBe(EventEnvelope.CloudEventsSpecVersion);
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.EventVersion.ShouldBe(AdminTourCreatedIntegrationEvent.EventVersion);
+        outboxMessage.EventId.ShouldNotBeEmpty();
+        outboxMessage.Time.ShouldBe(new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero));
+        outboxMessage.Payload.ShouldContain("andes-2026", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -49,9 +52,9 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
 
         dispatcher.DispatchedEvents.ShouldHaveSingleItem().ShouldBeOfType<TourCreatedDomainEvent>();
         tour.GetDomainEvents().ShouldBeEmpty();
-        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessageEntity>().ShouldHaveSingleItem();
-        outboxMessage.Envelope.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
-        outboxMessage.Envelope.PayloadJson.ShouldContain("andes-sync-2026", StringComparison.Ordinal);
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Payload.ShouldContain("andes-sync-2026", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -65,9 +68,9 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         await dbContext.SaveEntities(CancellationToken.None);
 
         tour.GetDomainEvents().ShouldBeEmpty();
-        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessageEntity>().ShouldHaveSingleItem();
-        outboxMessage.Envelope.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
-        outboxMessage.Envelope.PayloadJson.ShouldContain("andes-generated-2026", StringComparison.Ordinal);
+        var outboxMessage = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        outboxMessage.EventType.ShouldBe(AdminTourCreatedIntegrationEvent.EventType);
+        outboxMessage.Payload.ShouldContain("andes-generated-2026", StringComparison.Ordinal);
     }
 
     [Fact]

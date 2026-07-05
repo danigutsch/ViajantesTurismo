@@ -33,11 +33,19 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EnvelopeSpec = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EnvelopeSpecVersion = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    EventId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Source = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
                     EventType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    EventVersion = table.Column<int>(type: "integer", nullable: false),
-                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OccurredAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    PayloadJson = table.Column<string>(type: "text", nullable: false),
+                    EventVersion = table.Column<int>(type: "integer", nullable: true),
+                    Time = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Subject = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    DataContentType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    DataSchema = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    Payload = table.Column<string>(type: "text", nullable: true),
+                    PayloadEncoding = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ExtensionAttributesJson = table.Column<string>(type: "text", nullable: true),
                     EnqueuedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     PublishedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
