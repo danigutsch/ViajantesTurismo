@@ -14,22 +14,18 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
             migrationBuilder.EnsureSchema(
                 name: "messaging");
 
-            migrationBuilder.CreateTable(
-                name: "idempotency_keys",
-                schema: "messaging",
-                columns: table => new
-                {
-                    Scope = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Key = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    State = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    StartedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_idempotency_keys", x => new { x.Scope, x.Key });
-                });
+            migrationBuilder.Sql(
+                """
+                CREATE TABLE IF NOT EXISTS messaging.idempotency_keys (
+                    "Scope" character varying(200) NOT NULL,
+                    "Key" character varying(255) NOT NULL,
+                    "State" character varying(32) NOT NULL,
+                    "StartedAt" timestamp with time zone NOT NULL,
+                    "CompletedAt" timestamp with time zone NULL,
+                    "ResultFingerprint" character varying(512) NULL,
+                    CONSTRAINT "PK_idempotency_keys" PRIMARY KEY ("Scope", "Key")
+                );
+                """);
 
             migrationBuilder.CreateTable(
                 name: "outbox_messages",
@@ -67,9 +63,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "idempotency_keys",
-                schema: "messaging");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS messaging.idempotency_keys;");
 
             migrationBuilder.DropTable(
                 name: "outbox_messages",
