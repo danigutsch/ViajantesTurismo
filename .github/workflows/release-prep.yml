@@ -119,7 +119,7 @@ jobs:
             commit_range="${{ steps.version.outputs.source_tag }}..HEAD"
           fi
 
-          git log --format='- %s (%h)' "${commit_range}" | dotnet run \
+          git log --no-merges --format='- %s (%h)' "${commit_range}" | dotnet run \
             --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
             --configuration Release \
             --no-build \
