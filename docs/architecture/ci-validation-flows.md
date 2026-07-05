@@ -89,6 +89,8 @@ flowchart LR
     repo --> dependency_review
     devcontainer_smoke[Devcontainer Smoke]
     repo --> devcontainer_smoke
+    release_prep[Release Prep]
+    repo --> release_prep
     secret_scan[Secret Scan]
     repo --> secret_scan
     sync_labels[Sync Repository Labels]

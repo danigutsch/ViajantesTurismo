@@ -82,6 +82,20 @@ packages.
 Use this workflow only for local validation and CI dry runs. Stable publishing needs release workflow
 gates, release notes, provenance, and support-policy decisions.
 
+## Release prep workflow
+
+The `Release Prep` GitHub Actions workflow reuses `scripts/calculate-release-version.sh`, builds and
+tests with the computed version values, packs the current `SharedKernel.*` projects, and uploads a
+review artifact. The artifact includes packages plus generated release notes, a changelog, and a
+minimal provenance manifest with package SHA-256 hashes.
+
+Stable release behavior is disabled by default. Creating a `vX.Y.Z` tag, creating a GitHub release,
+or publishing to NuGet requires manual workflow dispatch and the `release` environment approval.
+NuGet publishing also requires `NUGET_API_KEY` to be configured for that approved environment.
+
+Formal SBOM output remains a follow-up because no repository-approved SBOM generator is currently
+wired into local tooling or CI.
+
 ## Internal SharedKernel dependency versions
 
 Packable `SharedKernel.*` projects should keep internal dependencies as project references in source.

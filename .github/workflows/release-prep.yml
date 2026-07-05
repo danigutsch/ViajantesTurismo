@@ -1,0 +1,208 @@
+name: Release Prep
+
+'on':
+  pull_request:
+    paths:
+      - .github/workflows/release-prep.yml
+      - scripts/calculate-release-version.sh
+      - scripts/pack-sharedkernel-local.sh
+      - scripts/prepare-release-artifacts.sh
+      - src/SharedKernel/**
+      - tools/SharedKernel.Versioning.Tool/**
+      - tests/SharedKernel.Versioning.Tests/**
+      - Directory.Build.props
+      - Directory.Packages.props
+      - global.json
+      - NuGet.Config
+  workflow_dispatch:
+    inputs:
+      promote_stable:
+        description: Create a stable tag, GitHub release, and NuGet publish after environment approval.
+        required: true
+        default: false
+        type: boolean
+      create_github_release:
+        description: Create or update the GitHub release when promoting stable.
+        required: true
+        default: false
+        type: boolean
+      publish_nuget:
+        description: Push packages to NuGet when promoting stable.
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    name: Release Dry Run
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    permissions:
+      contents: read
+    outputs:
+      sem_ver: ${{ steps.version.outputs.sem_ver }}
+      package_version: ${{ steps.version.outputs.package_version }}
+      assembly_version: ${{ steps.version.outputs.assembly_version }}
+      file_version: ${{ steps.version.outputs.file_version }}
+      informational_version: ${{ steps.version.outputs.informational_version }}
+      source_tag: ${{ steps.version.outputs.source_tag }}
+      release_impact: ${{ steps.version.outputs.release_impact }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up CI prerequisites
+        uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          trust-dev-certificate: "false"
+
+      - name: Calculate release version
+        id: version
+        shell: bash
+        env:
+          RELEASE_VERSION_KIND: ${{ github.event_name == 'workflow_dispatch' && inputs.promote_stable && 'stable' || 'prerelease' }}
+        run: bash scripts/calculate-release-version.sh
+
+      - name: Build with computed version
+        shell: bash
+        run: |
+          dotnet build ViajantesTurismo.slnx --configuration Release --no-restore \
+            -p:ComputedSemVer="${{ steps.version.outputs.package_version }}" \
+            -p:ComputedAssemblyVersion="${{ steps.version.outputs.assembly_version }}" \
+            -p:ComputedFileVersion="${{ steps.version.outputs.file_version }}" \
+            -p:ComputedInformationalVersion="${{ steps.version.outputs.informational_version }}"
+
+      - name: Test with computed version
+        shell: bash
+        run: |
+          dotnet test --solution ViajantesTurismo.slnx --configuration Release --no-build \
+            -p:ComputedSemVer="${{ steps.version.outputs.package_version }}" \
+            -p:ComputedAssemblyVersion="${{ steps.version.outputs.assembly_version }}" \
+            -p:ComputedFileVersion="${{ steps.version.outputs.file_version }}" \
+            -p:ComputedInformationalVersion="${{ steps.version.outputs.informational_version }}"
+
+      - name: Pack SharedKernel packages
+        shell: bash
+        run: |
+          bash scripts/pack-sharedkernel-local.sh \
+            --version "${{ steps.version.outputs.package_version }}" \
+            --output-root artifacts/packages/release-prep
+
+      - name: Generate release notes and manifest
+        shell: bash
+        run: |
+          bash scripts/prepare-release-artifacts.sh \
+            --version "${{ steps.version.outputs.package_version }}" \
+            --package-dir "artifacts/packages/release-prep/${{ steps.version.outputs.package_version }}" \
+            --source-tag "${{ steps.version.outputs.source_tag }}" \
+            --release-impact "${{ steps.version.outputs.release_impact }}" \
+            --sha "${{ github.sha }}"
+
+      - name: Upload release prep artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-prep-${{ steps.version.outputs.package_version }}
+          path: |
+            artifacts/packages/release-prep/${{ steps.version.outputs.package_version }}/*.nupkg
+            artifacts/release-prep/**
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summarize release prep
+        shell: bash
+        run: |
+          {
+            echo "## Release prep"
+            echo
+            echo "- Version: \`${{ steps.version.outputs.package_version }}\`"
+            echo "- Stable tag when approved: \`v${{ steps.version.outputs.package_version }}\`"
+            echo "- External publishing: disabled unless manually dispatched with approval"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  stable-release:
+    name: Stable Release Gate
+    needs:
+      - dry-run
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.promote_stable }}
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET SDK for NuGet publish
+        if: ${{ inputs.publish_nuget }}
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Download release prep artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-prep-${{ needs.dry-run.outputs.package_version }}
+
+      - name: Validate stable version
+        shell: bash
+        run: |
+          version="${{ needs.dry-run.outputs.package_version }}"
+          if [[ "${version}" == *-* ]]; then
+            echo "Stable promotion requires a non-prerelease SemVer value: ${version}" >&2
+            exit 1
+          fi
+
+      - name: Create stable tag
+        shell: bash
+        run: |
+          tag="v${{ needs.dry-run.outputs.package_version }}"
+          git tag --annotate "${tag}" --message "Release ${tag}"
+          git push origin "${tag}"
+
+      - name: Create GitHub release
+        if: ${{ inputs.create_github_release }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ needs.dry-run.outputs.package_version }}" \
+            --title "v${{ needs.dry-run.outputs.package_version }}" \
+            --notes-file artifacts/release-prep/release-notes.md \
+            artifacts/packages/release-prep/${{ needs.dry-run.outputs.package_version }}/*.nupkg \
+            artifacts/release-prep/*
+
+      - name: Publish packages to NuGet
+        if: ${{ inputs.publish_nuget }}
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "${NUGET_API_KEY}" ]]; then
+            echo "NUGET_API_KEY is required to publish packages." >&2
+            exit 1
+          fi
+
+          shopt -s nullglob
+          packages=(artifacts/packages/release-prep/${{ needs.dry-run.outputs.package_version }}/*.nupkg)
+          if [[ ${#packages[@]} -eq 0 ]]; then
+            echo "No packages found for NuGet publishing." >&2
+            exit 1
+          fi
+
+          for package in "${packages[@]}"; do
+            dotnet nuget push "${package}" \
+              --api-key "${NUGET_API_KEY}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done

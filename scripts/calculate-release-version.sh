@@ -27,7 +27,11 @@ tool_args=(
     --sha "${source_sha}"
 )
 
-if [[ -n "${GITHUB_RUN_NUMBER:-}" ]]; then
+release_version_kind="${RELEASE_VERSION_KIND:-prerelease}"
+
+if [[ "${release_version_kind}" == "stable" ]]; then
+    :
+elif [[ -n "${GITHUB_RUN_NUMBER:-}" ]]; then
     tool_args+=(--prerelease "alpha.${GITHUB_RUN_NUMBER}")
 fi
 

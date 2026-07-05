@@ -140,3 +140,37 @@ the complete in-container test suite still works without paying that cost every 
 The current optimization stance is intentionally conservative: the workflow keeps a pinned
 Dev Container CLI path, but broader startup work stays deferred unless devcontainer latency
 becomes a demonstrated contributor pain point.
+
+## Release prep workflow
+
+A separate workflow (`.github/workflows/release-prep.yml`) prepares release artifacts without
+publishing by default. It runs on relevant pull-request changes and manual dispatch.
+
+### Release Prep
+
+| Attribute | Value |
+| --- | --- |
+| Workflow file | `.github/workflows/release-prep.yml` |
+| Primary job name | `Release Dry Run` |
+| Runner | Repository CI baseline |
+| Merge gate | Not required |
+
+**Dry-run steps:**
+
+1. Checkout full history so the existing version calculation can inspect tags and commits.
+2. Run `scripts/calculate-release-version.sh` from the CI versioning flow.
+3. Build the solution in Release mode with the computed version properties.
+4. Test the Release build with `--no-build` so build and test never run in parallel.
+5. Pack `SharedKernel.*` packages with the computed package version.
+6. Generate `release-notes.md`, `CHANGELOG.md`, and `release-manifest.json`.
+7. Upload package and release-prep artifacts for review.
+
+The stable path is manual-only. It requires the `release` environment approval and the
+`promote_stable` dispatch input before it can create a `vX.Y.Z` tag. GitHub release creation and
+NuGet publishing remain separate explicit dispatch inputs. NuGet publishing also requires the
+`NUGET_API_KEY` secret scoped to the approved environment.
+
+The current release-prep manifest records package file names, SHA-256 hashes, sizes, source SHA,
+and version metadata. A formal SBOM is not generated yet because the repository does not currently
+have an SBOM generator wired into local or CI tooling. Add SBOM generation as a dedicated follow-up
+when a pinned repository-approved tool is selected.
