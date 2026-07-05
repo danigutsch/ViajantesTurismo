@@ -109,6 +109,9 @@ jobs:
             -- \
             pack-sharedkernel \
             --version "${{ steps.version.outputs.package_version }}" \
+            --assembly-version "${{ steps.version.outputs.assembly_version }}" \
+            --file-version "${{ steps.version.outputs.file_version }}" \
+            --informational-version "${{ steps.version.outputs.informational_version }}" \
             --output-root artifacts/packages/release-prep
 
       - name: Generate release notes and manifest
