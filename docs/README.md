@@ -18,6 +18,7 @@ Start here when looking for repository-wide guidance.
 - [Code quality](CODE_QUALITY.md)
 - [Test guidelines](TEST_GUIDELINES.md)
 - [Configuration standards](CONFIGURATION.md)
+- [API versioning](API_VERSIONING.md)
 - [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md)
 - [Mutation testing evaluation](MUTATION_TESTING.md)
 - [Dev containers](DEVCONTAINERS.md)
