@@ -68,6 +68,8 @@ Decisions about application architecture and layer responsibilities.
   and State Exposure
 - **[ADR-033](adr/20260705-messaging-event-abstractions.md)** — Messaging Event Abstractions
   and CloudEvents Boundary
+- **[ADR-034](adr/20260705-bounded-context-databases-and-outbox-ownership.md)** — Bounded Context
+  Databases and Outbox Ownership
 
 ### Versioning & Release
 

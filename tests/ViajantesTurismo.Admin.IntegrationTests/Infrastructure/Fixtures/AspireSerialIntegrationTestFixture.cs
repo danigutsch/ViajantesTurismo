@@ -19,7 +19,7 @@ public sealed class AspireSerialIntegrationTestFixture : IAsyncLifetime, IDispos
     {
         _app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>([ResourceNames.Api], null, TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
-        _databaseConnectionString = await _app.GetConnectionString(ResourceNames.Database, TestContext.Current.CancellationToken);
+        _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()

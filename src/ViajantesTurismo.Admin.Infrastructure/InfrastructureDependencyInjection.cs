@@ -43,7 +43,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
-        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>(ServiceLifetime.Singleton);
 
         return builder;
     }
@@ -66,7 +66,7 @@ public static class InfrastructureDependencyInjection
 
         builder.AddAdminWriteDbContext();
         builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
-        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>(ServiceLifetime.Singleton);
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;
@@ -90,7 +90,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
-            ResourceNames.Database,
+            ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
     }
 
@@ -98,7 +98,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
-            ResourceNames.Database,
+            ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));
     }
 

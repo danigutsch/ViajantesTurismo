@@ -16,9 +16,14 @@ public static class ResourceNames
     public const string DatabaseServer = "database-server";
 
     /// <summary>
-    /// The name of the database resource.
+    /// The name of the Admin database resource.
     /// </summary>
-    public const string Database = "database";
+    public const string AdminDatabase = "admin-database";
+
+    /// <summary>
+    /// The name of the Catalog database resource.
+    /// </summary>
+    public const string CatalogDatabase = "catalog-database";
 
     /// <summary>
     /// The name of the API service resource.

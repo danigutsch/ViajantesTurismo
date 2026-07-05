@@ -66,33 +66,37 @@ internal static class AppHostResourceExtensions
     /// Adds the database migration service.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
-    /// <param name="database">The database resource.</param>
+    /// <param name="adminDatabase">The Admin database resource.</param>
+    /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <returns>The configured migration service resource.</returns>
     public static IResourceBuilder<ProjectResource> AddMigrationService(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> database)
+        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase)
     {
         return builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
-            .WithReference(database)
-            .WaitFor(database);
+            .WithReference(adminDatabase)
+            .WithReference(catalogDatabase)
+            .WaitFor(adminDatabase)
+            .WaitFor(catalogDatabase);
     }
 
     /// <summary>
     /// Adds the Admin API service.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
-    /// <param name="database">The database resource.</param>
+    /// <param name="adminDatabase">The Admin database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <returns>The configured Admin API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminApi(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> database,
+        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
         IResourceBuilder<ProjectResource> migrationService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
             .WithHttpHealthCheck(EndpointPaths.Health)
-            .WithReference(database)
-            .WaitFor(database)
+            .WithReference(adminDatabase)
+            .WaitFor(adminDatabase)
             .WaitForCompletion(migrationService);
     }
 
@@ -100,18 +104,18 @@ internal static class AppHostResourceExtensions
     /// Adds the Catalog API service.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
-    /// <param name="database">The database resource.</param>
+    /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <returns>The configured Catalog API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogApi(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> database,
+        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
             .WithHttpHealthCheck(EndpointPaths.Health)
-            .WithReference(database)
-            .WaitFor(database)
+            .WithReference(catalogDatabase)
+            .WaitFor(catalogDatabase)
             .WaitForCompletion(migrationService);
     }
 

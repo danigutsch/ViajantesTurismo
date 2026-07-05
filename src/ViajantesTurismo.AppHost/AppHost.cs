@@ -4,15 +4,16 @@ using ViajantesTurismo.Resources;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var databaseServer = builder.AddDatabaseServer();
-var database = databaseServer.AddDatabase(ResourceNames.Database);
+var adminDatabase = databaseServer.AddDatabase(ResourceNames.AdminDatabase);
+var catalogDatabase = databaseServer.AddDatabase(ResourceNames.CatalogDatabase);
 
 var cache = builder.AddCache();
 
-var migrationService = builder.AddMigrationService(database);
+var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase);
 
-var apiService = builder.AddAdminApi(database, migrationService);
+var apiService = builder.AddAdminApi(adminDatabase, migrationService);
 
-var catalogApiService = builder.AddCatalogApi(database, migrationService);
+var catalogApiService = builder.AddCatalogApi(catalogDatabase, migrationService);
 
 builder.AddManagementWeb(cache, apiService, catalogApiService);
 

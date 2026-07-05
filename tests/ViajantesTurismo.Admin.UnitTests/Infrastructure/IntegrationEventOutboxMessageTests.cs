@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Testing.Assertions;
@@ -157,5 +159,42 @@ public sealed class IntegrationEventOutboxMessageTests
 
         var exception = await enqueue.ShouldThrow<InvalidOperationException>();
         exception.Message.ShouldContain("No current AdminWriteDbContext SaveChanges context", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Relay_publishes_pending_message_and_marks_it_published()
+    {
+        var publisher = new RecordingEventEnvelopePublisher();
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-relay-2026");
+
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        publisher.Published.Count.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBe(timeProvider.GetUtcNow());
+    }
+
+    [Fact]
+    public async Task Relay_records_retry_state_when_publish_fails()
+    {
+        var publisher = new RecordingEventEnvelopePublisher
+        {
+            Failure = new InvalidOperationException("transport unavailable")
+        };
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-retry-2026");
+
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBeNull();
+        message.PublishAttempts.ShouldBe(1);
+        message.LastPublishError.ShouldContain("transport unavailable", StringComparison.Ordinal);
+        ((IRetryableMessage)message).Attempts.ShouldBe(1);
     }
 }

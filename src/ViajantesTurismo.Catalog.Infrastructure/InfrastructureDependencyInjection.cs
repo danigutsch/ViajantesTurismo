@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -29,7 +32,7 @@ public static class InfrastructureDependencyInjection
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddNpgsqlDbContext<CatalogDbContext>(
-            ResourceNames.Database,
+            ResourceNames.CatalogDatabase,
             configureDbContextOptions: options => ConfigureDevelopmentDatabaseOptions(builder, options));
 
         builder.Services.AddCatalogApplication();
@@ -40,7 +43,10 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<EfCatalogTourReadModelStore>();
         builder.Services.AddScoped<ICatalogTourReadModelStore>(sp => sp.GetRequiredService<EfCatalogTourReadModelStore>());
         builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
-        builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
+        builder.Services.TryAddSingleton<IIntegrationEventSerializer, CatalogIntegrationEventSerializer>();
+        builder.Services.TryAddScoped<IEventEnvelopePublisher, CatalogEventEnvelopePublisher>();
+        builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
+        builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
 
         return builder;
     }

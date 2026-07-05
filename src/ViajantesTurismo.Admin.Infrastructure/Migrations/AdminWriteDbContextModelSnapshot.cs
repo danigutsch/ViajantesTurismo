@@ -96,6 +96,16 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<string>("ExtensionAttributesJson")
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset?>("LastPublishAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastPublishError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("NextPublishAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Payload")
                         .HasColumnType("text");
 
@@ -103,6 +113,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<int>("PublishAttempts")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone");
@@ -125,6 +138,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("PublishedAt", "EnqueuedAt");
+
+                    b.HasIndex("PublishedAt", "NextPublishAttemptAt", "EnqueuedAt");
 
                     b.ToTable("outbox_messages", "messaging");
                 });
