@@ -153,6 +153,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          ref: ${{ github.sha }}
 
       - name: Set up .NET SDK for NuGet publish
         if: ${{ inputs.publish_nuget }}
@@ -189,7 +190,7 @@ jobs:
 
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag --annotate "${tag}" --message "Release ${tag}"
+          git tag --annotate "${tag}" --message "Release ${tag}" "${GITHUB_SHA}"
           git push origin "${tag}"
 
       - name: Create GitHub release
