@@ -306,13 +306,22 @@ public sealed class IntegrationEventOutboxMessageTests
         await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(
             publisher,
             timeProvider,
-            configureServices: services => services.Replace(
-                ServiceDescriptor.Singleton<
-                    IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>,
-                    SingleClaimIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>>()));
+            configureServices: services =>
+            {
+                services.Replace(
+                    ServiceDescriptor.Singleton<
+                        IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>,
+                        SingleClaimIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>>());
+                services.Replace(
+                    ServiceDescriptor.Transient<
+                        EfIntegrationEventOutboxRelay<AdminWriteDbContext>,
+                        EfIntegrationEventOutboxRelay<AdminWriteDbContext>>());
+            });
         await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-atomic-claim-2026");
         var firstRelay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
         var secondRelay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+
+        secondRelay.ShouldNotBeSameAs(firstRelay);
 
         // Act
         var publishTasks = new[]
@@ -342,9 +351,50 @@ public sealed class IntegrationEventOutboxMessageTests
         var sql = PostgreSqlIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>.CreateClaimSql(entityType);
 
         // Assert
+        sql.ShouldContain("WITH claimed AS", StringComparison.Ordinal);
         sql.ShouldContain("UPDATE \"messaging\".\"outbox_messages\" AS message", StringComparison.Ordinal);
         sql.ShouldContain("FOR UPDATE SKIP LOCKED", StringComparison.Ordinal);
         sql.ShouldContain("RETURNING *", StringComparison.Ordinal);
+        sql.ShouldContain("SELECT *", StringComparison.Ordinal);
+        sql.ShouldContain("FROM claimed", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PostgreSql_atomic_claim_rejects_non_postgresql_provider()
+    {
+        // Arrange
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithGeneratedIntegrationEventDispatcher();
+        var strategy = new PostgreSqlIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>();
+        Func<Task> claim = async () => await strategy.ClaimPending(
+            scope.DbContext,
+            1,
+            new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero),
+            "test-relay",
+            new DateTimeOffset(2026, 6, 22, 12, 5, 0, TimeSpan.Zero),
+            TestContext.Current.CancellationToken);
+
+        // Act
+        var exception = await claim.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldContain("Npgsql.EntityFrameworkCore.PostgreSQL", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PostgreSql_atomic_claim_registration_replaces_default_claim_strategy()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+        services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+
+        // Assert
+        var descriptor = services
+            .Where(service => service.ServiceType == typeof(IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>))
+            .ShouldHaveSingleItem();
+        descriptor.ImplementationType.ShouldBe(typeof(PostgreSqlIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>));
     }
 
     [Fact]
