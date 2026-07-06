@@ -505,14 +505,21 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         shell: bash
         run: |
-          if dotnet run \
+          set +e
+          marker_output=$(dotnet run \
             --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
             --no-restore \
             -- \
-            has-breaking-change-marker "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"; then
+            has-breaking-change-marker "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" 2>&1)
+          marker_exit=$?
+          set -e
+          if [[ "${marker_exit}" -eq 0 ]]; then
             echo "present=true" >> "${GITHUB_OUTPUT}"
-          else
+          elif [[ "${marker_output}" == *"No breaking-change marker found"* ]]; then
             echo "present=false" >> "${GITHUB_OUTPUT}"
+          else
+            printf '%s\n' "${marker_output}" >&2
+            exit "${marker_exit}"
           fi
 
       - name: Run API compatibility report
