@@ -20,7 +20,7 @@ public sealed class AdminInfrastructureModuleTests
 
         var exception = resolveDispatcher.ShouldThrow<InvalidOperationException>();
 
-        exception.Message.ShouldContain(nameof(IIntegrationEventOutbox), StringComparison.Ordinal);
+        exception.Message.ShouldContain(nameof(IDomainEventIntegrationEventOutbox), StringComparison.Ordinal);
     }
 
     [Fact]

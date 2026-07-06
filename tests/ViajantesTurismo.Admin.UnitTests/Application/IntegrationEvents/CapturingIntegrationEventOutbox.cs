@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
 
-internal sealed class CapturingIntegrationEventOutbox(FakeUnitOfWork unitOfWork) : IIntegrationEventOutbox
+internal sealed class CapturingIntegrationEventOutbox(FakeUnitOfWork unitOfWork) : IIntegrationEventOutbox, IDomainEventIntegrationEventOutbox
 {
     public object? IntegrationEvent { get; private set; }
 

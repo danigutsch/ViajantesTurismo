@@ -43,7 +43,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ITourStore, TourStore>();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
-        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>(ServiceLifetime.Singleton);
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
 
         return builder;
     }
@@ -66,7 +66,7 @@ public static class InfrastructureDependencyInjection
 
         builder.AddAdminWriteDbContext();
         builder.Services.TryAddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
-        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>(ServiceLifetime.Singleton);
+        builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddScoped<ISeeder, Seeder>();
 
         return builder;

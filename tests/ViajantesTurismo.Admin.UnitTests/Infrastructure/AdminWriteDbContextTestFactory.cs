@@ -25,7 +25,7 @@ internal static class AdminWriteDbContextTestFactory
         var services = new ServiceCollection();
         services.AddSingleton(dispatcher);
         services.AddDomainEventDispatch<AdminWriteDbContext>();
-        services.AddIntegrationEventOutbox<AdminWriteDbContext>(ServiceLifetime.Singleton);
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddDbContext<AdminWriteDbContext>((provider, options) =>
         {
             options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
@@ -51,7 +51,7 @@ internal static class AdminWriteDbContextTestFactory
         services.AddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
-        services.AddIntegrationEventOutbox<AdminWriteDbContext>(ServiceLifetime.Singleton);
+        services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddDbContext<AdminWriteDbContext>((provider, options) =>
         {
             options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));

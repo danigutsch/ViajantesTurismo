@@ -143,25 +143,6 @@ public sealed class IntegrationEventOutboxMessageTests
     }
 
     [Fact]
-    public async Task Enqueue_requires_current_save_changes_context_when_no_context_was_constructed()
-    {
-        var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
-            new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero)),
-            new AdminIntegrationEventSerializer());
-
-        Func<Task> enqueue = async () => await outbox.Enqueue(new AdminTourCreatedIntegrationEvent(
-                Guid.CreateVersion7(),
-                new DateTimeOffset(2026, 6, 22, 11, 59, 0, TimeSpan.Zero),
-                Guid.CreateVersion7(),
-                "andes-no-context-2026",
-                "Andes No Context 2026"), CancellationToken.None)
-            .ConfigureAwait(false);
-
-        var exception = await enqueue.ShouldThrow<InvalidOperationException>();
-        exception.Message.ShouldContain("No current AdminWriteDbContext SaveChanges context", StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task Relay_publishes_pending_message_and_marks_it_published()
     {
         var publisher = new RecordingEventEnvelopePublisher();
