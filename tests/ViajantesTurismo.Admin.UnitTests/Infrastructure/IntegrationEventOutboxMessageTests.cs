@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.Messaging;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
@@ -294,6 +295,56 @@ public sealed class IntegrationEventOutboxMessageTests
         message.PublishedAt.ShouldBe(now);
         message.ClaimedBy.ShouldBeNull();
         message.ClaimedUntil.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Concurrent_relays_publish_once_when_claim_strategy_is_atomic()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher();
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(
+            publisher,
+            timeProvider,
+            configureServices: services => services.Replace(
+                ServiceDescriptor.Singleton<
+                    IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>,
+                    SingleClaimIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>>()));
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-atomic-claim-2026");
+        var firstRelay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        var secondRelay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+
+        // Act
+        var publishTasks = new[]
+        {
+            firstRelay.PublishPending(1, TestContext.Current.CancellationToken).AsTask(),
+            secondRelay.PublishPending(1, TestContext.Current.CancellationToken).AsTask(),
+        };
+        var publishedCounts = await Task.WhenAll(publishTasks);
+
+        // Assert
+        var totalPublished = publishedCounts.Sum();
+        totalPublished.ShouldBe(1);
+        publisher.Published.Count.ShouldBe(1);
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishedAt.ShouldBe(timeProvider.GetUtcNow());
+    }
+
+    [Fact]
+    public async Task PostgreSql_atomic_claim_sql_uses_skip_locked()
+    {
+        // Arrange
+        await using var scope = AdminWriteDbContextTestFactory.CreateWithGeneratedIntegrationEventDispatcher();
+        var entityType = scope.DbContext.Model.FindEntityType(typeof(IntegrationEventOutboxMessage));
+        entityType.ShouldNotBeNull();
+
+        // Act
+        var sql = PostgreSqlIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>.CreateClaimSql(entityType);
+
+        // Assert
+        sql.ShouldContain("UPDATE \"messaging\".\"outbox_messages\" AS message", StringComparison.Ordinal);
+        sql.ShouldContain("FOR UPDATE SKIP LOCKED", StringComparison.Ordinal);
+        sql.ShouldContain("RETURNING *", StringComparison.Ordinal);
     }
 
     [Fact]

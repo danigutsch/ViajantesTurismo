@@ -78,7 +78,8 @@ internal static class AdminWriteDbContextTestFactory
         IEventEnvelopePublisher publisher,
         TimeProvider timeProvider,
         Action<IntegrationEventOutboxRelayOptions>? configureOptions = null,
-        string? databaseName = null)
+        string? databaseName = null,
+        Action<IServiceCollection>? configureServices = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -93,6 +94,7 @@ internal static class AdminWriteDbContextTestFactory
             options.UseInMemoryDatabase(resolvedDatabaseName);
             services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
         });
+        configureServices?.Invoke(services);
 
         return services.BuildServiceProvider(new ServiceProviderOptions
         {
