@@ -1,19 +1,19 @@
-using ViajantesTurismo.Admin.ContractTests.Infrastructure;
+using ViajantesTurismo.Catalog.ContractTests.Infrastructure;
 
-namespace ViajantesTurismo.Admin.ContractTests;
+namespace ViajantesTurismo.Catalog.ContractTests;
 
 /// <summary>
-/// Verifies that canonical Admin OpenAPI artifacts do not drift from build-generated boundary artifacts.
+/// Verifies that canonical Catalog OpenAPI artifacts do not drift from build-generated boundary artifacts.
 /// </summary>
-public sealed class AdminOpenApiArtifactDriftGuardTests
+public sealed class CatalogOpenApiArtifactDriftGuardTests
 {
     [Fact]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
-    public void Canonical_OpenApi_artifacts_match_the_generated_boundary_artifacts()
+    public void Canonical_catalog_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Arrange
-        var snapshots = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet();
+        var snapshots = CatalogOpenApiSnapshots.CreateSnapshotSet();
         IReadOnlyList<string> expectedDrift = [];
 
         // Act

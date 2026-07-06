@@ -6,9 +6,15 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
+builder.Services.AddCatalogOpenApiDocuments();
 builder.AddCatalogInfrastructure();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
 
 app.MapCatalogEndpoints();
 

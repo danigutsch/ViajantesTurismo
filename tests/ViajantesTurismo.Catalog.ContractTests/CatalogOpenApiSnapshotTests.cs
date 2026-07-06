@@ -1,23 +1,22 @@
 using SharedKernel.Testing.Snapshots;
-using ViajantesTurismo.Admin.ContractTests.Infrastructure;
+using ViajantesTurismo.Catalog.ContractTests.Infrastructure;
 
-namespace ViajantesTurismo.Admin.ContractTests;
+namespace ViajantesTurismo.Catalog.ContractTests;
 
 /// <summary>
-/// Verifies that generated Admin OpenAPI documents match the committed canonical snapshots.
+/// Verifies that generated Catalog OpenAPI documents match the committed canonical snapshots.
 /// </summary>
-public sealed class AdminOpenApiSnapshotTests
+public sealed class CatalogOpenApiSnapshotTests
 {
     [Theory]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SnapshotCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
-    [InlineData("bookings")]
-    [InlineData("customers")]
-    [InlineData("tours")]
-    public void Generated_admin_OpenApi_document_matches_the_canonical_snapshot(string boundaryName)
+    [InlineData("catalog")]
+    [InlineData("public-catalog")]
+    public void Generated_catalog_OpenApi_document_matches_the_canonical_snapshot(string boundaryName)
     {
         // Arrange
-        var snapshots = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet();
+        var snapshots = CatalogOpenApiSnapshots.CreateSnapshotSet();
 
         // Act
         var canonicalSnapshot = snapshots.GetCanonicalSnapshot(boundaryName);
