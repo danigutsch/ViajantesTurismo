@@ -1,5 +1,4 @@
 using System.Text.Json.Nodes;
-using SharedKernel.Testing.Snapshots;
 
 namespace ViajantesTurismo.Admin.ContractTests;
 
@@ -98,10 +97,10 @@ internal static class AdminOpenApiArtifactDriftGuard
             generatedFilePath,
             $"Generated Admin OpenAPI artifact '{generatedFileName}' was not found. Build the solution so 'src/ViajantesTurismo.Admin.Contracts/OpenApi/.generated/' is populated.");
 
-        var canonicalText = SnapshotText.Normalize(File.ReadAllText(canonicalFilePath));
-        var generatedText = SnapshotText.Normalize(File.ReadAllText(generatedFilePath));
+        var canonicalJson = ParseJson(canonicalFilePath);
+        var generatedJson = ParseJson(generatedFilePath);
 
-        if (!string.Equals(canonicalText, generatedText, StringComparison.Ordinal))
+        if (!JsonNode.DeepEquals(canonicalJson, generatedJson))
         {
             throw new Xunit.Sdk.XunitException(
                 $"Generated Admin OpenAPI artifact '{generatedFileName}' does not match canonical snapshot '{canonicalFileName}'. "

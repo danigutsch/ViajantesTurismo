@@ -421,9 +421,6 @@
       "sharedkernel.testing.contracts": {
         "type": "Project"
       },
-      "sharedkernel.testing.snapshots": {
-        "type": "Project"
-      },
       "viajantesturismo.admin.apiservice": {
         "type": "Project",
         "dependencies": {
