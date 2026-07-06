@@ -5,9 +5,13 @@ name: Release Prep
     paths:
       - .github/workflows/release-prep.yml
       - src/SharedKernel/**
+      - src/Directory.Build.props
+      - src/Directory.Build.targets
       - tools/SharedKernel.Versioning.Tool/**
+      - tools/SharedKernel.Testing.CodeFixRunner/**
       - tests/SharedKernel.Versioning.Tests/**
       - docs/API_COMPATIBILITY.md
+      - docs/SHAREDKERNEL_PACKAGING.md
       - Directory.Build.props
       - Directory.Packages.props
       - ViajantesTurismo.slnx

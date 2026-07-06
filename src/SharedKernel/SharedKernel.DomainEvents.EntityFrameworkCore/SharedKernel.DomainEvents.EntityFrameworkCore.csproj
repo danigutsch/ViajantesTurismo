@@ -4,6 +4,7 @@
         <PackageId>SharedKernel.DomainEvents.EntityFrameworkCore</PackageId>
         <Description>Entity Framework Core SaveChanges integration for dispatching aggregate domain events.</Description>
         <RootNamespace>SharedKernel.DomainEvents.EntityFrameworkCore</RootNamespace>
+        <PackageTags>domain-events;entity-framework-core;shared-kernel;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

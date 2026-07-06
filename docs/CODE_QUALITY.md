@@ -149,6 +149,8 @@ JSON validation is performed by `scripts/lint-json.py`, which accepts repository
 **Key Rules:**
 
 The validator focuses on parse correctness for repository JSON files without a repo-tracked npm toolchain.
+Generated package artifacts under `artifacts/` are excluded so local SharedKernel pack/restore dry runs
+do not create lint inputs.
 
 ### Tool
 
