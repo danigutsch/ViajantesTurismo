@@ -86,9 +86,17 @@ Release-candidate and stable compatibility failures still block even when a mark
 
 ## OpenAPI snapshots
 
-The Admin contract tests read the committed OpenAPI artifacts and compare them with generated
-documents. Regenerate the artifacts intentionally when HTTP contracts change, then run:
+The Admin and Catalog contract tests read the committed OpenAPI artifacts and compare them with
+generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
+
+```bash
+dotnet build src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj -p:RefreshAdminOpenApiArtifacts=true
+dotnet build src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj -p:RefreshCatalogOpenApiArtifacts=true
+```
+
+Then run:
 
 ```bash
 dotnet test --project tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj --filter-class "*OpenApi*"
+dotnet test --project tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj --filter-class "*OpenApi*"
 ```

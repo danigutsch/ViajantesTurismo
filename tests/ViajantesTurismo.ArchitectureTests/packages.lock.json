@@ -1101,6 +1101,9 @@
       "viajantesturismo.catalog.apiservice": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
+          "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Infrastructure": "[0.1.0-alpha.0, )",

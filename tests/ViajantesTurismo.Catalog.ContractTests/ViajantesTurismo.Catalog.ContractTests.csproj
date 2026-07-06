@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <RootNamespace>ViajantesTurismo.Admin.ContractTests</RootNamespace>
+        <RootNamespace>ViajantesTurismo.Catalog.ContractTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,12 +22,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.ApiService\ViajantesTurismo.Admin.ApiService.csproj" />
-        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts\ViajantesTurismo.Admin.Contracts.csproj" />
-        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Snapshots\SharedKernel.Testing.Snapshots.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts\ViajantesTurismo.Catalog.Contracts.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Assertions\SharedKernel.Testing.Assertions.csproj" />
+        <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing.Snapshots\SharedKernel.Testing.Snapshots.csproj" />
         <ProjectReference Include="..\..\src\SharedKernel\SharedKernel.Testing\SharedKernel.Testing.csproj" />
-        <ProjectReference Include="..\SharedKernel.Testing.Contracts\SharedKernel.Testing.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

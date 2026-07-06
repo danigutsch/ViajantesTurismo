@@ -25,7 +25,7 @@
         <PackageReference Include="Microsoft.Extensions.ApiDescription.Server"/>
     </ItemGroup>
 
-    <Target Name="CopyAdminBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments">
+    <Target Name="CopyAdminBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments" Condition="'$(RefreshAdminOpenApiArtifacts)' == 'true'">
         <ItemGroup>
             <AdminOpenApiArtifact Include="tours;customers;bookings" />
             <GeneratedOpenApiArtifact Include="@(AdminOpenApiArtifact)">

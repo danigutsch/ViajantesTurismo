@@ -1,0 +1,266 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "ViajantesTurismo.Catalog.ApiService | public-catalog",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/public/catalog/tours": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogTourDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/catalog/tours/{slug}": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/public/catalog/content/{key}": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "culture",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/public/catalog/theme": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CatalogTourDto": {
+        "required": [
+          "id",
+          "adminTourId",
+          "identifier",
+          "title",
+          "slug",
+          "isPublished",
+          "images",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "adminTourId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identifier": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogTourImageDto"
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CatalogTourImageDto": {
+        "required": [
+          "sortOrder",
+          "isCover",
+          "uri",
+          "altText",
+          "responsiveVariants"
+        ],
+        "type": "object",
+        "properties": {
+          "sortOrder": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isCover": {
+            "type": "boolean"
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "altText": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "caption": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsiveVariants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaImageResponsiveVariantDto"
+            }
+          }
+        }
+      },
+      "MediaImageResponsiveVariantDto": {
+        "required": [
+          "uri",
+          "width",
+          "height",
+          "contentType",
+          "fileSizeBytes"
+        ],
+        "type": "object",
+        "properties": {
+          "objectKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "width": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "contentType": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "fileSizeBytes": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "CatalogEndpoints"
+    }
+  ]
+}

@@ -144,6 +144,7 @@
         <Project Path="tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj" />
     </Folder>
     <Folder Name="/benchmarks/">
         <Project Path="benchmarks/SharedKernel.Mediator.Benchmarks/SharedKernel.Mediator.Benchmarks.csproj" />

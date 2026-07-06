@@ -624,6 +624,9 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
+      "sharedkernel.apiversioning": {
+        "type": "Project"
+      },
       "sharedkernel.aspnetcoretesting": {
         "type": "Project",
         "dependencies": {
@@ -722,6 +725,15 @@
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
         }
       },
+      "sharedkernel.openapi": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "Microsoft.OpenApi": "[2.9.0, )",
+          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
+        }
+      },
       "sharedkernel.results": {
         "type": "Project"
       },
@@ -746,6 +758,9 @@
       "viajantesturismo.catalog.apiservice": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
+          "Microsoft.Extensions.ApiDescription.Server": "[10.0.9, )",
+          "SharedKernel.OpenApi": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Infrastructure": "[0.1.0-alpha.0, )",
@@ -852,6 +867,15 @@
         "resolved": "2026.2.0",
         "contentHash": "drvAEaI7Xf4wU6dx4UTB9MoZWXZlraaQ0qoeThPQ411FxNhId7QdUTukIC9I8aUHP0ycAaGwZNKqSvfOZQvUlg=="
       },
+      "Microsoft.AspNetCore.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "1ihb8FO9cGgEK1/m3CTtT/SfnynwmiZib0W2pcDVj3KSWk/Sca4VOXEtaptKQc582zpFrzTFiwkGRCglt6H+WQ==",
+        "dependencies": {
+          "Microsoft.OpenApi": "2.0.0"
+        }
+      },
       "Microsoft.AspNetCore.TestHost": {
         "type": "CentralTransitive",
         "requested": "[10.0.9, )",
@@ -869,6 +893,12 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
           "Microsoft.Extensions.Logging": "10.0.9"
         }
+      },
+      "Microsoft.Extensions.ApiDescription.Server": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "n1m7EAbCbHMGiTy++F+mLSan4MrZe0t00XEpJrkai6BFpB6lwEcirflI9FiMm4G4u55h/2RnWToYBDwS+MnN6g=="
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "CentralTransitive",
@@ -991,6 +1021,12 @@
           "Microsoft.Extensions.Http": "10.0.9",
           "Microsoft.Extensions.ServiceDiscovery.Abstractions": "10.7.0"
         }
+      },
+      "Microsoft.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
       },
       "Npgsql": {
         "type": "CentralTransitive",

@@ -412,6 +412,9 @@
           "SharedKernel.Results": "[0.1.0-alpha.0, )"
         }
       },
+      "sharedkernel.testing": {
+        "type": "Project"
+      },
       "sharedkernel.testing.assertions": {
         "type": "Project",
         "dependencies": {
@@ -419,6 +422,9 @@
         }
       },
       "sharedkernel.testing.contracts": {
+        "type": "Project"
+      },
+      "sharedkernel.testing.snapshots": {
         "type": "Project"
       },
       "viajantesturismo.admin.apiservice": {

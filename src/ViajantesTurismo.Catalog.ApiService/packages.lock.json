@@ -2,6 +2,21 @@
   "version": 2,
   "dependencies": {
     "net10.0": {
+      "Microsoft.AspNetCore.OpenApi": {
+        "type": "Direct",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "1ihb8FO9cGgEK1/m3CTtT/SfnynwmiZib0W2pcDVj3KSWk/Sca4VOXEtaptKQc582zpFrzTFiwkGRCglt6H+WQ==",
+        "dependencies": {
+          "Microsoft.OpenApi": "2.0.0"
+        }
+      },
+      "Microsoft.Extensions.ApiDescription.Server": {
+        "type": "Direct",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "n1m7EAbCbHMGiTy++F+mLSan4MrZe0t00XEpJrkai6BFpB6lwEcirflI9FiMm4G4u55h/2RnWToYBDwS+MnN6g=="
+      },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
         "requested": "[10.0.9, )",
@@ -169,6 +184,9 @@
           "Polly.Core": "8.4.2"
         }
       },
+      "sharedkernel.apiversioning": {
+        "type": "Project"
+      },
       "sharedkernel.buildingblocks": {
         "type": "Project",
         "dependencies": {
@@ -252,6 +270,14 @@
           "OpenTelemetry": "[1.16.0, )",
           "OpenTelemetry.Extensions.Hosting": "[1.16.0, )",
           "OpenTelemetry.Instrumentation.Runtime": "[1.15.1, )"
+        }
+      },
+      "sharedkernel.openapi": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
+          "Microsoft.OpenApi": "[2.9.0, )",
+          "SharedKernel.ApiVersioning": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.results": {
@@ -388,6 +414,12 @@
         "dependencies": {
           "Microsoft.Extensions.ServiceDiscovery.Abstractions": "10.7.0"
         }
+      },
+      "Microsoft.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
       },
       "Npgsql": {
         "type": "CentralTransitive",

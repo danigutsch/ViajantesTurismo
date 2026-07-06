@@ -87,6 +87,7 @@ flowchart TB
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
+    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> SharedKernel_OpenApi[SharedKernel.OpenApi]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts[ViajantesTurismo.Catalog.Contracts]
     ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
