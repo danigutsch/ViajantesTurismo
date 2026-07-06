@@ -384,16 +384,11 @@ public sealed class IntegrationEventOutboxMessageTests
     public void PostgreSql_atomic_claim_registration_replaces_default_claim_strategy()
     {
         // Arrange
-        var services = new ServiceCollection();
 
         // Act
-        services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
-        services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+        var descriptor = AdminWriteDbContextTestFactory.GetPostgreSqlOutboxRelayClaimStrategyDescriptor();
 
         // Assert
-        var descriptor = services
-            .Where(service => service.ServiceType == typeof(IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>))
-            .ShouldHaveSingleItem();
         descriptor.ImplementationType.ShouldBe(typeof(PostgreSqlIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>));
     }
 

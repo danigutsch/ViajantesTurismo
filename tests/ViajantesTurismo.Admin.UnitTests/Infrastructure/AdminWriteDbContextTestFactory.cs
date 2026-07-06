@@ -140,4 +140,15 @@ internal static class AdminWriteDbContextTestFactory
         _ = dbContext.SaveChanges();
     }
 
+    public static ServiceDescriptor GetPostgreSqlOutboxRelayClaimStrategyDescriptor()
+    {
+        var services = new ServiceCollection();
+        services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+        services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
+
+        return services
+            .Where(service => service.ServiceType == typeof(IIntegrationEventOutboxClaimStrategy<AdminWriteDbContext>))
+            .ShouldHaveSingleItem();
+    }
+
 }
