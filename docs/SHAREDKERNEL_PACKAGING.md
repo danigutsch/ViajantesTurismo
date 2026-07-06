@@ -64,6 +64,11 @@ changes.
 Repo-owned command-line automation is packaged as .NET tools when the executable is useful outside a
 single `dotnet run --project` call. Current repo-owned tool package IDs and commands:
 
+Use `tools/` for repository automation such as release, compatibility, code-fix, and packaging
+commands. Use `src/SharedKernel/` only for reusable library APIs that consumers reference at runtime
+or from tests. A command that orchestrates repository files, GitHub Actions artifacts, or `dotnet`
+processes belongs under `tools/`, even when it primarily supports SharedKernel packages.
+
 | Package ID | Command |
 | --- | --- |
 | `SharedKernel.Versioning.Tool` | `sharedkernel-version` |
@@ -162,3 +167,24 @@ when an internal `SharedKernel.*` dependency does not match the pack version.
 Do not widen internal dependency ranges in individual project files without a compatibility policy for
 that package family. Broader ranges belong in a release-governed change because they let consumers mix
 different SharedKernel package versions.
+
+## Public API compatibility
+
+Every `SharedKernel.*` source package has `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` baseline
+files. The repository enables `Microsoft.CodeAnalysis.PublicApiAnalyzers` centrally for SharedKernel
+package projects, so new public APIs must be added to the baseline intentionally.
+
+Run the baseline presence check before release work:
+
+```bash
+dotnet run --project tools/SharedKernel.Versioning.Tool -- check-public-api-baselines
+```
+
+Run the package compatibility report command before release work:
+
+```bash
+dotnet run --project tools/SharedKernel.Versioning.Tool -- api-compatibility
+```
+
+See [API compatibility gates](API_COMPATIBILITY.md) for alpha, beta, release-candidate, and stable
+breaking-change expectations.

@@ -7,6 +7,7 @@ name: Release Prep
       - src/SharedKernel/**
       - tools/SharedKernel.Versioning.Tool/**
       - tests/SharedKernel.Versioning.Tests/**
+      - docs/API_COMPATIBILITY.md
       - Directory.Build.props
       - Directory.Packages.props
       - ViajantesTurismo.slnx
@@ -98,6 +99,20 @@ jobs:
             --informational-version "${{ steps.version.outputs.informational_version }}" \
             --output-root artifacts/packages/release-prep
 
+      - name: Generate API compatibility report
+        shell: bash
+        run: |
+          dotnet run \
+            --project tools/SharedKernel.Versioning.Tool/SharedKernel.Versioning.Tool.csproj \
+            --configuration Release \
+            --no-restore \
+            --no-build \
+            -- \
+            api-compatibility \
+            --release-phase "${{ github.event_name == 'workflow_dispatch' && inputs.promote_stable && 'stable' || 'alpha' }}" \
+            --version "${{ steps.version.outputs.package_version }}" \
+            --output-root artifacts/api-compat
+
       - name: Generate release notes and manifest
         shell: bash
         run: |
@@ -126,6 +141,7 @@ jobs:
           path: |
             artifacts/packages/release-prep/${{ steps.version.outputs.package_version }}/*.nupkg
             artifacts/release-prep/**
+            artifacts/api-compat/**
           if-no-files-found: error
           retention-days: 14
 
