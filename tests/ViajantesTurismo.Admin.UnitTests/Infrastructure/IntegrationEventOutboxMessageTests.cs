@@ -4,6 +4,7 @@ using SharedKernel.Messaging;
 using SharedKernel.Messaging.IntegrationEvents;
 using SharedKernel.Messaging.IntegrationEvents.CloudEvents;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Testing;
 using SharedKernel.Testing.Assertions;
 using ViajantesTurismo.Admin.Contracts.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -11,6 +12,8 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.OutboxCategory)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventRelayCapability)]
 public sealed class IntegrationEventOutboxMessageTests
 {
     private const string JsonContentType = "application/json";
@@ -161,6 +164,7 @@ public sealed class IntegrationEventOutboxMessageTests
     [Fact]
     public async Task Relay_records_retry_state_when_publish_fails()
     {
+        // Arrange
         var publisher = new RecordingEventEnvelopePublisher
         {
             Failure = new InvalidOperationException("transport unavailable")
@@ -169,13 +173,60 @@ public sealed class IntegrationEventOutboxMessageTests
         await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
         await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-retry-2026");
 
+        // Act
         var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
         await relay.PublishPending(1, TestContext.Current.CancellationToken);
 
+        // Assert
         var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
         message.PublishedAt.ShouldBeNull();
         message.PublishAttempts.ShouldBe(1);
         message.LastPublishError.ShouldContain("transport unavailable", StringComparison.Ordinal);
         ((IRetryableMessage)message).Attempts.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Relay_records_exception_type_when_publish_failure_message_is_empty()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher
+        {
+            Failure = new InvalidOperationException(string.Empty)
+        };
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-empty-error-2026");
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishAttempts.ShouldBe(1);
+        message.LastPublishError.ShouldBe(typeof(InvalidOperationException).FullName);
+    }
+
+    [Fact]
+    public async Task Relay_truncates_long_publish_failure_message_to_configured_column_length()
+    {
+        // Arrange
+        var publisher = new RecordingEventEnvelopePublisher
+        {
+            Failure = new InvalidOperationException(new string('x', 2_100))
+        };
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 6, 22, 12, 0, 0, TimeSpan.Zero));
+        await using var provider = AdminWriteDbContextTestFactory.CreateOutboxRelayProvider(publisher, timeProvider);
+        await AdminWriteDbContextTestFactory.EnqueueAdminTourCreatedIntegrationEvent(provider, "andes-long-error-2026");
+
+        // Act
+        var relay = provider.GetRequiredService<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
+        await relay.PublishPending(1, TestContext.Current.CancellationToken);
+
+        // Assert
+        var message = AdminWriteDbContextTestFactory.GetSingleOutboxMessage(provider);
+        message.PublishAttempts.ShouldBe(1);
+        message.LastPublishError.ShouldNotBeNull();
+        message.LastPublishError.Length.ShouldBe(IntegrationEventOutboxMessage.LastPublishErrorMaxLength);
     }
 }
