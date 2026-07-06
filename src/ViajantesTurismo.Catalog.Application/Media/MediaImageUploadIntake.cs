@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using SharedKernel.ImageProcessing;
 using SharedKernel.Messaging.IntegrationEvents;
+using ViajantesTurismo.Catalog.Contracts.Media;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
 using SharedKernel.BuildingBlocks;

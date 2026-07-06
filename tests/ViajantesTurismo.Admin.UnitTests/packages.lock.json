@@ -691,7 +691,9 @@
       "sharedkernel.messaging.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.9, )",
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.messaging.integrationevents.cloudevents": {
@@ -832,6 +834,7 @@
           "SharedKernel.ImageProcessing": "[0.1.0-alpha.0, )",
           "SharedKernel.InputNormalization": "[0.1.0-alpha.0, )",
           "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )",
           "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )",
           "SharedKernel.Results": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Contracts": "[0.1.0-alpha.0, )",
@@ -842,7 +845,8 @@
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.domain": {

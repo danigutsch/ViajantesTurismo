@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.ArchitectureTests.Infrastructure;
 using static ViajantesTurismo.ArchitectureTests.Conventions.NamingConventionTestsHelpers;
@@ -40,6 +41,7 @@ public sealed partial class NamingConventionTests
             .Where(type => !IsStaticClass(type))
             .Where(type => !typeof(Attribute).IsAssignableFrom(type))
             .Where(type => !typeof(IIntegrationEvent).IsAssignableFrom(type))
+            .Where(type => !typeof(JsonSerializerContext).IsAssignableFrom(type))
             .Where(type => !type.Name.EndsWith("ApiClient", StringComparison.Ordinal))
             .Where(type => !type.Name.EndsWith("Dto", StringComparison.Ordinal))
             .ToArray();

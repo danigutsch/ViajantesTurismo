@@ -60,6 +60,14 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ClaimedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("ClaimedUntil")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("DataContentType")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");

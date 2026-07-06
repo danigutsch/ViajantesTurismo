@@ -48,7 +48,7 @@ internal static class AdminWriteDbContextTestFactory
     public static AdminWriteDbContextTestScope CreateWithGeneratedIntegrationEventDispatcher()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        services.AddAdminIntegrationEventContract();
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
@@ -74,18 +74,23 @@ internal static class AdminWriteDbContextTestFactory
         }
     }
 
-    public static ServiceProvider CreateOutboxRelayProvider(IEventEnvelopePublisher publisher, TimeProvider timeProvider)
+    public static ServiceProvider CreateOutboxRelayProvider(
+        IEventEnvelopePublisher publisher,
+        TimeProvider timeProvider,
+        Action<IntegrationEventOutboxRelayOptions>? configureOptions = null,
+        string? databaseName = null)
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddSingleton(publisher);
         services.AddSingleton(timeProvider);
-        services.AddSingleton<IIntegrationEventSerializer, AdminIntegrationEventSerializer>();
+        services.AddAdminIntegrationEventContract();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
-        services.AddSingleton<EfIntegrationEventOutboxRelay<AdminWriteDbContext>>();
-        var databaseName = Guid.NewGuid().ToString("N");
+        services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>(configureOptions);
+        var resolvedDatabaseName = databaseName ?? Guid.NewGuid().ToString("N");
         services.AddDbContext<AdminWriteDbContext>(options =>
         {
-            options.UseInMemoryDatabase(databaseName);
+            options.UseInMemoryDatabase(resolvedDatabaseName);
             services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
         });
 
@@ -120,6 +125,17 @@ internal static class AdminWriteDbContextTestFactory
         return scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>()
             .Set<IntegrationEventOutboxMessage>()
             .ShouldHaveSingleItem();
+    }
+
+    public static void ClaimSingleOutboxMessage(ServiceProvider provider, DateTimeOffset claimedUntil)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        using var scope = provider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+        var message = dbContext.Set<IntegrationEventOutboxMessage>().ShouldHaveSingleItem();
+        message.MarkClaimed("test-relay", claimedUntil);
+        _ = dbContext.SaveChanges();
     }
 
 }

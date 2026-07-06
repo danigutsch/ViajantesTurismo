@@ -190,10 +190,14 @@
       "sharedkernel.mediator.abstractions": {
         "type": "Project"
       },
+      "sharedkernel.messaging": {
+        "type": "Project"
+      },
       "sharedkernel.messaging.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )"
+          "SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging": "[0.1.0-alpha.0, )"
         }
       },
       "sharedkernel.observability": {
@@ -215,7 +219,8 @@
       "viajantesturismo.catalog.contracts": {
         "type": "Project",
         "dependencies": {
-          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )"
+          "SharedKernel.HttpClients": "[0.1.0-alpha.0, )",
+          "SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {

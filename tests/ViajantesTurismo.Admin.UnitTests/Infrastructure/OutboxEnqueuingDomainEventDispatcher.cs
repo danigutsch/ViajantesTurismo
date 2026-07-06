@@ -29,7 +29,7 @@ internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProv
         var outbox = new EfIntegrationEventOutbox<AdminWriteDbContext>(
             dbContext,
             timeProvider,
-            new AdminIntegrationEventSerializer());
+            RegisteredIntegrationEventSerializerTestServices.CreateSerializer());
         await outbox.Enqueue(
             new AdminTourCreatedIntegrationEvent(
                 Guid.CreateVersion7(),
