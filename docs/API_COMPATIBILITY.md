@@ -12,9 +12,9 @@ This repository protects two public contract surfaces:
 | Phase | Gate behavior | Breaking-change expectation |
 | --- | --- | --- |
 | Alpha / `0.y.z` / `-alpha` | Report-only compatibility artifacts | Breaking changes are allowed. Keep the package/API visibly prerelease and capture important design churn in release notes or issues. |
-| Beta / `-beta` | Report artifacts and require a breaking-change marker for known breaking diffs | Breaking changes are allowed, but should be intentional and documented. |
-| Release candidate / `-rc` | Block breaking diffs unless explicitly approved | Treat the API as final except for critical fixes. |
-| Stable / `>=1.0.0` | Block breaking diffs | Use a SemVer major version or a new HTTP API version for incompatible changes. Deprecate first when practical. |
+| Beta / `-beta` | Report-only only when a breaking-change marker is present | Breaking changes are allowed, but should be intentional and documented. |
+| Release candidate / `-rc` | Block breaking diffs | Treat the API as final except for critical fixes. |
+| Stable / `>=1.0.0` | Block breaking diffs, even when a marker is present | Use a SemVer major version or a new HTTP API version for incompatible changes. Deprecate first when practical. |
 
 This follows SemVer's rule that `0.y.z` is initial development and anything may
 change, NuGet's prerelease opt-in model, and Microsoft's guidance to minimize stable
@@ -52,10 +52,22 @@ dotnet run --project tools/SharedKernel.Versioning.Tool -- \
 
 Compatibility output is written under `artifacts/api-compat/` for CI artifact upload.
 
+When `--baseline-version` is supplied, the command maps its internal settings to the official .NET SDK
+package validation properties used by `dotnet pack`:
+
+| Internal setting | Environment variable | MSBuild property |
+| --- | --- | --- |
+| Enable package validation | `API_COMPAT_ENABLE_PACKAGE_VALIDATION` | `EnablePackageValidation` |
+| Baseline package version | `API_COMPAT_BASELINE_VERSION` | `PackageValidationBaselineVersion` |
+
+These environment variables are scoped inside `SharedKernel.Versioning.Tool`; the tool restores any
+previous values after the report command finishes. Contributors should prefer the command-line options
+above instead of setting these variables directly.
+
 ## Breaking-change marker
 
-When a non-alpha compatibility check finds a breaking API diff, the PR must include a Conventional
-Commit breaking marker in at least one commit:
+When a beta compatibility check finds a breaking API diff, the PR must include a Conventional Commit
+breaking marker in at least one commit:
 
 ```text
 feat(api)!: remove legacy contract
@@ -69,6 +81,8 @@ BREAKING CHANGE: describe the migration impact
 
 Alpha changes do not need this marker unless the author wants the release notes to call out an
 important consumer-visible break.
+
+Release-candidate and stable compatibility failures still block even when a marker is present.
 
 ## OpenAPI snapshots
 

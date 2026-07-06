@@ -64,6 +64,11 @@ changes.
 Repo-owned command-line automation is packaged as .NET tools when the executable is useful outside a
 single `dotnet run --project` call. Current repo-owned tool package IDs and commands:
 
+Use `tools/` for repository automation such as release, compatibility, code-fix, and packaging
+commands. Use `src/SharedKernel/` only for reusable library APIs that consumers reference at runtime
+or from tests. A command that orchestrates repository files, GitHub Actions artifacts, or `dotnet`
+processes belongs under `tools/`, even when it primarily supports SharedKernel packages.
+
 | Package ID | Command |
 | --- | --- |
 | `SharedKernel.Versioning.Tool` | `sharedkernel-version` |
