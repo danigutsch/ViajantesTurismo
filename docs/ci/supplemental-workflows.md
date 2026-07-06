@@ -160,9 +160,10 @@ publishing by default. It runs on relevant pull-request changes and manual dispa
 1. Checkout full history so the existing version calculation can inspect tags and commits.
 2. Run `SharedKernel.Versioning.Tool calculate-release` from the CI versioning flow.
 3. Run `SharedKernel.Versioning.Tool pack-sharedkernel` with the computed package version.
-4. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
+4. Run `SharedKernel.Versioning.Tool api-compatibility` to write the package compatibility report.
+5. Run `SharedKernel.Versioning.Tool prepare-release` to generate `release-notes.md`, `CHANGELOG.md`,
    and `release-manifest.json`.
-5. Upload package and release-prep artifacts for review.
+6. Upload package and release-prep artifacts for review.
 
 The existing CI workflow remains the build/test gate for pull requests. Release Prep intentionally
 stays focused on release artifact generation so it does not duplicate full-solution validation.

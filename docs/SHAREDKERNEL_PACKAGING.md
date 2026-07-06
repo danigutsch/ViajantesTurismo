@@ -30,6 +30,28 @@ pack/restore validation as runtime packages. They opt out of source-wide AOT com
 test frameworks, Roslyn test infrastructure, and Aspire test hosts are not production runtime
 surfaces.
 
+Repository-only test helpers stay under `tests/` and are explicitly non-packable:
+
+| Helper project | Placement decision |
+| --- | --- |
+| `SharedKernel.AspNetCoreTesting` | Repository-local ASP.NET Core test host support. |
+| `SharedKernel.CodeFixes.Testing` | Repository-local Roslyn code-fix test support. |
+| `SharedKernel.Mediator.Testing.ReferenceDispatcher` | Repository-local mediator test fixture. |
+| `SharedKernel.Testing.Contracts` | Repository-local contract test taxonomy. |
+| `SharedKernel.Testing.Integration` | Repository-local integration test taxonomy. |
+| `SharedKernel.Testing.Packaging` | Repository-local package-test builders. |
+| `SharedKernel.Testing.Scenarios` | Repository-local scenario test taxonomy. |
+| `SharedKernel.Testing.System` | Repository-local system test taxonomy. |
+
+Samples and benchmarks are explicitly non-packable:
+
+| Project | Reason |
+| --- | --- |
+| `samples/Mediator/Mediator.Sample` | Consumer-facing sample, not a reusable package. |
+| `samples/Results/BasicResults.Sample` | Consumer-facing sample, not a reusable package. |
+| `benchmarks/SharedKernel.Functional.Benchmarks` | Measurement harness, not a reusable package. |
+| `benchmarks/SharedKernel.Mediator.Benchmarks` | Measurement harness, not a reusable package. |
+
 ## Naming
 
 Use `SharedKernel.<Capability>` for provider-neutral packages.
@@ -47,6 +69,22 @@ under `tests/` when it only encodes this repository's test taxonomy or fixtures.
 
 Keep package IDs aligned with the root namespace unless a package has a documented compatibility reason
 to differ.
+
+Current package inventory follows these conventions:
+
+| Package family | Location | Convention |
+| --- | --- | --- |
+| Runtime and provider packages | `src/SharedKernel/SharedKernel.*` | `PackageId` matches the project file name and folder name. |
+| Roslyn analyzers, code fixes, and source generators | `src/SharedKernel/SharedKernel.*.{Analyzers,CodeFixes,SourceGenerator}` | `netstandard2.0`, Roslyn package suffix, and explicit `IsAotCompatible=false`. |
+| Reusable testing helpers | `src/SharedKernel/SharedKernel.Testing*` | Packable only when intended for reuse outside this repository's test taxonomy. |
+| Repo-owned command tools | `tools/SharedKernel.*` | Pack as .NET tools when useful outside one local `dotnet run --project` invocation. |
+
+Intentional naming exceptions:
+
+| Project | Exception | Reason |
+| --- | --- | --- |
+| `SharedKernel.Mediator.Abstractions` | Root namespace remains `SharedKernel.Mediator`. | The assembly contributes shared mediator contracts under the existing mediator namespace while keeping package identity precise. |
+| `SharedKernel.EventSourcing.Npgsql` | Provider segment uses the provider name `Npgsql`. | Matches the .NET PostgreSQL provider package naming. |
 
 ## Local package artifact layout
 
